@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__ID_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__SYNCHRONOUS_NAME;
@@ -24,10 +25,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -49,6 +53,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({JDBCConnectorTest.class})
+@RunWith(JUnitParamsRunner.class)
 public class CreateMappingCommandDUnitTest {
 
   private static final String REGION_NAME = "testRegion";
@@ -74,126 +79,142 @@ public class CreateMappingCommandDUnitTest {
 
   }
 
-  private void setupReplicate() {
-    setupReplicate(false);
+  private void setupReplicate(String regionName) {
+    setupReplicate(regionName, false);
   }
 
-  private void setupReplicate(boolean addLoader) {
-    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=REPLICATE"
+  private void setupReplicate(String regionName, boolean addLoader) {
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE"
         + (addLoader ? " --cache-loader=" + JdbcLoader.class.getName() : ""))
         .statusIsSuccess();
   }
 
-  private void setupPartition() {
-    gfsh.executeAndAssertThat("create region --name=" + REGION_NAME + " --type=PARTITION")
+  private void setupPartition(String regionName) {
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=PARTITION")
         .statusIsSuccess();
   }
 
-  private void setupAsyncEventQueue() {
+  private void setupAsyncEventQueue(String regionName) {
     gfsh.executeAndAssertThat(
         "create async-event-queue --id="
-            + CreateMappingCommand.createAsyncEventQueueName(REGION_NAME)
+            + CreateMappingCommand.createAsyncEventQueueName(regionName)
             + " --listener=" + JdbcAsyncWriter.class.getName())
         .statusIsSuccess();
   }
 
-  private static RegionMapping getRegionMappingFromClusterConfig() {
+  private static RegionMapping getRegionMappingFromClusterConfig(String regionName) {
     CacheConfig cacheConfig =
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
     RegionConfig regionConfig = cacheConfig.getRegions().stream()
-        .filter(region -> region.getName().equals(REGION_NAME)).findFirst().orElse(null);
+        .filter(region -> region.getName().equals(convertRegionPathToName(regionName))).findFirst()
+        .orElse(null);
     return (RegionMapping) regionConfig.getCustomRegionElements().stream()
         .filter(element -> element instanceof RegionMapping).findFirst().orElse(null);
   }
 
-  private static RegionMapping getRegionMappingFromService() {
+  private static RegionMapping getRegionMappingFromService(String regionName) {
     return ClusterStartupRule.getCache().getService(JdbcConnectorService.class)
-        .getMappingForRegion(REGION_NAME);
+        .getMappingForRegion(convertRegionPathToName(regionName));
   }
 
-  private static void validateAsyncEventQueueCreatedInClusterConfig(boolean isParallel) {
+  private static void validateAsyncEventQueueCreatedInClusterConfig(String regionName,
+      boolean isParallel) {
     CacheConfig cacheConfig =
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
     List<CacheConfig.AsyncEventQueue> queueList = cacheConfig.getAsyncEventQueues();
     CacheConfig.AsyncEventQueue queue = queueList.get(0);
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(REGION_NAME);
+    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
     assertThat(queue.getId()).isEqualTo(queueName);
     assertThat(queue.getAsyncEventListener().getClassName())
         .isEqualTo(JdbcAsyncWriter.class.getName());
     assertThat(queue.isParallel()).isEqualTo(isParallel);
   }
 
-  private static void validateRegionAlteredInClusterConfig(boolean synchronous) {
+  private static String convertRegionPathToName(String regionPath) {
+    if (regionPath.startsWith("/")) {
+      return regionPath.substring(1);
+    }
+    return regionPath;
+  }
+
+  private static void validateRegionAlteredInClusterConfig(String regionName, boolean synchronous) {
     CacheConfig cacheConfig =
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(null);
     RegionConfig regionConfig = cacheConfig.getRegions().stream()
-        .filter(region -> region.getName().equals(REGION_NAME)).findFirst().orElse(null);
-    RegionAttributesType attributes = regionConfig.getRegionAttributes().get(0);
+        .filter(region -> region.getName().equals(convertRegionPathToName(regionName))).findFirst()
+        .orElse(null);
+    RegionAttributesType attributes = regionConfig.getRegionAttributes();
     assertThat(attributes.getCacheLoader().getClassName()).isEqualTo(JdbcLoader.class.getName());
     if (synchronous) {
       assertThat(attributes.getCacheWriter().getClassName()).isEqualTo(JdbcWriter.class.getName());
     } else {
-      String queueName = CreateMappingCommand.createAsyncEventQueueName(REGION_NAME);
+      String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
       assertThat(attributes.getAsyncEventQueueIds()).isEqualTo(queueName);
     }
   }
 
-  private static void validateAsyncEventQueueCreatedOnServer(boolean isParallel) {
+  private static void validateAsyncEventQueueCreatedOnServer(String regionName,
+      boolean isParallel) {
     InternalCache cache = ClusterStartupRule.getCache();
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(REGION_NAME);
+    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
     AsyncEventQueue queue = cache.getAsyncEventQueue(queueName);
     assertThat(queue).isNotNull();
     assertThat(queue.getAsyncEventListener()).isInstanceOf(JdbcAsyncWriter.class);
     assertThat(queue.isParallel()).isEqualTo(isParallel);
   }
 
-  private static void validateRegionAlteredOnServer(boolean synchronous) {
+  private static void validateRegionAlteredOnServer(String regionName, boolean synchronous) {
     InternalCache cache = ClusterStartupRule.getCache();
-    Region<?, ?> region = cache.getRegion(REGION_NAME);
+    Region<?, ?> region = cache.getRegion(regionName);
     assertThat(region.getAttributes().getCacheLoader()).isInstanceOf(JdbcLoader.class);
     if (synchronous) {
       assertThat(region.getAttributes().getCacheWriter()).isInstanceOf(JdbcWriter.class);
     } else {
-      String queueName = CreateMappingCommand.createAsyncEventQueueName(REGION_NAME);
+      String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
       assertThat(region.getAttributes().getAsyncEventQueueIds()).contains(queueName);
     }
   }
 
   @Test
-  public void createMappingUpdatesServiceAndClusterConfig() {
-    setupReplicate();
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createMappingUpdatesServiceAndClusterConfig(String regionName) {
+    setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__ID_NAME, "myId");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     server.invoke(() -> {
-      RegionMapping mapping = getRegionMappingFromService();
+      RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredOnServer(false);
-      validateAsyncEventQueueCreatedOnServer(false);
+      assertThat(mapping.getIds()).isEqualTo("myId");
+      validateRegionAlteredOnServer(regionName, false);
+      validateAsyncEventQueueCreatedOnServer(regionName, false);
     });
 
     locator.invoke(() -> {
-      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredInClusterConfig(false);
-      validateAsyncEventQueueCreatedInClusterConfig(false);
+      assertThat(regionMapping.getIds()).isEqualTo("myId");
+      validateRegionAlteredInClusterConfig(regionName, false);
+      validateAsyncEventQueueCreatedInClusterConfig(regionName, false);
     });
   }
 
   @Test
-  public void createSynchronousMappingUpdatesServiceAndClusterConfig() {
-    setupReplicate();
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createSynchronousMappingUpdatesServiceAndClusterConfig(String regionName) {
+    setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
@@ -202,27 +223,28 @@ public class CreateMappingCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     server.invoke(() -> {
-      RegionMapping mapping = getRegionMappingFromService();
+      RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredOnServer(true);
+      validateRegionAlteredOnServer(regionName, true);
     });
 
     locator.invoke(() -> {
-      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredInClusterConfig(true);
+      validateRegionAlteredInClusterConfig(regionName, true);
     });
   }
 
   @Test
-  public void createMappingWithPartitionUpdatesServiceAndClusterConfig() {
-    setupPartition();
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createMappingWithPartitionUpdatesServiceAndClusterConfig(String regionName) {
+    setupPartition(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
@@ -230,80 +252,83 @@ public class CreateMappingCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     server.invoke(() -> {
-      RegionMapping mapping = getRegionMappingFromService();
+      RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredOnServer(false);
-      validateAsyncEventQueueCreatedOnServer(true);
+      validateRegionAlteredOnServer(regionName, false);
+      validateAsyncEventQueueCreatedOnServer(regionName, true);
     });
 
     locator.invoke(() -> {
-      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredInClusterConfig(false);
-      validateAsyncEventQueueCreatedInClusterConfig(true);
+      validateRegionAlteredInClusterConfig(regionName, false);
+      validateAsyncEventQueueCreatedInClusterConfig(regionName, true);
     });
   }
 
   @Test
-  public void createMappingWithNoTable() {
-    setupReplicate();
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createMappingWithNoTable(String regionName) {
+    setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     server.invoke(() -> {
-      RegionMapping mapping = getRegionMappingFromService();
+      RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isNull();
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredOnServer(false);
-      validateAsyncEventQueueCreatedOnServer(false);
+      validateRegionAlteredOnServer(regionName, false);
+      validateAsyncEventQueueCreatedOnServer(regionName, false);
     });
 
     locator.invoke(() -> {
-      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isNull();
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      validateRegionAlteredInClusterConfig(false);
-      validateAsyncEventQueueCreatedInClusterConfig(false);
+      validateRegionAlteredInClusterConfig(regionName, false);
+      validateAsyncEventQueueCreatedInClusterConfig(regionName, false);
     });
   }
 
   @Test
-  public void createExistingRegionMappingFails() {
-    setupReplicate();
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createExistingRegionMappingFails(String regionName) {
+    setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "bogusConnection");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "bogusPdxClass");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogusTable");
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
-        .containsOutput("A jdbc-mapping for " + REGION_NAME + " already exists");
+        .containsOutput(
+            "A JDBC mapping for " + convertRegionPathToName(regionName) + " already exists");
 
     server.invoke(() -> {
-      RegionMapping mapping = getRegionMappingFromService();
+      RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
     });
 
     locator.invoke(() -> {
-      RegionMapping regionMapping = getRegionMappingFromClusterConfig();
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
@@ -311,21 +336,23 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  public void createMappingWithoutPdxNameFails() {
-    setupReplicate();
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createMappingWithoutPdxNameFails(String regionName) {
+    setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
 
     // NOTE: --table is optional so it should not be in the output but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
-            "You should specify option (--table, --pdx-name, --synchronous) for this command");
+            "You should specify option (--table, --pdx-name, --synchronous, --id) for this command");
   }
 
   @Test
-  public void createMappingWithNonExistentRegionFails() {
-    setupReplicate();
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createMappingWithNonExistentRegionFails(String regionName) {
+    setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, "bogusRegion");
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
@@ -336,30 +363,32 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  public void createMappingWithRegionThatHasALoaderFails() {
-    setupReplicate(true);
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createMappingWithRegionThatHasALoaderFails(String regionName) {
+    setupReplicate(regionName, true);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
-        .containsOutput("The existing region " + REGION_NAME
+        .containsOutput("The existing region " + convertRegionPathToName(regionName)
             + " must not already have a cache-loader, but it has " + JdbcLoader.class.getName());
   }
 
   @Test
-  public void createMappingWithExistingQueueFails() {
-    setupReplicate();
-    setupAsyncEventQueue();
+  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  public void createMappingWithExistingQueueFails(String regionName) {
+    setupReplicate(regionName);
+    setupAsyncEventQueue(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, REGION_NAME);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
     csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
     csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput("An async-event-queue named "
-            + CreateMappingCommand.createAsyncEventQueueName(REGION_NAME)
+            + CreateMappingCommand.createAsyncEventQueueName(regionName)
             + " must not already exist.");
   }
 

@@ -24,13 +24,19 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.ajoberstar:gradle-git:1.3.2"
-    classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.2.0"
+    // Newer versions of the nebula plugins require gradle-info-plugin 4.0.2 or higher, which in 
+    // depends on JGit 5.0.  Conversely, gradle-git relies of JGit 4.0.
+    // Be mindful of potential classpath issues when updating any of these three dependencies.
+    classpath "com.netflix.nebula:nebula-project-plugin:5.1.0"
+    classpath "com.netflix.nebula:gradle-lint-plugin:10.1.0"
+    classpath "org.ajoberstar:gradle-git:1.7.2"
+
+    classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.3.1"
     classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.7"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
-    classpath "com.netflix.nebula:nebula-project-plugin:4.0.1"
+    classpath 'io.spring.gradle:dependency-management-plugin:1.0.6.RELEASE'
   }
 }
 
@@ -52,6 +58,7 @@ allprojects {
   ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
   repositories {
+    mavenLocal()
     mavenCentral()
     maven { url "http://repo.spring.io/release" }
   }
@@ -69,13 +76,14 @@ apply from: "${scriptDir}/ide.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"
 apply from: "${scriptDir}/test.gradle"
 apply from: "${scriptDir}/test-by-category.gradle"
-apply from: "${scriptDir}/publish.gradle"
 apply from: "${scriptDir}/code-analysis.gradle"
 apply from: "${scriptDir}/sonar.gradle"
 apply from: "${scriptDir}/rat.gradle"
 apply from: "${scriptDir}/docker.gradle"
 apply from: "${scriptDir}/spotless.gradle"
+apply from: "${scriptDir}/lint.gradle"
 apply from: "${scriptDir}/resolve-dependencies.gradle"
+apply from: "${scriptDir}/geode-dependency-management.gradle"
 
 subprojects {
   apply plugin: 'com.github.ben-manes.versions'
@@ -99,9 +107,9 @@ ext.readScmInfo = { proj ->
     def git = org.ajoberstar.grgit.Grgit.open(currentDir: project(proj).projectDir)
     try {
       return [
-          'Source-Repository': git.branch.getCurrent().name,
+          'Source-Repository': git.branch.current.name,
           'Source-Revision'  : git.head().id,
-          'Source-Date'      : git.head().getDate().format('yyyy-MM-dd HH:mm:ss Z')
+          'Source-Date'      : git.head().date.format('yyyy-MM-dd HH:mm:ss Z')
       ] as Properties
     } finally {
       git.close()
@@ -142,4 +150,41 @@ task generate() {
   // This task is a no-op, with other tasks (such as geode-protobuf-messages:generateProto)
   // injecting themselves as a task dependency into this task.  E.g., via
   // `afterEvaluate.rootProject.generate.dependsOn(generateProto)`
+}
+
+// Prompt the user for a publication passsword to sign archives or upload artifacts, if requested
+if (project.hasProperty('askpass')) {
+  gradle.taskGraph.whenReady { taskGraph ->
+    if(taskGraph.allTasks.any {it instanceof Sign}) {
+      if(!project.hasProperty('signing.keyId') || !project.hasProperty('signing.secretKeyRingFile')) {
+        println "You must configure your signing.keyId and signing.secretKeyRingFile"
+        println "in ~/.gradle/gradle.properties in order to sign jars\n"
+        println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
+        throw new GradleException("Signing key/keyring is missing")
+      }
+
+      if(!project.hasProperty('signing.password')) {
+        def password = PasswordDialog.askPassword("Please enter your password to unlock your gpg keyring for signing artifacts")
+
+        subprojects { ext."signing.password" = password }
+      }
+    }
+
+    if(taskGraph.allTasks.any {it instanceof PublishToMavenRepository}) {
+      if(!project.hasProperty('mavenUsername')) {
+        println "You must configure your mavenUsername in ~/.gradle/gradle.properties in order to publish\n"
+        println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
+        throw new GradleException("mavenUsername is missing")
+      }
+      if(!project.hasProperty('mavenPassword')) {
+        def getPassword = PasswordDialog.askPassword("Please enter your apache password to publish to Apache Maven")
+
+        taskGraph.allTasks.each {
+          if(it instanceof PublishToMavenRepository) {
+            (it as PublishToMavenRepository).repository.credentials.password = getPassword
+          }
+        }
+      }
+    }
+  }
 }

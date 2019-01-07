@@ -17,6 +17,7 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -61,7 +62,7 @@ import org.apache.geode.management.internal.cli.domain.ClassName;
 @XmlType(name = "declarable-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"parameters"})
 @Experimental
-public class DeclarableType extends ClassNameType {
+public class DeclarableType extends ClassNameType implements Serializable {
   @XmlElement(name = "parameter", namespace = "http://geode.apache.org/schema/cache")
   protected List<ParameterType> parameters;
 

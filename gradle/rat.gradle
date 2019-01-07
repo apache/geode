@@ -17,6 +17,7 @@
 apply plugin: "org.nosphere.apache.rat"
 
 rat {
+  inputDir = rootDir
   xmlOutput = false
   htmlOutput = false
   plainOutput = true
@@ -102,6 +103,7 @@ rat {
 
     // local configuration files that are ignored by git
     'ci/pipelines/meta/meta.properties.local',
+    '.java-version', // file created by `jenv local`
 
     // modules
     'extensions/**/log4j.properties',
@@ -114,7 +116,6 @@ rat {
     'extensions/geode-modules/src/test/resources/org/apache/geode/modules/Person.hbm.xml',
 
     // cargo log files
-//    'geode-assembly/cargo_logs/*',
     'geode-assembly/cargo_logs/**',
 
     // these are test files that don't expect the first element to be a comment

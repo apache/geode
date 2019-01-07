@@ -61,7 +61,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
-import org.apache.geode.cache.execute.internal.FunctionServiceManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -91,6 +90,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
+import org.apache.geode.internal.cache.execute.InternalFunctionService;
 import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -1432,7 +1432,7 @@ public class InternalDistributedSystem extends DistributedSystem
         functionstats.close();
       }
 
-      (new FunctionServiceManager()).unregisterAllFunctions();
+      InternalFunctionService.unregisterAllFunctions();
 
       if (this.sampler != null) {
         this.sampler.stop();
@@ -2201,6 +2201,7 @@ public class InternalDistributedSystem extends DistributedSystem
         listener.handleEvent(event, resource);
       } catch (CancelException e) {
         // ignore
+        logger.info("Skipping notifyResourceEventListeners for {} due to cancellation", event);
       } catch (GemFireSecurityException | ManagementException ex) {
         if (event == ResourceEvent.CACHE_CREATE) {
           throw ex;

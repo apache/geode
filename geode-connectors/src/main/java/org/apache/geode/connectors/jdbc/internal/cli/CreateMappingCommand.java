@@ -19,6 +19,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -47,10 +48,10 @@ import org.apache.geode.security.ResourcePermission;
 public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING = "create jdbc-mapping";
   static final String CREATE_MAPPING__HELP =
-      EXPERIMENTAL + "Create a mapping for a region for use with a JDBC database connection.";
+      EXPERIMENTAL + "Create a JDBC mapping for a region for use with a JDBC database.";
   static final String CREATE_MAPPING__REGION_NAME = "region";
   static final String CREATE_MAPPING__REGION_NAME__HELP =
-      "Name of the region the mapping is being created for.";
+      "Name of the region the JDBC mapping is being created for.";
   static final String CREATE_MAPPING__PDX_NAME = "pdx-name";
   static final String CREATE_MAPPING__PDX_NAME__HELP =
       "Name of pdx class for which values will be written to the database.";
@@ -62,8 +63,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING__SYNCHRONOUS_NAME = "synchronous";
   static final String CREATE_MAPPING__SYNCHRONOUS_NAME__HELP =
       "By default, writes will be asynchronous. If true, writes will be synchronous.";
+  static final String CREATE_MAPPING__ID_NAME = "id";
+  static final String CREATE_MAPPING__ID_NAME__HELP =
+      "The table column names to use as the region key for this JDBC mapping. If more than one column name is given then they must be separated by commas.";
 
   public static String createAsyncEventQueueName(String regionPath) {
+    if (regionPath.startsWith("/")) {
+      regionPath = regionPath.substring(1);
+    }
     return "JDBC#" + regionPath.replace('/', '_');
   }
 
@@ -82,10 +89,16 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName,
       @CliOption(key = CREATE_MAPPING__SYNCHRONOUS_NAME,
           help = CREATE_MAPPING__SYNCHRONOUS_NAME__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous) {
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous,
+      @CliOption(key = CREATE_MAPPING__ID_NAME,
+          help = CREATE_MAPPING__ID_NAME__HELP) String id) {
+    if (regionName.startsWith("/")) {
+      regionName = regionName.substring(1);
+    }
+
     // input
-    Set<DistributedMember> targetMembers = getMembers(null, null);
-    RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName);
+    Set<DistributedMember> targetMembers = findMembersForRegion(regionName);
+    RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName, id);
 
     try {
       ConfigurationPersistenceService configurationPersistenceService =
@@ -133,14 +146,13 @@ public class CreateMappingCommand extends SingleGfshCommand {
       throws PreconditionException {
     if (regionConfig.getCustomRegionElements().stream()
         .anyMatch(element -> element instanceof RegionMapping)) {
-      throw new PreconditionException("A jdbc-mapping for " + regionName + " already exists.");
+      throw new PreconditionException("A JDBC mapping for " + regionName + " already exists.");
     }
   }
 
   private void checkForCacheLoader(String regionName, RegionConfig regionConfig)
       throws PreconditionException {
-    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes().stream()
-        .filter(attributes -> attributes.getCacheLoader() != null).findFirst().orElse(null);
+    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
     if (regionAttributes != null) {
       DeclarableType loaderDeclarable = regionAttributes.getCacheLoader();
       if (loaderDeclarable != null) {
@@ -154,8 +166,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private void checkForCacheWriter(String regionName, boolean synchronous,
       RegionConfig regionConfig) throws PreconditionException {
     if (synchronous) {
-      RegionAttributesType writerAttributes = regionConfig.getRegionAttributes().stream()
-          .filter(attributes -> attributes.getCacheWriter() != null).findFirst().orElse(null);
+      RegionAttributesType writerAttributes = regionConfig.getRegionAttributes();
       if (writerAttributes != null) {
         DeclarableType writerDeclarable = writerAttributes.getCacheWriter();
         if (writerDeclarable != null) {
@@ -181,7 +192,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig cacheConfig, Object element) {
+  public boolean updateConfigForGroup(String group, CacheConfig cacheConfig, Object element) {
     Object[] arguments = (Object[]) element;
     RegionMapping regionMapping = (RegionMapping) arguments[0];
     boolean synchronous = (Boolean) arguments[1];
@@ -189,14 +200,30 @@ public class CreateMappingCommand extends SingleGfshCommand {
     String queueName = createAsyncEventQueueName(regionName);
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
-      return;
+      return false;
     }
-    RegionAttributesType attributes = getRegionAttributes(regionConfig);
+
+    RegionAttributesType attributes = getRegionAttribute(regionConfig);
     addMappingToRegion(regionMapping, regionConfig);
     if (!synchronous) {
       createAsyncQueue(cacheConfig, attributes, queueName);
     }
     alterRegion(queueName, attributes, synchronous);
+
+    return true;
+  }
+
+  private RegionAttributesType getRegionAttribute(RegionConfig config) {
+    if (config.getRegionAttributes() == null) {
+      config.setRegionAttributes(new RegionAttributesType());
+    }
+
+    return config.getRegionAttributes();
+  }
+
+  @CliAvailabilityIndicator({CREATE_MAPPING})
+  public boolean commandAvailable() {
+    return isOnlineCommandAvailable();
   }
 
   private void alterRegion(String queueName, RegionAttributesType attributes, boolean synchronous) {
@@ -242,6 +269,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       asyncEventQueueList += queueName;
       attributes.setAsyncEventQueueIds(asyncEventQueueList);
     }
+
   }
 
   private void setCacheLoader(RegionAttributesType attributes) {
@@ -254,17 +282,5 @@ public class CreateMappingCommand extends SingleGfshCommand {
     DeclarableType writer = new DeclarableType();
     writer.setClassName(JdbcWriter.class.getName());
     attributes.setCacheWriter(writer);
-  }
-
-  private RegionAttributesType getRegionAttributes(RegionConfig regionConfig) {
-    RegionAttributesType attributes;
-    List<RegionAttributesType> attributesList = regionConfig.getRegionAttributes();
-    if (attributesList.isEmpty()) {
-      attributes = new RegionAttributesType();
-      attributesList.add(attributes);
-    } else {
-      attributes = attributesList.get(0);
-    }
-    return attributes;
   }
 }

@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-
 apply plugin: 'antlr'
 apply plugin: 'me.champeau.gradle.jmh'
+apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 sourceSets {
   jca {
@@ -104,6 +105,8 @@ task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
   }
 }
 
+ext.moduleName = group + '.core'
+
 jar {
 
   from sourceSets.main.output
@@ -112,6 +115,12 @@ jar {
   exclude 'org/apache/geode/management/internal/web/**'
   exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
   exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
+
+  inputs.property("moduleName", moduleName)
+  manifest {
+    attributes('Automatic-Module-Name': moduleName)
+  }
+
 }
 
 jar.dependsOn(createVersionPropertiesFile)
@@ -150,136 +159,139 @@ dependencies {
 
 
   // Source Dependencies
-  antlr 'antlr:antlr:' + project.'antlr.version'
+  antlr 'antlr:antlr'
 
   // External
   compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
-  compile('com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version')
-  compile('org.jgroups:jgroups:' + project.'jgroups.version')
-  compile('antlr:antlr:' + project.'antlr.version')
-  compile('com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version')
-  compile('com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version')
-  compile('commons-io:commons-io:' + project.'commons-io.version')
-  compile('commons-validator:commons-validator:' + project.'commons-validator.version')
-  compile('commons-digester:commons-digester:' + project.'commons-digester.version')
-  compile('javax.activation:activation:' + project.'javax-activation.version')
-  compile('javax.xml.bind:jaxb-api:' + project.'jaxb.version')
-  compile('com.sun.xml.bind:jaxb-core:' + project.'jaxb.version')
-  compile('com.sun.xml.bind:jaxb-impl:' + project.'jaxb.version')
+  compile('com.github.stephenc.findbugs:findbugs-annotations')
+  compile('org.jgroups:jgroups')
+  compile('antlr:antlr')
+  compile('com.fasterxml.jackson.core:jackson-annotations')
+  compile('com.fasterxml.jackson.core:jackson-databind')
+  compile('commons-io:commons-io')
+  compile('commons-validator:commons-validator')
+  compile('commons-digester:commons-digester')
+  compile('com.sun.activation:javax.activation')
+  compile('javax.xml.bind:jaxb-api')
+  compile('com.sun.xml.bind:jaxb-impl')
+  compile('com.sun.istack:istack-commons-runtime') {
+    exclude group: '*'
+  }
 
-  compile('org.apache.commons:commons-lang3:' + project.'commons-lang3.version')
-  compile('commons-modeler:commons-modeler:' + project.'commons-modeler.version') {
+  compile('org.apache.commons:commons-lang3')
+  compile('commons-modeler:commons-modeler') {
     exclude module: 'commons-digester'
     exclude module: 'commons-logging-api'
     exclude module: 'mx4j-jmx'
     exclude module: 'xml-apis'
     ext.optional = true
   }
-  compile('io.netty:netty-all:' + project.'netty-all.version') {
+  compile('io.netty:netty-all') {
     ext.optional = true
   }
-  compile('it.unimi.dsi:fastutil:' + project.'fastutil.version')
-  compile('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
+  compile('it.unimi.dsi:fastutil')
+  compile('javax.mail:javax.mail-api') {
     ext.optional = true
   }
-  compile('javax.resource:javax.resource-api:' + project.'javax.resource-api.version')
-  compile('mx4j:mx4j:' + project.'mx4j.version') {
+  compile('javax.resource:javax.resource-api')
+  compile('mx4j:mx4j') {
     ext.optional = true
   }
-  compile('mx4j:mx4j-remote:' + project.'mx4j-remote.version') {
+  compile('mx4j:mx4j-remote') {
     ext.optional = true
   }
-  compile('mx4j:mx4j-tools:' + project.'mx4j-tools.version') {
+  compile('mx4j:mx4j-tools') {
     ext.optional = true
   }
-  compile('net.java.dev.jna:jna:' + project.'jna.version')
+  compile('net.java.dev.jna:jna')
 
-  compile('net.sf.jopt-simple:jopt-simple:' + project.'jopt-simple.version')
+  compile('net.sf.jopt-simple:jopt-simple')
 
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
-  compile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version')
-  compile('com.github.davidmoten:geo:' + project.'geo.version')
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.apache.logging.log4j:log4j-core')
+  compile('com.github.davidmoten:geo')
 
-  runtimeOnly('org.fusesource.jansi:jansi:' + project.'jansi.version') {
+  runtimeOnly('org.fusesource.jansi:jansi') {
     ext.optional = true
   }
-  runtimeOnly('org.slf4j:slf4j-api:' + project.'slf4j-api.version')
+  runtimeOnly('org.slf4j:slf4j-api')
 
-  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
     ext.optional = true
   }
-  runtimeOnly('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-jcl') {
     ext.optional = true
   }
-  runtimeOnly('org.apache.logging.log4j:log4j-jul:' + project.'log4j.version') {
+  runtimeOnly('org.apache.logging.log4j:log4j-jul') {
     ext.optional = true
   }
   compile('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
     ext.optional = true
   }
-  compileOnly('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  compileOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true
   }
-  testCompile('org.springframework:spring-webmvc:' + project.'springframework.version') {
+  testCompile('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true
   }
-  compile('org.springframework:spring-core:' + project.'springframework.version') {
+  compile('org.springframework:spring-core') {
     ext.optional = true
   }
-  compile('org.springframework.shell:spring-shell:' + project.'spring-shell.version') {
+  compile('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
     exclude module: 'guava'
     exclude module: 'spring-aop'
     exclude module: 'spring-context-support'
+    exclude module: 'spring-core'
+  }
+  compile('org.iq80.snappy:snappy') {
     ext.optional = true
   }
-  compile('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
-    ext.optional = true
-  }
 
-  compile('org.apache.shiro:shiro-core:' + project.'shiro.version')
+  compile('org.apache.shiro:shiro-core')
 
-  compile('io.github.classgraph:classgraph:' + project.'classgraph.version')
+  compile('io.github.classgraph:classgraph')
 
-  compile('com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version')
+  compile('com.healthmarketscience.rmiio:rmiio')
 
   compile(project(':geode-common'))
   compile(project(':geode-json'))
 
 
-  jcaAnnotationProcessor 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+  jcaAnnotationProcessor 'org.apache.logging.log4j:log4j-core'
 
 
   jcaCompile(sourceSets.main.output)
 
+  jmhCompile('org.apache.logging.log4j:log4j-core')
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   testCompile(project(':geode-concurrency-test'))
-  testCompile('org.apache.bcel:bcel:' + project.'bcel.version')
-  testCompile('org.mockito:mockito-core:' + project.'mockito-core.version')
-  testCompile('org.springframework:spring-test:' + project.'springframework.version')
-  testCompile('com.pholser:junit-quickcheck-core:' + project.'junit-quickcheck.version')
-  testCompile('org.powermock:powermock-core:' + project.'powermock.version')
-  testCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
-  testCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
-  testCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  testCompile('org.apache.bcel:bcel')
+  testCompile('org.mockito:mockito-core')
+  testCompile('org.springframework:spring-test')
+  testCompile('com.pholser:junit-quickcheck-core')
+  testCompile('org.powermock:powermock-core')
+  testCompile('org.powermock:powermock-module-junit4')
+  testCompile('org.powermock:powermock-api-mockito2')
+  testCompile('pl.pragmatists:JUnitParams')
 
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
 
-  testRuntime('commons-collections:commons-collections:' + project.'commons-collections.version')
-  testRuntime('commons-configuration:commons-configuration:' + project.'commons-configuration.version')
-  testRuntime('commons-io:commons-io:' + project.'commons-io.version')
-  testRuntime('commons-validator:commons-validator:' + project.'commons-validator.version')
-  testRuntime('com.pholser:junit-quickcheck-generators:' + project.'junit-quickcheck.version')
+  testRuntime('commons-collections:commons-collections')
+  testRuntime('commons-configuration:commons-configuration')
+  testRuntime('commons-io:commons-io')
+  testRuntime('commons-validator:commons-validator')
+  testRuntime('com.pholser:junit-quickcheck-generators')
 
 
   integrationTestCompile(project(':geode-junit')) {
@@ -289,19 +301,19 @@ dependencies {
     exclude module: 'geode-core'
   }
   integrationTestCompile(project(':geode-concurrency-test'))
-  integrationTestCompile('redis.clients:jedis:' + project.'jedis.version')
-  integrationTestCompile('org.apache.bcel:bcel:' + project.'bcel.version')
-  integrationTestCompile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':tests')
-  integrationTestCompile('org.apache.logging.log4j:log4j-core:' + project.'log4j.version' + ':test-sources')
-  integrationTestCompile('org.powermock:powermock-core:' + project.'powermock.version')
-  integrationTestCompile('org.powermock:powermock-module-junit4:' + project.'powermock.version')
-  integrationTestCompile('org.powermock:powermock-api-mockito2:' + project.'powermock.version')
-  integrationTestCompile('org.springframework:spring-test:' + project.'springframework.version')
-  integrationTestCompile('net.spy:spymemcached:' + project.'spymemcached.version')
-  integrationTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
+  integrationTestCompile('redis.clients:jedis')
+  integrationTestCompile('org.apache.bcel:bcel')
+  integrationTestCompile('org.apache.logging.log4j:log4j-core::tests')
+  integrationTestCompile('org.apache.logging.log4j:log4j-core::test-sources')
+  integrationTestCompile('org.powermock:powermock-core')
+  integrationTestCompile('org.powermock:powermock-module-junit4')
+  integrationTestCompile('org.powermock:powermock-api-mockito2')
+  integrationTestCompile('org.springframework:spring-test')
+  integrationTestCompile('net.spy:spymemcached')
+  integrationTestCompile('pl.pragmatists:JUnitParams')
 
-  integrationTestRuntime('org.apache.derby:derby:' + project.'derby.version')
-  integrationTestRuntime('xerces:xercesImpl:' + project.'xercesImpl.version')
+  integrationTestRuntime('org.apache.derby:derby')
+  integrationTestRuntime('xerces:xercesImpl')
 
 
   distributedTestCompile(project(':geode-junit')) {
@@ -310,16 +322,20 @@ dependencies {
   distributedTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile('redis.clients:jedis:' + project.'jedis.version')
-  distributedTestCompile('pl.pragmatists:JUnitParams:' + project.'JUnitParams.version')
-  distributedTestCompile('com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version')
+  distributedTestCompile('redis.clients:jedis')
+  distributedTestCompile('pl.pragmatists:JUnitParams')
+  distributedTestCompile('com.jayway.jsonpath:json-path-assert')
 
-  distributedTestRuntime('org.apache.derby:derby:' + project.'derby.version')
+  distributedTestRuntime(project(':geode-old-versions'))
+  distributedTestRuntime('org.apache.derby:derby')
 
 
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+
+  upgradeTestRuntime(project(':geode-old-versions'))
+
 
   performanceTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'

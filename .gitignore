@@ -10,6 +10,7 @@ build/
 .project
 .settings/
 .idea/
+.java-version
 build-eclipse/
 /tags
 out/

@@ -48,7 +48,8 @@ public class PutCommandWithJsonTest {
   @Test
   public void putWithJsonString() throws Exception {
     GfshExecution execution = GfshScript
-        .of("start locator --name=locator", "start server --name=server", "sleep --time=1",
+        .of("start locator --name=locator", "start server --name=server --server-port=0",
+            "sleep --time=1",
             "deploy --jar=" + jarToDeploy.getAbsolutePath(),
             "create region --name=region --type=REPLICATE", "sleep --time=1",
             "put --region=region --key=key --value=('name':'Jinmei') --value-class=Customer")

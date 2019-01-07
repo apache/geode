@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.functions;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
 
@@ -30,7 +31,7 @@ public class GetRegionDescriptionFunction implements InternalFunction {
   public void execute(FunctionContext context) {
     String regionPath = (String) context.getArguments();
     try {
-      Cache cache = context.getCache();
+      Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
       Region<?, ?> region = cache.getRegion(regionPath);
 
       if (region != null) {

@@ -24,7 +24,6 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.domain.SubscriptionQueueSizeResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /***
@@ -41,64 +40,64 @@ public class GetSubscriptionQueueSizeFunction implements InternalFunction {
     final String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
     String args[] = (String[]) context.getArguments();
-    String durableClientId = null, cqName = null;
-    SubscriptionQueueSizeResult result = new SubscriptionQueueSizeResult(memberNameOrId);
+    String durableClientId = args[0];
+    String cqName = args[1];
 
-    durableClientId = args[0];
-    cqName = args[1];
+    context.getResultSender()
+        .lastResult(createFunctionResult(memberNameOrId, durableClientId, cqName));
 
+  }
+
+  private CliFunctionResult createFunctionResult(String memberNameOrId, String durableClientId,
+      String cqName) {
     try {
       CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance();
 
-      if (cacheClientNotifier != null) {
-        CacheClientProxy cacheClientProxy = cacheClientNotifier.getClientProxy(durableClientId);
-        // Check if the client is present or not
-        if (cacheClientProxy != null) {
-          if (cqName != null && !cqName.isEmpty()) {
-            CqService cqService = cacheClientProxy.getCache().getCqService();
-            if (cqService != null) {
-              CqQuery cqQuery =
-                  cqService.getClientCqFromServer(cacheClientProxy.getProxyID(), cqName);
-              if (cqQuery != null) {
-                CqQueryVsdStats cqVsdStats = ((InternalCqQuery) cqQuery).getVsdStats();
-
-                if (cqVsdStats != null) {
-                  long queueSize = cqVsdStats.getNumHAQueuedEvents();
-                  result.setSubscriptionQueueSize(queueSize);
-                } else {
-                  result.setErrorMessage(CliStrings.format(
-                      CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE_CQ_STATS_NOT_FOUND,
-                      durableClientId, cqName));
-                }
-              } else {
-                result.setErrorMessage(
-                    CliStrings.format(CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE_CQ_NOT_FOUND,
-                        durableClientId, cqName));
-              }
-            } else {
-              result.setErrorMessage(CliStrings.COUNT_DURABLE_CQ_EVENTS__NO__CQS__REGISTERED);
-            }
-          } else {
-            result.setSubscriptionQueueSize(
-                cacheClientNotifier.getDurableClientHAQueueSize(durableClientId));
-          }
-        } else {
-          result.setErrorMessage(
-              CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
-        }
-      } else {
-        result.setErrorMessage(CliStrings.NO_CLIENT_FOUND);
+      if (cacheClientNotifier == null) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.NO_CLIENT_FOUND);
       }
+
+      CacheClientProxy cacheClientProxy = cacheClientNotifier.getClientProxy(durableClientId);
+      // Check if the client is present or not
+      if (cacheClientProxy == null) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
+      }
+
+      if (cqName == null || cqName.isEmpty()) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
+            Integer.toString(cacheClientNotifier.getDurableClientHAQueueSize(durableClientId)));
+      }
+
+      CqService cqService = cacheClientProxy.getCache().getCqService();
+      if (cqService == null) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.COUNT_DURABLE_CQ_EVENTS__NO__CQS__REGISTERED);
+      }
+
+      CqQuery cqQuery = cqService.getClientCqFromServer(cacheClientProxy.getProxyID(), cqName);
+      if (cqQuery == null) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE_CQ_NOT_FOUND,
+                durableClientId, cqName));
+      }
+
+      CqQueryVsdStats cqVsdStats = ((InternalCqQuery) cqQuery).getVsdStats();
+
+      if (cqVsdStats == null) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(
+                CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE_CQ_STATS_NOT_FOUND,
+                durableClientId, cqName));
+      }
+
+      long queueSize = cqVsdStats.getNumHAQueuedEvents();
+      return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
+          Long.toString(queueSize));
     } catch (Exception e) {
-      result.setExceptionMessage(e.getMessage());
-    } finally {
-      context.getResultSender().lastResult(result);
+      return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+          e.getMessage());
     }
   }
-
-  @Override
-  public String getId() {
-    return GetSubscriptionQueueSizeFunction.class.getName();
-  }
-
 }

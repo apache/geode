@@ -76,9 +76,9 @@ public class VersionDescription {
    */
   public static final String BUILD_JAVA_VERSION = "Build-Java-Version";
 
-  static final String NATIVE_VERSION = "Native version";
+  public static final String NATIVE_VERSION = "Native version";
 
-  static final String RUNNING_ON = "Running on";
+  public static final String RUNNING_ON = "Running on";
 
   /**
    * the version properties

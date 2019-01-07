@@ -14,12 +14,22 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.Set;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.internal.InternalAsyncEventQueue;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.connectors.jdbc.JdbcLoader;
+import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
 
 @Experimental
@@ -27,17 +37,45 @@ public class DestroyMappingFunction extends CliFunction<String> {
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<String> context) {
+    Cache cache = context.getCache();
     JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
     String regionName = context.getArguments();
     String member = context.getMemberName();
     RegionMapping mapping = service.getMappingForRegion(regionName);
     if (mapping != null) {
+      cleanupRegionAndQueue(cache, regionName);
       service.destroyRegionMapping(regionName);
-      String message = "Destroyed region mapping for region " + regionName + " on " + member;
-      return new CliFunctionResult(member, true, message);
+      String message = "Destroyed JDBC mapping for region " + regionName + " on " + member;
+      return new CliFunctionResult(member, StatusState.OK, message);
     } else {
-      String message = "Region mapping for region \"" + regionName + "\" not found";
-      return new CliFunctionResult(member, false, message);
+      String message = "JDBC mapping for region \"" + regionName + "\" not found";
+      return new CliFunctionResult(member, StatusState.ERROR, message);
+    }
+  }
+
+  private void cleanupRegionAndQueue(Cache cache, String regionName) {
+    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+
+    Region<?, ?> region = cache.getRegion(regionName);
+    if (region != null) {
+      CacheLoader<?, ?> loader = region.getAttributes().getCacheLoader();
+      if (loader instanceof JdbcLoader) {
+        region.getAttributesMutator().setCacheLoader(null);
+      }
+      CacheWriter<?, ?> writer = region.getAttributes().getCacheWriter();
+      if (writer instanceof JdbcWriter) {
+        region.getAttributesMutator().setCacheWriter(null);
+      }
+      Set<String> queueIds = region.getAttributes().getAsyncEventQueueIds();
+      if (queueIds.contains(queueName)) {
+        region.getAttributesMutator().removeAsyncEventQueueId(queueName);
+      }
+    }
+
+    InternalAsyncEventQueue queue = (InternalAsyncEventQueue) cache.getAsyncEventQueue(queueName);
+    if (queue != null) {
+      queue.stop();
+      queue.destroy();
     }
   }
 }

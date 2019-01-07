@@ -16,13 +16,15 @@
  */
 
 
+apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
+
+
 dependencies {
   compile(project(':geode-common'))
   compile(project(':geode-core'))
   compileOnly(project(':geode-protobuf'))
 
-  compile('junit:junit:' + project.'junit.version')
-  compile('org.mockito:mockito-core:' + project.'mockito-core.version')
+  compile('junit:junit')
+  compile('org.mockito:mockito-core')
 }
 
-disableMavenPublishing()

@@ -17,6 +17,9 @@
 
 evaluationDependsOn(":geode-core")
 
+apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
+
+
 dependencies {
   compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
@@ -34,14 +37,13 @@ dependencies {
 
   distributedTestCompile(project(':extensions:geode-modules-test'))
 
-  distributedTestRuntime('xerces:xercesImpl:' + project.'xercesImpl.version')
-  distributedTestRuntime('javax.annotation:javax.annotation-api:' + project.'javax-annotation.version')
+  distributedTestRuntime('xerces:xercesImpl')
+  distributedTestRuntime('javax.annotation:javax.annotation-api')
+}
 
-  eclipse.classpath.file {
-    whenMerged { classpath ->
-      classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build')}
-    }
+eclipse.classpath.file {
+  whenMerged { classpath ->
+    classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build')}
   }
 }
 
-disableMavenPublishing()

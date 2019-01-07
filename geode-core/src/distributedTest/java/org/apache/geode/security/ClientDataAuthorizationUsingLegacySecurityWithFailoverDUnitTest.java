@@ -55,9 +55,9 @@ import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * This test class reproduces the tests present in
@@ -326,9 +326,9 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     int server1Port = this.server1.getPort();
     int server2Port = this.server2.getPort();
 
-    ClientVM client1 = csRule.startClientVM(3, props, cf -> cf
+    ClientVM client1 = csRule.startClientVM(3, clientVersion, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2), clientVersion);
+        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2));
 
     // Initialize cache
     client1.invoke(() -> {
@@ -384,9 +384,9 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
 
-    ClientVM client = csRule.startClientVM(3, props, cf -> cf
+    ClientVM client = csRule.startClientVM(3, clientVersion, props, cf -> cf
         .addPoolServer("localhost", server1Port).addPoolServer("localhost", server2Port)
-        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2), clientVersion);
+        .setPoolSubscriptionEnabled(true).setPoolSubscriptionRedundancy(2));
 
     // Initialize cache
     client.invoke(() -> {

@@ -101,7 +101,7 @@ public class TcpServer {
   // GossipServer.
   public static final int OLDGOSSIPVERSION = 1001;
 
-  private static final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
+  private static final Map<Integer, Short> GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap<>();
 
   // For test purpose only
   public static boolean isTesting = false;
@@ -119,8 +119,6 @@ public class TcpServer {
   // no longer static so that tests can test this system property
   private final int READ_TIMEOUT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000);
-  // This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure
-  // the locator backlog.
   private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000);
   private static final int BACKLOG =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG);
@@ -558,7 +556,7 @@ public class TcpServer {
     return TcpServer.isTesting ? TcpServer.OLDTESTVERSION : TcpServer.OLDGOSSIPVERSION;
   }
 
-  public static Map getGossipVersionMapForTestOnly() {
+  public static Map<Integer, Short> getGossipVersionMapForTestOnly() {
     return GOSSIP_TO_GEMFIRE_VERSION_MAP;
   }
 

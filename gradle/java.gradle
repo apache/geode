@@ -33,7 +33,7 @@ subprojects {
   }
 
   String javaVersion = System.properties['java.version']
-  if (javaVersion.startsWith("1.8.0") && javaVersion.split("_")[1].toInteger() < 121) {
+  if (javaVersion.startsWith("1.8.0") && javaVersion.split("-")[0].split("_")[1].toInteger() < 121) {
     throw new GradleException("Java version 1.8.0_121 or later required, but was " + javaVersion)
   }
 
@@ -47,6 +47,9 @@ subprojects {
       }
       javac.options.incremental = true
       javac.options.fork = true
+      javac.options.forkOptions.with({
+        memoryMaximumSize = "768m"
+      })
       if (project.hasProperty('compileJVM') && !compileJVM.trim().isEmpty()) {
         javac.options.forkOptions.executable = compileJVM + "/bin/javac"
       }
@@ -69,8 +72,10 @@ subprojects {
       }
       jar.metaInf {
         from("$rootDir/LICENSE")
-        if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
-          from("$rootDir/NOTICE")
+        jar.doLast {
+          if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
+            from("$rootDir/NOTICE")
+          }
         }
       }
     }

@@ -14,26 +14,21 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
-import static org.apache.geode.security.SecurityTestUtil.createClientCache;
-import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -43,34 +38,39 @@ public class ClientCQAuthDUnitTest {
 
   private static final String REGION_NAME = "AuthRegion";
 
-  private VM client1;
-  private VM client2;
-  private VM client3;
+  private ClientVM client1;
+  private ClientVM client2;
+  private ClientVM client3;
 
   @Rule
-  public ClusterStartupRule startupRule = new ClusterStartupRule();
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName())
+      .withSecurityManager(SimpleTestSecurityManager.class)
       .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
-  @Before
-  public void setUp() {
-    client1 = startupRule.getVM(1);
-    client2 = startupRule.getVM(2);
-    client3 = startupRule.getVM(3);
-  }
-
   @Test
-  public void verifyCQPermissions() {
+  public void verifyCQPermissions() throws Exception {
     String query = "select * from /AuthRegion";
     int serverPort = server.getPort();
 
+    client1 = cluster.startClientVM(1, c2 -> c2.withCredential("test", "test")
+        .withPoolSubscription(true)
+        .withServerConnection(serverPort));
+    client2 =
+        cluster.startClientVM(2, c1 -> c1.withCredential("clusterManageQuery", "clusterManageQuery")
+            .withPoolSubscription(true)
+            .withServerConnection(serverPort));
+    client3 =
+        cluster.startClientVM(3,
+            c -> c.withCredential("clusterManageQuery,dataRead", "clusterManageQuery,dataRead")
+                .withPoolSubscription(true)
+                .withServerConnection(serverPort));
+
     // client has no permission whatsoever
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("test", "test", serverPort);
-      final Region region = createProxyRegion(cache, REGION_NAME);
+      final Region region = ClusterStartupRule.clientCacheRule.createProxyRegion(REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
       CqAttributes cqa = new CqAttributesFactory().create();
@@ -85,8 +85,7 @@ public class ClientCQAuthDUnitTest {
 
     // client2 has part of the permission
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("clusterManageQuery", "clusterManageQuery", serverPort);
-      final Region region = createProxyRegion(cache, REGION_NAME);
+      final Region region = ClusterStartupRule.clientCacheRule.createProxyRegion(REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
       CqAttributes cqa = new CqAttributesFactory().create();
@@ -100,9 +99,7 @@ public class ClientCQAuthDUnitTest {
 
     // client3 has all the permissions
     client3.invoke(() -> {
-      ClientCache cache = createClientCache("clusterManageQuery,dataRead",
-          "clusterManageQuery,dataRead", serverPort);
-      Region region = createProxyRegion(cache, REGION_NAME);
+      Region region = ClusterStartupRule.clientCacheRule.createProxyRegion(REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
       CqAttributes cqa = new CqAttributesFactory().create();

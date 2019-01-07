@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.logging;
 
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
-
 /**
  * {@link ProviderAgent} that does nothing.
  */
@@ -30,16 +27,6 @@ public class NullProviderAgent implements ProviderAgent {
 
   @Override
   public void cleanup() {
-    // nothing
-  }
-
-  @Override
-  public void enableLoggingToStandardOutput() {
-    // nothing
-  }
-
-  @Override
-  public void disableLoggingToStandardOutput() {
     // nothing
   }
 }

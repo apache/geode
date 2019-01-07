@@ -15,10 +15,10 @@
 package org.apache.geode.internal.logging.log4j;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.internal.logging.Configuration.DEFAULT_LOGWRITER_LEVEL;
 import static org.apache.geode.internal.logging.Configuration.LOG_LEVEL_UPDATE_OCCURS_PROPERTY;
-import static org.apache.geode.internal.logging.InternalLogWriter.FINE_LEVEL;
-import static org.apache.geode.internal.logging.InternalLogWriter.WARNING_LEVEL;
+import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
+import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
+import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
 import static org.apache.geode.test.util.ResourceUtils.createFileFromResource;
 import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +46,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -122,7 +122,7 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   @Test
   public void debugLoggedAfterLoweringLogLevelToFine() {
-    distributionConfig.setLogLevel(FINE_LEVEL);
+    distributionConfig.setLogLevel(FINE.intLevel());
 
     geodeLogger.debug(logMessage);
 
@@ -131,9 +131,9 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   @Test
   public void debugNotLoggedAfterRestoringLogLevelToDefault() {
-    distributionConfig.setLogLevel(FINE_LEVEL);
+    distributionConfig.setLogLevel(FINE.intLevel());
 
-    system.getConfig().setLogLevel(DEFAULT_LOGWRITER_LEVEL);
+    system.getConfig().setLogLevel(CONFIG.intLevel());
     geodeLogger.debug(logMessage);
 
     assertThatLogEventsDoesNotContain(logMessage, geodeLogger.getName(), Level.DEBUG);
@@ -148,7 +148,7 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   @Test
   public void applicationLoggerBelowLevelUnaffectedByLoweringLogLevelChanges() {
-    distributionConfig.setLogLevel(FINE_LEVEL);
+    distributionConfig.setLogLevel(FINE.intLevel());
 
     applicationLogger.debug(logMessage);
 
@@ -157,7 +157,7 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   @Test
   public void applicationLoggerAboveLevelUnaffectedByLoweringLogLevelChanges() {
-    distributionConfig.setLogLevel(FINE_LEVEL);
+    distributionConfig.setLogLevel(FINE.intLevel());
 
     applicationLogger.info(logMessage);
 
@@ -166,7 +166,7 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   @Test
   public void applicationLoggerAboveLevelUnaffectedByRaisingLogLevelChanges() {
-    distributionConfig.setLogLevel(WARNING_LEVEL);
+    distributionConfig.setLogLevel(WARNING.intLevel());
 
     applicationLogger.info(logMessage);
 
@@ -175,7 +175,7 @@ public class DistributedSystemWithLogLevelChangesIntegrationTest {
 
   @Test
   public void infoStatementNotLoggedAfterRaisingLogLevelToWarning() {
-    distributionConfig.setLogLevel(WARNING_LEVEL);
+    distributionConfig.setLogLevel(WARNING.intLevel());
 
     geodeLogger.info(logMessage);
 

@@ -374,15 +374,6 @@ public class CliStrings {
   public static final String ALTER_REGION__EVICTIONMAX = "eviction-max";
   public static final String ALTER_REGION__EVICTIONMAX__HELP =
       "Maximum value for the Eviction Attributes which the Eviction Algorithm uses to determine when to perform its Eviction Action. The unit of the maximum value is determined by the Eviction Algorithm.";
-  public static final String ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID =
-      "Specify a valid class name for " + CliStrings.CREATE_REGION__CACHELISTENER
-          + ". \"{0}\" is not valid.";
-  public static final String ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID =
-      "Specify a valid class name for " + CliStrings.CREATE_REGION__CACHEWRITER
-          + ". \"{0}\" is not valid.";
-  public static final String ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID =
-      "Specify a valid class name for " + CliStrings.CREATE_REGION__CACHELOADER
-          + ". \"{0}\" is not valid.";
   public static final String ALTER_REGION__MSG__REGION_0_ALTERED_ON_1 =
       "Region \"{0}\" altered on \"{1}\"";
   public static final String ALTER_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
@@ -946,10 +937,12 @@ public class CliStrings {
   public static final String CREATE_REGION__TOTALNUMBUCKETS__HELP =
       "Sets the total number of hash buckets to be used by the region in all processes. (Default: "
           + PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT + ").";
+  public static final String CREATE_REGION__MSG__CANNOT_DISABLE_CLONING_WITH_COMPRESSOR =
+      "Cannot set enable-cloning to false when compressor is provided";
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH =
       "Specify a valid " + CliStrings.CREATE_REGION__REGION;
   public static final String CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOES_NOT_EXIST =
-      "Parent region for \"{0}\" doesn't exist. ";
+      "Parent region for \"{0}\" does not exist. ";
   public static final String CREATE_REGION__MSG__GROUPS_0_ARE_INVALID =
       "Group(s) \"{0}\" are invalid.";
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_USE_ATTR_FROM =
@@ -959,15 +952,6 @@ public class CliStrings {
           + ". \"{0}\" is not valid.";
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID =
       "Specify a valid class name for " + CliStrings.CREATE_REGION__VALUECONSTRAINT
-          + ". \"{0}\" is not valid.";
-  public static final String CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID =
-      "Specify a valid class name for " + CliStrings.CREATE_REGION__CACHELISTENER
-          + ". \"{0}\" is not valid.";
-  public static final String CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID =
-      "Specify a valid class name for " + CliStrings.CREATE_REGION__CACHEWRITER
-          + ". \"{0}\" is not valid.";
-  public static final String CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID =
-      "Specify a valid class name for " + CliStrings.CREATE_REGION__CACHELOADER
           + ". \"{0}\" is not valid.";
   public static final String CREATE_REGION__MSG__NO_GATEWAYSENDERS_IN_THE_SYSTEM =
       "There are no GatewaySenders defined currently in the system.";
@@ -995,14 +979,6 @@ public class CliStrings {
           + "\" is required.";
   public static final String CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND =
       "Specify a valid region path for {0}. Region {1} not found.";
-  public static final String CREATE_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
-      "Could not find class \"{0}\" specified for \"{1}\".";
-  public static final String CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE =
-      "Class \"{0}\" specified for \"{1}\" is not of an expected type.";
-  public static final String CREATE_REGION__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
-      "Could not instantiate class \"{0}\" specified for \"{1}\".";
-  public static final String CREATE_REGION__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
-      "Could not access class \"{0}\" specified for \"{1}\".";
   public static final String CREATE_REGION__MSG__EXPIRATION_ACTION_0_IS_NOT_VALID =
       "Expiration action \"{0}\" is not valid.";
   public static final String CREATE_REGION__MSG__ERROR_ON_MEMBER_0 = "Error on member: {0}. ";
@@ -1048,18 +1024,6 @@ public class CliStrings {
       "The fully-qualified class name of the region's partition resolver";
   public static final String CREATE_REGION__MSG__PARTITION_RESOLVER_ONLY_FOR_REGION_TYPE_PARTITION =
       "partition resolver property is only applicable to PARTITION region type";
-
-  public static final String CREATE_REGION_PARTITION_RESOLVER__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
-      "Could not find class \"{0}\" specified for \"{1}\".";
-
-  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE =
-      "Class \"{0}\" specified for \"{1}\" is not of an expected type.";
-
-  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
-      "Could not instantiate class \"{0}\" specified for \"{1}\".";
-
-  public static final String CREATE_REGION__MSG__PARTITION_RESOLVER__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
-      "Could not access class \"{0}\" specified for \"{1}\".";
 
   public static final String CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER =
       "{0} is an invalid Partition Resolver.";
@@ -2249,10 +2213,6 @@ public class CliStrings {
       "The fully qualified class name of GatewayTransportFilter to be added to the GatewaySender. ";
   public static final String CREATE_GATEWAYSENDER__MSG__GATEWAYSENDER_0_CREATED_ON_1 =
       "GatewaySender \"{0}\" created on \"{1}\"";
-  public static final String CREATE_GATEWAYSENDER__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
-      "Could not instantiate class \"{0}\" specified for \"{1}\".";
-  public static final String CREATE_GATEWAYSENDER__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
-      "Could not access class \"{0}\" specified for \"{1}\".";
   public static final String CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS =
       "Gateway Sender cannot be created until all members are the current version";
 
@@ -2979,7 +2939,7 @@ public class CliStrings {
   public static final String LIST_DURABLE_CQS__EXCEPTION__OCCURRED__ON =
       "Members with exceptions while retrieving durable cqs.";
   public static final String LIST_DURABLE_CQS__NO__CQS__REGISTERED =
-      "No durable cq's registered on this member.";
+      "No durable cqs registered on this member.";
   public static final String LIST_DURABLE_CQS__NAME = "durable-cq-name";
   public static final String LIST_DURABLE_CQS__FAILURE__HEADER =
       "Unable to list durable-cqs for durable-client-id : \"{0}\" due to following reasons.";
@@ -3184,6 +3144,16 @@ public class CliStrings {
   public static final String START_SERVER__REDIRECT_OUTPUT = "redirect-output";
   public static final String START_SERVER__REDIRECT_OUTPUT__HELP =
       "Causes the member to redirect standard out and standard error to its own log file.";
+
+  // General CLI Error messages
+  public static final String ERROR__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1 =
+      "Could not find class \"{0}\" specified for \"{1}\".";
+  public static final String ERROR__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE =
+      "Class \"{0}\" specified for \"{1}\" is not of an expected type.";
+  public static final String ERROR__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1 =
+      "Could not instantiate class \"{0}\" specified for \"{1}\".";
+  public static final String ERROR__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1 =
+      "Could not access class \"{0}\" specified for \"{1}\".";
 
   /**
    * Creates a MessageFormat with the given pattern and uses it to format the given argument.

@@ -231,6 +231,7 @@ import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.memcached.GemFireMemcachedServer;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
@@ -265,6 +266,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public static final boolean DEFAULT_COPY_ON_READ = false;
 
   /**
+   * getcachefor
    * The default amount of time to wait for a {@code netSearch} to complete
    */
   public static final int DEFAULT_SEARCH_TIMEOUT =
@@ -921,7 +923,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.resourceAdvisor = ResourceAdvisor.createResourceAdvisor(this);
 
       // Initialize the advisor here, but wait to exchange profiles until cache is fully built
-      this.jmxAdvisor = JmxManagerAdvisor.createJmxManagerAdvisor(new JmxManagerAdvisee(this));
+      this.jmxAdvisor = JmxManagerAdvisor
+          .createJmxManagerAdvisor(new JmxManagerAdvisee(getCacheForProcessingClientRequests()));
 
       this.resourceManager = InternalResourceManager.createResourceManager(this);
       this.serialNumber = DistributionAdvisor.createSerialNumber();
@@ -4177,6 +4180,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  public JSONFormatter getJsonFormatter() {
+    // only ProxyCache implementation needs a JSONFormatter that has reference to userAttributes
+    return new JSONFormatter();
+  }
+
+  @Override
   public QueryService getLocalQueryService() {
     return new DefaultQueryService(this);
   }
@@ -5329,7 +5338,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       new InternalCacheForClientAccess(this);
 
   @Override
-  public InternalCache getCacheForProcessingClientRequests() {
+  public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return cacheForClients;
   }
 

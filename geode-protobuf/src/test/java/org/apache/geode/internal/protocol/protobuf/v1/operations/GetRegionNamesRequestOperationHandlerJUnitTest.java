@@ -16,6 +16,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.internal.protocol.TestExecutionContext.getNoAuthCacheExecutionContext;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +32,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
@@ -86,7 +88,8 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
 
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
-    InternalCache emptyCache = mock(InternalCache.class);
+    InternalCache emptyCache = mock(InternalCacheForClientAccess.class);
+    doReturn(emptyCache).when(emptyCache).getCacheForProcessingClientRequests();
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     Result result = operationHandler.process(serializationService,

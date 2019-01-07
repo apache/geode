@@ -70,7 +70,7 @@ import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.version.VersionManager;
 
 public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTestCase {
 

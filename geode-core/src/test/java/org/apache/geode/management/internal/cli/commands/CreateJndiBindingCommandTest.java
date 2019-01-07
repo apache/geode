@@ -25,7 +25,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,13 +32,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
@@ -122,8 +118,7 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
-  public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified()
-      throws ParserConfigurationException, SAXException, IOException {
+  public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified() {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
@@ -139,8 +134,7 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
-  public void skipsIfBindingAlreadyExistsAndIfSpecified()
-      throws ParserConfigurationException, SAXException, IOException {
+  public void skipsIfBindingAlreadyExistsAndIfSpecified() {
     InternalConfigurationPersistenceService clusterConfigService =
         mock(InternalConfigurationPersistenceService.class);
     CacheConfig cacheConfig = mock(CacheConfig.class);
@@ -224,7 +218,7 @@ public class CreateJndiBindingCommandTest {
         .containsOutput("Changes to configuration for group 'cluster' are persisted.");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
-    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
   }
 
   @Test
@@ -297,7 +291,7 @@ public class CreateJndiBindingCommandTest {
             "Tried creating jndi binding \"name\" on \"server1\"");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
-    verify(command).updateClusterConfig(eq("cluster"), eq(cacheConfig), any());
+    verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());
 
     ArgumentCaptor<CreateJndiBindingFunction> function =
         ArgumentCaptor.forClass(CreateJndiBindingFunction.class);

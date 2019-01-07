@@ -48,9 +48,9 @@ import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * Tests for authorization from client to server for data puts and gets. For similar test in the
@@ -119,8 +119,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataWrite");
     int locatorPort = locator.getPort();
 
-    ClientVM clientVM = csRule.startClientVM(2, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM clientVM = csRule.startClientVM(2, clientVersion, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort));
 
     // Client adds data
     clientVM.invoke(() -> {
@@ -152,8 +152,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     }
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM client = csRule.startClientVM(2, clientVersion, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort));
 
     // Client cannot get through any avenue
     client.invoke(() -> {
@@ -178,8 +178,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     Properties props = getVMPropertiesWithPermission("dataRead");
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM client = csRule.startClientVM(2, clientVersion, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort));
 
     // Add some values for the client to get
     server.invoke(() -> {
@@ -214,8 +214,8 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
 
     int locatorPort = locator.getPort();
 
-    ClientVM clientVM = csRule.startClientVM(2, props, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM clientVM = csRule.startClientVM(2, clientVersion, props, cf -> cf
+        .addPoolLocator("localhost", locatorPort));
 
     clientVM.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();

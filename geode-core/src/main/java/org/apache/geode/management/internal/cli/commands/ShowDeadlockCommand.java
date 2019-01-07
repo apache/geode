@@ -15,8 +15,11 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -28,27 +31,32 @@ import org.apache.geode.distributed.internal.deadlock.Dependency;
 import org.apache.geode.distributed.internal.deadlock.DependencyGraph;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.CliAroundInterceptor;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShowDeadlockCommand extends InternalGfshCommand {
+public class ShowDeadlockCommand extends GfshCommand {
   @CliCommand(value = CliStrings.SHOW_DEADLOCK, help = CliStrings.SHOW_DEADLOCK__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL},
+      interceptor = "org.apache.geode.management.internal.cli.commands.ShowDeadlockCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result showDeadlock(@CliOption(key = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE,
+  public ResultModel showDeadlock(@CliOption(key = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE,
       help = CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE__HELP,
       mandatory = true) String filename) {
 
-    Result result;
+    ResultModel result = new ResultModel();
     try {
       if (!filename.endsWith(".txt")) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".txt"));
+        return ResultModel.createError(
+            CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".txt"));
       }
       Set<DistributedMember> allMembers = getAllMembers();
       GemFireDeadlockDetector gfeDeadLockDetector = new GemFireDeadlockDetector(allMembers);
@@ -63,26 +71,50 @@ public class ShowDeadlockCommand extends InternalGfshCommand {
       }
       Set<Dependency> dependencies = (Set<Dependency>) dependencyGraph.getEdges();
 
-      InfoResultData resultData = ResultBuilder.createInfoResultData();
+      InfoResultModel infoResult = result.addInfo();
 
       if (deadlock != null) {
         if (deepest != null) {
-          resultData.addLine(CliStrings.SHOW_DEADLOCK__DEEPEST_FOUND);
+          infoResult.addLine(CliStrings.SHOW_DEADLOCK__DEEPEST_FOUND);
         } else {
-          resultData.addLine(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
+          infoResult.addLine(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED);
         }
-        resultData.addLine(DeadlockDetector.prettyFormat(deadlock));
+        infoResult.addLine(DeadlockDetector.prettyFormat(deadlock));
       } else {
-        resultData.addLine(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK);
+        infoResult.addLine(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK);
       }
-      resultData.addAsFile(filename, DeadlockDetector.prettyFormat(dependencies),
-          MessageFormat.format(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__REVIEW, filename), false);
-      result = ResultBuilder.buildResult(resultData);
-
+      result.addFile(filename, DeadlockDetector.prettyFormat(dependencies));
     } catch (Exception e) {
-      result = ResultBuilder
-          .createGemFireErrorResult(CliStrings.SHOW_DEADLOCK__ERROR + " : " + e.getMessage());
+      result = ResultModel.createError(CliStrings.SHOW_DEADLOCK__ERROR + " : " + e.getMessage());
     }
+
     return result;
   }
+
+  public static class Interceptor implements CliAroundInterceptor {
+    @Override
+    public ResultModel postExecution(GfshParseResult parseResult, ResultModel resultModel,
+        Path tempFile) {
+
+      if (resultModel.getFiles().size() != 1) {
+        resultModel.addInfo("No filename found to save");
+        resultModel.setStatus(Result.Status.ERROR);
+        return resultModel;
+      }
+
+      try {
+        for (Map.Entry<String, FileResultModel> entry : resultModel.getFiles().entrySet()) {
+          entry.getValue().saveFile();
+          resultModel.addInfo().addLine(
+              MessageFormat.format(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__REVIEW, entry.getKey()));
+        }
+      } catch (IOException e) {
+        resultModel.addInfo().addLine("Unable to save file: " + e.getMessage());
+        resultModel.setStatus(Result.Status.ERROR);
+      }
+
+      return resultModel;
+    }
+  }
+
 }

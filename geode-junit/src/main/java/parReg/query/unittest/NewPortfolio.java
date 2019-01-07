@@ -146,11 +146,11 @@ public class NewPortfolio implements Serializable {
    */
   protected Properties getProps() {
     Properties props = new Properties();
-    Double qty = rng.nextInt(MAX_QTY) * 100.00;
-    Double mktValue = rng.nextDouble() * MAX_PRICE;
+    double qty = rng.nextInt(MAX_QTY) * 100.00;
+    double mktValue = rng.nextDouble() * MAX_PRICE;
 
-    props.setProperty("qty", qty.toString());
-    props.setProperty("mktValue", mktValue.toString());
+    props.setProperty("qty", String.valueOf(qty));
+    props.setProperty("mktValue", String.valueOf(mktValue));
 
     return props;
   }

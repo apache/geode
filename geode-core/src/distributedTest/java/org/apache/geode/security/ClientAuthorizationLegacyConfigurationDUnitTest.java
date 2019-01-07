@@ -33,20 +33,18 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.security.templates.SimpleAccessController;
-import org.apache.geode.security.templates.SimpleAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.VersionManager;
 
 @Category({SecurityTest.class})
 @RunWith(Parameterized.class)
@@ -86,39 +84,20 @@ public class ClientAuthorizationLegacyConfigurationDUnitTest {
 
   @Test
   public void everythingFailsWithInvalidAuthenticator() throws Exception {
-    Properties clusterProps = new Properties();
-    clusterProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR,
-        "org.apache.geode.no.such.authenticator.create");
-    clusterProps.setProperty(SECURITY_CLIENT_ACCESSOR,
-        SimpleAccessController.class.getName() + ".create");
-    clusterProps.setProperty(UserPasswordAuthInit.USER_NAME, "cluster,data");
-    clusterProps.setProperty(UserPasswordAuthInit.PASSWORD, "cluster,data");
-    clusterProps.setProperty(SECURITY_CLIENT_AUTH_INIT,
-        UserPasswordAuthInit.class.getCanonicalName() + ".create");
+    Properties clusterProps = getClusterProperties();
 
     locator = csRule.startLocatorVM(0, clusterProps);
     server = csRule.startServerVM(1, clusterProps, locator.getPort());
     server.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<String, String> rf = cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region<String, String> region = rf.create(regionName);
+      Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
       region.put(initKey, initValue);
     });
 
-    Properties clientProps = new Properties();
-    clusterProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR,
-        "org.apache.geode.no.such.authenticator.create");
-    clusterProps.setProperty(SECURITY_CLIENT_ACCESSOR,
-        SimpleAccessController.class.getName() + ".create");
-    clientProps.setProperty(UserPasswordAuthInit.USER_NAME, "data");
-    clientProps.setProperty(UserPasswordAuthInit.PASSWORD, "data");
-    clientProps.setProperty(SECURITY_CLIENT_AUTH_INIT,
-        UserPasswordAuthInit.class.getCanonicalName() + ".create");
-
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, clientProps, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM client = csRule.startClientVM(2, clientVersion, c -> c.withCredential("data", "data")
+        .withLocatorConnection(locatorPort));
 
     client.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
@@ -148,44 +127,24 @@ public class ClientAuthorizationLegacyConfigurationDUnitTest {
 
   @Test
   public void everythingFailsWithInvalidAccessor() throws Exception {
-    Properties clusterProps = new Properties();
-    clusterProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR,
-        SimpleAuthenticator.class.getCanonicalName() + ".create");
-    clusterProps.setProperty(SECURITY_CLIENT_ACCESSOR, "org.apache.geode.no.such.accessor.create");
-    // give cluster members super-user permissions for ease of testing / RMI invocation
-    clusterProps.setProperty(UserPasswordAuthInit.USER_NAME, "cluster,data");
-    clusterProps.setProperty(UserPasswordAuthInit.PASSWORD, "cluster,data");
-    clusterProps.setProperty(SECURITY_CLIENT_AUTH_INIT,
-        UserPasswordAuthInit.class.getCanonicalName() + ".create");
+    Properties clusterProps = getClusterProperties();
 
     locator = csRule.startLocatorVM(0, clusterProps);
     server = csRule.startServerVM(1, clusterProps, locator.getPort());
     server.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<String, String> rf = cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region<String, String> region = rf.create(regionName);
+      Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
       region.put(initKey, initValue);
     });
 
-    Properties clientProps = new Properties();
-    clientProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR,
-        SimpleAuthenticator.class.getCanonicalName() + ".create");
-    clientProps.setProperty(SECURITY_CLIENT_ACCESSOR, "org.apache.geode.no.such.accessor.create");
-    // give cluster members super-user permissions for ease of testing / RMI invocation
-    clientProps.setProperty(UserPasswordAuthInit.USER_NAME, "data");
-    clientProps.setProperty(UserPasswordAuthInit.PASSWORD, "data");
-    clientProps.setProperty(SECURITY_CLIENT_AUTH_INIT,
-        UserPasswordAuthInit.class.getCanonicalName() + ".create");
-
     int locatorPort = locator.getPort();
 
-    ClientVM client = csRule.startClientVM(2, clientProps, cf -> cf
-        .addPoolLocator("localhost", locatorPort), clientVersion);
+    ClientVM client = csRule.startClientVM(2, clientVersion,
+        c -> c.withCredential("data", "data").withLocatorConnection(locatorPort));
     client.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
-      ClientRegionFactory<String, String> rf =
-          cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-      Region<String, String> region = rf.create(regionName);
+      Region region =
+          cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regionName);
 
       // Assert that everything is horrible
       assertThatThrownBy(() -> region.get(initKey))
@@ -207,5 +166,16 @@ public class ClientAuthorizationLegacyConfigurationDUnitTest {
     });
   }
 
-
+  private Properties getClusterProperties() {
+    Properties clusterProps = new Properties();
+    clusterProps.setProperty(SECURITY_CLIENT_AUTHENTICATOR,
+        "org.apache.geode.no.such.authenticator.create");
+    clusterProps.setProperty(SECURITY_CLIENT_ACCESSOR,
+        SimpleAccessController.class.getName() + ".create");
+    clusterProps.setProperty(UserPasswordAuthInit.USER_NAME, "cluster,data");
+    clusterProps.setProperty(UserPasswordAuthInit.PASSWORD, "cluster,data");
+    clusterProps.setProperty(SECURITY_CLIENT_AUTH_INIT,
+        UserPasswordAuthInit.class.getCanonicalName() + ".create");
+    return clusterProps;
+  }
 }

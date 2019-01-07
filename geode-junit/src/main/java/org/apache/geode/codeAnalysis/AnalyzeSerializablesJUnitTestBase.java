@@ -106,18 +106,15 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
     this.expectedDataSerializables =
         CompiledClassUtils.loadClassesAndMethods(this.expectedDataSerializablesFile);
-    Collections.sort(this.expectedDataSerializables);
-
   }
 
   public void loadExpectedSerializables() throws Exception {
     this.expectedSerializablesFile =
-        getResourceAsFile(InternalDataSerializer.class, expectedSerializablesFileName);
+        getResourceAsFile(getModuleClass(), expectedSerializablesFileName);
     assertThat(this.expectedSerializablesFile).exists().canRead();
 
     this.expectedSerializables =
         CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesFile);
-    Collections.sort(this.expectedSerializables);
   }
 
   public void findClasses() throws Exception {
@@ -150,6 +147,10 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
    * Override only this one method in sub-classes
    */
   protected abstract String getModuleName();
+
+  protected Class getModuleClass() {
+    return InternalDataSerializer.class;
+  }
 
   @Test
   public void testDataSerializables() throws Exception {

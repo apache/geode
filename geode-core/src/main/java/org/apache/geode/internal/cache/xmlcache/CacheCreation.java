@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,6 +121,7 @@ import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -152,6 +155,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
+import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
@@ -275,7 +279,7 @@ public class CacheCreation implements InternalCache {
    * A logger that is used in debugging
    */
   private final InternalLogWriter logWriter =
-      new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
+      new LocalLogWriter(ALL.intLevel(), System.out);
 
   private final InternalLogWriter securityLogWriter =
       LogWriterFactory.toSecurityLogWriter(this.logWriter);
@@ -1057,6 +1061,11 @@ public class CacheCreation implements InternalCache {
   @Override
   public InternalQueryService getQueryService() {
     return this.queryService;
+  }
+
+  @Override
+  public JSONFormatter getJsonFormatter() {
+    return new JSONFormatter();
   }
 
   /**
@@ -2407,7 +2416,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public InternalCache getCacheForProcessingClientRequests() {
+  public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 }

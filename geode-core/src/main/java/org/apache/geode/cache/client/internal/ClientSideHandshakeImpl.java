@@ -34,6 +34,8 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLSocket;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
@@ -186,8 +188,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
           this.clientReadTimeout, null, this.credentials, member, false);
 
       String authInit = this.system.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
-      if (!communicationMode.isWAN() && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
-          && (authInit != null && authInit.length() != 0)) {
+      if (!communicationMode.isWAN()
+          && intermediateAcceptanceCode != REPLY_AUTH_NOT_REQUIRED
+          && (StringUtils.isNotBlank(authInit) || multiuserSecureMode)) {
         location.compareAndSetRequiresCredentials(true);
       }
       // Read the acceptance code

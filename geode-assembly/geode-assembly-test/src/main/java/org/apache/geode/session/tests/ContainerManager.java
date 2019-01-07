@@ -123,7 +123,7 @@ public class ContainerManager {
   }
 
   public void dumpLogs() throws IOException {
-    for (ServerContainer container : getActiveContainers()) {
+    for (ServerContainer container : containers) {
       container.dumpLogs();
     }
   }
@@ -144,18 +144,18 @@ public class ContainerManager {
    *        be found in as static variables in the {@link State} class.
    */
   public ArrayList<Integer> getContainerIndexesWithState(String state) {
+    if (!(state.equals(State.STARTED.toString()) || state.equals(State.STOPPED.toString())
+        || state.equals(State.STARTING.toString()) || state.equals(State.STOPPING.toString())
+        || state.equals(State.UNKNOWN.toString()))) {
+      throw new IllegalArgumentException(
+          "State must be one of the 5 specified cargo state strings (stopped, started, starting, stopping, or unknown). State given was: "
+              + state);
+    }
+
     ArrayList<Integer> indexes = new ArrayList<>();
     for (int i = 0; i < numContainers(); i++) {
-      // Checks that the state passed in is one of the 5 supported by Cargo
-      if (state.equals(State.STARTED.toString()) || state.equals(State.STOPPED.toString())
-          || state.equals(State.STARTED.toString()) || state.equals(State.STOPPING.toString())
-          || state.equals(State.UNKNOWN.toString())) {
-        if (getContainer(i).getState().toString().equals(state))
-          indexes.add(i);
-      } else
-        throw new IllegalArgumentException(
-            "State must be one of the 5 specified cargo state strings (stopped, started, starting, stopping, or unknown). State given was: "
-                + state);
+      if (getContainer(i).getState().toString().equals(state))
+        indexes.add(i);
     }
     return indexes;
   }
@@ -209,6 +209,13 @@ public class ContainerManager {
    */
   public ServerContainer removeContainer(int index) {
     return containers.remove(index);
+  }
+
+  /**
+   * Remove the given container
+   */
+  public boolean removeContainer(ServerContainer container) {
+    return containers.remove(container);
   }
 
   /**

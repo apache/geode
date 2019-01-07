@@ -14,7 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/publish.gradle"
+
+
 dependencies {
-  compile('junit:junit:' + project.'junit.version')
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
+  compile('junit:junit')
+  compile('org.apache.logging.log4j:log4j-api')
 }

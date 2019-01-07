@@ -229,12 +229,31 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * The default value of the {@link ServerSocket} {@link #BACKLOG_PROPERTY_NAME}system property
    */
-  private static final int DEFAULT_BACKLOG = 1000;
+  private static final int DEFAULT_BACKLOG = 1280;
 
   /**
    * The system property name for setting the {@link ServerSocket}backlog
    */
   public static final String BACKLOG_PROPERTY_NAME = "BridgeServer.backlog";
+
+  /**
+   * The name of a system property that Defines the time interval (in nano-seconds) with which
+   * checkRegisteredKeys function can be called.
+   */
+  public static final String CHECK_REGISTERED_KEYS_INTERVAL_NAME =
+      "check-registered-keys-interval-ns";
+
+  /**
+   * The default value of {@link #CHECK_REGISTERED_KEYS_INTERVAL_NAME} system property.
+   */
+  public static final int DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL_NS = 0;
+
+  /**
+   * Set value of check registered keys interval
+   */
+  private final long checkRegisteredKeysInterval = Long
+      .getLong(CHECK_REGISTERED_KEYS_INTERVAL_NAME, DEFAULT_CHECK_REGISTERED_KEYS_INTERVAL_NS)
+      .longValue();
 
   /**
    * Current number of ServerConnection instances that are CLIENT_TO_SERVER cons.
@@ -971,6 +990,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   public void runSelectorLoop() {
     // int zeroEventsCount = 0;
     try {
+      long lastCheckedTime = System.nanoTime();
       logger.info("SELECTOR enabled");
       while (this.selector.isOpen() && !Thread.currentThread().isInterrupted()) {
         {
@@ -983,7 +1003,11 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             break;
           }
           ServerConnection sc;
-          registeredKeys = checkRegisteredKeys(registeredKeys);
+          long delta = System.nanoTime() - lastCheckedTime;
+          if (checkRegisteredKeysInterval == 0 || delta >= checkRegisteredKeysInterval) {
+            registeredKeys = checkRegisteredKeys(registeredKeys);
+            lastCheckedTime = System.nanoTime();
+          }
           if (registeredKeys == 0) {
             // do blocking wait on queue until we get some keys registered
             // with the selector

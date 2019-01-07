@@ -62,8 +62,13 @@ public class ClientExecuteFunctionAuthDUnitTest {
     server.invoke(() -> {
       ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("region");
     });
-    client1 = cluster.startClientVM(1, "dataRead", "dataRead", true, server.getPort());
-    client2 = cluster.startClientVM(2, "dataWrite", "dataWrite", true, server.getPort());
+    int serverPort = server.getPort();
+    client1 = cluster.startClientVM(1, c1 -> c1.withCredential("dataRead", "dataRead")
+        .withPoolSubscription(true)
+        .withServerConnection(serverPort));
+    client2 = cluster.startClientVM(2, c -> c.withCredential("dataWrite", "dataWrite")
+        .withPoolSubscription(true)
+        .withServerConnection(serverPort));
 
     VMProvider.invokeInEveryMember(() -> {
       writeFunction = new WriteFunction();

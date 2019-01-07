@@ -311,7 +311,7 @@ public class CompiledClassUtils {
   }
 
   public static String diffSortedClassesAndVariables(List<ClassAndVariableDetails> goldRecord,
-      List<ClassAndVariables> cavs) throws IOException {
+      List<ClassAndVariables> cavs) {
 
     StringBuilder newClassesSb = new StringBuilder(10000);
     StringBuilder changedClassesSb = new StringBuilder(10000);
@@ -323,9 +323,9 @@ public class CompiledClassUtils {
     Iterator<ClassAndVariables> it = cavs.iterator();
     ClassAndVariables newclass = null;
 
-    List<String> added = new ArrayList<String>();
-    List<String> removed = new ArrayList<String>();
-    List<String> changed = new ArrayList<String>();
+    List<String> added = new ArrayList<>();
+    List<String> removed = new ArrayList<>();
+    List<String> changed = new ArrayList<>();
 
     for (ClassAndVariableDetails gold : goldRecord) {
       added.clear();
@@ -350,21 +350,11 @@ public class CompiledClassUtils {
       if (comparison == 0) {
         ClassAndVariables nc = newclass;
         newclass = null;
-        // if (gold.variables.size() != nc.variables.size()) {
-        // changedClassesSb.append(nc).append(": field count\n");
-        // continue;
-        // }
         for (Map.Entry<String, CompiledField> entry : nc.variables.entrySet()) {
           CompiledField field = entry.getValue();
           String name = entry.getKey();
           String type = gold.variables.get(name);
           if (type == null) {
-            // if (comma) {
-            // changedClassesSb.append(", and ");
-            // } else {
-            // changedClassesSb.append(nc).append(": ");
-            // comma = true;
-            // }
             added.add(name);
             continue; // only report one diff per class
           }

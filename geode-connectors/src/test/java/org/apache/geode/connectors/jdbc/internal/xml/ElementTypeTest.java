@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.xml;
 
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.DATA_SOURCE;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.IDS;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.TABLE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,6 +74,7 @@ public class ElementTypeTest {
     when(attributes.getValue(DATA_SOURCE)).thenReturn("connectionName");
     when(attributes.getValue(TABLE)).thenReturn("table");
     when(attributes.getValue(PDX_NAME)).thenReturn("pdxClass");
+    when(attributes.getValue(IDS)).thenReturn("ids");
     when(regionCreation.getFullPath()).thenReturn("/region");
     stack.push(regionCreation);
 
@@ -83,6 +85,7 @@ public class ElementTypeTest {
     assertThat(regionMapping.getDataSourceName()).isEqualTo("connectionName");
     assertThat(regionMapping.getTableName()).isEqualTo("table");
     assertThat(regionMapping.getPdxName()).isEqualTo("pdxClass");
+    assertThat(regionMapping.getIds()).isEqualTo("ids");
   }
 
   @Test

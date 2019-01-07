@@ -34,9 +34,9 @@ import org.apache.logging.log4j.core.filter.AbstractFilterable;
 import org.apache.logging.log4j.core.lookup.StrLookup;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.internal.logging.ProviderAgent;
 
@@ -70,7 +70,10 @@ public class Log4jAgent implements ProviderAgent {
     return ((Logger) logger).get();
   }
 
-  public static String getConfigurationInfo() {
+  /**
+   * TODO:KIRK: delete getConfigurationInfoString
+   */
+  public static String getConfigurationInfoString() {
     return getConfiguration().getConfigurationSource().toString();
   }
 
@@ -102,23 +105,29 @@ public class Log4jAgent implements ProviderAgent {
   @Override
   public void configure(final LogConfig logConfig, final LogLevelUpdateOccurs logLevelUpdateOccurs,
       final LogLevelUpdateScope logLevelUpdateScope) {
-    Level loggerLevel = toLevel(LogWriterLevel.find(logConfig.getLogLevel()));
-    updateLogLevel(loggerLevel, getLoggerConfig(MAIN_LOGGER_NAME));
+    if (shouldUpdateLogLevels(logLevelUpdateOccurs)) {
+      Level loggerLevel = toLevel(LogWriterLevel.find(logConfig.getLogLevel()));
+      updateLogLevel(loggerLevel, getLoggerConfig(MAIN_LOGGER_NAME));
 
-    Level securityLoggerLevel = toLevel(LogWriterLevel.find(logConfig.getSecurityLogLevel()));
-    updateLogLevel(securityLoggerLevel, getLoggerConfig(SECURITY_LOGGER_NAME));
+      Level securityLoggerLevel = toLevel(LogWriterLevel.find(logConfig.getSecurityLogLevel()));
+      updateLogLevel(securityLoggerLevel, getLoggerConfig(SECURITY_LOGGER_NAME));
 
-    if (!LogConfig.hasSecurityLogFile(logConfig)) {
-      configuredSecurityAppenders =
-          configureSecurityAppenders(SECURITY_LOGGER_NAME, securityLoggerLevel);
+      if (!LogConfig.hasSecurityLogFile(logConfig)) {
+        configuredSecurityAppenders =
+            configureSecurityAppenders(SECURITY_LOGGER_NAME, securityLoggerLevel);
+      }
     }
 
-    if (logLevelUpdateOccurs.always() ||
-        logLevelUpdateOccurs.onlyWhenUsingDefaultConfig() && isUsingGemFireDefaultConfig()) {
+    if (shouldUpdateLogLevels(logLevelUpdateOccurs)) {
       updateLogLevel(logConfig, logLevelUpdateScope);
     }
 
     configureFastLoggerDelegating();
+  }
+
+  private boolean shouldUpdateLogLevels(final LogLevelUpdateOccurs logLevelUpdateOccurs) {
+    return logLevelUpdateOccurs.always() ||
+        logLevelUpdateOccurs.onlyWhenUsingDefaultConfig() && isUsingGemFireDefaultConfig();
   }
 
   @Override
@@ -133,6 +142,11 @@ public class Log4jAgent implements ProviderAgent {
       loggerConfig.setAdditive(false);
       getRootLoggerContext().updateLoggers();
     }
+  }
+
+  @Override
+  public String getConfigurationInfo() {
+    return getConfiguration().getConfigurationSource().toString();
   }
 
   @Override
@@ -153,6 +167,12 @@ public class Log4jAgent implements ProviderAgent {
       GeodeConsoleAppender geodeConsoleAppender = (GeodeConsoleAppender) appender;
       geodeConsoleAppender.pause();
     }
+  }
+
+  @Override
+  public String toString() {
+    return new StringBuilder().append(super.toString()).append(": {configuredSecurityAppenders=")
+        .append(configuredSecurityAppenders).append("}").toString();
   }
 
   private void updateLogLevel(final LogConfig logConfig,

@@ -102,7 +102,7 @@ public class CreateIndexCommand extends SingleGfshCommand {
   }
 
   @Override
-  public void updateClusterConfig(String group, CacheConfig config, Object element) {
+  public boolean updateConfigForGroup(String group, CacheConfig config, Object element) {
     RegionConfig.Index index = (RegionConfig.Index) element;
     String regionPath = getValidRegionName(index.getFromClause(), config);
 
@@ -111,5 +111,6 @@ public class CreateIndexCommand extends SingleGfshCommand {
       throw new EntityNotFoundException("Region " + index.getFromClause() + " not found.");
     }
     regionConfig.getIndexes().add(index);
+    return true;
   }
 }

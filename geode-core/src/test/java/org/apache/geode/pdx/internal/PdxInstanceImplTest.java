@@ -20,16 +20,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,28 +46,29 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
 public class PdxInstanceImplTest {
-  PdxType emptyPdxType;
-  PdxField nonExistentField;
-  PdxType pdxType;
-  PdxField nonIdentityField;
-  PdxField booleanField;
-  PdxField doubleField;
-  PdxField intField;
-  PdxField longField;
-  PdxField objectField;
-  PdxField stringField;
-  PdxField byteArrayField;
-  PdxField objectArrayField;
-  PdxField integerArrayField;
-  PdxField shortArrayField;
-  PdxField intArrayField;
-  PdxField longArrayField;
-  PdxField charArrayField;
-  PdxField floatArrayField;
-  PdxField doubleArrayField;
-  PdxField booleanArrayField;
-  TypeRegistry pdxRegistry;
-  PdxInstance instance;
+
+  private PdxType emptyPdxType;
+  private PdxField nonExistentField;
+  private PdxType pdxType;
+  private PdxField nonIdentityField;
+  private PdxField booleanField;
+  private PdxField doubleField;
+  private PdxField intField;
+  private PdxField longField;
+  private PdxField objectField;
+  private PdxField stringField;
+  private PdxField byteArrayField;
+  private PdxField objectArrayField;
+  private PdxField integerArrayField;
+  private PdxField shortArrayField;
+  private PdxField intArrayField;
+  private PdxField longArrayField;
+  private PdxField charArrayField;
+  private PdxField floatArrayField;
+  private PdxField doubleArrayField;
+  private PdxField booleanArrayField;
+  private TypeRegistry pdxRegistry;
+  private PdxInstance instance;
 
   @Before
   public void setUp() throws IOException, ClassNotFoundException {
@@ -190,11 +190,6 @@ public class PdxInstanceImplTest {
     writer.completeByteStreamGeneration();
 
     instance = writer.makePdxInstance();
-  }
-
-  @After
-  public void tearDown() {
-    // Do nothing.
   }
 
   @Test
@@ -338,14 +333,14 @@ public class PdxInstanceImplTest {
     assertEquals(true, instance.isIdentityField(booleanArrayField.getFieldName()));
   }
 
-  static class SerializableObject implements Serializable {
+  private static class SerializableObject implements Serializable {
     String name;
 
     public SerializableObject() {
       // Do nothing.
     }
 
-    public SerializableObject(String name) {
+    SerializableObject(String name) {
       this.name = name;
     }
 
@@ -355,10 +350,10 @@ public class PdxInstanceImplTest {
     }
   }
 
-  private static final class TestLonerTypeRegistration extends LonerTypeRegistration {
+  private static class TestLonerTypeRegistration extends LonerTypeRegistration {
     TypeRegistration testTypeRegistration;
 
-    public TestLonerTypeRegistration(InternalCache cache, TypeRegistration testTypeRegistration) {
+    TestLonerTypeRegistration(InternalCache cache, TypeRegistration testTypeRegistration) {
       super(cache);
       this.testTypeRegistration = testTypeRegistration;
     }

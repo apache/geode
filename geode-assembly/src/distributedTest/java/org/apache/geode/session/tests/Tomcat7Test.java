@@ -14,28 +14,14 @@
  */
 package org.apache.geode.session.tests;
 
-import org.junit.BeforeClass;
+import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.PEER_TO_PEER;
+import static org.apache.geode.session.tests.TomcatInstall.TomcatVersion.TOMCAT7;
 
-import org.apache.geode.test.dunit.DUnitEnv;
+import java.util.function.IntSupplier;
 
-/**
- * Tomcat 7 Peer to Peer tests
- *
- * Runs all the tests in {@link CargoTestBase} on the Tomcat 7 install, setup in the
- * {@link #setupTomcatInstall()} method before tests are run.
- */
 public class Tomcat7Test extends CargoTestBase {
-  private static ContainerInstall install;
-
-  @BeforeClass
-  public static void setupTomcatInstall() throws Exception {
-    install = new TomcatInstall(TomcatInstall.TomcatVersion.TOMCAT7,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Tomcat7Test");
-    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
-  }
-
   @Override
-  public ContainerInstall getInstall() {
-    return install;
+  public ContainerInstall getInstall(IntSupplier portSupplier) throws Exception {
+    return new TomcatInstall(getClass().getSimpleName(), TOMCAT7, PEER_TO_PEER, portSupplier);
   }
 }

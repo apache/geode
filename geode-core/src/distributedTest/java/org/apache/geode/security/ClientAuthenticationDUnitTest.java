@@ -23,9 +23,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * Test for authentication from client to server. This tests for both valid and invalid

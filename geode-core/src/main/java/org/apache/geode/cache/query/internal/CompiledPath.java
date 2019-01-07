@@ -164,6 +164,15 @@ public class CompiledPath extends AbstractCompiledValue {
   }
 
   @Override
+  public boolean hasIdentifierAtLeafNode() {
+    if (this._receiver.getType() == Identifier) {
+      return true;
+    } else {
+      return this._receiver.hasIdentifierAtLeafNode();
+    }
+  }
+
+  @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     // Asif: Canonicalize the tail ID. If the tail ID contains

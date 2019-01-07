@@ -200,9 +200,9 @@ Examples](https://github.com/apache/geode-examples) repository or the
 
 Apache Geode applications can be written in these client technologies:
 
-* Java [client](https://geode.apache.org/docs/guide/topologies_and_comm/cs_configuration/chapter_overview.html)
-  or [peer](https://geode.apache.org/docs/guide/topologies_and_comm/p2p_configuration/chapter_overview.html)
-* [REST](https://geode.apache.org/docs/guide/rest_apps/chapter_overview.html)
+* Java [client](https://geode.apache.org/docs/guide/18/topologies_and_comm/cs_configuration/chapter_overview.html)
+  or [peer](https://geode.apache.org/docs/guide/18/topologies_and_comm/p2p_configuration/chapter_overview.html)
+* [REST](https://geode.apache.org/docs/guide/18/rest_apps/chapter_overview.html)
 * [Memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
 * [Redis](https://cwiki.apache.org/confluence/display/GEODE/Geode+Redis+Adapter)
 

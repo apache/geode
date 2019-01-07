@@ -16,12 +16,14 @@
  */
 apply plugin: 'war'
 
+apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
+
+
 dependencies {
-  compile('javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version')
+  compile('javax.servlet:javax.servlet-api')
 }
 
 war {
     version = ''
 }
 
-disableMavenPublishing()

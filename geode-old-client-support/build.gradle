@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/publish.gradle"
+
+
 dependencies {
   compile(project(':geode-core'))
   distributedTestCompile(project(':geode-dunit')){
@@ -22,5 +26,5 @@ dependencies {
   }
 
 
-  distributedTestCompile('junit:junit:' + project.'junit.version')
+  distributedTestCompile('junit:junit')
 }

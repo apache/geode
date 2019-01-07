@@ -24,6 +24,7 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   static final String DATA_SOURCE = "data-source";
   static final String TABLE = "table";
   static final String PDX_NAME = "pdx-name";
+  static final String IDS = "ids";
 
   @Override
   public String getNamespaceUri() {

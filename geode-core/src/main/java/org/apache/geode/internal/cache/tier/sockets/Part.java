@@ -172,6 +172,31 @@ public class Part {
     return CacheServerHelper.fromUTF((byte[]) this.part);
   }
 
+  private static final byte[][] BYTES = new byte[256][1];
+  private static final int BYTES_OFFSET = -1 * Byte.MIN_VALUE;
+  static {
+    for (byte i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; i++) {
+      BYTES[i + BYTES_OFFSET][0] = i;
+    }
+  }
+
+  public void setByte(byte b) {
+    this.typeCode = BYTE_CODE;
+    this.part = BYTES[b + BYTES_OFFSET];
+  }
+
+  public byte getByte() {
+    if (!isBytes()) {
+      Assert.assertTrue(false, "expected int part to be of type BYTE, part = " + this.toString());
+    }
+    if (getLength() != 1) {
+      Assert.assertTrue(false,
+          "expected int length to be 1 but it was " + getLength() + "; part = " + this.toString());
+    }
+    final byte[] bytes = getSerializedForm();
+    return bytes[0];
+  }
+
   public int getInt() {
     if (!isBytes()) {
       Assert.assertTrue(false, "expected int part to be of type BYTE, part = " + this.toString());

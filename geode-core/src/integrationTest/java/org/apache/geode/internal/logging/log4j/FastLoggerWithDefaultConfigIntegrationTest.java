@@ -17,7 +17,7 @@ package org.apache.geode.internal.logging.log4j;
 import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -25,10 +25,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.logging.Configuration;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigSupplier;
+import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
+import org.apache.geode.internal.logging.LogLevelUpdateScope;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.LoggingTest;
 

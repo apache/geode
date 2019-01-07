@@ -16,7 +16,6 @@ package org.apache.geode.internal.logging;
 
 import static org.apache.geode.internal.logging.Configuration.LOG_LEVEL_UPDATE_OCCURS_PROPERTY;
 import static org.apache.geode.internal.logging.Configuration.LOG_LEVEL_UPDATE_SCOPE_PROPERTY;
-import static org.apache.geode.internal.logging.Configuration.PROVIDER_AGENT_NAME_PROPERTY;
 import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,9 +33,6 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateOccurs;
-import org.apache.geode.internal.logging.Configuration.LogLevelUpdateScope;
-import org.apache.geode.internal.logging.log4j.Log4jAgent;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -301,46 +297,6 @@ public class ConfigurationTest {
     assertThat(Configuration.getLogLevelUpdateScope()).isEqualTo(LogLevelUpdateScope.GEODE_LOGGERS);
   }
 
-  @Test
-  public void createProviderAgent_defaultsTo_Log4jAgent() {
-    assertThat(Configuration.createProviderAgent()).isInstanceOf(Log4jAgent.class);
-  }
-
-  @Test
-  public void createProviderAgent_usesSystemPropertySetTo_Log4jAgent() {
-    System.setProperty(PROVIDER_AGENT_NAME_PROPERTY, Log4jAgent.class.getName());
-
-    assertThat(Configuration.createProviderAgent()).isInstanceOf(Log4jAgent.class);
-  }
-
-  @Test
-  public void createProviderAgent_usesSystemPropertySetTo_NullProviderAgent() {
-    System.setProperty(PROVIDER_AGENT_NAME_PROPERTY, NullProviderAgent.class.getName());
-
-    assertThat(Configuration.createProviderAgent()).isInstanceOf(NullProviderAgent.class);
-  }
-
-  @Test
-  public void createProviderAgent_usesSystemPropertySetTo_SimpleProviderAgent() {
-    System.setProperty(PROVIDER_AGENT_NAME_PROPERTY, SimpleProviderAgent.class.getName());
-
-    assertThat(Configuration.createProviderAgent()).isInstanceOf(SimpleProviderAgent.class);
-  }
-
-  @Test
-  public void createProviderAgent_usesNullProviderAgent_whenClassNotFoundException() {
-    System.setProperty(PROVIDER_AGENT_NAME_PROPERTY, SimpleProviderAgent.class.getSimpleName());
-
-    assertThat(Configuration.createProviderAgent()).isInstanceOf(NullProviderAgent.class);
-  }
-
-  @Test
-  public void createProviderAgent_usesNullProviderAgent_whenClassCastException() {
-    System.setProperty(PROVIDER_AGENT_NAME_PROPERTY, NotProviderAgent.class.getName());
-
-    assertThat(Configuration.createProviderAgent()).isInstanceOf(NullProviderAgent.class);
-  }
-
   private LogConfigSupplier mockLogConfigSupplier() {
     LogConfigSupplier logConfigSupplier = mock(LogConfigSupplier.class);
 
@@ -349,34 +305,5 @@ public class ConfigurationTest {
     when(logConfig.getSecurityLogLevel()).thenReturn(INFO.intLevel());
 
     return logConfigSupplier;
-  }
-
-  public static class SimpleProviderAgent implements ProviderAgent {
-
-    @Override
-    public void configure(LogConfig logConfig,
-        LogLevelUpdateOccurs logLevelUpdateOccurs,
-        LogLevelUpdateScope logLevelUpdateScope) {
-      // nothing
-    }
-
-    @Override
-    public void cleanup() {
-      // nothing
-    }
-
-    @Override
-    public void enableLoggingToStandardOutput() {
-      // nothing
-    }
-
-    @Override
-    public void disableLoggingToStandardOutput() {
-      // nothing
-    }
-  }
-
-  public static class NotProviderAgent {
-
   }
 }

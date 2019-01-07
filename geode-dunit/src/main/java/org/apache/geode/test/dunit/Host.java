@@ -18,10 +18,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.test.dunit.standalone.ChildVMLauncher;
-import org.apache.geode.test.dunit.standalone.ProcessHolder;
-import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
-import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.dunit.internal.ChildVMLauncher;
+import org.apache.geode.test.dunit.internal.ProcessHolder;
+import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * This class represents a host on which a remote method may be invoked. It provides access to the

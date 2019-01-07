@@ -14,29 +14,17 @@
  */
 package org.apache.geode.session.tests;
 
-import org.junit.BeforeClass;
+import static org.apache.geode.session.tests.ContainerInstall.ConnectionType.CLIENT_SERVER;
+import static org.apache.geode.session.tests.GenericAppServerInstall.GenericAppServerVersion.JETTY9;
 
-import org.apache.geode.test.dunit.DUnitEnv;
+import java.io.IOException;
+import java.util.function.IntSupplier;
 
-/**
- * Jetty 9 Client Server tests
- *
- * Runs all the tests in {@link CargoTestBase} on the Jetty 9 install, setup in the
- * {@link #setupJettyInstall()} method before tests are run.
- */
 public class Jetty9ClientServerTest extends GenericAppServerClientServerTest {
-  private static ContainerInstall install;
-
-  @BeforeClass
-  public static void setupJettyInstall() throws Exception {
-    install = new GenericAppServerInstall(GenericAppServerInstall.GenericAppServerVersion.JETTY9,
-        ContainerInstall.ConnectionType.CLIENT_SERVER,
-        ContainerInstall.DEFAULT_INSTALL_DIR + "Jetty9ClientServerTest");
-    install.setDefaultLocator(DUnitEnv.get().getLocatorAddress(), DUnitEnv.get().getLocatorPort());
-  }
-
   @Override
-  public ContainerInstall getInstall() {
-    return install;
+  public ContainerInstall getInstall(IntSupplier portSupplier)
+      throws IOException, InterruptedException {
+    return new GenericAppServerInstall(getClass().getSimpleName(), JETTY9, CLIENT_SERVER,
+        portSupplier);
   }
 }

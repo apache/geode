@@ -33,7 +33,7 @@ import org.apache.geode.LogWriter;
  * </ul>
  *
  * <p>
- * Default level in Geode is {@link #INFO}.
+ * Default level in Geode is {@link #CONFIG}.
  */
 public enum LogWriterLevel {
 
@@ -41,7 +41,7 @@ public enum LogWriterLevel {
   FINEST(InternalLogWriter.FINEST_LEVEL),
   FINER(InternalLogWriter.FINER_LEVEL),
   FINE(InternalLogWriter.FINE_LEVEL),
-  CONFIG(InternalLogWriter.CONFIG_LEVEL),
+  CONFIG(InternalLogWriter.CONFIG_LEVEL), // default
   INFO(InternalLogWriter.INFO_LEVEL),
   WARNING(InternalLogWriter.WARNING_LEVEL),
   ERROR(InternalLogWriter.ERROR_LEVEL),

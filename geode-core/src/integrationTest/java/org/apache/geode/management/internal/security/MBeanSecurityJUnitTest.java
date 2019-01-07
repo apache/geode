@@ -35,6 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
@@ -106,7 +107,7 @@ public class MBeanSecurityJUnitTest {
         () -> server.createMBean("FakeClassName", new ObjectName("GemFire", "name", "foo")))
             .isInstanceOf(ReflectionException.class);
 
-    MBeanJMXAdapter adapter = new MBeanJMXAdapter();
+    MBeanJMXAdapter adapter = new MBeanJMXAdapter(mock(DistributedMember.class));
     assertThatThrownBy(() -> adapter.registerMBean(mock(DynamicMBean.class),
         new ObjectName("MockDomain", "name", "mock"), false))
             .isInstanceOf(ManagementException.class);

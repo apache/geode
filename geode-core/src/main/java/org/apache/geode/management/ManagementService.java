@@ -38,7 +38,8 @@ public abstract class ManagementService {
    * @param cache Cache for which to get the management service.
    */
   public static ManagementService getManagementService(Cache cache) {
-    return BaseManagementService.getManagementService((InternalCache) cache);
+    return BaseManagementService
+        .getManagementService(((InternalCache) cache).getCacheForProcessingClientRequests());
   }
 
   /**

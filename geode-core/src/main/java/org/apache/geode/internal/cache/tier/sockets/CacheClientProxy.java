@@ -945,17 +945,23 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
-  private void closeSocket() {
-    if (this._socketClosed.compareAndSet(false, true)) {
-      // Close the socket
-      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, this._remoteHostAddress,
-          null);
+  private boolean closeSocket() {
+    String remoteHostAddress = this._remoteHostAddress;
+    if (this._socketClosed.compareAndSet(false, true) && remoteHostAddress != null) {
+      // Only one thread is expected to close the socket
+      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, remoteHostAddress, null);
       getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
+      return true;
     }
+    return false;
   }
 
   private void closeTransientFields() {
-    closeSocket();
+    if (!closeSocket()) {
+      // The thread who closed the socket will be responsible to
+      // releaseResourcesForAddress and clearClientInterestList
+      return;
+    }
 
     // Null out comm buffer, host address, ports and proxy id. All will be
     // replaced when the client reconnects.
@@ -1706,7 +1712,7 @@ public class CacheClientProxy implements ClientSession {
       }
       String name = "Client Message Dispatcher for " + getProxyID().getDistributedMember()
           + (isDurable() ? " (" + getDurableId() + ")" : "");
-      this._messageDispatcher = new MessageDispatcher(this, name);
+      this._messageDispatcher = createMessageDispatcher(name);
 
       // Fix for 41375 - drain as many of the queued events
       // as we can without synchronization.
@@ -1729,6 +1735,10 @@ public class CacheClientProxy implements ClientSession {
         this._statistics.close();
       }
     }
+  }
+
+  MessageDispatcher createMessageDispatcher(String name) {
+    return new MessageDispatcher(this, name);
   }
 
   private void drainQueuedEvents(boolean withSynchronization) {

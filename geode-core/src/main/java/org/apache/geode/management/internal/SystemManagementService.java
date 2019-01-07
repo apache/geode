@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.AsyncEventQueueMXBean;
@@ -65,7 +66,7 @@ public class SystemManagementService extends BaseManagementService {
   /**
    * The concrete implementation of DistributedSystem that provides internal-only functionality.
    */
-  private InternalDistributedSystem system;
+  private final InternalDistributedSystem system;
 
   /**
    * core component for distribution
@@ -76,7 +77,7 @@ public class SystemManagementService extends BaseManagementService {
    * This is a notification hub to listen all the notifications emitted from all the MBeans in a
    * peer cache./cache server
    */
-  private NotificationHub notificationHub;
+  private final NotificationHub notificationHub;
 
   /**
    * whether the service is closed or not if cache is closed automatically this service will be
@@ -92,15 +93,15 @@ public class SystemManagementService extends BaseManagementService {
   /**
    * Adapter to interact with platform MBean server
    */
-  private MBeanJMXAdapter jmxAdapter;
+  private final MBeanJMXAdapter jmxAdapter;
 
-  private InternalCache cache;
+  private final InternalCacheForClientAccess cache;
 
   private FederatingManager federatingManager;
 
   private final ManagementAgent agent;
 
-  private ManagementResourceRepo repo;
+  private final ManagementResourceRepo repo;
 
   /**
    * This membership listener will listen on membership events after the node has transformed into a
@@ -112,15 +113,17 @@ public class SystemManagementService extends BaseManagementService {
    * Proxy aggregator to create aggregate MBeans e.g. DistributedSystem and DistributedRegion
    * GemFire comes with a default aggregator.
    */
-  private List<ProxyListener> proxyListeners;
+  private final List<ProxyListener> proxyListeners;
 
-  private UniversalListenerContainer universalListenerContainer = new UniversalListenerContainer();
+  private final UniversalListenerContainer universalListenerContainer =
+      new UniversalListenerContainer();
 
-  public static BaseManagementService newSystemManagementService(InternalCache cache) {
+  public static BaseManagementService newSystemManagementService(
+      InternalCacheForClientAccess cache) {
     return new SystemManagementService(cache).init();
   }
 
-  protected SystemManagementService(InternalCache cache) {
+  protected SystemManagementService(InternalCacheForClientAccess cache) {
     this.cache = cache;
     this.system = (InternalDistributedSystem) cache.getDistributedSystem();
     // This is a safe check to ensure Management service does not start for a
@@ -131,9 +134,9 @@ public class SystemManagementService extends BaseManagementService {
       throw new DistributedSystemDisconnectedException(
           "This connection to a distributed system has been disconnected.");
     }
-    this.jmxAdapter = new MBeanJMXAdapter();
-    this.repo = new ManagementResourceRepo();
 
+    this.jmxAdapter = new MBeanJMXAdapter(this.system.getDistributedMember());
+    this.repo = new ManagementResourceRepo();
 
     this.notificationHub = new NotificationHub(repo);
     if (system.getConfig().getJmxManager()) {

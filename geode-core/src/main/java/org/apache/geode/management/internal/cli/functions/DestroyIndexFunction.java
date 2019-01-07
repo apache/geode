@@ -23,6 +23,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
@@ -36,7 +37,7 @@ public class DestroyIndexFunction extends CliFunction {
 
     CliFunctionResult result;
     try {
-      Cache cache = context.getCache();
+      Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       QueryService queryService = cache.getQueryService();
       String indexName = indexInfo.getName();

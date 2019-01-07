@@ -14,120 +14,97 @@
  */
 package org.apache.geode.distributed;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static java.util.Arrays.asList;
+import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
+import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.getDistributedSystemProperties;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemAdmin;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 
+/**
+ * Distributed tests for {@link SystemAdmin}.
+ */
+public class SystemAdminDUnitTest {
 
-public class SystemAdminDUnitTest extends JUnit4DistributedTestCase {
+  private static final String STACK_DUMP_FILE = "stack dump file created by printStacks";
+  private static final String GF_GC_THREAD = "GemFire Garbage Collection";
+  private static final String MANAGEMENT_TASK_THREAD = "Management Task";
+  private static final String FUNCTION_THREAD = "Function Execution Processor";
 
-  @Override
-  public final void postSetUp() throws Exception {
-    disconnect();
+  private Properties config;
+  private String filename2;
+  private String filename1;
+
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public TestName testName = new TestName();
+
+  @Before
+  public void setUp() {
+    String uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
+
+    // create a gemfire.properties that lets SystemAdmin find the dunit locator
+    config = getAllDistributedSystemProperties(getDistributedSystemProperties());
+
+    filename2 = new File(temporaryFolder.getRoot(), uniqueName + "2.txt").getAbsolutePath();
+    filename1 = new File(temporaryFolder.getRoot(), uniqueName + "1.txt").getAbsolutePath();
   }
 
-  @Override
-  public final void preTearDown() throws Exception {
-    disconnect();
-  }
+  @After
+  public void tearDown() {
+    disconnectFromDS();
 
-  public void disconnect() {
-    // get rid of the command-line distributed system created by SystemAdmin
-    nullSystem();
-    InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
-    if (sys != null && sys.isConnected()) {
-      LogWriterUtils.getLogWriter().info("disconnecting(3)");
-      sys.disconnect();
-    }
+    // SystemAdmin calls methods that set these static variables
+    ClusterDistributionManager.setIsDedicatedAdminVM(false);
+    SystemAdmin.setDistributedSystemProperties(null);
   }
 
   @Test
-  public void testPrintStacks() throws Exception {
+  public void testPrintStacks() {
+    SystemAdmin.setDistributedSystemProperties(config);
 
-    // create a gemfire.properties that lets SystemAdmin find the dunit locator
-    Properties p =
-        DistributedTestUtils.getAllDistributedSystemProperties(getDistributedSystemProperties());
-    try {
+    SystemAdmin.printStacks(asList(filename2), true);
+    checkStackDumps(filename2, false);
 
-      SystemAdmin.setDistributedSystemProperties(p);
+    disconnectFromDS();
 
-      String filename2 = getUniqueName() + "2.txt";
-      List<String> options = new ArrayList<String>(1);
-      options.add(filename2);
-      SystemAdmin.printStacks(options, true);
-      checkStackDumps(filename2, false);
-
-      disconnect();
-
-      String filename1 = getUniqueName() + "1.txt";
-      options.clear();
-      options.add(filename1);
-      SystemAdmin.printStacks(options, false);
-      checkStackDumps(filename1, true);
-
-    } finally {
-      // SystemAdmin calls methods that set these static variables
-      ClusterDistributionManager.setIsDedicatedAdminVM(false);
-      SystemAdmin.setDistributedSystemProperties(null);
-    }
+    SystemAdmin.printStacks(asList(filename1), false);
+    checkStackDumps(filename1, true);
   }
 
-  private void checkStackDumps(String filename, boolean isPruned) throws IOException {
+  private void checkStackDumps(String filename, boolean isPruned) {
     File file = new File(filename);
-    if (!file.exists()) {
-      fail("printStacks did not create a stack dump");
-    }
-    BufferedReader in = new BufferedReader(new FileReader(file));
-    // look for some threads that shouldn't be there
-    boolean setting = !isPruned;
-    boolean foundManagementTask = setting;
-    boolean foundGCThread = setting;
-    boolean foundFunctionThread = setting;
-    String line;
-    do {
-      line = in.readLine();
-      if (line != null) {
-        if (line.contains("GemFire Garbage Collection"))
-          foundGCThread = true;
-        else if (line.contains("Management Task"))
-          foundManagementTask = true;
-        else if (line.contains("Function Execution Processor"))
-          foundFunctionThread = true;
-      }
-    } while (line != null);
+    assertThat(file).as(STACK_DUMP_FILE).exists();
 
     if (isPruned) {
-      assertFalse("found a GemFire Garbage Collection thread in stack dump in " + filename,
-          foundGCThread);
-      assertFalse("found a Management Task thread in stack dump in " + filename,
-          foundManagementTask);
-      assertFalse("found a Function Excecution Processor thread in stack dump in " + filename,
-          foundFunctionThread);
+      LogFileAssert.assertThat(file).as(STACK_DUMP_FILE).doesNotContain(GF_GC_THREAD);
+      LogFileAssert.assertThat(file).as(STACK_DUMP_FILE).doesNotContain(MANAGEMENT_TASK_THREAD);
+      LogFileAssert.assertThat(file).as(STACK_DUMP_FILE).doesNotContain(FUNCTION_THREAD);
+
     } else {
-      assertTrue("found no GemFire Garbage Collection thread in stack dump in " + filename,
-          foundGCThread);
-      assertTrue("found no Management Task thread in stack dump in " + filename,
-          foundManagementTask);
-      assertTrue("found no Function Excecution Processor thread in stack dump in " + filename,
-          foundFunctionThread);
+      // the old code set foundGCThread = !isPruned, but the GF_GC_THREAD was never actually there
+      LogFileAssert.assertThat(file).as(STACK_DUMP_FILE).doesNotContain(GF_GC_THREAD);
+      LogFileAssert.assertThat(file).as(STACK_DUMP_FILE).contains(MANAGEMENT_TASK_THREAD);
+      LogFileAssert.assertThat(file).as(STACK_DUMP_FILE).contains(FUNCTION_THREAD);
     }
-    file.delete();
   }
 }

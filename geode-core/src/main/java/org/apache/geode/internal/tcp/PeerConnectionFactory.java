@@ -18,6 +18,7 @@ package org.apache.geode.internal.tcp;
 import java.io.IOException;
 import java.net.Socket;
 
+
 public class PeerConnectionFactory {
   /**
    * creates a connection that we accepted (it was initiated by an explicit connect being done on

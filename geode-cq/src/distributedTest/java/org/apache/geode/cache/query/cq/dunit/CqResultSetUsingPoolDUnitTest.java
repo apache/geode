@@ -26,11 +26,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.cq.internal.ServerCQImpl;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.AvailablePortHelper;

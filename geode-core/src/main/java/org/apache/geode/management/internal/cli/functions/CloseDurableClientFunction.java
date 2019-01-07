@@ -20,7 +20,6 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.domain.MemberResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /***
@@ -37,39 +36,37 @@ public class CloseDurableClientFunction implements InternalFunction {
     final Cache cache = context.getCache();
     final String memberNameOrId =
         CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
-    MemberResult memberResult = new MemberResult(memberNameOrId);
 
+    context.getResultSender().lastResult(createFunctionResult(memberNameOrId, durableClientId));
+  }
+
+  private CliFunctionResult createFunctionResult(String memberNameOrId, String durableClientId) {
     try {
       CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance();
 
-      if (cacheClientNotifier != null) {
-        CacheClientProxy ccp = cacheClientNotifier.getClientProxy(durableClientId);
-        if (ccp != null) {
-          boolean isClosed = cacheClientNotifier.closeDurableClientProxy(durableClientId);
-          if (isClosed) {
-            memberResult.setSuccessMessage(
-                CliStrings.format(CliStrings.CLOSE_DURABLE_CLIENTS__SUCCESS, durableClientId));
-          } else {
-            memberResult.setErrorMessage(
-                CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
-          }
-        } else {
-          memberResult.setErrorMessage(
-              CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
-        }
+      if (cacheClientNotifier == null) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.NO_CLIENT_FOUND);
+      }
+
+      CacheClientProxy ccp = cacheClientNotifier.getClientProxy(durableClientId);
+      if (ccp == null) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
+      }
+
+      boolean isClosed = cacheClientNotifier.closeDurableClientProxy(durableClientId);
+      if (isClosed) {
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
+            CliStrings.format(CliStrings.CLOSE_DURABLE_CLIENTS__SUCCESS, durableClientId));
       } else {
-        memberResult.setErrorMessage(CliStrings.NO_CLIENT_FOUND);
+        return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+            CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId));
       }
     } catch (Exception e) {
-      memberResult.setExceptionMessage(e.getMessage());
-    } finally {
-      context.getResultSender().lastResult(memberResult);
+      return new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+          e.getMessage());
     }
-  }
-
-  @Override
-  public String getId() {
-    return CloseDurableClientFunction.class.getName();
   }
 
 }

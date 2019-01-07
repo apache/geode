@@ -108,7 +108,7 @@ public class FederatingManager extends Manager {
         logger.debug("Starting the Federating Manager.... ");
       }
 
-      pooledMembershipExecutor = LoggingExecutors.newFixedThreadPool("FederatingManager", false,
+      pooledMembershipExecutor = LoggingExecutors.newFixedThreadPool("FederatingManager", true,
           Runtime.getRuntime().availableProcessors());
 
       running = true;
@@ -357,8 +357,9 @@ public class FederatingManager extends Manager {
         String monitoringRegionName = ManagementConstants.MONITORING_REGION + "_" + appender;
         String notificationRegionName = ManagementConstants.NOTIFICATION_REGION + "_" + appender;
 
-        if (cache.getRegion(monitoringRegionName) != null
-            && cache.getRegion(notificationRegionName) != null) {
+
+        if (cache.getInternalRegion(monitoringRegionName) != null
+            && cache.getInternalRegion(notificationRegionName) != null) {
           return member;
         }
 
@@ -415,7 +416,7 @@ public class FederatingManager extends Manager {
                 return null;
               }
               proxyMonitoringRegion =
-                  cache.createVMRegion(monitoringRegionName, monitoringRegionAttrs,
+                  cache.createInternalRegion(monitoringRegionName, monitoringRegionAttrs,
                       internalRegionArguments);
               proxyMonitoringRegionCreated = true;
 
@@ -434,7 +435,7 @@ public class FederatingManager extends Manager {
                 return null;
               }
               proxyNotificationRegion =
-                  cache.createVMRegion(notificationRegionName, notifRegionAttrs,
+                  cache.createInternalRegion(notificationRegionName, notifRegionAttrs,
                       internalRegionArguments);
               proxyNotificationRegionCreated = true;
             } catch (TimeoutException | RegionExistsException | IOException

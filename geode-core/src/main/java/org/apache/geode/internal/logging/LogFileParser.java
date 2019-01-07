@@ -15,6 +15,7 @@
 package org.apache.geode.internal.logging;
 
 import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
+import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -335,7 +336,7 @@ public class LogFileParser {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw, true);
 
-      LocalLogWriter tempLogger = new LocalLogWriter(InternalLogWriter.ALL_LEVEL, pw);
+      LocalLogWriter tempLogger = new LocalLogWriter(ALL.intLevel(), pw);
       tempLogger.info("MISSING TIME STAMP");
       pw.flush();
       sb.insert(0, LINE_SEPARATOR + LINE_SEPARATOR);

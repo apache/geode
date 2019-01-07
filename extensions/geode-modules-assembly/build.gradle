@@ -22,6 +22,9 @@ configurations {
   slf4jDeps
 }
 
+apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
+
+
 dependencies {
   slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
   slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
@@ -29,7 +32,6 @@ dependencies {
 
 jar.enabled = true
 
-disableMavenPublishing()
 
 def getJarArtifact(module) {
   project(module).configurations.archives.artifacts.findAll {
@@ -239,15 +241,3 @@ task distTcServer30(type: Zip, dependsOn: [':extensions:geode-modules:assemble',
 task dist(type: Task, dependsOn: ['distTcServer', 'distTcServer30', 'distTomcat', 'distAppServer'])
 
 build.dependsOn dist
-
-publishing {
-  publications {
-    maven(MavenPublication) {
-      artifact distTcServer
-      artifact distTcServer30
-      artifact distAppServer
-      artifact distTomcat
-    }
-  }
-}
-

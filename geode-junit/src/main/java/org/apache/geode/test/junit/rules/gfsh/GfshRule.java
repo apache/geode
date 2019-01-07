@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * The {@code GfshRule} allows a test to execute Gfsh commands via the actual (fully-assembled) gfsh

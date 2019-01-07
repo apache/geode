@@ -39,7 +39,7 @@ public class FetchSharedConfigurationStatusFunction implements InternalFunction 
       memberId = member.getId();
     }
 
-    CliFunctionResult result = new CliFunctionResult(memberId, new String[] {status.name()});
+    CliFunctionResult result = new CliFunctionResult(memberId, status.name(), null);
     context.getResultSender().lastResult(result);
   }
 

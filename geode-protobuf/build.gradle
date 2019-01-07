@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/publish.gradle"
+
+
 dependencies {
   compile(project(':geode-common'))
   compile(project(':geode-core'))
@@ -40,15 +44,15 @@ dependencies {
   distributedTestCompile(project(':geode-protobuf:geode-protobuf-test'))
 
   compile('com.google.protobuf:protobuf-java:' + project.'protobuf-java.version')
-  compile('org.apache.logging.log4j:log4j-api:' + project.'log4j.version')
-  compile('org.apache.shiro:shiro-core:' + project.'shiro.version')
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.apache.shiro:shiro-core')
 
-  integrationTestCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+  integrationTestCompile('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
-  integrationTestCompile('junit:junit:' + project.'junit.version')
-  integrationTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
+  integrationTestCompile('junit:junit')
+  integrationTestCompile('org.awaitility:awaitility')
 
-  distributedTestCompile('junit:junit:' + project.'junit.version')
-  distributedTestCompile('org.awaitility:awaitility:' + project.'awaitility.version')
+  distributedTestCompile('junit:junit')
+  distributedTestCompile('org.awaitility:awaitility')
 }

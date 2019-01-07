@@ -315,44 +315,56 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   }
 
   // No need to synchronize because it is called from a synchronized method
-  private void removeIndex(Long qkey) {
+  protected boolean removeIndex(Long qkey) {
     // Determine whether conflation is enabled for this queue and object
+    boolean entryFound;
     Object o = getNoLRU(qkey, true, false, false);
-    if (o instanceof Conflatable) {
-      Conflatable object = (Conflatable) o;
-      if (object.shouldBeConflated()) {
-        // Otherwise, remove the index from the indexes map.
-        String rName = object.getRegionToConflate();
-        Object key = object.getKeyToConflate();
-        Map latestIndexesForRegion = (Map) this.indexes.get(rName);
-        if (latestIndexesForRegion != null) {
-          // Remove the index if appropriate. Verify the qKey is actually the one being referenced
-          // in the index. If it isn't, then another event has been received for the real key. In
-          // that case, don't remove the index since it has already been overwritten.
-          if (latestIndexesForRegion.get(key) == qkey) {
-            Long index = (Long) latestIndexesForRegion.remove(key);
-            if (index != null) {
-              this.getPartitionedRegion().getParallelGatewaySender().getStatistics()
-                  .decConflationIndexesMapSize();
-              if (logger.isDebugEnabled()) {
-                logger.debug("{}: Removed index {} for {}", this, index, object);
+    if (o == null) {
+      entryFound = false;
+    } else {
+      entryFound = true;
+      if (o instanceof Conflatable) {
+        Conflatable object = (Conflatable) o;
+        if (object.shouldBeConflated()) {
+          // Otherwise, remove the index from the indexes map.
+          String rName = object.getRegionToConflate();
+          Object key = object.getKeyToConflate();
+          Map latestIndexesForRegion = (Map) this.indexes.get(rName);
+          if (latestIndexesForRegion != null) {
+            // Remove the index if appropriate. Verify the qKey is actually the one being referenced
+            // in the index. If it isn't, then another event has been received for the real key. In
+            // that case, don't remove the index since it has already been overwritten.
+            if (latestIndexesForRegion.get(key) == qkey) {
+              Long index = (Long) latestIndexesForRegion.remove(key);
+              if (index != null) {
+                this.getPartitionedRegion().getParallelGatewaySender().getStatistics()
+                    .decConflationIndexesMapSize();
+                if (logger.isDebugEnabled()) {
+                  logger.debug("{}: Removed index {} for {}", this, index, object);
+                }
               }
             }
           }
         }
       }
     }
+    return entryFound;
   }
 
   @Override
   public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
       Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
+    boolean indexEntryFound = true;
     if (getPartitionedRegion().isConflationEnabled()) {
-      removeIndex((Long) event.getKey());
+      indexEntryFound = containsKey(event.getKey()) && removeIndex((Long) event.getKey());
     }
     try {
-      super.basicDestroy(event, cacheWrite, expectedOldValue);
+      if (indexEntryFound) {
+        super.basicDestroy(event, cacheWrite, expectedOldValue);
+      } else {
+        throw new EntryNotFoundException(event.getKey().toString());
+      }
     } finally {
       GatewaySenderEventImpl.release(event.getRawOldValue());
     }

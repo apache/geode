@@ -137,6 +137,28 @@ public class JAXBServiceTest {
   }
 
   @Test
+  public void unmarshallPartialElement() {
+    String xml = "<region name=\"one\">\n"
+        + "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
+        + "    </region>";
+
+    RegionConfig config = service2.unMarshall(xml, RegionConfig.class);
+    assertThat(config.getName()).isEqualTo("one");
+  }
+
+  @Test
+  public void unmarshallAnyElement() {
+    String xml = "<region name=\"one\">\n"
+        + "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
+        + "        <custom:any xmlns:custom=\"http://geode.apache.org/schema/custom\" id=\"any\"/>"
+        + "    </region>";
+
+    RegionConfig config = service2.unMarshall(xml, RegionConfig.class);
+    assertThat(config.getName()).isEqualTo("one");
+    assertThat(config.getCustomRegionElements()).hasSize(1);
+  }
+
+  @Test
   public void unmarshallIgnoresUnknownProperties() {
     // say xml has a type attribute that is removed in the new version
     String existingXML = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
@@ -151,6 +173,37 @@ public class JAXBServiceTest {
     CacheConfig cacheConfig = service.unMarshall(existingXML);
     List elements = cacheConfig.getCustomCacheElements();
     assertThat(elements.get(0)).isInstanceOf(ElementOne.class);
+  }
+
+  @Test
+  public void marshalOlderNameSpace() {
+    String xml =
+        "<cache xsi:schemaLocation=\"http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd\"\n"
+            +
+            "       version=\"8.1\"\n" +
+            "       xmlns=\"http://schema.pivotal.io/gemfire/cache\"\n" +
+            "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
+            "    <region name=\"one\">\n" +
+            "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n" +
+            "    </region>\n" +
+            "</cache>";
+
+    CacheConfig cacheConfig = service2.unMarshall(xml);
+    assertThat(cacheConfig.getRegions()).hasSize(1);
+    assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("one");
+  }
+
+  @Test
+  public void marshallNoNameSpace() {
+    String xml = "<cache version=\"1.0\">\n" +
+        "    <region name=\"one\">\n" +
+        "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n" +
+        "    </region>\n" +
+        "</cache>";
+
+    CacheConfig cacheConfig = service2.unMarshall(xml);
+    assertThat(cacheConfig.getRegions()).hasSize(1);
+    assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("one");
   }
 
   public static void setBasicValues(CacheConfig cache) {

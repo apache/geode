@@ -24,6 +24,7 @@ import static org.assertj.core.data.MapEntry.entry;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -53,6 +54,7 @@ import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -68,7 +70,8 @@ public class SecureCacheImplTest {
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class);
+    cache = mock(InternalCacheForClientAccess.class);
+    doReturn(cache).when(cache).getCacheForProcessingClientRequests();
     region = mock(Region.class);
     when(cache.getRegion(REGION)).thenReturn(region);
     security = mock(Security.class);
@@ -80,7 +83,7 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void getAllSuccesses() throws Exception {
+  public void getAllSuccesses() {
     authorize(DATA, READ, REGION, "a");
     authorize(DATA, READ, REGION, "b");
     Map<Object, Object> okValues = new HashMap<>();
@@ -97,7 +100,7 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void getAllWithRegionLevelAuthorizationSucceeds() throws Exception {
+  public void getAllWithRegionLevelAuthorizationSucceeds() {
     authorize(DATA, READ, REGION, ALL);
     Map<Object, Object> okValues = new HashMap<>();
     Map<Object, Exception> exceptionValues = new HashMap<>();
@@ -113,7 +116,7 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void getAllWithFailure() throws Exception {
+  public void getAllWithFailure() {
     authorize(DATA, READ, REGION, "b");
     Map<Object, Object> okValues = new HashMap<>();
     Map<Object, Exception> exceptionValues = new HashMap<>();
@@ -131,7 +134,7 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void getAllIsPostProcessed() throws Exception {
+  public void getAllIsPostProcessed() {
     authorize(DATA, READ, REGION, "a");
     authorize(DATA, READ, REGION, "b");
     when(security.postProcess(any(), any(), any())).thenReturn("spam");
@@ -154,20 +157,20 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void get() throws Exception {
+  public void get() {
     authorize(DATA, READ, REGION, "a");
     when(region.get("a")).thenReturn("value");
     assertEquals("value", authorizingCache.get(REGION, "a"));
   }
 
   @Test
-  public void getWithFailure() throws Exception {
+  public void getWithFailure() {
     assertThatThrownBy(() -> authorizingCache.get(REGION, "a"))
         .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void getIsPostProcessed() throws Exception {
+  public void getIsPostProcessed() {
     authorize(DATA, READ, REGION, "a");
     when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
     when(region.get("a")).thenReturn("value");
@@ -175,20 +178,20 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void put() throws Exception {
+  public void put() {
     authorize(DATA, WRITE, REGION, "a");
     authorizingCache.put(REGION, "a", "value");
     verify(region).put("a", "value");
   }
 
   @Test
-  public void putWithFailure() throws Exception {
+  public void putWithFailure() {
     assertThatThrownBy(() -> authorizingCache.put(REGION, "a", "value"))
         .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void putAll() throws Exception {
+  public void putAll() {
     authorize(DATA, WRITE, REGION, "a");
     authorize(DATA, WRITE, REGION, "c");
     Map<Object, Object> entries = new HashMap<>();
@@ -205,7 +208,7 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void putAllWithRegionLevelAuthorizationSucceeds() throws Exception {
+  public void putAllWithRegionLevelAuthorizationSucceeds() {
     authorize(DATA, WRITE, REGION, ALL);
     Map<Object, Object> entries = new HashMap<>();
     entries.put("a", "b");
@@ -221,7 +224,7 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void putAllWithFailure() throws Exception {
+  public void putAllWithFailure() {
     authorize(DATA, WRITE, REGION, "a");
     Map<Object, Object> entries = new HashMap<>();
     entries.put("a", "b");
@@ -239,20 +242,20 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void remove() throws Exception {
+  public void remove() {
     authorize(DATA, WRITE, REGION, "a");
     authorizingCache.remove(REGION, "a");
     verify(region).remove("a");
   }
 
   @Test
-  public void removeWithoutAuthorization() throws Exception {
+  public void removeWithoutAuthorization() {
     assertThatThrownBy(() -> authorizingCache.remove(REGION, "a"))
         .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void removeIsPostProcessed() throws Exception {
+  public void removeIsPostProcessed() {
     authorize(DATA, WRITE, REGION, "a");
     when(region.remove("a")).thenReturn("value");
     when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
@@ -262,7 +265,7 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void getRegionNames() throws Exception {
+  public void getRegionNames() {
     authorize(DATA, READ, ALL, ALL);
     Set<Region<?, ?>> regions = new HashSet<>();
     regions.add(region);
@@ -284,59 +287,59 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void getRegionNamesWithoutAuthorization() throws Exception {
+  public void getRegionNamesWithoutAuthorization() {
     assertThatThrownBy(() -> authorizingCache.getRegionNames())
         .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void getSize() throws Exception {
+  public void getSize() {
     authorize(DATA, READ, REGION, ALL);
     authorizingCache.getSize(REGION);
     verify(region).size();
   }
 
   @Test
-  public void getSizeWithoutAuthorization() throws Exception {
+  public void getSizeWithoutAuthorization() {
     assertThatThrownBy(() -> authorizingCache.getSize(REGION))
         .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void keySet() throws Exception {
+  public void keySet() {
     authorize(DATA, READ, REGION, ALL);
     authorizingCache.keySet(REGION);
     verify(region).keySet();
   }
 
   @Test
-  public void keySetWithoutAuthorization() throws Exception {
+  public void keySetWithoutAuthorization() {
     assertThatThrownBy(() -> authorizingCache.keySet(REGION))
         .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void clear() throws Exception {
+  public void clear() {
     authorize(DATA, WRITE, REGION, ALL);
     authorizingCache.clear(REGION);
     verify(region).clear();
   }
 
   @Test
-  public void clearWithoutAuthorization() throws Exception {
+  public void clearWithoutAuthorization() {
     assertThatThrownBy(() -> authorizingCache.clear(REGION))
         .isInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  public void putIfAbsent() throws Exception {
+  public void putIfAbsent() {
     authorize(DATA, WRITE, REGION, "a");
     String oldValue = authorizingCache.putIfAbsent(REGION, "a", "b");
     verify(region).putIfAbsent("a", "b");
   }
 
   @Test
-  public void putIfAbsentIsPostProcessed() throws Exception {
+  public void putIfAbsentIsPostProcessed() {
     authorize(DATA, WRITE, REGION, "a");
     when(region.putIfAbsent(any(), any())).thenReturn("value");
     when(security.postProcess(REGION, "a", "value")).thenReturn("spam");
@@ -346,7 +349,7 @@ public class SecureCacheImplTest {
   }
 
   @Test
-  public void putIfAbsentWithoutAuthorization() throws Exception {
+  public void putIfAbsentWithoutAuthorization() {
     assertThatThrownBy(() -> authorizingCache.putIfAbsent(REGION, "a", "b"))
         .isInstanceOf(NotAuthorizedException.class);
   }

@@ -62,6 +62,7 @@ import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.JSONFormatterException;
@@ -109,8 +110,8 @@ public abstract class AbstractBaseController implements InitializingBean {
     JSONUtils.setObjectMapper(objectMapper);
   }
 
-  protected InternalCache getCache() {
-    InternalCache cache = cacheProvider.getInternalCache();
+  protected InternalCacheForClientAccess getCache() {
+    InternalCacheForClientAccess cache = cacheProvider.getCache();
     Assert.state(cache != null, "The Gemfire Cache reference was not properly initialized");
     return cache;
   }
@@ -402,8 +403,8 @@ public abstract class AbstractBaseController implements InitializingBean {
   }
 
   Region<String, String> getQueryStore(final String namePath) {
-    return ValidationUtils.returnValueThrowOnNull(getCache().<String, String>getRegion(namePath),
-        new GemfireRestException(String.format("Query store does not exist!", namePath)));
+    return ValidationUtils.returnValueThrowOnNull(getCache().getInternalRegion(namePath),
+        new GemfireRestException(String.format("Query store (%1$s) does not exist!", namePath)));
   }
 
   protected String getQueryIdValue(final String regionNamePath, final String key) {
@@ -703,9 +704,6 @@ public abstract class AbstractBaseController implements InitializingBean {
                 "Server has encountered error (illegal or inappropriate arguments).", e);
           }
         } else {
-
-          Assert.state(typeValue != null,
-              "The class type of the object to persist in GemFire must be specified in JSON content using the '@type' property!");
           Assert.state(
               ClassUtils.isPresent(String.valueOf(typeValue),
                   Thread.currentThread().getContextClassLoader()),

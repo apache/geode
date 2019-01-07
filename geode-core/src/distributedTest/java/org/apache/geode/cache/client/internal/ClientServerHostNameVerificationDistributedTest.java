@@ -40,19 +40,12 @@ import org.apache.geode.cache.ssl.TestSSLUtils.CertificateBuilder;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class ClientServerHostNameVerificationDistributedTest {
-  private static MemberVM locator;
-  private static MemberVM locator2;
-  private static MemberVM server;
-  private static MemberVM server2;
-  private static ClientVM client;
-
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
@@ -96,6 +89,7 @@ public class ClientServerHostNameVerificationDistributedTest {
 
   @Test
   public void expectConnectionFailureWhenNoHostNameInLocatorKey() throws Exception {
+
     CertificateBuilder locatorCertificate = new CertificateBuilder()
         .commonName("locator");
 
@@ -112,6 +106,7 @@ public class ClientServerHostNameVerificationDistributedTest {
 
   @Test
   public void expectConnectionFailureWhenWrongHostNameInLocatorKey() throws Exception {
+
     CertificateBuilder locatorCertificate = new CertificateBuilder()
         .commonName("locator")
         .sanDnsName("example.com");;
@@ -151,7 +146,8 @@ public class ClientServerHostNameVerificationDistributedTest {
   private void validateClientConnection(CertificateBuilder locatorCertificate,
       CertificateBuilder serverCertificate, CertificateBuilder clientCertificate,
       boolean enableHostNameVerficiationForLocator, boolean enableHostNameVerificationForServer,
-      boolean enableHostNameVerificationForClient, Class expectedExceptionOnClient)
+      boolean enableHostNameVerificationForClient,
+      Class<? extends Throwable> expectedExceptionOnClient)
       throws GeneralSecurityException, IOException {
     CertStores locatorStore = CertStores.locatorStore();
     locatorStore.withCertificate(locatorCertificate);
@@ -180,10 +176,10 @@ public class ClientServerHostNameVerificationDistributedTest {
         .propertiesWith(ALL, true, enableHostNameVerificationForClient);
 
     // create a cluster
-    locator = cluster.startLocatorVM(0, locatorSSLProps);
-    locator2 = cluster.startLocatorVM(1, locatorSSLProps, locator.getPort());
-    server = cluster.startServerVM(2, serverSSLProps, locator.getPort());
-    server2 = cluster.startServerVM(3, serverSSLProps, locator.getPort());
+    MemberVM locator = cluster.startLocatorVM(0, locatorSSLProps);
+    MemberVM locator2 = cluster.startLocatorVM(1, locatorSSLProps, locator.getPort());
+    MemberVM server = cluster.startServerVM(2, serverSSLProps, locator.getPort());
+    MemberVM server2 = cluster.startServerVM(3, serverSSLProps, locator.getPort());
 
     // create region
     server.invoke(ClientServerHostNameVerificationDistributedTest::createServerRegion);
@@ -198,35 +194,35 @@ public class ClientServerHostNameVerificationDistributedTest {
     clientCacheFactory.setPoolSubscriptionEnabled(true)
         .addPoolLocator(locatorHost, locatorPort);
 
-    ClientCache clientCache = clientCacheFactory.create();
+    // close clientCache when done to stop retries between closing suspect log buffer and closing
+    // cache
+    try (ClientCache clientCache = clientCacheFactory.create()) {
 
-    ClientRegionFactory<String, String> regionFactory =
-        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+      ClientRegionFactory<String, String> regionFactory =
+          clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
 
-    if (expectedExceptionOnClient != null) {
-      IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
-      IgnoredException.addIgnoredException("java.net.SocketException");
-      IgnoredException.addIgnoredException("java.security.cert.CertificateException");
+      IgnoredException.addIgnoredException("Connection reset");
+      IgnoredException.addIgnoredException("java.io.IOException");
+      if (expectedExceptionOnClient != null) {
+        IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
+        IgnoredException.addIgnoredException("java.net.SocketException");
+        IgnoredException.addIgnoredException("java.security.cert.CertificateException");
+        IgnoredException.addIgnoredException("java.net.ssl.SSLProtocolException");
 
-      Region<String, String> clientRegion = regionFactory.create("region");
-      assertThatExceptionOfType(expectedExceptionOnClient)
-          .isThrownBy(() -> clientRegion.put("1", "1"));
+        Region<String, String> clientRegion = regionFactory.create("region");
+        assertThatExceptionOfType(expectedExceptionOnClient)
+            .isThrownBy(() -> clientRegion.put("1", "1"));
+      } else {
+        // test client can read and write to server
+        Region<String, String> clientRegion = regionFactory.create("region");
+        assertThat("servervalue").isEqualTo(clientRegion.get("serverkey"));
+        clientRegion.put("clientkey", "clientvalue");
 
-      // Close the client cache so the pool does not retry, CSRule tearDown
-      // closes cache which eventually close pool. But pool can keep
-      // retrying and fill logs between closing suspect log buffer
-      // and closing cache
-      clientCache.close();
-      IgnoredException.removeAllExpectedExceptions();
-    } else {
-      // test client can read and write to server
-      Region<String, String> clientRegion = regionFactory.create("region");
-      assertThat("servervalue").isEqualTo(clientRegion.get("serverkey"));
-      clientRegion.put("clientkey", "clientvalue");
-
-      // test server can see data written by client
-      server.invoke(ClientServerHostNameVerificationDistributedTest::doServerRegionTest);
+        // test server can see data written by client
+        server.invoke(ClientServerHostNameVerificationDistributedTest::doServerRegionTest);
+      }
+    } finally {
+      SocketCreatorFactory.close();
     }
-    SocketCreatorFactory.close();
   }
 }

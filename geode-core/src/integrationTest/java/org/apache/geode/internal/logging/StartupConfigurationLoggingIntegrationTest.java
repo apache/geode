@@ -41,7 +41,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.Banner;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -77,7 +76,7 @@ public class StartupConfigurationLoggingIntegrationTest {
 
     system = (InternalDistributedSystem) DistributedSystem.connect(config);
 
-    banner = Banner.getString(null);
+    banner = new Banner().getString();
 
     DistributionConfig distributionConfig = system.getConfig();
     startupConfiguration = StringUtils

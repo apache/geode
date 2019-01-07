@@ -15,6 +15,7 @@
 package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +39,7 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.execute.util.FindRestEnabledServersFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.rest.internal.web.controllers.support.RestServersResultCollector;
@@ -73,7 +75,10 @@ public abstract class CommonCrudController extends AbstractBaseController {
     logger.debug("Listing all resources (Regions) in Geode...");
     final HttpHeaders headers = new HttpHeaders();
     headers.setLocation(toUri());
-    final Set<Region<?, ?>> regions = getCache().rootRegions();
+    final Set<Region<?, ?>> regions = new HashSet<>();
+    for (InternalRegion region : getCache().getApplicationRegions()) {
+      regions.add(region);
+    }
     String listRegionsAsJson = JSONUtils.formulateJsonForListRegions(regions, "regions");
     return new ResponseEntity<>(listRegionsAsJson, headers, HttpStatus.OK);
   }

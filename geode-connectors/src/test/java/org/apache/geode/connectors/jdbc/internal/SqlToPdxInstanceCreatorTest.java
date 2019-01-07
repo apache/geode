@@ -30,6 +30,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Arrays;
 import java.util.Date;
 
 import junitparams.JUnitParamsRunner;
@@ -75,7 +76,7 @@ public class SqlToPdxInstanceCreatorTest {
     regionMapping = mock(RegionMapping.class);
     resultSet = mock(ResultSet.class);
     tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getKeyColumnName()).thenReturn(KEY_COLUMN);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN));
   }
 
   @Test
@@ -109,7 +110,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_2), any()))
         .thenReturn(PDX_FIELD_NAME_2);
     tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getKeyColumnName()).thenReturn(COLUMN_NAME_1);
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(COLUMN_NAME_1));
     TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
     when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
     String pdxClassName = "myPdxClassName";

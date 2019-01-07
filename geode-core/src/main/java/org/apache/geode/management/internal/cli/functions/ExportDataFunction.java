@@ -22,8 +22,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /***
@@ -32,10 +33,10 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  *
  *
  */
-public class ExportDataFunction implements InternalFunction {
+public class ExportDataFunction extends CliFunction {
   private static final long serialVersionUID = 1L;
 
-  public void execute(FunctionContext context) {
+  public CliFunctionResult executeFunction(FunctionContext context) throws Exception {
     final String[] args = (String[]) context.getArguments();
     if (args.length < 3) {
       throw new IllegalStateException(
@@ -44,31 +45,31 @@ public class ExportDataFunction implements InternalFunction {
     final String regionName = args[0];
     final String fileName = args[1];
     final boolean parallel = Boolean.parseBoolean(args[2]);
+    CliFunctionResult result;
 
-    try {
-      Cache cache = context.getCache();
-      Region<?, ?> region = cache.getRegion(regionName);
-      String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
-      if (region != null) {
-        RegionSnapshotService<?, ?> snapshotService = region.getSnapshotService();
-        final File exportFile = new File(fileName);
-        if (parallel) {
-          SnapshotOptions options = new SnapshotOptionsImpl<>().setParallelMode(true);
-          snapshotService.save(exportFile, SnapshotFormat.GEMFIRE, options);
-        } else {
-          snapshotService.save(exportFile, SnapshotFormat.GEMFIRE);
-        }
-        String successMessage = CliStrings.format(CliStrings.EXPORT_DATA__SUCCESS__MESSAGE,
-            regionName, exportFile.getCanonicalPath(), hostName);
-        context.getResultSender().lastResult(successMessage);
+    Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
+    Region<?, ?> region = cache.getRegion(regionName);
+    String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
+    if (region != null) {
+      RegionSnapshotService<?, ?> snapshotService = region.getSnapshotService();
+      final File exportFile = new File(fileName);
+      if (parallel) {
+        SnapshotOptions options = new SnapshotOptionsImpl<>().setParallelMode(true);
+        snapshotService.save(exportFile, SnapshotFormat.GEMFIRE, options);
       } else {
-        throw new IllegalArgumentException(
-            CliStrings.format(CliStrings.REGION_NOT_FOUND, regionName));
+        snapshotService.save(exportFile, SnapshotFormat.GEMFIRE);
       }
 
-    } catch (Exception e) {
-      context.getResultSender().sendException(e);
+      String successMessage = CliStrings.format(CliStrings.EXPORT_DATA__SUCCESS__MESSAGE,
+          regionName, exportFile.getCanonicalPath(), hostName);
+      result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          successMessage);
+    } else {
+      result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          CliStrings.format(CliStrings.REGION_NOT_FOUND, regionName));
     }
+
+    return result;
   }
 
   public String getId() {

@@ -15,7 +15,11 @@
  * limitations under the License.
  */
 
+apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/publish.gradle"
+
+
 dependencies {
-  testCompile('junit:junit:' + project.'junit.version')
-  testCompile('org.assertj:assertj-core:' + project.'assertj-core.version')
+  testCompile('junit:junit')
+  testCompile('org.assertj:assertj-core')
 }

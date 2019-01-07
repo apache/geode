@@ -26,9 +26,9 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class GatewaySenderCreateFunction implements InternalFunction {
@@ -144,62 +144,25 @@ public class GatewaySenderCreateFunction implements InternalFunction {
     if (gatewayEventFilters != null) {
       for (String gatewayEventFilter : gatewayEventFilters) {
         Class gatewayEventFilterKlass =
-            forName(gatewayEventFilter, CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER);
-        gateway.addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass,
-            CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER));
+            CliUtil.forName(gatewayEventFilter,
+                CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER);
+        gateway.addGatewayEventFilter(
+            (GatewayEventFilter) CliUtil.newInstance(gatewayEventFilterKlass,
+                CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER));
       }
     }
 
     List<String> gatewayTransportFilters = gatewaySenderCreateArgs.getGatewayTransportFilter();
     if (gatewayTransportFilters != null) {
       for (String gatewayTransportFilter : gatewayTransportFilters) {
-        Class gatewayTransportFilterKlass = forName(gatewayTransportFilter,
+        Class gatewayTransportFilterKlass = CliUtil.forName(gatewayTransportFilter,
             CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER);
-        gateway.addGatewayTransportFilter((GatewayTransportFilter) newInstance(
+        gateway.addGatewayTransportFilter((GatewayTransportFilter) CliUtil.newInstance(
             gatewayTransportFilterKlass, CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER));
       }
     }
     return gateway.create(gatewaySenderCreateArgs.getId(),
         gatewaySenderCreateArgs.getRemoteDistributedSystemId());
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Class forName(String classToLoadName, String neededFor) {
-    Class loadedClass = null;
-    try {
-      // Set Constraints
-      ClassPathLoader classPathLoader = ClassPathLoader.getLatest();
-      if (classToLoadName != null && !classToLoadName.isEmpty()) {
-        loadedClass = classPathLoader.forName(classToLoadName);
-      }
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-              classToLoadName, neededFor),
-          e);
-    } catch (ClassCastException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
-          classToLoadName, neededFor), e);
-    }
-
-    return loadedClass;
-  }
-
-  private static Object newInstance(Class klass, String neededFor) {
-    Object instance = null;
-    try {
-      instance = klass.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_GATEWAYSENDER__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
-          klass, neededFor), e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_GATEWAYSENDER__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, klass,
-          neededFor), e);
-    }
-    return instance;
   }
 
   @Override

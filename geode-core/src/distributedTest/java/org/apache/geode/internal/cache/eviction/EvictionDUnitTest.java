@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,12 +85,13 @@ public class EvictionDUnitTest {
     if (offHeap) {
       properties.setProperty(OFF_HEAP_MEMORY_SIZE, "200m");
     }
+
     server0 = cluster.startServerVM(0, s -> s.withNoCacheServer()
         .withProperties(properties).withConnectionToLocator(locatorPort));
     server1 = cluster.startServerVM(1, s -> s.withNoCacheServer()
         .withProperties(properties).withConnectionToLocator(locatorPort));
 
-    VMProvider.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember("setup VM", () -> {
       HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
       System.setProperty("gemfire.memoryEventTolerance", "0");
       InternalCache cache = ClusterStartupRule.getCache();
@@ -102,9 +104,17 @@ public class EvictionDUnitTest {
     }, server0, server1);
   }
 
+  @After
+  public void tearDown() throws Exception {
+    // this test is asserting on the expected number of evictions depending on the current memory
+    // usage, so we need to make sure each test start with clean memory usage to reduce flakiness
+    server0.getVM().bounce();
+    server1.getVM().bounce();
+  }
+
   @Test
   public void testDummyInlineNCentralizedEviction() {
-    VMProvider.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember("create region", () -> {
       ServerStarterRule server = (ServerStarterRule) ClusterStartupRule.memberStarter;
       server.createPartitionRegion("PR1",
           f -> f.setOffHeap(offHeap).setEvictionAttributes(
@@ -113,7 +123,7 @@ public class EvictionDUnitTest {
 
     }, server0, server1);
 
-    server0.invoke(() -> {
+    server0.invoke("put data", () -> {
       Region region = ClusterStartupRule.getCache().getRegion("PR1");
       for (int counter = 1; counter <= 50; counter++) {
         region.put(counter, new byte[ENTRY_SIZE]);
@@ -124,7 +134,7 @@ public class EvictionDUnitTest {
     int server1ExpectedEviction = server1.invoke(() -> sendEventAndWaitForExpectedEviction("PR1"));
 
     // do 4 puts again in PR1
-    server0.invoke(() -> {
+    server0.invoke("put more data", () -> {
       Region region = ClusterStartupRule.getCache().getRegion("PR1");
       for (int counter = 1; counter <= 4; counter++) {
         region.put(counter, new byte[ENTRY_SIZE]);

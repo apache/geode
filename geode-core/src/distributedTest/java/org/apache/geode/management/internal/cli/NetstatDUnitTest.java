@@ -15,7 +15,9 @@
 
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.JavaVersion;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -76,6 +79,9 @@ public class NetstatDUnitTest {
     CommandResult result = gfsh.executeCommand("netstat");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
+    // verify that the OS commands executed
+    assertThat(result.toString()).doesNotContain("Could not execute");
+
     String rawOutput = result.getMessageFromContent();
     String[] lines = rawOutput.split("\n");
 
@@ -89,6 +95,9 @@ public class NetstatDUnitTest {
     CommandResult result = gfsh.executeCommand("netstat --member=server-1");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
+    // verify that the OS commands executed
+    assertThat(result.toString()).doesNotContain("Could not execute");
+
     String rawOutput = result.getMessageFromContent();
     String[] lines = rawOutput.split("\n");
 
@@ -96,10 +105,14 @@ public class NetstatDUnitTest {
     assertThat(lines[4].trim().split("[,\\s]+")).containsExactlyInAnyOrder("server-1");
   }
 
+  @Ignore("GEODE-6228")
   @Test
   public void testOutputToConsoleWithLsofForOneMember() throws Exception {
     CommandResult result = gfsh.executeCommand("netstat --member=server-1 --with-lsof");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    // verify that the OS commands executed
+    assertThat(result.toString()).doesNotContain("Could not execute");
 
     String rawOutput = result.getMessageFromContent();
     String[] lines = rawOutput.split("\n");
@@ -122,6 +135,9 @@ public class NetstatDUnitTest {
       lines.add(scanner.nextLine());
     }
 
+    // verify that the OS commands executed
+    assertThat(lines.toString()).doesNotContain("Could not execute");
+
     assertThat(lines.size()).isGreaterThan(5);
     assertThat(lines.get(4).trim().split("[,\\s]+")).containsExactlyInAnyOrder("locator-0",
         "server-1", "server-2");
@@ -141,12 +157,20 @@ public class NetstatDUnitTest {
       lines.add(scanner.nextLine());
     }
 
+    // verify that the OS commands executed
+    assertThat(lines.toString()).doesNotContain("Could not execute");
+
     assertThat(lines.size()).isGreaterThan(5);
     assertThat(lines.get(4).trim().split("[,\\s]+")).containsExactly("server-1");
   }
 
+  // This test runs OK on JDK11 but takes a very long time on JDK8
   @Test
   public void testOutputWithLsofToFile() throws Exception {
+    // Skipping test on JDK8. Running lsof command takes an excessive amount of time on Java 8
+    assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_11))
+        .as("Skipping test due to excessive run time when running lsof on JDK 8").isTrue();
+
     File outputFile = new File(temp.newFolder(), "command.log.txt");
 
     CommandResult result =
@@ -159,30 +183,37 @@ public class NetstatDUnitTest {
       lines.add(scanner.nextLine());
     }
 
+    // verify that the OS commands executed
+    assertThat(lines.toString()).doesNotContain("Could not execute");
+
     assertThat(lines.size()).isGreaterThan(5);
     assertThat(lines.get(4).trim().split("[,\\s]+")).containsExactlyInAnyOrder("locator-0",
         "server-1", "server-2");
     assertThat(lines).filteredOn(e -> e.contains("## lsof output ##")).hasSize(1);
   }
 
-  @Ignore("GEODE-2488")
+  @Ignore("GEODE-6228")
   @Test
   public void testConnectToLocatorWithLargeCommandResponse() throws Exception {
     gfsh.connect(server0.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
-    gfsh.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
+    gfsh.executeAndAssertThat(netStatLsofCommand).statusIsSuccess()
+        .doesNotContainOutput("Could not execute");
   }
 
-  @Ignore("GEODE-2488")
+  @Ignore("GEODE-6228")
   @Test
   public void testConnectToJmxManagerOneWithLargeCommandResponse() throws Exception {
     gfsh.connect(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-    gfsh.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
+    gfsh.executeAndAssertThat(netStatLsofCommand).statusIsSuccess()
+        .doesNotContainOutput("Could not execute");
+
   }
 
-  @Ignore("GEODE-2488")
+  @Ignore("GEODE-6228")
   @Test
   public void testConnectToJmxManagerTwoWithLargeCommandResponse() throws Exception {
     gfsh.connect(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-    gfsh.executeAndAssertThat(netStatLsofCommand).statusIsSuccess();
+    gfsh.executeAndAssertThat(netStatLsofCommand).statusIsSuccess()
+        .doesNotContainOutput("Could not execute");
   }
 }

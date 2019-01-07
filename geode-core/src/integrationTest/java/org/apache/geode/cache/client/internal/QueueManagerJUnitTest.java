@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.logging.LogWriterLevel.FINEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -53,7 +54,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -78,7 +78,7 @@ public class QueueManagerJUnitTest {
 
   @Before
   public void setUp() {
-    this.logger = new LocalLogWriter(InternalLogWriter.FINEST_LEVEL, System.out);
+    this.logger = new LocalLogWriter(FINEST.intLevel(), System.out);
     Properties properties = new Properties();
     properties.put(MCAST_PORT, "0");
     properties.put(LOCATORS, "");

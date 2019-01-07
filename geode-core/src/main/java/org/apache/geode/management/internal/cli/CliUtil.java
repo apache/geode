@@ -443,12 +443,12 @@ public class CliUtil {
       }
     } catch (ClassNotFoundException | NoClassDefFoundError e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+          CliStrings.format(CliStrings.ERROR__MSG__COULD_NOT_FIND_CLASS_0_SPECIFIED_FOR_1,
               classToLoadName, neededFor),
           e);
     } catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_REGION__MSG__CLASS_SPECIFIED_FOR_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
+          CliStrings.ERROR__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
           classToLoadName, neededFor), e);
     }
 
@@ -461,11 +461,11 @@ public class CliUtil {
       instance = klass.newInstance();
     } catch (InstantiationException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_REGION__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, klass,
+          CliStrings.ERROR__MSG__COULD_NOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, klass,
           neededFor), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(
-          CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
+          CliStrings.format(CliStrings.ERROR__MSG__COULD_NOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
               klass, neededFor),
           e);
     }

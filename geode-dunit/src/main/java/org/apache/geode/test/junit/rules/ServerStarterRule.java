@@ -22,11 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
@@ -161,36 +158,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     this.autoStart = true;
     regions.put(name, type);
     return this;
-  }
-
-  /**
-   * convenience method to create a region with customized regionFactory
-   *
-   * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
-   */
-  public Region createRegion(RegionShortcut type, String name,
-      Consumer<RegionFactory> regionFactoryConsumer) {
-    RegionFactory regionFactory = getCache().createRegionFactory(type);
-    regionFactoryConsumer.accept(regionFactory);
-    return regionFactory.create(name);
-  }
-
-  /**
-   * convenience method to create a partition region with customized regionFactory and a customized
-   * PartitionAttributeFactory
-   *
-   * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
-   * @param attributesFactoryConsumer a lamda that allows you to customize the
-   *        partitionAttributeFactory
-   */
-  public Region createPartitionRegion(String name, Consumer<RegionFactory> regionFactoryConsumer,
-      Consumer<PartitionAttributesFactory> attributesFactoryConsumer) {
-    return createRegion(RegionShortcut.PARTITION, name, rf -> {
-      regionFactoryConsumer.accept(rf);
-      PartitionAttributesFactory attributeFactory = new PartitionAttributesFactory();
-      attributesFactoryConsumer.accept(attributeFactory);
-      rf.setPartitionAttributes(attributeFactory.create());
-    });
   }
 
   public void startServer(Properties properties, int locatorPort) {

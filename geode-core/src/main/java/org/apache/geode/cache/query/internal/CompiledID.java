@@ -61,7 +61,10 @@ public class CompiledID extends AbstractCompiledValue {
     return _id;
   }
 
-
+  @Override
+  public boolean hasIdentifierAtLeafNode() {
+    return true;
+  }
 
   public int getType() {
     return Identifier;

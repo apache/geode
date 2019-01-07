@@ -15,7 +15,6 @@
 package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -27,11 +26,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-
-import javax.net.ssl.SSLException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -50,7 +44,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
@@ -89,7 +82,18 @@ public class TCPConduit implements Runnable {
   private static int LISTENER_CLOSE_TIMEOUT;
 
   /**
-   * backlog is the "accept" backlog configuration parameter all conduits server socket
+   * BACKLOG is the "accept" backlog configuration parameter for the conduits server socket.
+   * In most operating systems this is limited to 128 by default and you must change
+   * the OS setting somaxconn to go beyond that limit. Note that setting this too high
+   * can have ramifications when disconnecting from the distributed system if a thread
+   * is trying to connect to another member that is not accepting connections quickly
+   * enough. Setting it too low can also have adverse effects because backlog overflows
+   * aren't handled well by most tcp/ip implementations, causing connect timeouts instead
+   * of expected ServerRefusedConnection exceptions.
+   * <p>
+   * Normally the backlog isn't that important because if it's full of connection requests
+   * a SYN "cookie" mechanism is used to bypass the backlog queue. If this is turned off
+   * though connection requests are dropped when the queue is full.
    */
   private static int BACKLOG;
 
@@ -99,29 +103,12 @@ public class TCPConduit implements Runnable {
   static boolean useSSL;
 
   /**
-   * Force use of Sockets rather than SocketChannels (NIO). Note from Bruce: due to a bug in the
-   * java VM, NIO cannot be used with IPv6 addresses on Windows. When that condition holds, the
-   * useNIO flag must be disregarded.
-   */
-  private static boolean USE_NIO;
-
-  /**
-   * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
-   */
-  static boolean useDirectBuffers;
-
-  /**
    * The socket producer used by the cluster
    */
   private final SocketCreator socketCreator;
 
 
   private MembershipManager membershipManager;
-
-  /**
-   * true if NIO can be used for the server socket
-   */
-  private boolean useNIO;
 
   static {
     init();
@@ -137,13 +124,13 @@ public class TCPConduit implements Runnable {
 
   public static void init() {
     useSSL = Boolean.getBoolean("p2p.useSSL");
-    // only use nio if not SSL
-    USE_NIO = !useSSL && !Boolean.getBoolean("p2p.oldIO");
     // only use direct buffers if we are using nio
-    useDirectBuffers = USE_NIO && !Boolean.getBoolean("p2p.nodirectBuffers");
-    LISTENER_CLOSE_TIMEOUT = Integer.getInteger("p2p.listenerCloseTimeout", 60000).intValue();
-    // fix for bug 37730
-    BACKLOG = Integer.getInteger("p2p.backlog", HANDSHAKE_POOL_SIZE + 1).intValue();
+    LISTENER_CLOSE_TIMEOUT = Integer.getInteger("p2p.listenerCloseTimeout", 60000);
+    // note: bug 37730 concerned this defaulting to 50
+    BACKLOG = Integer.getInteger("p2p.backlog", 1280);
+    if (Boolean.getBoolean("p2p.oldIO")) {
+      logger.warn("detected use of p2p.oldIO setting - this is no longer supported");
+    }
   }
 
   ///////////////// permanent conduit state
@@ -151,8 +138,8 @@ public class TCPConduit implements Runnable {
   /**
    * the size of OS TCP/IP buffers, not set by default
    */
-  public int tcpBufferSize = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
-  public int idleConnectionTimeout = DistributionConfig.DEFAULT_SOCKET_LEASE_TIME;
+  int tcpBufferSize = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+  int idleConnectionTimeout = DistributionConfig.DEFAULT_SOCKET_LEASE_TIME;
 
   /**
    * port is the tcp/ip port that this conduit binds to. If it is zero, a port from
@@ -267,24 +254,12 @@ public class TCPConduit implements Runnable {
     this.socketCreator =
         SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
 
-    this.useNIO = USE_NIO;
-    if (this.useNIO) {
-      InetAddress addr = address;
-      if (addr == null) {
-        try {
-          addr = SocketCreator.getLocalHost();
-        } catch (java.net.UnknownHostException e) {
-          throw new ConnectionException("Unable to resolve localHost address", e);
-        }
-      }
-      // JDK bug 6230761 - NIO can't be used with IPv6 on Windows
-      if (addr instanceof Inet6Address) {
-        String os = System.getProperty("os.name");
-        if (os != null) {
-          if (os.indexOf("Windows") != -1) {
-            this.useNIO = false;
-          }
-        }
+    InetAddress addr = address;
+    if (addr == null) {
+      try {
+        addr = SocketCreator.getLocalHost();
+      } catch (java.net.UnknownHostException e) {
+        throw new ConnectionException("Unable to resolve localHost address", e);
       }
     }
 
@@ -334,29 +309,10 @@ public class TCPConduit implements Runnable {
     }
   }
 
-  private ExecutorService hsPool;
-
   /**
    * the reason for a shutdown, if abnormal
    */
   private volatile Exception shutdownCause;
-
-  private static final int HANDSHAKE_POOL_SIZE =
-      Integer.getInteger("p2p.HANDSHAKE_POOL_SIZE", 10).intValue();
-  private static final long HANDSHAKE_POOL_KEEP_ALIVE_TIME =
-      Long.getLong("p2p.HANDSHAKE_POOL_KEEP_ALIVE_TIME", 60).longValue();
-
-  /**
-   * added to fix bug 40436
-   */
-  public void setMaximumHandshakePoolSize(int maxSize) {
-    if (this.hsPool != null) {
-      ThreadPoolExecutor handshakePool = (ThreadPoolExecutor) this.hsPool;
-      if (maxSize > handshakePool.getMaximumPoolSize()) {
-        handshakePool.setMaximumPoolSize(maxSize);
-      }
-    }
-  }
 
   /**
    * binds the server socket and gets threads going
@@ -364,23 +320,9 @@ public class TCPConduit implements Runnable {
   private void startAcceptor() throws ConnectionException {
     int localPort;
     int p = this.port;
-    InetAddress ba = this.address;
 
-    {
-      ExecutorService tmp_hsPool = null;
-      String threadName = "P2P-Handshaker " + ba + ":" + p + " Thread ";
-      try {
-        tmp_hsPool =
-            LoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(threadName, null,
-                null, 1, HANDSHAKE_POOL_SIZE, HANDSHAKE_POOL_KEEP_ALIVE_TIME);
-      } catch (IllegalArgumentException poolInitException) {
-        throw new ConnectionException(
-            "while creating handshake pool",
-            poolInitException);
-      }
-      this.hsPool = tmp_hsPool;
-    }
     createServerSocket();
+
     try {
       localPort = socket.getLocalPort();
 
@@ -398,7 +340,6 @@ public class TCPConduit implements Runnable {
         logger.fatal(
             "p2p.test.inhibitAcceptor was found to be set, inhibiting incoming tcp/ip connections");
         socket.close();
-        this.hsPool.shutdownNow();
       }
     } catch (IOException io) {
       String s = "While creating ServerSocket on port " + p;
@@ -412,68 +353,45 @@ public class TCPConduit implements Runnable {
    * this.bindAddress, which must be set before invoking this method.
    */
   private void createServerSocket() {
-    int p = this.port;
-    int b = BACKLOG;
+    int serverPort = this.port;
+    int connectionRequestBacklog = BACKLOG;
     InetAddress bindAddress = this.address;
 
     try {
-      if (this.useNIO) {
-        if (p <= 0) {
+      if (serverPort <= 0) {
 
-          socket = socketCreator.createServerSocketUsingPortRange(bindAddress, b, isBindAddress,
-              this.useNIO, 0, tcpPortRange);
-        } else {
-          ServerSocketChannel channel = ServerSocketChannel.open();
-          socket = channel.socket();
-
-          InetSocketAddress inetSocketAddress =
-              new InetSocketAddress(isBindAddress ? bindAddress : null, p);
-          socket.bind(inetSocketAddress, b);
-        }
-
-        if (useNIO) {
-          try {
-            // set these buffers early so that large buffers will be allocated
-            // on accepted sockets (see java.net.ServerSocket.setReceiverBufferSize javadocs)
-            socket.setReceiveBufferSize(tcpBufferSize);
-            int newSize = socket.getReceiveBufferSize();
-            if (newSize != tcpBufferSize) {
-              logger.info("{} is {} instead of the requested {}",
-                  "Listener receiverBufferSize", Integer.valueOf(newSize),
-                  Integer.valueOf(tcpBufferSize));
-            }
-          } catch (SocketException ex) {
-            logger.warn("Failed to set listener receiverBufferSize to {}",
-                tcpBufferSize);
-          }
-        }
-        channel = socket.getChannel();
+        socket = socketCreator.createServerSocketUsingPortRange(bindAddress,
+            connectionRequestBacklog, isBindAddress,
+            true, 0, tcpPortRange);
       } else {
-        try {
-          if (p <= 0) {
-            socket = socketCreator.createServerSocketUsingPortRange(bindAddress, b, isBindAddress,
-                this.useNIO, this.tcpBufferSize, tcpPortRange);
-          } else {
-            socket = socketCreator.createServerSocket(p, b, isBindAddress ? bindAddress : null,
-                this.tcpBufferSize);
-          }
-          int newSize = socket.getReceiveBufferSize();
-          if (newSize != this.tcpBufferSize) {
-            logger.info("Listener receiverBufferSize is {} instead of the requested {}",
-                Integer.valueOf(newSize),
-                Integer.valueOf(this.tcpBufferSize));
-          }
-        } catch (SocketException ex) {
-          logger.warn("Failed to set listener receiverBufferSize to {}",
-              this.tcpBufferSize);
+        ServerSocketChannel channel = ServerSocketChannel.open();
+        socket = channel.socket();
 
-        }
+        InetSocketAddress inetSocketAddress =
+            new InetSocketAddress(isBindAddress ? bindAddress : null, serverPort);
+        socket.bind(inetSocketAddress, connectionRequestBacklog);
       }
+
+      try {
+        // set these buffers early so that large buffers will be allocated
+        // on accepted sockets (see java.net.ServerSocket.setReceiverBufferSize javadocs)
+        socket.setReceiveBufferSize(tcpBufferSize);
+        int newSize = socket.getReceiveBufferSize();
+        if (newSize != tcpBufferSize) {
+          logger.info("{} is {} instead of the requested {}",
+              "Listener receiverBufferSize", newSize,
+              tcpBufferSize);
+        }
+      } catch (SocketException ex) {
+        logger.warn("Failed to set listener receiverBufferSize to {}",
+            tcpBufferSize);
+      }
+      channel = socket.getChannel();
       port = socket.getLocalPort();
     } catch (IOException io) {
       throw new ConnectionException(
           String.format("While creating ServerSocket on port %s with address %s",
-              new Object[] {Integer.valueOf(p), bindAddress}),
+              serverPort, bindAddress),
           io);
     }
   }
@@ -514,7 +432,6 @@ public class TCPConduit implements Runnable {
       // ignore, please!
     }
 
-    // this.hsPool.shutdownNow(); // I don't trust this not to allocate objects or to synchronize
     // this.conTable.close(); not safe against deadlocks
     ConnectionTable.emergencyClose();
 
@@ -536,7 +453,7 @@ public class TCPConduit implements Runnable {
         // set timeout endpoint here since interrupt() has been known
         // to hang
         long timeout = System.currentTimeMillis() + LISTENER_CLOSE_TIMEOUT;
-        Thread t = this.thread;;
+        Thread t = this.thread;
         if (channel != null) {
           channel.close();
           // NOTE: do not try to interrupt the listener thread at this point.
@@ -562,12 +479,10 @@ public class TCPConduit implements Runnable {
         if (t != null && t.isAlive()) {
           logger.warn(
               "Unable to shut down listener within {}ms.  Unable to interrupt socket.accept() due to JDK bug. Giving up.",
-              Integer.valueOf(LISTENER_CLOSE_TIMEOUT));
+              LISTENER_CLOSE_TIMEOUT);
         }
       } catch (IOException | InterruptedException e) {
         // we're already trying to shutdown, ignore
-      } finally {
-        this.hsPool.shutdownNow();
       }
 
       // close connections after shutting down acceptor to fix bug 30695
@@ -638,23 +553,8 @@ public class TCPConduit implements Runnable {
 
       Socket othersock = null;
       try {
-        if (this.useNIO) {
-          SocketChannel otherChannel = channel.accept();
-          othersock = otherChannel.socket();
-        } else {
-          try {
-            othersock = socket.accept();
-          } catch (SSLException ex) {
-            // SW: This is the case when there is a problem in P2P
-            // SSL configuration, so need to exit otherwise goes into an
-            // infinite loop just filling the logs
-            logger.warn("Stopping P2P listener due to SSL configuration problem.",
-                ex);
-            break;
-          }
-          othersock.setSoTimeout(0);
-          socketCreator.handshakeIfSocketIsSSL(othersock, idleConnectionTimeout);
-        }
+        SocketChannel otherChannel = channel.accept();
+        othersock = otherChannel.socket();
         if (stopped) {
           try {
             if (othersock != null) {
@@ -732,21 +632,6 @@ public class TCPConduit implements Runnable {
     }
   }
 
-  private void acceptConnection(final Socket othersock) {
-    try {
-      this.hsPool.execute(new Runnable() {
-        public void run() {
-          basicAcceptConnection(othersock);
-        }
-      });
-    } catch (RejectedExecutionException rejected) {
-      try {
-        othersock.close();
-      } catch (IOException ignore) {
-      }
-    }
-  }
-
   private ConnectionTable getConTable() {
     ConnectionTable result = this.conTable;
     if (result == null) {
@@ -757,15 +642,10 @@ public class TCPConduit implements Runnable {
     return result;
   }
 
-  protected void basicAcceptConnection(Socket othersock) {
+  private void acceptConnection(Socket othersock) {
     try {
       getConTable().acceptConnection(othersock, new PeerConnectionFactory());
-    } catch (IOException io) {
-      // exception is logged by the Connection
-      if (!stopped) {
-        this.getStats().incFailedAccept();
-      }
-    } catch (ConnectionException ex) {
+    } catch (IOException | ConnectionException io) {
       // exception is logged by the Connection
       if (!stopped) {
         this.getStats().incFailedAccept();
@@ -778,13 +658,6 @@ public class TCPConduit implements Runnable {
             othersock.getInetAddress(), e);
       }
     }
-  }
-
-  /**
-   * return true if "new IO" classes are being used for the server socket
-   */
-  protected boolean useNIO() {
-    return this.useNIO;
   }
 
   /**

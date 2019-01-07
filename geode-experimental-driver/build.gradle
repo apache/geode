@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
+apply from: "${project.projectDir}/../gradle/publish.gradle"
+
+
 dependencies {
   compile(project(':geode-common'))
   compile(project(':geode-protobuf-messages'))
@@ -32,17 +36,17 @@ dependencies {
   }
   integrationTestCompile(project(':geode-protobuf'))
 
-  compile('com.google.protobuf:protobuf-java:' + project.'protobuf-java.version')
+  compile('com.google.protobuf:protobuf-java')
 
-  testCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+  testCompile('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
 
-  integrationTestCompile('com.github.stefanbirkner:system-rules:' + project.'system-rules.version') {
+  integrationTestCompile('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
-  integrationTestCompile('junit:junit:' + project.'junit.version')
-  integrationTestCompile('org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version')
-  integrationTestCompile('org.hamcrest:hamcrest-core:' + project.'hamcrest-all.version')
-  integrationTestCompile('org.hamcrest:hamcrest-library:' + project.'hamcrest-all.version')
+  integrationTestCompile('junit:junit')
+  integrationTestCompile('org.hamcrest:hamcrest-all')
+  integrationTestCompile('org.hamcrest:hamcrest-core')
+  integrationTestCompile('org.hamcrest:hamcrest-library')
 }

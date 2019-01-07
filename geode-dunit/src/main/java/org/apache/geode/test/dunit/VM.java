@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.dunit;
 
-import static org.apache.geode.test.dunit.standalone.DUnitLauncher.NUM_VMS;
+import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,12 +28,12 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.test.dunit.standalone.ChildVMLauncher;
-import org.apache.geode.test.dunit.standalone.MethExecutorResult;
-import org.apache.geode.test.dunit.standalone.ProcessHolder;
-import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
-import org.apache.geode.test.dunit.standalone.StandAloneDUnitEnv;
-import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.dunit.internal.ChildVMLauncher;
+import org.apache.geode.test.dunit.internal.MethodInvokerResult;
+import org.apache.geode.test.dunit.internal.ProcessHolder;
+import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
+import org.apache.geode.test.dunit.internal.StandAloneDUnitEnv;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * This class represents a Java Virtual Machine that runs in a DistributedTest.
@@ -527,7 +527,7 @@ public class VM implements Serializable {
   private <V> V executeMethodOnObject(final Object targetObject, final String methodName,
       final Object[] args) {
     try {
-      MethExecutorResult result = client.executeMethodOnObject(targetObject, methodName, args);
+      MethodInvokerResult result = client.executeMethodOnObject(targetObject, methodName, args);
       if (result.exceptionOccurred()) {
         throw new RMIException(this, targetObject.getClass().getName(), methodName,
             result.getException(), result.getStackTrace());
@@ -541,7 +541,7 @@ public class VM implements Serializable {
   private <V> V executeMethodOnClass(final Class<?> targetClass, final String methodName,
       final Object[] args) {
     try {
-      MethExecutorResult result =
+      MethodInvokerResult result =
           client.executeMethodOnClass(targetClass.getName(), methodName, args);
       if (result.exceptionOccurred()) {
         throw new RMIException(this, targetClass.getName(), methodName, result.getException(),

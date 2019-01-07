@@ -35,8 +35,11 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -786,5 +789,66 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     }
 
     return computeOffHeapLocalMaxMemory();
+  }
+
+  public static PartitionAttributesImpl fromConfig(
+      RegionAttributesType.PartitionAttributes configAttributes) {
+    PartitionAttributesImpl partitionAttributes = new PartitionAttributesImpl();
+    if (configAttributes == null) {
+      return null;
+    }
+
+    if (configAttributes.getRedundantCopies() != null) {
+      partitionAttributes
+          .setRedundantCopies(Integer.valueOf(configAttributes.getRedundantCopies()));
+    }
+
+    if (configAttributes.getTotalMaxMemory() != null) {
+      partitionAttributes.setTotalMaxMemory(Integer.valueOf(configAttributes.getTotalMaxMemory()));
+    }
+
+    if (configAttributes.getTotalNumBuckets() != null) {
+      partitionAttributes
+          .setTotalNumBuckets(Integer.valueOf(configAttributes.getTotalNumBuckets()));
+    }
+
+    if (configAttributes.getLocalMaxMemory() != null) {
+      partitionAttributes.setLocalMaxMemory(Integer.valueOf(configAttributes.getLocalMaxMemory()));
+    }
+
+    if (configAttributes.getColocatedWith() != null) {
+      partitionAttributes.setColocatedWith(configAttributes.getColocatedWith());
+    }
+
+    if (configAttributes.getPartitionResolver() != null) {
+      try {
+        partitionAttributes.setPartitionResolver((PartitionResolver) ClassPathLoader.getLatest()
+            .forName(configAttributes.getPartitionResolver().getClassName()).newInstance());
+      } catch (Exception e) {
+      }
+    }
+
+    if (configAttributes.getRecoveryDelay() != null) {
+      partitionAttributes.setRecoveryDelay(Long.valueOf(configAttributes.getRecoveryDelay()));
+    }
+
+    if (configAttributes.getStartupRecoveryDelay() != null) {
+      partitionAttributes
+          .setStartupRecoveryDelay(Long.valueOf(configAttributes.getStartupRecoveryDelay()));
+    }
+
+    if (configAttributes.getPartitionListeners() != null) {
+      List<DeclarableType> configListeners = configAttributes.getPartitionListeners();
+      for (int i = 0; i < configListeners.size(); i++) {
+        try {
+          partitionAttributes.addPartitionListener((PartitionListener) ClassPathLoader.getLatest()
+              .forName(configListeners.get(i).getClassName())
+              .newInstance());
+        } catch (Exception e) {
+        }
+      }
+    }
+
+    return partitionAttributes;
   }
 }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import static org.apache.geode.internal.cache.PartitionedRegionHelper.PR_ROOT_REGION_NAME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -23,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -43,14 +45,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
@@ -63,8 +60,9 @@ import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
@@ -75,9 +73,6 @@ import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 @Category({LuceneTest.class})
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore("*.UnitTest")
-@PrepareForTest({PartitionedRegionHelper.class})
 public class PartitionedRepositoryManagerJUnitTest {
 
   protected PartitionedRegion userRegion;
@@ -87,7 +82,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected PartitionedRegionDataStore fileDataStore;
   protected PartitionedRegionHelper prHelper;
   protected PartitionRegionConfig prConfig;
-  protected LocalRegion prRoot;
+  protected DistributedRegion prRoot;
 
   protected Map<Integer, BucketRegion> fileAndChunkBuckets = new HashMap<Integer, BucketRegion>();
   protected Map<Integer, BucketRegion> dataBuckets = new HashMap<Integer, BucketRegion>();
@@ -99,7 +94,7 @@ public class PartitionedRepositoryManagerJUnitTest {
   private final Map<Integer, Boolean> isIndexAvailableMap = new HashMap<>();
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     cache = Fakes.cache();
     userRegion = Mockito.mock(PartitionedRegion.class);
     userDataStore = Mockito.mock(PartitionedRegionDataStore.class);
@@ -120,7 +115,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     DLockService.removeLockServiceForTests(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
   }
 
-  protected void createIndexAndRepoManager() {
+  protected void createIndexAndRepoManager() throws Exception {
     fileAndChunkRegion = Mockito.mock(PartitionedRegion.class);
     fileDataStore = Mockito.mock(PartitionedRegionDataStore.class);
     when(fileAndChunkRegion.getDataStore()).thenReturn(fileDataStore);
@@ -139,12 +134,16 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(indexForPR.getAnalyzer()).thenReturn(new StandardAnalyzer());
     when(indexForPR.getCache()).thenReturn(cache);
     when(indexForPR.getRegionPath()).thenReturn("/testRegion");
-    prRoot = Mockito.mock(LocalRegion.class);
+
+    prRoot = Mockito.mock(DistributedRegion.class);
+    CacheDistributionAdvisor cda = mock(CacheDistributionAdvisor.class);
+    when(prRoot.getDistributionAdvisor()).thenReturn(cda);
+    doNothing().when(cda).addMembershipListener(any());
+    when(cache.createVMRegion(eq(PR_ROOT_REGION_NAME), any(), any())).thenReturn(prRoot);
+
     prConfig = Mockito.mock(PartitionRegionConfig.class);
     when(prConfig.isColocationComplete()).thenReturn(true);
     when(prRoot.get("rid")).thenReturn(prConfig);
-    PowerMockito.mockStatic(PartitionedRegionHelper.class);
-    PowerMockito.when(PartitionedRegionHelper.getPRRoot(cache)).thenReturn(prRoot);
     repoManager = new PartitionedRepositoryManager(indexForPR, serializer,
         Executors.newSingleThreadExecutor());
     repoManager.setUserRegionForRepositoryManager(userRegion);

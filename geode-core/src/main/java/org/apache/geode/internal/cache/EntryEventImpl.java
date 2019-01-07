@@ -181,6 +181,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
 
   private transient boolean isPendingSecondaryExpireDestroy = false;
 
+  private transient boolean hasRetried = false;
+
   public static final Object SUSPECT_TOKEN = new Object();
 
   public EntryEventImpl() {
@@ -608,6 +610,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
 
   public boolean isEvicted() {
     return this.isEvicted;
+  }
+
+  public boolean hasRetried() {
+    return hasRetried;
+  }
+
+  public void setRetried(boolean retried) {
+    hasRetried = retried;
   }
 
   public boolean isPendingSecondaryExpireDestroy() {
@@ -2091,21 +2101,23 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     buf.append(getRegion().getFullPath());
     buf.append(";key=");
     buf.append(this.getKey());
-    buf.append(";oldValue=");
-    try {
-      synchronized (this.offHeapLock) {
-        ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
+    if (Boolean.getBoolean("gemfire.insecure-logvalues")) {
+      buf.append(";oldValue=");
+      try {
+        synchronized (this.offHeapLock) {
+          ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
+        }
+      } catch (IllegalStateException ignore) {
+        buf.append("OFFHEAP_VALUE_FREED");
       }
-    } catch (IllegalStateException ignore) {
-      buf.append("OFFHEAP_VALUE_FREED");
-    }
-    buf.append(";newValue=");
-    try {
-      synchronized (this.offHeapLock) {
-        ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
+      buf.append(";newValue=");
+      try {
+        synchronized (this.offHeapLock) {
+          ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
+        }
+      } catch (IllegalStateException ignore) {
+        buf.append("OFFHEAP_VALUE_FREED");
       }
-    } catch (IllegalStateException ignore) {
-      buf.append("OFFHEAP_VALUE_FREED");
     }
     buf.append(";callbackArg=");
     buf.append(this.getRawCallbackArgument());

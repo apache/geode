@@ -23,31 +23,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.management.remote.JMXServiceURL;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.GemFireException;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
-import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
+import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
-import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.JdkTool;
 
-public class StartJConsoleCommand extends InternalGfshCommand {
+public class StartJConsoleCommand extends OfflineGfshCommand {
 
   @CliCommand(value = CliStrings.START_JCONSOLE, help = CliStrings.START_JCONSOLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
       CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
-  public Result startJConsole(
+  public ResultModel startJConsole(
       @CliOption(key = CliStrings.START_JCONSOLE__INTERVAL, unspecifiedDefaultValue = "4",
           help = CliStrings.START_JCONSOLE__INTERVAL__HELP) final int interval,
       @CliOption(key = CliStrings.START_JCONSOLE__NOTILE, specifiedDefaultValue = "true",
@@ -59,61 +55,68 @@ public class StartJConsoleCommand extends InternalGfshCommand {
           unspecifiedDefaultValue = "false",
           help = CliStrings.START_JCONSOLE__VERSION__HELP) final boolean version,
       @CliOption(key = CliStrings.START_JCONSOLE__J, optionContext = GfshParser.J_OPTION_CONTEXT,
-          help = CliStrings.START_JCONSOLE__J__HELP) final String[] jvmArgs) {
-    try {
-      String[] jconsoleCommandLine =
-          createJConsoleCommandLine(null, interval, notile, pluginpath, version, jvmArgs);
+          help = CliStrings.START_JCONSOLE__J__HELP) final String[] jvmArgs)
+      throws InterruptedException, IOException {
+    String[] jconsoleCommandLine =
+        createJConsoleCommandLine(interval, notile, pluginpath, version, jvmArgs);
 
-      if (isDebugging()) {
-        getGfsh().printAsInfo(
-            String.format("JConsole command-line ($1%s)", Arrays.toString(jconsoleCommandLine)));
-      }
-
-      Process jconsoleProcess = Runtime.getRuntime().exec(jconsoleCommandLine);
-
-      StringBuilder message = new StringBuilder();
-
-      if (version) {
-        jconsoleProcess.waitFor();
-
-        BufferedReader reader =
-            new BufferedReader(new InputStreamReader(jconsoleProcess.getErrorStream()));
-
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-          message.append(line);
-          message.append(StringUtils.LINE_SEPARATOR);
-        }
-
-        IOUtils.close(reader);
-      } else {
-        getGfsh().printAsInfo(CliStrings.START_JCONSOLE__RUN);
-
-        String jconsoleProcessOutput = waitAndCaptureProcessStandardErrorStream(jconsoleProcess);
-
-        if (StringUtils.isNotBlank(jconsoleProcessOutput)) {
-          message.append(StringUtils.LINE_SEPARATOR);
-          message.append(jconsoleProcessOutput);
-        }
-      }
-
-      return ResultBuilder.createInfoResult(message.toString());
-    } catch (GemFireException | IllegalStateException | IllegalArgumentException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (IOException e) {
-      return ResultBuilder
-          .createShellClientErrorResult(CliStrings.START_JCONSOLE__IO_EXCEPTION_MESSAGE);
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_JCONSOLE__CATCH_ALL_ERROR_MESSAGE, t.getMessage()));
+    ResultModel resultModel = new ResultModel();
+    InfoResultModel infoResult = resultModel.addInfo();
+    if (isDebugging()) {
+      getGfsh().printAsInfo(
+          String.format("JConsole command-line ($1%s)", Arrays.toString(jconsoleCommandLine)));
     }
+
+    Process jconsoleProcess = getProcess(jconsoleCommandLine);
+
+    StringBuilder message;
+
+    if (version) {
+      jconsoleProcess.waitFor();
+      message = getErrorStringBuilder(jconsoleProcess);
+    } else {
+      message = new StringBuilder();
+      getGfsh().printAsInfo(CliStrings.START_JCONSOLE__RUN);
+
+      String jconsoleProcessOutput = getProcessOutput(jconsoleProcess);
+
+      if (StringUtils.isNotBlank(jconsoleProcessOutput)) {
+        message.append(System.lineSeparator());
+        message.append(jconsoleProcessOutput);
+      }
+    }
+
+    infoResult.addLine(message.toString());
+
+    return resultModel;
   }
 
-  protected String[] createJConsoleCommandLine(final String member, final int interval,
-      final boolean notile, final String pluginpath, final boolean version,
+  StringBuilder getErrorStringBuilder(Process jconsoleProcess) throws IOException {
+    StringBuilder message;
+    message = new StringBuilder();
+    BufferedReader reader =
+        new BufferedReader(new InputStreamReader(jconsoleProcess.getErrorStream()));
+
+    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+      message.append(line);
+      message.append(System.lineSeparator());
+    }
+
+    IOUtils.close(reader);
+    return message;
+  }
+
+  String getProcessOutput(Process jconsoleProcess) {
+    return waitAndCaptureProcessStandardErrorStream(jconsoleProcess);
+  }
+
+  Process getProcess(String[] jconsoleCommandLine) throws IOException {
+    return Runtime.getRuntime().exec(jconsoleCommandLine);
+  }
+
+  protected String[] createJConsoleCommandLine(final int interval,
+      final boolean notile, final String pluginpath,
+      final boolean version,
       final String[] jvmArgs) {
     List<String> commandLine = new ArrayList<>();
 
@@ -138,39 +141,12 @@ public class StartJConsoleCommand extends InternalGfshCommand {
         }
       }
 
-      String jmxServiceUrl = getJmxServiceUrlAsString(member);
-
-      if (StringUtils.isNotBlank(jmxServiceUrl)) {
-        commandLine.add(jmxServiceUrl);
+      JMXServiceURL jmxServiceUrl = getJmxServiceUrl();
+      if (isConnectedAndReady() && jmxServiceUrl != null) {
+        commandLine.add(jmxServiceUrl.toString());
       }
     }
 
     return commandLine.toArray(new String[commandLine.size()]);
-  }
-
-  protected String getJmxServiceUrlAsString(final String member) {
-    if (StringUtils.isNotBlank(member)) {
-      ConnectionEndpointConverter converter = new ConnectionEndpointConverter();
-
-      try {
-        ConnectionEndpoint connectionEndpoint =
-            converter.convertFromText(member, ConnectionEndpoint.class, null);
-        String hostAndPort = connectionEndpoint.getHost() + ":" + connectionEndpoint.getPort();
-        return String.format("service:jmx:rmi://%s/jndi/rmi://%s/jmxrmi", hostAndPort, hostAndPort);
-      } catch (Exception e) {
-        throw new IllegalArgumentException(
-            CliStrings.START_JCONSOLE__CONNECT_BY_MEMBER_NAME_ID_ERROR_MESSAGE);
-      }
-    } else {
-      if (isConnectedAndReady()
-          && (getGfsh().getOperationInvoker() instanceof JmxOperationInvoker)) {
-        JmxOperationInvoker jmxOperationInvoker =
-            (JmxOperationInvoker) getGfsh().getOperationInvoker();
-
-        return ObjectUtils.toString(jmxOperationInvoker.getJmxServiceUrl());
-      }
-    }
-
-    return null;
   }
 }

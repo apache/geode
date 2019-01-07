@@ -418,6 +418,13 @@ public class Message {
     this.currentPart++;
   }
 
+  public void addBytePart(byte v) {
+    this.messageModified = true;
+    Part part = this.partsList[this.currentPart];
+    part.setByte(v);
+    this.currentPart++;
+  }
+
   /**
    * Adds a new part to this message that may contain a serialized object.
    */

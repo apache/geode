@@ -44,6 +44,8 @@ apt-get install -y --no-install-recommends \
     htop \
     jq \
     less \
+    lsof \
+    net-tools \
     python3 \
     python3-pip \
     rsync \

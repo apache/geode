@@ -44,7 +44,8 @@ public class GfshCommandsSecurityTestBase {
   public static ServerStarterRule serverStarter =
       new ServerStarterRule().withJMXManager().withHttpService()
           .withSecurityManager(SimpleTestSecurityManager.class)
-          .withRegion(RegionShortcut.REPLICATE_PERSISTENT, "persistentRegion");
+          .withRegion(RegionShortcut.REPLICATE_PERSISTENT, "persistentRegion")
+          .withEmbeddedLocator();
 
   @Rule
   public GfshCommandRule gfshConnection =
@@ -164,6 +165,15 @@ public class GfshCommandsSecurityTestBase {
       assertThat(((ErrorResultData) result.getResultData()).getErrorCode())
           .describedAs(other.getCommand()).isEqualTo(ResultBuilder.ERRORCODE_UNAUTHORIZED);
     }
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "data,cluster", password = "data,cluster")
+  public void modifyInternalRegionSuperUser() {
+    CommandResult result =
+        gfshConnection.executeCommand("put --key=key1 --value=value1 --region=PdxTypes");
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getMessageFromContent()).contains("Unauthorized");
   }
 
   @Test

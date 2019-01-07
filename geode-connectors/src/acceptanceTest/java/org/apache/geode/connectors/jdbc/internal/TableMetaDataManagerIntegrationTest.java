@@ -23,6 +23,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,7 +44,6 @@ public abstract class TableMetaDataManagerIntegrationTest {
   public void setup() throws Exception {
     connection = getConnection();
     statement = connection.createStatement();
-    createTable();
     manager = new TableMetaDataManager();
   }
 
@@ -71,21 +72,52 @@ public abstract class TableMetaDataManagerIntegrationTest {
     statement.execute("CREATE TABLE " + REGION_TABLE_NAME + " (" + quote + "id" + quote
         + " VARCHAR(10) primary key not null," + quote + "name" + quote + " VARCHAR(10)," + quote
         + "age" + quote + " int)");
+  }
 
+  protected void createTableWithNoPrimaryKey() throws SQLException {
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
+    statement.execute("CREATE TABLE " + REGION_TABLE_NAME + " (" + quote + "nonprimaryid" + quote
+        + " VARCHAR(10)," + quote + "name" + quote + " VARCHAR(10)," + quote
+        + "age" + quote + " int)");
   }
 
   @Test
-  public void validateKeyColumnName() {
-    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME);
+  public void validateKeyColumnName() throws SQLException {
+    createTable();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
 
-    String keyColumnName = metaData.getKeyColumnName();
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
 
-    assertThat(keyColumnName).isEqualTo("id");
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("id"));
   }
 
   @Test
-  public void validateColumnDataTypeForName() {
-    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME);
+  public void validateKeyColumnNameOnNonPrimaryKey() throws SQLException {
+    createTableWithNoPrimaryKey();
+    TableMetaDataView metaData =
+        manager.getTableMetaDataView(connection, REGION_TABLE_NAME, "nonprimaryid");
+
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
+
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("nonprimaryid"));
+  }
+
+  @Test
+  public void validateKeyColumnNameOnNonPrimaryKeyWithInExactMatch() throws SQLException {
+    createTableWithNoPrimaryKey();
+    TableMetaDataView metaData =
+        manager.getTableMetaDataView(connection, REGION_TABLE_NAME, "NonPrimaryId");
+
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
+
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("NonPrimaryId"));
+  }
+
+  @Test
+  public void validateColumnDataTypeForName() throws SQLException {
+    createTable();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
 
     int nameDataType = metaData.getColumnDataType("name");
 
@@ -93,8 +125,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
   }
 
   @Test
-  public void validateColumnDataTypeForId() {
-    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME);
+  public void validateColumnDataTypeForId() throws SQLException {
+    createTable();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
 
     int nameDataType = metaData.getColumnDataType("id");
 
@@ -102,8 +135,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
   }
 
   @Test
-  public void validateColumnDataTypeForAge() {
-    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME);
+  public void validateColumnDataTypeForAge() throws SQLException {
+    createTable();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, REGION_TABLE_NAME, null);
 
     int nameDataType = metaData.getColumnDataType("age");
 

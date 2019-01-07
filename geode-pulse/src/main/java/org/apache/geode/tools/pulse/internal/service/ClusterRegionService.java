@@ -145,14 +145,14 @@ public class ClusterRegionService implements PulseService {
       regionJSON.put("memberNames", memberNameArray);
       regionJSON.put("entryCount", reg.getSystemRegionEntryCount());
 
-      Boolean persistent = reg.getPersistentEnabled();
+      boolean persistent = reg.getPersistentEnabled();
       if (persistent) {
         regionJSON.put("persistence", VALUE_ON);
       } else {
         regionJSON.put("persistence", VALUE_OFF);
       }
 
-      Boolean isEnableOffHeapMemory = reg.isEnableOffHeapMemory();
+      boolean isEnableOffHeapMemory = reg.isEnableOffHeapMemory();
       if (isEnableOffHeapMemory) {
         regionJSON.put("isEnableOffHeapMemory", VALUE_ON);
       } else {
@@ -179,7 +179,7 @@ public class ClusterRegionService implements PulseService {
       regionJSON.put("diskWritesTrend", mapper.valueToTree(
           reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
       regionJSON.put("emptyNodes", reg.getEmptyNode());
-      Long entrySize = reg.getEntrySize();
+      long entrySize = reg.getEntrySize();
       String entrySizeInMB = FOUR_PLACE_DECIMAL_FORMAT.format(entrySize / (1024f * 1024f));
 
       if (entrySize < 0) {

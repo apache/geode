@@ -29,6 +29,7 @@ import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
@@ -37,7 +38,7 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShowMissingDiskStoreCommand extends InternalGfshCommand {
+public class ShowMissingDiskStoreCommand extends GfshCommand {
   public static final String MISSING_DISK_STORES_SECTION = "missing-disk-stores";
   public static final String MISSING_COLOCATED_REGIONS_SECTION = "missing-colocated-regions";
 

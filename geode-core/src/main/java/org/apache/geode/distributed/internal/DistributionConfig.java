@@ -198,9 +198,9 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
@@ -637,21 +637,21 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default {@link ConfigurationProperties#LOG_LEVEL}.
    * <p>
-   * Actual value of this constant is {@link InternalLogWriter#CONFIG_LEVEL}.
+   * Actual value of this constant is {@link LogWriterLevel#CONFIG#intLevel()}.
    */
-  int DEFAULT_LOG_LEVEL = InternalLogWriter.CONFIG_LEVEL;
+  int DEFAULT_LOG_LEVEL = LogWriterLevel.CONFIG.intLevel();
   /**
    * The minimum {@link ConfigurationProperties#LOG_LEVEL}.
    * <p>
-   * Actual value of this constant is {@link InternalLogWriter#ALL_LEVEL}.
+   * Actual value of this constant is {@link LogWriterLevel#ALL#intLevel()}.
    */
-  int MIN_LOG_LEVEL = InternalLogWriter.ALL_LEVEL;
+  int MIN_LOG_LEVEL = LogWriterLevel.ALL.intLevel();
   /**
    * The maximum {@link ConfigurationProperties#LOG_LEVEL}.
    * <p>
-   * Actual value of this constant is {@link InternalLogWriter#NONE_LEVEL}.
+   * Actual value of this constant is {@link LogWriterLevel#NONE#intLevel()}.
    */
-  int MAX_LOG_LEVEL = InternalLogWriter.NONE_LEVEL;
+  int MAX_LOG_LEVEL = LogWriterLevel.NONE.intLevel();
 
   /**
    * The name of the {@link ConfigurationProperties#LOG_LEVEL} property

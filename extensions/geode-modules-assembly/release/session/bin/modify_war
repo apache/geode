@@ -283,17 +283,15 @@ TMP_DIR="/tmp/modify_war.$$"
 if [ -n "$JAVA_HOME" ] ; then
     JAVACMD="$JAVA_HOME/bin/java"
     JARCMD="$JAVA_HOME/bin/jar"
-    if [ ! -x "$JAVACMD" ] ; then
-        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
-Please set the JAVA_HOME variable in your environment to match the
-location of your Java installation."
+    if [[ ! -x "$JAVACMD" || ! -x "$JARCMD" ]] ; then
+        echo "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME Please set the JAVA_HOME variable in your environment to match the location of your Java installation."
+        exit 1;
     fi
 else
+    hash java >/dev/null 2>&1 || { echo "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH. Please set the JAVA_HOME variable in your environment to match the location of your Java installation."; exit 1;}
+    hash jar >/dev/null 2>&1 || { echo "ERROR: JAVA_HOME is not set and no 'jar' command could be found in your PATH. Please set the JAVA_HOME variable in your environment to match the location of your Java installation."; exit 1;}
     JAVACMD="java"
     JARCMD="jar"
-    which java >/dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
-Please set the JAVA_HOME variable in your environment to match the
-location of your Java installation."
 fi
 
 ARG_INPUT_FILE=""

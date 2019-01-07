@@ -26,6 +26,10 @@ import org.apache.geode.lang.Identifiable;
 @Experimental
 public interface CacheElement extends Identifiable<String>, Serializable {
 
+  static <T extends CacheElement> boolean exists(List<T> list, String id) {
+    return list.stream().anyMatch(o -> o.getId().equals(id));
+  }
+
   static <T extends CacheElement> T findElement(List<T> list, String id) {
     return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
   }

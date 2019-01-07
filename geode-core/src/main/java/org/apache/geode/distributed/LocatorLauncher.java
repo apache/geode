@@ -667,7 +667,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
           ProcessLauncherContext.remove();
         }
 
-        debug("Running Locator on (%1$s) in (%2$s) as (%2$s)...", getId(), getWorkingDirectory(),
+        debug("Running Locator on (%1$s) in (%2$s) as (%3$s)...", getId(), getWorkingDirectory(),
             getMember());
         running.set(true);
 

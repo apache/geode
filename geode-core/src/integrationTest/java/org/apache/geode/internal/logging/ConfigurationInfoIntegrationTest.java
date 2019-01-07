@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.log4j.Log4jAgent;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
@@ -32,11 +31,5 @@ public class ConfigurationInfoIntegrationTest {
   @Test
   public void getConfigurationInfoContainsLog4j2Xml() {
     assertThat(getConfigurationInfo()).contains("log4j2.xml");
-  }
-
-  @Test
-  public void getConfigurationInfoMatchesLog4jAgent() {
-
-    assertThat(getConfigurationInfo()).contains(Log4jAgent.getConfigurationInfo());
   }
 }

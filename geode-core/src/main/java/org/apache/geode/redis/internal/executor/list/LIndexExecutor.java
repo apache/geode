@@ -54,7 +54,7 @@ public class LIndexExecutor extends ListExecutor {
 
     int listSize = keyRegion.size() - LIST_EMPTY_SIZE;
 
-    Integer redisIndex;
+    int redisIndex;
 
     try {
       redisIndex = Coder.bytesToInt(indexArray);
