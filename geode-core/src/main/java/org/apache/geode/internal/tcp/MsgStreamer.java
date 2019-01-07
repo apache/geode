@@ -38,7 +38,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.Buffers;
 
 /**
  * <p>

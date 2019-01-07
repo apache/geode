@@ -2475,6 +2475,9 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   @Override
   public void installView(NetView v) {
     if (latestViewId < 0 && !isConnected()) {
+      if (this.directChannel != null) {
+        this.directChannel.setMembershipSize(v.getMembers().size());
+      }
       latestViewId = v.getViewId();
       latestView = v;
       logger.debug("MembershipManager: initial view is {}", latestView);

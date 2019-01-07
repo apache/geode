@@ -12,41 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.net;
+package org.apache.geode.internal.tcp;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.internal.Version;
 
 /**
- * A pass-through implementation of NioFilter. Use this if you don't need
- * secure communications.
+ * A message reader which reads from the socket using the old io.
+ *
  */
-public class NioEngine implements NioFilter {
+public class OioMsgReader extends MsgReader {
 
-  public NioEngine() {}
-
-  @Override
-  public ByteBuffer wrap(ByteBuffer buffer) {
-    return buffer;
+  public OioMsgReader(Connection conn, Version version) {
+    super(conn, version);
   }
 
   @Override
-  public ByteBuffer unwrap(ByteBuffer wrappedBuffer) {
-    wrappedBuffer.position(wrappedBuffer.limit());
-    return wrappedBuffer;
-  }
-
-  @Override
-  public ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer) {
-    return wrappedBuffer;
-  }
-
-  @Override
-  public ByteBuffer ensureUnwrappedCapacity(int amount, ByteBuffer wrappedBuffer,
-      Buffers.BufferType bufferType,
-      DMStats stats) {
-    return Buffers.expandBuffer(bufferType, wrappedBuffer, amount, stats);
+  public ByteBuffer readAtLeast(int bytes) throws IOException {
+    byte[] buffer = new byte[bytes];
+    conn.readFully(conn.getSocket().getInputStream(), buffer, bytes);
+    return ByteBuffer.wrap(buffer);
   }
 
 }

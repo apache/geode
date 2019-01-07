@@ -394,9 +394,6 @@ public class ConnectionTable {
     } // synchronized
 
     if (pc != null) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("created PendingConnection {}", pc);
-      }
       result = handleNewPendingConnection(id, true /* fixes bug 43386 */, preserveOrder, m, pc,
           startTime, ackTimeout, ackSATimeout);
       if (!preserveOrder && scheduleTimeout) {
@@ -1180,11 +1177,9 @@ public class ConnectionTable {
         targetMember = this.id;
       }
 
-      int attempt = 0;
       for (;;) {
-        if (!this.pending) {
+        if (!this.pending)
           break;
-        }
         getConduit().getCancelCriterion().checkCancelInProgress(null);
 
         // wait a little bit...
@@ -1226,8 +1221,7 @@ public class ConnectionTable {
         e = m.get(this.id);
         // }
         if (e == this) {
-          attempt += 1;
-          if (logger.isDebugEnabled() && (attempt % 20 == 1)) {
+          if (logger.isDebugEnabled()) {
             logger.debug("Waiting for pending connection to complete: {} connection to {}; {}",
                 ((this.preserveOrder) ? "ordered" : "unordered"), this.id, this);
           }
@@ -1254,10 +1248,6 @@ public class ConnectionTable {
       } // for
       return this.conn;
 
-    }
-
-    public String toString() {
-      return super.toString() + " created by " + connectingThread.getName();
     }
   }
 
