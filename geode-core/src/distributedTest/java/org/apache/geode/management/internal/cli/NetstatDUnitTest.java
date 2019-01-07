@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import org.apache.commons.lang3.JavaVersion;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -35,6 +36,7 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -71,7 +73,12 @@ public class NetstatDUnitTest {
     gfsh.connectAndVerify(locator0);
 
     netStatLsofCommand = "netstat --with-lsof=true --member=" + server1.getName();
+  }
 
+  @Before
+  public void postSetup() {
+    // Add ignored exceptions to ignore IllegalArgumentException from MemoryUsage java obj
+    IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
   }
 
   @Test
