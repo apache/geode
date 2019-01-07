@@ -19,25 +19,31 @@
 // E.g.:  apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
 
 
-apply plugin: "io.spring.dependency-management"
-
 class GeodeDependencyExtension {
+  // While we transition away from external properties, we will consume this plugin
+  // in build files that should not apply Spring dependency-management.
+  // Allow this to be configurable via this extension.
   boolean applySpringDependencyManagement = true
-  boolean applyExtendedPropertyVersioning = true
 }
 
 class GeodeDependencyManagementPlugin implements Plugin<Project> {
-
   @Override
   void apply(Project project) {
     def extension = project.extensions.create('versionManagement', GeodeDependencyExtension)
-
-    if(extension.applySpringDependencyManagement) {
-      manage_dependencies(project)
+    // Delay evaluation to allow for configuration
+    project.afterEvaluate {
+      if (extension.applySpringDependencyManagement) {
+        project.logger.info("Applying Spring management via GeodeDependencyManagementPlugin to ${project}")
+        manage_dependencies(project)
+      }
     }
+
+    project.logger.info("Applying external property version values via GeodeDependencyManagementPlugin to ${project}")
+    set_extended_property_versioning(project)
   }
 
   void manage_dependencies(Project project) {
+    project.apply plugin: "io.spring.dependency-management"
     project.dependencyManagement {
       dependencies {
         dependencySet(group: project.group, version: project.version) {
@@ -92,7 +98,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
           entry 'docker-compose-rule-core'
           entry 'docker-compose-rule-junit4'
         }
-        dependencySet(group: 'com.pholser', version: '0.8.1'){
+        dependencySet(group: 'com.pholser', version: '0.8.1') {
           entry 'junit-quickcheck-core'
           entry 'junit-quickcheck-generators'
         }
@@ -207,6 +213,47 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency('redis.clients:jedis:2.9.0')
         dependency('xerces:xercesImpl:2.12.0')
       }
+    }
+  }
+
+  void set_extended_property_versioning(Project project) {
+    // These versions are consumed beyond the scope of source set dependencies.
+    project.ext {
+      // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
+      set('antlr.version', '2.7.7')
+      set('commons-io.version', '2.6')
+      set('commons-lang3.version', '3.8.1')
+      set('commons-validator.version', '1.6')
+      set('fastutil.version', '8.2.2')
+      set('javax.transaction-api.version', '1.3')
+      set('jgroups.version', '3.6.14.Final')
+      set('log4j.version', '2.11.1')
+      set('shiro.version', '1.4.0')
+      set('slf4j-api.version', '1.7.25')
+
+      // These version numbers are used in testing various versions of tomcat and are consumed explicitly
+      // in will be called explicitly in the relevant extensions module, and respective configurations
+      // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to place nicely when
+      // specifying @zip in a dependency, in the manner in which we consume them in custom configurations.
+      // This would possibly be corrected if they were proper source sets.
+      set('tomcat6.version', '6.0.37')
+      set('tomcat7.version', '7.0.90')
+      set('tomcat8.version', '8.5.34')
+      set('tomcat9.version', '9.0.12')
+      // The jetty version is also hard-coded in geode-assembly:test
+      // at o.a.g.sessions.tests.GenericAppServerInstall.java
+      set('jetty.version', '9.4.12.v20180830')
+
+      // These version numbers are consumed by protobuf configurations that are plugin-specific and not
+      // part of the typical Gradle dependency configurations.
+      set('protoc.version', '3.6.1')
+      set('protobuf-gradle-plugin.version', '0.8.6')
+      set('protobuf-java.version', '3.6.1')
+
+      // These versions are referenced in test.gradle, which is aggressively injected into all projects.
+      // This results in brittle behavior compared to dependency-management.gradle's "opt-in" plugin style.
+      set('junit.version', '4.12')
+      set('cglib.version', '3.2.9')
     }
   }
 }
