@@ -68,7 +68,7 @@ public class RegionAttributesTypeTest {
   }
 
   @Test
-  public void gatewaySender() throws Exception {
+  public void gatewaySender() {
     regionAttributes.setGatewaySenderIds(null);
     assertThat(regionAttributes.getGatewaySenderIdsAsSet()).isNull();
 
@@ -80,7 +80,7 @@ public class RegionAttributesTypeTest {
   }
 
   @Test
-  public void asyncEventQueue() throws Exception {
+  public void asyncEventQueue() {
     regionAttributes.setAsyncEventQueueIds(null);
     assertThat(regionAttributes.getAsyncEventQueueIdsAsSet()).isNull();
 

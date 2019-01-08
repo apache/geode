@@ -111,14 +111,14 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithCloningEnabled() throws Exception {
+  public void updateWithCloningEnabled() {
     regionAttributes.setCloningEnabled(false);
     function.alterRegion(cache, config);
     verify(mutator).setCloningEnabled(false);
   }
 
   @Test
-  public void updateWithEvictionAttributes() throws Exception {
+  public void updateWithEvictionAttributes() {
     RegionAttributesType.EvictionAttributes evictionAttributes =
         new RegionAttributesType.EvictionAttributes();
     RegionAttributesType.EvictionAttributes.LruEntryCount lruEntryCount =
@@ -133,7 +133,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithEntryIdleTime_timeoutAndAction() throws Exception {
+  public void updateWithEntryIdleTime_timeoutAndAction() {
     RegionAttributesType.ExpirationAttributesType expiration =
         new RegionAttributesType.ExpirationAttributesType();
     regionAttributes.setEntryIdleTime(expiration);
@@ -154,7 +154,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithEntryIdleTime_TimeoutOnly() throws Exception {
+  public void updateWithEntryIdleTime_TimeoutOnly() {
     RegionAttributesType.ExpirationAttributesType expiration =
         new RegionAttributesType.ExpirationAttributesType();
     regionAttributes.setEntryIdleTime(expiration);
@@ -174,7 +174,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithCustomExpiry() throws Exception {
+  public void updateWithCustomExpiry() {
     RegionAttributesType.ExpirationAttributesType expiration =
         new RegionAttributesType.ExpirationAttributesType();
     regionAttributes.setEntryIdleTime(expiration);
@@ -189,7 +189,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void deleteCustomExpiry() throws Exception {
+  public void deleteCustomExpiry() {
     RegionAttributesType.ExpirationAttributesType expiration =
         new RegionAttributesType.ExpirationAttributesType();
     regionAttributes.setEntryIdleTime(expiration);
@@ -202,7 +202,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithGatewaySenders() throws Exception {
+  public void updateWithGatewaySenders() {
     regionAttributes.setGatewaySenderIds("2,3");
     when(region.getGatewaySenderIds()).thenReturn(new HashSet<>(Arrays.asList("1", "2")));
 
@@ -218,7 +218,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithEmptyGatewaySenders() throws Exception {
+  public void updateWithEmptyGatewaySenders() {
     regionAttributes.setGatewaySenderIds("");
     when(region.getGatewaySenderIds()).thenReturn(new HashSet<>(Arrays.asList("1", "2")));
 
@@ -229,7 +229,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithCacheListeners() throws Exception {
+  public void updateWithCacheListeners() {
     // suppose region has one cacheListener, and we want to replace the oldOne one with the new one
     CacheListener oldOne = mock(CacheListener.class);
     CacheListener newOne = mock(CacheListener.class);
@@ -245,7 +245,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithEmptyCacheListeners() throws Exception {
+  public void updateWithEmptyCacheListeners() {
     // suppose region has on listener, and we want to delete that one
     CacheListener oldOne = mock(CacheListener.class);
     when(region.getCacheListeners()).thenReturn(new CacheListener[] {oldOne});
@@ -257,7 +257,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithCacheWriter() throws Exception {
+  public void updateWithCacheWriter() {
     DeclarableType newCacheWriterDeclarable = mock(DeclarableType.class);
     when(newCacheWriterDeclarable.newInstance(any())).thenReturn(mock(CacheWriter.class));
     regionAttributes.setCacheWriter(newCacheWriterDeclarable);
@@ -268,7 +268,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void updateWithNoCacheWriter() throws Exception {
+  public void updateWithNoCacheWriter() {
     regionAttributes.setCacheWriter(DeclarableType.EMPTY);
 
     function.alterRegion(cache, config);

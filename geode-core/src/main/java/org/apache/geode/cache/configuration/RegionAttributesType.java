@@ -936,6 +936,9 @@ public class RegionAttributesType implements Serializable {
     return gatewaySenderIds;
   }
 
+  /**
+   * turn the comma separated ids into a set of id
+   */
   public Set<String> getGatewaySenderIdsAsSet() {
     if (gatewaySenderIds == null) {
       return null;
@@ -967,6 +970,9 @@ public class RegionAttributesType implements Serializable {
     return asyncEventQueueIds;
   }
 
+  /**
+   * turn the comma separated id into a set of ids
+   */
   public Set<String> getAsyncEventQueueIdsAsSet() {
     if (asyncEventQueueIds == null) {
       return null;
@@ -1687,14 +1693,23 @@ public class RegionAttributesType implements Serializable {
       }
     }
 
+    /**
+     * @return true if timeout or action is specified
+     */
     public boolean hasTimoutOrAction() {
       return (getTimeout() != null || getAction() != null);
     }
 
+    /**
+     * @return true if custom expiry class is specified
+     */
     public boolean hasCustomExpiry() {
       return getCustomExpiry() != null;
     }
 
+    /**
+     * @return the custom expiry declarable
+     */
     public DeclarableType getCustomExpiry() {
       return expirationAttributes.getCustomExpiry();
     }

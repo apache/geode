@@ -234,15 +234,15 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
 
     if (newAttributes.hasTimoutOrAction() && existingAttributes != null) {
       int existingTimeout = existingAttributes.getTimeout();
-      ExpirationAction exitingAction = existingAttributes.getAction();
+      ExpirationAction existingAction = existingAttributes.getAction();
       if (newAttributes.getTimeout() != null) {
         existingTimeout = Integer.parseInt(newAttributes.getTimeout());
       }
 
       if (newAttributes.getAction() != null) {
-        exitingAction = ExpirationAction.fromXmlString(newAttributes.getAction());
+        existingAction = ExpirationAction.fromXmlString(newAttributes.getAction());
       }
-      mutator1.accept(new ExpirationAttributes(existingTimeout, exitingAction));
+      mutator1.accept(new ExpirationAttributes(existingTimeout, existingAction));
     }
 
     if (mutator2 == null) {

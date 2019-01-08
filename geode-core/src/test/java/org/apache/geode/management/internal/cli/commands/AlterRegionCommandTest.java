@@ -61,7 +61,7 @@ public class AlterRegionCommandTest {
   private RegionConfig existingRegionConfig;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     command = spy(AlterRegionCommand.class);
     cache = mock(InternalCache.class);
     command.setCache(cache);
@@ -84,7 +84,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void cacheWriterEmpty() throws Exception {
+  public void cacheWriterEmpty() {
     String command = "alter region --name=/Person --cache-writer='' --cache-loader=' '";
     GfshParseResult result = parser.parse(command);
     assertThat(result.getParamValue("cache-writer")).isEqualTo(ClassName.EMPTY);
@@ -94,7 +94,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void cacheWriterInvalid() throws Exception {
+  public void cacheWriterInvalid() {
     String command = "alter region --name=/Person --cache-writer='1abc'";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNull();
@@ -143,7 +143,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void ccServiceNotAvailable() throws Exception {
+  public void ccServiceNotAvailable() {
     doReturn(null).when(command).getConfigurationPersistenceService();
     parser.executeAndAssertThat(command,
         "alter region --name=regionB --cache-loader=abc")
@@ -153,7 +153,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithCloningEnabled() throws Exception {
+  public void alterWithCloningEnabled() {
     RegionAttributesType regionAttributes =
         getDeltaRegionConfig("alter region --name=regionA --enable-cloning=false")
             .getRegionAttributes();
@@ -172,7 +172,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithEntryIdleTimeOut() throws Exception {
+  public void alterWithEntryIdleTimeOut() {
     // check that the deltaConfig is created as expected
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --entry-idle-time-expiration=7");
@@ -199,7 +199,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithEntryIdleTimeOutAction() throws Exception {
+  public void alterWithEntryIdleTimeOutAction() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig(
             "alter region --name=regionA --entry-idle-time-expiration-action=destroy");
@@ -227,7 +227,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithEntryIdleTimeOutCustomExpiry() throws Exception {
+  public void alterWithEntryIdleTimeOutCustomExpiry() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --entry-idle-time-custom-expiry=abc");
     RegionAttributesType.ExpirationAttributesType entryIdleTime =
@@ -254,7 +254,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithEmptyEntryIdleTimeOutCustomExpiry() throws Exception {
+  public void alterWithEmptyEntryIdleTimeOutCustomExpiry() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --entry-idle-time-custom-expiry=''");
     RegionAttributesType.ExpirationAttributesType entryIdleTime =
@@ -281,7 +281,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithCacheListener() throws Exception {
+  public void alterWithCacheListener() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --cache-listener=abc,def");
     List<DeclarableType> cacheListeners = deltaConfig.getRegionAttributes().getCacheListeners();
@@ -305,7 +305,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithNoCacheListener() throws Exception {
+  public void alterWithNoCacheListener() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --cache-listener=''");
     List<DeclarableType> cacheListeners = deltaConfig.getRegionAttributes().getCacheListeners();
@@ -323,7 +323,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithCacheLoader() throws Exception {
+  public void alterWithCacheLoader() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --cache-loader=abc");
     RegionAttributesType deltaAttributes = deltaConfig.getRegionAttributes();
@@ -351,7 +351,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithNoCacheLoader() throws Exception {
+  public void alterWithNoCacheLoader() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --cache-loader=''");
     RegionAttributesType deltaAttributes = deltaConfig.getRegionAttributes();
@@ -368,7 +368,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithAsyncEventQueueIds() throws Exception {
+  public void alterWithAsyncEventQueueIds() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --async-event-queue-id=abc,def");
     assertThat(deltaConfig.getRegionAttributes().getAsyncEventQueueIds()).isEqualTo("abc,def");
@@ -385,7 +385,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithNoAsyncEventQueueIds() throws Exception {
+  public void alterWithNoAsyncEventQueueIds() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --async-event-queue-id=''");
     assertThat(deltaConfig.getRegionAttributes().getAsyncEventQueueIds()).isEqualTo("");
@@ -403,7 +403,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithEvictionMaxWithExistingLruHeapPercentage() throws Exception {
+  public void alterWithEvictionMaxWithExistingLruHeapPercentage() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --eviction-max=20");
 
@@ -429,7 +429,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithEvictionMaxWithExistingLruEntryCount() throws Exception {
+  public void alterWithEvictionMaxWithExistingLruEntryCount() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --eviction-max=20");
 
@@ -461,7 +461,7 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void alterWithEvictionMaxWithExistingLruMemory() throws Exception {
+  public void alterWithEvictionMaxWithExistingLruMemory() {
     RegionConfig deltaConfig =
         getDeltaRegionConfig("alter region --name=regionA --eviction-max=20");
 

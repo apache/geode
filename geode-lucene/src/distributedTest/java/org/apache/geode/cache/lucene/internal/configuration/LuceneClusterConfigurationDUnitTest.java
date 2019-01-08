@@ -222,6 +222,9 @@ public class LuceneClusterConfigurationDUnitTest {
     // Create index and region in no group
     createLuceneIndexAndDataRegion();
 
+    // Start another member with group
+    createServer(properties, 3);
+
     // Verify all members have indexes
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess()

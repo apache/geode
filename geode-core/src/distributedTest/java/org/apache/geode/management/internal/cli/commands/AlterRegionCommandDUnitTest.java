@@ -247,7 +247,7 @@ public class AlterRegionCommandDUnitTest {
   }
 
   @Test
-  public void alterRegionWithEvictionMaxHasNoEffect() throws Exception {
+  public void alterEvictionMaxOnRegionWithoutEvictionAttributesHasNoEffect() throws Exception {
     gfsh.executeAndAssertThat("create region --name=regionA --type=REPLICATE").statusIsSuccess();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 3);
 
