@@ -441,7 +441,6 @@ org/apache/geode/internal/memcached/ResponseStatus$5,false
 org/apache/geode/internal/memcached/ResponseStatus$6,false
 org/apache/geode/internal/memcached/commands/ClientError,true,-2426928000696680541
 org/apache/geode/internal/monitoring/ThreadsMonitoring$Mode,false
-org/apache/geode/internal/net/Buffers$BufferType,false
 org/apache/geode/internal/offheap/MemoryBlock$State,false
 org/apache/geode/internal/offheap/OffHeapStorage$1,false
 org/apache/geode/internal/offheap/OffHeapStorage$2,false

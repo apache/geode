@@ -60,15 +60,14 @@ public abstract class AbstractExecutor {
 
     StringBuilder strb = new StringBuilder();
 
-    strb.append("Thread <").append(this.threadID).append("> (0x")
-        .append(Long.toHexString(this.threadID)).append(") that was executed at <")
+    strb.append("Thread <").append(this.threadID).append("> that was executed at <")
         .append(dateFormat.format(this.getStartTime())).append("> has been stuck for <")
         .append((float) stuckTime / 1000)
         .append(" seconds> and number of thread monitor iteration <")
         .append(this.numIterationsStuck).append("> ").append(System.lineSeparator());
     if (logThreadDetails) {
       strb.append("Thread Name <").append(thread.getThreadName()).append(">")
-          .append(" state <").append(thread.getThreadState())
+          .append(System.lineSeparator()).append("Thread state <").append(thread.getThreadState())
           .append(">").append(System.lineSeparator());
 
       if (thread.getLockName() != null)
@@ -76,7 +75,7 @@ public abstract class AbstractExecutor {
             .append(System.lineSeparator());
 
       if (thread.getLockOwnerName() != null)
-        strb.append("Owned By <").append(thread.getLockOwnerName()).append("> with ID <")
+        strb.append("Owned By <").append(thread.getLockOwnerName()).append("> and ID <")
             .append(thread.getLockOwnerId()).append(">").append(System.lineSeparator());
     }
 

@@ -12,11 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.net;
+package org.apache.geode.internal.tcp;
 
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.geode.distributed.internal.DMStats;
@@ -24,45 +25,29 @@ import org.apache.geode.internal.Assert;
 
 public class Buffers {
   /**
-   * Buffers may be acquired from the Buffers pool
-   * or they may be allocated using Buffer.allocate(). This enum is used
-   * to note the different types. Tracked buffers come from the Buffers pool
-   * and need to be released when we're done using them.
-   */
-  public enum BufferType {
-    UNTRACKED, TRACKED_SENDER, TRACKED_RECEIVER
-  }
-
-  /**
    * A list of soft references to byte buffers.
    */
-  private static final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
-      new ConcurrentLinkedQueue<>();
-
-  /**
-   * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
-   */
-  public static boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers");
+  private static final ConcurrentLinkedQueue bufferQueue = new ConcurrentLinkedQueue();
 
   /**
    * Should only be called by threads that have currently acquired send permission.
    *
    * @return a byte buffer to be used for sending on this connection.
    */
-  public static ByteBuffer acquireSenderBuffer(int size, DMStats stats) {
+  static ByteBuffer acquireSenderBuffer(int size, DMStats stats) {
     return acquireBuffer(size, stats, true);
   }
 
-  public static ByteBuffer acquireReceiveBuffer(int size, DMStats stats) {
+  static ByteBuffer acquireReceiveBuffer(int size, DMStats stats) {
     return acquireBuffer(size, stats, false);
   }
 
-  private static ByteBuffer acquireBuffer(int size, DMStats stats, boolean send) {
+  static ByteBuffer acquireBuffer(int size, DMStats stats, boolean send) {
     ByteBuffer result;
-    if (useDirectBuffers) {
+    if (TCPConduit.useDirectBuffers) {
       IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
                                                                             // set
-      BBSoftReference ref = bufferQueue.poll();
+      BBSoftReference ref = (BBSoftReference) bufferQueue.poll();
       while (ref != null) {
         ByteBuffer bb = ref.getBB();
         if (bb == null) {
@@ -83,7 +68,7 @@ public class Buffers {
           // wasn't big enough so put it back in the queue
           Assert.assertTrue(bufferQueue.offer(ref));
           if (alreadySeen == null) {
-            alreadySeen = new IdentityHashMap<>();
+            alreadySeen = new IdentityHashMap<BBSoftReference, BBSoftReference>();
           }
           if (alreadySeen.put(ref, ref) != null) {
             // if it returns non-null then we have already seen this item
@@ -92,7 +77,7 @@ public class Buffers {
             break;
           }
         }
-        ref = bufferQueue.poll();
+        ref = (BBSoftReference) bufferQueue.poll();
       }
       result = ByteBuffer.allocateDirect(size);
     } else {
@@ -100,67 +85,26 @@ public class Buffers {
       result = ByteBuffer.allocate(size);
     }
     if (send) {
-      stats.incSenderBufferSize(size, useDirectBuffers);
+      stats.incSenderBufferSize(size, TCPConduit.useDirectBuffers);
     } else {
-      stats.incReceiverBufferSize(size, useDirectBuffers);
+      stats.incReceiverBufferSize(size, TCPConduit.useDirectBuffers);
     }
     return result;
   }
 
-  public static void releaseSenderBuffer(ByteBuffer bb, DMStats stats) {
+  static void releaseSenderBuffer(ByteBuffer bb, DMStats stats) {
     releaseBuffer(bb, stats, true);
   }
 
-  public static void releaseReceiveBuffer(ByteBuffer bb, DMStats stats) {
+  static void releaseReceiveBuffer(ByteBuffer bb, DMStats stats) {
     releaseBuffer(bb, stats, false);
   }
-
-  static ByteBuffer expandBuffer(Buffers.BufferType type, ByteBuffer existing,
-      int desiredCapacity, DMStats stats) {
-    if (existing.capacity() >= desiredCapacity) {
-      existing.compact();
-      return existing;
-    }
-    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity, stats);
-    newBuffer.clear();
-    existing.flip();
-    newBuffer.put(existing);
-    releaseBuffer(type, existing, stats);
-    return newBuffer;
-  }
-
-  private static ByteBuffer acquireBuffer(Buffers.BufferType type, int capacity, DMStats stats) {
-    switch (type) {
-      case UNTRACKED:
-        return ByteBuffer.allocate(capacity);
-      case TRACKED_SENDER:
-        return Buffers.acquireSenderBuffer(capacity, stats);
-      case TRACKED_RECEIVER:
-        return Buffers.acquireReceiveBuffer(capacity, stats);
-    }
-    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
-  }
-
-  static void releaseBuffer(Buffers.BufferType type, ByteBuffer buffer, DMStats stats) {
-    switch (type) {
-      case UNTRACKED:
-        return;
-      case TRACKED_SENDER:
-        Buffers.releaseSenderBuffer(buffer, stats);
-        return;
-      case TRACKED_RECEIVER:
-        Buffers.releaseReceiveBuffer(buffer, stats);
-        return;
-    }
-    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
-  }
-
 
   /**
    * Releases a previously acquired buffer.
    */
-  private static void releaseBuffer(ByteBuffer bb, DMStats stats, boolean send) {
-    if (useDirectBuffers) {
+  static void releaseBuffer(ByteBuffer bb, DMStats stats, boolean send) {
+    if (TCPConduit.useDirectBuffers) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
       bufferQueue.offer(bbRef);
     } else {
@@ -173,8 +117,11 @@ public class Buffers {
   }
 
   public static void initBufferStats(DMStats stats) { // fixes 46773
-    if (useDirectBuffers) {
-      for (BBSoftReference ref : bufferQueue) {
+    if (TCPConduit.useDirectBuffers) {
+      @SuppressWarnings("unchecked")
+      Iterator<BBSoftReference> it = (Iterator<BBSoftReference>) bufferQueue.iterator();
+      while (it.hasNext()) {
+        BBSoftReference ref = it.next();
         if (ref.getBB() != null) {
           if (ref.getSend()) { // fix bug 46773
             stats.incSenderBufferSize(ref.getSize(), true);
@@ -195,7 +142,7 @@ public class Buffers {
     private int size;
     private final boolean send;
 
-    BBSoftReference(ByteBuffer bb, boolean send) {
+    public BBSoftReference(ByteBuffer bb, boolean send) {
       super(bb);
       this.size = bb.capacity();
       this.send = send;
@@ -205,7 +152,7 @@ public class Buffers {
       return this.size;
     }
 
-    synchronized int consumeSize() {
+    public synchronized int consumeSize() {
       int result = this.size;
       this.size = 0;
       return result;
@@ -216,7 +163,7 @@ public class Buffers {
     }
 
     public ByteBuffer getBB() {
-      return super.get();
+      return (ByteBuffer) super.get();
     }
   }
 

@@ -23,8 +23,8 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.Buffers;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.tcp.Buffers;
 import org.apache.geode.internal.util.Breadcrumbs;
 
 /**
