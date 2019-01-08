@@ -206,7 +206,7 @@ public class LuceneClusterConfigurationDUnitTest {
   }
 
   @Test
-  public void verifyMemberWithGroupStartsAfterAlterRegion() throws Exception {
+  public void verifyMemberWithGroupStarts() throws Exception {
     // Start a member with no group
     createServer(1);
 
@@ -214,7 +214,7 @@ public class LuceneClusterConfigurationDUnitTest {
     String group = "group1";
     Properties properties = new Properties();
     properties.setProperty(GROUPS, group);
-    MemberVM vm2 = createServer(properties, 2);
+    createServer(properties, 2);
 
     // Connect Gfsh to locator
     gfshConnector.connectAndVerify(locator);
@@ -222,22 +222,8 @@ public class LuceneClusterConfigurationDUnitTest {
     // Create index and region in no group
     createLuceneIndexAndDataRegion();
 
-    // Alter region in group
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
-    csb.addOption(CliStrings.ALTER_REGION__REGION, REGION_NAME);
-    csb.addOption(CliStrings.GROUP, group);
-    csb.addOption(CliStrings.ALTER_REGION__EVICTIONMAX, "5764");
-
-    String expectedStatusOutput =
-        "Region \"/" + REGION_NAME + "\" altered on \"" + vm2.getName() + "\"";
-    gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInExactOrder("Status", expectedStatusOutput);
-
-    // Start another member with group
-    createServer(properties, 3);
-
     // Verify all members have indexes
-    csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .tableHasColumnWithExactValuesInExactOrder("Status", "INITIALIZED", "INITIALIZED",
             "INITIALIZED");

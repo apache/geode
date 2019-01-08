@@ -78,7 +78,7 @@ public class DeclarableType extends ClassNameType implements Serializable {
   public DeclarableType() {}
 
   public DeclarableType(String className) {
-    this(className, "{}");
+    this(className, (Properties) null);
   }
 
   public DeclarableType(String className, String jsonProperties) {

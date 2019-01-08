@@ -32,6 +32,7 @@ import java.util.HashSet;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheListener;
@@ -144,9 +145,11 @@ public class RegionAlterFunctionTest {
 
     function.alterRegion(cache, config);
 
-    verify(mutator).setEntryIdleTimeout(existing);
-    assertThat(existing.getTimeout()).isEqualTo(10);
-    assertThat(existing.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
+    ArgumentCaptor<ExpirationAttributes> updatedCaptor =
+        ArgumentCaptor.forClass(ExpirationAttributes.class);
+    verify(mutator).setEntryIdleTimeout(updatedCaptor.capture());
+    assertThat(updatedCaptor.getValue().getTimeout()).isEqualTo(10);
+    assertThat(updatedCaptor.getValue().getAction()).isEqualTo(ExpirationAction.INVALIDATE);
     verify(mutator, times(0)).setCustomEntryIdleTimeout(any());
   }
 
@@ -157,16 +160,16 @@ public class RegionAlterFunctionTest {
     regionAttributes.setEntryIdleTime(expiration);
     expiration.setTimeout("10");
 
-    ExpirationAttributes existing = new ExpirationAttributes();
-    existing.setTimeout(20);
-    existing.setAction(ExpirationAction.DESTROY);
+    ExpirationAttributes existing = new ExpirationAttributes(20, ExpirationAction.DESTROY);
     when(region.getEntryIdleTimeout()).thenReturn(existing);
 
     function.alterRegion(cache, config);
 
-    verify(mutator).setEntryIdleTimeout(existing);
-    assertThat(existing.getTimeout()).isEqualTo(10);
-    assertThat(existing.getAction()).isEqualTo(ExpirationAction.DESTROY);
+    ArgumentCaptor<ExpirationAttributes> updatedCaptor =
+        ArgumentCaptor.forClass(ExpirationAttributes.class);
+    verify(mutator).setEntryIdleTimeout(updatedCaptor.capture());
+    assertThat(updatedCaptor.getValue().getTimeout()).isEqualTo(10);
+    assertThat(updatedCaptor.getValue().getAction()).isEqualTo(ExpirationAction.DESTROY);
     verify(mutator, times(0)).setCustomEntryIdleTimeout(any());
   }
 

@@ -256,7 +256,7 @@ public class AlterRegionCommand extends SingleGfshCommand {
       String newMax = evictionAttributes.getLruEntryCount().getMaximum();
       EvictionAttributes existingEviction = existingAttributes.getEvictionAttributes();
 
-      // we only alter the max value if there is an existing evication attributes
+      // we only alter the max value if there is an existing eviction attributes
       if (existingEviction != null) {
         if (existingEviction.getLruEntryCount() != null) {
           existingEviction.getLruEntryCount().setMaximum(newMax);
@@ -283,7 +283,7 @@ public class AlterRegionCommand extends SingleGfshCommand {
     }
   }
 
-  // this is a helper class to combine the existing with the delta ExpirationAttributesType
+  // this is a helper method to combine the existing with the delta ExpirationAttributesType
   ExpirationAttributesType combine(ExpirationAttributesType existing,
       ExpirationAttributesType delta) {
     if (delta == null) {
