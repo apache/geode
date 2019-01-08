@@ -41,7 +41,6 @@ BUILD_DATE=$(date +%s)
 if [ -e "${ROOT_DIR}/geode-build-version" ] ; then
   GEODE_BUILD_VERSION_FILE=${ROOT_DIR}/geode-build-version/number
   GEODE_RESULTS_VERSION_FILE=${ROOT_DIR}/results/number
-  GEODE_BUILD_VERSION_NUMBER=$(echo "${GRADLE_GLOBAL_ARGS}"|tr ' ' '\n' | grep "versionNumber *=" - geode/gradle.properties | awk -F "=" '{print $2; exit}' | tr -d ' ')
   GEODE_BUILD_DIR=/tmp/geode-build
   GEODE_PULL_REQUEST_ID_FILE=${ROOT_DIR}/geode/.git/id
 
@@ -49,14 +48,23 @@ if [ -e "${ROOT_DIR}/geode-build-version" ] ; then
     GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
     FULL_PRODUCT_VERSION="geode-pr-${GEODE_PULL_REQUEST_ID}"
   else
+    # semver resource, e.g., "1.9.0-SNAPSHOT.325"
     CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
-    CONCOURSE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
-    GEODE_PRODUCT_VERSION=${GEODE_BUILD_VERSION_NUMBER}
+    # Prune all after '-', yielding e.g., "1.9.0"
+    GEODE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
+    # Prune all before '-', yielding e.g., "SNAPSHOT.325"
     CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
-    BUILD_ID=${CONCOURSE_VERSION##*.}
-    FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${CONCOURSE_BUILD_SLUG}
+    # Prune all before '.', yielding e.g., "SNAPSHOT"
+    SNAPSHOT_SLUG=${CONCOURSE_BUILD_SLUG##*.}
+    # Prune all before '.', yielding e.g., "325"
+    BUILD_ID=$(printf "%04d" ${CONCOURSE_VERSION##*.})
+
+    # Rebuild version, zero-padded
+    FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${SNAPSHOT_SLUG}.${BUILD_ID}
+
     echo "Concourse VERSION is ${CONCOURSE_VERSION}"
     echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}"
+    echo "Full product VERSION is ${FULL_PRODUCT_VERSION}"
     echo "Build ID is ${BUILD_ID}"
   fi
 
@@ -99,6 +107,7 @@ GRADLE_ARGS="\
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_SKIP_TASK_OPTIONS} \
     ${GRADLE_GLOBAL_ARGS} \
+    -Pversion=${FULL_PRODUCT_VERSION} \
     -PbuildId=${BUILD_ID} \
     build install javadoc spotlessCheck rat checkPom resolveDependencies -x test"
 

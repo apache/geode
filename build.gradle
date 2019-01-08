@@ -54,8 +54,11 @@ dependencyVersions.load(new FileInputStream("${project.projectDir}/gradle/depend
 dependencyVersions.keys().each{ k -> project.ext[k] = dependencyVersions[k]}
 
 allprojects {
-  version = versionNumber + releaseQualifier + releaseType
-  ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+  ext.isReleaseVersion = true
+  if(version.contains("SNAPSHOT")) {
+    ext.isReleaseVersion = false
+    version = (version as String).replaceFirst(/SNAPSHOT.*/, 'SNAPSHOT')
+  }
 
   repositories {
     mavenLocal()
