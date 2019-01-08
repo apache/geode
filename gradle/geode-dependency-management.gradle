@@ -74,8 +74,8 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency('javax.xml.bind:jaxb-api:2.3.1')
 
 
-        dependency('antlr:antlr:2.7.7')
-        dependency('cglib:cglib:3.2.9')
+        dependency("antlr:antlr:${project.'antlr.version'}")
+        dependency("cglib:cglib:${project.'cglib.version'}")
         dependency('com.carrotsearch.randomizedtesting:randomizedtesting-runner:2.5.0')
         dependencySet(group: 'com.fasterxml.jackson.core', version: '2.9.7') {
           entry 'jackson-annotations'
@@ -87,7 +87,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency('com.github.stefanbirkner:system-rules:1.19.0')
         dependency('com.github.stephenc.findbugs:findbugs-annotations:1.3.9-1')
         dependency('com.google.guava:guava:27.0-jre')
-        dependency('com.google.protobuf:protobuf-java:3.6.1')
+        dependency("com.google.protobuf:protobuf-java:${project.'protobuf-java.version'}")
         dependency('com.healthmarketscience.rmiio:rmiio:2.1.2')
         dependencySet(group: 'com.jayway.jsonpath', version: '2.4.0') {
           entry 'json-path-assert'
@@ -110,24 +110,24 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency('commons-configuration:commons-configuration:1.10')
         dependency('commons-digester:commons-digester:2.1')
         dependency('commons-fileupload:commons-fileupload:1.3.3')
-        dependency('commons-io:commons-io:2.6')
+        dependency("commons-io:commons-io:${project.'commons-io.version'}")
         dependency('commons-logging:commons-logging:1.2')
         dependency('commons-modeler:commons-modeler:2.0.1')
-        dependency('commons-validator:commons-validator:1.6')
+        dependency("commons-validator:commons-validator:${project.'commons-validator.version'}")
         dependency('io.github.classgraph:classgraph:4.0.6')
         dependency('io.netty:netty-all:4.1.31.Final')
         dependencySet(group: 'io.springfox', version: '2.9.2') {
           entry 'springfox-swagger-ui'
           entry 'springfox-swagger2'
         }
-        dependency('it.unimi.dsi:fastutil:8.2.2')
+        dependency("it.unimi.dsi:fastutil:${project.'fastutil.version'}")
         dependency('javax.annotation:javax.annotation-api:1.3.2')
         dependency('javax.annotation:jsr250-api:1.0')
         dependency('javax.ejb:ejb-api:3.0')
         dependency('javax.mail:javax.mail-api:1.6.2')
         dependency('javax.resource:javax.resource-api:1.7.1')
         dependency('javax.servlet:javax.servlet-api:3.1.0')
-        dependency('junit:junit:4.12')
+        dependency("junit:junit:${project.'junit.version'}")
         dependencySet(group: 'mx4j', version: '3.0.2') {
           entry 'mx4j-remote'
           entry 'mx4j'
@@ -138,11 +138,11 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency('net.sf.jopt-simple:jopt-simple:5.0.4')
         dependency('net.spy:spymemcached:2.12.2')
         dependency('org.apache.bcel:bcel:6.2')
-        dependency('org.apache.commons:commons-lang3:3.8.1')
+        dependency("org.apache.commons:commons-lang3:${project.'commons-lang3.version'}")
         dependency('org.apache.derby:derby:10.14.2.0')
         dependency('org.apache.httpcomponents:httpclient:4.5.6')
         dependency('org.apache.httpcomponents:httpcore:4.4.10')
-        dependencySet(group: 'org.apache.logging.log4j', version: '2.11.1') {
+        dependencySet(group: 'org.apache.logging.log4j', version: project.'log4j.version') {
           entry 'log4j-api'
           entry 'log4j-core'
           entry 'log4j-jcl'
@@ -156,7 +156,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
           entry 'lucene-queryparser'
           entry 'lucene-test-framework'
         }
-        dependency('org.apache.shiro:shiro-core:1.4.0')
+        dependency("org.apache.shiro:shiro-core:${project.'shiro.version'}")
         dependency('org.assertj:assertj-core:3.11.1')
         dependency('org.awaitility:awaitility:3.1.2')
         dependency('org.bouncycastle:bcpkix-jdk15on:1.60')
@@ -170,7 +170,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         }
         dependency('org.httpunit:httpunit:1.7.3')
         dependency('org.iq80.snappy:snappy:0.4')
-        dependency('org.jgroups:jgroups:3.6.14.Final')
+        dependency("org.jgroups:jgroups:${project.'jgroups.version'}")
         dependency('org.mockito:mockito-core:2.23.0')
         dependency('org.mortbay.jetty:servlet-api:3.0.20100224')
         dependency('org.postgresql:postgresql:42.2.2')
@@ -186,7 +186,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
           entry 'selenium-support'
         }
         dependency('org.skyscreamer:jsonassert:1.5.0')
-        dependency('org.slf4j:slf4j-api:1.7.25')
+        dependency("org.slf4j:slf4j-api:${project.'slf4j-api.version'}")
         dependency('org.springframework.hateoas:spring-hateoas:0.25.0.RELEASE')
         dependency('org.springframework.ldap:spring-ldap-core:2.3.2.RELEASE')
         dependencySet(group: 'org.springframework.security', version: '4.2.8.RELEASE') {
@@ -220,6 +220,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
     // These versions are consumed beyond the scope of source set dependencies.
     project.ext {
       // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
+      // Some of these are referenced above as well
       set('antlr.version', '2.7.7')
       set('commons-io.version', '2.6')
       set('commons-lang3.version', '3.8.1')
