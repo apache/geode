@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
@@ -189,6 +190,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "myTable");
     csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(ID_NAME, "myId");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -197,6 +199,8 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(mapping.getIds()).isEqualTo("myId");
+
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
     });
@@ -206,6 +210,8 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(regionMapping.getIds()).isEqualTo("myId");
+
       validateRegionAlteredInClusterConfig(regionName, false);
       validateAsyncEventQueueCreatedInClusterConfig(regionName, false);
     });
@@ -221,6 +227,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(TABLE_NAME, "myTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "true");
+    csb.addOption(ID_NAME, "myId");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -229,6 +236,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(mapping.getIds()).isEqualTo("myId");
       validateRegionAlteredOnServer(regionName, true);
     });
 
@@ -237,6 +245,7 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(regionMapping.getIds()).isEqualTo("myId");
       validateRegionAlteredInClusterConfig(regionName, true);
     });
   }

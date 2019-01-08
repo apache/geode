@@ -65,8 +65,8 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   }
 
   @Override
-  public boolean isMappingSynchronous(RegionMapping mapping, Cache cache) {
-    Region<?, ?> region = cache.getRegion(mapping.getRegionName());
+  public boolean isMappingSynchronous(String regionName, Cache cache) {
+    Region<?, ?> region = cache.getRegion(regionName);
     if (region == null) {
       throw new IllegalStateException("Region for mapping could not be found.");
     }

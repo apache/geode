@@ -20,6 +20,7 @@ public final class MappingConstants {
   public static final String TABLE_NAME = "table";
   public static final String DATA_SOURCE_NAME = "data-source";
   public static final String SYNCHRONOUS_NAME = "synchronous";
+  public static final String ID_NAME = "id";
 
   private MappingConstants() {}
 }

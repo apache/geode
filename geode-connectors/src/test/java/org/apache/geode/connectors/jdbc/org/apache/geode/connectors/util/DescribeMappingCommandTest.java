@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.org.apache.geode.connectors.util;
 
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
@@ -82,6 +83,7 @@ public class DescribeMappingCommandTest {
     attributes.put(TABLE_NAME, "table1");
     attributes.put(DATA_SOURCE_NAME, "name1");
     attributes.put(SYNCHRONOUS_NAME, "true");
+    attributes.put(ID_NAME, "myId");
 
     DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
 
@@ -92,9 +94,10 @@ public class DescribeMappingCommandTest {
 
 
 
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess().containsOutput("region", "region")
-        .containsOutput("data-source", "name1").containsOutput("table", "table1")
-        .containsOutput("pdx-name", "class1").containsOutput("true");
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOutput(REGION_NAME, "region")
+        .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
+        .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId").containsOutput("true");
   }
 
   @Test

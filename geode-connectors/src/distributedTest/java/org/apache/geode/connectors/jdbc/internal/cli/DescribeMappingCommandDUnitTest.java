@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
@@ -94,6 +95,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(TABLE_NAME, "testTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "true");
+    csb.addOption(ID_NAME, "myId");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -109,6 +111,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "true");
+    commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
   }
 
   @Test
@@ -127,6 +130,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(TABLE_NAME, "testTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "false");
+    csb.addOption(ID_NAME, "myId");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -143,6 +147,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
+    commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
   }
 
   @Test
@@ -184,6 +189,8 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
+    commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
+
   }
 
   private void createRegionMapping() throws RegionMappingExistsException {

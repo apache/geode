@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
@@ -51,10 +52,12 @@ public class DescribeMappingFunction extends CliFunction<String> {
     attributes.put(DATA_SOURCE_NAME, mapping.getDataSourceName());
     attributes.put(TABLE_NAME, mapping.getTableName());
     attributes.put(PDX_NAME, mapping.getPdxName());
+    attributes.put(ID_NAME, mapping.getIds());
 
     try {
       attributes.put(SYNCHRONOUS_NAME,
-          Boolean.toString(service.isMappingSynchronous(mapping, context.getCache())));
+          Boolean
+              .toString(service.isMappingSynchronous(mapping.getRegionName(), context.getCache())));
     } catch (RegionMappingNotFoundException e) {
       attributes.put(SYNCHRONOUS_NAME, "Not found.");
     }

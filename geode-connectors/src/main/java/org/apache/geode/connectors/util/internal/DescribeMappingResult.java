@@ -24,7 +24,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 
 public class DescribeMappingResult implements DataSerializable {
-  private Map<String, String> attributeMap;
+  private final Map<String, String> attributeMap;
 
   public DescribeMappingResult() {
     this.attributeMap = new HashMap<>();

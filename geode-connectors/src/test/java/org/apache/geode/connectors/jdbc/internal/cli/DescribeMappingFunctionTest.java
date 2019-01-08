@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
@@ -54,6 +55,7 @@ public class DescribeMappingFunctionTest {
   private static final String TEST_TABLE = "testTableName";
   private static final String TEST_DATASOURCE = "testDataSource";
   private static final String TEST_SYNCHRONOUS = "false";
+  private static final String TEST_ID = "testId";
 
   private DescribeMappingFunction function;
   private JdbcConnectorService service;
@@ -84,6 +86,7 @@ public class DescribeMappingFunctionTest {
     when(regionMapping.getDataSourceName()).thenReturn(TEST_DATASOURCE);
     when(regionMapping.getTableName()).thenReturn(TEST_TABLE);
     when(regionMapping.getPdxName()).thenReturn(TEST_PDX);
+    when(regionMapping.getId()).thenReturn(TEST_ID);
   }
 
   @Test
@@ -115,6 +118,7 @@ public class DescribeMappingFunctionTest {
     expectedAttributes.put(TABLE_NAME, TEST_TABLE);
     expectedAttributes.put(DATA_SOURCE_NAME, TEST_DATASOURCE);
     expectedAttributes.put(SYNCHRONOUS_NAME, TEST_SYNCHRONOUS);
+    expectedAttributes.put(ID_NAME, TEST_ID);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
