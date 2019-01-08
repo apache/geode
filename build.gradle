@@ -48,11 +48,6 @@ wrapper {
   distributionType = "all"
 }
 
-// Load all properties in dependency-version.properties as project properties, so all projects can read them
-Properties dependencyVersions = new Properties()
-dependencyVersions.load(new FileInputStream("${project.projectDir}/gradle/dependency-versions.properties"))
-dependencyVersions.keys().each{ k -> project.ext[k] = dependencyVersions[k]}
-
 allprojects {
   version = versionNumber + releaseQualifier + releaseType
   ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
@@ -69,6 +64,11 @@ allprojects {
   }
 }
 
+apply from: "${scriptDir}/geode-dependency-management.gradle"
+// We will apply project versions here at the root project until they can be removed
+// Those subprojects that are properly managed by Spring will apply this plugin explicitly.
+versionManagement.applySpringDependencyManagement = false
+
 // utilities.gradle MUST be read before publish.gradle for reasons
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
@@ -83,7 +83,6 @@ apply from: "${scriptDir}/docker.gradle"
 apply from: "${scriptDir}/spotless.gradle"
 apply from: "${scriptDir}/lint.gradle"
 apply from: "${scriptDir}/resolve-dependencies.gradle"
-apply from: "${scriptDir}/geode-dependency-management.gradle"
 
 subprojects {
   apply plugin: 'com.github.ben-manes.versions'
