@@ -37,7 +37,6 @@ EMAIL_BODY="results/body"
 
 GEODE_BUILD_VERSION_FILE=${ROOT_DIR}/geode-build-version/number
 GEODE_RESULTS_VERSION_FILE=${ROOT_DIR}/results/number
-GEODE_BUILD_VERSION_NUMBER=$(echo "${GRADLE_GLOBAL_ARGS}"|tr ' ' '\n' | grep "versionNumber *=" - geode/gradle.properties | awk -F "=" '{print $2; exit}' | tr -d ' ')
 GEODE_BUILD_DIR=/tmp/geode-build
 GEODE_PULL_REQUEST_ID_FILE=${ROOT_DIR}/geode/.git/id
 
@@ -45,11 +44,15 @@ if [ -e "${GEODE_PULL_REQUEST_ID_FILE}" ]; then
   GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
   FULL_PRODUCT_VERSION="geode-pr-${GEODE_PULL_REQUEST_ID}"
 else
+  # semver resource, e.g., "1.9.0-build.325"
   CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
-  CONCOURSE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
-  GEODE_PRODUCT_VERSION=${GEODE_BUILD_VERSION_NUMBER}
+  # Prune all after '-', yielding e.g., "1.9.0"
+  GEODE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
+  # Prune all before '-', yielding e.g., "build.325"
   CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
+  # Prune all before '.', yielding e.g., "325"
   BUILD_ID=${CONCOURSE_VERSION##*.}
+
   FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${CONCOURSE_BUILD_SLUG}
   echo "Concourse VERSION is ${CONCOURSE_VERSION}"
   echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}"
@@ -68,7 +71,9 @@ SET_JAVA_HOME="export JAVA_HOME=/usr/lib/jvm/java-${JAVA_BUILD_VERSION}-openjdk-
 GRADLE_COMMAND="./gradlew \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_GLOBAL_ARGS} \
-    -PbuildId=${BUILD_ID} -PmavenSnapshotBucket=${MAVEN_SNAPSHOT_BUCKET} publish"
+    -PversionNumber=${GEODE_PRODUCT_VERSION} \
+    -PreleaseType=-${CONCOURSE_BUILD_SLUG} \
+    -PbuildId=${BUILD_ID} -PmavenRepository=\"gcs://${MAVEN_SNAPSHOT_BUCKET}/pre-release\" publish"
 
 echo "${GRADLE_COMMAND}"
 ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ${GRADLE_COMMAND}"
