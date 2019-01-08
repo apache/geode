@@ -162,7 +162,7 @@ resources:
 - name: geode-benchmarks
   type: git
   source:
-    branch: aws
+    branch: develop
     depth: 1
     uri: https://github.com/apache/geode-benchmarks.git
 - name: geode-build-version
