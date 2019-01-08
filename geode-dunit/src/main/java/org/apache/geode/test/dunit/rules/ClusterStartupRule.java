@@ -15,6 +15,7 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -31,6 +32,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.JavaVersion;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.cache.client.ClientCache;
@@ -41,6 +43,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.VM;
@@ -135,6 +138,10 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   @Override
   protected void before() throws Throwable {
+    if (isJavaVersionAtLeast(JavaVersion.JAVA_11)) {
+      // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
+      IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
+    }
     DUnitLauncher.launchIfNeeded();
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
