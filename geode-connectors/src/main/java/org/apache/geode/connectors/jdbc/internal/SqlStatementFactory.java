@@ -24,14 +24,14 @@ class SqlStatementFactory {
     this.quote = identifierQuoteString;
   }
 
-  String createSelectQueryString(String tableName, EntryColumnData entryColumnData) {
+  String createSelectQueryString(String quotedTablePath, EntryColumnData entryColumnData) {
     return addKeyColumnsToQuery(entryColumnData,
-        new StringBuilder("SELECT * FROM ").append(quote).append(tableName).append(quote));
+        new StringBuilder("SELECT * FROM ").append(quotedTablePath));
   }
 
-  String createDestroySqlString(String tableName, EntryColumnData entryColumnData) {
+  String createDestroySqlString(String quotedTablePath, EntryColumnData entryColumnData) {
     return addKeyColumnsToQuery(entryColumnData,
-        new StringBuilder("DELETE FROM ").append(quote).append(tableName).append(quote));
+        new StringBuilder("DELETE FROM ").append(quotedTablePath));
   }
 
   private String addKeyColumnsToQuery(EntryColumnData entryColumnData, StringBuilder queryBuilder) {
@@ -48,9 +48,9 @@ class SqlStatementFactory {
     return queryBuilder.toString();
   }
 
-  String createUpdateSqlString(String tableName, EntryColumnData entryColumnData) {
+  String createUpdateSqlString(String quotedTablePath, EntryColumnData entryColumnData) {
     StringBuilder query = new StringBuilder("UPDATE ")
-        .append(quote).append(tableName).append(quote)
+        .append(quotedTablePath)
         .append(" SET ");
     int idx = 0;
     for (ColumnData column : entryColumnData.getEntryValueColumnData()) {
@@ -64,9 +64,9 @@ class SqlStatementFactory {
     return addKeyColumnsToQuery(entryColumnData, query);
   }
 
-  String createInsertSqlString(String tableName, EntryColumnData entryColumnData) {
+  String createInsertSqlString(String quotedTablePath, EntryColumnData entryColumnData) {
     StringBuilder columnNames = new StringBuilder("INSERT INTO ")
-        .append(quote).append(tableName).append(quote)
+        .append(quotedTablePath)
         .append(" (");
     StringBuilder columnValues = new StringBuilder(" VALUES (");
     addColumnDataToSqlString(entryColumnData, columnNames, columnValues);

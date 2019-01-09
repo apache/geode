@@ -264,7 +264,23 @@ public class TableMetaDataManagerTest {
     TableMetaDataView data =
         tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
-    assertThat(data.getTableName()).isEqualTo(TABLE_NAME);
+    assertThat(data.getQuotedTablePath()).isEqualTo(TABLE_NAME);
+  }
+
+  @Test
+  public void returnsQuotedTableNameWhenMetaDataHasQuoteId() throws Exception {
+    setupPrimaryKeysMetaData();
+    when(primaryKeysResultSet.next()).thenReturn(true).thenReturn(false);
+    when(tablesResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+    when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase())
+        .thenReturn(TABLE_NAME);
+    String QUOTE = "@@";
+    when(this.databaseMetaData.getIdentifierQuoteString()).thenReturn(QUOTE);
+
+    TableMetaDataView data =
+        tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
+
+    assertThat(data.getQuotedTablePath()).isEqualTo(QUOTE + TABLE_NAME + QUOTE);
   }
 
   @Test
@@ -279,7 +295,7 @@ public class TableMetaDataManagerTest {
     TableMetaDataView data =
         tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
-    assertThat(data.getTableName()).isEqualTo(TABLE_NAME.toUpperCase());
+    assertThat(data.getQuotedTablePath()).isEqualTo(TABLE_NAME.toUpperCase());
   }
 
   @Test
@@ -411,7 +427,7 @@ public class TableMetaDataManagerTest {
     TableMetaDataView data =
         tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
 
-    assertThat(data.getTableName()).isEqualTo(TABLE_NAME);
+    assertThat(data.getQuotedTablePath()).isEqualTo(TABLE_NAME);
   }
 
   private void setupPrimaryKeysMetaData() throws SQLException {

@@ -225,7 +225,7 @@ public class SqlHandler {
       Operation operation) {
     SqlStatementFactory statementFactory =
         new SqlStatementFactory(tableMetaData.getIdentifierQuoteString());
-    String tableName = tableMetaData.getTableName();
+    String tableName = tableMetaData.getQuotedTablePath();
     if (operation.isCreate()) {
       return statementFactory.createInsertSqlString(tableName, entryColumnData);
     } else if (operation.isUpdate()) {

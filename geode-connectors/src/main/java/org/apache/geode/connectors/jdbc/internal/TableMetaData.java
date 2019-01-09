@@ -22,22 +22,22 @@ import java.util.Set;
 
 public class TableMetaData implements TableMetaDataView {
 
-  private final String tableName;
+  private final String quotedTablePath;
   private final List<String> keyColumnNames;
   private final Map<String, Integer> columnNameToTypeMap;
   private final String identifierQuoteString;
 
   public TableMetaData(String tableName, List<String> keyColumnNames, String quoteString,
       Map<String, Integer> dataTypes) {
-    this.tableName = tableName;
+    this.quotedTablePath = quoteString + tableName + quoteString;
     this.keyColumnNames = keyColumnNames;
     this.columnNameToTypeMap = dataTypes;
     this.identifierQuoteString = quoteString;
   }
 
   @Override
-  public String getTableName() {
-    return tableName;
+  public String getQuotedTablePath() {
+    return quotedTablePath;
   }
 
   @Override

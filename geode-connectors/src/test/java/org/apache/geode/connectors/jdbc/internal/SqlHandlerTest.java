@@ -90,7 +90,7 @@ public class SqlHandlerTest {
     when(region.getRegionService()).thenReturn(cache);
     tableMetaDataManager = mock(TableMetaDataManager.class);
     tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getTableName()).thenReturn(TABLE_NAME);
+    when(tableMetaDataView.getQuotedTablePath()).thenReturn(TABLE_NAME);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN));
     final String IDS = "ids";
     when(tableMetaDataManager.getTableMetaDataView(any(), any()))
