@@ -64,27 +64,20 @@ public class TableMetaDataManager {
       String tableName, RegionMapping regionMapping) {
     try {
       DatabaseMetaData metaData = connection.getMetaData();
-      String catalogFilter = getCatalogNameFromMetaData(metaData, regionMapping);
-      String schemaFilter = getSchemaNameFromMetaData(metaData, regionMapping, catalogFilter);
+      String realCatalogName = getCatalogNameFromMetaData(metaData, regionMapping);
+      String realSchemaName = getSchemaNameFromMetaData(metaData, regionMapping, realCatalogName);
       String realTableName =
-          getTableNameFromMetaData(metaData, catalogFilter, schemaFilter, tableName);
-      List<String> keys = getPrimaryKeyColumnNamesFromMetaData(metaData, catalogFilter,
-          schemaFilter, realTableName, regionMapping.getIds());
-      String quoteString = getQuoteStringFromMetaData(metaData);
+          getTableNameFromMetaData(metaData, realCatalogName, realSchemaName, tableName);
+      List<String> keys = getPrimaryKeyColumnNamesFromMetaData(metaData, realCatalogName,
+          realSchemaName, realTableName, regionMapping.getIds());
+      String quoteString = metaData.getIdentifierQuoteString();
       Map<String, Integer> dataTypes =
-          getDataTypesFromMetaData(metaData, catalogFilter, schemaFilter, realTableName);
-      return new TableMetaData(realTableName, keys, quoteString, dataTypes);
+          getDataTypesFromMetaData(metaData, realCatalogName, realSchemaName, realTableName);
+      return new TableMetaData(realCatalogName, realSchemaName, realTableName, keys, quoteString,
+          dataTypes);
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
     }
-  }
-
-  private String getQuoteStringFromMetaData(DatabaseMetaData metaData) throws SQLException {
-    String quoteString = metaData.getIdentifierQuoteString();
-    if (quoteString == null) {
-      quoteString = "";
-    }
-    return quoteString;
   }
 
   String getCatalogNameFromMetaData(DatabaseMetaData metaData, RegionMapping regionMapping)

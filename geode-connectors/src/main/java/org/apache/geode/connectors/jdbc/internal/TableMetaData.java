@@ -27,12 +27,30 @@ public class TableMetaData implements TableMetaDataView {
   private final Map<String, Integer> columnNameToTypeMap;
   private final String identifierQuoteString;
 
-  public TableMetaData(String tableName, List<String> keyColumnNames, String quoteString,
-      Map<String, Integer> dataTypes) {
-    this.quotedTablePath = quoteString + tableName + quoteString;
+  public TableMetaData(String catalogName, String schemaName, String tableName,
+      List<String> keyColumnNames, String quoteString, Map<String, Integer> dataTypes) {
+    if (quoteString == null) {
+      quoteString = "";
+    }
+    this.quotedTablePath = createQuotedTablePath(catalogName, schemaName, tableName, quoteString);
     this.keyColumnNames = keyColumnNames;
     this.columnNameToTypeMap = dataTypes;
     this.identifierQuoteString = quoteString;
+  }
+
+  private static String createQuotedTablePath(String catalogName, String schemaName,
+      String tableName, String quote) {
+    StringBuilder builder = new StringBuilder();
+    appendPrefix(builder, catalogName, quote);
+    appendPrefix(builder, schemaName, quote);
+    builder.append(quote).append(tableName).append(quote);
+    return builder.toString();
+  }
+
+  private static void appendPrefix(StringBuilder builder, String prefix, String quote) {
+    if (prefix != null && !prefix.isEmpty()) {
+      builder.append(quote).append(prefix).append(quote).append('.');
+    }
   }
 
   @Override
