@@ -47,12 +47,12 @@ import org.apache.geode.pdx.internal.AutoSerializableManager;
 public abstract class JdbcLoaderIntegrationTest {
 
   static final String DB_NAME = "test";
+  protected static final String SCHEMA_NAME = "mySchema";
+  protected static final String REGION_TABLE_NAME = "employees";
 
-  private static final String REGION_TABLE_NAME = "employees";
-
-  private InternalCache cache;
-  private Connection connection;
-  private Statement statement;
+  protected InternalCache cache;
+  protected Connection connection;
+  protected Statement statement;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -90,11 +90,19 @@ public abstract class JdbcLoaderIntegrationTest {
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
   }
 
+  private void createEmployeeTableWithSchema() throws Exception {
+    statement.execute("CREATE SCHEMA " + SCHEMA_NAME);
+    statement.execute("Create Table " + SCHEMA_NAME + '.' + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+  }
+
   private void closeDB() throws Exception {
     if (statement == null) {
       statement = connection.createStatement();
     }
-    statement.execute("Drop table " + REGION_TABLE_NAME);
+    statement.execute("Drop table IF EXISTS " + REGION_TABLE_NAME);
+    statement.execute("Drop table IF EXISTS " + SCHEMA_NAME + "." + REGION_TABLE_NAME);
+    statement.execute("Drop schema IF EXISTS " + SCHEMA_NAME);
     statement.close();
 
     if (connection != null) {
@@ -125,7 +133,7 @@ public abstract class JdbcLoaderIntegrationTest {
         .execute("Insert into " + REGION_TABLE_NAME + "(id, name, age) values('1', 'Emp1', 21)");
     String ids = "id,name";
     Region<String, Employee> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids);
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, null, null);
     createPdxType();
 
     JSONObject key = new JSONObject();
@@ -137,6 +145,37 @@ public abstract class JdbcLoaderIntegrationTest {
     assertThat(value.getName()).isEqualTo("Emp1");
     assertThat(value.getAge()).isEqualTo(21);
   }
+
+  @Test
+  public void verifyGetWithSchemaAndPdxClassNameAndCompositeKey() throws Exception {
+    createEmployeeTableWithSchema();
+    statement
+        .execute("Insert into " + SCHEMA_NAME + '.' + REGION_TABLE_NAME + "(id, name, age) values('1', 'Emp1', 21)");
+    String ids = "id,name";
+    String catalog;
+    String schema;
+    if (vendorSupportsSchemas()) {
+      catalog = null;
+      schema = SCHEMA_NAME;
+    } else {
+      catalog = SCHEMA_NAME;
+      schema = null;
+    }
+    Region<String, Employee> region =
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, catalog, schema);
+    createPdxType();
+
+    JSONObject key = new JSONObject();
+    key.put("id", "1");
+    key.put("name", "Emp1");
+    Employee value = region.get(key.toString());
+
+    assertThat(value.getId()).isEqualTo("1");
+    assertThat(value.getName()).isEqualTo("Emp1");
+    assertThat(value.getAge()).isEqualTo(21);
+  }
+
+  protected abstract boolean vendorSupportsSchemas();
 
   @Test
   public void verifyGetWithSupportedFieldsWithPdxClassName() throws Exception {
@@ -153,11 +192,11 @@ public abstract class JdbcLoaderIntegrationTest {
     assertThat(value).isEqualTo(classWithSupportedPdxFields);
   }
 
-  private void createPdxType() throws IOException {
+  protected void createPdxType() throws IOException {
     createPdxType(new Employee("id", "name", 45));
   }
 
-  private void createPdxType(Object value) throws IOException {
+  protected void createPdxType(Object value) throws IOException {
     // the following serialization will add a pdxType
     BlobHelper.serializeToBlob(value);
   }
@@ -170,29 +209,29 @@ public abstract class JdbcLoaderIntegrationTest {
     assertThat(pdx).isNull();
   }
 
-  private SqlHandler createSqlHandler(String pdxClassName, String ids)
+  protected SqlHandler createSqlHandler(String pdxClassName, String ids, String catalog, String schema)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName, ids),
+        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName, ids, catalog, schema),
         testDataSourceFactory);
   }
 
-  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
-      String ids)
+  protected <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
+      String ids, String catalog, String schema)
       throws RegionMappingExistsException {
     JdbcLoader<K, V> jdbcLoader =
-        new JdbcLoader<>(createSqlHandler(pdxClassName, ids), cache);
+        new JdbcLoader<>(createSqlHandler(pdxClassName, ids, catalog, schema), cache);
     RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setCacheLoader(jdbcLoader);
     return regionFactory.create(regionName);
   }
 
-  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName)
+  protected <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName)
       throws RegionMappingExistsException {
-    return createRegionWithJDBCLoader(regionName, pdxClassName, null);
+    return createRegionWithJDBCLoader(regionName, pdxClassName, null, null, null);
   }
 
-  private ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert(String key) {
+  protected ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert(String key) {
     ClassWithSupportedPdxFields classWithSupportedPdxFields =
         new ClassWithSupportedPdxFields(key, true, (byte) 1, (short) 2, 3, 4, 5.5f, 6.0, "BigEmp",
             new Date(0), "BigEmpObject", new byte[] {1, 2}, 'c');
@@ -200,7 +239,7 @@ public abstract class JdbcLoaderIntegrationTest {
     return classWithSupportedPdxFields;
   }
 
-  private void insertIntoClassWithSupportedPdxFieldsTable(String id,
+  protected void insertIntoClassWithSupportedPdxFieldsTable(String id,
       ClassWithSupportedPdxFields classWithSupportedPdxFields) throws Exception {
     String insertString =
         "Insert into " + REGION_TABLE_NAME + " values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
