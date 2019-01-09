@@ -1540,6 +1540,11 @@ public class TXState implements TXStateInterface {
         txr = txWriteRegion(internalRegion, keyInfo);
       }
       result = dataReg.createReadEntry(txr, keyInfo, createIfAbsent);
+      if (result == null) {
+        assert !createIfAbsent;
+        // Destroyed token is excluded from TXState in set operation
+        return result;
+      }
     }
 
     if (result != null) {
