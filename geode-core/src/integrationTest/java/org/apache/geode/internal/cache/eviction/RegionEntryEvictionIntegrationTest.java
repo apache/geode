@@ -22,6 +22,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,10 +42,25 @@ import org.apache.geode.test.junit.categories.EvictionTest;
 
 @Category({EvictionTest.class})
 public class RegionEntryEvictionIntegrationTest {
+
+  private Cache cache;
+
   private Region<String, String> region;
 
   @Rule
   public TestName testName = new TestName();
+
+  @Before
+  public void setup() {
+    cache = new CacheFactory().set("locators", "").set("mcast-port", "0").create();
+  }
+
+  @After
+  public void cleaup() {
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
+    }
+  }
 
   @Test
   public void verifyMostRecentEntryIsNotEvicted() {
@@ -88,14 +107,12 @@ public class RegionEntryEvictionIntegrationTest {
 
 
   private Region<String, String> createRegion() {
-    Cache cache = new CacheFactory().set("locators", "").set("mcast-port", "0").create();
     return cache.<String, String>createRegionFactory(RegionShortcut.REPLICATE)
         .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(2))
         .create(testName.getMethodName());
   }
 
   private Region<String, String> createRegionWithCustomExpiration(int evictionCount) {
-    Cache cache = new CacheFactory().set("locators", "").set("mcast-port", "0").create();
     return cache.<String, String>createRegionFactory(RegionShortcut.REPLICATE)
         .setCustomEntryIdleTimeout(new CustomExpiry<String, String>() {
           @Override
