@@ -29,9 +29,10 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 RESULTS_DIR=$(pwd)/results
-
+export PAGER=
 pushd geode
 GEODE_SHA=$(git rev-parse --verify HEAD)
+GEODE_SHA_COMMIT_MESSAGE=$(git log -n 1 ${GEODE_SHA})
 popd
 
 source concourse-metadata-resource/concourse_metadata
@@ -55,11 +56,18 @@ popd
 
 pushd ${RESULTS_BASE_DIR}
   if [[ -d ${BENCHMARKS_DIR} ]]; then
-    tar zcvf ${BENCHMARKS_ARCHIVE_FILE} ${BENCHMARKS_DIR}
-    gsutil cp ${BENCHMARKS_ARCHIVE_FILE} ${ARTIFACT_SCHEME}://${BENCHMARKS_ARTIFACTS_DESTINATION}/${BENCHMARKS_ARCHIVE_FILENAME}
-    printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=  Test Results URI =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
-    printf "\033[92m${ARTIFACT_SCHEME}://${BENCHMARKS_ARTIFACTS_DESTINATION_DESTINATION}\033[0m\n"
-    printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
+    echo "***** Creating benchmarks archive"
+    tar zcf ${BENCHMARKS_ARCHIVE_FILE} ${BENCHMARKS_DIR}
+    echo "***** Copying benchmarks archive to storage"
+    gsutil cp ${BENCHMARKS_ARCHIVE_FILE} gs://${BENCHMARKS_ARTIFACTS_DESTINATION}/${BENCHMARKS_ARCHIVE_FILENAME}
+    printf "\n"
+    printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
+    printf "\033[92mThis benchmark run is the result of comparing ${GEODE_SHA} with baseline ${BASELINE_BRANCH}\033[0m\n"
+    printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- Commit Message =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
+    echo "${GEODE_SHA_COMMIT_MESSAGE}"
+    printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Benchmark Results URI =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
+    printf "\033[92m${ARTIFACT_SCHEME}://${BENCHMARKS_ARTIFACTS_DESTINATION}/${BENCHMARKS_ARCHIVE_FILENAME}\033[0m\n"
+    printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
     printf "\n"
   else
     echo "***************************"
