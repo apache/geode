@@ -23,12 +23,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-
 public class TableMetaDataTest {
-  private static final String TABLE_NAME = "testTable";
-  private static final String KEY_COLUMN = "keyColumn";
-  private static final String KEY_COLUMN2 = "keyColumn2";
-
   private String catalogName;
   private String schemaName;
   private String tableName;
