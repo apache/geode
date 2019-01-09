@@ -270,7 +270,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
   }
 
   @Override
-  protected void doAfterCompletionActions() {
+  protected void doAfterCompletionActions(boolean disabledEviction) {
     if (isOnlyExisting() && !isCompleted()) {
       if (didDestroy) {
         getOwner().txApplyPutHandleDidDestroy(getEvent().getKey());

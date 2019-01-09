@@ -286,18 +286,27 @@ public class RegionMapPut extends AbstractRegionMapPut {
   }
 
   @Override
-  protected void doAfterCompletionActions() {
-    if (isCompleted()) {
-      try {
+  protected void doAfterCompletionActions(boolean disabledEviction) {
+    try {
+      if (isCompleted()) {
         final boolean invokeListeners = getEvent().basicGetNewValue() != Token.TOMBSTONE;
         getOwner().basicPutPart3(getEvent(), getRegionEntry(), isOwnerInitialized(),
             getLastModifiedTime(), invokeListeners, isIfNew(), isIfOld(), getExpectedOldValue(),
             isRequireOldValue());
-      } finally {
-        lruUpdateCallbackIfNotCleared();
       }
-    } else {
-      getRegionMap().resetThreadLocals();
+    } finally {
+      finishEviction(disabledEviction);
+    }
+  }
+
+  private void finishEviction(boolean disabledEviction) {
+    if (disabledEviction) {
+      getRegionMap().enableLruUpdateCallback();
+      if (isCompleted()) {
+        lruUpdateCallbackIfNotCleared();
+      } else {
+        getRegionMap().resetThreadLocals();
+      }
     }
   }
 

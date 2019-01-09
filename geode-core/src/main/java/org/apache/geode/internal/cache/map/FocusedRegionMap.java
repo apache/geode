@@ -22,8 +22,9 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.TXEntryState;
+import org.apache.geode.internal.cache.eviction.EvictableMap;
 
-public interface FocusedRegionMap {
+public interface FocusedRegionMap extends EvictableMap {
 
   RegionEntry getEntry(EntryEventImpl event);
 
@@ -51,10 +52,6 @@ public interface FocusedRegionMap {
   void incEntryCount(int delta);
 
   void runWhileEvictionDisabled(Runnable runnable);
-
-  void lruUpdateCallback();
-
-  void resetThreadLocals();
 
   void txRemoveOldIndexEntry(Operation putOp, RegionEntry regionEntry);
 
