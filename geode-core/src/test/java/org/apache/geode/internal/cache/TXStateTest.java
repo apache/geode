@@ -179,4 +179,22 @@ public class TXStateTest {
     assertThat(txState.getOriginatingMember()).isSameAs(txStateProxy.getOnBehalfOfClientMember());
   }
 
+  @Test
+  public void txReadEntryDoesNotCleanupNonDirtyEntriesIfRegionCreateReadEntryReturnsNull() {
+    TXState txState = spy(new TXState(txStateProxy, true));
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    Object key = new Object();
+    InternalRegion internalRegion = mock(InternalRegion.class);
+    InternalRegion dataRegion = mock(InternalRegion.class);
+    TXRegionState txRegionState = mock(TXRegionState.class);
+    when(internalRegion.getDataRegionForWrite(keyInfo)).thenReturn(dataRegion);
+    when(txState.txReadRegion(dataRegion)).thenReturn(txRegionState);
+    when(keyInfo.getKey()).thenReturn(key);
+    when(txRegionState.readEntry(key)).thenReturn(null);
+    when(dataRegion.createReadEntry(txRegionState, keyInfo, false)).thenReturn(null);
+
+    assertThat(txState.txReadEntry(keyInfo, internalRegion, true, null, false)).isNull();
+    verify(txRegionState, never()).cleanupNonDirtyEntries(dataRegion);
+  }
+
 }
