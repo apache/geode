@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
@@ -38,10 +37,10 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 
 public abstract class TableMetaDataManagerIntegrationTest {
 
-  private static final String REGION_TABLE_NAME = "employees";
+  protected static final String REGION_TABLE_NAME = "employees";
   protected static final String DB_NAME = "test";
 
-  private TableMetaDataManager manager;
+  protected TableMetaDataManager manager;
   protected Connection connection;
   protected Statement statement;
   protected RegionMapping regionMapping;
@@ -91,18 +90,6 @@ public abstract class TableMetaDataManagerIntegrationTest {
     statement.execute("CREATE TABLE MYSCHEMA." + REGION_TABLE_NAME + " (" + quote + "id" + quote
         + " VARCHAR(10) primary key not null," + quote + "name" + quote + " VARCHAR(10)," + quote
         + "age" + quote + " int)");
-    System.out.println("DEBUG getCatalogs()");
-    dumpResultSet(connection.getMetaData().getCatalogs());
-    System.out.println("DEBUG getSchemas()");
-    dumpResultSet(connection.getMetaData().getSchemas());
-    System.out.println("DEBUG getSchemas(%)");
-    dumpResultSet(connection.getMetaData().getSchemas("", "%"));
-  }
-
-  private void dumpResultSet(ResultSet schemas) throws SQLException {
-    while (schemas.next()) {
-      System.out.println("  " + schemas.getString(1));
-    }
   }
 
   protected void createTableWithNoPrimaryKey() throws SQLException {

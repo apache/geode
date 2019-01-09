@@ -14,11 +14,17 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.ClassRule;
+import org.junit.Test;
 
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
@@ -44,4 +50,26 @@ public class PostgresTableMetaDataManagerIntegrationTest
     regionMapping.setSchema(name);
   }
 
+  protected void createTableWithSchemaAndCatalog() throws SQLException {
+    DatabaseMetaData metaData = connection.getMetaData();
+    String quote = metaData.getIdentifierQuoteString();
+    statement.execute("CREATE SCHEMA MYSCHEMA");
+    statement.execute(
+        "CREATE TABLE " + DB_NAME + ".MYSCHEMA." + REGION_TABLE_NAME + " (" + quote + "id" + quote
+            + " VARCHAR(10) primary key not null," + quote + "name" + quote + " VARCHAR(10),"
+            + quote
+            + "age" + quote + " int)");
+  }
+
+  @Test
+  public void validateKeyColumnNameWithSchemaAndCatalog() throws SQLException {
+    createTableWithSchemaAndCatalog();
+    regionMapping.setSchema("MYSCHEMA");
+    regionMapping.setCatalog(DB_NAME);
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
+
+    List<String> keyColumnNames = metaData.getKeyColumnNames();
+
+    assertThat(keyColumnNames).isEqualTo(Arrays.asList("id"));
+  }
 }
