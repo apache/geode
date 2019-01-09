@@ -70,6 +70,8 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionEvent;
@@ -7206,6 +7208,51 @@ public class TXJUnitTest {
     assertTrue(!ev.getOperation().isNetLoad());
     assertTrue(!ev.getOperation().isLoad());
     assertTrue(!ev.getOperation().isNetSearch());
+  }
+
+  private enum OperationType {
+    REPLACE, REMOVE
+  }
+
+  @Test
+  public void removeShouldNotCleanupRepeatableReadTXEntriesIfEntryNotFound() {
+    repeatableReadTXEntriesShouldNotBeCleanedUpIfEntryNotFound(OperationType.REMOVE);
+  }
+
+  @Test
+  public void replaceShouldNotCleanupRepeatableReadTXEntriesIfEntryNotFound() {
+    repeatableReadTXEntriesShouldNotBeCleanedUpIfEntryNotFound(OperationType.REPLACE);
+  }
+
+  private void repeatableReadTXEntriesShouldNotBeCleanedUpIfEntryNotFound(OperationType type) {
+    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    Region<Integer, String> region = regionFactory.create(getUniqueName());
+    region.put(1, "value1");
+    region.put(2, "value2");
+    txMgr.begin();
+    region.put(1, "newValue1");
+    TransactionId transaction1 = txMgr.suspend();
+
+    txMgr.begin();
+    region.get(1); // a repeatable read operation
+    switch (type) {
+      case REMOVE:
+        assertThat(region.remove(2, "nonExistingValue")).isFalse();
+        break;
+      case REPLACE:
+        assertThat(region.replace(2, "newValue", "nonExistingValue")).isFalse();
+        break;
+      default:
+        throw new RuntimeException("Unknown operation");
+    };
+    TransactionId transaction2 = txMgr.suspend();
+
+    txMgr.resume(transaction1);
+    txMgr.commit();
+
+    txMgr.resume(transaction2);
+    region.put(1, "anotherValue");
+    assertThatThrownBy(() -> txMgr.commit()).isInstanceOf(CommitConflictException.class);
   }
 
 }

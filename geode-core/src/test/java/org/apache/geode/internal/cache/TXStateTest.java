@@ -34,7 +34,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FailedSynchronizationException;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
@@ -180,7 +182,7 @@ public class TXStateTest {
   }
 
   @Test
-  public void txReadEntryDoesNotCleanupNonDirtyEntriesIfRegionCreateReadEntryReturnsNull() {
+  public void txReadEntryDoesNotCleanupTXEntriesIfRegionCreateReadEntryReturnsNull() {
     TXState txState = spy(new TXState(txStateProxy, true));
     KeyInfo keyInfo = mock(KeyInfo.class);
     Object key = new Object();
@@ -195,6 +197,30 @@ public class TXStateTest {
 
     assertThat(txState.txReadEntry(keyInfo, internalRegion, true, null, false)).isNull();
     verify(txRegionState, never()).cleanupNonDirtyEntries(dataRegion);
+  }
+
+  @Test
+  public void txReadEntryDoesNotCleanupTXEntriesIfEntryNotFound() {
+    TXState txState = spy(new TXState(txStateProxy, true));
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    Object key = new Object();
+    Object expectedValue = new Object();
+    InternalRegion internalRegion = mock(InternalRegion.class);
+    InternalRegion dataRegion = mock(InternalRegion.class);
+    TXRegionState txRegionState = mock(TXRegionState.class);
+    TXEntryState txEntryState = mock(TXEntryState.class);
+    when(internalRegion.getDataRegionForWrite(keyInfo)).thenReturn(dataRegion);
+    when(internalRegion.getAttributes()).thenReturn(mock(RegionAttributes.class));
+    when(internalRegion.getCache()).thenReturn(mock(InternalCache.class));
+    when(txState.txReadRegion(dataRegion)).thenReturn(txRegionState);
+    when(keyInfo.getKey()).thenReturn(key);
+    when(txRegionState.readEntry(key)).thenReturn(txEntryState);
+    when(txEntryState.getNearSidePendingValue()).thenReturn("currentVal");
+
+    assertThatThrownBy(
+        () -> txState.txReadEntry(keyInfo, internalRegion, true, expectedValue, false))
+            .isInstanceOf(EntryNotFoundException.class);
+    verify(txRegionState, never()).cleanupNonDirtyEntries(internalRegion);
   }
 
 }

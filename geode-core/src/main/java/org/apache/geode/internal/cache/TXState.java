@@ -1553,7 +1553,6 @@ public class TXState implements TXStateInterface {
       if (expectedOldValue != null) {
         Object val = result.getNearSidePendingValue();
         if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, val, internalRegion)) {
-          txr.cleanupNonDirtyEntries(internalRegion);
           throw new EntryNotFoundException(
               "The current value was not equal to expected value.");
         }
