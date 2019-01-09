@@ -249,8 +249,7 @@ public class RegionCreateFunction implements InternalFunction {
       RegionAttributesType.ExpirationAttributesType eitl = regionAttributes.getEntryIdleTime();
       factory.setEntryIdleTimeout(
           new ExpirationAttributes(Integer.valueOf(eitl.getTimeout()),
-              ExpirationAction.fromString(eitl.getAction().toUpperCase()
-                  .replace("-", "_"))));
+              ExpirationAction.fromXmlString(eitl.getAction())));
 
       try {
         if (eitl.getCustomExpiry() != null) {
@@ -266,8 +265,7 @@ public class RegionCreateFunction implements InternalFunction {
       RegionAttributesType.ExpirationAttributesType ettl = regionAttributes.getEntryTimeToLive();
       factory.setEntryTimeToLive(
           new ExpirationAttributes(Integer.valueOf(ettl.getTimeout()),
-              ExpirationAction.fromString(ettl.getAction().toUpperCase()
-                  .replace("-", "_"))));
+              ExpirationAction.fromXmlString(ettl.getAction())));
 
       try {
         if (ettl.getCustomExpiry() != null) {
@@ -283,16 +281,14 @@ public class RegionCreateFunction implements InternalFunction {
       RegionAttributesType.ExpirationAttributesType ritl = regionAttributes.getRegionIdleTime();
       factory.setRegionIdleTimeout(
           new ExpirationAttributes(Integer.valueOf(ritl.getTimeout()),
-              ExpirationAction.fromString(ritl.getAction().toUpperCase()
-                  .replace("-", "_"))));
+              ExpirationAction.fromXmlString(ritl.getAction())));
     }
 
     if (regionAttributes.getRegionTimeToLive() != null) {
       RegionAttributesType.ExpirationAttributesType rttl = regionAttributes.getRegionTimeToLive();
       factory.setRegionTimeToLive(
           new ExpirationAttributes(Integer.valueOf(rttl.getTimeout()),
-              ExpirationAction.fromString(rttl.getAction().toUpperCase()
-                  .replace("-", "_"))));
+              ExpirationAction.fromXmlString(rttl.getAction())));
     }
   }
 

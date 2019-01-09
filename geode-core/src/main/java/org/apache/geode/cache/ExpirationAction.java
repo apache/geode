@@ -120,6 +120,11 @@ public class ExpirationAction implements Serializable {
     return this.name;
   }
 
+  /**
+   * converts to strings used in cache.xml
+   *
+   * @return strings used in cache.xml
+   */
   public String toXmlString() {
     switch (this.name) {
       case "INVALIDATE":
@@ -135,19 +140,26 @@ public class ExpirationAction implements Serializable {
     }
   }
 
-  public static ExpirationAction fromString(String s) {
-    int matchValue = -1;
-    for (int i = 0; i < VALUES.length; i++) {
-      if (VALUES[i].toString().equals(s)) {
-        matchValue = i;
-        break;
-      }
+  /**
+   * converts allowed values in cache.xml into ExpirationAction
+   *
+   * @param xmlValue the values allowed are: invalidate, destroy, local-invalidate, local-destroy
+   * @return the corresponding ExpirationAction
+   * @throws IllegalArgumentException for all other invalid strings.
+   */
+  public static ExpirationAction fromXmlString(String xmlValue) {
+    switch (xmlValue) {
+      case "invalidate":
+        return INVALIDATE;
+      case "destroy":
+        return DESTROY;
+      case "local-destroy":
+        return LOCAL_DESTROY;
+      case "local-invalidate":
+        return LOCAL_INVALIDATE;
+      default:
+        throw new IllegalArgumentException("invalid expiration action: " + xmlValue);
     }
-    if (matchValue != -1) {
-      return VALUES[matchValue];
-    }
-
-    return null;
   }
 
   // The 4 declarations below are necessary for serialization

@@ -15,11 +15,14 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -29,7 +32,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class AlterRegionCommandIntegrationTest {
   @ClassRule
   public static ServerStarterRule server =
-      new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "REPLICATED");
+      new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "REPLICATED")
+          .withRegion(RegionShortcut.PARTITION, "PARTITION");
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -42,7 +46,7 @@ public class AlterRegionCommandIntegrationTest {
   @Test
   public void validateGroup() throws Exception {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --group=unknown").statusIsError()
-        .containsOutput("Group(s) \"[unknown]\" are invalid.");
+        .containsOutput("No Members Found");
   }
 
   @Test
@@ -70,5 +74,32 @@ public class AlterRegionCommandIntegrationTest {
   public void invalidEvictionMax() throws Exception {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --eviction-max=-1").statusIsError()
         .containsOutput("Specify 0 or a positive integer value for eviction-max");
+  }
+
+
+  @Test
+  public void alterRegionWithGatewaySender() throws Exception {
+    Region region = server.getCache().getRegion("/REPLICATED");
+    region.getAttributesMutator().addGatewaySenderId("1");
+    gfsh.executeAndAssertThat("alter region --name=REPLICATED --gateway-sender-id='1,2'")
+        .statusIsSuccess();
+    assertThat(region.getAttributes().getGatewaySenderIds()).containsExactly("1", "2");
+
+    gfsh.executeAndAssertThat("alter region --name=REPLICATED --gateway-sender-id=''")
+        .statusIsSuccess();
+    assertThat(region.getAttributes().getGatewaySenderIds()).isNotNull().isEmpty();
+  }
+
+  @Test
+  public void alterRegionWithAsyncEventQueue() throws Exception {
+    Region region = server.getCache().getRegion("/REPLICATED");
+    region.getAttributesMutator().addAsyncEventQueueId("1");
+    gfsh.executeAndAssertThat("alter region --name=REPLICATED --async-event-queue-id='1,2'")
+        .statusIsSuccess();
+    assertThat(region.getAttributes().getAsyncEventQueueIds()).containsExactly("1", "2");
+
+    gfsh.executeAndAssertThat("alter region --name=REPLICATED --async-event-queue-id=''")
+        .statusIsSuccess();
+    assertThat(region.getAttributes().getAsyncEventQueueIds()).isNotNull().isEmpty();
   }
 }
