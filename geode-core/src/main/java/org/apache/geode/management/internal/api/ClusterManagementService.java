@@ -15,12 +15,19 @@
 
 package org.apache.geode.management.internal.api;
 
-import org.apache.geode.cache.configuration.ClusterCacheElement;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.internal.configuration.domain.ClusterConfigElement;
 
+/**
+ * Defines the behavior for a management service object, which is responsible for applying and
+ * persisting
+ * cache configuaration changes on locators and/or servers.
+ */
+@Experimental
 public interface ClusterManagementService {
-  APIResult createCacheElement(ClusterCacheElement config);
+  APIResult createCacheElement(ClusterConfigElement config);
 
-  APIResult deleteCacheElement(ClusterCacheElement config);
+  APIResult deleteCacheElement(ClusterConfigElement config);
 
-  APIResult updateCacheElement(ClusterCacheElement config);
+  APIResult updateCacheElement(ClusterConfigElement config);
 }

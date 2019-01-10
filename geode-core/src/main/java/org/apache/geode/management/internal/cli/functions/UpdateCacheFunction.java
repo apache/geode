@@ -20,29 +20,30 @@ package org.apache.geode.management.internal.cli.functions;
 import java.util.List;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.configuration.ClusterCacheElement;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.configuration.domain.ClusterConfigElement;
+import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
 
 public class UpdateCacheFunction extends CliFunction<List> {
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<List> context) throws Exception {
-    ClusterCacheElement cacheElement = (ClusterCacheElement) context.getArguments().get(0);
-    ClusterCacheElement.Operation operation =
-        (ClusterCacheElement.Operation) context.getArguments().get(1);
+    ClusterConfigElement cacheElement = (ClusterConfigElement) context.getArguments().get(0);
+    ClusterConfigElement.Operation operation =
+        (ClusterConfigElement.Operation) context.getArguments().get(1);
     Cache cache = context.getCache();
-    // the configuration object should know how to create itself given an existing cache
-    // throw whatever exception
+
+    ConfigurationRealizer realizer = cacheElement.getConfigurationRealizer();
     switch (operation) {
       case ADD:
-        cacheElement.createOnServer(cache);
+        realizer.createIn(cache);
         break;
       case DELETE:
-        cacheElement.deleteFromServer(cache);
+        realizer.deleteFrom(cache);
         break;
       case UPDATE:
-        cacheElement.updateOnServer(cache);
+        realizer.updateIn(cache);
         break;
     }
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,

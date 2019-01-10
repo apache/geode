@@ -14,40 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.geode.cache.configuration;
+package org.apache.geode.management.internal.configuration.realizers;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.management.internal.configuration.domain.ClusterConfigElement;
 
+/**
+ * Defines the behavior to realize a configuration change in the cache on a server. Created with an
+ * object of
+ * type {@link ClusterConfigElement}, which represents the configuration change.
+ */
 @Experimental
-public interface ClusterCacheElement extends CacheElement {
-  enum Operation {
-    ADD, DELETE, UPDATE
+public abstract class ConfigurationRealizer<T extends ClusterConfigElement> {
+  T config;
+
+  ConfigurationRealizer(T config) {
+    this.config = config;
   }
 
-  void createOnServer(Cache cache) throws Exception;
+  public void createIn(Cache cache) {}
 
-  void updateOnServer(Cache cache) throws Exception;
-
-  void deleteFromServer(Cache cache) throws Exception;
-
-  CacheElement getExistingOnServer(Cache cache);
-
-  void addToLocatorConfig(CacheConfig cache);
-
-  void updateInLocatorConfig(CacheConfig cache);
-
-  void deleteFromLocatorConfig(CacheConfig cache);
-
-  CacheElement getExistingInLocatorConfig(CacheConfig cache);
-
-  default String merge(String newValue, String existingValue) {
-    // if newValue is null use the value already in the config
-    // if newValue is the empty string, then "unset" it by returning null
-    if (newValue == null) {
-      return existingValue;
-    }
-    return newValue.isEmpty() ? null : newValue;
+  public boolean existsIn(Cache cache) {
+    return false;
   }
+
+  public void updateIn(Cache cache) {}
+
+  public void deleteFrom(Cache cache) {}
 }

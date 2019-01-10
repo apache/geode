@@ -17,20 +17,27 @@
 
 package org.apache.geode.management.internal.configuration.domain;
 
-import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.internal.configuration.persisters.ClusterRegionConfigPersister;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.management.internal.api.ClusterManagementService;
 import org.apache.geode.management.internal.configuration.persisters.ConfigurationPersister;
-import org.apache.geode.management.internal.configuration.realizers.ClusterRegionConfigRealizer;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
 
-public class ClusterRegionConfig extends RegionConfig implements ClusterConfigElement {
-  @Override
-  public ConfigurationPersister getConfigurationPersister() {
-    return new ClusterRegionConfigPersister(this);
+/**
+ * Defines a configuration element for the {@link ClusterManagementService}. The behavior for a
+ * configuration element is implemented in subclass of {@link ConfigurationPersister} to persist
+ * this element in the {@link ConfigurationPersistenceService} and a subclass of
+ * {@link ConfigurationRealizer}
+ * to make the change in the cache on the servers.
+ */
+@Experimental
+public interface ClusterConfigElement extends CacheElement {
+  enum Operation {
+    ADD, DELETE, UPDATE
   }
 
-  @Override
-  public ConfigurationRealizer getConfigurationRealizer() {
-    return new ClusterRegionConfigRealizer(this);
-  }
+  ConfigurationPersister getConfigurationPersister();
+
+  ConfigurationRealizer getConfigurationRealizer();
 }
