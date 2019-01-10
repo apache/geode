@@ -107,6 +107,10 @@ if [ -v CALL_STACK_TIMEOUT ]; then
   ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${SET_JAVA_HOME} && tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
 fi
 
+if [ -z "${FULL_PRODUCT_VERSION}" ] ; then
+  FULL_PRODUCT_VERSION="0.0.0-UndefinedVersion"
+fi
+
 GRADLE_ARGS="\
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_SKIP_TASK_OPTIONS} \
