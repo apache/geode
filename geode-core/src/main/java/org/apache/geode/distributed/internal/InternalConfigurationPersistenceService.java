@@ -950,6 +950,9 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
     Configuration configuration = getConfiguration(group);
     if (configuration == null) {
+      if (createNew) {
+        return new CacheConfig(CACHE_CONFIG_VERSION);
+      }
       return null;
     }
     String xmlContent = configuration.getCacheXmlContent();
