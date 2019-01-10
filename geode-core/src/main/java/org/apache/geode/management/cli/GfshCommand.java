@@ -88,11 +88,6 @@ public abstract class GfshCommand implements CommandMarker {
     return locator == null ? null : (T) locator.getConfigurationPersistenceService();
   }
 
-  public LocatorClusterManagementService getClusterConfigurationService() {
-    InternalLocator locator = InternalLocator.getLocator();
-    return locator == null ? null : locator.getClusterManagementService();
-  }
-
   public void setCache(Cache cache) {
     this.cache = (InternalCache) cache;
   }
