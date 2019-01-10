@@ -60,6 +60,12 @@ public class APIResult {
     return clusterConfigStatus.result == Result.SUCCESS;
   }
 
+  /**
+   * - true if operation is successful on all distributed members,
+   * and configuration persistence is either not applicable (in case cluster config is disabled)
+   * or configuration persistence is applicable and successful
+   * - false otherwise
+   */
   public boolean isSuccessful() {
     return (clusterConfigStatus.result == Result.NOT_APPLICABLE || isSuccessfullyPersisted())
         && isSuccessfulOnDistributedMembers();

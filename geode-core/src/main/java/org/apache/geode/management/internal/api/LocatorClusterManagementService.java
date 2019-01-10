@@ -68,7 +68,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // execute function on all members
     Set<DistributedMember> targetedMembers = findMembers(null, null);
     if (targetedMembers.size() == 0) {
-      throw new NoMembersException();
+      throw new NoMembersException("no members found to create cache element");
     }
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
