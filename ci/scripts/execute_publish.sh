@@ -51,12 +51,12 @@ else
   # Prune all before '-', yielding e.g., "SNAPSHOT.325"
   CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
   # Prune all before '.', yielding e.g., "SNAPSHOT"
-  SNAPSHOT_SLUG=${CONCOURSE_BUILD_SLUG##*.}
+  QUALIFIER_SLUG=${CONCOURSE_BUILD_SLUG%%.*}
   # Prune all before '.', yielding e.g., "325"
   BUILD_ID=$(printf "%04d" ${CONCOURSE_VERSION##*.})
 
   # Rebuild version, zero-padded
-  FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${SNAPSHOT_SLUG}.${BUILD_ID}
+  FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${QUALIFIER_SLUG}.${BUILD_ID}
 
   echo "Concourse VERSION is ${CONCOURSE_VERSION}"
   echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}"

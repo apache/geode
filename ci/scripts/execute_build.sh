@@ -47,6 +47,7 @@ if [ -e "${ROOT_DIR}/geode-build-version" ] ; then
   if [ -e "${GEODE_PULL_REQUEST_ID_FILE}" ]; then
     GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
     FULL_PRODUCT_VERSION="geode-pr-${GEODE_PULL_REQUEST_ID}"
+    echo -n "${FULL_PRODUCT_VERSION}" > ${GEODE_RESULTS_VERSION_FILE}
   else
     # semver resource, e.g., "1.9.0-SNAPSHOT.325"
     CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
@@ -55,20 +56,23 @@ if [ -e "${ROOT_DIR}/geode-build-version" ] ; then
     # Prune all before '-', yielding e.g., "SNAPSHOT.325"
     CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
     # Prune all before '.', yielding e.g., "SNAPSHOT"
-    SNAPSHOT_SLUG=${CONCOURSE_BUILD_SLUG##*.}
+    QUALIFIER_SLUG=${CONCOURSE_BUILD_SLUG%%.*}
     # Prune all before '.', yielding e.g., "325"
     BUILD_ID=$(printf "%04d" ${CONCOURSE_VERSION##*.})
 
     # Rebuild version, zero-padded
-    FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${SNAPSHOT_SLUG}.${BUILD_ID}
+    FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${QUALIFIER_SLUG}.${BUILD_ID}
 
     echo "Concourse VERSION is ${CONCOURSE_VERSION}"
     echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}"
     echo "Full product VERSION is ${FULL_PRODUCT_VERSION}"
     echo "Build ID is ${BUILD_ID}"
-  fi
 
-  echo -n "${FULL_PRODUCT_VERSION}" > ${GEODE_RESULTS_VERSION_FILE}
+    # The version passed in by concourse has an incremented buildId.
+    # We pass it back out to persist that count.
+    # The buildId must not be zero-padded to be compatible with the Concourse resource.
+    echo -n "${CONCOURSE_VERSION}" > ${GEODE_RESULTS_VERSION_FILE}
+  fi
 fi
 
 if [[ ${PARALLEL_GRADLE:-"true"} == "true" ]]; then
