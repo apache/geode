@@ -37,7 +37,7 @@ import org.apache.geode.rest.internal.web.controllers.RedactingPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.GeodeRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -52,8 +52,8 @@ public class RestSecurityPostProcessorTest {
       .withProperty(SECURITY_POST_PROCESSOR, RedactingPostProcessor.class.getName())
       .withRestService().withAutoStart();
 
-  private final GeodeDevRestClient restClient =
-      new GeodeDevRestClient("localhost", serverStarter.getHttpPort());
+  private final GeodeRestClient restClient =
+      new GeodeRestClient("localhost", serverStarter.getHttpPort());
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();

@@ -44,7 +44,7 @@ limitations under the License.
       <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
-      <!--bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/-->
+      <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
       <bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"/>

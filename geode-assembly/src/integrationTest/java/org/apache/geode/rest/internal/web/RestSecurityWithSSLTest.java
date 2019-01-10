@@ -36,7 +36,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.GeodeRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -61,8 +61,8 @@ public class RestSecurityWithSSLTest {
 
   @Test
   public void testRestSecurityWithSSL() {
-    GeodeDevRestClient restClient =
-        new GeodeDevRestClient("localhost", serverStarter.getHttpPort(), true);
+    GeodeRestClient restClient =
+        new GeodeRestClient("localhost", serverStarter.getHttpPort(), true);
     assertResponse(restClient.doGet("/servers", "cluster", "cluster"))
         .hasStatusCode(200);
   }

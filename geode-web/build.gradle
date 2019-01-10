@@ -63,7 +63,9 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-
+  integrationTestCompile('org.springframework:spring-test')
+  integrationTestCompile('org.springframework.security:spring-security-test')
+  
   integrationTestRuntime(files(war.destinationDir))
   integrationTestRuntime('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
@@ -84,6 +86,14 @@ dependencies {
 
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
+  }
+}
+
+sourceSets {
+  integrationTest {
+    resources {
+      srcDir "${projectDir}/src/main/webapp"
+    }
   }
 }
 

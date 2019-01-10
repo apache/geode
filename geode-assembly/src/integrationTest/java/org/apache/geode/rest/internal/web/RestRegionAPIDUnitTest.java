@@ -42,7 +42,7 @@ import org.springframework.http.MediaType;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.rest.internal.web.controllers.Customer;
-import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.GeodeRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -65,13 +65,13 @@ public class RestRegionAPIDUnitTest {
     return server.getCache().getRegion("/regionA");
   }
 
-  public static GeodeDevRestClient restClient;
+  public static GeodeRestClient restClient;
 
   private static List<String> jsonDocuments = new ArrayList<>();
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    restClient = new GeodeDevRestClient("localhost", server.getHttpPort(), false);
+    restClient = new GeodeRestClient("localhost", server.getHttpPort(), false);
     initJsonDocuments();
   }
 

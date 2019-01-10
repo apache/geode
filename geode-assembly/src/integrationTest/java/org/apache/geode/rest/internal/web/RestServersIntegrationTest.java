@@ -29,14 +29,14 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.GeodeRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({RestAPITest.class})
 public class RestServersIntegrationTest {
 
-  private static GeodeDevRestClient restClient;
+  private static GeodeRestClient restClient;
 
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule().withRestService(true);
@@ -52,7 +52,7 @@ public class RestServersIntegrationTest {
         AvailablePort.isPortAvailable(DEFAULT_HTTP_SERVICE_PORT, AvailablePort.SOCKET));
     serverStarter.startServer();
     assertThat(serverStarter.getHttpPort()).isEqualTo(DEFAULT_HTTP_SERVICE_PORT);
-    restClient = new GeodeDevRestClient("localhost", serverStarter.getHttpPort());
+    restClient = new GeodeRestClient("localhost", serverStarter.getHttpPort());
   }
 
   @Test

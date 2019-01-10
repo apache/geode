@@ -31,7 +31,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.GeodeRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -44,7 +44,7 @@ public class RestSecurityIntegrationTest {
   public static ServerStarterRule serverStarter = new ServerStarterRule()
       .withSecurityManager(SimpleSecurityManager.class).withRestService().withAutoStart();
 
-  private static GeodeDevRestClient restClient;
+  private static GeodeRestClient restClient;
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
@@ -53,7 +53,7 @@ public class RestSecurityIntegrationTest {
   public static void before() {
     serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
     restClient =
-        new GeodeDevRestClient("localhost", serverStarter.getHttpPort());
+        new GeodeRestClient("localhost", serverStarter.getHttpPort());
   }
 
   @Test
