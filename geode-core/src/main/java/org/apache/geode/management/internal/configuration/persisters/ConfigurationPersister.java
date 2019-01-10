@@ -24,7 +24,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 /**
  * Defines the behavior to persist a configuration change on a locator
  * {@link org.apache.geode.distributed.ConfigurationPersistenceService}. Created with an object of
- * type ClusterConfigElement, which represents the configuration change.
+ * type {@link CacheElement}, which represents the configuration change.
  */
 @Experimental
 public abstract class ConfigurationPersister {
