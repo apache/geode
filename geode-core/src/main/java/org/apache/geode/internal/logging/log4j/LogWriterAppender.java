@@ -350,7 +350,6 @@ public class LogWriterAppender extends AbstractAppender
   private void doAppendToLogWriter(final ManagerLogWriter logWriter, final LogEvent event) {
     byte[] bytes = getLayout().toByteArray(event);
     if (bytes != null && bytes.length > 0) {
-      // TODO:KIRK:PERF: creating new String - change to event.getMessage().getFormattedMessage()?
       logWriter.writeFormattedMessage(new String(bytes, Charset.defaultCharset()));
     }
     if (debug) {
