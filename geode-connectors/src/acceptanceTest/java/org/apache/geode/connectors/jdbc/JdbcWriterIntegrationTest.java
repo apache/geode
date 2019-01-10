@@ -44,19 +44,22 @@ import org.apache.geode.pdx.WritablePdxInstance;
 public abstract class JdbcWriterIntegrationTest {
 
   static final String DB_NAME = "test";
-  private static final String REGION_TABLE_NAME = "employees";
+  protected static final String SCHEMA_NAME = "mySchema";
+  protected static final String REGION_TABLE_NAME = "employees";
 
-  private InternalCache cache;
-  private Region<String, PdxInstance> employees;
-  private Connection connection;
-  private Statement statement;
-  private JdbcWriter jdbcWriter;
-  private PdxInstance pdx1;
-  private PdxInstance pdx2;
-  private Employee employee1;
-  private Employee employee2;
-  private final TestDataSourceFactory testDataSourceFactory =
+  protected InternalCache cache;
+  protected Region<String, PdxInstance> employees;
+  protected Connection connection;
+  protected Statement statement;
+  protected JdbcWriter jdbcWriter;
+  protected PdxInstance pdx1;
+  protected PdxInstance pdx2;
+  protected Employee employee1;
+  protected Employee employee2;
+  protected final TestDataSourceFactory testDataSourceFactory =
       new TestDataSourceFactory(getConnectionUrl());
+  protected String catalog;
+  protected String schema;
 
   @Before
   public void setUp() throws Exception {
@@ -65,8 +68,6 @@ public abstract class JdbcWriterIntegrationTest {
 
     connection = getConnection();
     statement = connection.createStatement();
-    statement.execute("Create Table " + REGION_TABLE_NAME
-        + " (id varchar(10) primary key not null, name varchar(10), age int)");
     pdx1 = cache.createPdxInstanceFactory(Employee.class.getName()).writeString("id", "1")
         .writeString("name", "Emp1")
         .writeInt("age", 55).create();
@@ -75,10 +76,47 @@ public abstract class JdbcWriterIntegrationTest {
         .writeInt("age", 21).create();
     employee1 = (Employee) pdx1.getObject();
     employee2 = (Employee) pdx2.getObject();
+    createTableInUnusedSchema();
   }
 
-  private void setupRegion(String ids) throws RegionMappingExistsException {
-    employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME, ids);
+  protected void createTable() throws SQLException {
+    statement.execute("Create Table " + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+  }
+
+  protected void createTableWithSchema() throws SQLException {
+    statement.execute("Create Schema " + SCHEMA_NAME);
+    statement.execute("Create Table " + SCHEMA_NAME + '.' + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+  }
+
+  protected void createTableInUnusedSchema() throws SQLException {
+    Connection connection2 = getConnection();
+    statement.execute("Create Schema unusedSchema");
+    statement = connection2.createStatement();
+    statement.execute("Create Table " + "unusedSchema." + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+  }
+
+  protected void setupRegion(String ids) throws RegionMappingExistsException {
+    sharedRegionSetup(ids, null, null);
+  }
+
+  protected void sharedRegionSetup(String ids, String catalog, String schema)
+      throws RegionMappingExistsException {
+    employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME, ids, catalog, schema);
+  }
+
+  protected void setupRegionWithSchema(String ids) throws RegionMappingExistsException {
+    if (vendorSupportsSchemas()) {
+      catalog = null;
+      schema = SCHEMA_NAME;
+    } else {
+      catalog = SCHEMA_NAME;
+      schema = null;
+
+    }
+    sharedRegionSetup(ids, catalog, schema);
   }
 
   @After
@@ -98,7 +136,11 @@ public abstract class JdbcWriterIntegrationTest {
       }
     }
     if (statement != null) {
-      statement.execute("Drop table " + REGION_TABLE_NAME);
+      statement.execute("Drop table IF EXISTS " + REGION_TABLE_NAME);
+      statement.execute("Drop table IF EXISTS unusedSchema." + REGION_TABLE_NAME);
+      statement.execute("Drop schema IF EXISTS unusedSchema");
+      statement.execute("Drop table IF EXISTS " + SCHEMA_NAME + '.' + REGION_TABLE_NAME);
+      statement.execute("Drop schema IF EXISTS " + SCHEMA_NAME);
       statement.close();
     }
     if (connection != null) {
@@ -109,6 +151,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   @Test
   public void canInsertIntoTable() throws Exception {
+    createTable();
     setupRegion(null);
     employees.put("1", pdx1);
     employees.put("2", pdx2);
@@ -120,8 +163,26 @@ public abstract class JdbcWriterIntegrationTest {
     assertThat(resultSet.next()).isFalse();
   }
 
+  protected abstract boolean vendorSupportsSchemas();
+
+  @Test
+  public void canInsertIntoTableWithSchema() throws Exception {
+    createTableWithSchema();
+    setupRegionWithSchema(null);
+    employees.put("1", pdx1);
+    employees.put("2", pdx2);
+
+    ResultSet resultSet =
+        statement.executeQuery(
+            "select * from " + SCHEMA_NAME + '.' + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "1", employee1);
+    assertRecordMatchesEmployee(resultSet, "2", employee2);
+    assertThat(resultSet.next()).isFalse();
+  }
+
   @Test
   public void canInsertIntoTableWithCompositeKey() throws Exception {
+    createTable();
     setupRegion("id,age");
     JSONObject compositeKey1 = new JSONObject();
     compositeKey1.put("id", pdx1.getField("id"));
@@ -143,6 +204,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   @Test
   public void canPutAllInsertIntoTable() throws Exception {
+    createTable();
     setupRegion(null);
     Map<String, PdxInstance> putAllMap = new HashMap<>();
     putAllMap.put("1", pdx1);
@@ -158,6 +220,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   @Test
   public void verifyThatPdxFieldNamedSameAsPrimaryKeyIsIgnored() throws Exception {
+    createTable();
     setupRegion(null);
     PdxInstance pdxInstanceWithId = cache.createPdxInstanceFactory(Employee.class.getName())
         .writeString("name", "Emp1").writeInt("age", 55).writeString("id", "3").create();
@@ -170,7 +233,8 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
-  public void putNonPdxInstanceFails() throws RegionMappingExistsException {
+  public void putNonPdxInstanceFails() throws Exception {
+    createTable();
     setupRegion(null);
     Region nonPdxEmployees = this.employees;
     Throwable thrown = catchThrowable(() -> nonPdxEmployees.put("1", "non pdx instance"));
@@ -180,6 +244,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void putNonPdxInstanceThatIsPdxSerializable()
       throws SQLException, RegionMappingExistsException {
+    createTable();
     setupRegion(null);
     Region nonPdxEmployees = this.employees;
     Employee value = new Employee("2", "Emp2", 22);
@@ -193,6 +258,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   @Test
   public void canDestroyFromTable() throws Exception {
+    createTable();
     setupRegion(null);
     employees.put("1", pdx1);
     employees.put("2", pdx2);
@@ -206,7 +272,24 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
+  public void canDestroyFromTableWithSchema() throws Exception {
+    createTableWithSchema();
+    setupRegionWithSchema(null);
+    employees.put("1", pdx1);
+    employees.put("2", pdx2);
+
+    employees.destroy("1");
+
+    ResultSet resultSet =
+        statement.executeQuery(
+            "select * from " + SCHEMA_NAME + '.' + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "2", employee2);
+    assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
   public void canDestroyFromTableWithCompositeKey() throws Exception {
+    createTable();
     setupRegion("id,age");
     JSONObject compositeKey1 = new JSONObject();
     compositeKey1.put("id", pdx1.getField("id"));
@@ -227,6 +310,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   @Test
   public void canUpdateTable() throws Exception {
+    createTable();
     setupRegion(null);
     employees.put("1", pdx1);
     employees.put("1", pdx2);
@@ -238,7 +322,22 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   @Test
+  public void canUpdateTableWithSchema() throws Exception {
+    createTableWithSchema();
+    setupRegionWithSchema(null);
+    employees.put("1", pdx1);
+    employees.put("1", pdx2);
+
+    ResultSet resultSet =
+        statement.executeQuery(
+            "select * from " + SCHEMA_NAME + '.' + REGION_TABLE_NAME + " order by id asc");
+    assertRecordMatchesEmployee(resultSet, "1", employee2);
+    assertThat(resultSet.next()).isFalse();
+  }
+
+  @Test
   public void canUpdateTableWithCompositeKey() throws Exception {
+    createTable();
     setupRegion("id,age");
     PdxInstance myPdx = cache.createPdxInstanceFactory(Employee.class.getName())
         .writeString("id", "1").writeString("name", "Emp1")
@@ -261,6 +360,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   @Test
   public void canUpdateBecomeInsert() throws Exception {
+    createTable();
     setupRegion(null);
     employees.put("1", pdx1);
 
@@ -277,6 +377,7 @@ public abstract class JdbcWriterIntegrationTest {
 
   @Test
   public void canInsertBecomeUpdate() throws Exception {
+    createTable();
     setupRegion(null);
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'bogus', 11)");
     validateTableRowCount(1);
@@ -289,10 +390,10 @@ public abstract class JdbcWriterIntegrationTest {
     assertThat(resultSet.next()).isFalse();
   }
 
-  private Region<String, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName,
-      String ids)
+  protected Region<String, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName,
+      String ids, String catalog, String schema)
       throws RegionMappingExistsException {
-    jdbcWriter = new JdbcWriter(createSqlHandler(ids), cache);
+    jdbcWriter = new JdbcWriter(createSqlHandler(ids, catalog, schema), cache);
 
     RegionFactory<String, PdxInstance> regionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -300,21 +401,21 @@ public abstract class JdbcWriterIntegrationTest {
     return regionFactory.create(regionName);
   }
 
-  private void validateTableRowCount(int expected) throws Exception {
+  protected void validateTableRowCount(int expected) throws Exception {
     ResultSet resultSet = statement.executeQuery("select count(*) from " + REGION_TABLE_NAME);
     resultSet.next();
     int size = resultSet.getInt(1);
     assertThat(size).isEqualTo(expected);
   }
 
-  private SqlHandler createSqlHandler(String ids)
+  protected SqlHandler createSqlHandler(String ids, String catalog, String schema)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(getConnectionUrl(), ids),
+        TestConfigService.getTestConfigService(cache, null, ids, catalog, schema),
         testDataSourceFactory);
   }
 
-  private void assertRecordMatchesEmployee(ResultSet resultSet, String id, Employee employee)
+  protected void assertRecordMatchesEmployee(ResultSet resultSet, String id, Employee employee)
       throws SQLException {
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getString("id")).isEqualTo(id);

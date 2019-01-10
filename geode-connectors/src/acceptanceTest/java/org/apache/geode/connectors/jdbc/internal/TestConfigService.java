@@ -29,29 +29,18 @@ public class TestConfigService {
   private static final String REGION_NAME = "employees";
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
 
-  public static JdbcConnectorServiceImpl getTestConfigService(String connectionUrl)
+  public static JdbcConnectorServiceImpl getTestConfigService(String ids)
       throws RegionMappingExistsException {
-    return getTestConfigService(createMockCache(), null, connectionUrl);
-  }
-
-  public static JdbcConnectorServiceImpl getTestConfigService(String connectionUrl, String ids)
-      throws RegionMappingExistsException {
-    return getTestConfigService(createMockCache(), null, connectionUrl, ids);
+    return getTestConfigService(createMockCache(), null, ids, null, null);
   }
 
   public static JdbcConnectorServiceImpl getTestConfigService(InternalCache cache,
-      String pdxClassName, String connectionUrl)
-      throws RegionMappingExistsException {
-    return getTestConfigService(cache, pdxClassName, connectionUrl, null);
-  }
-
-  public static JdbcConnectorServiceImpl getTestConfigService(InternalCache cache,
-      String pdxClassName, String connectionUrl, String ids)
+      String pdxClassName, String ids, String catalog, String schema)
       throws RegionMappingExistsException {
 
     JdbcConnectorServiceImpl service = new JdbcConnectorServiceImpl();
     service.init(cache);
-    service.createRegionMapping(createRegionMapping(pdxClassName, ids));
+    service.createRegionMapping(createRegionMapping(pdxClassName, ids, catalog, schema));
     return service;
   }
 
@@ -61,8 +50,9 @@ public class TestConfigService {
     return cache;
   }
 
-  private static RegionMapping createRegionMapping(String pdxClassName, String ids) {
+  private static RegionMapping createRegionMapping(String pdxClassName, String ids, String catalog,
+      String schema) {
     return new RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME,
-        CONNECTION_CONFIG_NAME, ids);
+        CONNECTION_CONFIG_NAME, ids, catalog, schema);
   }
 }

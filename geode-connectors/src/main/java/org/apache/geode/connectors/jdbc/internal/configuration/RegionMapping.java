@@ -49,6 +49,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  *       &lt;attribute name="table" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="ids" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="catalog" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -72,6 +73,10 @@ public class RegionMapping implements CacheElement {
   protected String pdxName;
   @XmlAttribute(name = "ids")
   protected String ids;
+  @XmlAttribute(name = "catalog")
+  protected String catalog;
+  @XmlAttribute(name = "schema")
+  protected String schema;
 
   @XmlTransient
   protected String regionName;
@@ -81,12 +86,14 @@ public class RegionMapping implements CacheElement {
   public RegionMapping() {}
 
   public RegionMapping(String regionName, String pdxName, String tableName,
-      String dataSourceName, String ids) {
+      String dataSourceName, String ids, String catalog, String schema) {
     this.regionName = regionName;
     this.pdxName = pdxName;
     this.tableName = tableName;
     this.dataSourceName = dataSourceName;
     this.ids = ids;
+    this.catalog = catalog;
+    this.schema = schema;
   }
 
   public void setDataSourceName(String dataSourceName) {
@@ -109,6 +116,14 @@ public class RegionMapping implements CacheElement {
     this.ids = ids;
   }
 
+  public void setCatalog(String catalog) {
+    this.catalog = catalog;
+  }
+
+  public void setSchema(String schema) {
+    this.schema = schema;
+  }
+
   public String getDataSourceName() {
     return dataSourceName;
   }
@@ -125,14 +140,15 @@ public class RegionMapping implements CacheElement {
     return ids;
   }
 
-  public String getTableName() {
-    return tableName;
+  public String getCatalog() {
+    return catalog;
   }
 
-  public String getRegionToTableName() {
-    if (tableName == null) {
-      return regionName;
-    }
+  public String getSchema() {
+    return schema;
+  }
+
+  public String getTableName() {
     return tableName;
   }
 
@@ -229,23 +245,17 @@ public class RegionMapping implements CacheElement {
 
     RegionMapping that = (RegionMapping) o;
 
-    if (regionName != null ? !regionName.equals(that.regionName) : that.regionName != null) {
-      return false;
-    }
-    if (!pdxName.equals(that.pdxName)) {
-      return false;
-    }
-    if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) {
-      return false;
-    }
-    if (dataSourceName != null ? !dataSourceName.equals(that.dataSourceName)
-        : that.dataSourceName != null) {
-      return false;
-    }
-    if (ids != null ? !ids.equals(that.ids) : that.ids != null) {
-      return false;
-    }
-    return true;
+    return isEqual(regionName, that.regionName)
+        && isEqual(pdxName, that.pdxName)
+        && isEqual(tableName, that.tableName)
+        && isEqual(dataSourceName, that.dataSourceName)
+        && isEqual(ids, that.ids)
+        && isEqual(catalog, that.catalog)
+        && isEqual(schema, that.schema);
+  }
+
+  private static boolean isEqual(String s1, String s2) {
+    return s1 != null ? s1.equals(s2) : s2 == null;
   }
 
   @Override
@@ -255,6 +265,8 @@ public class RegionMapping implements CacheElement {
     result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
     result = 31 * result + (dataSourceName != null ? dataSourceName.hashCode() : 0);
     result = 31 * result + (ids != null ? ids.hashCode() : 0);
+    result = 31 * result + (catalog != null ? catalog.hashCode() : 0);
+    result = 31 * result + (schema != null ? schema.hashCode() : 0);
     return result;
   }
 
@@ -266,6 +278,8 @@ public class RegionMapping implements CacheElement {
         + ", tableName='" + tableName + '\''
         + ", dataSourceName='" + dataSourceName + '\''
         + ", ids='" + ids + '\''
+        + ", catalog='" + catalog + '\''
+        + ", schema='" + schema + '\''
         + '}';
   }
 

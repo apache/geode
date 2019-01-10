@@ -14,13 +14,18 @@
  */
 package org.apache.geode.connectors.jdbc;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.json.JSONObject;
 import org.junit.ClassRule;
+import org.junit.Test;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 
@@ -51,4 +56,39 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
         + "along bigint, " + "afloat float, " + "adouble float, " + "astring varchar(10), "
         + "adate timestamp, " + "anobject varchar(20), " + "abytearray bytea, " + "achar char(1))");
   }
+
+  @Override
+  protected boolean vendorSupportsSchemas() {
+    return true;
+  }
+
+  private void createEmployeeTableWithSchemaAndCatalog() throws Exception {
+    statement.execute("CREATE SCHEMA " + SCHEMA_NAME);
+    statement.execute("Create Table " + DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME
+        + " (id varchar(10) primary key not null, name varchar(10), age int)");
+  }
+
+  @Test
+  public void verifyGetWithSchemaCatalogAndPdxClassNameAndCompositeKey() throws Exception {
+    createEmployeeTableWithSchemaAndCatalog();
+    statement
+        .execute("Insert into " + DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME
+            + "(id, name, age) values('1', 'Emp1', 21)");
+    String ids = "id,name";
+    Region<String, Employee> region =
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, DB_NAME,
+            SCHEMA_NAME);
+    createPdxType();
+
+    JSONObject key = new JSONObject();
+    key.put("id", "1");
+    key.put("name", "Emp1");
+    Employee value = region.get(key.toString());
+
+    assertThat(value.getId()).isEqualTo("1");
+    assertThat(value.getName()).isEqualTo("Emp1");
+    assertThat(value.getAge()).isEqualTo(21);
+  }
+
+
 }

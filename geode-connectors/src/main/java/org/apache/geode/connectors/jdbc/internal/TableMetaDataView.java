@@ -21,7 +21,12 @@ import java.util.List;
 import java.util.Set;
 
 public interface TableMetaDataView {
-  String getTableName();
+  /**
+   * The path will include the catalog and schema if needed.
+   *
+   * @return the fully qualified, quoted, table path
+   */
+  String getQuotedTablePath();
 
   List<String> getKeyColumnNames();
 

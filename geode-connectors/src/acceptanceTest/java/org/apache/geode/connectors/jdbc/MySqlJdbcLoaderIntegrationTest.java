@@ -52,4 +52,9 @@ public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
         + "adate datetime, " + "anobject varchar(20), " + "abytearray blob(100), "
         + "achar char(1))");
   }
+
+  @Override
+  protected boolean vendorSupportsSchemas() {
+    return false;
+  }
 }

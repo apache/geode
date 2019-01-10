@@ -14,10 +14,12 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CATALOG_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__ID_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__SCHEMA_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 
 import java.util.Set;
@@ -91,6 +93,8 @@ public class DescribeMappingCommand extends GfshCommand {
     sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
     sectionModel.addData(CREATE_MAPPING__PDX_NAME, mapping.getPdxName());
     sectionModel.addData(CREATE_MAPPING__ID_NAME, mapping.getIds());
+    sectionModel.addData(CREATE_MAPPING__CATALOG_NAME, mapping.getCatalog());
+    sectionModel.addData(CREATE_MAPPING__SCHEMA_NAME, mapping.getSchema());
   }
 
   @CliAvailabilityIndicator({DESCRIBE_MAPPING})
