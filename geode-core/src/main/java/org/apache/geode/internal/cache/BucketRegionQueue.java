@@ -176,7 +176,14 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       }
       if (containsKey(key)) {
         try {
-          destroyKey(key);
+          // The destroyKey method is called with forceBasicDestroy set to true since containsKey
+          // can be true even though get on the key returns null. That happens when the
+          // ParallelQueueRemovalMessage destroys the entry first. In that case, when this method is
+          // invoked, the raw value is the DESTROYED token. This was causing the
+          // EntryNotFoundException to be thrown by basicDestroy. The forceBasicDestroy boolean set
+          // to true forces the super.basicDestroy call to be made instead of the
+          // EntryNotFoundException to be thrown.
+          destroyKey(key, true);
           if (isDebugEnabled) {
             logger.debug("Destroyed {} from bucket: ", key, getId());
           }
@@ -351,16 +358,15 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     return entryFound;
   }
 
-  @Override
   public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
-      Object expectedOldValue)
+      Object expectedOldValue, boolean forceBasicDestroy)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
     boolean indexEntryFound = true;
     if (getPartitionedRegion().isConflationEnabled()) {
       indexEntryFound = containsKey(event.getKey()) && removeIndex((Long) event.getKey());
     }
     try {
-      if (indexEntryFound) {
+      if (indexEntryFound || forceBasicDestroy) {
         super.basicDestroy(event, cacheWrite, expectedOldValue);
       } else {
         throw new EntryNotFoundException(event.getKey().toString());
@@ -551,6 +557,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * done during selective merge from r41425 from gemfire701X_maint.
    */
   public void destroyKey(Object key) throws ForceReattemptException {
+    destroyKey(key, false);
+  }
+
+  private void destroyKey(Object key, boolean forceBasicDestroy) throws ForceReattemptException {
     if (logger.isDebugEnabled()) {
       logger.debug(" destroying primary key {}", key);
     }
@@ -559,7 +569,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     try {
       event.setEventId(new EventID(cache.getInternalDistributedSystem()));
       event.setRegion(this);
-      basicDestroy(event, true, null);
+      basicDestroy(event, true, null, forceBasicDestroy);
       setLatestAcknowledgedKey((Long) key);
       checkReadiness();
     } catch (EntryNotFoundException enf) {

@@ -98,7 +98,7 @@ public class BucketRegionQueueJUnitTest {
     doReturn(true).when(this.bucketRegionQueue).removeIndex(KEY);
 
     // Invoke basicDestroy
-    this.bucketRegionQueue.basicDestroy(event, true, null);
+    this.bucketRegionQueue.basicDestroy(event, true, null, false);
 
     // Verify mapDestroy is invoked
     verify(this.bucketRegionQueue).mapDestroy(event, true, false, null);
@@ -118,6 +118,6 @@ public class BucketRegionQueueJUnitTest {
     when(this.bucketRegionQueue.containsKey(KEY)).thenReturn(false);
 
     // Invoke basicDestroy
-    this.bucketRegionQueue.basicDestroy(event, true, null);
+    this.bucketRegionQueue.basicDestroy(event, true, null, false);
   }
 }
