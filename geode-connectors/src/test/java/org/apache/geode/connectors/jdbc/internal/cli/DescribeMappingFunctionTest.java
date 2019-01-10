@@ -86,7 +86,7 @@ public class DescribeMappingFunctionTest {
     when(regionMapping.getDataSourceName()).thenReturn(TEST_DATASOURCE);
     when(regionMapping.getTableName()).thenReturn(TEST_TABLE);
     when(regionMapping.getPdxName()).thenReturn(TEST_PDX);
-    when(regionMapping.getId()).thenReturn(TEST_ID);
+    when(regionMapping.getIds()).thenReturn(TEST_ID);
   }
 
   @Test
