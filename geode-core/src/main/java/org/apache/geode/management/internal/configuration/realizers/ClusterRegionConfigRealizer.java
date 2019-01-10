@@ -20,25 +20,27 @@ package org.apache.geode.management.internal.configuration.realizers;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
-import org.apache.geode.management.internal.configuration.domain.ClusterRegionConfig;
 
-public class ClusterRegionConfigRealizer extends ConfigurationRealizer<ClusterRegionConfig> {
-  public ClusterRegionConfigRealizer(ClusterRegionConfig config) {
-    super(config);
+public class ClusterRegionConfigRealizer extends ConfigurationRealizer {
+  public ClusterRegionConfigRealizer(CacheElement config, Cache cache) {
+    super(config, cache);
   }
 
   @Override
-  public void createIn(Cache cache) {
-    String regionPath = config.getName();
-    if (config.getRegionAttributes() == null) {
-      config.setRegionAttributes(new RegionAttributesType());
+  public void create() {
+    RegionConfig regionConfig = (RegionConfig) config;
+    String regionPath = regionConfig.getName();
+    if (regionConfig.getRegionAttributes() == null) {
+      regionConfig.setRegionAttributes(new RegionAttributesType());
     }
 
-    RegionAttributesType regionAttributes = config.getRegionAttributes();
-    switch (config.getRefid()) {
+    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
+    switch (regionConfig.getRefid()) {
       case "PARTITION":
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
         RegionAttributesType.PartitionAttributes partitionAttributes =

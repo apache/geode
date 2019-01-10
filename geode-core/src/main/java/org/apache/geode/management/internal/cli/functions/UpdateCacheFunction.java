@@ -20,30 +20,34 @@ package org.apache.geode.management.internal.cli.functions;
 import java.util.List;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.management.cli.CliFunction;
-import org.apache.geode.management.internal.configuration.domain.ClusterConfigElement;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
+import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizerFactory;
 
 public class UpdateCacheFunction extends CliFunction<List> {
+  public enum CacheElementOperation {
+    ADD, DELETE, UPDATE
+  }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<List> context) throws Exception {
-    ClusterConfigElement cacheElement = (ClusterConfigElement) context.getArguments().get(0);
-    ClusterConfigElement.Operation operation =
-        (ClusterConfigElement.Operation) context.getArguments().get(1);
+    CacheElement cacheElement = (CacheElement) context.getArguments().get(0);
+    CacheElementOperation operation = (CacheElementOperation) context.getArguments().get(1);
     Cache cache = context.getCache();
 
-    ConfigurationRealizer realizer = cacheElement.getConfigurationRealizer();
+    ConfigurationRealizer realizer =
+        (new ConfigurationRealizerFactory(cache)).generate(cacheElement);
     switch (operation) {
       case ADD:
-        realizer.createIn(cache);
+        realizer.create();
         break;
       case DELETE:
-        realizer.deleteFrom(cache);
+        realizer.delete();
         break;
       case UPDATE:
-        realizer.updateIn(cache);
+        realizer.update();
         break;
     }
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,

@@ -19,7 +19,7 @@ package org.apache.geode.management.internal.configuration.persisters;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.management.internal.configuration.domain.ClusterConfigElement;
+import org.apache.geode.cache.configuration.CacheElement;
 
 /**
  * Defines the behavior to persist a configuration change on a locator
@@ -27,20 +27,30 @@ import org.apache.geode.management.internal.configuration.domain.ClusterConfigEl
  * type ClusterConfigElement, which represents the configuration change.
  */
 @Experimental
-public abstract class ConfigurationPersister<T extends ClusterConfigElement> {
-  T config;
+public abstract class ConfigurationPersister {
+  protected CacheElement configElement;
+  protected CacheConfig existingConfig;
 
-  ConfigurationPersister(T config) {
-    this.config = config;
+  ConfigurationPersister(CacheElement configElement, CacheConfig existingConfig) {
+    this.configElement = configElement;
+    this.existingConfig = existingConfig;
   }
 
-  public void addTo(CacheConfig existing) {}
+  public CacheConfig getExistingConfig() {
+    return existingConfig;
+  }
 
-  public boolean existsIn(CacheConfig existing) {
+  public CacheElement getConfigElement() {
+    return configElement;
+  }
+
+  public void add() {}
+
+  public boolean exists() {
     return false;
   }
 
-  public void updateIn(CacheConfig existing) {}
+  public void update() {}
 
-  public void deleteFrom(CacheConfig existing) {}
+  public void delete() {}
 }

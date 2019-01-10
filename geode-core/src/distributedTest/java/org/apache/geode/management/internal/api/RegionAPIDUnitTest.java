@@ -31,7 +31,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.internal.configuration.domain.ClusterRegionConfig;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RegionsTest;
@@ -63,7 +62,7 @@ public class RegionAPIDUnitTest {
   public void createsPartitionedRegion() {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
-      ClusterRegionConfig config = new ClusterRegionConfig();
+      RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setRefid(RegionShortcut.PARTITION.toString());
       APIResult result = ClusterStartupRule.getLocator().getClusterManagementService()
@@ -96,7 +95,7 @@ public class RegionAPIDUnitTest {
   public void createsReplicatedRegion() {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
-      ClusterRegionConfig config = new ClusterRegionConfig();
+      RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setRefid(RegionShortcut.REPLICATE.toString());
       APIResult result = ClusterStartupRule.getLocator().getClusterManagementService()
@@ -121,7 +120,7 @@ public class RegionAPIDUnitTest {
     gfsh.executeAndAssertThat("create region --name=Dummy --type=PARTITION").statusIsSuccess();
 
     locator.invoke(() -> {
-      ClusterRegionConfig config = new ClusterRegionConfig();
+      RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setRefid(RegionShortcut.PARTITION.toString());
       APIResult result = ClusterStartupRule.getLocator().getClusterManagementService()

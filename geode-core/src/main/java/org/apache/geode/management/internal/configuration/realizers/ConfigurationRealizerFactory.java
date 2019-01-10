@@ -14,21 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.geode.management.internal.configuration.realizers;
 
-package org.apache.geode.management.internal.configuration.persisters;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 
-public class ClusterRegionConfigPersister extends ConfigurationPersister {
+public class ConfigurationRealizerFactory {
+  private final Cache cache;
+  private final Map<Class, Class> realizerMap = new HashMap<>();
 
-  public ClusterRegionConfigPersister(CacheElement configElement, CacheConfig existingConfig) {
-    super(configElement, existingConfig);
+  public ConfigurationRealizerFactory(Cache cache) {
+    this.cache = cache;
+    this.realizerMap.put(RegionConfig.class, ClusterRegionConfigRealizer.class);
   }
 
-  @Override
-  public void add() {
-    existingConfig.getRegions().add((RegionConfig) configElement);
+  public ConfigurationRealizer generate(CacheElement config) throws Exception {
+    Class realizerClass = realizerMap.get(config.getClass());
+    ConfigurationRealizer realizer = null;
+    if (realizerClass != null) {
+      realizer =
+          (ConfigurationRealizer) realizerClass.getConstructor(CacheElement.class, Cache.class)
+              .newInstance(config, cache);
+    }
+
+    return realizer;
   }
 }

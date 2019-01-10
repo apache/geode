@@ -18,28 +18,39 @@ package org.apache.geode.management.internal.configuration.realizers;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.management.internal.configuration.domain.ClusterConfigElement;
+import org.apache.geode.cache.configuration.CacheElement;
 
 /**
  * Defines the behavior to realize a configuration change in the cache on a server. Created with an
  * object of
- * type {@link ClusterConfigElement}, which represents the configuration change.
+ * type {@link org.apache.geode.cache.configuration.CacheElement}, which represents the
+ * configuration change.
  */
 @Experimental
-public abstract class ConfigurationRealizer<T extends ClusterConfigElement> {
-  T config;
+public abstract class ConfigurationRealizer {
+  protected CacheElement config;
+  protected Cache cache;
 
-  ConfigurationRealizer(T config) {
+  ConfigurationRealizer(CacheElement config, Cache cache) {
     this.config = config;
+    this.cache = cache;
   }
 
-  public void createIn(Cache cache) {}
+  public Cache getCache() {
+    return cache;
+  }
 
-  public boolean existsIn(Cache cache) {
+  public CacheElement getConfig() {
+    return config;
+  }
+
+  public void create() {}
+
+  public boolean exists() {
     return false;
   }
 
-  public void updateIn(Cache cache) {}
+  public void update() {}
 
-  public void deleteFrom(Cache cache) {}
+  public void delete() {}
 }

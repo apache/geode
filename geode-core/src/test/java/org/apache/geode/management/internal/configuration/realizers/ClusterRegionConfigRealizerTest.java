@@ -28,8 +28,8 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.configuration.domain.ClusterRegionConfig;
 
 public class ClusterRegionConfigRealizerTest {
   InternalCache cache;
@@ -44,12 +44,12 @@ public class ClusterRegionConfigRealizerTest {
 
   @Test
   public void createsPartitionedInCache() {
-    ClusterRegionConfig config = new ClusterRegionConfig();
+    RegionConfig config = new RegionConfig();
     config.setName("regionName");
     config.setRefid("PARTITION");
 
-    ClusterRegionConfigRealizer subject = new ClusterRegionConfigRealizer(config);
-    subject.createIn(cache);
+    ClusterRegionConfigRealizer subject = new ClusterRegionConfigRealizer(config, cache);
+    subject.create();
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
     verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());
@@ -68,12 +68,12 @@ public class ClusterRegionConfigRealizerTest {
 
   @Test
   public void createsReplicateInCache() {
-    ClusterRegionConfig config = new ClusterRegionConfig();
+    RegionConfig config = new RegionConfig();
     config.setName("regionName");
     config.setRefid("REPLICATE");
 
-    ClusterRegionConfigRealizer subject = new ClusterRegionConfigRealizer(config);
-    subject.createIn(cache);
+    ClusterRegionConfigRealizer subject = new ClusterRegionConfigRealizer(config, cache);
+    subject.create();
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
     verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());

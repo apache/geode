@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -34,8 +35,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
-import org.apache.geode.management.internal.configuration.domain.ClusterConfigElement;
 import org.apache.geode.management.internal.configuration.persisters.ConfigurationPersister;
+import org.apache.geode.management.internal.configuration.persisters.ConfigurationPersisterFactory;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.exceptions.NoMembersException;
 
@@ -48,19 +49,26 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ConfigurationPersistenceService persistenceService) {
     this.cache = cache;
     this.persistenceService = persistenceService;
+
   }
 
   @Override
-  public APIResult createCacheElement(ClusterConfigElement config) {
+  public APIResult createCacheElement(CacheElement config) {
     APIResult result = new APIResult();
-    CacheConfig cacheConfig;
     String group = "cluster";
 
     if (persistenceService != null) {
-      cacheConfig = persistenceService.getCacheConfig(group, true);
-      ConfigurationPersister persister = config.getConfigurationPersister();
-      // see if the element already exists in this group's configuration
-      if (persister.existsIn(cacheConfig)) {
+      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+      ConfigurationPersisterFactory persisterFactory =
+          new ConfigurationPersisterFactory(currentPersistedConfig);
+      ConfigurationPersister persister;
+      try {
+        persister = persisterFactory.generate(config);
+      } catch (Exception e) {
+        throw new RuntimeException(e.getMessage());
+      }
+
+      if (persister.exists()) {
         throw new EntityExistsException("cache element " + config.getId() + " already exists.");
       }
     }
@@ -72,18 +80,21 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
-        new UpdateCacheFunction(), Arrays.asList(config, ClusterConfigElement.Operation.ADD),
+        new UpdateCacheFunction(),
+        Arrays.asList(config, UpdateCacheFunction.CacheElementOperation.ADD),
         targetedMembers);
-    functionResults.forEach(fr -> result.addMemberStatus(fr.getMemberIdOrName(),
-        fr.isSuccessful() ? APIResult.Result.SUCCESS : APIResult.Result.FAILURE,
-        fr.getStatusMessage()));
+    functionResults
+        .forEach(functionResult -> result.addMemberStatus(functionResult.getMemberIdOrName(),
+            functionResult.isSuccessful() ? APIResult.Result.SUCCESS : APIResult.Result.FAILURE,
+            functionResult.getStatusMessage()));
 
     // persist configuration
     if (persistenceService != null) {
       persistenceService.updateCacheConfig(group, cacheConfigForGroup -> {
         try {
-          ConfigurationPersister persister = config.getConfigurationPersister();
-          persister.addTo(cacheConfigForGroup);
+          ConfigurationPersister groupPersister =
+              (new ConfigurationPersisterFactory(cacheConfigForGroup)).generate(config);
+          groupPersister.add();
           result.setClusterConfigPersisted(APIResult.Result.SUCCESS,
               "successfully persisted config for " + group);
         } catch (Exception e) {
@@ -101,12 +112,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public APIResult deleteCacheElement(ClusterConfigElement config) {
+  public APIResult deleteCacheElement(CacheElement config) {
     throw new NotImplementedException();
   }
 
   @Override
-  public APIResult updateCacheElement(ClusterConfigElement config) {
+  public APIResult updateCacheElement(CacheElement config) {
     throw new NotImplementedException();
   }
 

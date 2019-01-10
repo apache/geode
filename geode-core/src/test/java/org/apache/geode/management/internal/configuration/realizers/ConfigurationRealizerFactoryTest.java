@@ -14,23 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.geode.management.internal.configuration.realizers;
 
-package org.apache.geode.management.internal.configuration.domain;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.internal.configuration.persisters.ClusterRegionConfigPersister;
-import org.apache.geode.management.internal.configuration.persisters.ConfigurationPersister;
-import org.apache.geode.management.internal.configuration.realizers.ClusterRegionConfigRealizer;
-import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
 
-public class ClusterRegionConfig extends RegionConfig implements ClusterConfigElement {
-  @Override
-  public ConfigurationPersister getConfigurationPersister() {
-    return new ClusterRegionConfigPersister(this);
+public class ConfigurationRealizerFactoryTest {
+  Cache cache;
+
+  @Before
+  public void setup() {
+    cache = mock(Cache.class);
   }
 
-  @Override
-  public ConfigurationRealizer getConfigurationRealizer() {
-    return new ClusterRegionConfigRealizer(this);
+  @Test
+  public void generatesConfigurationRealizerFromConfigObjectType() throws Exception {
+    ConfigurationRealizerFactory subject = new ConfigurationRealizerFactory(cache);
+
+    RegionConfig config = new RegionConfig();
+    ConfigurationRealizer realizer = subject.generate(config);
+
+    assertThat(realizer).isInstanceOf(ClusterRegionConfigRealizer.class);
+    assertThat(realizer.getCache()).isEqualTo(cache);
+    assertThat(realizer.getConfig()).isEqualTo(config);
   }
 }

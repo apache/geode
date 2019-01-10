@@ -14,21 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.geode.management.internal.configuration.persisters;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 
-public class ClusterRegionConfigPersister extends ConfigurationPersister {
+public class ConfigurationPersisterFactoryTest {
+  CacheConfig cacheConfig;
 
-  public ClusterRegionConfigPersister(CacheElement configElement, CacheConfig existingConfig) {
-    super(configElement, existingConfig);
+  @Before
+  public void setup() {
+    cacheConfig = mock(CacheConfig.class);
   }
 
-  @Override
-  public void add() {
-    existingConfig.getRegions().add((RegionConfig) configElement);
+  @Test
+  public void generatesConfigurationPersisterFromConfigObjectType() throws Exception {
+    ConfigurationPersisterFactory subject = new ConfigurationPersisterFactory(cacheConfig);
+
+    RegionConfig config = new RegionConfig();
+    ConfigurationPersister persister = subject.generate(config);
+
+    assertThat(persister).isInstanceOf(ClusterRegionConfigPersister.class);
+    assertThat(persister.getExistingConfig()).isEqualTo(cacheConfig);
+    assertThat(persister.getConfigElement()).isEqualTo(config);
   }
 }

@@ -128,7 +128,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Name of the region which is used to store the configuration information
    */
   public static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
-  public static final String CACHE_CONFIG_VERSION = "1.0";
+  private static final String CACHE_CONFIG_VERSION = "1.0";
 
   private final String configDirPath;
   private final String configDiskDirPath;
