@@ -140,6 +140,7 @@ dependencies {
   archives project(':geode-protobuf-messages')
   archives project(':geode-web')
   archives project(':geode-web-api')
+  archives project(':geode-web-management')
   archives project(':geode-wan')
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
@@ -461,6 +462,9 @@ distributions {
           exclude '*.jar'
         }
         from (project(':geode-web-api').configurations.archives.allArtifacts.files) {
+          exclude '*.jar'
+        }
+        from (project(':geode-web-management').configurations.archives.allArtifacts.files) {
           exclude '*.jar'
         }
       }

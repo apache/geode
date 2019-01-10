@@ -215,7 +215,16 @@ public class ManagementAgent {
       if (gemfireWar == null) {
         if (logger.isDebugEnabled()) {
           logger.debug(
-              "Unable to find GemFire Management REST API WAR file; the Management REST Interface for GemFire will not be accessible.");
+              "Unable to find GemFire V1 Management REST API WAR file; the Management REST Interface for GemFire will not be accessible.");
+        }
+      }
+
+      // Find the V2 Management rest WAR file
+      final String gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
+      if (gemfireManagementWar == null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "Unable to find GemFire V2 Management REST API WAR file; the Management REST Interface for GemFire will not be accessible.");
         }
       }
 
@@ -248,7 +257,7 @@ public class ManagementAgent {
       }
 
       try {
-        if (agentUtil.isWebApplicationAvailable(gemfireWar, pulseWar, gemfireAPIWar)) {
+        if (agentUtil.isAnyWarFileAvailable(gemfireWar, gemfireManagementWar, pulseWar, gemfireAPIWar)) {
 
           final String bindAddress = this.config.getHttpServiceBindAddress();
           final int port = this.config.getHttpServicePort();
@@ -258,20 +267,25 @@ public class ManagementAgent {
           this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory
               .getSSLConfigForComponent(config, SecurableCommunicationChannel.WEB));
 
-          if (agentUtil.isWebApplicationAvailable(gemfireWar)) {
+          if (agentUtil.isAnyWarFileAvailable(gemfireWar)) {
             this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire", gemfireWar,
                 securityService, null);
             this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode-mgmt",
                 gemfireWar, securityService, null);
           }
 
-          if (agentUtil.isWebApplicationAvailable(pulseWar)) {
+          if (agentUtil.isAnyWarFileAvailable(gemfireManagementWar)) {
+            this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode-management",
+                gemfireManagementWar, securityService, null);
+          }
+
+          if (agentUtil.isAnyWarFileAvailable(pulseWar)) {
             this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/pulse", pulseWar,
                 securityService, createSslProps());
           }
 
           if (isServer && this.config.getStartDevRestApi()) {
-            if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
+            if (agentUtil.isAnyWarFileAvailable(gemfireAPIWar)) {
               this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode",
                   gemfireAPIWar, securityService, null);
               this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire-api",
@@ -307,7 +321,7 @@ public class ManagementAgent {
 
           // now, that Tomcat has been started, we can set the URL used by web
           // clients to connect to Pulse
-          if (agentUtil.isWebApplicationAvailable(pulseWar)) {
+          if (agentUtil.isAnyWarFileAvailable(pulseWar)) {
             managerBean.setPulseURL("http://".concat(getHost(bindAddress)).concat(":")
                 .concat(String.valueOf(port)).concat("/pulse/"));
           }
