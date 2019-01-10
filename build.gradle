@@ -49,8 +49,11 @@ wrapper {
 }
 
 allprojects {
-  version = versionNumber + releaseQualifier + releaseType
-  ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+  ext.isReleaseVersion = true
+  if(version.contains("SNAPSHOT")) {
+    ext.isReleaseVersion = false
+    version = (version as String).replaceFirst(/SNAPSHOT.*/, 'SNAPSHOT')
+  }
 
   repositories {
     mavenLocal()

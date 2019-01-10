@@ -197,7 +197,7 @@ jobs:
       trigger: true
     - get: geode-build-version
       params:
-        pre: build
+        pre: {{semver-prerelease-token}}
     - do:
       - put: concourse-metadata-resource
       - task: create_instance
@@ -385,7 +385,7 @@ jobs:
       trigger: true
     - get: geode-build-version
       params:
-        pre: build
+        pre: {{semver-prerelease-token}}
     - do:
       - put: concourse-metadata-resource
       - task: create_instance
