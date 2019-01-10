@@ -68,10 +68,10 @@ public class CreateMappingCommand extends SingleGfshCommand {
       "The table column names to use as the region key for this JDBC mapping. If more than one column name is given then they must be separated by commas.";
   static final String CREATE_MAPPING__CATALOG_NAME = "catalog";
   static final String CREATE_MAPPING__CATALOG_NAME__HELP =
-      "The catalog that contains the database table. By default, the catalog is null causing the table to be found irrespective of catalog.";
+      "The catalog that contains the database table. By default, the catalog is the empty string causing the table to be referenced without a catalog prefix.";
   static final String CREATE_MAPPING__SCHEMA_NAME = "schema";
   static final String CREATE_MAPPING__SCHEMA_NAME__HELP =
-      "The schema that contains the database table. By default, the schema is null causing the table to be found irrespective of schema.";
+      "The schema that contains the database table. By default, the schema is the empty string causing the table to be referenced without a schema prefix.";
 
   public static String createAsyncEventQueueName(String regionPath) {
     if (regionPath.startsWith("/")) {
