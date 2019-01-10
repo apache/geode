@@ -50,7 +50,8 @@ public class TestConfigService {
     return cache;
   }
 
-  private static RegionMapping createRegionMapping(String pdxClassName, String ids, String catalog, String schema) {
+  private static RegionMapping createRegionMapping(String pdxClassName, String ids, String catalog,
+      String schema) {
     return new RegionMapping(REGION_NAME, pdxClassName, REGION_TABLE_NAME,
         CONNECTION_CONFIG_NAME, ids, catalog, schema);
   }

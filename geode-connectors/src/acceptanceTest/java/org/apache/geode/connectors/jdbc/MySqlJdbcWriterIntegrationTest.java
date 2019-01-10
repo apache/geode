@@ -41,4 +41,9 @@ public class MySqlJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
   public String getConnectionUrl() {
     return dbRule.getConnectionUrl();
   }
+
+  @Override
+  protected boolean vendorSupportsSchemas() {
+    return false;
+  }
 }

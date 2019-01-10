@@ -150,7 +150,8 @@ public abstract class JdbcLoaderIntegrationTest {
   public void verifyGetWithSchemaAndPdxClassNameAndCompositeKey() throws Exception {
     createEmployeeTableWithSchema();
     statement
-        .execute("Insert into " + SCHEMA_NAME + '.' + REGION_TABLE_NAME + "(id, name, age) values('1', 'Emp1', 21)");
+        .execute("Insert into " + SCHEMA_NAME + '.' + REGION_TABLE_NAME
+            + "(id, name, age) values('1', 'Emp1', 21)");
     String ids = "id,name";
     String catalog;
     String schema;
@@ -162,7 +163,8 @@ public abstract class JdbcLoaderIntegrationTest {
       schema = null;
     }
     Region<String, Employee> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, catalog, schema);
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, catalog,
+            schema);
     createPdxType();
 
     JSONObject key = new JSONObject();
@@ -209,10 +211,12 @@ public abstract class JdbcLoaderIntegrationTest {
     assertThat(pdx).isNull();
   }
 
-  protected SqlHandler createSqlHandler(String pdxClassName, String ids, String catalog, String schema)
+  protected SqlHandler createSqlHandler(String pdxClassName, String ids, String catalog,
+      String schema)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName, ids, catalog, schema),
+        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName, ids, catalog,
+            schema),
         testDataSourceFactory);
   }
 

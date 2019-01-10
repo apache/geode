@@ -61,7 +61,7 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
   protected boolean vendorSupportsSchemas() {
     return true;
   }
-  
+
   private void createEmployeeTableWithSchemaAndCatalog() throws Exception {
     statement.execute("CREATE SCHEMA " + SCHEMA_NAME);
     statement.execute("Create Table " + DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME
@@ -72,10 +72,12 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
   public void verifyGetWithSchemaCatalogAndPdxClassNameAndCompositeKey() throws Exception {
     createEmployeeTableWithSchemaAndCatalog();
     statement
-        .execute("Insert into " + DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME + "(id, name, age) values('1', 'Emp1', 21)");
+        .execute("Insert into " + DB_NAME + '.' + SCHEMA_NAME + '.' + REGION_TABLE_NAME
+            + "(id, name, age) values('1', 'Emp1', 21)");
     String ids = "id,name";
     Region<String, Employee> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, DB_NAME, SCHEMA_NAME);
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, DB_NAME,
+            SCHEMA_NAME);
     createPdxType();
 
     JSONObject key = new JSONObject();
