@@ -19,6 +19,7 @@ package org.apache.geode.internal.cache.map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -114,7 +115,27 @@ public class AbstractRegionMapPutTest {
     verify(instance, never()).createOrUpdateEntry();
     verify(instance, times(1)).shouldCreatedEntryBeRemoved();
     verify(instance, never()).doBeforeCompletionActions();
-    verify(instance, times(1)).doAfterCompletionActions();
+    verify(instance, times(1)).doAfterCompletionActions(anyBoolean());
+  }
+
+  @Test
+  public void putWithDisableLruUpdateCallbackTrueCallsDoAfterCompletionActionsWithTrue() {
+    instance.checkPreconditions = false;
+    when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(true);
+
+    instance.put();
+
+    verify(instance, times(1)).doAfterCompletionActions(true);
+  }
+
+  @Test
+  public void putWithDisableLruUpdateCallbackFalseCallsDoAfterCompletionActionsWithFalse() {
+    instance.checkPreconditions = false;
+    when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(false);
+
+    instance.put();
+
+    verify(instance, times(1)).doAfterCompletionActions(false);
   }
 
   @Test
@@ -283,7 +304,7 @@ public class AbstractRegionMapPutTest {
       verify(instance, never()).doBeforeCompletionActions();
       verify(instance, never()).shouldCreatedEntryBeRemoved();
     }
-    verify(instance, times(1)).doAfterCompletionActions();
+    verify(instance, times(1)).doAfterCompletionActions(anyBoolean());
   }
 
   private class TestableRegionMapPut extends AbstractRegionMapPut {
@@ -343,7 +364,7 @@ public class AbstractRegionMapPutTest {
     }
 
     @Override
-    protected void doAfterCompletionActions() {}
+    protected void doAfterCompletionActions(boolean disabledEviction) {}
 
   }
 }
