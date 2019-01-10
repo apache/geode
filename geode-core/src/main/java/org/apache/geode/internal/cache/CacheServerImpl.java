@@ -58,7 +58,6 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.Assert;
@@ -75,6 +74,8 @@ import org.apache.geode.internal.cache.tier.sockets.ProtobufServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
@@ -90,6 +91,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private static final int FORCE_LOAD_UPDATE_FREQUENCY = getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
+
+  private final ResourceEventNotifier resourceEventNotifier;
 
   private final SecurityService securityService;
 
@@ -119,7 +122,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   /**
    * boolean that represents whether this server is a GatewayReceiver or a simple BridgeServer
    */
-  private boolean isGatewayReceiver;
+  private final boolean isGatewayReceiver;
 
   private List<GatewayTransportFilter> gatewayTransportFilters = Collections.emptyList();
 
@@ -143,8 +146,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * Creates a new{@code BridgeServerImpl} that serves the contents of the give {@code Cache}. It
    * has the default configuration.
    */
-  public CacheServerImpl(InternalCache cache, boolean isGatewayReceiver) {
+  public CacheServerImpl(InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      boolean isGatewayReceiver) {
     super(cache);
+    this.resourceEventNotifier = resourceEventNotifier;
     this.isGatewayReceiver = isGatewayReceiver;
     this.securityService = cache.getSecurityService();
   }
@@ -387,8 +392,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     }
 
     if (!isGatewayReceiver) {
-      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
-      system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
+      resourceEventNotifier.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
     }
 
   }
@@ -484,8 +488,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     txMgr.removeHostedTXStatesForClients();
 
     if (!isGatewayReceiver) {
-      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
-      system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
+      resourceEventNotifier.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
     }
 
   }

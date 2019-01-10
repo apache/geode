@@ -41,6 +41,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.test.fake.Fakes;
 
 public class PartitionedRegionTest {
@@ -53,6 +54,7 @@ public class PartitionedRegionTest {
   @Before
   public void setup() {
     InternalCache internalCache = Fakes.cache();
+    ResourceEventNotifier resourceEventNotifier = internalCache.getResourceEventNotifier();
     InternalResourceManager resourceManager =
         mock(InternalResourceManager.class, RETURNS_DEEP_STUBS);
     when(internalCache.getInternalResourceManager()).thenReturn(resourceManager);
@@ -60,7 +62,7 @@ public class PartitionedRegionTest {
     attributesFactory.setPartitionAttributes(
         new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
     partitionedRegion = new PartitionedRegion(regionName, attributesFactory.create(),
-        null, internalCache, mock(InternalRegionArguments.class));
+        null, internalCache, resourceEventNotifier, mock(InternalRegionArguments.class));
 
   }
 

@@ -65,6 +65,7 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -72,7 +73,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * The InternalCache interface is contract for implementing classes for defining internal cache
  * operations that should not be part of the "public" API of the implementing class.
  *
- * @see org.apache.geode.cache.Cache
+ * @see Cache
  * @since GemFire 7.0
  */
 public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
@@ -368,4 +369,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
    * by Geode will not be accessible from the returned cache.
    */
   InternalCacheForClientAccess getCacheForProcessingClientRequests();
+
+  ResourceEventNotifier getResourceEventNotifier();
 }

@@ -155,6 +155,8 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
+import org.apache.geode.management.internal.resource.ResourceEventNotifierFactory;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -290,6 +292,9 @@ public class CacheCreation implements InternalCache {
    * @since GemFire 8.1
    */
   private final SimpleExtensionPoint<Cache> extensionPoint = new SimpleExtensionPoint<>(this, this);
+
+  private final ResourceEventNotifier resourceEventNotifier =
+      new ResourceEventNotifierFactory().createDummyResourceEventNotifier();
 
   /**
    * Creates a new {@code CacheCreation} with no root regions
@@ -429,7 +434,7 @@ public class CacheCreation implements InternalCache {
    */
   @Override
   public DiskStoreFactory createDiskStoreFactory() {
-    return new DiskStoreFactoryImpl(this);
+    return new DiskStoreFactoryImpl(this, resourceEventNotifier);
   }
 
   /**
@@ -1640,17 +1645,17 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory() {
-    return WANServiceProvider.createGatewaySenderFactory(this);
+    return WANServiceProvider.createGatewaySenderFactory(this, resourceEventNotifier);
   }
 
   @Override
   public GatewayReceiverFactory createGatewayReceiverFactory() {
-    return WANServiceProvider.createGatewayReceiverFactory(this);
+    return WANServiceProvider.createGatewayReceiverFactory(this, resourceEventNotifier);
   }
 
   @Override
   public AsyncEventQueueFactory createAsyncEventQueueFactory() {
-    return new AsyncEventQueueFactoryImpl(this);
+    return new AsyncEventQueueFactoryImpl(this, resourceEventNotifier);
   }
 
   public void setPdxReadSerialized(boolean readSerialized) {
@@ -2417,6 +2422,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  public ResourceEventNotifier getResourceEventNotifier() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 }

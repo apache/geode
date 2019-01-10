@@ -16,9 +16,9 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import static org.apache.geode.distributed.internal.ResourceEvent.CACHE_CREATE;
-import static org.apache.geode.distributed.internal.ResourceEvent.CACHE_REMOVE;
-import static org.apache.geode.distributed.internal.ResourceEvent.SYSTEM_ALERT;
+import static org.apache.geode.management.internal.resource.ResourceEvent.CACHE_CREATE;
+import static org.apache.geode.management.internal.resource.ResourceEvent.CACHE_REMOVE;
+import static org.apache.geode.management.internal.resource.ResourceEvent.SYSTEM_ALERT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -35,8 +35,8 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.resource.ResourceEvent;
 import org.apache.geode.test.junit.categories.ManagementTest;
 
 /**

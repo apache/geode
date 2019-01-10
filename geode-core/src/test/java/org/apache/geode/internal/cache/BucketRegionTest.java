@@ -38,12 +38,14 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.partitioned.LockObject;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.test.fake.Fakes;
 
 public class BucketRegionTest {
   private RegionAttributes regionAttributes;
   private PartitionedRegion partitionedRegion;
   private InternalCache cache;
+  private ResourceEventNotifier resourceEventNotifier;
   private InternalRegionArguments internalRegionArgs;
   private DataPolicy dataPolicy;
   private EntryEventImpl event;
@@ -61,6 +63,7 @@ public class BucketRegionTest {
     regionAttributes = mock(RegionAttributes.class);
     partitionedRegion = mock(PartitionedRegion.class);
     cache = Fakes.cache();
+    resourceEventNotifier = cache.getResourceEventNotifier();
     internalRegionArgs = mock(InternalRegionArguments.class);
     dataPolicy = mock(DataPolicy.class);
     event = mock(EntryEventImpl.class, RETURNS_DEEP_STUBS);
@@ -99,7 +102,7 @@ public class BucketRegionTest {
   public void waitUntilLockedThrowsIfFoundLockAndPartitionedRegionIsClosing() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     Integer[] keys = {1};
     doReturn(mock(LockObject.class)).when(bucketRegion).searchAndLock(keys);
     doThrow(regionDestroyedException).when(partitionedRegion)
@@ -112,7 +115,7 @@ public class BucketRegionTest {
   public void waitUntilLockedReturnsTrueIfNoOtherThreadLockedKeys() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     Integer[] keys = {1};
     doReturn(null).when(bucketRegion).searchAndLock(keys);
 
@@ -123,7 +126,7 @@ public class BucketRegionTest {
   public void basicPutEntryDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
     bucketRegion.basicPutEntry(event, 1);
@@ -135,7 +138,7 @@ public class BucketRegionTest {
   public void basicPutEntryReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(mock(AbstractRegionMap.class)).when(bucketRegion).getRegionMap();
 
@@ -148,7 +151,7 @@ public class BucketRegionTest {
   public void virtualPutDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
     bucketRegion.virtualPut(event, false, true, null, false, 1, true);
@@ -160,7 +163,7 @@ public class BucketRegionTest {
   public void virtualPutReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
 
@@ -173,7 +176,7 @@ public class BucketRegionTest {
   public void basicDestroyDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
     bucketRegion.basicDestroy(event, false, null);
@@ -185,7 +188,7 @@ public class BucketRegionTest {
   public void basicDestroyReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
 
@@ -198,7 +201,7 @@ public class BucketRegionTest {
   public void basicUpdateEntryVersionDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
     when(event.getRegion()).thenReturn(bucketRegion);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
@@ -213,7 +216,7 @@ public class BucketRegionTest {
   public void basicUpdateEntryVersionReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     when(event.getRegion()).thenReturn(bucketRegion);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
@@ -228,7 +231,7 @@ public class BucketRegionTest {
   public void basicInvalidateDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
     bucketRegion.basicInvalidate(event, false, false);
@@ -240,7 +243,7 @@ public class BucketRegionTest {
   public void basicInvalidateReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
 
@@ -253,7 +256,7 @@ public class BucketRegionTest {
   public void lockKeysAndPrimaryReturnFalseIfDoesNotNeedWriteLock() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(false).when(bucketRegion).needWriteLock(event);
 
     assertThat(bucketRegion.lockKeysAndPrimary(event)).isFalse();
@@ -263,7 +266,7 @@ public class BucketRegionTest {
   public void lockKeysAndPrimaryThrowsIfWaitUntilLockedThrows() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(keys).when(bucketRegion).getKeysToBeLocked(event);
     doThrow(regionDestroyedException).when(bucketRegion).waitUntilLocked(keys);
 
@@ -274,7 +277,7 @@ public class BucketRegionTest {
   public void lockKeysAndPrimaryReleaseLockHeldIfDoLockForPrimaryThrows() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(keys).when(bucketRegion).getKeysToBeLocked(event);
     doReturn(true).when(bucketRegion).waitUntilLocked(keys);
     doThrow(new PrimaryBucketException()).when(bucketRegion).doLockForPrimary(false);
@@ -288,7 +291,7 @@ public class BucketRegionTest {
   public void lockKeysAndPrimaryReleaseLockHeldIfDoesNotLockForPrimary() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, resourceEventNotifier, internalRegionArgs));
     doReturn(keys).when(bucketRegion).getKeysToBeLocked(event);
     doReturn(true).when(bucketRegion).waitUntilLocked(keys);
     doReturn(true).when(bucketRegion).doLockForPrimary(false);

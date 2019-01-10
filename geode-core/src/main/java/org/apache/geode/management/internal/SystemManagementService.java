@@ -30,7 +30,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
@@ -51,6 +50,8 @@ import org.apache.geode.management.ManagerMXBean;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.RegionMXBean;
 import org.apache.geode.management.internal.beans.ManagementAdapter;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.management.membership.MembershipEvent;
 import org.apache.geode.management.membership.MembershipListener;
 
@@ -67,6 +68,8 @@ public class SystemManagementService extends BaseManagementService {
    * The concrete implementation of DistributedSystem that provides internal-only functionality.
    */
   private final InternalDistributedSystem system;
+
+  private final ResourceEventNotifier resourceEventNotifier;
 
   /**
    * core component for distribution
@@ -120,11 +123,13 @@ public class SystemManagementService extends BaseManagementService {
 
   public static BaseManagementService newSystemManagementService(
       InternalCacheForClientAccess cache) {
-    return new SystemManagementService(cache).init();
+    return new SystemManagementService(cache, cache.getResourceEventNotifier()).init();
   }
 
-  protected SystemManagementService(InternalCacheForClientAccess cache) {
+  protected SystemManagementService(InternalCacheForClientAccess cache,
+      ResourceEventNotifier resourceEventNotifier) {
     this.cache = cache;
+    this.resourceEventNotifier = resourceEventNotifier;
     this.system = (InternalDistributedSystem) cache.getDistributedSystem();
     // This is a safe check to ensure Management service does not start for a
     // system which is disconnected.
@@ -426,7 +431,7 @@ public class SystemManagementService extends BaseManagementService {
       if (needsToBeStarted) {
         boolean started = false;
         try {
-          system.handleResourceEvent(ResourceEvent.MANAGER_START, null);
+          resourceEventNotifier.handleResourceEvent(ResourceEvent.MANAGER_START, null);
           federatingManager.startManager();
           if (this.agent != null) {
             this.agent.startAgent(getInternalCache());
@@ -441,7 +446,7 @@ public class SystemManagementService extends BaseManagementService {
             if (federatingManager != null) {
               federatingManager.stopManager();
             }
-            system.handleResourceEvent(ResourceEvent.MANAGER_STOP, null);
+            resourceEventNotifier.handleResourceEvent(ResourceEvent.MANAGER_STOP, null);
           }
         }
       }
@@ -460,7 +465,7 @@ public class SystemManagementService extends BaseManagementService {
       if (federatingManager != null) {
         return false;
       }
-      system.handleResourceEvent(ResourceEvent.MANAGER_CREATE, null);
+      resourceEventNotifier.handleResourceEvent(ResourceEvent.MANAGER_CREATE, null);
       // An initialised copy of federating manager
       federatingManager = new FederatingManager(jmxAdapter, repo, system, this, cache);
       getInternalCache().getJmxManagerAdvisor().broadcastChange();
@@ -477,7 +482,7 @@ public class SystemManagementService extends BaseManagementService {
       verifyManagementService();
       if (federatingManager != null) {
         federatingManager.stopManager();
-        system.handleResourceEvent(ResourceEvent.MANAGER_STOP, null);
+        resourceEventNotifier.handleResourceEvent(ResourceEvent.MANAGER_STOP, null);
         getInternalCache().getJmxManagerAdvisor().broadcastChange();
         if (this.agent != null && (this.agent.isRunning() || this.agent.isHttpServiceRunning())) {
           this.agent.stopAgent();

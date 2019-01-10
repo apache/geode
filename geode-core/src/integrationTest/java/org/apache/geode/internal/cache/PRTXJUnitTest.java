@@ -26,6 +26,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class PRTXJUnitTest extends TXJUnitTest {
 
@@ -38,7 +39,8 @@ public class PRTXJUnitTest extends TXJUnitTest {
         .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(3).create());
 
     this.region = new PRWithLocalOps(getClass().getSimpleName(), attributesFactory.create(), null,
-        this.cache, new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+        this.cache, resourceEventNotifier,
+        new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
             .setSnapshotInputStream(null).setImageTarget(null));
 
     ((PartitionedRegion) this.region).initialize(null, null, null);
@@ -87,8 +89,9 @@ public class PRTXJUnitTest extends TXJUnitTest {
   private static class PRWithLocalOps extends PartitionedRegion {
 
     PRWithLocalOps(String regionName, RegionAttributes ra, LocalRegion parentRegion,
-        GemFireCacheImpl cache, InternalRegionArguments internalRegionArgs) {
-      super(regionName, ra, parentRegion, cache, internalRegionArgs);
+        GemFireCacheImpl cache, ResourceEventNotifier resourceEventNotifier,
+        InternalRegionArguments internalRegionArgs) {
+      super(regionName, ra, parentRegion, cache, resourceEventNotifier, internalRegionArgs);
     }
 
     @Override

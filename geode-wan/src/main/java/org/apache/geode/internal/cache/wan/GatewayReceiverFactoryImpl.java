@@ -23,12 +23,12 @@ import java.util.List;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.GatewayReceiverCreation;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * @since GemFire 7.0
@@ -49,16 +49,16 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 
   private boolean manualStart = GatewayReceiver.DEFAULT_MANUAL_START;
 
-  private List<GatewayTransportFilter> filters = new ArrayList<GatewayTransportFilter>();
+  private final List<GatewayTransportFilter> filters = new ArrayList<>();
 
-  private InternalCache cache;
+  private final InternalCache cache;
 
-  public GatewayReceiverFactoryImpl() {
-    // nothing
-  }
+  private final ResourceEventNotifier resourceEventNotifier;
 
-  public GatewayReceiverFactoryImpl(InternalCache cache) {
+  public GatewayReceiverFactoryImpl(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier) {
     this.cache = cache;
+    this.resourceEventNotifier = resourceEventNotifier;
   }
 
   @Override
@@ -129,13 +129,12 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 
     GatewayReceiver recv = null;
     if (this.cache instanceof GemFireCacheImpl) {
-      recv = new GatewayReceiverImpl(this.cache, this.startPort, this.endPort, this.timeBetPings,
+      recv = new GatewayReceiverImpl(this.cache, resourceEventNotifier, this.startPort,
+          this.endPort, this.timeBetPings,
           this.socketBuffSize, this.bindAdd, this.filters, this.hostnameForSenders,
           this.manualStart);
       this.cache.addGatewayReceiver(recv);
-      InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
-      system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_CREATE, recv);
+      resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_CREATE, recv);
       if (!this.manualStart) {
         try {
           recv.start();

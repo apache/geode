@@ -32,17 +32,20 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender {
   private static final Logger logger = LogService.getLogger();
 
   /** used to reduce warning logs in case remote locator is down (#47634) */
-  protected int proxyFailureTries = 0;
+  private int proxyFailureTries;
 
-  public AbstractRemoteGatewaySender(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public AbstractRemoteGatewaySender(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier, GatewaySenderAttributes attrs) {
+    super(cache, resourceEventNotifier, attrs);
   }
 
+  @Override
   public synchronized void initProxy() {
     // return if it is being used for WBCL or proxy is already created
     if (this.remoteDSId == DEFAULT_DISTRIBUTED_SYSTEM_ID
@@ -152,7 +155,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
     }
   }
 
-  protected boolean logProxyFailure() {
+  private boolean logProxyFailure() {
     assert Thread.holdsLock(this);
     // always log the first failure
     if (logger.isDebugEnabled() || this.proxyFailureTries == 0) {

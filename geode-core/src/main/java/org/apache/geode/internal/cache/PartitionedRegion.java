@@ -242,6 +242,7 @@ import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * A Region whose total storage is split into chunks of data (partitions) which are copied up to a
@@ -726,8 +727,10 @@ public class PartitionedRegion extends LocalRegion
    * and also by invoking Cache.createRegion(). (Cache.xml etc to be added)
    */
   public PartitionedRegion(String regionName, RegionAttributes regionAttributes,
-      LocalRegion parentRegion, InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs);
+      LocalRegion parentRegion, InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      InternalRegionArguments internalRegionArgs) {
+    super(regionName, regionAttributes, parentRegion, cache, resourceEventNotifier,
+        internalRegionArgs);
 
     this.node = initializeNode();
     this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath());

@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEventImpl;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
@@ -153,6 +154,8 @@ public abstract class DynamicRegionFactory {
 
   InternalCache cache = null;
 
+  private ResourceEventNotifier resourceEventNotifier;
+
   private Config config = null;
 
   /** The region listeners registered on this DynamicRegionFactory */
@@ -240,6 +243,7 @@ public abstract class DynamicRegionFactory {
 
     try {
       this.cache = theCache;
+      resourceEventNotifier = cache.getResourceEventNotifier();
       this.dynamicRegionList = theCache.getRegion(DYNAMIC_REGION_LIST_NAME);
       final boolean isClient = this.config.getPoolName() != null;
       if (this.dynamicRegionList == null) {
@@ -876,7 +880,8 @@ public abstract class DynamicRegionFactory {
   // the meta data
   private class LocalMetaRegion extends LocalRegion {
     protected LocalMetaRegion(RegionAttributes attrs, InternalRegionArguments ira) {
-      super(DYNAMIC_REGION_LIST_NAME, attrs, null, DynamicRegionFactory.this.cache, ira);
+      super(DYNAMIC_REGION_LIST_NAME, attrs, null, DynamicRegionFactory.this.cache,
+          resourceEventNotifier, ira);
       Assert.assertTrue(attrs.getScope().isLocal());
     }
 
@@ -986,7 +991,7 @@ public abstract class DynamicRegionFactory {
   private class DistributedMetaRegion extends DistributedRegion {
     protected DistributedMetaRegion(RegionAttributes attrs) {
       super(DYNAMIC_REGION_LIST_NAME, attrs, null, DynamicRegionFactory.this.cache,
-          new InternalRegionArguments());
+          resourceEventNotifier, new InternalRegionArguments());
     }
 
     // This is an internal uses only region

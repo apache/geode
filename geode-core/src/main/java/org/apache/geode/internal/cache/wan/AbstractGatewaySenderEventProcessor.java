@@ -145,10 +145,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    */
   private int batchSize;
 
-  public AbstractGatewaySenderEventProcessor(String string,
-      GatewaySender sender, ThreadsMonitoring tMonitoring) {
+  public AbstractGatewaySenderEventProcessor(String string, AbstractGatewaySender sender,
+      ThreadsMonitoring tMonitoring) {
     super(string);
-    this.sender = (AbstractGatewaySender) sender;
+    this.sender = sender;
     this.batchSize = sender.getBatchSize();
     this.threadMonitoring = tMonitoring;
   }

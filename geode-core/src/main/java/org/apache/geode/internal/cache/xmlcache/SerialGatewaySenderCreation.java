@@ -29,59 +29,74 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class SerialGatewaySenderCreation extends AbstractGatewaySender implements GatewaySender {
 
-  public SerialGatewaySenderCreation(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public SerialGatewaySenderCreation(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier, GatewaySenderAttributes attrs) {
+    super(cache, resourceEventNotifier, attrs);
   }
 
+  @Override
   public void distribute(EnumListenerEvent operation, EntryEventImpl event,
       List<Integer> remoteDSIds) {}
 
   @Override
   public void start() {}
 
+  @Override
   public void stop() {}
 
+  @Override
   public void rebalance() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void fillInProfile(Profile profile) {}
 
+  @Override
   public CancelCriterion getCancelCriterion() {
     return null;
   }
 
+  @Override
   public DistributionAdvisor getDistributionAdvisor() {
     return null;
   }
 
+  @Override
   public DistributionManager getDistributionManager() {
     return null;
   }
 
+  @Override
   public String getFullPath() {
     return null;
   }
 
+  @Override
   public String getName() {
     return null;
   }
 
+  @Override
   public DistributionAdvisee getParentAdvisee() {
     return null;
   }
 
+  @Override
   public Profile getProfile() {
     return null;
   }
 
+  @Override
   public int getSerialNumber() {
     return 0;
   }
 
+  @Override
   public InternalDistributedSystem getSystem() {
     return null;
   }
@@ -89,10 +104,12 @@ public class SerialGatewaySenderCreation extends AbstractGatewaySender implement
   @Override
   public void setModifiedEventId(EntryEventImpl clonedEvent) {}
 
+  @Override
   protected GatewayQueueEvent getSynchronizationEvent(Object key, long timestamp) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   protected void putSynchronizationEvent(GatewayQueueEvent event) {
     throw new UnsupportedOperationException();
   }

@@ -22,8 +22,6 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
@@ -40,13 +38,16 @@ import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
 
   private static final Logger logger = LogService.getLogger();
 
-  public SerialAsyncEventQueueImpl(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public SerialAsyncEventQueueImpl(InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      GatewaySenderAttributes attrs) {
+    super(cache, resourceEventNotifier, attrs);
     if (!(this.cache instanceof CacheCreation)) {
       // this sender lies underneath the AsyncEventQueue. Need to have
       // AsyncEventQueueStats
@@ -99,10 +100,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       }
       new UpdateAttributesProcessor(this).distribute(false);
 
-
-      InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
-      system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
+      resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
       logger
           .info("Started {}", this);
@@ -168,9 +166,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       }
     }
 
-    InternalDistributedSystem system =
-        (InternalDistributedSystem) this.cache.getDistributedSystem();
-    system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
+    resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
   }
 
   @Override

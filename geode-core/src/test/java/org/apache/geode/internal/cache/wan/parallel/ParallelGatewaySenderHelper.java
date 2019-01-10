@@ -55,6 +55,7 @@ import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class ParallelGatewaySenderHelper {
 
@@ -106,6 +107,7 @@ public class ParallelGatewaySenderHelper {
   }
 
   public static BucketRegionQueue createBucketRegionQueue(GemFireCacheImpl cache,
+      ResourceEventNotifier resourceEventNotifier,
       PartitionedRegion parentRegion, PartitionedRegion queueRegion, int bucketId) {
     // Create InternalRegionArguments
     InternalRegionArguments ira = new InternalRegionArguments();
@@ -143,7 +145,8 @@ public class ParallelGatewaySenderHelper {
 
     // Create BucketRegionQueue
     return new BucketRegionQueue(
-        queueRegion.getBucketName(bucketId), attributes, parentRegion, cache, ira);
+        queueRegion.getBucketName(bucketId), attributes, parentRegion, cache, resourceEventNotifier,
+        ira);
   }
 
   public static String getRegionQueueName(String gatewaySenderId) {

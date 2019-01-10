@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * @since GemFire 7.0
@@ -47,92 +48,112 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
    * creating.
    */
-  private GatewaySenderAttributes attrs = new GatewaySenderAttributes();
+  private final GatewaySenderAttributes attrs = new GatewaySenderAttributes();
 
-  private InternalCache cache;
+  private final InternalCache cache;
+
+  private final ResourceEventNotifier resourceEventNotifier;
 
   private static final AtomicBoolean GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY_CHECKED =
       new AtomicBoolean(false);
 
-  public GatewaySenderFactoryImpl(InternalCache cache) {
+  public GatewaySenderFactoryImpl(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier) {
     this.cache = cache;
+    this.resourceEventNotifier = resourceEventNotifier;
   }
 
+  @Override
   public GatewaySenderFactory setParallel(boolean isParallel) {
     this.attrs.isParallel = isParallel;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setForInternalUse(boolean isForInternalUse) {
     this.attrs.isForInternalUse = isForInternalUse;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory addGatewayEventFilter(GatewayEventFilter filter) {
     this.attrs.addGatewayEventFilter(filter);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory addGatewayTransportFilter(GatewayTransportFilter filter) {
     this.attrs.addGatewayTransportFilter(filter);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory addAsyncEventListener(AsyncEventListener listener) {
     this.attrs.addAsyncEventListener(listener);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setSocketBufferSize(int socketBufferSize) {
     this.attrs.socketBufferSize = socketBufferSize;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setSocketReadTimeout(int socketReadTimeout) {
     this.attrs.socketReadTimeout = socketReadTimeout;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setDiskStoreName(String diskStoreName) {
     this.attrs.diskStoreName = diskStoreName;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setMaximumQueueMemory(int maximumQueueMemory) {
     this.attrs.maximumQueueMemory = maximumQueueMemory;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setBatchSize(int batchSize) {
     this.attrs.batchSize = batchSize;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setBatchTimeInterval(int batchTimeInterval) {
     this.attrs.batchTimeInterval = batchTimeInterval;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setBatchConflationEnabled(boolean enableBatchConflation) {
     this.attrs.isBatchConflationEnabled = enableBatchConflation;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setPersistenceEnabled(boolean enablePersistence) {
     this.attrs.isPersistenceEnabled = enablePersistence;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setAlertThreshold(int threshold) {
     this.attrs.alertThreshold = threshold;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setManualStart(boolean start) {
     this.attrs.manualStart = start;
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setLocatorDiscoveryCallback(LocatorDiscoveryCallback locCallback) {
     this.attrs.locatorDiscoveryCallback = locCallback;
     return this;
@@ -153,6 +174,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setParallelFactorForReplicatedRegion(int parallel) {
     this.attrs.parallelism = parallel;
     this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
@@ -165,11 +187,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setBucketSorted(boolean isBucketSorted) {
     this.attrs.isBucketSorted = isBucketSorted;
     return this;
   }
 
+  @Override
   public GatewaySender create(String id, int remoteDSId) {
     int myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager()
         .getDistributedSystemId();
@@ -227,14 +251,14 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
                 id, this.attrs.getOrderPolicy()));
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderImpl(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
-        sender = new ParallelGatewaySenderCreation(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderCreation(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
       }
     } else {
@@ -248,20 +272,21 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
+        sender = new SerialGatewaySenderImpl(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
-        sender = new SerialGatewaySenderCreation(this.cache, this.attrs);
+        sender = new SerialGatewaySenderCreation(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
       }
     }
     return sender;
   }
 
+  @Override
   public GatewaySender create(String id) {
     this.attrs.id = id;
     GatewaySender sender = null;
@@ -282,13 +307,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
 
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderImpl(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
-        sender = new ParallelGatewaySenderCreation(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderCreation(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
       }
     } else {
@@ -296,35 +321,39 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
+        sender = new SerialGatewaySenderImpl(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
-        sender = new SerialGatewaySenderCreation(this.cache, this.attrs);
+        sender = new SerialGatewaySenderCreation(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
       }
     }
     return sender;
   }
 
+  @Override
   public GatewaySenderFactory removeGatewayEventFilter(GatewayEventFilter filter) {
     this.attrs.eventFilters.remove(filter);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory removeGatewayTransportFilter(GatewayTransportFilter filter) {
     this.attrs.transFilters.remove(filter);
     return this;
   }
 
+  @Override
   public GatewaySenderFactory setGatewayEventSubstitutionFilter(
       GatewayEventSubstitutionFilter filter) {
     this.attrs.eventSubstitutionFilter = filter;
     return this;
   }
 
+  @Override
   public void configureGatewaySender(GatewaySender senderCreation) {
     this.attrs.isParallel = senderCreation.isParallel();
     this.attrs.manualStart = senderCreation.isManualStart();

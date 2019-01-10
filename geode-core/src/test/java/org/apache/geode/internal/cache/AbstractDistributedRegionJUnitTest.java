@@ -33,6 +33,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.test.fake.Fakes;
 
 public abstract class AbstractDistributedRegionJUnitTest {
@@ -96,7 +97,8 @@ public abstract class AbstractDistributedRegionJUnitTest {
   protected abstract void setInternalRegionArguments(InternalRegionArguments ira);
 
   protected abstract DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
-      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache);
+      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache,
+      ResourceEventNotifier resourceEventNotifier);
 
   protected abstract void verifyDistributeUpdate(DistributedRegion region, EntryEventImpl event,
       int cnt);
@@ -113,6 +115,7 @@ public abstract class AbstractDistributedRegionJUnitTest {
   protected DistributedRegion prepare(boolean isConcurrencyChecksEnabled,
       boolean testHasSeenEvent) {
     GemFireCacheImpl cache = Fakes.cache();
+    ResourceEventNotifier resourceEventNotifier = cache.getResourceEventNotifier();
 
     // create region attributes and internal region arguments
     RegionAttributes ra = createRegionAttributes(isConcurrencyChecksEnabled);
@@ -121,7 +124,8 @@ public abstract class AbstractDistributedRegionJUnitTest {
     setInternalRegionArguments(ira);
 
     // create a region object
-    DistributedRegion region = createAndDefineRegion(isConcurrencyChecksEnabled, ra, ira, cache);
+    DistributedRegion region =
+        createAndDefineRegion(isConcurrencyChecksEnabled, ra, ira, cache, resourceEventNotifier);
     if (isConcurrencyChecksEnabled) {
       region.enableConcurrencyChecks();
     }

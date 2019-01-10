@@ -48,6 +48,7 @@ import org.apache.geode.internal.concurrent.Atomics;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
@@ -73,8 +74,9 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   private final AtomicLong latestAcknowledgedKey = new AtomicLong();
 
   public BucketRegionQueue(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, attrs, parentRegion, cache, internalRegionArgs);
+      InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      InternalRegionArguments internalRegionArgs) {
+    super(regionName, attrs, parentRegion, cache, resourceEventNotifier, internalRegionArgs);
     this.keySet();
     this.indexes = new ConcurrentHashMap<Object, Long>();
   }

@@ -12,21 +12,37 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal;
+package org.apache.geode.management.internal.resource;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
- * Internal interface to be implemented to catch various resource events
- *
- *
+ * No-op implementation of {@link ResourceEventNotifier}.
  */
-public interface ResourceEventsListener {
+public class DummyResourceEventNotifier implements ResourceEventNotifier {
 
-  /**
-   * Handles various GFE resource life-cycle methods vis-a-vis Management and Monitoring
-   *
-   * @param event Resource events for which invocation has happened
-   * @param resource the GFE resource type
-   */
-  void handleEvent(ResourceEvent event, Object resource);
+  DummyResourceEventNotifier() {
+    // nothing
+  }
 
+  @Override
+  public void addResourceListener(ResourceEventListener listener) {
+    // nothing
+  }
+
+  @Override
+  public Set<ResourceEventListener> getResourceListeners() {
+    return Collections.emptySet();
+  }
+
+  @Override
+  public void handleResourceEvent(ResourceEvent event, Object resource) {
+    // nothing
+  }
+
+  @Override
+  public void close() {
+    // nothing
+  }
 }

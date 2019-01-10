@@ -47,7 +47,8 @@ public class SerialAsyncEventQueueImplJUnitTest {
   public void testStopClearsStats() {
     GatewaySenderAttributes attrs = new GatewaySenderAttributes();
     attrs.id = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
-    SerialAsyncEventQueueImpl queue = new SerialAsyncEventQueueImpl(cache, attrs);
+    SerialAsyncEventQueueImpl queue =
+        new SerialAsyncEventQueueImpl(cache, cache.getResourceEventNotifier(), attrs);
     queue.getStatistics().incQueueSize(5);
     queue.getStatistics().incSecondaryQueueSize(6);
     queue.getStatistics().incTempQueueSize(10);

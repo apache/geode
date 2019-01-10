@@ -23,6 +23,7 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class WANServiceProvider {
   private static final WANFactory factory;
@@ -38,19 +39,21 @@ public class WANServiceProvider {
     }
   }
 
-  public static GatewaySenderFactory createGatewaySenderFactory(InternalCache cache) {
+  public static GatewaySenderFactory createGatewaySenderFactory(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier) {
     if (factory == null) {
       throw new IllegalStateException("WAN service is not available.");
     }
-    return factory.createGatewaySenderFactory(cache);
+    return factory.createGatewaySenderFactory(cache, resourceEventNotifier);
 
   }
 
-  public static GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache) {
+  public static GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier) {
     if (factory == null) {
       throw new IllegalStateException("WAN service is not available.");
     }
-    return factory.createGatewayReceiverFactory(cache);
+    return factory.createGatewayReceiverFactory(cache, resourceEventNotifier);
   }
 
   public static WanLocatorDiscoverer createLocatorDiscoverer() {

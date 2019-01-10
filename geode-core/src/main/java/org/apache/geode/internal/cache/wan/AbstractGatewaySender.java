@@ -51,7 +51,6 @@ import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -75,6 +74,8 @@ import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * Abstract implementation of both Serial and Parallel GatewaySender. It handles common
@@ -88,6 +89,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected InternalCache cache;
 
+  protected final ResourceEventNotifier resourceEventNotifier;
+
   protected String id;
 
   protected long startTime;
@@ -96,23 +99,21 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected int remoteDSId;
 
-  protected String locName;
-
   protected int socketBufferSize;
 
   protected int socketReadTimeout;
 
-  protected int queueMemory;
+  private final int queueMemory;
 
-  protected int maxMemoryPerDispatcherQueue;
+  private final int maxMemoryPerDispatcherQueue;
 
   protected int batchSize;
 
   protected int batchTimeInterval;
 
-  protected boolean isConflation;
+  private boolean isConflation;
 
-  protected boolean isPersistence;
+  private final boolean isPersistence;
 
   protected int alertThreshold;
 
@@ -126,53 +127,53 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   protected String diskStoreName;
 
-  protected List<GatewayEventFilter> eventFilters;
+  private List<GatewayEventFilter> eventFilters;
 
-  protected List<GatewayTransportFilter> transFilters;
+  private final List<GatewayTransportFilter> transFilters;
 
   protected List<AsyncEventListener> listeners;
 
   protected boolean forwardExpirationDestroy;
 
-  protected GatewayEventSubstitutionFilter substitutionFilter;
+  private final GatewayEventSubstitutionFilter substitutionFilter;
 
-  protected LocatorDiscoveryCallback locatorDiscoveryCallback;
+  LocatorDiscoveryCallback locatorDiscoveryCallback;
 
   private final ReentrantReadWriteLock lifeCycleLock = new ReentrantReadWriteLock();
 
-  protected GatewaySenderAdvisor senderAdvisor;
+  private GatewaySenderAdvisor senderAdvisor;
 
-  private int serialNumber;
+  private final int serialNumber;
 
   protected GatewaySenderStats statistics;
 
   private Stopper stopper;
 
-  private OrderPolicy policy;
+  private final OrderPolicy policy;
 
-  private int dispatcherThreads;
+  private final int dispatcherThreads;
 
-  protected boolean isBucketSorted;
+  private final boolean isBucketSorted;
 
-  protected boolean isMetaQueue;
+  private final boolean isMetaQueue;
 
-  private int parallelismForReplicatedRegion;
+  private final int parallelismForReplicatedRegion;
 
   protected AbstractGatewaySenderEventProcessor eventProcessor;
 
-  private org.apache.geode.internal.cache.GatewayEventFilter filter =
+  private final org.apache.geode.internal.cache.GatewayEventFilter filter =
       DefaultGatewayEventFilter.getInstance();
 
   private ServerLocation serverLocation;
 
-  protected Object queuedEventsSync = new Object();
+  private final Object queuedEventsSync = new Object();
 
-  protected volatile boolean enqueuedAllTempQueueEvents = false;
+  private volatile boolean enqueuedAllTempQueueEvents;
 
-  protected volatile ConcurrentLinkedQueue<TmpQueueEvent> tmpQueuedEvents =
+  private final ConcurrentLinkedQueue<TmpQueueEvent> tmpQueuedEvents =
       new ConcurrentLinkedQueue<>();
 
-  protected volatile ConcurrentLinkedQueue<EntryEventImpl> tmpDroppedEvents =
+  private final ConcurrentLinkedQueue<EntryEventImpl> tmpDroppedEvents =
       new ConcurrentLinkedQueue<>();
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
@@ -201,11 +202,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   /**
    * The name of the GatewaySender's meta data region.
    */
-  protected static final String META_DATA_REGION_NAME = "gatewayEventIdIndexMetaData";
+  private static final String META_DATA_REGION_NAME = "gatewayEventIdIndexMetaData";
 
-  protected int myDSId = DEFAULT_DISTRIBUTED_SYSTEM_ID;
+  private int myDSId = DEFAULT_DISTRIBUTED_SYSTEM_ID;
 
-  protected int connectionIdleTimeOut = GATEWAY_CONNECTION_IDLE_TIMEOUT;
+  int connectionIdleTimeOut = GATEWAY_CONNECTION_IDLE_TIMEOUT;
 
   private boolean removeFromQueueOnException = GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION;
 
@@ -223,12 +224,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   private Region<String, Integer> eventIdIndexMetaDataRegion;
 
-  final Object lockForConcurrentDispatcher = new Object();
+  private final Object lockForConcurrentDispatcher = new Object();
 
-  protected AbstractGatewaySender() {}
-
-  public AbstractGatewaySender(InternalCache cache, GatewaySenderAttributes attrs) {
+  public AbstractGatewaySender(InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      GatewaySenderAttributes attrs) {
     this.cache = cache;
+    this.resourceEventNotifier = resourceEventNotifier;
     this.id = attrs.getId();
     this.socketBufferSize = attrs.getSocketBufferSize();
     this.socketReadTimeout = attrs.getSocketReadTimeout();
@@ -390,7 +391,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return this.isConflation;
   }
 
-  public void test_setBatchConflationEnabled(boolean enableConflation) {
+  void test_setBatchConflationEnabled(boolean enableConflation) {
     this.isConflation = enableConflation;
   }
 
@@ -409,7 +410,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return this.parallelismForReplicatedRegion;
   }
 
-  public LocatorDiscoveryCallback getLocatorDiscoveryCallback() {
+  LocatorDiscoveryCallback getLocatorDiscoveryCallback() {
     return this.locatorDiscoveryCallback;
   }
 
@@ -701,7 +702,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   /**
    * @return the removeFromQueueOnException
    */
-  public boolean isRemoveFromQueueOnException() {
+  boolean isRemoveFromQueueOnException() {
     return removeFromQueueOnException;
   }
 
@@ -718,7 +719,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return serverLocation;
   }
 
-  public synchronized boolean setServerLocation(ServerLocation location) {
+  synchronized boolean setServerLocation(ServerLocation location) {
     this.serverLocation = location;
     return true;
   }
@@ -796,9 +797,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         }
         this.eventProcessor.pauseDispatching();
 
-        InternalDistributedSystem system =
-            (InternalDistributedSystem) this.cache.getDistributedSystem();
-        system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_PAUSE, this);
+        resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYSENDER_PAUSE, this);
 
         logger.info("Paused {}", this);
 
@@ -819,10 +818,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         }
         this.eventProcessor.resumeDispatching();
 
-
-        InternalDistributedSystem system =
-            (InternalDistributedSystem) this.cache.getDistributedSystem();
-        system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_RESUME, this);
+        resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYSENDER_RESUME, this);
 
         logger.info("Resumed {}", this);
 
@@ -1133,7 +1129,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    * will be stored in temp queue. Once sender is started, these event from tmp queue will be
    * cleared.
    */
-  public void clearTempEventsAfterSenderStopped() {
+  protected void clearTempEventsAfterSenderStopped() {
     TmpQueueEvent nextEvent = null;
     while ((nextEvent = tmpQueuedEvents.poll()) != null) {
       nextEvent.release();
@@ -1151,7 +1147,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     statistics.setTempQueueSize(0);
   }
 
-  public Object getSubstituteValue(EntryEventImpl clonedEvent, EnumListenerEvent operation) {
+  private Object getSubstituteValue(EntryEventImpl clonedEvent, EnumListenerEvent operation) {
     // Get substitution value to enqueue if necessary
     Object substituteValue = null;
     if (this.substitutionFilter != null) {
@@ -1172,7 +1168,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return substituteValue;
   }
 
-  protected void initializeEventIdIndex() {
+  private void initializeEventIdIndex() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     boolean gotLock = false;
@@ -1306,7 +1302,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return localProcessor == null ? 0 : localProcessor.eventQueueSize();
   }
 
-  public int getSecondaryEventQueueSize() {
+  int getSecondaryEventQueueSize() {
     AbstractGatewaySenderEventProcessor localProcessor = this.eventProcessor;
     return localProcessor == null ? 0 : localProcessor.secondaryEventQueueSize();
   }
@@ -1319,7 +1315,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return this.getAsyncEventListeners() != null && !this.getAsyncEventListeners().isEmpty();
   }
 
-  public Object getLockForConcurrentDispatcher() {
+  Object getLockForConcurrentDispatcher() {
     return this.lockForConcurrentDispatcher;
   }
 
@@ -1386,7 +1382,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     private final @Retained EntryEventImpl event;
     private final Object substituteValue;
 
-    public TmpQueueEvent(EnumListenerEvent op, @Retained EntryEventImpl e, Object subValue) {
+    TmpQueueEvent(EnumListenerEvent op, @Retained EntryEventImpl e, Object subValue) {
       this.operation = op;
       this.event = e;
       this.substituteValue = subValue;
@@ -1400,7 +1396,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       return this.event;
     }
 
-    public Object getSubstituteValue() {
+    Object getSubstituteValue() {
       return this.substituteValue;
     }
 

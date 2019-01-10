@@ -26,6 +26,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
+import org.apache.geode.management.internal.resource.ResourceEventNotifierFactory;
 import org.apache.geode.test.junit.categories.AEQTest;
 
 /**
@@ -35,12 +37,13 @@ import org.apache.geode.test.junit.categories.AEQTest;
 public class AsyncEventQueueFactoryImplTest {
 
   private InternalCache cache;
+  private ResourceEventNotifier resourceEventNotifier;
   private AsyncEventQueueFactory asyncEventQueueFactory;
 
   @Before
   public void setUp() {
     cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
-
+    resourceEventNotifier = new ResourceEventNotifierFactory().createDummyResourceEventNotifier();
   }
 
   /**
@@ -48,7 +51,7 @@ public class AsyncEventQueueFactoryImplTest {
    */
   @Test
   public void testCreateAsyncEventQueueWithNullListener() {
-    asyncEventQueueFactory = new AsyncEventQueueFactoryImpl(cache);
+    asyncEventQueueFactory = new AsyncEventQueueFactoryImpl(cache, resourceEventNotifier);
 
     assertThatThrownBy(() -> asyncEventQueueFactory.create("id", null))
         .isInstanceOf(IllegalArgumentException.class);

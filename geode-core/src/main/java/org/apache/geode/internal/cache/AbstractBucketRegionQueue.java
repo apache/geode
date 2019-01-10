@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySen
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();
@@ -68,8 +69,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   private final ConcurrentHashSet<Object> failedBatchRemovalMessageKeys = new ConcurrentHashSet<>();
 
   AbstractBucketRegionQueue(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, attrs, parentRegion, cache, internalRegionArgs);
+      InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      InternalRegionArguments internalRegionArgs) {
+    super(regionName, attrs, parentRegion, cache, resourceEventNotifier, internalRegionArgs);
     this.gatewaySenderStats =
         this.getPartitionedRegion().getParallelGatewaySender().getStatistics();
   }

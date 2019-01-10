@@ -26,18 +26,18 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
-import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.AlertDetails;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventListener;
 
 /**
  * This Listener listens on various resource creation in GemFire and create/destroys GemFire
  * specific MBeans accordingly
  */
-public class ManagementListener implements ResourceEventsListener {
+public class ManagementListener implements ResourceEventListener {
 
   private final InternalDistributedSystem system;
 

@@ -132,7 +132,8 @@ public class GiiDiskAccessExceptionRegressionTest extends CacheTestCase {
     // used is customized by us to throw exception while writing to disk
 
     DistributedRegion distributedRegion = new DistributedRegion(uniqueName, factory.create(), null,
-        getCache(), new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+        getCache(), getCache().getResourceEventNotifier(),
+        new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
             .setSnapshotInputStream(null).setImageTarget(null));
 
     distributedRegion.entries.setEntryFactory(new DiskRegionEntryThrowsFactory());

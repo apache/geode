@@ -19,12 +19,15 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public interface WANFactory {
 
-  GatewaySenderFactory createGatewaySenderFactory(InternalCache cache);
+  GatewaySenderFactory createGatewaySenderFactory(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier);
 
-  GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache);
+  GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier);
 
   WanLocatorDiscoverer createLocatorDiscoverer();
 

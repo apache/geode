@@ -24,13 +24,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * @since GemFire 7.0
@@ -62,11 +62,13 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   private final InternalCache cache;
 
-  public GatewayReceiverImpl(InternalCache cache, int startPort, int endPort, int timeBetPings,
-      int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
-      boolean manualStart) {
-    this.cache = cache;
+  private final ResourceEventNotifier resourceEventNotifier;
 
+  public GatewayReceiverImpl(InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      int startPort, int endPort, int timeBetPings, int buffSize, String bindAdd,
+      List<GatewayTransportFilter> filters, String hostnameForSenders, boolean manualStart) {
+    this.cache = cache;
+    this.resourceEventNotifier = resourceEventNotifier;
     this.hostnameForSenders = hostnameForSenders;
     this.startPort = startPort;
     this.endPort = endPort;
@@ -187,8 +189,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     logger
         .info("The GatewayReceiver started on port : {}", this.port);
 
-    InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
-    system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
+    resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
   }
 
   private int getPortToStart() {
@@ -224,8 +225,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       this.cache.removeGatewayReceiver(this);
       this.cache.removeCacheServer(receiver);
     }
-    InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
-    system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_DESTROY, this);
+    resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_DESTROY, this);
   }
 
   public String getBindAddress() {

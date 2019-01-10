@@ -29,6 +29,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
+import org.apache.geode.management.internal.resource.ResourceEventNotifierFactory;
 import org.apache.geode.test.fake.Fakes;
 
 public class BucketRegionQueueJUnitTest {
@@ -38,6 +40,7 @@ public class BucketRegionQueueJUnitTest {
   private static final long KEY = 198;
 
   private GemFireCacheImpl cache;
+  private ResourceEventNotifier resourceEventNotifier;
   private PartitionedRegion queueRegion;
   private AbstractGatewaySender sender;
   private PartitionedRegion rootRegion;
@@ -46,6 +49,7 @@ public class BucketRegionQueueJUnitTest {
   @Before
   public void setUpGemFire() {
     createCache();
+    createResourceEventNotifier();
     createQueueRegion();
     createGatewaySender();
     createRootRegion();
@@ -55,6 +59,10 @@ public class BucketRegionQueueJUnitTest {
   private void createCache() {
     // Mock cache
     this.cache = Fakes.cache();
+  }
+
+  private void createResourceEventNotifier() {
+    resourceEventNotifier = new ResourceEventNotifierFactory().createDummyResourceEventNotifier();
   }
 
   private void createQueueRegion() {
@@ -79,7 +87,8 @@ public class BucketRegionQueueJUnitTest {
 
   private void createBucketRegionQueue() {
     BucketRegionQueue realBucketRegionQueue = ParallelGatewaySenderHelper
-        .createBucketRegionQueue(this.cache, this.rootRegion, this.queueRegion, BUCKET_ID);
+        .createBucketRegionQueue(this.cache, resourceEventNotifier, this.rootRegion,
+            this.queueRegion, BUCKET_ID);
     this.bucketRegionQueue = spy(realBucketRegionQueue);
   }
 

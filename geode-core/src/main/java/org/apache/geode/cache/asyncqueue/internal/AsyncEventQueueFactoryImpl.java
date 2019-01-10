@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelAsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialAsyncEventQueueCreation;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 
@@ -46,19 +47,24 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 
   private final InternalCache cache;
 
+  private final ResourceEventNotifier resourceEventNotifier;
+
   /**
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
    * creating.
    */
   private final GatewaySenderAttributes gatewaySenderAttributes;
 
-  public AsyncEventQueueFactoryImpl(InternalCache cache) {
-    this(cache, new GatewaySenderAttributes(), DEFAULT_BATCH_TIME_INTERVAL);
+  public AsyncEventQueueFactoryImpl(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier) {
+    this(cache, resourceEventNotifier, new GatewaySenderAttributes(), DEFAULT_BATCH_TIME_INTERVAL);
   }
 
-  AsyncEventQueueFactoryImpl(InternalCache cache, GatewaySenderAttributes gatewaySenderAttributes,
+  AsyncEventQueueFactoryImpl(InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      GatewaySenderAttributes gatewaySenderAttributes,
       int batchTimeInterval) {
     this.cache = cache;
+    this.resourceEventNotifier = resourceEventNotifier;
     this.gatewaySenderAttributes = gatewaySenderAttributes;
     // set a different default for batchTimeInterval for AsyncEventQueue
     this.gatewaySenderAttributes.batchTimeInterval = batchTimeInterval;
@@ -202,9 +208,11 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       }
 
       if (cache instanceof CacheCreation) {
-        sender = new ParallelAsyncEventQueueCreation(cache, gatewaySenderAttributes);
+        sender = new ParallelAsyncEventQueueCreation(cache, resourceEventNotifier,
+            gatewaySenderAttributes);
       } else {
-        sender = new ParallelAsyncEventQueueImpl(cache, gatewaySenderAttributes);
+        sender =
+            new ParallelAsyncEventQueueImpl(cache, resourceEventNotifier, gatewaySenderAttributes);
       }
       cache.addGatewaySender(sender);
 
@@ -215,9 +223,11 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       }
 
       if (cache instanceof CacheCreation) {
-        sender = new SerialAsyncEventQueueCreation(cache, gatewaySenderAttributes);
+        sender = new SerialAsyncEventQueueCreation(cache, resourceEventNotifier,
+            gatewaySenderAttributes);
       } else {
-        sender = new SerialAsyncEventQueueImpl(cache, gatewaySenderAttributes);
+        sender =
+            new SerialAsyncEventQueueImpl(cache, resourceEventNotifier, gatewaySenderAttributes);
       }
       cache.addGatewaySender(sender);
     }
