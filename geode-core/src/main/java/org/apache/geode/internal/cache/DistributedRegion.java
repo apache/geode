@@ -124,6 +124,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 @SuppressWarnings("deprecation")
 public class DistributedRegion extends LocalRegion implements InternalDistributedRegion {
@@ -186,8 +187,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   /** Creates a new instance of DistributedRegion */
   protected DistributedRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, attrs, parentRegion, cache, internalRegionArgs);
+      InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      InternalRegionArguments internalRegionArgs) {
+    super(regionName, attrs, parentRegion, cache, resourceEventNotifier, internalRegionArgs);
     this.initializationLatchAfterMemberTimeout =
         new StoppableCountDownLatch(getCancelCriterion(), 1);
     this.distAdvisor = createDistributionAdvisor(internalRegionArgs);

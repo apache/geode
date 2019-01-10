@@ -87,7 +87,8 @@ public class LRUClearWithDiskRegionOpRegressionTest {
         .setRecreateFlag(false).setSnapshotInputStream(null).setImageTarget(null);
 
     DistributedRegion distributedRegion =
-        new DistributedRegion(regionName, regionAttributes, null, cache, args);
+        new DistributedRegion(regionName, regionAttributes, null, cache,
+            cache.getResourceEventNotifier(), args);
 
     region = cache.createVMRegion(regionName, regionAttributes,
         new InternalRegionArguments().setInternalMetaRegion(distributedRegion)

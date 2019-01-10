@@ -88,6 +88,7 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -1217,5 +1218,10 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return this;
+  }
+
+  @Override
+  public ResourceEventNotifier getResourceEventNotifier() {
+    return delegate.getResourceEventNotifier();
   }
 }

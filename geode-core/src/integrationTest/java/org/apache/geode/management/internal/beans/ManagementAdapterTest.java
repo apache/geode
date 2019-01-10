@@ -28,17 +28,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.DiskStoreStats;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.test.junit.rules.ConcurrencyRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class ManagementAdapterTest {
 
   private InternalCache cache;
+  private ResourceEventNotifier resourceEventNotifier;
   private DiskStoreImpl diskStore = mock(DiskStoreImpl.class);
   private AtomicBoolean raceConditionFound = new AtomicBoolean(false);
 
@@ -52,6 +53,7 @@ public class ManagementAdapterTest {
   @Before
   public void before() {
     cache = serverRule.getCache();
+    resourceEventNotifier = cache.getResourceEventNotifier();
     doReturn(new DiskStoreStats(cache.getInternalDistributedSystem(), "disk-stats"))
         .when(diskStore).getStats();
     doReturn(new File[] {}).when(diskStore).getDiskDirs();
@@ -63,10 +65,9 @@ public class ManagementAdapterTest {
     Callable<Void> cacheNotifications = () -> {
       if (raceConditionFound.get() == Boolean.FALSE) {
         try {
-          InternalDistributedSystem ids = cache.getInternalDistributedSystem();
-          ids.handleResourceEvent(ResourceEvent.CACHE_REMOVE, cache);
+          resourceEventNotifier.handleResourceEvent(ResourceEvent.CACHE_REMOVE, cache);
           Thread.sleep(10);
-          ids.handleResourceEvent(ResourceEvent.CACHE_CREATE, cache);
+          resourceEventNotifier.handleResourceEvent(ResourceEvent.CACHE_CREATE, cache);
           Thread.sleep(10);
         } catch (InterruptedException e) {
           e.printStackTrace();
@@ -79,10 +80,9 @@ public class ManagementAdapterTest {
     Callable<Void> diskNotifications = () -> {
       if (raceConditionFound.get() == Boolean.FALSE) {
         try {
-          InternalDistributedSystem ids = cache.getInternalDistributedSystem();
-          ids.handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, diskStore);
+          resourceEventNotifier.handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, diskStore);
           Thread.sleep(5);
-          ids.handleResourceEvent(ResourceEvent.DISKSTORE_REMOVE, diskStore);
+          resourceEventNotifier.handleResourceEvent(ResourceEvent.DISKSTORE_REMOVE, diskStore);
           Thread.sleep(5);
         } catch (InterruptedException e) {
           e.printStackTrace();

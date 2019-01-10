@@ -18,8 +18,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_JMX;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,9 +27,9 @@ import org.junit.Test;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.resource.ResourceEventListener;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * Integration test to ensure that Geode does not create MBeans when
@@ -55,9 +55,9 @@ public class DisableJmxIntegrationTest {
 
   @Test
   public void disableJmxPreventsRegistrationOfManagementListener() {
-    InternalDistributedSystem system = cache.getInternalDistributedSystem();
+    ResourceEventNotifier resourceEventNotifier = cache.getResourceEventNotifier();
 
-    List<ResourceEventsListener> result = system.getResourceListeners();
+    Set<ResourceEventListener> result = resourceEventNotifier.getResourceListeners();
 
     assertThat(result).isEmpty();
   }

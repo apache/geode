@@ -23,6 +23,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewayReceiverFactoryImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderFactoryImpl;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class WANFactoryImpl implements WANFactory {
 
@@ -45,13 +46,15 @@ public class WANFactoryImpl implements WANFactory {
   }
 
   @Override
-  public GatewaySenderFactory createGatewaySenderFactory(InternalCache cache) {
-    return new GatewaySenderFactoryImpl(cache);
+  public GatewaySenderFactory createGatewaySenderFactory(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier) {
+    return new GatewaySenderFactoryImpl(cache, resourceEventNotifier);
   }
 
   @Override
-  public GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache) {
-    return new GatewayReceiverFactoryImpl(cache);
+  public GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier) {
+    return new GatewayReceiverFactoryImpl(cache, resourceEventNotifier);
   }
 
   @Override

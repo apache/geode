@@ -28,11 +28,13 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class SerialAsyncEventQueueCreation extends AbstractGatewaySender implements GatewaySender {
 
-  public SerialAsyncEventQueueCreation(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public SerialAsyncEventQueueCreation(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier, GatewaySenderAttributes attrs) {
+    super(cache, resourceEventNotifier, attrs);
   }
 
   @Override

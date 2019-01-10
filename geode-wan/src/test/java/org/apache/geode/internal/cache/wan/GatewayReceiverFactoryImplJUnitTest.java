@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
+import org.apache.geode.management.internal.resource.ResourceEventNotifierFactory;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @RunWith(Parameterized.class)
@@ -59,7 +60,8 @@ public class GatewayReceiverFactoryImplJUnitTest {
 
   @Before
   public void setUp() {
-    gatewayReceiverFactory = spy(new GatewayReceiverFactoryImpl(cache));
+    gatewayReceiverFactory = spy(new GatewayReceiverFactoryImpl(cache,
+        new ResourceEventNotifierFactory().createDummyResourceEventNotifier()));
     gatewayReceiverFactory.setManualStart(true);
   }
 

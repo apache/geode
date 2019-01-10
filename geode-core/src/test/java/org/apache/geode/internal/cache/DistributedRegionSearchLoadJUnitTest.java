@@ -45,6 +45,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
+import org.apache.geode.management.internal.resource.ResourceEventNotifierFactory;
 import org.apache.geode.test.fake.Fakes;
 
 @RunWith(PowerMockRunner.class)
@@ -53,8 +55,10 @@ import org.apache.geode.test.fake.Fakes;
 public class DistributedRegionSearchLoadJUnitTest {
 
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
-      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
-    DistributedRegion region = new DistributedRegion("testRegion", ra, null, cache, ira);
+      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache,
+      ResourceEventNotifier resourceEventNotifier) {
+    DistributedRegion region =
+        new DistributedRegion("testRegion", ra, null, cache, resourceEventNotifier, ira);
     if (isConcurrencyChecksEnabled) {
       region.enableConcurrencyChecks();
     }
@@ -113,13 +117,16 @@ public class DistributedRegionSearchLoadJUnitTest {
 
   protected DistributedRegion prepare(boolean isConcurrencyChecksEnabled) {
     GemFireCacheImpl cache = Fakes.cache();
+    ResourceEventNotifier resourceEventNotifier =
+        new ResourceEventNotifierFactory().createDummyResourceEventNotifier();
 
     // create region attributes and internal region arguments
     RegionAttributes ra = createRegionAttributes(isConcurrencyChecksEnabled);
     InternalRegionArguments ira = new InternalRegionArguments();
 
     // create a region object
-    DistributedRegion region = createAndDefineRegion(isConcurrencyChecksEnabled, ra, ira, cache);
+    DistributedRegion region =
+        createAndDefineRegion(isConcurrencyChecksEnabled, ra, ira, cache, resourceEventNotifier);
     if (isConcurrencyChecksEnabled) {
       region.enableConcurrencyChecks();
     }

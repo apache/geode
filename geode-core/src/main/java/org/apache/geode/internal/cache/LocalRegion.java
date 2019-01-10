@@ -150,7 +150,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassLoadUtil;
@@ -218,6 +217,8 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReadWriteLock;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -375,6 +376,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 5.0
    */
   final boolean EXPIRY_UNITS_MS;
+  private final ResourceEventNotifier resourceEventNotifier;
 
   // Indicates that the entries are in fact initialized. It turns out
   // you can't trust the assignment of a volatile (as indicated above)
@@ -594,12 +596,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Creates new region
    */
   protected LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) throws DiskAccessException {
+      InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      InternalRegionArguments internalRegionArgs) throws DiskAccessException {
     super(cache, attrs, regionName, internalRegionArgs);
 
     // Initialized here (and defers to parent) to fix GEODE-128
     this.EXPIRY_UNITS_MS = parentRegion != null ? parentRegion.EXPIRY_UNITS_MS
         : Boolean.getBoolean(EXPIRY_MS_PROPERTY);
+    this.resourceEventNotifier = resourceEventNotifier;
 
     Assert.assertTrue(regionName != null, "regionName must not be null");
     this.sharedDataView = buildDataView();
@@ -952,20 +956,22 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               internalRegionArgs.setUserAttribute(pr.getUserAttribute());
               if (pr.isShadowPR()) {
                 newRegion = new BucketRegionQueue(subregionName, regionAttributes, this, this.cache,
-                    internalRegionArgs);
+                    resourceEventNotifier, internalRegionArgs);
               } else {
                 newRegion = new BucketRegion(subregionName, regionAttributes, this, this.cache,
-                    internalRegionArgs);
+                    resourceEventNotifier, internalRegionArgs);
               }
             } else if (regionAttributes.getPartitionAttributes() != null) {
               newRegion = new PartitionedRegion(subregionName, regionAttributes, this, this.cache,
-                  internalRegionArgs);
+                  resourceEventNotifier, internalRegionArgs);
             } else {
               boolean local = regionAttributes.getScope().isLocal();
               newRegion = local
                   ? new LocalRegion(subregionName, regionAttributes, this, this.cache,
+                      resourceEventNotifier,
                       internalRegionArgs)
                   : new DistributedRegion(subregionName, regionAttributes, this, this.cache,
+                      resourceEventNotifier,
                       internalRegionArgs);
             }
             Object previousValue = this.subregions.putIfAbsent(subregionName, newRegion);
@@ -1034,8 +1040,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             // instead of destroyLock in LocalRegion? ManagementAdapter is one
             // of the Resource Event listeners
 
-            InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
-            system.handleResourceEvent(ResourceEvent.REGION_CREATE, newRegion);
+            resourceEventNotifier.handleResourceEvent(ResourceEvent.REGION_CREATE,
+                newRegion);
           }
         }
         success = true;
@@ -2644,8 +2650,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         try {
           region.recursiveDestroyRegion(eventSet, regionEvent, cacheWrite);
           if (!region.isInternalRegion()) {
-            InternalDistributedSystem system = region.cache.getInternalDistributedSystem();
-            system.handleResourceEvent(ResourceEvent.REGION_REMOVE, region);
+            resourceEventNotifier.handleResourceEvent(ResourceEvent.REGION_REMOVE, region);
           }
         } catch (CancelException e) {
           // I don't think this should ever happen: bulletproofing for bug 39454
@@ -6328,8 +6333,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           // Added for M&M : At this point we can safely call ResourceEvent to remove the region
           // artifacts From Management Layer
           if (!isInternalRegion()) {
-            InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
-            system.handleResourceEvent(ResourceEvent.REGION_REMOVE, this);
+            resourceEventNotifier.handleResourceEvent(ResourceEvent.REGION_REMOVE, this);
           }
 
           try {

@@ -47,7 +47,6 @@ import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.deadlock.UnsafeThreadLocal;
 import org.apache.geode.distributed.internal.locks.DLockQueryProcessor.DLockQueryReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -55,10 +54,12 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.internal.util.concurrent.FutureResult;
+import org.apache.geode.management.internal.resource.ResourceEvent;
 
 /**
  * Implements the distributed locking service with distributed lock grantors.
@@ -1910,7 +1911,11 @@ public class DLockService extends DistributedLockService {
       }
     }
 
-    ds.handleResourceEvent(ResourceEvent.LOCKSERVICE_CREATE, this);
+    InternalCache cache = ds.getCache();
+    System.out.println("cache = " + cache);
+    if (cache != null) {
+      cache.getResourceEventNotifier().handleResourceEvent(ResourceEvent.LOCKSERVICE_CREATE, this);
+    }
 
     return success;
   }
@@ -2336,8 +2341,12 @@ public class DLockService extends DistributedLockService {
     // }
   }
 
-  protected void postDestroyAction() {
-    ds.handleResourceEvent(ResourceEvent.LOCKSERVICE_REMOVE, this);
+  private void postDestroyAction() {
+    InternalCache cache = ds.getCache();
+    if (cache != null) {
+      cache.getResourceEventNotifier().handleResourceEvent(ResourceEvent.LOCKSERVICE_REMOVE,
+          this);
+    }
   }
 
   // -------------------------------------------------------------------------

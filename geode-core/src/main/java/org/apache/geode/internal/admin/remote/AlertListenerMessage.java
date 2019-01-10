@@ -27,10 +27,10 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.management.internal.AlertDetails;
+import org.apache.geode.management.internal.resource.ResourceEvent;
 
 /**
  * A message that is sent to an admin member or manager to notify it of an alert.
@@ -113,7 +113,8 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
         listener.created(alertDetail);
       }
 
-      dm.getSystem().handleResourceEvent(ResourceEvent.SYSTEM_ALERT, alertDetail);
+      dm.getCache().getResourceEventNotifier().handleResourceEvent(ResourceEvent.SYSTEM_ALERT,
+          alertDetail);
     }
   }
 

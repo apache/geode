@@ -40,6 +40,7 @@ import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTest {
 
@@ -48,8 +49,10 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
 
   @Override
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
-      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
-    DistributedRegion region = new DistributedRegion("testRegion", ra, null, cache, ira);
+      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache,
+      ResourceEventNotifier resourceEventNotifier) {
+    DistributedRegion region =
+        new DistributedRegion("testRegion", ra, null, cache, resourceEventNotifier, ira);
     if (isConcurrencyChecksEnabled) {
       region.enableConcurrencyChecks();
     }

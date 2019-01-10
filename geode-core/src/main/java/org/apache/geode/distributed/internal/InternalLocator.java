@@ -86,6 +86,7 @@ import org.apache.geode.management.internal.configuration.domain.SharedConfigura
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.management.internal.resource.ResourceEvent;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
@@ -658,7 +659,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       internalCache = this.myCache;
     } else {
       logger.info("Using existing cache for locator.");
-      ((InternalDistributedSystem) ds).handleResourceEvent(ResourceEvent.LOCATOR_START, this);
+      internalCache.getResourceEventNotifier().handleResourceEvent(ResourceEvent.LOCATOR_START,
+          this);
     }
     startJmxManagerLocationService(internalCache);
 

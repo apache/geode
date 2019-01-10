@@ -20,11 +20,12 @@ import java.util.Arrays;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.DiskStoreAttributesCreation;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
@@ -35,26 +36,32 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 public class DiskStoreFactoryImpl implements DiskStoreFactory {
 
   private final InternalCache cache;
+  private final ResourceEventNotifier resourceEventNotifier;
   private final DiskStoreAttributes attrs = new DiskStoreAttributes();
 
-  public DiskStoreFactoryImpl(InternalCache cache) {
-    this.cache = cache;
+  public DiskStoreFactoryImpl(InternalCache cache, ResourceEventNotifier resourceEventNotifier) {
+    this(cache, resourceEventNotifier, null);
   }
 
-  public DiskStoreFactoryImpl(InternalCache cache, DiskStoreAttributes attrs) {
-    this.attrs.name = attrs.name;
-    setAutoCompact(attrs.getAutoCompact());
-    setAllowForceCompaction(attrs.getAllowForceCompaction());
-    setCompactionThreshold(attrs.getCompactionThreshold());
-    setMaxOplogSizeInBytes(attrs.getMaxOplogSizeInBytes());
-    setTimeInterval(attrs.getTimeInterval());
-    setWriteBufferSize(attrs.getWriteBufferSize());
-    setQueueSize(attrs.getQueueSize());
-    setDiskDirs(cloneArray(attrs.getDiskDirs()));
-    setDiskDirsAndSizes(cloneArray(attrs.getDiskDirs()), cloneArray(attrs.getDiskDirSizes()));
-    setDiskUsageWarningPercentage(attrs.getDiskUsageWarningPercentage());
-    setDiskUsageCriticalPercentage(attrs.getDiskUsageCriticalPercentage());
+  public DiskStoreFactoryImpl(InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      DiskStoreAttributes attrs) {
     this.cache = cache;
+    this.resourceEventNotifier = resourceEventNotifier;
+
+    if (attrs != null) {
+      this.attrs.name = attrs.name;
+      setAutoCompact(attrs.getAutoCompact());
+      setAllowForceCompaction(attrs.getAllowForceCompaction());
+      setCompactionThreshold(attrs.getCompactionThreshold());
+      setMaxOplogSizeInBytes(attrs.getMaxOplogSizeInBytes());
+      setTimeInterval(attrs.getTimeInterval());
+      setWriteBufferSize(attrs.getWriteBufferSize());
+      setQueueSize(attrs.getQueueSize());
+      setDiskDirs(cloneArray(attrs.getDiskDirs()));
+      setDiskDirsAndSizes(cloneArray(attrs.getDiskDirs()), cloneArray(attrs.getDiskDirSizes()));
+      setDiskUsageWarningPercentage(attrs.getDiskUsageWarningPercentage());
+      setDiskUsageCriticalPercentage(attrs.getDiskUsageCriticalPercentage());
+    }
   }
 
   private static File[] cloneArray(File[] o) {
@@ -144,9 +151,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
           TypeRegistry registry = this.cache.getPdxRegistry();
           DiskStoreImpl dsi = new DiskStoreImpl(this.cache, this.attrs);
           result = dsi;
-          // Added for M&M
-          this.cache.getInternalDistributedSystem()
-              .handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, dsi);
+          resourceEventNotifier.handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, dsi);
           initializeDiskStore(dsi);
           this.cache.addDiskStore(dsi);
           if (registry != null) {

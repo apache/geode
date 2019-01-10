@@ -39,7 +39,6 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -114,7 +113,6 @@ import org.apache.geode.internal.statistics.StatisticsManagerFactory;
 import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
@@ -134,9 +132,6 @@ public class InternalDistributedSystem extends DistributedSystem
   private static final boolean ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT");
   private static final Logger logger = LogService.getLogger();
-
-  public static final String DISABLE_MANAGEMENT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "disableManagement";
 
   /**
    * Feature flag to enable multiple caches within a JVM.
@@ -305,10 +300,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * if this distributed system starts a locator, it is stored here
    */
   private InternalLocator startedLocator;
-
-  private List<ResourceEventsListener> resourceListeners;
-
-  private final boolean disableManagement = Boolean.getBoolean(DISABLE_MANAGEMENT_PROPERTY);
 
   /**
    * Stack trace showing the creation of this instance of InternalDistributedSystem.
@@ -573,47 +564,6 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * Registers a listener to the system
-   *
-   * @param listener listener to be added
-   */
-  public void addResourceListener(ResourceEventsListener listener) {
-    resourceListeners.add(listener);
-  }
-
-  /**
-   * Un-Registers a listener to the system
-   *
-   * @param listener listener to be removed
-   */
-  public void removeResourceListener(ResourceEventsListener listener) {
-    resourceListeners.remove(listener);
-  }
-
-  /**
-   * @return the listeners registered with the system
-   */
-  public List<ResourceEventsListener> getResourceListeners() {
-    return resourceListeners;
-  }
-
-  /**
-   * Handles a particular event associated with a resource
-   *
-   * @param event Resource event
-   * @param resource resource on which event is generated
-   */
-  public void handleResourceEvent(ResourceEvent event, Object resource) {
-    if (disableManagement) {
-      return;
-    }
-    if (resourceListeners.size() == 0) {
-      return;
-    }
-    notifyResourceEventListeners(event, resource);
-  }
-
-  /**
    * Returns true if system is a loner (for testing)
    */
   public boolean isLoner() {
@@ -822,7 +772,6 @@ public class InternalDistributedSystem extends DistributedSystem
       throw ex;
     }
 
-    resourceListeners = new CopyOnWriteArrayList<>();
     this.reconnected = this.attemptingToReconnect;
     this.attemptingToReconnect = false;
   }
@@ -2092,38 +2041,6 @@ public class InternalDistributedSystem extends DistributedSystem
         // is still usable:
         SystemFailure.checkFailure();
         logger.fatal("ConnectListener threw...", t);
-      }
-    }
-  }
-
-  /**
-   * Notifies all resource event listeners. All exceptions are caught here and only a warning
-   * message is printed in the log
-   *
-   * @param event Enumeration depicting particular resource event
-   * @param resource the actual resource object.
-   */
-  private void notifyResourceEventListeners(ResourceEvent event, Object resource) {
-    for (ResourceEventsListener listener : resourceListeners) {
-      try {
-        listener.handleEvent(event, resource);
-      } catch (CancelException e) {
-        // ignore
-        logger.info("Skipping notifyResourceEventListeners for {} due to cancellation", event);
-      } catch (GemFireSecurityException | ManagementException ex) {
-        if (event == ResourceEvent.CACHE_CREATE) {
-          throw ex;
-        } else {
-          logger.warn(ex.getMessage(), ex);
-        }
-      } catch (Exception err) {
-        logger.warn(err.getMessage(), err);
-      } catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
-      } catch (Throwable t) {
-        SystemFailure.checkFailure();
-        logger.warn(t.getMessage(), t);
       }
     }
   }

@@ -596,7 +596,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     Properties config = new Properties();
     config.setProperty(DISABLE_JMX, "true");
     InternalCache cache = cacheRule.getOrCreateCache(config);
-    assertThat(cache.getInternalDistributedSystem().getResourceListeners()).isEmpty();
+    assertThat(cache.getResourceEventNotifier().getResourceListeners()).isEmpty();
     return cache;
   }
 

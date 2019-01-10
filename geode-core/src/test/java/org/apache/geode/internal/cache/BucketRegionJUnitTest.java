@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
 
@@ -51,8 +52,9 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
 
   @Override
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
-      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
-    BucketRegion br = new BucketRegion("testRegion", ra, null, cache, ira);
+      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache,
+      ResourceEventNotifier resourceEventNotifier) {
+    BucketRegion br = new BucketRegion("testRegion", ra, null, cache, resourceEventNotifier, ira);
     // it is necessary to set the event tracker to initialized, since initialize() in not being
     // called on the instantiated region
     br.getEventTracker().setInitialized();

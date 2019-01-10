@@ -22,8 +22,6 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
@@ -36,6 +34,8 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderPro
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * @since GemFire 7.0
@@ -44,8 +44,9 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   private static final Logger logger = LogService.getLogger();
 
-  public ParallelGatewaySenderImpl(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public ParallelGatewaySenderImpl(InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      GatewaySenderAttributes attrs) {
+    super(cache, resourceEventNotifier, attrs);
   }
 
   @Override
@@ -81,8 +82,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       }
       new UpdateAttributesProcessor(this).distribute(false);
 
-      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
-      system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
+      resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
       logger.info("Started {}", this);
 
@@ -115,9 +115,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
       logger.info("Stopped  {}", this);
 
-      InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
-      system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
+      resourceEventNotifier.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
 
       clearTempEventsAfterSenderStopped();
       // Keep the eventProcessor around so we can ask it for the regionQueues later.

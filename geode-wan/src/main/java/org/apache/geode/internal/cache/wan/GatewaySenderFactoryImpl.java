@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * @since GemFire 7.0
@@ -47,15 +48,19 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
    * creating.
    */
-  private GatewaySenderAttributes attrs = new GatewaySenderAttributes();
+  private final GatewaySenderAttributes attrs = new GatewaySenderAttributes();
 
-  private InternalCache cache;
+  private final InternalCache cache;
+
+  private final ResourceEventNotifier resourceEventNotifier;
 
   private static final AtomicBoolean GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY_CHECKED =
       new AtomicBoolean(false);
 
-  public GatewaySenderFactoryImpl(InternalCache cache) {
+  public GatewaySenderFactoryImpl(InternalCache cache,
+      ResourceEventNotifier resourceEventNotifier) {
     this.cache = cache;
+    this.resourceEventNotifier = resourceEventNotifier;
   }
 
   @Override
@@ -246,14 +251,14 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
                 id, this.attrs.getOrderPolicy()));
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderImpl(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
-        sender = new ParallelGatewaySenderCreation(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderCreation(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
       }
     } else {
@@ -267,14 +272,14 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
+        sender = new SerialGatewaySenderImpl(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
-        sender = new SerialGatewaySenderCreation(this.cache, this.attrs);
+        sender = new SerialGatewaySenderCreation(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
       }
     }
@@ -302,13 +307,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
 
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderImpl(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
-        sender = new ParallelGatewaySenderCreation(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderCreation(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
       }
     } else {
@@ -316,13 +321,13 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
+        sender = new SerialGatewaySenderImpl(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
         }
       } else if (this.cache instanceof CacheCreation) {
-        sender = new SerialGatewaySenderCreation(this.cache, this.attrs);
+        sender = new SerialGatewaySenderCreation(cache, resourceEventNotifier, attrs);
         this.cache.addGatewaySender(sender);
       }
     }

@@ -35,8 +35,8 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
@@ -60,8 +60,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.distributed.internal.ResourceEvent;
-import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.distributed.internal.locks.DLockBatch;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -78,6 +76,8 @@ import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.locks.TXLockBatch;
 import org.apache.geode.internal.cache.locks.TXLockService;
 import org.apache.geode.internal.cache.locks.TXLockServiceImpl;
+import org.apache.geode.management.internal.resource.ResourceEvent;
+import org.apache.geode.management.internal.resource.ResourceEventListener;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -1382,7 +1382,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  public static class ShutdownListener implements ResourceEventsListener {
+  public static class ShutdownListener implements ResourceEventListener {
     CountDownLatch latch = new CountDownLatch(1);
 
     @Override
@@ -1447,7 +1447,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
                 af.setDiskStoreName(diskStoreName);
                 gfc.createVMRegion(rgnName1, af.create(), ira);
                 gfc.createVMRegion(rgnName2, af.create(), ira);
-                gfc.getInternalDistributedSystem().addResourceListener(new ShutdownListener());
+                gfc.getResourceEventNotifier().addResourceListener(new ShutdownListener());
               } catch (IOException ioe) {
                 fail(ioe.toString());
               } catch (TimeoutException e) {
@@ -1520,10 +1520,9 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
       SerializableCallable allowCacheToShutdown = new SerializableCallable() {
         @Override
         public Object call() throws Exception {
-          GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-          List<ResourceEventsListener> listeners =
-              cache.getInternalDistributedSystem().getResourceListeners();
-          for (ResourceEventsListener l : listeners) {
+          Collection<ResourceEventListener> resourceListeners =
+              getCache().getResourceEventNotifier().getResourceListeners();
+          for (ResourceEventListener l : resourceListeners) {
             if (l instanceof ShutdownListener) {
               ShutdownListener shutListener = (ShutdownListener) l;
               shutListener.unblockShutdown();

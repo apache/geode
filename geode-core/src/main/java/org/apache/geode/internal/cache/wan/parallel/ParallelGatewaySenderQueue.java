@@ -85,6 +85,7 @@ import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
 import org.apache.geode.management.internal.beans.GatewaySenderMBean;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 public class ParallelGatewaySenderQueue implements RegionQueue {
 
@@ -309,6 +310,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         return;
 
       InternalCache cache = sender.getCache();
+      ResourceEventNotifier resourceEventNotifier = cache.getResourceEventNotifier();
       final String prQName = getQueueName(sender.getId(), userRegion.getFullPath());
       prQ = (PartitionedRegion) cache.getRegion(prQName);
       if (prQ == null) {
@@ -354,7 +356,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
 
         ParallelGatewaySenderQueueMetaRegion meta =
-            new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender);
+            new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache,
+                resourceEventNotifier, sender);
 
         try {
           prQ = (PartitionedRegion) cache.createVMRegion(prQName, ra,
@@ -455,6 +458,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
 
       InternalCache cache = sender.getCache();
+      ResourceEventNotifier resourceEventNotifier = cache.getResourceEventNotifier();
       boolean isAccessor = (userPR.getLocalMaxMemory() == 0);
 
       final String prQName = sender.getId() + QSTRING + convertPathToName(userPR.getFullPath());
@@ -505,7 +509,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
 
         ParallelGatewaySenderQueueMetaRegion meta =
-            metaRegionFactory.newMetataRegion(cache, prQName, ra, sender);
+            metaRegionFactory.newMetataRegion(cache, resourceEventNotifier, prQName, ra, sender);
 
         try {
           prQ = (PartitionedRegion) cache.createVMRegion(prQName, ra,
@@ -1783,13 +1787,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     AbstractGatewaySender sender = null;
 
     public ParallelGatewaySenderQueueMetaRegion(String regionName, RegionAttributes attrs,
-        LocalRegion parentRegion, InternalCache cache, AbstractGatewaySender pgSender) {
-      super(regionName, attrs, parentRegion, cache,
+        LocalRegion parentRegion, InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+        AbstractGatewaySender pgSender) {
+      super(regionName, attrs, parentRegion, cache, resourceEventNotifier,
           new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
               .setSnapshotInputStream(null).setImageTarget(null)
               .setIsUsedForParallelGatewaySenderQueue(true)
-              .setParallelGatewaySender((AbstractGatewaySender) pgSender));
-      this.sender = (AbstractGatewaySender) pgSender;
+              .setParallelGatewaySender(pgSender));
+      this.sender = pgSender;
 
     }
 
@@ -1846,10 +1851,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   static class MetaRegionFactory {
-    ParallelGatewaySenderQueueMetaRegion newMetataRegion(InternalCache cache, final String prQName,
+    ParallelGatewaySenderQueueMetaRegion newMetataRegion(InternalCache cache,
+        ResourceEventNotifier resourceEventNotifier, final String prQName,
         final RegionAttributes ra, AbstractGatewaySender sender) {
       ParallelGatewaySenderQueueMetaRegion meta =
-          new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender);
+          new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, resourceEventNotifier,
+              sender);
       return meta;
     }
   }

@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.resource.ResourceEventNotifierFactory;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -93,6 +94,8 @@ public class Fakes {
     when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
     when(cache.getPdxRegistry()).thenReturn(pdxRegistryMock);
     when(cache.getTxManager()).thenReturn(txManager);
+    when(cache.getResourceEventNotifier())
+        .thenReturn(new ResourceEventNotifierFactory().createDummyResourceEventNotifier());
 
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);

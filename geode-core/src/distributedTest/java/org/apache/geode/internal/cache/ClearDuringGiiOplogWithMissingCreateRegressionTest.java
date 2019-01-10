@@ -147,7 +147,8 @@ public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTes
     factory.setDiskStoreName(diskStore.getName());
 
     DistributedRegion distRegion = new DistributedRegion(regionName, factory.create(), null,
-        getCache(), new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+        getCache(), getCache().getResourceEventNotifier(),
+        new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
             .setSnapshotInputStream(null).setImageTarget(null));
 
     distRegion.entries.setEntryFactory(new TestableDiskRegionEntryFactory());

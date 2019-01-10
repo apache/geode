@@ -92,6 +92,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 
 /**
@@ -222,8 +223,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   public BucketRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, attrs, parentRegion, cache, internalRegionArgs);
+      InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+      InternalRegionArguments internalRegionArgs) {
+    super(regionName, attrs, parentRegion, cache, resourceEventNotifier, internalRegionArgs);
     if (PartitionedRegion.DISABLE_SECONDARY_BUCKET_ACK) {
       Assert.assertTrue(attrs.getScope().isDistributedNoAck());
     } else {

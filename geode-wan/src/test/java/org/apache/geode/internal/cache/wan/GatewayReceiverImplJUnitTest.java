@@ -37,6 +37,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.management.internal.resource.ResourceEventNotifierFactory;
 
 public class GatewayReceiverImplJUnitTest {
 
@@ -44,7 +45,9 @@ public class GatewayReceiverImplJUnitTest {
   public void getHostOnUnstartedGatewayShouldReturnLocalhost() throws UnknownHostException {
     InternalCache cache = mock(InternalCache.class);
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2001, 5,
+            100, null, null, null, true);
     assertEquals(SocketCreator.getLocalHost().getHostName(), gateway.getHost());
   }
 
@@ -57,7 +60,9 @@ public class GatewayReceiverImplJUnitTest {
     when(server.getExternalAddress()).thenReturn("hello");
     when(cache.addCacheServer(eq(true))).thenReturn(server);
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2001, 5,
+            100, null, null, null, true);
     gateway.start();
     assertEquals("hello", gateway.getHost());
   }
@@ -72,7 +77,9 @@ public class GatewayReceiverImplJUnitTest {
     when(server.isRunning()).thenReturn(true);
     when(cache.addCacheServer(eq(true))).thenReturn(server);
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2001, 5,
+            100, null, null, null, true);
     gateway.start();
     try {
       gateway.destroy();
@@ -92,7 +99,9 @@ public class GatewayReceiverImplJUnitTest {
     when(server.getExternalAddress()).thenReturn("hello");
     when(cache.addCacheServer(eq(true))).thenReturn(server);
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2001, 5,
+            100, null, null, null, true);
     gateway.start();
     // sender is mocked already to say running is false
     gateway.destroy();
@@ -109,7 +118,9 @@ public class GatewayReceiverImplJUnitTest {
     when(server.getExternalAddress()).thenReturn("hello");
     when(cache.addCacheServer(eq(true))).thenReturn(server);
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2001, 5,
+            100, null, null, null, true);
     gateway.start();
     // sender is mocked already to say running is false
     gateway.destroy();
@@ -123,7 +134,9 @@ public class GatewayReceiverImplJUnitTest {
     when(cache.addCacheServer(eq(true))).thenReturn(server);
     doThrow(new SocketException("Address already in use")).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2001, 5,
+            100, null, null, null, true);
     assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
         .hasMessageContaining("No available free port found in the given range");
     verify(server, times(2)).start();
@@ -136,7 +149,9 @@ public class GatewayReceiverImplJUnitTest {
     when(cache.addCacheServer(eq(true))).thenReturn(server);
     doThrow(new SocketException("Address already in use")).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2000, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2000, 5,
+            100, null, null, null, true);
     assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
         .hasMessageContaining("No available free port found in the given range");
     verify(server, times(1)).start();
@@ -149,7 +164,9 @@ public class GatewayReceiverImplJUnitTest {
     when(cache.addCacheServer(eq(true))).thenReturn(server);
     doThrow(new SocketException("Address already in use")).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2100, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2100, 5,
+            100, null, null, null, true);
     assertThatThrownBy(() -> gateway.start()).isInstanceOf(GatewayReceiverException.class)
         .hasMessageContaining("No available free port found in the given range");
     assertTrue(gateway.getPort() == 0);
@@ -173,7 +190,9 @@ public class GatewayReceiverImplJUnitTest {
       return 0;
     }).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2010, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache,
+            new ResourceEventNotifierFactory().createDummyResourceEventNotifier(), 2000, 2010, 5,
+            100, null, null, null, true);
     gateway.start();
     assertTrue(gateway.getPort() >= 2000);
     assertEquals(2, callCount.get());

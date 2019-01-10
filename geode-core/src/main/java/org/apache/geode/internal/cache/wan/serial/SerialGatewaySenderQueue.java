@@ -71,6 +71,7 @@ import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
 import org.apache.geode.management.internal.beans.GatewaySenderMBean;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
@@ -840,6 +841,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   @SuppressWarnings({"unchecked", "rawtypes"})
   private void initializeRegion(AbstractGatewaySender sender, CacheListener listener) {
     final InternalCache gemCache = sender.getCache();
+    final ResourceEventNotifier resourceEventNotifier = gemCache.getResourceEventNotifier();
     this.region = gemCache.getRegion(this.regionName);
     if (this.region == null) {
       AttributesFactory<Long, AsyncEvent> factory = new AttributesFactory<Long, AsyncEvent>();
@@ -874,7 +876,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       final RegionAttributes<Long, AsyncEvent> ra = factory.create();
       try {
         SerialGatewaySenderQueueMetaRegion meta =
-            new SerialGatewaySenderQueueMetaRegion(this.regionName, ra, null, gemCache, sender);
+            new SerialGatewaySenderQueueMetaRegion(this.regionName, ra, null, gemCache,
+                resourceEventNotifier, sender);
         try {
           this.region = gemCache.createVMRegion(this.regionName, ra,
               new InternalRegionArguments().setInternalMetaRegion(meta).setDestroyLockFlag(true)
@@ -884,14 +887,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
           // Add overflow statistics to the mbean
           addOverflowStatisticsToMBean(gemCache, sender);
-        } catch (IOException veryUnLikely) {
+        } catch (IOException | ClassNotFoundException veryUnLikely) {
           logger.fatal(String.format("Unexpected Exception during init of %s",
               this.getClass()),
               veryUnLikely);
-        } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal(String.format("Unexpected Exception during init of %s",
-              this.getClass()),
-              alsoUnlikely);
         }
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, this.region);
@@ -1114,8 +1113,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     AbstractGatewaySender sender = null;
 
     protected SerialGatewaySenderQueueMetaRegion(String regionName, RegionAttributes attrs,
-        LocalRegion parentRegion, InternalCache cache, AbstractGatewaySender sender) {
-      super(regionName, attrs, parentRegion, cache,
+        LocalRegion parentRegion, InternalCache cache, ResourceEventNotifier resourceEventNotifier,
+        AbstractGatewaySender sender) {
+      super(regionName, attrs, parentRegion, cache, resourceEventNotifier,
           new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
               .setSnapshotInputStream(null).setImageTarget(null)
               .setIsUsedForSerialGatewaySenderQueue(true).setSerialGatewaySender(sender));

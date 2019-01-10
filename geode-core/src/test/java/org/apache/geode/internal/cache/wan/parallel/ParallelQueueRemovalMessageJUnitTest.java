@@ -54,6 +54,8 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
+import org.apache.geode.management.internal.resource.ResourceEventNotifierFactory;
 import org.apache.geode.test.fake.Fakes;
 
 public class ParallelQueueRemovalMessageJUnitTest {
@@ -63,6 +65,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
   private static final long KEY = 198;
 
   private GemFireCacheImpl cache;
+  private ResourceEventNotifier resourceEventNotifier;
   private PartitionedRegion queueRegion;
   private AbstractGatewaySender sender;
   private PartitionedRegion rootRegion;
@@ -73,6 +76,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
   @Before
   public void setUpGemFire() {
     createCache();
+    createResourceEventNotifier();
     createQueueRegion();
     createGatewaySender();
     createRootRegion();
@@ -82,6 +86,10 @@ public class ParallelQueueRemovalMessageJUnitTest {
   private void createCache() {
     // Mock cache
     this.cache = Fakes.cache();
+  }
+
+  private void createResourceEventNotifier() {
+    resourceEventNotifier = new ResourceEventNotifierFactory().createDummyResourceEventNotifier();
   }
 
   private void createQueueRegion() {
@@ -115,7 +123,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
   private void createBucketRegionQueue() {
     // Create BucketRegionQueue
     BucketRegionQueue realBucketRegionQueue = ParallelGatewaySenderHelper
-        .createBucketRegionQueue(this.cache, this.rootRegion, this.queueRegion, BUCKET_ID);
+        .createBucketRegionQueue(this.cache, resourceEventNotifier, this.rootRegion,
+            this.queueRegion, BUCKET_ID);
     this.bucketRegionQueue = spy(realBucketRegionQueue);
     // (this.queueRegion.getBucketName(BUCKET_ID), attributes, this.rootRegion, this.cache, ira);
     EntryEventImpl entryEvent = EntryEventImpl.create(this.bucketRegionQueue, Operation.DESTROY,

@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * This region is being implemented to suppress distribution of puts and to allow localDestroys on
@@ -83,15 +84,11 @@ public class HARegion extends DistributedRegion {
     return buf;
   }
 
-  // protected Object conditionalCopy(Object o) {
-  // return o;
-  // }
-
   private volatile HARegionQueue owningQueue;
 
   private HARegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache) {
-    super(regionName, attrs, parentRegion, cache,
+      InternalCache cache, ResourceEventNotifier resourceEventNotifier) {
+    super(regionName, attrs, parentRegion, cache, resourceEventNotifier,
         new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
             .setSnapshotInputStream(null).setImageTarget(null));
     this.haRegionStats = new DummyCachePerfStats();
@@ -247,7 +244,7 @@ public class HARegion extends DistributedRegion {
       RegionAttributes ra)
       throws TimeoutException, RegionExistsException, IOException, ClassNotFoundException {
 
-    HARegion haRegion = new HARegion(regionName, ra, null, cache);
+    HARegion haRegion = new HARegion(regionName, ra, null, cache, cache.getResourceEventNotifier());
     haRegion.setOwner(hrq);
     Region region = cache.createVMRegion(regionName, ra,
         new InternalRegionArguments().setInternalMetaRegion(haRegion).setDestroyLockFlag(true)

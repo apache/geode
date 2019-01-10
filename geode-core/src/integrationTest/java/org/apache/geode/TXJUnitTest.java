@@ -102,6 +102,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.management.internal.resource.ResourceEventNotifier;
 
 /**
  * Tests basic transaction functionality
@@ -121,6 +122,7 @@ public class TXJUnitTest {
   protected CacheTransactionManager txMgr;
 
   protected GemFireCacheImpl cache;
+  protected ResourceEventNotifier resourceEventNotifier;
   protected Region<String, String> region;
 
   @Rule
@@ -135,6 +137,7 @@ public class TXJUnitTest {
     properties.setProperty(MCAST_PORT, "0"); // loner
 
     this.cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem.connect(properties));
+    resourceEventNotifier = cache.getResourceEventNotifier();
 
     createRegion();
     this.txMgr = this.cache.getCacheTransactionManager();
