@@ -58,12 +58,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
     String group = "cluster";
     ConfigurationMutator configurationMutator =
         (new ConfigurationMutatorFactory()).generate(config);
-    CacheConfig cacheConfig = null;
 
     // exit early if config element already exists in cache config
     if (persistenceService != null) {
-      cacheConfig = persistenceService.getCacheConfig(group, true);
-      if (configurationMutator.exists(config, cacheConfig)) {
+      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+      if (configurationMutator.exists(config, currentPersistedConfig)) {
         throw new EntityExistsException("cache element " + config.getId() + " already exists.");
       }
     }
@@ -85,17 +84,20 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // persist configuration in cache config
     if (persistenceService != null) {
-      configurationMutator.add(config, cacheConfig);
-      try {
-        persistenceService.replaceCacheConfig(group, cacheConfig);
-        String message = "Successfully updated cluster config for " + group;
-        logger.info(message);
-        result.setClusterConfigPersisted(APIResult.Result.SUCCESS, message);
-      } catch (Exception e) {
-        String message = "failed to update cluster config for " + group;
-        logger.error(message, e);
-        result.setClusterConfigPersisted(APIResult.Result.FAILURE, message);
-      }
+      persistenceService.updateCacheConfig(group, cacheConfigForGroup -> {
+        try {
+          configurationMutator.add(config, cacheConfigForGroup);
+          result.setClusterConfigPersisted(APIResult.Result.SUCCESS,
+              "successfully persisted config for " + group);
+        } catch (Exception e) {
+          String message = "failed to update cluster config for " + group;
+          logger.error(message, e);
+          result.setClusterConfigPersisted(APIResult.Result.FAILURE, message);
+          return null;
+        }
+
+        return cacheConfigForGroup;
+      });
     }
 
     return result;

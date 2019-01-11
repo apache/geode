@@ -55,7 +55,6 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 @RunWith(JUnitParamsRunner.class)
 public class InternalConfigurationPersistenceServiceTest {
-  private static final String CACHE_CONFIG_VERSION = "1.0";
   private InternalConfigurationPersistenceService service, service2;
   private Configuration configuration;
 
@@ -87,20 +86,6 @@ public class InternalConfigurationPersistenceServiceTest {
       cacheConfig.getRegions().add(regionConfig);
       return cacheConfig;
     });
-
-    System.out.println(configuration.getCacheXmlContent());
-    assertThat(configuration.getCacheXmlContent())
-        .contains("<region name=\"regionA\" refid=\"REPLICATE\"/>");
-  }
-
-  @Test
-  public void replaceRegionConfig() {
-    CacheConfig cacheConfig = new CacheConfig(CACHE_CONFIG_VERSION);
-    RegionConfig regionConfig = new RegionConfig();
-    regionConfig.setName("regionA");
-    regionConfig.setRefid("REPLICATE");
-    cacheConfig.getRegions().add(regionConfig);
-    service.replaceCacheConfig("cluster", cacheConfig);
 
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent())
