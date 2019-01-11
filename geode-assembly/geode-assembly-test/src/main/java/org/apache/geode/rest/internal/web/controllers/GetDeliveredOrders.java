@@ -38,6 +38,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
  */
 
 public class GetDeliveredOrders implements Function {
+  @Override
   public void execute(FunctionContext context) {
 
     Cache c = null;
@@ -91,6 +92,7 @@ public class GetDeliveredOrders implements Function {
     context.getResultSender().lastResult(vals);
   }
 
+  @Override
   public String getId() {
     return "GetDeliveredOrders";
   }

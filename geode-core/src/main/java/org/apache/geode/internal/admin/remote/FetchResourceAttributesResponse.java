@@ -62,6 +62,7 @@ public class FetchResourceAttributesResponse extends AdminResponse {
     // nothing
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_RESOURCE_ATTRIBUTES_RESPONSE;
   }

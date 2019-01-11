@@ -70,26 +70,32 @@ public class RemoteAlert implements Alert {
     this.sender = sender;
   }
 
+  @Override
   public int getLevel() {
     return level;
   }
 
+  @Override
   public GemFireVM getGemFireVM() {
     return manager;
   }
 
+  @Override
   public String getConnectionName() {
     return connectionName;
   }
 
+  @Override
   public String getSourceId() {
     return sourceId;
   }
 
+  @Override
   public String getMessage() {
     return message;
   }
 
+  @Override
   public Date getDate() {
     return date;
   }
@@ -103,6 +109,7 @@ public class RemoteAlert implements Alert {
    *
    * @since GemFire 6.5
    */
+  @Override
   public InternalDistributedMember getSender() {
     return sender;
   }
@@ -151,30 +158,37 @@ public class RemoteAlert implements Alert {
     Assert.assertTrue(!st.hasMoreTokens());
 
     return new Alert() {
+      @Override
       public int getLevel() {
         return level;
       }
 
+      @Override
       public GemFireVM getGemFireVM() {
         return null;
       }
 
+      @Override
       public String getConnectionName() {
         return connectionName;
       }
 
+      @Override
       public String getSourceId() {
         return sourceId;
       }
 
+      @Override
       public String getMessage() {
         return message;
       }
 
+      @Override
       public Date getDate() {
         return date;
       }
 
+      @Override
       public InternalDistributedMember getSender() {
         /* Not implemented, currently this is used only for testing purpose */
         return null;

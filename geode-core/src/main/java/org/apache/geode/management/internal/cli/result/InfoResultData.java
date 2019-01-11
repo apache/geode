@@ -39,6 +39,7 @@ public class InfoResultData extends AbstractResultData {
   /**
    * @return this InfoResultData
    */
+  @Override
   public InfoResultData setHeader(String headerText) {
     return (InfoResultData) super.setHeader(headerText);
   }
@@ -60,6 +61,7 @@ public class InfoResultData extends AbstractResultData {
   /**
    * @return this InfoResultData
    */
+  @Override
   public InfoResultData setFooter(String footerText) {
     return (InfoResultData) super.setFooter(footerText);
   }
@@ -67,18 +69,22 @@ public class InfoResultData extends AbstractResultData {
   /**
    * @return the gfJsonObject
    */
+  @Override
   public GfJsonObject getGfJsonObject() {
     return gfJsonObject;
   }
 
+  @Override
   public String getType() {
     return TYPE_INFO;
   }
 
+  @Override
   public String getHeader() {
     return gfJsonObject.getString(RESULT_HEADER);
   }
 
+  @Override
   public String getFooter() {
     return gfJsonObject.getString(RESULT_FOOTER);
   }

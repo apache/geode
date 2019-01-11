@@ -83,6 +83,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return this.startedLocal;
   }
 
+  @Override
   public Object getKey() {
     checkEntryDestroyed();
     return regionEntry.getKey();
@@ -124,6 +125,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return v;
   }
 
+  @Override
   public Object getValue() {
     checkEntryDestroyed();
     return getRawValue();
@@ -138,6 +140,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return o;
   }
 
+  @Override
   public Object getUserAttribute() {
     checkEntryDestroyed();
     Map userAttr = region.entryUserAttributes;
@@ -147,6 +150,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return userAttr.get(this.regionEntry.getKey());
   }
 
+  @Override
   public Object setUserAttribute(Object value) {
     checkEntryDestroyed();
     if (region.entryUserAttributes == null) {
@@ -155,6 +159,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return region.entryUserAttributes.put(this.regionEntry.getKey(), value);
   }
 
+  @Override
   public boolean isDestroyed() {
     if (this.entryDestroyed) {
       return true;
@@ -168,11 +173,13 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return this.entryDestroyed;
   }
 
+  @Override
   public Region getRegion() {
     checkEntryDestroyed();
     return region;
   }
 
+  @Override
   public CacheStatistics getStatistics() throws StatisticsDisabledException {
     checkEntryDestroyed();
     if (!regionEntry.hasStats() || !region.statisticsEnabled) {
@@ -197,6 +204,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     return this.regionEntry.getKey().hashCode();
   }
 
+  @Override
   public Object setValue(Object arg) {
     Object returnValue = region.put(this.getKey(), arg);
     this.regionEntry.setCachedValue(arg);
@@ -208,6 +216,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
    *
    * @see org.apache.geode.cache.Region.Entry#isLocal()
    */
+  @Override
   public boolean isLocal() {
     // pr entries are always non-local to support the bucket being moved out
     // from under an entry
@@ -264,11 +273,13 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
 
   // when externalized, we write the state of a non-local RegionEntry so it
   // can be reconstituted anywhere
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeBoolean(this.regionEntry instanceof NonLocalRegionEntryWithStats);
     this.regionEntry.toData(out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.startedLocal = false;
     boolean hasStats = in.readBoolean();

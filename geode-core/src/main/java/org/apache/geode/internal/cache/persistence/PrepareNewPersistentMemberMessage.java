@@ -125,6 +125,7 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
     }
   }
 
+  @Override
   public int getDSFID() {
     return PREPARE_NEW_PERSISTENT_MEMBER_REQUEST;
   }

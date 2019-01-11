@@ -56,6 +56,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
     return FetchHealthDiagnosisResponse.create(dm, this.getSender(), this.id, this.healthCode);
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_HEALTH_DIAGNOSIS_REQUEST;
   }

@@ -20,11 +20,13 @@ import javax.servlet.ServletRequestListener;
 
 public class ServletRequestListenerImpl extends AbstractListener implements ServletRequestListener {
 
+  @Override
   public synchronized void requestDestroyed(ServletRequestEvent sre) {
     events.add(ListenerEventType.SERVLET_REQUEST_DESTROYED);
     latch.countDown();
   }
 
+  @Override
   public synchronized void requestInitialized(ServletRequestEvent sre) {
     events.add(ListenerEventType.SERVLET_REQUEST_INITIALIZED);
     latch.countDown();

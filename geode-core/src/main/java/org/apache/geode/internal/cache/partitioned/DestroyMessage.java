@@ -321,6 +321,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
   }
 
+  @Override
   public int getDSFID() {
     return PR_DESTROY;
   }

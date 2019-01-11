@@ -31,6 +31,7 @@ import org.apache.geode.DataSerializer;
 
 public class DataSerializerHolderJUnitTest extends TestCase {
 
+  @Override
   @After
   public void tearDown() {
     InternalDataSerializer.reinitialize();

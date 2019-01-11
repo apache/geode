@@ -106,6 +106,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     SerializableRunnable createRegionWithWriter =
         new CacheSerializableRunnable("create region with cache writer") {
 
+          @Override
           public void run2() throws CacheException {
             cache.setLockTimeout(5);
             CacheWriter cacheWriter = new CacheWriterCallBack();
@@ -120,6 +121,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
 
     AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("put object") {
+      @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
           region.put(new Integer(i), java.lang.Integer.toString(i));
@@ -130,6 +132,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     });
 
     vm0.invoke(new CacheSerializableRunnable("verify locking") {
+      @Override
       public void run2() throws CacheException {
 
         synchronized (RemoveGlobalDUnitTest.class) {
@@ -164,6 +167,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
     SerializableRunnable createSimpleRegion =
         new CacheSerializableRunnable("create region with cache writer") {
+          @Override
           public void run2() throws CacheException {
             AttributesFactory factory = new AttributesFactory();
             factory.setScope(Scope.GLOBAL);
@@ -174,6 +178,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
     SerializableRunnable createRegionWithWriter =
         new CacheSerializableRunnable("create region with capacity controller") {
+          @Override
           public void run2() throws CacheException {
             CacheWriter cw = new CacheWriterCallBack();
             AttributesFactory factory = new AttributesFactory();
@@ -187,6 +192,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm1.invoke(createRegionWithWriter);
 
     vm0.invoke(new CacheSerializableRunnable("put object") {
+      @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
           region.put(new Integer(i), java.lang.Integer.toString(i));
@@ -195,6 +201,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     });
 
     vm1.invoke(new CacheSerializableRunnable("get object") {
+      @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
           region.get(new Integer(i));
@@ -203,6 +210,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     });
 
     AsyncInvocation async = vm0.invokeAsync(new CacheSerializableRunnable("remove object") {
+      @Override
       public void run2() throws CacheException {
         region.remove(new Integer(2));
       }
@@ -210,6 +218,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
 
     vm1.invoke(new CacheSerializableRunnable("verify locking") {
+      @Override
       public void run2() throws CacheException {
         cache.setLockTimeout(5);
         synchronized (RemoveGlobalDUnitTest.class) {
@@ -238,6 +247,7 @@ public class RemoveGlobalDUnitTest extends JUnit4DistributedTestCase { // TODO: 
   }// end of testRemoveGlobalMultiVM
 
   static class CacheWriterCallBack extends CacheWriterAdapter {
+    @Override
     public void beforeDestroy(EntryEvent event) {
 
       synchronized (RemoveGlobalDUnitTest.class) {

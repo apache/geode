@@ -254,6 +254,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     return this.processorId;
   }
 
+  @Override
   public int getDSFID() {
     return MEMBER_FUNCTION_STREAMING_MESSAGE;
   }
@@ -375,14 +376,17 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     return (ds == null || ds.isDisconnecting());
   }
 
+  @Override
   public boolean canStartRemoteTransaction() {
     return true;
   }
 
+  @Override
   public int getTXUniqId() {
     return this.txUniqId;
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -391,6 +395,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     }
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     return null;
   }

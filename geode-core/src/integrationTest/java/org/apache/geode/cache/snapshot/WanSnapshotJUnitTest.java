@@ -61,6 +61,7 @@ public class WanSnapshotJUnitTest extends SnapshotTestCase {
     assertEquals(count, region.size());
   }
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();

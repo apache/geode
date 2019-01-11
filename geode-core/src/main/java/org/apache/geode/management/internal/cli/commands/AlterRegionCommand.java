@@ -197,6 +197,7 @@ public class AlterRegionCommand extends SingleGfshCommand {
     return result;
   }
 
+  @Override
   public boolean updateConfigForGroup(String group, CacheConfig cacheConfig, Object configObject) {
     RegionConfig deltaConfig = (RegionConfig) configObject;
     RegionConfig existingConfig = CacheElement.findElement(cacheConfig.getRegions(),

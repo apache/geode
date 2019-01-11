@@ -52,6 +52,7 @@ public class AlertsNotificationMessage extends PooledDistributionMessage {
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
+  @Override
   public int getDSFID() {
     return ALERTS_NOTIF_MESSAGE;
   }

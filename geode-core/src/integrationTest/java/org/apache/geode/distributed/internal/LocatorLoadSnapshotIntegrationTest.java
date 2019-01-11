@@ -69,6 +69,7 @@ public class LocatorLoadSnapshotIntegrationTest {
     // final Object lock = new Object();
     for (int i = 0; i < NUM_THREADS; i++) {
       threads[i] = new Thread("Thread-" + i) {
+        @Override
         public void run() {
           for (int ii = 0; ii < NUM_REQUESTS; ii++) {
             ServerLocation location;

@@ -322,10 +322,12 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
   public static void waitForLastKey() {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return lastKeyReceived;
       }
 
+      @Override
       public String description() {
         return "Last key NOT received.";
       }
@@ -521,6 +523,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     factory.setCloningEnabled(false);
 
     factory.addCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         if (LAST_KEY.equals(event.getKey())) {
           lastKeyReceived = true;
@@ -552,6 +555,7 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
 
     if (listener) {
       factory.addCacheListener(new CacheListenerAdapter() {
+        @Override
         public void afterCreate(EntryEvent event) {
           if (event.getKey().equals(LAST_KEY)) {
             lastKeyReceived = true;

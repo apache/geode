@@ -57,6 +57,7 @@ public class RuntimeIterator extends AbstractCompiledValue {
   private String index_internal_id = null;
   private int scopeID = -1;
 
+  @Override
   public int getType() {
     return ITERATOR_DEF;
   }
@@ -151,6 +152,7 @@ public class RuntimeIterator extends AbstractCompiledValue {
     this.current = current;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) {
     Support.Assert(current != UNINITIALIZED,
         "error to evaluate RuntimeIterator without setting current first");

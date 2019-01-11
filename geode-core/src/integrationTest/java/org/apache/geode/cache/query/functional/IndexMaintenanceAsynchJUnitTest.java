@@ -106,10 +106,12 @@ public class IndexMaintenanceAsynchJUnitTest {
       }
       final IndexStatistics st = stats;
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return st.getNumUpdates() == 8;
         }
 
+        @Override
         public String description() {
           return "index updates never became 8";
         }
@@ -143,10 +145,12 @@ public class IndexMaintenanceAsynchJUnitTest {
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;

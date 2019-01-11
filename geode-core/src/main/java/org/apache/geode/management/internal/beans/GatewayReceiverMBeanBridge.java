@@ -71,6 +71,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   }
 
 
+  @Override
   public void stopMonitor() {
     monitor.stopListener();
   }

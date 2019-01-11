@@ -44,6 +44,7 @@ public class LuceneQueriesWithRegionCreatedBeforeReindexIntegrationTest
     LuceneServiceImpl.LUCENE_REINDEX = false;
   }
 
+  @Override
   protected Region createRegionAndIndex(Map<String, Analyzer> fields) {
     region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     ((LuceneIndexFactoryImpl) luceneService.createIndexFactory().setFields(fields))
@@ -51,6 +52,7 @@ public class LuceneQueriesWithRegionCreatedBeforeReindexIntegrationTest
     return region;
   }
 
+  @Override
   protected Region createRegionAndIndex(RegionShortcut regionShortcut, String... fields) {
     region = cache.createRegionFactory(regionShortcut).create(REGION_NAME);
     ((LuceneIndexFactoryImpl) luceneService.createIndexFactory().setFields(fields))

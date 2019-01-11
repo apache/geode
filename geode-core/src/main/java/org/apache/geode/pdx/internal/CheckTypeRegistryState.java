@@ -91,6 +91,7 @@ public class CheckTypeRegistryState extends HighPriorityDistributionMessage
     }
   }
 
+  @Override
   public int getDSFID() {
     return CHECK_TYPE_REGISTRY_STATE;
   }

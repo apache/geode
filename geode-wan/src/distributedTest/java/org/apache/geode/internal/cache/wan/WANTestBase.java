@@ -2684,6 +2684,7 @@ public class WANTestBase extends DistributedTestCase {
     final ExecutorService execService = Executors.newFixedThreadPool(5, new ThreadFactory() {
       AtomicInteger threadNum = new AtomicInteger();
 
+      @Override
       public Thread newThread(final Runnable r) {
         Thread result = new Thread(r, "Client Put Thread-" + threadNum.incrementAndGet());
         result.setDaemon(true);
@@ -2866,6 +2867,7 @@ public class WANTestBase extends DistributedTestCase {
       int sameRegionSizeCounter = 0;
       long previousSize = -1;
 
+      @Override
       public boolean done() {
         if (r.keySet().size() == previousSize) {
           sameRegionSizeCounter++;
@@ -2886,6 +2888,7 @@ public class WANTestBase extends DistributedTestCase {
         }
       }
 
+      @Override
       public String description() {
         return "Expected region size to remain same below a specified limit but actual region size does not remain same or exceeded the specified limit "
             + sameRegionSizeCounter + " :regionSize " + previousSize;
@@ -3558,11 +3561,13 @@ public class WANTestBase extends DistributedTestCase {
 
     private final Set removedLocators = new HashSet();
 
+    @Override
     public synchronized void locatorsDiscovered(List locators) {
       discoveredLocators.addAll(locators);
       notifyAll();
     }
 
+    @Override
     public synchronized void locatorsRemoved(List locators) {
       removedLocators.addAll(locators);
       notifyAll();
@@ -3604,6 +3609,7 @@ public class WANTestBase extends DistributedTestCase {
       this.numPuts = numPuts;
     }
 
+    @Override
     public Object call() throws Exception {
       while (true) {
         int key = key_value.incrementAndGet();
@@ -3627,16 +3633,19 @@ public class WANTestBase extends DistributedTestCase {
 
     public MyGatewayEventFilter() {}
 
+    @Override
     public boolean beforeEnqueue(GatewayQueueEvent event) {
       this.beforeEnqueueInvoked = true;
       return !((Long) event.getKey() >= 500 && (Long) event.getKey() < 600);
     }
 
+    @Override
     public boolean beforeTransmit(GatewayQueueEvent event) {
       this.beforeTransmitInvoked = true;
       return !((Long) event.getKey() >= 600 && (Long) event.getKey() < 700);
     }
 
+    @Override
     public void close() {
       // TODO Auto-generated method stub
 
@@ -3646,6 +3655,7 @@ public class WANTestBase extends DistributedTestCase {
       return Id;
     }
 
+    @Override
     public void afterAcknowledgement(GatewayQueueEvent event) {
       this.afterAckInvoked = true;
       // TODO Auto-generated method stub
@@ -3670,14 +3680,17 @@ public class WANTestBase extends DistributedTestCase {
 
     public MyGatewayEventFilter_AfterAck() {}
 
+    @Override
     public boolean beforeEnqueue(GatewayQueueEvent event) {
       return true;
     }
 
+    @Override
     public boolean beforeTransmit(GatewayQueueEvent event) {
       return true;
     }
 
+    @Override
     public void close() {
       // TODO Auto-generated method stub
 
@@ -3687,6 +3700,7 @@ public class WANTestBase extends DistributedTestCase {
       return Id;
     }
 
+    @Override
     public void afterAcknowledgement(GatewayQueueEvent event) {
       ackList.add((Long) event.getKey());
     }
@@ -3716,18 +3730,21 @@ public class WANTestBase extends DistributedTestCase {
 
     public PDXGatewayEventFilter() {}
 
+    @Override
     public boolean beforeEnqueue(GatewayQueueEvent event) {
       System.out.println("Invoked enqueue for " + event);
       this.beforeEnqueueInvoked++;
       return true;
     }
 
+    @Override
     public boolean beforeTransmit(GatewayQueueEvent event) {
       System.out.println("Invoked transmit for " + event);
       this.beforeTransmitInvoked++;
       return true;
     }
 
+    @Override
     public void close() {
       // TODO Auto-generated method stub
 
@@ -3737,6 +3754,7 @@ public class WANTestBase extends DistributedTestCase {
       return Id;
     }
 
+    @Override
     public void afterAcknowledgement(GatewayQueueEvent event) {
       System.out.println("Invoked afterAck for " + event);
       this.afterAckInvoked++;
@@ -3832,6 +3850,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void checkAsyncQueueMBean(final VM vm, final boolean shouldExist) {
     SerializableRunnable checkAsyncQueueMBean =
         new SerializableRunnable("Check Async Queue MBean") {
+          @Override
           public void run() {
             ManagementService service = ManagementService.getManagementService(cache);
             AsyncEventQueueMXBean bean = service.getLocalAsyncEventQueueMXBean("pn");
@@ -3853,6 +3872,7 @@ public class WANTestBase extends DistributedTestCase {
   @SuppressWarnings("serial")
   public static void checkProxyReceiver(final VM vm, final DistributedMember senderMember) {
     SerializableRunnable checkProxySender = new SerializableRunnable("Check Proxy Receiver") {
+      @Override
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewayReceiverMXBean bean = null;
@@ -3882,6 +3902,7 @@ public class WANTestBase extends DistributedTestCase {
   @SuppressWarnings("serial")
   public static void checkProxySender(final VM vm, final DistributedMember senderMember) {
     SerializableRunnable checkProxySender = new SerializableRunnable("Check Proxy Sender") {
+      @Override
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewaySenderMXBean bean = null;
@@ -3920,6 +3941,7 @@ public class WANTestBase extends DistributedTestCase {
   @SuppressWarnings("serial")
   public static void checkReceiverMBean(final VM vm) {
     SerializableRunnable checkMBean = new SerializableRunnable("Check Receiver MBean") {
+      @Override
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewayReceiverMXBean bean = service.getLocalGatewayReceiverMXBean();
@@ -3934,6 +3956,7 @@ public class WANTestBase extends DistributedTestCase {
       final DistributedMember receiverMember) {
     SerializableRunnable checkNavigationAPIS =
         new SerializableRunnable("Check Receiver Navigation APIs") {
+          @Override
           public void run() {
             ManagementService service = ManagementService.getManagementService(cache);
             DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
@@ -3964,6 +3987,7 @@ public class WANTestBase extends DistributedTestCase {
   @SuppressWarnings("serial")
   public static void checkSenderMBean(final VM vm, final String regionPath, boolean connected) {
     SerializableRunnable checkMBean = new SerializableRunnable("Check Sender MBean") {
+      @Override
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
 
@@ -3987,6 +4011,7 @@ public class WANTestBase extends DistributedTestCase {
   public static void checkSenderNavigationAPIS(final VM vm, final DistributedMember senderMember) {
     SerializableRunnable checkNavigationAPIS =
         new SerializableRunnable("Check Sender Navigation APIs") {
+          @Override
           public void run() {
             ManagementService service = ManagementService.getManagementService(cache);
             DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
@@ -4018,6 +4043,7 @@ public class WANTestBase extends DistributedTestCase {
   @SuppressWarnings("serial")
   public static void startGatewaySender(final VM vm) {
     SerializableRunnable stopGatewaySender = new SerializableRunnable("Start Gateway Sender") {
+      @Override
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("pn");
@@ -4037,6 +4063,7 @@ public class WANTestBase extends DistributedTestCase {
   @SuppressWarnings("serial")
   public static void stopGatewaySender(final VM vm) {
     SerializableRunnable stopGatewaySender = new SerializableRunnable("Stop Gateway Sender") {
+      @Override
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("pn");
@@ -4058,6 +4085,7 @@ public class WANTestBase extends DistributedTestCase {
       final boolean shouldExist) {
     SerializableRunnable checkProxyAsyncQueue =
         new SerializableRunnable("Check Proxy Async Queue") {
+          @Override
           public void run() {
             SystemManagementService service =
                 (SystemManagementService) ManagementService.getManagementService(cache);
@@ -4104,6 +4132,7 @@ public class WANTestBase extends DistributedTestCase {
   @SuppressWarnings("serial")
   public static void checkRemoteClusterStatus(final VM vm, final DistributedMember senderMember) {
     SerializableRunnable checkProxySender = new SerializableRunnable("DS Map Size") {
+      @Override
       public void run() {
         await().untilAsserted(() -> {
           final ManagementService service = ManagementService.getManagementService(cache);

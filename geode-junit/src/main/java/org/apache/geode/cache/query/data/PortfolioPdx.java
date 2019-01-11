@@ -254,6 +254,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
     return this.doubleMinValue;
   }
 
+  @Override
   public void fromData(PdxReader in) {
     this.ID = in.readInt("ID");
     this.shortID = in.readShort("shortID");
@@ -272,6 +273,7 @@ public class PortfolioPdx implements Serializable, PdxSerializable {
     this.aDay = (Day) in.readObject("aDay");
   }
 
+  @Override
   public void toData(PdxWriter out) {
     out.writeInt("ID", this.ID);
     out.writeShort("shortID", this.shortID);

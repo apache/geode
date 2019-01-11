@@ -149,6 +149,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     this.isReExecute = isReExecute;
   }
 
+  @Override
   public ResultCollector execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
@@ -208,6 +209,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     }
   }
 
+  @Override
   public Execution withFilter(Set filter) {
     if (filter == null) {
       throw new FunctionException(
@@ -248,10 +250,12 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     return new DistributedRegionFunctionExecutor(this, args);
   }
 
+  @Override
   public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
+  @Override
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
@@ -261,6 +265,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
     return new DistributedRegionFunctionExecutor(this, rs);
   }
 
+  @Override
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(

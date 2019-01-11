@@ -533,10 +533,12 @@ public class ClientRegionFactoryJUnitTest {
   }
 
   public static class MyCustomExpiry implements CustomExpiry {
+    @Override
     public ExpirationAttributes getExpiry(Region.Entry entry) {
       return null;
     }
 
+    @Override
     public void close() {}
   }
 }

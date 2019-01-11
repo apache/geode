@@ -110,6 +110,7 @@ public class PositionNoDS implements Serializable, Comparable {
 
 
 
+  @Override
   public int compareTo(Object o) {
     if (o == this) {
       return 0;

@@ -96,6 +96,7 @@ public class CacheRegionsReliablityStatsCheckDUnitTest extends JUnit4CacheTestCa
     VM vm1 = host.getVM(1);
 
     SerializableRunnable roleAPlayer = new CacheSerializableRunnable("ROLEAPLAYER") {
+      @Override
       public void run2() throws CacheException {
 
         Properties props = new Properties();

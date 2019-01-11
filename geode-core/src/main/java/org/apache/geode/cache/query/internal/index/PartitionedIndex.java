@@ -201,6 +201,7 @@ public class PartitionedIndex extends AbstractIndex {
    *
    * @return indexType type of partitioned index.
    */
+  @Override
   public IndexType getType() {
     return type;
   }
@@ -330,6 +331,7 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * Not supported on partitioned index.
    */
+  @Override
   void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
       RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) {
@@ -351,6 +353,7 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * Not supported on partitioned index.
    */
+  @Override
   void removeMapping(RegionEntry entry, int opCode) {
     throw new RuntimeException(
         "Not supported on partitioned index");
@@ -361,6 +364,7 @@ public class PartitionedIndex extends AbstractIndex {
    * Returns false, clear is not supported on partitioned index.
    */
 
+  @Override
   public boolean clear() throws QueryException {
     return false;
   }
@@ -377,6 +381,7 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * Not supported on partitioned index.
    */
+  @Override
   public IndexStatistics getStatistics() {
     return this.internalIndexStats;
   }
@@ -399,6 +404,7 @@ public class PartitionedIndex extends AbstractIndex {
     return st.toString();
   }
 
+  @Override
   protected InternalIndexStatistics createStats(String indexName) {
     if (this.internalIndexStats == null) {
       this.internalIndexStats = new PartitionedIndexStatistics(this.indexName);
@@ -429,58 +435,72 @@ public class PartitionedIndex extends AbstractIndex {
     /**
      * Return the total number of times this index has been updated
      */
+    @Override
     public long getNumUpdates() {
       return this.vsdStats.getNumUpdates();
     }
 
+    @Override
     public void incNumValues(int delta) {
       this.vsdStats.incNumValues(delta);
     }
 
+    @Override
     public void incNumUpdates() {
       this.vsdStats.incNumUpdates();
     }
 
+    @Override
     public void incNumUpdates(int delta) {
       this.vsdStats.incNumUpdates(delta);
     }
 
+    @Override
     public void updateNumKeys(long numKeys) {
       this.vsdStats.updateNumKeys(numKeys);
     }
 
+    @Override
     public void incNumKeys(long numKeys) {
       this.vsdStats.incNumKeys(numKeys);
     }
 
+    @Override
     public void incNumMapIndexKeys(long numKeys) {
       this.vsdStats.incNumMapIndexKeys(numKeys);
     }
 
+    @Override
     public void incUpdateTime(long delta) {
       this.vsdStats.incUpdateTime(delta);
     }
 
+    @Override
     public void incUpdatesInProgress(int delta) {
       this.vsdStats.incUpdatesInProgress(delta);
     }
 
+    @Override
     public void incNumUses() {
       this.vsdStats.incNumUses();
     }
 
+    @Override
     public void incUseTime(long delta) {
       this.vsdStats.incUseTime(delta);
     }
 
+    @Override
     public void incUsesInProgress(int delta) {
       this.vsdStats.incUsesInProgress(delta);
     }
 
+    @Override
     public void incReadLockCount(int delta) {
       this.vsdStats.incReadLockCount(delta);
     }
 
+    @Override
     public void incNumBucketIndexes(int delta) {
       this.vsdStats.incNumBucketIndexes(delta);
     }
@@ -488,6 +508,7 @@ public class PartitionedIndex extends AbstractIndex {
     /**
      * Returns the number of keys in this index at the highest level
      */
+    @Override
     public long getNumberOfMapIndexKeys() {
       return this.vsdStats.getNumberOfMapIndexKeys();
     }
@@ -495,6 +516,7 @@ public class PartitionedIndex extends AbstractIndex {
     /**
      * Returns the total amount of time (in nanoseconds) spent updating this index.
      */
+    @Override
     public long getTotalUpdateTime() {
       return this.vsdStats.getTotalUpdateTime();
     }
@@ -502,6 +524,7 @@ public class PartitionedIndex extends AbstractIndex {
     /**
      * Returns the total number of times this index has been accessed by a query.
      */
+    @Override
     public long getTotalUses() {
       return this.vsdStats.getTotalUses();
     }
@@ -509,6 +532,7 @@ public class PartitionedIndex extends AbstractIndex {
     /**
      * Returns the number of keys in this index.
      */
+    @Override
     public long getNumberOfKeys() {
       return this.vsdStats.getNumberOfKeys();
     }
@@ -516,6 +540,7 @@ public class PartitionedIndex extends AbstractIndex {
     /**
      * Returns the number of values in this index.
      */
+    @Override
     public long getNumberOfValues() {
       return this.vsdStats.getNumberOfValues();
     }
@@ -523,14 +548,17 @@ public class PartitionedIndex extends AbstractIndex {
     /**
      * Return the number of read locks taken on this index
      */
+    @Override
     public int getReadLockCount() {
       return this.vsdStats.getReadLockCount();
     }
 
+    @Override
     public int getNumberOfBucketIndexes() {
       return vsdStats.getNumberOfBucketIndexes();
     }
 
+    @Override
     public void close() {
       this.vsdStats.close();
     }
@@ -569,11 +597,13 @@ public class PartitionedIndex extends AbstractIndex {
 
   }
 
+  @Override
   public int getSizeEstimate(Object key, int op, int matchLevel) {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 
 
+  @Override
   void lockedQuery(Object key, int operator, Collection results, Set keysToRemove,
       ExecutionContext context) throws TypeMismatchException {
     throw new RuntimeException("Not supported on partitioned index");

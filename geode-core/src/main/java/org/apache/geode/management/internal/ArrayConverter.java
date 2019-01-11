@@ -34,6 +34,7 @@ public class ArrayConverter extends OpenTypeConverter {
     this.elementConverter = elementConverter;
   }
 
+  @Override
   Object toNonNullOpenValue(Object value) throws OpenDataException {
     Object[] valueArray = (Object[]) value;
     final int len = valueArray.length;
@@ -44,6 +45,7 @@ public class ArrayConverter extends OpenTypeConverter {
     return openArray;
   }
 
+  @Override
   public Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
     final Object[] openArray = (Object[]) openValue;
     final Type targetType = getTargetType();
@@ -63,6 +65,7 @@ public class ArrayConverter extends OpenTypeConverter {
     return valueArray;
   }
 
+  @Override
   void checkReconstructible() throws InvalidObjectException {
     elementConverter.checkReconstructible();
   }

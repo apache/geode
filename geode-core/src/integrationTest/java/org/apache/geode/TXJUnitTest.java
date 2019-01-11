@@ -5982,10 +5982,12 @@ public class TXJUnitTest {
       AttributesMutator<String, Object> mutator = lruRegion.getAttributesMutator();
       mutator.setCacheLoader(new CacheLoader() {
         // int count = 0;
+        @Override
         public Object load(LoaderHelper helper) throws CacheLoaderException {
           return "value" + helper.getArgument();
         }
 
+        @Override
         public void close() {}
       });
       final TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;

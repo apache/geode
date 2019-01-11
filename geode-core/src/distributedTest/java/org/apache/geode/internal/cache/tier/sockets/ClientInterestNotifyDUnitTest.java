@@ -78,18 +78,22 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     private int m_invalidates = 0;
     private int m_destroys = 0;
 
+    @Override
     public void afterCreate(EntryEvent event) {
       m_creates++;
     }
 
+    @Override
     public void afterUpdate(EntryEvent event) {
       m_updates++;
     }
 
+    @Override
     public void afterInvalidate(EntryEvent event) {
       m_invalidates++;
     }
 
+    @Override
     public void afterDestroy(EntryEvent event) {
       m_destroys++;
     }
@@ -367,6 +371,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
+      @Override
       public boolean done() {
         // assume a single cache server as configured in this test
         CacheServerImpl bridgeServer =
@@ -397,6 +402,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
         return true;
       }
 
+      @Override
       public String description() {
         return excuse;
       }

@@ -197,6 +197,7 @@ public class SSLSocketIntegrationTest {
     final ServerSocket serverSocket = new ServerSocket();
     serverSocket.bind(new InetSocketAddress(SocketCreator.getLocalHost(), 0));
     Thread serverThread = new Thread() {
+      @Override
       public void run() {
         serverCoordination.release();
         try (Socket clientSocket = serverSocket.accept()) {

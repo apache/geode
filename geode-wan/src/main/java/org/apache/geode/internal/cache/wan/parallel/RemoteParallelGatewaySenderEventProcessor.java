@@ -67,6 +67,7 @@ public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySe
     }
   }
 
+  @Override
   public void initializeEventDispatcher() {
     if (logger.isDebugEnabled()) {
       logger.debug(" Creating the GatewayEventRemoteDispatcher");

@@ -276,6 +276,7 @@ public class DUnitLauncher {
     final File locatorLogFile =
         LOCATOR_LOG_TO_DISK ? new File("locator-" + locatorPort + ".log") : new File("");
     MethodInvokerResult result = remote.executeMethodOnObject(new SerializableCallable() {
+      @Override
       public Object call() throws IOException {
         Properties p = getDistributedSystemProperties();
         // I never want this locator to end up starting a jmx manager

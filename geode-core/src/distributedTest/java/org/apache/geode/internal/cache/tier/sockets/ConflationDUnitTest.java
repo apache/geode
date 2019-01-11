@@ -200,6 +200,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(createPool(host, "p1", port, true).getName());
     factory.addCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         String val = (String) event.getNewValue();
@@ -215,6 +216,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public void afterUpdate(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         synchronized (this) {
@@ -222,6 +224,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public void afterDestroy(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         synchronized (this) {
@@ -244,6 +247,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(createPool(host, "p1", port, true).getName());
     factory.addCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         String val = (String) event.getNewValue();
@@ -259,6 +263,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public void afterUpdate(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         synchronized (this) {
@@ -266,6 +271,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public void afterDestroy(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         synchronized (this) {
@@ -310,6 +316,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(createPool(host, "p1", port, true).getName());
     factory.addCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         String val = (String) event.getNewValue();
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
@@ -325,12 +332,14 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public void afterUpdate(EntryEvent event) {
         synchronized (this) {
           counterUpdate++;
         }
       }
 
+      @Override
       public void afterDestroy(EntryEvent event) {
         synchronized (this) {
           if (!event.getKey().equals(MARKER)) {
@@ -383,6 +392,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public static void setClientServerObserverForBeforeInterestRecovery() {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforeInterestRecovery() {
         setAllCountersZero();
       }
@@ -395,10 +405,12 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void assertCounterSizes() {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return counterCreate == 2;
       }
 
+      @Override
       public String description() {
         return "Expected counterCreate to be 2. Instead it was " + counterCreate + ".";
       }
@@ -406,10 +418,12 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return counterUpdate == 2;
       }
 
+      @Override
       public String description() {
         return "Expected counterUpdate to be 2. Instead it was " + counterUpdate + ".";
       }
@@ -417,10 +431,12 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return counterDestroy == 2;
       }
 
+      @Override
       public String description() {
         return "Expected counterDestroy to be 2. Instead it was " + counterDestroy + ".";
       }
@@ -435,11 +451,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    */
   public static void assertCounterSizesLessThan200() {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         yield(); // TODO is this necessary?
         return counterCreate == 2;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -448,11 +466,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     // assertIndexDetailsEquals("creates", 2, counterCreate);
 
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         yield(); // TODO is this necessary?
         return counterDestroy == 2;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -462,11 +482,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     // assertIndexDetailsEquals("destroys", 2, counterDestroy);
     // assertTrue("updates", 20000 >= counterUpdate);
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         yield(); // TODO is this necessary?
         return counterUpdate <= 200;
       }
 
+      @Override
       public String description() {
         return null;
       }

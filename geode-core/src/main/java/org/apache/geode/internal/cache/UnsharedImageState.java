@@ -72,20 +72,24 @@ public class UnsharedImageState implements ImageState {
     }
   }
 
+  @Override
   public boolean isReplicate() {
     return this.giiLock != null;
   }
 
+  @Override
   public boolean isClient() {
     return this.riLock != null;
   }
 
+  @Override
   public void init() {
     if (isReplicate()) {
       this.wasRegionClearedDuringGII = false;
     }
   }
 
+  @Override
   public boolean getRegionInvalidated() {
     if (isReplicate()) {
       return this.regionInvalidated;
@@ -94,18 +98,21 @@ public class UnsharedImageState implements ImageState {
     }
   }
 
+  @Override
   public void setRegionInvalidated(boolean b) {
     if (isReplicate()) {
       this.regionInvalidated = b;
     }
   }
 
+  @Override
   public void setInRecovery(boolean b) {
     if (this.mayDoRecovery) {
       this.inRecovery = b;
     }
   }
 
+  @Override
   public boolean getInRecovery() {
     if (this.mayDoRecovery) {
       return this.inRecovery;
@@ -114,6 +121,7 @@ public class UnsharedImageState implements ImageState {
     }
   }
 
+  @Override
   public void addDestroyedEntry(Object key) {
     // assert if ri then readLock held
     // assert if gii then lock held
@@ -122,14 +130,17 @@ public class UnsharedImageState implements ImageState {
     }
   }
 
+  @Override
   public void removeDestroyedEntry(Object key) {
     this.destroyedEntryKeys.remove(key);
   }
 
+  @Override
   public boolean hasDestroyedEntry(Object key) {
     return this.destroyedEntryKeys.containsKey(key);
   }
 
+  @Override
   public Iterator getDestroyedEntries() {
     // assert if ri then writeLock held
     // assert if gii then lock held
@@ -142,10 +153,12 @@ public class UnsharedImageState implements ImageState {
     this.versionTags = new ConcurrentHashSet<VersionTagEntry>(16);
   }
 
+  @Override
   public void addVersionTag(Object key, VersionTag<?> tag) {
     this.versionTags.add(new VersionTagEntryImpl(key, tag.getMemberID(), tag.getRegionVersion()));
   }
 
+  @Override
   public Iterator<VersionTagEntry> getVersionTags() {
     Iterator<VersionTagEntry> result = this.versionTags.iterator();
     initVersionTagsSet();
@@ -156,16 +169,19 @@ public class UnsharedImageState implements ImageState {
     this.leftMembers = new ConcurrentHashSet<VersionSource>(16);
   }
 
+  @Override
   public void addLeftMember(VersionSource<?> mbr) {
     this.leftMembers.add(mbr);
   }
 
+  @Override
   public Set<VersionSource> getLeftMembers() {
     Set<VersionSource> result = this.leftMembers;
     initFailedMembersSet();
     return result;
   }
 
+  @Override
   public boolean hasLeftMembers() {
     return this.leftMembers.size() > 0;
   }
@@ -186,10 +202,12 @@ public class UnsharedImageState implements ImageState {
   /**
    * returns count of entries that have been destroyed by concurrent operations while in token mode
    */
+  @Override
   public int getDestroyedEntriesCount() {
     return this.destroyedEntryKeys.size();
   }
 
+  @Override
   public void setClearRegionFlag(boolean isClearOn, RegionVersionVector rvv) {
     if (isReplicate()) {
       this.clearRegionFlag = isClearOn;
@@ -200,6 +218,7 @@ public class UnsharedImageState implements ImageState {
     }
   }
 
+  @Override
   public boolean getClearRegionFlag() {
     if (isReplicate()) {
       return this.clearRegionFlag;
@@ -208,6 +227,7 @@ public class UnsharedImageState implements ImageState {
     }
   }
 
+  @Override
   public RegionVersionVector getClearRegionVersionVector() {
     if (isReplicate()) {
       return this.clearRVV;
@@ -219,6 +239,7 @@ public class UnsharedImageState implements ImageState {
    * Returns true if a region clear was received on the region during a GII. If true is returned the
    * the flag is cleared. This method is used by unit tests.
    */
+  @Override
   public boolean wasRegionClearedDuringGII() {
     if (isReplicate()) {
       boolean result = this.wasRegionClearedDuringGII;
@@ -231,26 +252,32 @@ public class UnsharedImageState implements ImageState {
     }
   }
 
+  @Override
   public void lockGII() {
     this.giiLock.lock();
   }
 
+  @Override
   public void unlockGII() {
     this.giiLock.unlock();
   }
 
+  @Override
   public void readLockRI() {
     this.riLock.readLock().lock();
   }
 
+  @Override
   public void readUnlockRI() {
     this.riLock.readLock().unlock();
   }
 
+  @Override
   public void writeLockRI() {
     this.riLock.writeLock().lock();
   }
 
+  @Override
   public void writeUnlockRI() {
     this.riLock.writeLock().unlock();
   }
@@ -267,10 +294,12 @@ public class UnsharedImageState implements ImageState {
       this.regionVersion = regionVersion;
     }
 
+    @Override
     public Object getKey() {
       return key;
     }
 
+    @Override
     public VersionSource getMemberID() {
       return member;
     }

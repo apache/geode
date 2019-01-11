@@ -54,22 +54,27 @@ public class UpdateOnlyMap implements Map, Serializable {
     return this.m;
   }
 
+  @Override
   public int size() {
     return m.size();
   }
 
+  @Override
   public boolean isEmpty() {
     return m.isEmpty();
   }
 
+  @Override
   public boolean containsKey(Object key) {
     return m.containsKey(key);
   }
 
+  @Override
   public boolean containsValue(Object val) {
     return values().contains(val);
   }
 
+  @Override
   public Object get(Object key) {
     return exportValue(m.get(key));
   }
@@ -86,6 +91,7 @@ public class UpdateOnlyMap implements Map, Serializable {
     return result;
   }
 
+  @Override
   public Object put(Object key, Object value) {
     if (containsKey(key)) {
       return m.put(key, value);
@@ -94,6 +100,7 @@ public class UpdateOnlyMap implements Map, Serializable {
     }
   }
 
+  @Override
   public void putAll(Map m) {
     if (m != null) {
       for (Object i : m.entrySet()) {
@@ -103,10 +110,12 @@ public class UpdateOnlyMap implements Map, Serializable {
     }
   }
 
+  @Override
   public Object remove(Object key) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void clear() {
     throw new UnsupportedOperationException();
   }
@@ -115,6 +124,7 @@ public class UpdateOnlyMap implements Map, Serializable {
   private transient Set entrySet = null;
   private transient Collection values = null;
 
+  @Override
   public Set keySet() {
     if (keySet == null) {
       keySet = Collections.unmodifiableSet(m.keySet());
@@ -122,6 +132,7 @@ public class UpdateOnlyMap implements Map, Serializable {
     return keySet;
   }
 
+  @Override
   public Set entrySet() {
     if (entrySet == null) {
       entrySet = Collections.unmodifiableSet(new EntrySet());
@@ -130,6 +141,7 @@ public class UpdateOnlyMap implements Map, Serializable {
   }
 
   private class EntrySet extends AbstractSet {
+    @Override
     public Iterator iterator() {
       return new EntryIterator();
     }
@@ -166,14 +178,17 @@ public class UpdateOnlyMap implements Map, Serializable {
       this.e = e;
     }
 
+    @Override
     public Object getKey() {
       return this.e.getKey();
     }
 
+    @Override
     public Object getValue() {
       return exportValue(this.e.getValue());
     }
 
+    @Override
     public Object setValue(Object value) {
       return exportValue(this.e.setValue(value));
     }
@@ -202,6 +217,7 @@ public class UpdateOnlyMap implements Map, Serializable {
     return o1 == null ? o2 == null : o1.equals(o2);
   }
 
+  @Override
   public Collection values() {
     if (values == null) {
       values = Collections.unmodifiableCollection(new Values());

@@ -123,10 +123,12 @@ public class RemoteBridgeServer extends AbstractCacheServer
         "A remote BridgeServer cannot be started.");
   }
 
+  @Override
   public boolean isRunning() {
     return this.isRunning;
   }
 
+  @Override
   public void stop() {
     throw new UnsupportedOperationException(
         "A remote BridgeServer cannot be stopped.");
@@ -142,30 +144,36 @@ public class RemoteBridgeServer extends AbstractCacheServer
         "Cannot get the Cache of a remote BridgeServer.");
   }
 
+  @Override
   public ClientSession getClientSession(String durableClientId) {
     String s = "Cannot get a client session for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
+  @Override
   public ClientSession getClientSession(DistributedMember member) {
     String s = "Cannot get a client session for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
+  @Override
   public Set getAllClientSessions() {
     String s =
         "Cannot get all client sessions for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
   }
 
+  @Override
   public ClientSubscriptionConfig getClientSubscriptionConfig() {
     return this.clientSubscriptionConfig;
   }
 
+  @Override
   public int getId() {
     return this.id;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.port);
     out.writeBoolean(this.notifyBySubscription);
@@ -191,6 +199,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.port = in.readInt();
@@ -232,6 +241,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
       this.desc = desc;
     }
 
+    @Override
     public ServerLoad getLoad(ServerMetrics metrics) {
       return null;
     }
@@ -250,6 +260,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
    *
    * @since GemFire 5.8Beta
    */
+  @Override
   public void registerInterestRegistrationListener(InterestRegistrationListener listener) {
     final String s =
         "InterestRegistrationListeners cannot be registered on a remote BridgeServer";
@@ -264,6 +275,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
    *
    * @since GemFire 5.8Beta
    */
+  @Override
   public void unregisterInterestRegistrationListener(InterestRegistrationListener listener) {
     final String s =
         "InterestRegistrationListeners cannot be unregistered from a remote BridgeServer";
@@ -279,6 +291,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
    *
    * @since GemFire 5.8Beta
    */
+  @Override
   public Set getInterestRegistrationListeners() {
     final String s =
         "InterestRegistrationListeners cannot be retrieved from a remote BridgeServer";

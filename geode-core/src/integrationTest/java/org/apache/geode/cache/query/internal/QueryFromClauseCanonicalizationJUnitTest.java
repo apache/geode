@@ -230,6 +230,7 @@ public class QueryFromClauseCanonicalizationJUnitTest {
   class QueryObserverImpl extends QueryObserverAdapter {
     public List clauses = new ArrayList();
 
+    @Override
     public void beforeIterationEvaluation(CompiledValue executer, Object currentObject) {
       clauses.add(((RuntimeIterator) executer).getDefinition());
 

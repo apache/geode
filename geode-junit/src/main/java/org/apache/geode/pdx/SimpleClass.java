@@ -50,12 +50,14 @@ public class SimpleClass implements PdxSerializable {
     return myEnum;
   }
 
+  @Override
   public void toData(PdxWriter out) {
     out.writeInt("myInt", this.myInt);
     out.writeByte("myByte", this.myByte);
     out.writeObject("myEnum", this.myEnum);
   }
 
+  @Override
   public void fromData(PdxReader in) {
     this.myInt = in.readInt("myInt");
     this.myByte = in.readByte("myByte");

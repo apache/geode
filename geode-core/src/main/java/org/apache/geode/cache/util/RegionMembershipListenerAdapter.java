@@ -29,11 +29,15 @@ import org.apache.geode.distributed.DistributedMember;
  */
 public abstract class RegionMembershipListenerAdapter<K, V> extends CacheListenerAdapter<K, V>
     implements RegionMembershipListener<K, V> {
+  @Override
   public void initialMembers(Region<K, V> r, DistributedMember[] initialMembers) {}
 
+  @Override
   public void afterRemoteRegionCreate(RegionEvent<K, V> event) {}
 
+  @Override
   public void afterRemoteRegionDeparture(RegionEvent<K, V> event) {}
 
+  @Override
   public void afterRemoteRegionCrash(RegionEvent<K, V> event) {}
 }

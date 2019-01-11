@@ -59,6 +59,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
    * Given a publicId, attempts to resolve it to a DTD. Returns an <code>InputSource</code> for the
    * DTD.
    */
+  @Override
   public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
 
     // Figure out the location for the publicId. Be tolerant of other
@@ -83,18 +84,21 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
     }
   }
 
+  @Override
   public void warning(SAXParseException exception) throws SAXException {
     // We don't want to thrown an exception. We want to log it!!
     // FIXME
     // String s = "SAX warning while working with XML";
   }
 
+  @Override
   public void error(SAXParseException exception) throws SAXException {
     throw new GemFireConfigException(
         "SAX error while working with XML",
         exception);
   }
 
+  @Override
   public void fatalError(SAXParseException exception) throws SAXException {
     throw new GemFireConfigException(
         "SAX fatal error while working with XML",

@@ -506,6 +506,7 @@ public class DistributedEventTracker implements EventTracker {
         && this.initialImageProvider.equals(mbr);
   }
 
+  @Override
   public ConcurrentMap<ThreadIdentifier, BulkOperationHolder> getRecordedBulkOpVersionTags() {
     return recordedBulkOpVersionTags;
   }

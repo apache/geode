@@ -137,6 +137,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     ClientServerTestCase.configureConnectionPoolWithName(factory, hostName,
         new int[] {PORT1, PORT2}, true, -1, 2, null, "FailoverPool");
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterUpdate(EntryEvent event) {
         synchronized (this) {
           cache.getLogger().info("Event Received : key..." + event.getKey());
@@ -165,6 +166,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
   public void waitForPrimaryAndBackups(final int numBackups) {
     final PoolImpl pool = (PoolImpl) find("FailoverPool");
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (pool.getPrimary() == null) {
           return false;
@@ -175,6 +177,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
         return true;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -245,10 +248,12 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     final Region r = cache.getRegion("/" + regionName);
     assertNotNull(r);
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return !r.getEntry("key-3").getValue().equals("key-3");
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -263,6 +268,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
   public static void setClientServerObserver() {
     PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforePrimaryIdentificationFromBackup() {
         primary.invoke(() -> FailoverDUnitTest.putDuringFailover());
         PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
@@ -286,10 +292,12 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     final Region r = cache.getRegion("/" + regionName);
     assertNotNull(r);
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return !r.getEntry("key-5").getValue().equals("key-5");
       }
 
+      @Override
       public String description() {
         return null;
       }

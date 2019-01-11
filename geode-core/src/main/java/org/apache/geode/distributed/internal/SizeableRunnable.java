@@ -33,6 +33,7 @@ public abstract class SizeableRunnable implements Runnable, Sizeable {
     this.size = size;
   }
 
+  @Override
   public int getSize() {
     return this.size;
   }

@@ -69,6 +69,7 @@ public class ReentrantSemaphoreJUnitTest {
     final AtomicReference<Throwable> failure = new AtomicReference<>();
 
     Thread t1 = new Thread() {
+      @Override
       public void run() {
         try {
           sem.acquire();
@@ -87,6 +88,7 @@ public class ReentrantSemaphoreJUnitTest {
     t1.start();
 
     Thread t2 = new Thread() {
+      @Override
       public void run() {
         try {
           sem.acquire();
@@ -105,6 +107,7 @@ public class ReentrantSemaphoreJUnitTest {
     t2.start();
 
     Thread t3 = new Thread() {
+      @Override
       public void run() {
         try {
           assertTrue(acquired.await(OPERATION_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS));

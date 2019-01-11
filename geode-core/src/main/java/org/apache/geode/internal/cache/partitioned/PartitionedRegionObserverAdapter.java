@@ -29,6 +29,7 @@ public class PartitionedRegionObserverAdapter implements PartitionedRegionObserv
    * This callback is called just before calculating starting bucket id on datastore
    */
 
+  @Override
   public void beforeCalculatingStartingBucketId() {}
 
   @Override

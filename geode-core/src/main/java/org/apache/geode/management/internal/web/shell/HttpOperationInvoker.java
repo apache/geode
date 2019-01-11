@@ -294,6 +294,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @see org.apache.geode.management.DistributedSystemMXBean
    * @see org.apache.geode.management.internal.MBeanJMXAdapter#getDistributedSystemName()
    */
+  @Override
   public DistributedSystemMXBean getDistributedSystemMXBean() {
     return getMBeanProxy(MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
   }
@@ -309,6 +310,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * @see javax.management.ObjectName
    * @see org.apache.geode.management.internal.web.shell.support.HttpMBeanProxyFactory
    */
+  @Override
   public <T> T getMBeanProxy(final ObjectName objectName, final Class<T> mbeanInterface) {
     return HttpMBeanProxyFactory.createMBeanProxy(this, objectName, mbeanInterface);
   }
@@ -405,6 +407,7 @@ public class HttpOperationInvoker implements OperationInvoker {
     return String.format("GemFire Manager HTTP service @ %1$s", baseUrl);
   }
 
+  @Override
   public String getRemoteVersion() {
     final URI link = HttpRequester.createURI(baseUrl, "/version/release");
     return httpRequester.get(link, String.class);

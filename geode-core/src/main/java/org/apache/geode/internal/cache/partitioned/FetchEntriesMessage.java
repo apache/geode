@@ -132,6 +132,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     buff.append("; recipient=").append(this.getRecipient());
   }
 
+  @Override
   public int getDSFID() {
     return PR_FETCH_ENTRIES_MESSAGE;
   }
@@ -230,6 +231,7 @@ public class FetchEntriesMessage extends PartitionMessage {
                * @param b positive if last chunk
                * @return true to continue to next chunk
                */
+              @Override
               public boolean executeWith(Object a, int b) {
                 HeapDataOutputStream chunk = (HeapDataOutputStream) a;
                 this.last = b > 0;

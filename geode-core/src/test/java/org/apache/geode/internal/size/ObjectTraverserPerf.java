@@ -76,11 +76,13 @@ public class ObjectTraverserPerf {
       this.field4 = field4;
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       throw new UnsupportedOperationException("Don't need this method for the test");
 
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.write(field1);
       out.write(field2);

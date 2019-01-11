@@ -39,6 +39,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
 
   ObjectType typecast = null;
 
+  @Override
   public ObjectType getTypecast() {
     return this.typecast;
   }
@@ -49,6 +50,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   }
 
   /** Default impl returns null as N/A */
+  @Override
   public List getPathOnIterator(RuntimeIterator itr, ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException {
     return null;
@@ -59,6 +61,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
    * Undefined
    */
 
+  @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults iterationLimit,
       boolean completeExpansionNeeded, CompiledValue iterOperands, RuntimeIterator[] indpndntItrs,
       boolean isIntersection, boolean conditioningNeeded, boolean evalProj)
@@ -73,6 +76,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   // be used
   // default is true for evalAsFilter if independent of iterator, otherwise
   // calls protGetPlanInfo (which defaults to false for evalAsFilter)
+  @Override
   public PlanInfo getPlanInfo(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     PlanInfo planInfo;
@@ -110,6 +114,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
     return planInfo;
   }
 
+  @Override
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     // default implementation has no dependencies
@@ -117,6 +122,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
     return Collections.EMPTY_SET;
   }
 
+  @Override
   public boolean isDependentOnIterator(RuntimeIterator itr, ExecutionContext context) {
     return context.isDependentOn(this, itr);
   }
@@ -124,6 +130,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   /**
    * Return true if this value is dependent on any iterator in the current scope
    */
+  @Override
   public boolean isDependentOnCurrentScope(ExecutionContext context) {
     return context.isDependentOnCurrentScope(this);
   }
@@ -196,12 +203,14 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
    *
    * @see CompiledJunction#filterEvaluate
    */
+  @Override
   public SelectResults auxFilterEvaluate(ExecutionContext context,
       SelectResults intermediateResults) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     return filterEvaluate(context, intermediateResults);
   }
 
+  @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -256,6 +265,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   }
 
   // This function needs to be appropriately overridden in the derived classes
+  @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, System.currentTimeMillis());
@@ -263,6 +273,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
     clauseBuffer.insert(0, '.');
   }
 
+  @Override
   public void getRegionsInQuery(Set regionsInQuery, Object[] parameters) {
     for (Iterator itr = getChildren().iterator(); itr.hasNext();) {
       CompiledValue v = (CompiledValue) itr.next();
@@ -276,15 +287,18 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
   }
 
   /** Get the CompiledValues that this owns */
+  @Override
   public List getChildren() {
     return Collections.EMPTY_LIST;
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 
+  @Override
   public void visitNodes(NodeVisitor visitor) {
     visitor.visit(this);
     for (Iterator itr = getChildren().iterator(); itr.hasNext();) {
@@ -294,40 +308,47 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
     }
   }
 
+  @Override
   public boolean isProjectionEvaluationAPossibility(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 
+  @Override
   public boolean isLimitApplicableAtIndexLevel(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 
+  @Override
   public boolean isOrderByApplicableAtIndexLevel(ExecutionContext context,
       String canonicalizedOrderByClause) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 
+  @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 
+  @Override
   public int getOperator() {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 
+  @Override
   public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, int thisSize)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
 
+  @Override
   public CompiledValue getReceiver() {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }

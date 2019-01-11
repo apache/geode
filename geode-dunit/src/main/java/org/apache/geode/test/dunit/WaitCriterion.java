@@ -42,6 +42,7 @@ public interface WaitCriterion extends ThrowingRunnable {
 
   public String description();
 
+  @Override
   default void run() {
     if (!done()) {
       fail(description());

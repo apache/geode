@@ -101,6 +101,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     // now create a system that fills this role since it does not create the
     // region our queue should not be flushed
     vm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Properties config = new Properties();
         config.setProperty(ROLES, "missing");
@@ -113,18 +114,23 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
 
     // now create the region
     vm.invoke(new CacheSerializableRunnable("create root") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(DISTRIBUTED_ACK);
         factory.setDataPolicy(NORMAL);
         factory.setSubscriptionAttributes(new SubscriptionAttributes(ALL));
         TestCacheListener cl = new TestCacheListener() {
+          @Override
           public void afterCreate2(EntryEvent event) {}
 
+          @Override
           public void afterUpdate2(EntryEvent event) {}
 
+          @Override
           public void afterInvalidate2(EntryEvent event) {}
 
+          @Override
           public void afterDestroy2(EntryEvent event) {}
         };
         cl.enableEventHistory();
@@ -134,10 +140,12 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
     });
     // after some amount of time we should see the queuedOps flushed
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return stats.getReliableQueuedOps() == 0;
       }
 
+      @Override
       public String description() {
         return "waiting for reliableQueuedOps to become 0";
       }
@@ -146,6 +154,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
 
     // now check that the queued op was delivered
     vm.invoke(new CacheSerializableRunnable("check") {
+      @Override
       public void run2() throws CacheException {
         Region r = getRootRegion();
         assertEquals(null, r.getEntry("createKey"));
@@ -243,6 +252,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
 
     VM vm = Host.getHost(0).getVM(0);
     vm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Properties config = new Properties();
         config.setProperty(ROLES, "pubFirst");
@@ -252,6 +262,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
 
     // now create the region
     vm.invoke(new CacheSerializableRunnable("create root") {
+      @Override
       public void run2() throws CacheException {
         final String expectedExceptions = "does not allow queued messages";
         AttributesFactory factory = new AttributesFactory();
@@ -284,6 +295,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
 
     VM vm = Host.getHost(0).getVM(0);
     vm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Properties config = new Properties();
         config.setProperty(ROLES, "subFirst");
@@ -293,6 +305,7 @@ public class QueueMsgDUnitTest extends ReliabilityTestCase {
 
     // now create the region
     vm.invoke(new CacheSerializableRunnable("create root") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);

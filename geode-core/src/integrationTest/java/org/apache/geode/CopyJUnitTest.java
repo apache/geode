@@ -73,34 +73,41 @@ public class CopyJUnitTest {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
     af.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         oldValue = event.getOldValue();
         newValue = event.getNewValue();
       }
 
+      @Override
       public void afterUpdate(EntryEvent event) {
         oldValue = event.getOldValue();
         newValue = event.getNewValue();
       }
 
+      @Override
       public void afterInvalidate(EntryEvent event) {
         oldValue = event.getOldValue();
         newValue = event.getNewValue();
       }
 
+      @Override
       public void afterDestroy(EntryEvent event) {
         oldValue = event.getOldValue();
         newValue = event.getNewValue();
       }
 
+      @Override
       public void afterRegionInvalidate(RegionEvent event) {
         // ignore
       }
 
+      @Override
       public void afterRegionDestroy(RegionEvent event) {
         // ignore
       }
 
+      @Override
       public void close() {
         oldValue = null;
         newValue = null;
@@ -130,6 +137,7 @@ public class CopyJUnitTest {
   }
 
   protected static class CloneImpl implements Cloneable {
+    @Override
     public Object clone() {
       return this;
     }
@@ -353,6 +361,7 @@ public class CopyJUnitTest {
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance(new BigDecimal("123.4556")));
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance(new UUID(1L, 2L)));
     PdxInstance pi = new PdxInstance() {
+      @Override
       public Object getObject() {
         return null;
       }
@@ -361,35 +370,43 @@ public class CopyJUnitTest {
         return null;
       }
 
+      @Override
       public boolean hasField(String fieldName) {
         return false;
       }
 
+      @Override
       public List<String> getFieldNames() {
         return null;
       }
 
+      @Override
       public boolean isIdentityField(String fieldName) {
         return false;
       }
 
+      @Override
       public Object getField(String fieldName) {
         return null;
       }
 
+      @Override
       public WritablePdxInstance createWriter() {
         return null;
       }
 
+      @Override
       public String getClassName() {
         return null;
       }
 
+      @Override
       public boolean isEnum() {
         return false;
       }
     };
     WritablePdxInstance wpi = new WritablePdxInstance() {
+      @Override
       public Object getObject() {
         return null;
       }
@@ -398,32 +415,40 @@ public class CopyJUnitTest {
         return null;
       }
 
+      @Override
       public boolean hasField(String fieldName) {
         return false;
       }
 
+      @Override
       public List<String> getFieldNames() {
         return null;
       }
 
+      @Override
       public boolean isIdentityField(String fieldName) {
         return false;
       }
 
+      @Override
       public Object getField(String fieldName) {
         return null;
       }
 
+      @Override
       public WritablePdxInstance createWriter() {
         return null;
       }
 
+      @Override
       public void setField(String fieldName, Object value) {}
 
+      @Override
       public String getClassName() {
         return null;
       }
 
+      @Override
       public boolean isEnum() {
         return false;
       }

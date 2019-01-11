@@ -173,6 +173,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     put(vm2, "f", "6");
 
     SerializableCallable verifyEvicted = new SerializableCallable("verify eviction of 'a'") {
+      @Override
       public Object call() {
         Cache cache = getCache();
         LocalRegion region = (LocalRegion) cache.getRegion("region");
@@ -193,6 +194,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
     evicted = (Boolean) vm2.invoke(verifyEvicted);
     assertTrue("expected 'a' to still be evicted", evicted);
     vm2.invoke(new SerializableRunnable("verify other entries are not evicted") {
+      @Override
       public void run() {
         Cache cache = getCache();
         LocalRegion region = (LocalRegion) cache.getRegion("region");
@@ -272,6 +274,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
       // Make sure we were disconnected in vm0
       disconnected = (Boolean) vm0.invoke(new SerializableCallable("check disconnected") {
+        @Override
         public Object call() {
           return InternalDistributedSystem.getConnectedInstance() == null;
         }
@@ -284,6 +287,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   private Object put(VM vm, final String key, final String value) {
     return vm.invoke(new SerializableCallable() {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         Region region = cache.getRegion("region");
@@ -298,6 +302,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   private Object get(VM vm, final Object key) {
     return vm.invoke(new SerializableCallable("get " + key) {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         Region region = cache.getRegion("region");
@@ -324,6 +329,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   private long getReceivedMessages(VM vm) {
     return ((Long) vm.invoke(new SerializableCallable() {
 
+      @Override
       public Object call() {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         return cache.getInternalDistributedSystem().getDMStats().getReceivedMessages();
@@ -334,6 +340,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   private void createEmpty(VM vm) {
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         RegionFactory rf = new RegionFactory();
@@ -349,6 +356,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   private void createNormal(VM vm) {
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         RegionFactory rf = new RegionFactory();
@@ -365,6 +373,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
   private void createOverflow(VM vm, final int count) {
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -382,6 +391,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         RegionFactory rf = new RegionFactory();
@@ -399,9 +409,11 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
   private void installListenerToDisconnectOnNetSearchRequest(VM vm) {
     vm.invoke(new SerializableRunnable("Install listener") {
+      @Override
       public void run() {
         listenerHasFinished.set(false);
         DistributionMessageObserver ob = new DistributionMessageObserver() {
+          @Override
           public void beforeProcessMessage(ClusterDistributionManager dm,
               DistributionMessage message) {
             if (message instanceof NetSearchRequestMessage) {

@@ -69,6 +69,7 @@ public class ClusterRegionsService implements PulseService {
     }
   };
 
+  @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
     // get cluster object
     Cluster cluster = Repository.get().getCluster();

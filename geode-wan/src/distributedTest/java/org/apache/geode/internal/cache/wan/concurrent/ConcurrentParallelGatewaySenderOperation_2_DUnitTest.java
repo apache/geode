@@ -645,6 +645,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     final Region r = cache.getRegion(SEPARATOR + regionName);
     assertNotNull(r);
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (r.keySet().size() > min && r.keySet().size() <= max) {
           return true;
@@ -652,6 +653,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
         return false;
       }
 
+      @Override
       public String description() {
         return "Expected region entries to be within range : " + min + " " + max
             + " but actual entries: " + r.keySet().size();

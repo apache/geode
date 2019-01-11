@@ -60,6 +60,7 @@ public class CompactResponse extends AdminResponse {
     this.setRecipient(sender);
   }
 
+  @Override
   public int getDSFID() {
     return MGMT_COMPACT_RESPONSE;
   }

@@ -72,6 +72,7 @@ public class DescribeDiskStoreFunction implements InternalFunction {
     }
   }
 
+  @Override
   public String getId() {
     return getClass().getName();
   }
@@ -79,6 +80,7 @@ public class DescribeDiskStoreFunction implements InternalFunction {
   @SuppressWarnings("unused")
   public void init(final Properties props) {}
 
+  @Override
   public void execute(final FunctionContext context) {
     Cache cache = context.getCache();
 

@@ -798,6 +798,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     return connection != null && !connection.isDestroyed();
   }
 
+  @Override
   public void shutDownAckReaderConnection() {
     if (ackReaderThread != null) {
       ackReaderThread.shutDownAckReaderConnection(connection);
@@ -805,6 +806,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
     }
   }
 
+  @Override
   public void stop() {
     stopAckReaderThread();
     if (this.processor.isStopped()) {

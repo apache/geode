@@ -28,6 +28,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 public class PartitionedQuerySecurityRestrictedQueriesDUnitTest
     extends QuerySecurityRestrictedQueriesDUnitTest {
 
+  @Override
   public RegionShortcut getRegionType() {
     return RegionShortcut.PARTITION;
   }

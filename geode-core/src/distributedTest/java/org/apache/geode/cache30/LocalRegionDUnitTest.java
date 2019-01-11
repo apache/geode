@@ -46,6 +46,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
   /**
    * Returns the attributes of a region to be tested.
    */
+  @Override
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -115,6 +116,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
     final Object key = this.getUniqueName();
 
     TestCacheLoader loader = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) throws CacheLoaderException {
 
         try {
@@ -158,6 +160,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
     final Object two = "TWO";
 
     TestCacheLoader loader = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) throws CacheLoaderException {
 
         Object[] array = (Object[]) helper.getArgument();
@@ -169,6 +172,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
     };
 
     TestCacheWriter writer = new TestCacheWriter() {
+      @Override
       public void beforeCreate2(EntryEvent event) throws CacheWriterException {
 
         Object[] array = (Object[]) event.getCallbackArgument();
@@ -200,6 +204,7 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
     final Object two = "TWO";
 
     TestCacheLoader loader = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) throws CacheLoaderException {
 
         Object[] array = (Object[]) helper.getArgument();
@@ -211,10 +216,12 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
     };
 
     TestCacheWriter writer = new TestCacheWriter() {
+      @Override
       public void beforeCreate2(EntryEvent event) throws CacheWriterException {
 
       }
 
+      @Override
       public void beforeUpdate2(EntryEvent event) throws CacheWriterException {
 
         Object[] array = (Object[]) event.getCallbackArgument();

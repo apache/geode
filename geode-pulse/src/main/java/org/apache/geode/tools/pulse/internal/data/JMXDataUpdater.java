@@ -172,6 +172,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   /**
    * Get the jmx connection
    */
+  @Override
   public JMXConnector connect(String username, String password) {
     // Reference to repository
     Repository repository = Repository.get();

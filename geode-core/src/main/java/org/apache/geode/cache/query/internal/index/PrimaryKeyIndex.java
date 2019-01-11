@@ -65,6 +65,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     markValid(true);
   }
 
+  @Override
   public IndexType getType() {
     return IndexType.PRIMARY_KEY;
   }
@@ -74,10 +75,12 @@ public class PrimaryKeyIndex extends AbstractIndex {
     return false;
   }
 
+  @Override
   public ObjectType getResultSetType() {
     return this.indexResultType;
   }
 
+  @Override
   void removeMapping(RegionEntry entry, int opCode) {}
 
   @Override
@@ -167,6 +170,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     numUses++;
   }
 
+  @Override
   void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
       RuntimeIterator runtimeItr, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
@@ -247,11 +251,13 @@ public class PrimaryKeyIndex extends AbstractIndex {
     numUses++;
   }
 
+  @Override
   void recreateIndexData() throws IMQException {
     Support.Assert(false,
         "PrimaryKeyIndex::recreateIndexData: This method should not have got invoked at all");
   }
 
+  @Override
   public boolean clear() throws QueryException {
     return true;
   }
@@ -265,6 +271,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     }
   }
 
+  @Override
   protected InternalIndexStatistics createStats(String indexName) {
     return new PrimaryKeyIndexStatistics();
   }
@@ -273,6 +280,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     /**
      * Returns the total number of times this index has been accessed by a query.
      */
+    @Override
     public long getTotalUses() {
       return numUses;
     }
@@ -280,6 +288,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     /**
      * Returns the number of keys in this index.
      */
+    @Override
     public long getNumberOfKeys() {
       return getRegion().keySet().size();
     }
@@ -287,6 +296,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     /**
      * Returns the number of values in this index.
      */
+    @Override
     public long getNumberOfValues() {
       return getRegion().values().size();
     }
@@ -294,6 +304,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     /**
      * Return the number of values for the specified key in this index.
      */
+    @Override
     public long getNumberOfValues(Object key) {
       if (getRegion().containsValueForKey(key))
         return 1;
@@ -321,6 +332,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
   }
 
+  @Override
   public int getSizeEstimate(Object key, int op, int matchLevel) {
     return 1;
   }
@@ -335,6 +347,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     // Do Nothing; We are not going to call this for PrimaryKeyIndex ever.
   }
 
+  @Override
   public boolean isEmpty() {
     return createStats("primaryKeyIndex").getNumberOfKeys() == 0 ? true : false;
   }

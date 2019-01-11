@@ -46,30 +46,37 @@ public class RemoteCacheStatistics implements CacheStatistics, DataSerializable 
    */
   public RemoteCacheStatistics() {}
 
+  @Override
   public long getLastModifiedTime() {
     return lastModified;
   }
 
+  @Override
   public long getLastAccessedTime() {
     return lastAccessed;
   }
 
+  @Override
   public long getHitCount() {
     return hitCount;
   }
 
+  @Override
   public long getMissCount() {
     return missCount;
   }
 
+  @Override
   public float getHitRatio() {
     return hitRatio;
   }
 
+  @Override
   public void resetCounts() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(lastModified);
     out.writeLong(lastAccessed);
@@ -78,6 +85,7 @@ public class RemoteCacheStatistics implements CacheStatistics, DataSerializable 
     out.writeFloat(hitRatio);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     lastModified = in.readLong();
     lastAccessed = in.readLong();

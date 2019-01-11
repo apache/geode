@@ -93,18 +93,22 @@ public class GetEventValueOp {
       }
     }
 
+    @Override
     protected boolean isErrorResponse(int msgType) {
       return msgType == MessageType.REQUESTDATAERROR;
     }
 
+    @Override
     protected long startAttempt(ConnectionStats stats) {
       return stats.startGet();
     }
 
+    @Override
     protected void endSendAttempt(ConnectionStats stats, long start) {
       stats.endGetSend(start, hasFailed());
     }
 
+    @Override
     protected void endAttempt(ConnectionStats stats, long start) {
       stats.endGet(start, hasTimedOut(), hasFailed());
     }

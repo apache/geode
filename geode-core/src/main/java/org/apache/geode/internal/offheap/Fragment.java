@@ -56,6 +56,7 @@ public class Fragment implements MemoryBlock {
     return this.size;
   }
 
+  @Override
   public long getAddress() {
     return this.baseAddr;
   }

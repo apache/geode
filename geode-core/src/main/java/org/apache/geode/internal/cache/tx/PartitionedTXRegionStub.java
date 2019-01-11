@@ -71,6 +71,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     return buckets;
   }
 
+  @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
     PartitionedRegion pr = (PartitionedRegion) event.getRegion();
@@ -158,6 +159,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
 
+  @Override
   public Entry getEntry(KeyInfo keyInfo, boolean allowTombstones) {
     try {
       Entry e = region.getEntryRemotely((InternalDistributedMember) state.getTarget(),
@@ -203,6 +205,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     PartitionedRegion pr = (PartitionedRegion) event.getRegion();
@@ -235,6 +238,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public boolean containsKey(KeyInfo keyInfo) {
     try {
       boolean retVal = region.containsKeyRemotely((InternalDistributedMember) state.getTarget(),
@@ -278,6 +282,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public boolean containsValueForKey(KeyInfo keyInfo) {
     try {
       boolean retVal = region.containsValueForKeyRemotely(
@@ -309,6 +314,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public Object findObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object value, boolean peferCD, ClientProxyMembershipID requestingClient,
       EntryEventImpl clientEvent) {
@@ -343,6 +349,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public Object getEntryForIterator(KeyInfo keyInfo, boolean allowTombstones) {
     InternalDistributedMember primary = region.getBucketPrimary(keyInfo.getBucketId());
     if (primary.equals(state.getTarget())) {
@@ -353,6 +360,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
@@ -385,6 +393,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    *
    * @param putallO DistributedPutAllOperation object.
    */
+  @Override
   public void postPutAll(DistributedPutAllOperation putallO, VersionedObjectList successfulPuts,
       InternalRegion r) throws TransactionException {
     if (r.getCache().isCacheAtShutdownAll()) {

@@ -33,6 +33,7 @@ public class DynamicRegionAttributes implements DataSerializable {
   // public MirrorType mirror_type = null;
   public String rootRegionName = null;
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     DataSerializer.writeString(this.rootRegionName, out);
@@ -40,6 +41,7 @@ public class DynamicRegionAttributes implements DataSerializable {
     // DataSerializer.writeObject( this.mirror_type, out );
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this.rootRegionName = DataSerializer.readString(in);

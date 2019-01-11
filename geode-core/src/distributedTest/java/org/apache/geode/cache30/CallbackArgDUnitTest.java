@@ -63,9 +63,11 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
   private void doCommitOtherVm() {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("create root") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory af = new AttributesFactory();
         CacheListener cl1 = new CacheListenerAdapter() {
+          @Override
           public void afterCreate(EntryEvent e) {
             assertEquals(callbackArg, e.getCallbackArgument());
           }
@@ -77,6 +79,7 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
         Region r3 = r2.createSubregion("r3", af.create());
         CacheTransactionManager ctm = getCache().getCacheTransactionManager();
         TransactionListener tl1 = new TransactionListenerAdapter() {
+          @Override
           public void afterCommit(TransactionEvent e) {
             assertEquals(6, e.getEvents().size());
             Iterator it = e.getEvents().iterator();
@@ -123,6 +126,7 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
   public void testForCA() throws Exception {
     callbackArg = "cbArg";
     getOtherVm().invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         callbackArg = "cbArg";
         return null;
@@ -136,6 +140,7 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
     af.setDataPolicy(DataPolicy.REPLICATE);
     af.setScope(Scope.DISTRIBUTED_ACK);
     CacheListener cl1 = new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent e) {
         assertEquals(getCurrentExpectedKey(), e.getKey());
         assertEquals(callbackArg, e.getCallbackArgument());
@@ -148,6 +153,7 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
     r2.createSubregion("r3", af.create());
 
     TransactionListener tl1 = new TransactionListenerAdapter() {
+      @Override
       public void afterCommit(TransactionEvent e) {
         assertEquals(6, e.getEvents().size());
         ArrayList keys = new ArrayList();

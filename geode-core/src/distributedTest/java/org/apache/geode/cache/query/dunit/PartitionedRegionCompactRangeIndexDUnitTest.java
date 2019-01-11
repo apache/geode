@@ -416,6 +416,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
 
   private SerializableRunnable verifyQueryResultsSize(String query, int expectedSize) {
     return new SerializableRunnable() {
+      @Override
       public void run() {
         try {
           QueryService qs = ClusterStartupRule.getCache().getQueryService();

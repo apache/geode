@@ -86,6 +86,7 @@ public class SortedResultSet extends TreeSet
     return this.elementType.hashCode();
   }
 
+  @Override
   public void setElementType(ObjectType elementType) {
     if (elementType instanceof StructType)
       throw new IllegalArgumentException(
@@ -93,30 +94,37 @@ public class SortedResultSet extends TreeSet
     this.elementType = elementType;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(SortedResultSet.class, this.elementType);
   }
 
+  @Override
   public boolean isModifiable() {
     return true;
   }
 
+  @Override
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
 
+  @Override
   public int getDSFID() {
     return SORTED_RESULT_SET;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     this.elementType = (ObjectType) DataSerializer.readObject(in);
@@ -125,6 +133,7 @@ public class SortedResultSet extends TreeSet
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // how do we serialize the comparator?
     out.writeInt(this.size());

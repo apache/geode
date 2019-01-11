@@ -45,6 +45,7 @@ public class SystemMemberRegionEventImpl extends SystemMemberCacheEventImpl
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public String getRegionPath() {
     return this.regionPath;
   }

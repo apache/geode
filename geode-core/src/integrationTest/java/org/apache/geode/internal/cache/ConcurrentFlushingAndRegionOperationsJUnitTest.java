@@ -45,6 +45,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     alreadyComeHere = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void goingToFlush() {
         if (!alreadyComeHere) {
           // this should do an in place update of the re we just took of the queue
@@ -76,6 +77,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     alreadyComeHere = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void goingToFlush() {
         if (!alreadyComeHere) {
           region.get("Key");
@@ -102,6 +104,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     alreadyComeHere = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void goingToFlush() {
         if (!alreadyComeHere) {
           try {
@@ -148,6 +151,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     alreadyComeHere = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void goingToFlush() {
         if (!alreadyComeHere) {
           try {
@@ -191,6 +195,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     alreadyComeHere = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void afterWritingBytes() {
         if (!alreadyComeHere) {
           try {
@@ -252,6 +257,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     alreadyComeHere = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void afterWritingBytes() {
         if (!alreadyComeHere) {
           DiskEntry de = (DiskEntry) ((LocalRegion) region).basicGetEntry("Key");
@@ -304,6 +310,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     alreadyComeHere = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void afterWritingBytes() {
         if (!alreadyComeHere) {
           region.get("key");
@@ -326,6 +333,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
     alreadyComeHere = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void afterWritingBytes() {
         if (!alreadyComeHere) {
           try {
@@ -531,6 +539,7 @@ public class ConcurrentFlushingAndRegionOperationsJUnitTest extends DiskRegionTe
       this.region = region;
     }
 
+    @Override
     public void run() {
       try {
         region.close();

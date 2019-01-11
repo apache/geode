@@ -156,10 +156,12 @@ public class ServerDenyList {
   }
 
   public static class DenyListListenerAdapter implements DenyListListener {
+    @Override
     public void serverAdded(ServerLocation location) {
       // do nothing
     }
 
+    @Override
     public void serverRemoved(ServerLocation location) {
       // do nothing
     }
@@ -169,6 +171,7 @@ public class ServerDenyList {
 
     protected Set listeners = new CopyOnWriteArraySet();
 
+    @Override
     public void serverAdded(ServerLocation location) {
       for (Iterator itr = listeners.iterator(); itr.hasNext();) {
         DenyListListener listener = (DenyListListener) itr.next();
@@ -176,6 +179,7 @@ public class ServerDenyList {
       }
     }
 
+    @Override
     public void serverRemoved(ServerLocation location) {
       for (Iterator itr = listeners.iterator(); itr.hasNext();) {
         DenyListListener listener = (DenyListListener) itr.next();

@@ -357,14 +357,17 @@ public class PRQueryProcessor {
       return "EndOfBucket(" + this.bucketId + ")";
     }
 
+    @Override
     public int getDSFID() {
       return END_OF_BUCKET;
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.bucketId = in.readInt();
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeInt(this.bucketId);
     }
@@ -397,6 +400,7 @@ public class PRQueryProcessor {
       this.parameters = parameters;
     }
 
+    @Override
     public Object call() throws Exception {
       BucketQueryResult bukResult = new BucketQueryResult(this._bucketId);
       try {

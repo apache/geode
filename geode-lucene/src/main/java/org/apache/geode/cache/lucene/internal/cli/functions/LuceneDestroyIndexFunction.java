@@ -28,6 +28,7 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class LuceneDestroyIndexFunction implements InternalFunction {
+  @Override
   public void execute(final FunctionContext context) {
     CliFunctionResult result;
     String memberId = context.getCache().getDistributedSystem().getDistributedMember().getId();

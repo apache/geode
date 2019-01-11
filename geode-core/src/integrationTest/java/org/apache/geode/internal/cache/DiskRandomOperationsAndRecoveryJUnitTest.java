@@ -541,6 +541,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
         compareVersionTags(tagmapInCache, tagmapFromRecover);
       }
       Thread th = new Thread(new Runnable() {
+        @Override
         public void run() {
           while (run[0]) {
             try {
@@ -665,6 +666,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
     // this.run = false;
     // }
 
+    @Override
     public void run() {
       Random opRandom = new Random();
       Random keyRandom = new Random();

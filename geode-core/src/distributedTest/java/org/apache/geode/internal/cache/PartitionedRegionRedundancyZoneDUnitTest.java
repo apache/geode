@@ -88,6 +88,7 @@ public class PartitionedRegionRedundancyZoneDUnitTest extends JUnit4CacheTestCas
   protected void checkBucketCount(VM vm0, final int numLocalBuckets) {
     vm0.invoke(new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
@@ -99,6 +100,7 @@ public class PartitionedRegionRedundancyZoneDUnitTest extends JUnit4CacheTestCas
   protected int getBucketCount(VM vm0) {
     return (Integer) vm0.invoke(new SerializableCallable("checkLowRedundancy") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
@@ -109,6 +111,7 @@ public class PartitionedRegionRedundancyZoneDUnitTest extends JUnit4CacheTestCas
 
   protected DistributedMember createPR(VM vm, int redundancy) throws Exception {
     SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
+      @Override
       public Object call() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -125,6 +128,7 @@ public class PartitionedRegionRedundancyZoneDUnitTest extends JUnit4CacheTestCas
 
   protected DistributedMember setRedundancyZone(VM vm, final String zone) {
     return (DistributedMember) vm.invoke(new SerializableCallable("set redundancy zone") {
+      @Override
       public Object call() {
         Properties props = new Properties();
         props.setProperty(REDUNDANCY_ZONE, zone);
@@ -143,6 +147,7 @@ public class PartitionedRegionRedundancyZoneDUnitTest extends JUnit4CacheTestCas
       final String regionName) {
     SerializableRunnable createData = new SerializableRunnable("createData") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);

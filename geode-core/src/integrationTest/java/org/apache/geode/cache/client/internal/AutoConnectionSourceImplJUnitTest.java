@@ -419,8 +419,10 @@ public class AutoConnectionSourceImplJUnitTest {
     protected volatile LocatorListResponse nextLocatorListResponse;;
 
 
+    @Override
     public void init(TcpServer tcpServer) {}
 
+    @Override
     public Object processRequest(Object request) throws IOException {
       if (request instanceof ClientConnectionRequest) {
         return nextConnectionResponse;
@@ -429,12 +431,16 @@ public class AutoConnectionSourceImplJUnitTest {
       }
     }
 
+    @Override
     public void shutDown() {}
 
+    @Override
     public void endRequest(Object request, long startTime) {}
 
+    @Override
     public void endResponse(Object request, long startTime) {}
 
+    @Override
     public void restarting(DistributedSystem ds, GemFireCache cache,
         InternalConfigurationPersistenceService sharedConfig) {}
 
@@ -442,13 +448,16 @@ public class AutoConnectionSourceImplJUnitTest {
 
   public static class FakeHelper implements PoolStatHelper {
 
+    @Override
     public void endJob() {}
 
+    @Override
     public void startJob() {}
 
   }
 
   public class FakePool implements InternalPool {
+    @Override
     public String getPoolOrCacheCancelInProgress() {
       return null;
     }
@@ -458,52 +467,65 @@ public class AutoConnectionSourceImplJUnitTest {
       return false;
     }
 
+    @Override
     public EndpointManager getEndpointManager() {
       return null;
     }
 
+    @Override
     public String getName() {
       return null;
     }
 
+    @Override
     public PoolStats getStats() {
       return poolStats;
     }
 
+    @Override
     public void destroy() {
 
     }
 
+    @Override
     public void detach() {}
 
+    @Override
     public void destroy(boolean keepAlive) {
 
     }
 
+    @Override
     public boolean isDurableClient() {
       return false;
     }
 
+    @Override
     public boolean isDestroyed() {
       return false;
     }
 
+    @Override
     public int getSocketConnectTimeout() {
       return 0;
     }
 
+    @Override
     public int getFreeConnectionTimeout() {
       return 0;
     }
 
+    @Override
     public int getLoadConditioningInterval() {
       return 0;
     }
 
+    @Override
     public int getSocketBufferSize() {
       return 0;
     }
 
+    @Override
     public int getReadTimeout() {
       return 0;
     }
@@ -512,128 +534,159 @@ public class AutoConnectionSourceImplJUnitTest {
       return 0;
     }
 
+    @Override
     public boolean getThreadLocalConnections() {
       return false;
     }
 
+    @Override
     public boolean getSubscriptionEnabled() {
       return false;
     }
 
+    @Override
     public boolean getPRSingleHopEnabled() {
       return false;
     }
 
+    @Override
     public int getSubscriptionRedundancy() {
       return 0;
     }
 
+    @Override
     public int getSubscriptionMessageTrackingTimeout() {
       return 0;
     }
 
+    @Override
     public String getServerGroup() {
       return "";
     }
 
+    @Override
     public List/* <InetSocketAddress> */ getLocators() {
       return new ArrayList();
     }
 
+    @Override
     public List/* <InetSocketAddress> */ getOnlineLocators() {
       return new ArrayList();
     }
 
+    @Override
     public List/* <InetSocketAddress> */ getServers() {
       return new ArrayList();
     }
 
+    @Override
     public void releaseThreadLocalConnection() {}
 
     public ConnectionStats getStats(ServerLocation location) {
       return null;
     }
 
+    @Override
     public boolean getMultiuserAuthentication() {
       return false;
     }
 
+    @Override
     public long getIdleTimeout() {
       return 0;
     }
 
+    @Override
     public int getMaxConnections() {
       return 0;
     }
 
+    @Override
     public int getMinConnections() {
       return 0;
     }
 
+    @Override
     public long getPingInterval() {
       return 100;
     }
 
+    @Override
     public int getStatisticInterval() {
       return -1;
     }
 
+    @Override
     public int getRetryAttempts() {
       return 0;
     }
 
+    @Override
     public Object execute(Op op) {
       return null;
     }
 
+    @Override
     public Object executeOn(ServerLocation server, Op op) {
       return null;
     }
 
+    @Override
     public Object executeOn(ServerLocation server, Op op, boolean accessed,
         boolean onlyUseExistingCnx) {
       return null;
     }
 
+    @Override
     public Object executeOnPrimary(Op op) {
       return null;
     }
 
+    @Override
     public Map getEndpointMap() {
       return null;
     }
 
+    @Override
     public ScheduledExecutorService getBackgroundProcessor() {
       return background;
     }
 
+    @Override
     public Object executeOn(Connection con, Op op) {
       return null;
     }
 
+    @Override
     public Object executeOn(Connection con, Op op, boolean timeoutFatal) {
       return null;
     }
 
+    @Override
     public RegisterInterestTracker getRITracker() {
       return null;
     }
 
+    @Override
     public int getSubscriptionAckInterval() {
       return 0;
     }
 
+    @Override
     public Object executeOnQueuesAndReturnPrimaryResult(Op op) {
       return null;
     }
 
+    @Override
     public CancelCriterion getCancelCriterion() {
       return new CancelCriterion() {
 
+        @Override
         public String cancelInProgress() {
           return null;
         }
 
+        @Override
         public RuntimeException generateCancelledException(Throwable e) {
           return null;
         }
@@ -641,19 +694,23 @@ public class AutoConnectionSourceImplJUnitTest {
       };
     }
 
+    @Override
     public void executeOnAllQueueServers(Op op)
         throws NoSubscriptionServersAvailableException, SubscriptionNotEnabledException {
 
     }
 
+    @Override
     public Object execute(Op op, int retryAttempts) {
       return null;
     }
 
+    @Override
     public QueryService getQueryService() {
       return null;
     }
 
+    @Override
     public int getPendingEventCount() {
       return 0;
     }
@@ -667,14 +724,18 @@ public class AutoConnectionSourceImplJUnitTest {
       return null;
     }
 
+    @Override
     public void setupServerAffinity(boolean allowFailover) {}
 
+    @Override
     public void releaseServerAffinity() {}
 
+    @Override
     public ServerLocation getServerAffinityLocation() {
       return null;
     }
 
+    @Override
     public void setServerAffinityLocation(ServerLocation serverLocation) {}
   }
 }

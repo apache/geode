@@ -36,12 +36,14 @@ public class Customer implements DataSerializable {
     this.address = address + PRColocationDUnitTestHelper.getDefaultAddOnString();
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this.address = DataSerializer.readString(in);
 
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     DataSerializer.writeString(this.address, out);

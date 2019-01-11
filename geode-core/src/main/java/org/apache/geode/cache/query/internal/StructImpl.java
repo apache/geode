@@ -67,6 +67,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   /**
    * @throws IllegalArgumentException if fieldName not found
    */
+  @Override
   public Object get(String fieldName) {
     return this.values[this.type.getFieldIndex(fieldName)];
   }
@@ -80,6 +81,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     return this.type.getFieldNames();
   }
 
+  @Override
   public Object[] getFieldValues() {
     if (this.values == null) {
       return new Object[0];
@@ -108,6 +110,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     return fValues;
   }
 
+  @Override
   public StructType getStructType() {
     return this.type;
   }
@@ -158,10 +161,12 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     return buf.toString();
   }
 
+  @Override
   public int getDSFID() {
     return STRUCT_IMPL;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.type = (StructTypeImpl) DataSerializer.readObject(in);
     this.values = DataSerializer.readObjectArray(in);
@@ -175,6 +180,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.type, out);
     DataSerializer.writeObjectArray(this.values, out);

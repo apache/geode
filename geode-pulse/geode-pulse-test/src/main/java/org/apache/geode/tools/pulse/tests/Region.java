@@ -51,6 +51,7 @@ public class Region extends JMXBaseBean implements RegionMBean {
     this.name = name;
   }
 
+  @Override
   protected String getKey(String propName) {
     return "region." + name + "." + propName;
   }

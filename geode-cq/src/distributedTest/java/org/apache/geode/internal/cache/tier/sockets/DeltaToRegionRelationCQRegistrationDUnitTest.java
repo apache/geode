@@ -405,11 +405,13 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     CacheClientProxy proxy = getClientProxy();
     assertNotNull(proxy);
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return getClientProxy()
             .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + REGION_NAME1);
       }
 
+      @Override
       public String description() {
         return "Wait Expired";
       }
@@ -439,6 +441,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     assertNotNull(proxy);
 
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return getClientProxy()
             .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + REGION_NAME1)
@@ -446,6 +449,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
                 .getRegionsWithEmptyDataPolicy().containsKey(SEPARATOR + REGION_NAME2);
       }
 
+      @Override
       public String description() {
         return "Wait Expired";
       }

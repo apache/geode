@@ -25,20 +25,25 @@ public class CustomResultCollector implements ResultCollector {
 
   private ArrayList resultList = new ArrayList();
 
+  @Override
   public void addResult(DistributedMember memberID, Object result) {
     this.resultList.add(result);
   }
 
+  @Override
   public void endResults() {}
 
+  @Override
   public Object getResult() throws FunctionException {
     return resultList;
   }
 
+  @Override
   public Object getResult(long timeout, TimeUnit unit) throws FunctionException {
     return resultList;
   }
 
+  @Override
   public void clearResults() {
     resultList.clear();
   }

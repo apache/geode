@@ -43,6 +43,7 @@ public class TouchReplicatedRegionEntriesFunction
 
   public static final String ID = "touch-replicated-region-entries";
 
+  @Override
   public void execute(FunctionContext context) {
     Object[] arguments = (Object[]) context.getArguments();
     Cache cache = context.getCache();
@@ -72,24 +73,29 @@ public class TouchReplicatedRegionEntriesFunction
     return Collections.singletonList(ResourcePermissions.DATA_READ);
   }
 
+  @Override
   public String getId() {
     return ID;
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return false;
   }
 
+  @Override
   public boolean isHA() {
     return false;
   }
 
+  @Override
   public boolean hasResult() {
     // Setting this to false caused the onServers method to only execute the
     // function on one server.
     return true;
   }
 
+  @Override
   public void init(Properties properties) {}
 
   @Override

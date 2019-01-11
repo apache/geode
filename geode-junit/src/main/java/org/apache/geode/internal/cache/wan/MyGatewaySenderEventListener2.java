@@ -38,6 +38,7 @@ public class MyGatewaySenderEventListener2 implements AsyncEventListener, Serial
   /**
    * Processes events by recording their latencies.
    */
+  @Override
   public boolean processEvents(List<AsyncEvent> events) {
     for (AsyncEvent event : events) {
       this.eventsMap.put(event.getKey(), event.getDeserializedValue());
@@ -45,6 +46,7 @@ public class MyGatewaySenderEventListener2 implements AsyncEventListener, Serial
     return true;
   }
 
+  @Override
   public void close() {}
 
   public Map getEventsMap() {

@@ -46,10 +46,12 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    *
    * @param iface - a Class defining an interface.
    */
+  @Override
   public boolean isWrapperFor(Class iface) throws SQLException {
     return true;
   }
 
+  @Override
   public Object unwrap(Class iface) throws SQLException {
     return iface;
   }
@@ -118,6 +120,7 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * be invoked on connection close event.
    *
    */
+  @Override
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       try {
@@ -137,6 +140,7 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * be invoked on connection error event.
    *
    */
+  @Override
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
       try {

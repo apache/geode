@@ -1407,10 +1407,12 @@ public class CachePerfStats {
    */
   public PoolStatHelper getEventPoolHelper() {
     return new PoolStatHelper() {
+      @Override
       public void startJob() {
         incEventThreads(1);
       }
 
+      @Override
       public void endJob() {
         incEventThreads(-1);
       }
@@ -1483,14 +1485,17 @@ public class CachePerfStats {
 
   public QueueStatHelper getEvictionQueueStatHelper() {
     return new QueueStatHelper() {
+      @Override
       public void add() {
         incEvictorQueueSize(1);
       }
 
+      @Override
       public void remove() {
         incEvictorQueueSize(-1);
       }
 
+      @Override
       public void remove(int count) {
         incEvictorQueueSize(count * -1);
       }

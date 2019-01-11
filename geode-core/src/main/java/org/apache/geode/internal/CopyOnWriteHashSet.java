@@ -50,14 +50,17 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
    * Because I'm lazy, this iterator does not support modification of this set. If you need it, it
    * shouldn't be too hard to implement.
    */
+  @Override
   public Iterator<T> iterator() {
     return Collections.unmodifiableSet(snapshot).iterator();
   }
 
+  @Override
   public int size() {
     return snapshot.size();
   }
 
+  @Override
   public boolean add(T e) {
     synchronized (this) {
       Set<T> set = new HashSet<T>(snapshot);
@@ -67,6 +70,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
     }
   }
 
+  @Override
   public boolean addAll(Collection<? extends T> c) {
     synchronized (this) {
       Set<T> set = new HashSet<T>(snapshot);
@@ -76,24 +80,29 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
     }
   }
 
+  @Override
   public void clear() {
     synchronized (this) {
       snapshot = Collections.emptySet();
     }
   }
 
+  @Override
   public boolean contains(Object o) {
     return snapshot.contains(o);
   }
 
+  @Override
   public boolean containsAll(Collection<?> c) {
     return snapshot.containsAll(c);
   }
 
+  @Override
   public boolean isEmpty() {
     return snapshot.isEmpty();
   }
 
+  @Override
   public boolean remove(Object o) {
     synchronized (this) {
       Set<T> set = new HashSet<T>(snapshot);
@@ -103,6 +112,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
     }
   }
 
+  @Override
   public boolean retainAll(Collection<?> c) {
     synchronized (this) {
       Set<T> set = new HashSet<T>(snapshot);
@@ -112,10 +122,12 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
     }
   }
 
+  @Override
   public Object[] toArray() {
     return snapshot.toArray();
   }
 
+  @Override
   public <T> T[] toArray(T[] a) {
     return snapshot.toArray(a);
   }
@@ -130,6 +142,7 @@ public class CopyOnWriteHashSet<T> implements Set<T>, Serializable {
     return snapshot.hashCode();
   }
 
+  @Override
   public boolean removeAll(Collection<?> c) {
     synchronized (this) {
       Set<T> set = new HashSet<T>(snapshot);

@@ -84,6 +84,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       Host host = Host.getHost(h);
       for (int v = 0; v < host.getVMCount(); v++) {
         host.getVM(v).invoke(new SerializableRunnable("Clean up") {
+          @Override
           public void run() {
             cleanup();
           }
@@ -123,6 +124,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     final String objectName = "NetSearchKey";
     final Integer value = new Integer(440);
     vm0.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         try {
 
@@ -139,6 +141,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         try {
 
@@ -156,6 +159,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm2.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         try {
 
@@ -173,6 +177,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm0.invoke(new SerializableRunnable("Get a value") {
+      @Override
       public void run() {
         try {
           Object result = null;
@@ -219,6 +224,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     loaderInvoked = false;
 
     vm0.invoke(new CacheSerializableRunnable("create region " + name + " in vm0") {
+      @Override
       public void run2() {
         remoteLoaderInvoked = false;
         loaderInvoked = false;
@@ -228,6 +234,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
         factory.setCacheLoader(new CacheLoader() {
           boolean firstInvocation = true;
 
+          @Override
           public synchronized Object load(LoaderHelper helper) {
             System.out.println("invoked cache loader for " + helper.getKey());
             loaderInvoked = true;
@@ -251,6 +258,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
             return value;
           }
 
+          @Override
           public void close() {
 
           }
@@ -266,6 +274,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     try {
       async1 = vm0.invokeAsync(new CacheSerializableRunnable(
           "Concurrently invoke the remote loader on the same key - t1") {
+        @Override
         public void run2() {
           Region region = getCache().getRegion("root/" + name);
 
@@ -282,6 +291,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       });
       vm0.invoke(
           new CacheSerializableRunnable("Concurrently invoke the loader on the same key - t2") {
+            @Override
             public void run2() {
               final Region region = getCache().getRegion("root/" + name);
               final Object[] valueHolder = new Object[1];
@@ -296,6 +306,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
               assertTrue(loaderInvoked);
 
               Thread t = new Thread("invoke get()") {
+                @Override
                 public void run() {
                   try {
                     valueHolder[0] = region.get(objectName);
@@ -359,6 +370,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getUniqueName() + "-ACK";
     final String objectName = "B";
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -372,6 +384,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(create);
 
     vm0.invoke(new SerializableRunnable("Get with No Loaders defined") {
+      @Override
       public void run() {
         try {
           Object result = getRootRegion().getSubregion(name).get(objectName);
@@ -401,6 +414,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     loaderInvoked = false;
     remoteLoaderInvoked = false;
     vm0.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         try {
           loaderInvoked = false;
@@ -428,17 +442,20 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setEarlyAck(false);
           factory.setCacheLoader(new CacheLoader() {
+            @Override
             public Object load(LoaderHelper helper) {
               remoteLoaderInvoked = true;
               return value;
             }
 
+            @Override
             public void close() {
 
             }
@@ -450,6 +467,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       }
     });
     vm0.invoke(new SerializableRunnable("Get a value from remote loader") {
+      @Override
       public void run() {
         for (int i = 0; i < 1; i++) {
           try {
@@ -494,6 +512,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     remoteLoaderInvoked = false;
     remoteLoaderInvokedCount = 0;
     vm0.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         loaderInvoked = false;
         remoteLoaderInvoked = false;
@@ -521,6 +540,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     });
 
     SerializableRunnable installLoader = new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         loaderInvoked = false;
         remoteLoaderInvoked = false;
@@ -530,12 +550,14 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setEarlyAck(false);
           factory.setCacheLoader(new CacheLoader() {
+            @Override
             public Object load(LoaderHelper helper) {
               remoteLoaderInvoked = true;
               remoteLoaderInvokedCount++;
               return null;
             }
 
+            @Override
             public void close() {
 
             }
@@ -549,6 +571,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(installLoader);
     vm2.invoke(installLoader);
     vm0.invoke(new SerializableRunnable("Get a value from remote loader") {
+      @Override
       public void run() {
         for (int i = 0; i < 1; i++) {
           try {
@@ -616,6 +639,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     remoteLoaderInvoked = false;
     loaderInvoked = false;
     vm0.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         remoteLoaderInvoked = false;
         loaderInvoked = false;
@@ -624,11 +648,13 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setEarlyAck(false);
           factory.setCacheLoader(new CacheLoader() {
+            @Override
             public Object load(LoaderHelper helper) {
               loaderInvoked = true;
               return value;
             }
 
+            @Override
             public void close() {
 
             }
@@ -644,6 +670,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         remoteLoaderInvoked = false;
         loaderInvoked = false;
@@ -652,11 +679,13 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setEarlyAck(false);
           factory.setCacheLoader(new CacheLoader() {
+            @Override
             public Object load(LoaderHelper helper) {
               remoteLoaderInvoked = true;
               return value;
             }
 
+            @Override
             public void close() {
 
             }
@@ -668,6 +697,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       }
     });
     vm0.invoke(new SerializableRunnable("Get a value from local loader") {
+      @Override
       public void run() {
         try {
           Object result = getRootRegion().getSubregion(name).get(objectName);
@@ -696,34 +726,41 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     final Integer value = new Integer(483);
 
     vm0.invoke(new SerializableRunnable("Create ACK Region with cacheWriter") {
+      @Override
       public void run() {
         netWriteInvoked = false;
         try {
           AttributesFactory factory = new AttributesFactory();
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setCacheWriter(new CacheWriter() {
+            @Override
             public void beforeCreate(EntryEvent e) throws CacheWriterException {
               netWriteInvoked = true;
               return;
             }
 
+            @Override
             public void beforeUpdate(EntryEvent e) throws CacheWriterException {
               netWriteInvoked = true;
               return;
             }
 
+            @Override
             public void beforeDestroy(EntryEvent e) throws CacheWriterException {
               return;
             }
 
+            @Override
             public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {
               return;
             }
 
+            @Override
             public void beforeRegionClear(RegionEvent e) throws CacheWriterException {
               return;
             }
 
+            @Override
             public void close() {}
           });
 
@@ -735,6 +772,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       }
     });
     vm1.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         loaderInvoked = false;
         remoteLoaderInvoked = false;
@@ -751,6 +789,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(new SerializableRunnable(
         "Do a put operation resulting in cache writer notification in other vm") {
+      @Override
       public void run() {
         try {
           getRootRegion().getSubregion(name).put(objectName, value);
@@ -769,6 +808,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm0.invoke(new SerializableRunnable("ensure that cache writer was invoked") {
+      @Override
       public void run() {
         assertTrue("expected cache writer to be invoked", netWriteInvoked);
       }
@@ -788,6 +828,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     final Integer updateValue = new Integer(484);
 
     vm0.invoke(new SerializableRunnable("Create replicated region with cacheWriter") {
+      @Override
       public void run() {
         netWriteInvoked = false;
         operationWasCreate = false;
@@ -798,6 +839,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
           factory.setCacheWriter(new CacheWriter() {
+            @Override
             public void beforeCreate(EntryEvent e) throws CacheWriterException {
               e.getRegion().getCache().getLogger()
                   .info("cache writer beforeCreate invoked for " + e);
@@ -808,6 +850,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
               return;
             }
 
+            @Override
             public void beforeUpdate(EntryEvent e) throws CacheWriterException {
               e.getRegion().getCache().getLogger()
                   .info("cache writer beforeUpdate invoked for " + e);
@@ -818,12 +861,16 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
               return;
             }
 
+            @Override
             public void beforeDestroy(EntryEvent e) throws CacheWriterException {}
 
+            @Override
             public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {}
 
+            @Override
             public void beforeRegionClear(RegionEvent e) throws CacheWriterException {}
 
+            @Override
             public void close() {}
           });
 
@@ -835,6 +882,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       }
     });
     vm1.invoke(new SerializableRunnable("Create empty Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory();
@@ -849,6 +897,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(new SerializableRunnable(
         "do a put that should be proxied in the other vm and invoke its cache writer") {
+      @Override
       public void run() {
         try {
           getRootRegion().getSubregion(name).put(objectName, value);
@@ -860,6 +909,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(new SerializableRunnable(
         "ensure that cache writer was invoked with correct settings in event") {
+      @Override
       public void run() {
         assertTrue("expected cache writer to be invoked", netWriteInvoked);
         assertTrue("expected originRemote to be true", originWasRemote);
@@ -873,6 +923,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(new SerializableRunnable(
         "do an update that should be proxied in the other vm and invoke its cache writer") {
+      @Override
       public void run() {
         try {
           getRootRegion().getSubregion(name).put(objectName, updateValue);
@@ -884,6 +935,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(new SerializableRunnable(
         "ensure that cache writer was invoked with correct settings in event") {
+      @Override
       public void run() {
         assertTrue("expected cache writer to be invoked", netWriteInvoked);
         assertTrue("expected originRemote to be true", originWasRemote);
@@ -908,6 +960,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     final Integer updateValue = new Integer(484);
 
     vm0.invoke(new SerializableRunnable("Create replicate Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory();
@@ -920,6 +973,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       }
     });
     vm1.invoke(new SerializableRunnable("Create empty Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory();
@@ -932,6 +986,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
       }
     });
     vm2.invoke(new SerializableRunnable("Create replicated region with cacheWriter") {
+      @Override
       public void run() {
         netWriteInvoked = false;
         operationWasCreate = false;
@@ -942,6 +997,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
           factory.setScope(Scope.DISTRIBUTED_ACK);
           factory.setDataPolicy(DataPolicy.EMPTY);
           factory.setCacheWriter(new CacheWriter() {
+            @Override
             public void beforeCreate(EntryEvent e) throws CacheWriterException {
               e.getRegion().getCache().getLogger()
                   .info("cache writer beforeCreate invoked for " + e);
@@ -952,6 +1008,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
               return;
             }
 
+            @Override
             public void beforeUpdate(EntryEvent e) throws CacheWriterException {
               e.getRegion().getCache().getLogger()
                   .info("cache writer beforeUpdate invoked for " + e);
@@ -962,12 +1019,16 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
               return;
             }
 
+            @Override
             public void beforeDestroy(EntryEvent e) throws CacheWriterException {}
 
+            @Override
             public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {}
 
+            @Override
             public void beforeRegionClear(RegionEvent e) throws CacheWriterException {}
 
+            @Override
             public void close() {}
           });
 
@@ -981,6 +1042,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(new SerializableRunnable(
         "do a put that should be proxied in the other vm and invoke its cache writer") {
+      @Override
       public void run() {
         try {
           getRootRegion().getSubregion(name).put(objectName, value);
@@ -992,6 +1054,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm2.invoke(new SerializableRunnable(
         "ensure that cache writer was invoked with correct settings in event") {
+      @Override
       public void run() {
         assertTrue("expected cache writer to be invoked", netWriteInvoked);
         assertTrue("expected originRemote to be true", originWasRemote);
@@ -1005,6 +1068,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(new SerializableRunnable(
         "do an update that should be proxied in the other vm and invoke its cache writer") {
+      @Override
       public void run() {
         try {
           getRootRegion().getSubregion(name).put(objectName, updateValue);
@@ -1016,6 +1080,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
 
     vm2.invoke(new SerializableRunnable(
         "ensure that cache writer was invoked with correct settings in event") {
+      @Override
       public void run() {
         assertTrue("expected cache writer to be invoked", netWriteInvoked);
         assertTrue("expected originRemote to be true", originWasRemote);

@@ -125,6 +125,7 @@ public class MXBeanProxyInvocationHandler {
    * (see eliminateCovariantMethods).
    **/
   private static class MethodOrder implements Comparator<Method> {
+    @Override
     public int compare(Method a, Method b) {
       final int cmp = a.getName().compareTo(b.getName());
       if (cmp != 0)
@@ -218,6 +219,7 @@ public class MXBeanProxyInvocationHandler {
 
     }
 
+    @Override
     Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
       final String methodName = method.getName();
       final Class[] paramTypes = method.getParameterTypes();

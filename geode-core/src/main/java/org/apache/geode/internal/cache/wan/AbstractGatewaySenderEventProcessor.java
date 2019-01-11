@@ -1350,6 +1350,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       this.p = processor;
     }
 
+    @Override
     public Boolean call() {
       this.p.stopProcessing();
       return true;

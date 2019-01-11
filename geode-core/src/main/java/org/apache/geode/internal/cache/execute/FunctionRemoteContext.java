@@ -58,6 +58,7 @@ public class FunctionRemoteContext implements DataSerializable {
     this.isFnSerializationReqd = isFnSerializationReqd;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     Object object = DataSerializer.readObject(in);
     if (object instanceof String) {
@@ -76,6 +77,7 @@ public class FunctionRemoteContext implements DataSerializable {
     this.isReExecute = DataSerializer.readBoolean(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     if (this.isFnSerializationReqd) {
       DataSerializer.writeObject(this.function, out);

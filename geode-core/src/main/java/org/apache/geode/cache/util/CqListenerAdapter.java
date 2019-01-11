@@ -31,12 +31,14 @@ public abstract class CqListenerAdapter implements CqListener {
   /**
    * An event occurred that modifies the results of the query. This event does not contain an error.
    */
+  @Override
   public void onEvent(CqEvent aCqEvent) {}
 
   /**
    * An error occurred in the processing of a CQ. This event does contain an error. The newValue and
    * oldValue in the event may or may not be available, and will be null if not available.
    */
+  @Override
   public void onError(CqEvent aCqEvent) {}
 
   /**
@@ -53,5 +55,6 @@ public abstract class CqListenerAdapter implements CqListener {
    *
    * @see org.apache.geode.cache.CacheCallback#close
    */
+  @Override
   public void close() {}
 }

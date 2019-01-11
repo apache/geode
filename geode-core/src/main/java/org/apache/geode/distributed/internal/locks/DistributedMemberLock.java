@@ -141,8 +141,10 @@ public class DistributedMemberLock implements Lock {
     this.threadState = new ThreadRequestState(rThread.getThreadId(), true);
   }
 
+  @Override
   public synchronized void lock() {
     executeOperation(new Operation() {
+      @Override
       public boolean operate() {
         if (holdsLock() && reentryPolicy.preventReentry(DistributedMemberLock.this)) {
           return true;
@@ -154,8 +156,10 @@ public class DistributedMemberLock implements Lock {
     });
   }
 
+  @Override
   public synchronized void lockInterruptibly() throws InterruptedException {
     executeOperationInterruptibly(new Operation() {
+      @Override
       public boolean operate() throws InterruptedException {
         if (holdsLock() && reentryPolicy.preventReentry(DistributedMemberLock.this)) {
           return true;
@@ -167,8 +171,10 @@ public class DistributedMemberLock implements Lock {
     });
   }
 
+  @Override
   public synchronized boolean tryLock() {
     return executeOperation(new Operation() {
+      @Override
       public boolean operate() {
         if (holdsLock() && reentryPolicy.preventReentry(DistributedMemberLock.this)) {
           return true;
@@ -178,9 +184,11 @@ public class DistributedMemberLock implements Lock {
     });
   }
 
+  @Override
   public synchronized boolean tryLock(final long time, final TimeUnit unit)
       throws InterruptedException {
     return executeOperationInterruptibly(new Operation() {
+      @Override
       public boolean operate() throws InterruptedException {
         if (holdsLock() && reentryPolicy.preventReentry(DistributedMemberLock.this)) {
           return true;
@@ -190,8 +198,10 @@ public class DistributedMemberLock implements Lock {
     });
   }
 
+  @Override
   public synchronized void unlock() {
     executeOperation(new Operation() {
+      @Override
       public boolean operate() {
         dls.unlock(key);
         return true;
@@ -201,6 +211,7 @@ public class DistributedMemberLock implements Lock {
 
   public synchronized boolean holdsLock() {
     return executeOperation(new Operation() {
+      @Override
       public boolean operate() {
         return dls.isHeldByThreadId(key, threadState.threadId);
       }
@@ -269,6 +280,7 @@ public class DistributedMemberLock implements Lock {
     boolean operate() throws InterruptedException;
   }
 
+  @Override
   public Condition newCondition() {
     throw new UnsupportedOperationException(
         "not implemented");

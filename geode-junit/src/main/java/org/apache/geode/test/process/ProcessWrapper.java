@@ -281,6 +281,7 @@ public class ProcessWrapper {
       }
       this.starting = true;
       this.processThread = new Thread(new Runnable() {
+        @Override
         public void run() {
           start(properties, workingDirectory);
         }

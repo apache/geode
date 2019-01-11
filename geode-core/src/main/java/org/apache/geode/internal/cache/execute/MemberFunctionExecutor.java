@@ -208,11 +208,13 @@ public class MemberFunctionExecutor extends AbstractExecution {
   }
 
   // Changing the object!!
+  @Override
   public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
   // Changing the object!!
+  @Override
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
@@ -222,6 +224,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
     return new MemberFunctionExecutor(this, rs);
   }
 
+  @Override
   public Execution withFilter(Set filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
@@ -235,6 +238,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
             "bucket as filter"));
   }
 
+  @Override
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(

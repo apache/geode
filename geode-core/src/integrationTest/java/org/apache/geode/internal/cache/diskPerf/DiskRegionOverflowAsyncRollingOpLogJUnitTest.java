@@ -113,6 +113,7 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
     afterHavingCompacted = false;
     setCacheObserverCallBack();
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+      @Override
       public void afterHavingCompacted() {
         afterHavingCompacted = true;
       }
@@ -137,10 +138,12 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
     // over
     if (((LocalRegion) region).getDiskRegion().isBackup()) {
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return afterHavingCompacted;
         }
 
+        @Override
         public String description() {
           return null;
         }

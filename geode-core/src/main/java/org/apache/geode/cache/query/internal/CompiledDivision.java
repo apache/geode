@@ -22,6 +22,7 @@ public class CompiledDivision extends CompiledArithmetic implements OQLLexerToke
     super(left, right, op);
   }
 
+  @Override
   public int getType() {
     return DIVISION;
   }

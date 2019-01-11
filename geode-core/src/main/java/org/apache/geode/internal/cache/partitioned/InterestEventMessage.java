@@ -216,6 +216,7 @@ public class InterestEventMessage extends PartitionMessage {
       return sb.toString();
     }
 
+    @Override
     public int getDSFID() {
       return INTEREST_EVENT_REPLY_MESSAGE;
     }
@@ -252,6 +253,7 @@ public class InterestEventMessage extends PartitionMessage {
     }
   }
 
+  @Override
   public int getDSFID() {
     return INTEREST_EVENT_MESSAGE;
   }

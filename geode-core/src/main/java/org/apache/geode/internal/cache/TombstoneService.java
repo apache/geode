@@ -564,6 +564,7 @@ public class TombstoneService {
           // do messaging in a pool so this thread is not stuck trying to
           // communicate with other members
           executor.execute(new Runnable() {
+            @Override
             public void run() {
               try {
                 // this thread should not reference other sweeper state, which is not synchronized
@@ -875,6 +876,7 @@ public class TombstoneService {
       updateMemoryEstimate(ts.getSize());
     }
 
+    @Override
     public void run() {
       if (logger.isTraceEnabled(LogMarker.TOMBSTONE_VERBOSE)) {
         logger.trace(LogMarker.TOMBSTONE_VERBOSE,

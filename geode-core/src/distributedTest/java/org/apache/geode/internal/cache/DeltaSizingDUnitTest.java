@@ -89,6 +89,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
   private void doPeerTest(final boolean clone, final boolean copyOnRead) throws Exception {
     AccessorFactory factory = new AccessorFactory() {
 
+      @Override
       public Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2) {
         AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
         attr.setCloningEnabled(clone);
@@ -110,6 +111,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
   private void doClientTest(final boolean clone, final boolean copyOnRead) throws Exception {
     AccessorFactory factory = new AccessorFactory() {
 
+      @Override
       public Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2) {
         AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
         PoolFactory pf = PoolManager.createFactory();
@@ -136,6 +138,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
 
     SerializableCallable createDataRegion = new SerializableCallable("createRegion") {
+      @Override
       public Object call() throws Exception {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);
@@ -176,6 +179,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
     final Integer port2 = (Integer) vm1.invoke(createDataRegion);
 
     SerializableRunnable createEmptyRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);
@@ -200,6 +204,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
 
     // Now apply a delta
     vm2.invoke(new SerializableRunnable("update") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region<Object, TestDelta> region = cache.getRegion("region1");
@@ -222,6 +227,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
 
     // Try another
     vm2.invoke(new SerializableRunnable("update") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region<Object, TestDelta> region = cache.getRegion("region1");
@@ -246,6 +252,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
   private long checkObjects(VM vm, final int serializations, final int deserializations,
       final int deltas, final int clones) {
     SerializableCallable getSize = new SerializableCallable("check objects") {
+      @Override
       public Object call() {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");

@@ -103,6 +103,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
       return new Class[] {Color.class};
     }
 
+    @Override
     public int getId() {
       return 1073741824;
     }

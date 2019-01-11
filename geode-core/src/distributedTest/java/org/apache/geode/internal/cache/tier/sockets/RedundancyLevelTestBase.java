@@ -347,6 +347,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
       throws Exception {
     if (!FailOverDetectionByCCU) {
       oldBo = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+        @Override
         public void beforeFailoverByCacheClientUpdater(ServerLocation epFailed) {
           try {
             Thread.sleep(300000);

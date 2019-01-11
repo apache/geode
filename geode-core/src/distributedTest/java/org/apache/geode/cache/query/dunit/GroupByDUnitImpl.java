@@ -285,6 +285,7 @@ public abstract class GroupByDUnitImpl extends JUnit4CacheTestCase implements Gr
     this.closeCache(vm0, vm1, vm2, vm3);
   }
 
+  @Override
   @Test
   public void testLimitWithGroupBy() throws Exception {
     Host host = Host.getHost(0);
@@ -301,6 +302,7 @@ public abstract class GroupByDUnitImpl extends JUnit4CacheTestCase implements Gr
   protected void createIndex(VM vm, final String indexName, final String indexedExpression,
       final String regionPath) {
     vm.invoke(new SerializableRunnable("create index") {
+      @Override
       public void run() {
         try {
           Cache cache = getCache();
@@ -321,6 +323,7 @@ public abstract class GroupByDUnitImpl extends JUnit4CacheTestCase implements Gr
   private void closeCache(VM... vms) {
     for (VM vm : vms) {
       vm.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           getCache().close();
         }

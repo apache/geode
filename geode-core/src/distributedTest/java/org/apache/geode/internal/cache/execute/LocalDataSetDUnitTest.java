@@ -100,6 +100,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
     registerIteratorFunctionOnAll();
 
     SerializableCallable installHook = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         PartitionedRegion pr = (PartitionedRegion) basicGetCache().getRegion("CustomerPR");
         Runnable r = new ReadHook();
@@ -109,6 +110,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
     };
     invokeInAllDataStores(installHook);
     accessor.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = basicGetCache().getRegion("CustomerPR");
         Set filter = new HashSet();
@@ -119,6 +121,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
     });
 
     SerializableCallable bucketRead = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         return getHookInvoked();
       }
@@ -138,6 +141,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   protected static class IterateFunction implements Function {
     public static final String id = "IteratorFunction";
 
+    @Override
     public void execute(FunctionContext context) {
       Region localRegion =
           PartitionRegionHelper.getLocalDataForContext((RegionFunctionContext) context);
@@ -148,18 +152,22 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
       context.getResultSender().lastResult(Boolean.TRUE);
     }
 
+    @Override
     public String getId() {
       return id;
     }
 
+    @Override
     public boolean hasResult() {
       return true;
     }
 
+    @Override
     public boolean optimizeForWrite() {
       return true;
     }
 
+    @Override
     public boolean isHA() {
       return false;
     }
@@ -180,6 +188,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
 
   protected static class ReadHook implements Runnable {
 
+    @Override
     public void run() {
       System.out.println("SWAP:invokedHook");
       setHookInvoked();
@@ -345,15 +354,18 @@ class LDSPartitionResolver implements PartitionResolver {
 
   public LDSPartitionResolver() {}
 
+  @Override
   public String getName() {
     return this.getClass().getName();
   }
 
+  @Override
   public Serializable getRoutingObject(EntryOperation opDetails) {
     String key = (String) opDetails.getKey();
     return new LDSRoutingObject("" + key.charAt(key.length() - 1));
   }
 
+  @Override
   public void close() {}
 
   public boolean equals(Object o) {
@@ -374,10 +386,12 @@ class LDSRoutingObject implements DataSerializable {
 
   private String value;
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.value = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.value, out);
   }

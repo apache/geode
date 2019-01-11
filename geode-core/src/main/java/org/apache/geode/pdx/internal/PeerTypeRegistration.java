@@ -125,6 +125,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public void initialize() {
     AttributesFactory<Object, Object> factory = new AttributesFactory<Object, Object>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -338,6 +339,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public int defineType(PdxType newType) {
     verifyConfiguration();
     Integer existingId = typeToId.get(newType);
@@ -414,6 +416,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     CheckTypeRegistryState.send(cache.getDistributionManager());
   }
 
+  @Override
   public PdxType getType(int typeId) {
     return getById(typeId);
   }
@@ -438,6 +441,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   }
 
+  @Override
   public void addRemoteType(int typeId, PdxType type) {
     verifyConfiguration();
     TXStateProxy currentState = suspendTX();
@@ -459,6 +463,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
     if (!typeRegistryInUse || this.idToType == null) {
       return;
@@ -466,6 +471,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     checkAllowed(true, this.cache.hasPersistentRegion());
   }
 
+  @Override
   public void creatingPersistentRegion() {
     // Anything is allowed until the registry is in use.
     if (!typeRegistryInUse) {
@@ -486,6 +492,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     return !sendersAndAsyncQueues.isEmpty();
   }
 
+  @Override
   public void creatingPool() {
     if (typeRegistryInUse) {
       throw new PdxInitializationException(
@@ -612,6 +619,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public int getEnumId(Enum<?> v) {
     verifyConfiguration();
     EnumInfo ei = new EnumInfo(v);
@@ -638,6 +646,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public void addRemoteEnum(int id, EnumInfo enumInfo) {
     verifyConfiguration();
     TXStateProxy currentState = suspendTX();
@@ -660,6 +669,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public int defineEnum(EnumInfo newInfo) {
     verifyConfiguration();
     EnumId existingId = enumToId.get(newInfo);
@@ -685,6 +695,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public EnumInfo getEnumById(int id) {
     EnumId enumId = new EnumId(id);
     return getById(enumId);

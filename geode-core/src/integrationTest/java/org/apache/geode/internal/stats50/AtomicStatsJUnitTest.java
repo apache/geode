@@ -66,6 +66,7 @@ public class AtomicStatsJUnitTest {
       final CyclicBarrier beforeIncrement = new CyclicBarrier(3);
       final CyclicBarrier afterIncrement = new CyclicBarrier(3);
       Thread thread1 = new Thread("thread1") {
+        @Override
         public void run() {
           try {
             while (true) {
@@ -83,6 +84,7 @@ public class AtomicStatsJUnitTest {
         }
       };
       Thread thread3 = new Thread("thread1") {
+        @Override
         public void run() {
           try {
             while (true) {

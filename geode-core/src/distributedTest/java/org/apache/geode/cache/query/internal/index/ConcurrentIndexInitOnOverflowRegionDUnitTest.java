@@ -456,6 +456,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
 
   public class IndexManagerTestHook
       implements org.apache.geode.cache.query.internal.index.IndexManager.TestHook {
+    @Override
     public void hook(final int spot) throws RuntimeException {
       switch (spot) {
         case 6: // Before Index update and after region entry lock.

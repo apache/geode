@@ -81,6 +81,7 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(1);
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         disconnectFromDS();
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[0] + "]");
@@ -99,6 +100,7 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm2.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         disconnectFromDS();
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[1] + "]");
@@ -118,6 +120,7 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Cache cache = CacheFactory.getAnyInstance();
         if (cache != null && !cache.isClosed()) {
@@ -128,6 +131,7 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Collection<PdxType> types = DiskStoreImpl.pdxDeleteField(DS_NAME, new File[] {f},
             PdxValue.class.getName(), "fieldToDelete");
@@ -140,6 +144,7 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[0] + "]");
         final Cache cache =
@@ -156,6 +161,7 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm2.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[1] + "]");
         final Cache cache = (new CacheFactory(props)).setPdxReadSerialized(true)
@@ -177,6 +183,7 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Cache cache = CacheFactory.getAnyInstance();
         if (cache != null && !cache.isClosed()) {

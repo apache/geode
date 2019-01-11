@@ -106,6 +106,7 @@ public class QueryOp {
       final SelectResults[] resultRef = new SelectResults[1];
       final Exception[] exceptionRef = new Exception[1];
       ChunkHandler ch = new ChunkHandler() {
+        @Override
         public void handle(ChunkedMessage cm) throws Exception {
           Part collectionTypePart = cm.getPart(0);
           Object o = collectionTypePart.getObject();

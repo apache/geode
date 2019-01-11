@@ -100,10 +100,12 @@ public class DummySessionManager implements SessionManager {
     sessions.remove(id);
   }
 
+  @Override
   public String getSessionCookieName() {
     return "JSESSIONID";
   }
 
+  @Override
   public String getJvmId() {
     return "jvm-id";
   }

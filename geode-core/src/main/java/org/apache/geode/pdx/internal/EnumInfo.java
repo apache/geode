@@ -56,6 +56,7 @@ public class EnumInfo implements DataSerializableFixedID {
 
   public EnumInfo() {}
 
+  @Override
   public int getDSFID() {
     return ENUM_INFO;
   }
@@ -69,12 +70,14 @@ public class EnumInfo implements DataSerializableFixedID {
     this.clazz = v;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.clazz, out);
     DataSerializer.writeString(this.name, out);
     DataSerializer.writePrimitiveInt(this.ordinal, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.clazz = DataSerializer.readString(in);
     this.name = DataSerializer.readString(in);
@@ -201,22 +204,27 @@ public class EnumInfo implements DataSerializableFixedID {
       this.ei = ei;
     }
 
+    @Override
     public String getClassName() {
       return this.ei.clazz;
     }
 
+    @Override
     public String getName() {
       return this.ei.name;
     }
 
+    @Override
     public int getOrdinal() {
       return this.ei.ordinal;
     }
 
+    @Override
     public boolean isEnum() {
       return true;
     }
 
+    @Override
     public Object getObject() {
       try {
         return this.ei.getEnum();
@@ -228,6 +236,7 @@ public class EnumInfo implements DataSerializableFixedID {
       }
     }
 
+    @Override
     public boolean hasField(String fieldName) {
       return getFieldNames().contains(fieldName);
     }
@@ -240,14 +249,17 @@ public class EnumInfo implements DataSerializableFixedID {
       fieldNames = Collections.unmodifiableList(tmp);
     }
 
+    @Override
     public List<String> getFieldNames() {
       return fieldNames;
     }
 
+    @Override
     public boolean isIdentityField(String fieldName) {
       return false;
     }
 
+    @Override
     public Object getField(String fieldName) {
       if ("name".equals(fieldName)) {
         return getName();
@@ -257,10 +269,12 @@ public class EnumInfo implements DataSerializableFixedID {
       return null;
     }
 
+    @Override
     public WritablePdxInstance createWriter() {
       throw new IllegalStateException("PdxInstances that are an enum can not be modified.");
     }
 
+    @Override
     public void sendTo(DataOutput out) throws IOException {
       InternalDataSerializer.writePdxEnumId(this.enumId, out);
     }
@@ -306,12 +320,14 @@ public class EnumInfo implements DataSerializableFixedID {
       return this.ei.name;
     }
 
+    @Override
     public byte[] toBytes() throws IOException {
       HeapDataOutputStream hdos = new HeapDataOutputStream(16, Version.CURRENT);
       sendTo(hdos);
       return hdos.toByteArray();
     }
 
+    @Override
     public int compareTo(Object o) {
       if (o instanceof ComparableEnum) {
         ComparableEnum other = (ComparableEnum) o;

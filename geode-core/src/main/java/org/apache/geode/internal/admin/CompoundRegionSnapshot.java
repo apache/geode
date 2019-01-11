@@ -160,6 +160,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
   /**
    * Returns the name of the <code>Region</code> whose information is amalgamated in this snapshot.
    */
+  @Override
   public Object getName() {
     return this.name;
   }
@@ -168,6 +169,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    * Since a compound snapshot does not have <code>RegionAttributes</code>, this method returns
    * <code>null</code>.
    */
+  @Override
   public RegionAttributes getAttributes() {
     return null;
   }
@@ -176,6 +178,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    * Since a compound snapshot does not have a <code>userAttributes</code>, this method returns
    * <code>null</code>.
    */
+  @Override
   public Object getUserAttribute() {
     return null;
   }
@@ -333,6 +336,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    * Returns the most recent <code>lastModifiedTime</code> of any instance of this snapshot's
    * <code>Region</code> across the distributed system.
    */
+  @Override
   public long getLastModifiedTime() {
     return this.lastModifiedTime;
   }
@@ -341,6 +345,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    * Returns the most recent <code>lastAccessTime</code> of any instance of this snapshot's
    * <code>Region</code> across the distributed system.
    */
+  @Override
   public long getLastAccessTime() {
     return this.lastAccessTime;
   }
@@ -349,6 +354,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    * Returns the cumulative number of hits across all instances of the snapshot's
    * <code>Region</code>.
    */
+  @Override
   public long getNumberOfHits() {
     return this.numHits;
   }
@@ -357,6 +363,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
    * Returns the cumulative number of misses across all instances of this snapshot's
    * <code>Region</code>.
    */
+  @Override
   public long getNumberOfMisses() {
     return this.numMisses;
   }
@@ -364,6 +371,7 @@ public class CompoundRegionSnapshot implements RegionSnapshot {
   /**
    * Returns the aggregate hit ratio across all instances of this snapshot's <code>Region</code>.
    */
+  @Override
   public float getHitRatio() {
     return this.hitRatio;
   }

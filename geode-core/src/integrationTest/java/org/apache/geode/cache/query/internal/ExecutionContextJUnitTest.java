@@ -273,6 +273,7 @@ public class ExecutionContextJUnitTest {
     QCompiler compiler = new QCompiler();
     final CompiledValue query = compiler.compileQuery(qry);
     Runnable runnable = new Runnable() {
+      @Override
       public void run() {
         try {
           latch.countDown();

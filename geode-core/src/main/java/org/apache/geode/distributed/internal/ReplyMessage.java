@@ -244,6 +244,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
 
   ////////////////////// Utility Methods //////////////////////
 
+  @Override
   public int getDSFID() {
     return REPLY_MESSAGE;
   }
@@ -332,6 +333,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
     return sb;
   }
 
+  @Override
   public boolean isInternal() {
     return this.internal;
   }

@@ -87,6 +87,7 @@ public class CloseCacheMessage extends HighPriorityDistributionMessage implement
     return super.toString() + " (processorId=" + processorId + ")";
   }
 
+  @Override
   public int getDSFID() {
     return CLOSE_CACHE_MESSAGE;
   }

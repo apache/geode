@@ -23,6 +23,7 @@ public class Member extends JMXBaseBean implements MemberMBean {
     this.name = name;
   }
 
+  @Override
   protected String getKey(String propName) {
     return "member." + name + "." + propName;
   }

@@ -137,6 +137,7 @@ public class DistributedRegionSearchLoadJUnitTest {
     VersionTag tag = createVersionTag(true);
 
     doAnswer(new Answer<EntryEventImpl>() {
+      @Override
       public EntryEventImpl answer(InvocationOnMock invocation) throws Throwable {
         Object[] args = invocation.getArguments();
         if (args[0] instanceof EntryEventImpl) {

@@ -105,6 +105,7 @@ public class BucketOperatorWrapperTest {
   @Test
   public void bucketWrapperShouldRecordNumberOfBucketsCreatedIfCreateBucketSucceeds() {
     doAnswer(new Answer<Object>() {
+      @Override
       public Object answer(InvocationOnMock invocation) {
         // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
         ((Completion) invocation.getArguments()[3]).onSuccess();
@@ -131,6 +132,7 @@ public class BucketOperatorWrapperTest {
   @Test
   public void bucketWrapperShouldNotRecordNumberOfBucketsCreatedIfCreateBucketFails() {
     doAnswer(new Answer<Object>() {
+      @Override
       public Object answer(InvocationOnMock invocation) {
         // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
         ((Completion) invocation.getArguments()[3]).onFailure();
@@ -152,6 +154,7 @@ public class BucketOperatorWrapperTest {
   @Test
   public void bucketWrapperShouldInvokeOnFailureWhenCreateBucketFails() {
     doAnswer(new Answer<Object>() {
+      @Override
       public Object answer(InvocationOnMock invocation) {
         // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
         ((Completion) invocation.getArguments()[3]).onFailure();
@@ -171,6 +174,7 @@ public class BucketOperatorWrapperTest {
   @Test
   public void bucketWrapperShouldInvokeOnSuccessWhenCreateBucketSucceeds() {
     doAnswer(new Answer<Object>() {
+      @Override
       public Object answer(InvocationOnMock invocation) {
         // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
         ((Completion) invocation.getArguments()[3]).onSuccess();

@@ -566,6 +566,7 @@ public class VMStats50 implements VMStatsContract {
     }
   }
 
+  @Override
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
     this.vmStats.setInt(pendingFinalizationCountId, memBean.getObjectPendingFinalizationCount());
@@ -670,6 +671,7 @@ public class VMStats50 implements VMStatsContract {
     stats.setLong(mu_maxMemoryId, mu.getMax());
   }
 
+  @Override
   public void close() {
     this.heapMemStats.close();
     this.nonHeapMemStats.close();

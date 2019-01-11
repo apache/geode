@@ -2611,6 +2611,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     stack.push(d);
   }
 
+  @Override
   public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
       throws SAXException {
     // This while loop pops all StringBuffers at the top of the stack
@@ -2898,6 +2899,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     stack.push(Integer.valueOf(maxOplogSize));
   }
 
+  @Override
   public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
     // This while loop pops all StringBuffers at the top of the stack
     // that contain only whitespace; see GEODE-3306
@@ -3287,6 +3289,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
   }
 
+  @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
     // This method needs to handle XML chunking, so its uses a
     // StringBuffer to uniquely identify previous calls and will
@@ -3326,18 +3329,25 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     this.documentLocator = locator;
   }
 
+  @Override
   public void startDocument() throws SAXException {}
 
+  @Override
   public void endDocument() throws SAXException {}
 
+  @Override
   public void startPrefixMapping(String prefix, String uri) throws SAXException {}
 
+  @Override
   public void endPrefixMapping(String prefix) throws SAXException {}
 
+  @Override
   public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {}
 
+  @Override
   public void processingInstruction(String target, String data) throws SAXException {}
 
+  @Override
   public void skippedEntity(String name) throws SAXException {}
 
   /*

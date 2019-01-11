@@ -130,22 +130,27 @@ public abstract class StatisticsImpl implements Statistics {
     return this.osStatFlags;
   }
 
+  @Override
   public int nameToId(String name) {
     return this.type.nameToId(name);
   }
 
+  @Override
   public StatisticDescriptor nameToDescriptor(String name) {
     return this.type.nameToDescriptor(name);
   }
 
+  @Override
   public void close() {
     this.closed = true;
   }
 
+  @Override
   public boolean isClosed() {
     return this.closed;
   }
 
+  @Override
   public abstract boolean isAtomic();
 
   private boolean isOpen() { // fix for bug 29973
@@ -154,14 +159,17 @@ public abstract class StatisticsImpl implements Statistics {
 
   //////////////////////// attribute Methods ///////////////////////
 
+  @Override
   public StatisticsType getType() {
     return this.type;
   }
 
+  @Override
   public String getTextId() {
     return this.textId;
   }
 
+  @Override
   public long getNumericId() {
     return this.numericId;
   }
@@ -169,6 +177,7 @@ public abstract class StatisticsImpl implements Statistics {
   /**
    * Gets the unique id for this resource
    */
+  @Override
   public long getUniqueId() {
     return this.uniqueId;
   }
@@ -182,14 +191,17 @@ public abstract class StatisticsImpl implements Statistics {
 
   //////////////////////// set() Methods ///////////////////////
 
+  @Override
   public void setInt(String name, int value) {
     setInt(nameToDescriptor(name), value);
   }
 
+  @Override
   public void setInt(StatisticDescriptor descriptor, int value) {
     setInt(getIntId(descriptor), value);
   }
 
+  @Override
   public void setInt(int id, int value) {
     if (isOpen()) {
       _setInt(id, value);
@@ -202,14 +214,17 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract void _setInt(int offset, int value);
 
+  @Override
   public void setLong(String name, long value) {
     setLong(nameToDescriptor(name), value);
   }
 
+  @Override
   public void setLong(StatisticDescriptor descriptor, long value) {
     setLong(getLongId(descriptor), value);
   }
 
+  @Override
   public void setLong(int id, long value) {
     if (isOpen()) {
       _setLong(id, value);
@@ -222,14 +237,17 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract void _setLong(int offset, long value);
 
+  @Override
   public void setDouble(String name, double value) {
     setDouble(nameToDescriptor(name), value);
   }
 
+  @Override
   public void setDouble(StatisticDescriptor descriptor, double value) {
     setDouble(getDoubleId(descriptor), value);
   }
 
+  @Override
   public void setDouble(int id, double value) {
     if (isOpen()) {
       _setDouble(id, value);
@@ -244,14 +262,17 @@ public abstract class StatisticsImpl implements Statistics {
 
   /////////////////////// get() Methods ///////////////////////
 
+  @Override
   public int getInt(String name) {
     return getInt(nameToDescriptor(name));
   }
 
+  @Override
   public int getInt(StatisticDescriptor descriptor) {
     return getInt(getIntId(descriptor));
   }
 
+  @Override
   public int getInt(int id) {
     if (isOpen()) {
       return _getInt(id);
@@ -267,14 +288,17 @@ public abstract class StatisticsImpl implements Statistics {
   protected abstract int _getInt(int offset);
 
 
+  @Override
   public long getLong(String name) {
     return getLong(nameToDescriptor(name));
   }
 
+  @Override
   public long getLong(StatisticDescriptor descriptor) {
     return getLong(getLongId(descriptor));
   }
 
+  @Override
   public long getLong(int id) {
     if (isOpen()) {
       return _getLong(id);
@@ -290,14 +314,17 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract long _getLong(int offset);
 
+  @Override
   public double getDouble(String name) {
     return getDouble(nameToDescriptor(name));
   }
 
+  @Override
   public double getDouble(StatisticDescriptor descriptor) {
     return getDouble(getDoubleId(descriptor));
   }
 
+  @Override
   public double getDouble(int id) {
     if (isOpen()) {
       return _getDouble(id);
@@ -312,6 +339,7 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract double _getDouble(int offset);
 
+  @Override
   public Number get(StatisticDescriptor descriptor) {
     if (isOpen()) {
       return _get((StatisticDescriptorImpl) descriptor);
@@ -320,10 +348,12 @@ public abstract class StatisticsImpl implements Statistics {
     }
   }
 
+  @Override
   public Number get(String name) {
     return get(nameToDescriptor(name));
   }
 
+  @Override
   public long getRawBits(StatisticDescriptor descriptor) {
     if (isOpen()) {
       return _getRawBits((StatisticDescriptorImpl) descriptor);
@@ -332,20 +362,24 @@ public abstract class StatisticsImpl implements Statistics {
     }
   }
 
+  @Override
   public long getRawBits(String name) {
     return getRawBits(nameToDescriptor(name));
   }
 
   //////////////////////// inc() Methods ////////////////////////
 
+  @Override
   public void incInt(String name, int delta) {
     incInt(nameToDescriptor(name), delta);
   }
 
+  @Override
   public void incInt(StatisticDescriptor descriptor, int delta) {
     incInt(getIntId(descriptor), delta);
   }
 
+  @Override
   public void incInt(int id, int delta) {
     if (isOpen()) {
       _incInt(id, delta);
@@ -358,14 +392,17 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract void _incInt(int offset, int delta);
 
+  @Override
   public void incLong(String name, long delta) {
     incLong(nameToDescriptor(name), delta);
   }
 
+  @Override
   public void incLong(StatisticDescriptor descriptor, long delta) {
     incLong(getLongId(descriptor), delta);
   }
 
+  @Override
   public void incLong(int id, long delta) {
     if (isOpen()) {
       _incLong(id, delta);
@@ -378,14 +415,17 @@ public abstract class StatisticsImpl implements Statistics {
    */
   protected abstract void _incLong(int offset, long delta);
 
+  @Override
   public void incDouble(String name, double delta) {
     incDouble(nameToDescriptor(name), delta);
   }
 
+  @Override
   public void incDouble(StatisticDescriptor descriptor, double delta) {
     incDouble(getDoubleId(descriptor), delta);
   }
 
+  @Override
   public void incDouble(int id, double delta) {
     if (isOpen()) {
       _incDouble(id, delta);

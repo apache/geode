@@ -87,6 +87,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
    *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
+  @Override
   public int getDSFID() {
     return CLIENT_MEMBERSHIP_MESSAGE;
   }

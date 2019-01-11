@@ -131,6 +131,7 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
     return rp;
   }
 
+  @Override
   public int getDSFID() {
     return PR_ALL_BUCKET_PROFILES_UPDATE_MESSAGE;
   }

@@ -59,6 +59,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testDataSerializable() throws InterruptedException {
     doTest(new ObjectFactory() {
+      @Override
       public Object get() {
         return new ClassNotFoundDataSerializable();
       }
@@ -68,6 +69,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testPdx() throws InterruptedException {
     doTest(new ObjectFactory() {
+      @Override
       public Object get() {
         return new ClassNotFoundPdx(false);
       }
@@ -89,6 +91,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
     createClientRegion(vm3, port2);
 
     SerializableRunnable putKey = new SerializableRunnable() {
+      @Override
       public void run() {
         Region region = getCache().getRegion("testSimplePdx");
         region.put("a", "b");
@@ -125,6 +128,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
     };
 
     SerializableRunnable getValue = new SerializableRunnable() {
+      @Override
       public void run() {
         Region region = getCache().getRegion("testSimplePdx");
         try {
@@ -142,6 +146,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
     };
 
     SerializableRunnable registerInterest = new SerializableRunnable() {
+      @Override
       public void run() {
         Region region = getCache().getRegion("testSimplePdx");
 
@@ -178,6 +183,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
   private int createServerRegion(VM vm) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         // af.setScope(Scope.DISTRIBUTED_ACK);
@@ -200,6 +206,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
   private void createClientRegion(final VM vm, final int port) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         disconnectFromDS();
         ClientCacheFactory cf = new ClientCacheFactory();
@@ -219,8 +226,10 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       throw new ClassNotFoundException("Test exception");
     }
@@ -236,11 +245,13 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
       throw new ClassNotFoundException("Test Exception");
     }
 
+    @Override
     public void toData(PdxWriter writer) {
       writer.writeString("field1", "string");
 
     }
 
+    @Override
     public void fromData(PdxReader reader) {
 
     }

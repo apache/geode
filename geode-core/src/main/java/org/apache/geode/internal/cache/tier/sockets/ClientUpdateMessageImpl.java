@@ -210,22 +210,27 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   }
 
+  @Override
   public String getRegionName() {
     return this._regionName;
   }
 
+  @Override
   public Object getKeyOfInterest() {
     return this._keyOfInterest;
   }
 
+  @Override
   public EnumListenerEvent getOperation() {
     return this._operation;
   }
 
+  @Override
   public Object getValue() {
     return this._value;
   }
 
+  @Override
   public boolean valueIsObject() {
     return (this._valueIsObject == 0x01);
   }
@@ -247,6 +252,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    *
    * @return Whether to conflate this message
    */
+  @Override
   public boolean shouldBeConflated() {
     // If the message is an update, it may be conflatable. If it is a
     // create, destroy, invalidate or destroy-region, it is not conflatable.
@@ -255,18 +261,22 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return this._shouldConflate;
   }
 
+  @Override
   public String getRegionToConflate() {
     return this._regionName;
   }
 
+  @Override
   public Object getKeyToConflate() {
     return this._keyOfInterest;
   }
 
+  @Override
   public Object getValueToConflate() {
     return this._value;
   }
 
+  @Override
   public void setLatestValue(Object value) {
     // does this also need to set _valueIsObject
     this._value = value;
@@ -274,6 +284,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   /// End Conflatable interface methods ///
 
+  @Override
   public ClientProxyMembershipID getMembershipId() {
     return this._membershipId;
   }
@@ -283,34 +294,42 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    *
    * @return the unqiue event eventifier for event corresponding to this message.
    */
+  @Override
   public EventID getEventId() {
     return this._eventIdentifier;
   }
 
+  @Override
   public VersionTag getVersionTag() {
     return this.versionTag;
   }
 
+  @Override
   public boolean isCreate() {
     return this._operation == EnumListenerEvent.AFTER_CREATE;
   }
 
+  @Override
   public boolean isUpdate() {
     return this._operation == EnumListenerEvent.AFTER_UPDATE;
   }
 
+  @Override
   public boolean isDestroy() {
     return this._operation == EnumListenerEvent.AFTER_DESTROY;
   }
 
+  @Override
   public boolean isInvalidate() {
     return this._operation == EnumListenerEvent.AFTER_INVALIDATE;
   }
 
+  @Override
   public boolean isDestroyRegion() {
     return this._operation == EnumListenerEvent.AFTER_REGION_DESTROY;
   }
 
+  @Override
   public boolean isClearRegion() {
     return this._operation == EnumListenerEvent.AFTER_REGION_CLEAR;
   }
@@ -323,6 +342,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return false;
   }
 
+  @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     // the MessageDispatcher uses getMessage(CacheClientProxy, byte[]) for this class
     throw new Error("ClientUpdateMessage.getMessage(proxy) should not be invoked");
@@ -955,6 +975,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   private static final ThreadLocal<Map<Integer, Message>> CACHED_MESSAGES =
       new ThreadLocal<Map<Integer, Message>>() {
+        @Override
         protected Map<Integer, Message> initialValue() {
           return new HashMap<Integer, Message>();
         };
@@ -974,6 +995,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * @return boolean true if the event is due to net load.
    */
+  @Override
   public boolean isNetLoad() {
     return this._isNetLoad;
   }
@@ -981,6 +1003,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * @param isNetLoad boolean true if the event is due to net load.
    */
+  @Override
   public void setIsNetLoad(boolean isNetLoad) {
     this._isNetLoad = isNetLoad;
   }
@@ -989,6 +1012,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * @return boolean true if cq info is present for the given proxy.
    */
+  @Override
   public boolean hasCqs(ClientProxyMembershipID clientId) {
     if (this._clientCqs != null) {
       CqNameToOp cqs = this._clientCqs.get(clientId);
@@ -1002,6 +1026,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * @return boolean true if cq info is present.
    */
+  @Override
   public boolean hasCqs() {
     return this._hasCqs;
   }
@@ -1080,6 +1105,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * Set the region name that was updated.
    */
+  @Override
   public void setRegionName(String regionName) {
     this._regionName = regionName;
   }
@@ -1174,6 +1200,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
   }
 
+  @Override
   public boolean isClientInterested(ClientProxyMembershipID clientId) {
     return (this._clientInterestList != null && this._clientInterestList.contains(clientId))
         || (this._clientInterestListInv != null && this._clientInterestListInv.contains(clientId));
@@ -1218,10 +1245,12 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return buffer.toString();
   }
 
+  @Override
   public int getDSFID() {
     return CLIENT_UPDATE_MESSAGE;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeByte(_operation.getEventCode());
     DataSerializer.writeString(_regionName, out);
@@ -1247,6 +1276,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     DataSerializer.writeObject(this.versionTag, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this._operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
     this._regionName = DataSerializer.readString(in);
@@ -1354,6 +1384,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     CONSTANT_MEMORY_OVERHEAD = size;
   }
 
+  @Override
   public int getSizeInBytes() {
 
     int size = CONSTANT_MEMORY_OVERHEAD;
@@ -1391,6 +1422,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * @see
    * org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage#needsNoAuthorizationCheck()
    */
+  @Override
   public boolean needsNoAuthorizationCheck() {
     return false;
   }

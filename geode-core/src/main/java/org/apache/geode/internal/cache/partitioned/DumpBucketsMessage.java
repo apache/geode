@@ -85,6 +85,7 @@ public class DumpBucketsMessage extends PartitionMessage {
     return true;
   }
 
+  @Override
   public int getDSFID() {
     return PR_DUMP_BUCKETS_MESSAGE;
   }

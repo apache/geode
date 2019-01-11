@@ -112,6 +112,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // system before creating ConnectionPools
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         getSystem();
       }
@@ -243,6 +244,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create index.
     server.invoke(new CacheSerializableRunnable("Set RangeIndex Falg") {
+      @Override
       public void run2() throws CacheException {
         IndexManager.TEST_RANGEINDEX_ONLY = true;
       }
@@ -267,6 +269,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Unset the flag.
     server.invoke(new CacheSerializableRunnable("Set RangeIndex Falg") {
+      @Override
       public void run2() throws CacheException {
         IndexManager.TEST_RANGEINDEX_ONLY = false;
       }
@@ -407,12 +410,14 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create index.
     server1.invoke(new CacheSerializableRunnable("Set RangeIndex Falg") {
+      @Override
       public void run2() throws CacheException {
         IndexManager.TEST_RANGEINDEX_ONLY = true;
       }
     });
 
     server2.invoke(new CacheSerializableRunnable("Set RangeIndex Falg") {
+      @Override
       public void run2() throws CacheException {
         IndexManager.TEST_RANGEINDEX_ONLY = true;
       }
@@ -437,12 +442,14 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create index.
     server1.invoke(new CacheSerializableRunnable("Set RangeIndex Falg") {
+      @Override
       public void run2() throws CacheException {
         IndexManager.TEST_RANGEINDEX_ONLY = false;
       }
     });
 
     server2.invoke(new CacheSerializableRunnable("Set RangeIndex Falg") {
+      @Override
       public void run2() throws CacheException {
         IndexManager.TEST_RANGEINDEX_ONLY = false;
       }
@@ -484,6 +491,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // initialize Region.
     server.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -495,6 +503,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Keep updating region (async invocation).
     server.invokeAsync(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         // Update (totalObjects - 1) entries.
@@ -524,6 +533,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Verify CQ Cache results.
     server.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -610,6 +620,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // initialize Region.
     server.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -621,6 +632,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Keep updating region (async invocation).
     server.invokeAsync(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         // Update (totalObjects - 1) entries.
@@ -651,6 +663,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Verify CQ Cache results.
     server.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -733,6 +746,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // initialize Region.
     server1.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -746,6 +760,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Keep updating region (async invocation).
     server2.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         // Update (totalObjects - 1) entries.
@@ -771,6 +786,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Verify CQ Cache results.
     server1.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -830,6 +846,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // initialize Region.
     server1.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -841,6 +858,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Update from server2.
     server2.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -852,6 +870,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Destroy entries.
     server2.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -866,6 +885,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Verify CQ Cache results.
     server1.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -887,6 +907,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     server2.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -944,6 +965,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // initialize Region.
     server1.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -955,6 +977,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Keep updating region (async invocation).
     server1.invokeAsync(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         // Update (totalObjects - 1) entries.
@@ -984,6 +1007,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Verify CQ Cache results.
     server1.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -1041,6 +1065,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Verify CQ Cache results.
     server2.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {

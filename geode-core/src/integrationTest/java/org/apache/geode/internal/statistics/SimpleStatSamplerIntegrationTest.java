@@ -335,10 +335,12 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
 
   private void initStatisticsFactory() {
     CancelCriterion stopper = new CancelCriterion() {
+      @Override
       public String cancelInProgress() {
         return null;
       }
 
+      @Override
       public RuntimeException generateCancelledException(Throwable e) {
         return null;
       }

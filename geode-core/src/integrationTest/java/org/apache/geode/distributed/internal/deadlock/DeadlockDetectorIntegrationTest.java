@@ -67,11 +67,13 @@ public class DeadlockDetectorIntegrationTest {
     final Object lock2 = new Object();
 
     Thread thread1 = new Thread() {
+      @Override
       public void run() {
         stuckThreads.add(Thread.currentThread());
 
         synchronized (lock1) {
           Thread thread2 = new Thread() {
+            @Override
             public void run() {
               stuckThreads.add(Thread.currentThread());
               synchronized (lock2) {
@@ -118,12 +120,14 @@ public class DeadlockDetectorIntegrationTest {
     final Lock lock2 = new ReentrantLock();
 
     Thread thread1 = new Thread() {
+      @Override
       public void run() {
         stuckThreads.add(Thread.currentThread());
 
         lock1.lock();
 
         Thread thread2 = new Thread() {
+          @Override
           public void run() {
             stuckThreads.add(Thread.currentThread());
             lock2.lock();
@@ -168,6 +172,7 @@ public class DeadlockDetectorIntegrationTest {
     final Semaphore lock2 = new Semaphore(1);
 
     Thread thread1 = new Thread() {
+      @Override
       public void run() {
         stuckThreads.add(Thread.currentThread());
 
@@ -178,6 +183,7 @@ public class DeadlockDetectorIntegrationTest {
         }
 
         Thread thread2 = new Thread() {
+          @Override
           public void run() {
             stuckThreads.add(Thread.currentThread());
             try {

@@ -77,10 +77,12 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     this.manualStart = manualStart;
   }
 
+  @Override
   public String getHostnameForSenders() {
     return hostnameForSenders;
   }
 
+  @Override
   public String getHost() {
     if (receiver != null) {
       return ((CacheServerImpl) receiver).getExternalAddress();
@@ -102,34 +104,42 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     }
   }
 
+  @Override
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
     return this.filters;
   }
 
+  @Override
   public int getMaximumTimeBetweenPings() {
     return this.timeBetPings;
   }
 
+  @Override
   public int getPort() {
     return this.port;
   }
 
+  @Override
   public int getStartPort() {
     return this.startPort;
   }
 
+  @Override
   public int getEndPort() {
     return this.endPort;
   }
 
+  @Override
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
 
+  @Override
   public boolean isManualStart() {
     return this.manualStart;
   }
 
+  @Override
   public CacheServer getServer() {
     return receiver;
   }
@@ -160,6 +170,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     }
   }
 
+  @Override
   public void start() throws IOException {
     if (receiver == null) {
       receiver = this.cache.addCacheServer(true);
@@ -203,6 +214,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     return rPort;
   }
 
+  @Override
   public void stop() {
     if (!isRunning()) {
       throw new GatewayReceiverException(
@@ -211,6 +223,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     receiver.stop();
   }
 
+  @Override
   public void destroy() {
     logger.info("Destroying Gateway Receiver: " + this);
     if (receiver == null) {
@@ -228,10 +241,12 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_DESTROY, this);
   }
 
+  @Override
   public String getBindAddress() {
     return this.bindAdd;
   }
 
+  @Override
   public boolean isRunning() {
     if (this.receiver != null) {
       return this.receiver.isRunning();

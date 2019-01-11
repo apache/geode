@@ -33,10 +33,12 @@ public class Order implements DataSerializable {
     this.orderName = orderName + PRColocationDUnitTestHelper.getDefaultAddOnString();
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.orderName = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.orderName, out);
   }

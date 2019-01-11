@@ -28,6 +28,7 @@ public class QueryGeode10 extends Query {
     return singleton;
   }
 
+  @Override
   protected CollectionType getCollectionType(SelectResults selectResults) {
     return selectResults.getCollectionType();
   }

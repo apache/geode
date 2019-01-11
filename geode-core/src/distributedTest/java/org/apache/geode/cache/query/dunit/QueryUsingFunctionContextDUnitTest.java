@@ -158,6 +158,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
     Invoke.invokeInEveryVM(() -> QueryObserverHolder.reset());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
       }

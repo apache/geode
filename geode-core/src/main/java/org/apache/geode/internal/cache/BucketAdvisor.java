@@ -504,6 +504,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       }
       this.primaryElector = getBucket().getDistributionManager().getId();
       this.getBucket().getDistributionManager().getWaitingThreadPool().execute(new Runnable() {
+        @Override
         public void run() {
           getBucket().getPartitionedRegion().getRedundancyProvider()
               .finishIncompleteBucketCreation(getBucket().getId());
@@ -1763,6 +1764,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    */
   private InternalDistributedMember[] findPrimaryMembers() {
     Set primaryMembers = adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         assert profile instanceof BucketProfile;
         BucketProfile srp = (BucketProfile) profile;
@@ -1810,6 +1812,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   public Set<InternalDistributedMember> adviseInitialized() {
     return adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         assert profile instanceof BucketProfile;
         BucketProfile bucketProfile = (BucketProfile) profile;
@@ -2235,6 +2238,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   public Set adviseNotInitialized() {
     return adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         assert profile instanceof CacheProfile;
         CacheProfile cp = (CacheProfile) profile;
@@ -2470,6 +2474,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         boolean interrupted = Thread.interrupted();
         try {
           execute(new Runnable() {
+            @Override
             public void run() {
               doVolunteerForPrimary();
             }
@@ -2761,6 +2766,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
      */
     private Runnable consumeQueue() {
       return new Runnable() {
+        @Override
         public void run() {
           getPartitionedRegionStats().incVolunteeringThreads(1);
           boolean releaseSemaphore = true;

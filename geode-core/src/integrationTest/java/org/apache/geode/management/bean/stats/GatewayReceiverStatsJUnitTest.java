@@ -32,6 +32,7 @@ public class GatewayReceiverStatsJUnitTest extends MBeanStatsTestCase {
 
   private GatewayReceiverStats receiverStats;
 
+  @Override
   public void init() {
     receiverStats = GatewayReceiverStats.createGatewayReceiverStats("Test Sock Name");
 

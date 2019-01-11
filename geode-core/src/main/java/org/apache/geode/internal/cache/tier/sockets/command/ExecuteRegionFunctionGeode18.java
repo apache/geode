@@ -32,6 +32,7 @@ public class ExecuteRegionFunctionGeode18 extends ExecuteRegionFunction66 {
 
   private ExecuteRegionFunctionGeode18() {}
 
+  @Override
   void executeFunctionWithResult(Object function, byte functionState,
       Function<?> functionObject, AbstractExecution execution) {
     if (function instanceof String) {

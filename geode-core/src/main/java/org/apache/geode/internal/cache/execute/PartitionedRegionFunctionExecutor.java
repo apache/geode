@@ -208,6 +208,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     }
   }
 
+  @Override
   public ResultCollector executeFunction(final Function function) {
     if (function.hasResult()) {
       if (this.rc == null) {
@@ -222,6 +223,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     }
   }
 
+  @Override
   public Execution withFilter(Set filter) {
     if (filter == null) {
       throw new FunctionException(
@@ -233,6 +235,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
   }
 
 
+  @Override
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
@@ -277,10 +280,12 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     return new PartitionedRegionFunctionExecutor(this, args);
   }
 
+  @Override
   public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
+  @Override
   public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
@@ -290,6 +295,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     return new PartitionedRegionFunctionExecutor(this, rs);
   }
 
+  @Override
   public AbstractExecution setIsReExecute() {
     return new PartitionedRegionFunctionExecutor(this, true);
   }
@@ -298,6 +304,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     return this.isPRSingleHop;
   }
 
+  @Override
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(

@@ -45,6 +45,7 @@ public class ClientConnectionResponse extends ServerLocationResponse {
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.serverFound = DataSerializer.readPrimitiveBoolean(in);
     if (this.serverFound) {
@@ -53,6 +54,7 @@ public class ClientConnectionResponse extends ServerLocationResponse {
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     boolean serverFound = server != null;
     DataSerializer.writePrimitiveBoolean(serverFound, out);
@@ -70,6 +72,7 @@ public class ClientConnectionResponse extends ServerLocationResponse {
     return "ClientConnectionResponse{server=" + getServer() + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.CLIENT_CONNECTION_RESPONSE;
   }

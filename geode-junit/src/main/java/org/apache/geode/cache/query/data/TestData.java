@@ -39,6 +39,7 @@ public class TestData {
       this.value = value;
     }
 
+    @Override
     public int compareTo(MyValue o) {
       if (this.value > o.value) {
         return 1;

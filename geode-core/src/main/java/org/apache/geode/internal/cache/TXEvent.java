@@ -40,11 +40,13 @@ public class TXEvent implements TransactionEvent, Releasable {
     this.events = null;
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return this.localTxState.getTransactionId();
   }
 
 
+  @Override
   public synchronized List getEvents() {
     if (this.events == null) {
       this.events = this.localTxState.getEvents();
@@ -70,6 +72,7 @@ public class TXEvent implements TransactionEvent, Releasable {
     return true;
   }
 
+  @Override
   public Cache getCache() {
     return this.cache;
   }

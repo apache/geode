@@ -69,22 +69,27 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
   // Attributes accessors and mutators
   // -------------------------------------------------------------------------
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getDescription() {
     return this.description;
   }
 
+  @Override
   public String getType() {
     return this.type;
   }
 
+  @Override
   public String getOwner() {
     return this.member.toString();
   }
 
+  @Override
   public Statistic[] getStatistics() {
     if (this.statistics == null) {
       try {
@@ -96,6 +101,7 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
     return this.statistics;
   }
 
+  @Override
   public long getUniqueId() {
     return this.statResource.getResourceUniqueID();
   }
@@ -104,6 +110,7 @@ public class StatisticResourceImpl implements org.apache.geode.admin.StatisticRe
   // Operations
   // -------------------------------------------------------------------------
 
+  @Override
   public void refresh() throws org.apache.geode.admin.AdminException {
     Stat[] stats = null;
     if (this.statResource != null) {

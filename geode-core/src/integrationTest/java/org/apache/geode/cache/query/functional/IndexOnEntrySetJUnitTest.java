@@ -251,6 +251,7 @@ public class IndexOnEntrySetJUnitTest {
   class MyQueryObserverAdapter extends QueryObserverAdapter {
     public boolean indexUsed = false;
 
+    @Override
     public void afterIndexLookup(Collection results) {
       super.afterIndexLookup(results);
       indexUsed = true;
@@ -326,6 +327,7 @@ public class IndexOnEntrySetJUnitTest {
       this.r = r;
     }
 
+    @Override
     public void doOp() {
       Iterator it = r.entrySet().iterator();
       while (it.hasNext()) {
@@ -342,6 +344,7 @@ public class IndexOnEntrySetJUnitTest {
       this.r = r;
     }
 
+    @Override
     public void doOp() {
       Iterator it = r.entrySet().iterator();
       while (it.hasNext()) {
@@ -358,6 +361,7 @@ public class IndexOnEntrySetJUnitTest {
       this.r = r;
     }
 
+    @Override
     public void doOp() {
       Iterator it = r.entrySet().iterator();
       while (it.hasNext()) {

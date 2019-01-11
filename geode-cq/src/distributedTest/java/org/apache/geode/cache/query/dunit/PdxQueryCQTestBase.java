@@ -93,6 +93,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     for (int i = 0; i < 4; i++) {
       VM vm = host.getVM(i);
       vm.invoke(new CacheSerializableRunnable("Create cache server") {
+        @Override
         public void run2() throws CacheException {
           TestObject.numInstance = 0;
           PortfolioPdx.numInstance = 0;
@@ -121,6 +122,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
   public void createPool(VM vm, final String poolName, final String[] servers, final int[] ports,
       final boolean subscriptionEnabled, final int redundancy) {
     vm.invoke(new CacheSerializableRunnable("createPool :" + poolName) {
+      @Override
       public void run2() throws CacheException {
         // Create Cache.
         Properties props = new Properties();
@@ -143,6 +145,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
 
   public void executeClientQueries(VM vm, final String poolName, final String queryStr) {
     vm.invoke(new CacheSerializableRunnable("Execute queries") {
+      @Override
       public void run2() throws CacheException {
         SelectResults results = null;
         Comparator comparator = null;
@@ -294,6 +297,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
 
   public void closeClient(VM client) {
     SerializableRunnable closeCache = new CacheSerializableRunnable("Close Client") {
+      @Override
       public void run2() throws CacheException {
         org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### Close Client. ###");
         try {
@@ -326,10 +330,12 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
       return this._id;
     }
 
+    @Override
     public void toData(PdxWriter out) {
       out.writeInt("id", this._id);
     }
 
+    @Override
     public void fromData(PdxReader in) {
       this._id = in.readInt("id");
     }
@@ -421,6 +427,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
       return (id % 2 == 0) ? "active" : "inactive";
     }
 
+    @Override
     public void toData(PdxWriter out) {
       // System.out.println("Is serializing in WAN: " + GatewayEventImpl.isSerializingValue());
       out.writeInt("id", this.id);
@@ -431,6 +438,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
       out.writeObject("test", this.test);
     }
 
+    @Override
     public void fromData(PdxReader in) {
       // System.out.println("Is deserializing in WAN: " + GatewayEventImpl.isDeserializingValue());
       this.id = in.readInt("id");

@@ -146,6 +146,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
 
     // create some destroyed entries so the GC service is populated
     SerializableCallable create = new SerializableCallable("create region") {
+      @Override
       public Object call() {
         RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
         CCRegion = (LocalRegion) f.create(name);
@@ -159,6 +160,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
 
     AsyncInvocation partialCreate =
         vm2.invokeAsync(new SerializableCallable<Object>("create region with stall") {
+          @Override
           public Object call() {
             final GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
             RegionFactory f = cache.createRegionFactory(getRegionAttributes());
@@ -207,6 +209,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
           }
         });
     vm1.invoke(new SerializableRunnable("create conflicting events") {
+      @Override
       public void run() {
         // wait for the other to come on line
         long waitEnd = System.currentTimeMillis() + 45000;
@@ -307,6 +310,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
 
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+      @Override
       public void run() {
         try {
           RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
@@ -323,6 +327,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     vm0.invoke(createRegion);
     vm1.invoke(createRegion);
     vm1.invoke(new SerializableRunnable("Create local tombstone and adjust time") {
+      @Override
       public void run() {
         // make the entry for cckey0 a tombstone in this VM and set its modification time to be
         // older
@@ -346,6 +351,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     // new version number
     vm0.invoke(new SerializableRunnable(
         "Locally destroy the entry and do a create that will be propagated with v1") {
+      @Override
       public void run() {
         CCRegion.getRegionMap().removeEntry("cckey0", CCRegion.getRegionEntry("cckey0"), true);
         if (CCRegion.getRegionEntry("ckey0") != null) {
@@ -355,6 +361,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       }
     });
     vm1.invoke(new SerializableRunnable("Check that the create() was applied") {
+      @Override
       public void run() {
         RegionEntry entry = CCRegion.getRegionEntry("cckey0");
         assertThat(entry.getVersionStamp().getEntryVersion()).isEqualTo(1);
@@ -435,6 +442,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     final String name = this.getUniqueName() + "-CC";
     final int numEntries = 1;
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+      @Override
       public void run() {
         try {
           RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
@@ -466,6 +474,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
           .getNewProxyMembership(CCRegion.getDistributionManager().getSystem());
       CCRegion.basicBridgePut("cckey0", "newvalue", null, true, null, id, true, holder);
       vm0.invoke(new SerializableRunnable("check conflation count") {
+        @Override
         public void run() {
           // after changed the 3rd try of AUO.doPutOrCreate to be ifOld=false ifNew=false
           // ARM.updateEntry will be called one more time, so there will be 2 conflicted events

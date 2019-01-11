@@ -49,6 +49,7 @@ public class RegionStatisticsRequest extends RegionAdminRequest {
     return RegionStatisticsResponse.create(dm, this.getSender(), this.getRegion(dm.getSystem()));
   }
 
+  @Override
   public int getDSFID() {
     return REGION_STATISTICS_REQUEST;
   }

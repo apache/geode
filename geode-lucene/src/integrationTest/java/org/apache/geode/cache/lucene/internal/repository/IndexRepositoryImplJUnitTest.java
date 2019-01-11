@@ -328,6 +328,7 @@ public class IndexRepositoryImplJUnitTest {
       super(region, writer, serializer, stats, userRegion, lockService, lockName, index);
     }
 
+    @Override
     protected SearcherManager createSearchManager() throws IOException {
       return new SearcherManager(writer, true, true, null);
     }

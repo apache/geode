@@ -78,6 +78,7 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   public final void postTearDownCacheTestCase() throws Exception {
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
       }

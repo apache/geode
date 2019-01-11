@@ -101,6 +101,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   Collection<InternalRegion> getRegions();
 
+  @Override
   void invalidateExistingEntry(final EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry);
 
@@ -108,6 +109,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
    * @return a Region.Entry if it exists either in committed state or in transactional state,
    *         otherwise returns null
    */
+  @Override
   Entry getEntry(final KeyInfo keyInfo, final LocalRegion region, boolean allowTombstones);
 
   TXEvent getEvent();

@@ -29,22 +29,26 @@ public interface CacheServerConfig extends CacheVmConfig {
    * Returns the <code>cache.xml</code> declarative caching initialization file used to configure
    * this cache server VM. By default, a cache server VM is started without an XML file.
    */
+  @Override
   String getCacheXMLFile();
 
   /**
    * Sets the <code>cache.xml</code> declarative caching initialization file used to configure this
    * cache server VM.
    */
+  @Override
   void setCacheXMLFile(String cacheXml);
 
   /**
    * Returns the location(s) of user classes (such as cache loaders) required by the cache server
    * VM.
    */
+  @Override
   String getClassPath();
 
   /**
    * Sets the location(s) of user classes (such as cache loaders) required by the cache server VM.
    */
+  @Override
   void setClassPath(String classpath);
 }

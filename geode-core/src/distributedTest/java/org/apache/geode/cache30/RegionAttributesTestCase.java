@@ -63,6 +63,7 @@ public abstract class RegionAttributesTestCase extends RegionTestCase {
       sb.append("CustomExpiry from: <");
       OutputStream os = new OutputStream() {
 
+        @Override
         public void write(int b) throws IOException {
           sb.append((char) b);
         }
@@ -73,12 +74,15 @@ public abstract class RegionAttributesTestCase extends RegionTestCase {
       return sb.toString();
     }
 
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       return null;
     }
 
+    @Override
     public void init(Properties props) {}
 
+    @Override
     public void close() {}
   }
   // ///////////////////// Test Methods ///////////////////////
@@ -96,6 +100,7 @@ public abstract class RegionAttributesTestCase extends RegionTestCase {
 
     CacheListener listener = new TestCacheListener() {};
     CacheLoader loader = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) {
         fail("Why was I invoked?");
         return null;
@@ -136,6 +141,7 @@ public abstract class RegionAttributesTestCase extends RegionTestCase {
 
     CacheListener listener2 = new TestCacheListener() {};
     CacheLoader loader2 = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) {
         fail("Why was I invoked?");
         return null;

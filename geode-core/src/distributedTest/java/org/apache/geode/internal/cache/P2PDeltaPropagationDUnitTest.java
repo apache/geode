@@ -436,6 +436,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     if (listener) {
       factory.addCacheListener(new CacheListenerAdapter() {
+        @Override
         @SuppressWarnings("synthetic-access")
         public void afterUpdate(EntryEvent event) {
           numOfUpdates++;

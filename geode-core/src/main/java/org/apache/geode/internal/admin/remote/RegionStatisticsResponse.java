@@ -50,6 +50,7 @@ public class RegionStatisticsResponse extends AdminResponse {
     return this.regionStatistics;
   }
 
+  @Override
   public int getDSFID() {
     return REGION_STATISTICS_RESPONSE;
   }

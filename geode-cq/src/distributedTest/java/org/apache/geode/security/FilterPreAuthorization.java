@@ -63,12 +63,14 @@ public class FilterPreAuthorization implements AccessControl {
     return new FilterPreAuthorization();
   }
 
+  @Override
   public void init(Principal principal, DistributedMember remoteMember, Cache cache)
       throws NotAuthorizedException {
 
     this.logger = cache.getSecurityLogger();
   }
 
+  @Override
   public boolean authorizeOperation(String regionName, OperationContext context) {
 
     assert !context.isPostOperation();
@@ -139,6 +141,7 @@ public class FilterPreAuthorization implements AccessControl {
     return true;
   }
 
+  @Override
   public void close() {}
 
 }

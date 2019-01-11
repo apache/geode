@@ -117,6 +117,7 @@ public class CompactRangeIndex extends AbstractIndex {
    *
    * @return the type of index
    */
+  @Override
   public IndexType getType() {
     return IndexType.FUNCTIONAL;
   }
@@ -135,6 +136,7 @@ public class CompactRangeIndex extends AbstractIndex {
     this.internalIndexStats.incUpdateTime(endTime - startTime);
   }
 
+  @Override
   void addMapping(RegionEntry entry) throws IMQException {
     this.evaluator.evaluate(entry, true);
     this.internalIndexStats.incNumUpdates();
@@ -143,6 +145,7 @@ public class CompactRangeIndex extends AbstractIndex {
   /**
    * @param opCode one of OTHER_OP, BEFORE_UPDATE_OP, AFTER_UPDATE_OP.
    */
+  @Override
   void removeMapping(RegionEntry entry, int opCode) throws IMQException {
     if (opCode == BEFORE_UPDATE_OP) {
       // Either take key from reverse map OR evaluate it using IMQEvaluator.
@@ -183,11 +186,13 @@ public class CompactRangeIndex extends AbstractIndex {
     indexStore.removeMapping(key, entry);
   }
 
+  @Override
   public boolean clear() {
     return indexStore.clear();
   }
 
 
+  @Override
   public List queryEquijoinCondition(IndexProtocol indx, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
       QueryInvocationTargetException {
@@ -297,6 +302,7 @@ public class CompactRangeIndex extends AbstractIndex {
     return evaluateEntry(indexInfo, context, keyVal);
   }
 
+  @Override
   public int getSizeEstimate(Object key, int operator, int matchLevel)
       throws TypeMismatchException {
     // Get approx size;
@@ -489,6 +495,7 @@ public class CompactRangeIndex extends AbstractIndex {
   }
 
   /** Method called while appropriate lock held on index */
+  @Override
   void lockedQuery(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
       int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
       throws TypeMismatchException, FunctionDomainException, NameResolutionException,
@@ -691,6 +698,7 @@ public class CompactRangeIndex extends AbstractIndex {
     ((IMQEvaluator) this.evaluator).indexResultSetType = objectType;
   }
 
+  @Override
   public ObjectType getResultSetType() {
     return this.evaluator.getIndexResultSetType();
   }
@@ -935,6 +943,7 @@ public class CompactRangeIndex extends AbstractIndex {
     }
   }
 
+  @Override
   void recreateIndexData() throws IMQException {
     indexStore.clear();
     int numKeys = (int) this.internalIndexStats.getNumberOfKeys();
@@ -956,6 +965,7 @@ public class CompactRangeIndex extends AbstractIndex {
     return this.indexStore.printAll();
   }
 
+  @Override
   protected InternalIndexStatistics createStats(String indexName) {
     return new RangeIndexStatistics(indexName);
   }
@@ -970,50 +980,62 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * Return the total number of times this index has been updated
      */
+    @Override
     public long getNumUpdates() {
       return this.vsdStats.getNumUpdates();
     }
 
+    @Override
     public void incNumValues(int delta) {
       this.vsdStats.incNumValues(delta);
     }
 
+    @Override
     public void incNumUpdates() {
       this.vsdStats.incNumUpdates();
     }
 
+    @Override
     public void incNumUpdates(int delta) {
       this.vsdStats.incNumUpdates(delta);
     }
 
+    @Override
     public void updateNumKeys(long numKeys) {
       this.vsdStats.updateNumKeys(numKeys);
     }
 
+    @Override
     public void incNumKeys(long numKeys) {
       this.vsdStats.incNumKeys(numKeys);
     }
 
+    @Override
     public void incUpdateTime(long delta) {
       this.vsdStats.incUpdateTime(delta);
     }
 
+    @Override
     public void incUpdatesInProgress(int delta) {
       this.vsdStats.incUpdatesInProgress(delta);
     }
 
+    @Override
     public void incNumUses() {
       this.vsdStats.incNumUses();
     }
 
+    @Override
     public void incUseTime(long delta) {
       this.vsdStats.incUseTime(delta);
     }
 
+    @Override
     public void incUsesInProgress(int delta) {
       this.vsdStats.incUsesInProgress(delta);
     }
 
+    @Override
     public void incReadLockCount(int delta) {
       this.vsdStats.incReadLockCount(delta);
     }
@@ -1021,6 +1043,7 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * Returns the total amount of time (in nanoseconds) spent updating this index.
      */
+    @Override
     public long getTotalUpdateTime() {
       return this.vsdStats.getTotalUpdateTime();
     }
@@ -1028,6 +1051,7 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * Returns the total number of times this index has been accessed by a query.
      */
+    @Override
     public long getTotalUses() {
       return this.vsdStats.getTotalUses();
     }
@@ -1035,6 +1059,7 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * Returns the number of keys in this index.
      */
+    @Override
     public long getNumberOfKeys() {
       return this.vsdStats.getNumberOfKeys();
     }
@@ -1042,6 +1067,7 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * Returns the number of values in this index.
      */
+    @Override
     public long getNumberOfValues() {
       return this.vsdStats.getNumberOfValues();
     }
@@ -1049,6 +1075,7 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * Return the number of values for the specified key in this index.
      */
+    @Override
     public long getNumberOfValues(Object key) {
       return indexStore.size(key);
     }
@@ -1056,10 +1083,12 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * Return the number of read locks taken on this index
      */
+    @Override
     public int getReadLockCount() {
       return this.vsdStats.getReadLockCount();
     }
 
+    @Override
     public void close() {
       this.vsdStats.close();
     }
@@ -1151,18 +1180,22 @@ public class CompactRangeIndex extends AbstractIndex {
       }
     }
 
+    @Override
     public String getIndexedExpression() {
       return CompactRangeIndex.this.getCanonicalizedIndexedExpression();
     }
 
+    @Override
     public String getProjectionAttributes() {
       return CompactRangeIndex.this.getCanonicalizedProjectionAttributes();
     }
 
+    @Override
     public String getFromClause() {
       return CompactRangeIndex.this.getCanonicalizedFromClause();
     }
 
+    @Override
     public void expansion(List expandedResults, Object lowerBoundKey, Object upperBoundKey,
         int lowerBoundOperator, int upperBoundOperator, Object value) throws IMQException {
       try {
@@ -1323,6 +1356,7 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * @param add true if adding to index, false if removing
      */
+    @Override
     public void evaluate(RegionEntry target, boolean add) throws IMQException {
       assert !target.isInvalid() : "value in RegionEntry should not be INVALID";
       DummyQRegion dQRegion = new DummyQRegion(rgn);
@@ -1379,6 +1413,7 @@ public class CompactRangeIndex extends AbstractIndex {
     /**
      * This function is used for creating Index data at the start
      */
+    @Override
     public void initializeIndex(boolean loadEntries) throws IMQException {
       this.initEntriesUpdated = 0;
       try {
@@ -1584,15 +1619,18 @@ public class CompactRangeIndex extends AbstractIndex {
       return this.initEntriesUpdated;
     }
 
+    @Override
     public ObjectType getIndexResultSetType() {
       return this.indexResultSetType;
     }
 
+    @Override
     public List getAllDependentIterators() {
       return fromIterators;
     }
   }
 
+  @Override
   void lockedQuery(Object key, int operator, Collection results, CompiledValue iterOps,
       RuntimeIterator indpndntItr, ExecutionContext context, List projAttrib,
       SelectResults intermediateResults, boolean isIntersection) throws TypeMismatchException,
@@ -1601,6 +1639,7 @@ public class CompactRangeIndex extends AbstractIndex {
         intermediateResults, isIntersection);
   }
 
+  @Override
   void lockedQuery(Object key, int operator, Collection results, Set keysToRemove,
       ExecutionContext context) throws TypeMismatchException, FunctionDomainException,
       NameResolutionException, QueryInvocationTargetException {
@@ -1623,6 +1662,7 @@ public class CompactRangeIndex extends AbstractIndex {
     // TODO Auto-generated method stub
   }
 
+  @Override
   public boolean isEmpty() {
     return indexStore.size() == 0 ? true : false;
   }

@@ -555,6 +555,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
     log.info(stats_ForSameKeyputs);
   }
 
+  @Override
   protected void deleteFiles() {
     for (int i = 0; i < 4; i++) {
       File[] files = dirs[i].listFiles();

@@ -133,6 +133,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
   private static final byte IDENTITY_BIT = 1;
   private static final byte DELETED_BIT = 2;
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.fieldName = DataSerializer.readString(in);
     this.fieldIndex = in.readInt();
@@ -147,6 +148,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.fieldName, out);
     out.writeInt(this.fieldIndex);
@@ -230,6 +232,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
     return getFieldType().toString();
   }
 
+  @Override
   public int compareTo(PdxField o) {
     return getFieldName().compareTo(o.getFieldName());
   }

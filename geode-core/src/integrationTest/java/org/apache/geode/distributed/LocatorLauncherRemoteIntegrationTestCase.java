@@ -107,6 +107,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
     assertThat(process.isAlive()).isFalse();
   }
 
+  @Override
   protected LocatorLauncher givenRunningLocator() {
     return givenRunningLocator(new LocatorCommand(this).withCommand(Command.START));
   }

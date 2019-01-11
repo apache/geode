@@ -33,6 +33,7 @@ public class ClusterMemberIdNameConverter extends BaseStringConverter {
     return ConverterHint.ALL_MEMBER_IDNAME;
   }
 
+  @Override
   public Set<String> getCompletionValues() {
     final Set<String> memberIdsAndNames = new TreeSet<String>();
 

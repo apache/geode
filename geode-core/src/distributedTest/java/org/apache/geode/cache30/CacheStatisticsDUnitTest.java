@@ -330,6 +330,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     final Object value = "VALUE";
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -347,6 +348,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Define entry") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         // region.create(key, null);
@@ -364,6 +366,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Net search") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Object result = region.get(key);
@@ -377,6 +380,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm0.invoke(new CacheSerializableRunnable("Verify stats") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         CacheStatistics stats = region.getEntry(key).getStatistics();
@@ -394,6 +398,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     Wait.pause(100);
 
     vm1.invoke(new CacheSerializableRunnable("Update") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         // assertNull(region.getEntry(key));
@@ -408,6 +413,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     final long errorMargin = 50;
 
     vm0.invoke(new CacheSerializableRunnable("Verify stats") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         CacheStatistics stats = region.getEntry(key).getStatistics();
@@ -429,12 +435,14 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Invalidate") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         region.invalidate(key);
       }
     });
     vm0.invoke(new CacheSerializableRunnable("Verify stats") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         CacheStatistics stats = region.getEntry(key).getStatistics();
@@ -445,12 +453,14 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
       }
     });
     vm1.invoke(new CacheSerializableRunnable("Destroy Entry") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         region.destroy(key);
       }
     });
     vm0.invoke(new CacheSerializableRunnable("Verify region stats") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         CacheStatistics stats = region.getStatistics();

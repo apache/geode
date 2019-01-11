@@ -48,6 +48,7 @@ public class RequestEventValue extends BaseCommand {
 
   private RequestEventValue() {}
 
+  @Override
   public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
       final SecurityService securityService, long start) throws IOException {
     Part eventIDPart = null, valuePart = null;

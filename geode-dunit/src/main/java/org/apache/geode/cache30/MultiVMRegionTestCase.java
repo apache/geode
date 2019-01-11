@@ -5736,6 +5736,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
         getSystem().getLogWriter().info("testTXSimpleOps: Create/Put Value");
         invokeInEveryVM(new SerializableRunnable() {
+          @Override
           public void run() {
             assertCacheCallbackEvents(rgnName, txId, "key", null, "value");
           }
@@ -5797,6 +5798,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         txMgr.commit();
         getSystem().getLogWriter().info("testTXSimpleOps: Put(update) Value2");
         invokeInEveryVM(new SerializableRunnable() {
+          @Override
           public void run() {
             assertCacheCallbackEvents(rgnName, txId, "key", "value", "value2");
           }
@@ -5848,6 +5850,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         getSystem().getLogWriter().info("testTXSimpleOps: invalidate key");
         // validate each of the CacheListeners EntryEvents
         invokeInEveryVM(new SerializableRunnable() {
+          @Override
           public void run() {
             assertCacheCallbackEvents(rgnName, txId, "key", "value2", null);
           }
@@ -5901,6 +5904,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         getSystem().getLogWriter().info("testTXSimpleOps: destroy key");
         // validate each of the CacheListeners EntryEvents
         invokeInEveryVM(new SerializableRunnable() {
+          @Override
           public void run() {
             assertCacheCallbackEvents(rgnName, txId, "key", null, null);
           }

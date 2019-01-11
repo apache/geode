@@ -34,6 +34,7 @@ public abstract class VMThinRegionEntryHeap extends VMThinRegionEntry {
   }
 
   private static class VMThinRegionEntryHeapFactory implements RegionEntryFactory {
+    @Override
     public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
@@ -59,12 +60,14 @@ public abstract class VMThinRegionEntryHeap extends VMThinRegionEntry {
       return new VMThinRegionEntryHeapObjectKey(context, key, value);
     }
 
+    @Override
     public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VMThinRegionEntryHeapObjectKey.class;
     }
 
+    @Override
     public RegionEntryFactory makeVersioned() {
       return VersionedThinRegionEntryHeap.getEntryFactory();
     }

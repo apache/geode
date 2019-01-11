@@ -180,10 +180,12 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     return new Iterator() {
       int position = 0;
 
+      @Override
       public boolean hasNext() {
         return DistributedPutAllOperation.this.putAllDataSize > position;
       };
 
+      @Override
       @Unretained
       public Object next() {
         @Unretained
@@ -192,6 +194,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
         return ev;
       };
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       };
@@ -1172,6 +1175,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       }
 
       rgn.syncBulkOp(new Runnable() {
+        @Override
         public void run() {
           final boolean isDebugEnabled = logger.isDebugEnabled();
           for (int i = 0; i < putAllDataSize; ++i) {
@@ -1186,6 +1190,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       }, ev.getEventId());
     }
 
+    @Override
     public int getDSFID() {
       return PUT_ALL_MESSAGE;
     }

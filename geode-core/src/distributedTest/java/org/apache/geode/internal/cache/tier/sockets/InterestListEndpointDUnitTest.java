@@ -177,6 +177,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     // do two dumb puts, which will ensure that fail over happens from the
     // interest list end point in case Live ServerMonitor is not working
     client1.invoke(new CacheSerializableRunnable("Ensure that the failover from ILEP occurs") {
+      @Override
       public void run2() throws CacheException {
         Region r = cache.getRegion("/" + REGION_NAME);
 
@@ -198,10 +199,12 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
         }
 
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             return pool.getConnectedServerCount() != 2;
           }
 
+          @Override
           public String description() {
             return null;
           }
@@ -423,6 +426,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
       final Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           Entry e1 = r.getEntry(k1);
           if (e1 == null)
@@ -440,6 +444,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
           return true;
         }
 
+        @Override
         public String description() {
           Entry e1 = r.getEntry(k1);
           if (e1 == null)
@@ -485,6 +490,7 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
       }

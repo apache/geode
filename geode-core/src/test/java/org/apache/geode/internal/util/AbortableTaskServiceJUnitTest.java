@@ -179,6 +179,7 @@ public class AbortableTaskServiceJUnitTest {
     public Object invoke(final Object proxy, final Method method, final Object[] args)
         throws Throwable {
       this.async.execute(new Runnable() {
+        @Override
         public void run() {
           try {
             if (method.getName().equals(methodName)) {

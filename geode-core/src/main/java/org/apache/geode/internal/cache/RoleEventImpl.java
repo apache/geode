@@ -59,6 +59,7 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent, DataSer
     this.requiredRoles = Collections.unmodifiableSet(requiredRoles);
   }
 
+  @Override
   public Set getRequiredRoles() {
     return this.requiredRoles; // already unmodifiableSet
   }

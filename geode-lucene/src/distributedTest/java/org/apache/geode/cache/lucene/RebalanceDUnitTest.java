@@ -53,6 +53,7 @@ public class RebalanceDUnitTest extends LuceneQueriesAccessorBase {
     removeCallback(dataStore2);
   }
 
+  @Override
   protected RegionTestableType[] getListOfRegionTestTypes() {
     return new RegionTestableType[] {RegionTestableType.PARTITION,
         RegionTestableType.PARTITION_OVERFLOW_TO_DISK};

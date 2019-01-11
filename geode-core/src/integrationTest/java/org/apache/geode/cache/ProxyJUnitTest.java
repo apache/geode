@@ -151,26 +151,32 @@ public class ProxyJUnitTest {
       assertEquals(isDistributed(), other.getOperation().isDistributed());
     }
 
+    @Override
     public Region getRegion() {
       return this.r;
     }
 
+    @Override
     public Operation getOperation() {
       return this.op;
     }
 
+    @Override
     public Object getCallbackArgument() {
       return this.cbArg;
     }
 
+    @Override
     public boolean isCallbackArgumentAvailable() {
       return true;
     }
 
+    @Override
     public boolean isOriginRemote() {
       return false;
     }
 
+    @Override
     public DistributedMember getDistributedMember() {
       return c.getDistributedSystem().getDistributedMember();
     }
@@ -201,20 +207,24 @@ public class ProxyJUnitTest {
 
     public Object key;
 
+    @Override
     public Object getKey() {
       return this.key;
     }
 
+    @Override
     public Object getOldValue() {
       return null;
     }
 
+    @Override
     public boolean isOldValueAvailable() {
       return true;
     }
 
     public Object newValue;
 
+    @Override
     public Object getNewValue() {
       return this.newValue;
     }
@@ -237,6 +247,7 @@ public class ProxyJUnitTest {
 
     public TransactionId txId;
 
+    @Override
     public TransactionId getTransactionId() {
       return this.txId;
     }
@@ -245,6 +256,7 @@ public class ProxyJUnitTest {
       return hasClientOrigin();
     }
 
+    @Override
     public boolean hasClientOrigin() {
       return false;
     }
@@ -254,10 +266,12 @@ public class ProxyJUnitTest {
       return null;
     }
 
+    @Override
     public SerializedCacheValue getSerializedOldValue() {
       return null;
     }
 
+    @Override
     public SerializedCacheValue getSerializedNewValue() {
       return null;
     }
@@ -271,6 +285,7 @@ public class ProxyJUnitTest {
       assertEquals(isReinitializing(), other.isReinitializing());
     }
 
+    @Override
     public boolean isReinitializing() {
       return false;
     }
@@ -336,81 +351,97 @@ public class ProxyJUnitTest {
 
   private void setCallbacks(AttributesFactory af) {
     CacheListener cl1 = new CacheListener() {
+      @Override
       public void afterUpdate(EntryEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void afterCreate(EntryEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void afterInvalidate(EntryEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void afterDestroy(EntryEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void afterRegionInvalidate(RegionEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void afterRegionDestroy(RegionEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void afterRegionClear(RegionEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void afterRegionCreate(RegionEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void afterRegionLive(RegionEvent e) {
         clLastEvent = e;
         clInvokeCount++;
       }
 
+      @Override
       public void close() {
         clClosed = true;
       }
     };
     CacheWriter cw = new CacheWriter() {
+      @Override
       public void beforeUpdate(EntryEvent e) throws CacheWriterException {
         cwLastEvent = e;
         cwInvokeCount++;
       }
 
+      @Override
       public void beforeCreate(EntryEvent e) throws CacheWriterException {
         cwLastEvent = e;
         cwInvokeCount++;
       }
 
+      @Override
       public void beforeDestroy(EntryEvent e) throws CacheWriterException {
         cwLastEvent = e;
         cwInvokeCount++;
       }
 
+      @Override
       public void beforeRegionDestroy(RegionEvent e) throws CacheWriterException {
         cwLastEvent = e;
         cwInvokeCount++;
       }
 
+      @Override
       public void beforeRegionClear(RegionEvent e) throws CacheWriterException {
         cwLastEvent = e;
         cwInvokeCount++;
       }
 
+      @Override
       public void close() {
         cwClosed = true;
       }
@@ -419,11 +450,13 @@ public class ProxyJUnitTest {
     af.setCacheWriter(cw);
     {
       TransactionListener tl = new TransactionListenerAdapter() {
+        @Override
         public void afterCommit(TransactionEvent e) {
           tlLastEvents = e.getEvents();
           tlInvokeCount++;
         }
 
+        @Override
         public void close() {
           tlClosed = true;
         };
@@ -763,10 +796,12 @@ public class ProxyJUnitTest {
     // check to see if a local loader works
     {
       CacheLoader cl = new CacheLoader() {
+        @Override
         public Object load(LoaderHelper helper) throws CacheLoaderException {
           return "loadedValue";
         }
 
+        @Override
         public void close() {}
       };
       r.getAttributesMutator().setCacheLoader(cl);
@@ -1023,6 +1058,7 @@ public class ProxyJUnitTest {
     AttributesFactory af = new AttributesFactory();
     af.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(1));
     CacheListener cl1 = new CacheListenerAdapter() {
+      @Override
       public void afterDestroy(EntryEvent e) {
         clInvokeCount++;
       }

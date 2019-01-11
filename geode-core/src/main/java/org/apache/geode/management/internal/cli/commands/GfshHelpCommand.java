@@ -29,6 +29,7 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 public class GfshHelpCommand extends InternalGfshCommand implements CommandManagerAware {
   private CommandManager commandManager = null;
 
+  @Override
   public void setCommandManager(CommandManager commandManager) {
     this.commandManager = commandManager;
   }

@@ -81,6 +81,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     super(initialCapacity);
   }
 
+  @Override
   public void setElementType(ObjectType elementType) {
     if (elementType instanceof StructType)
       throw new IllegalArgumentException(
@@ -107,31 +108,38 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     return this.elementType.hashCode();
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(Set.class, this.elementType);
   }
 
+  @Override
   public boolean isModifiable() {
     return true;
   }
 
+  @Override
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
 
 
+  @Override
   public int getDSFID() {
     return RESULTS_SET;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     ObjectTypeImpl clt = new ObjectTypeImpl();
@@ -142,6 +150,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(size());
     ObjectTypeImpl ctImpl = (ObjectTypeImpl) this.getCollectionType().getElementType();

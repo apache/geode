@@ -91,6 +91,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     initManagement(false);
     VM client = managedNodeList.get(2);
     client.invokeAsync(new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         SimpleWaitFunction<Boolean> simpleWaitFunction = new SimpleWaitFunction();
@@ -107,6 +108,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     assertTrue(numOfRunningFunctions > 0);
 
     client.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         SimpleWaitFunction.clearLatch();
       }

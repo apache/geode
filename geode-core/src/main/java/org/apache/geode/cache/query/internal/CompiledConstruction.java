@@ -50,10 +50,12 @@ public class CompiledConstruction extends AbstractCompiledValue {
   }
 
 
+  @Override
   public int getType() {
     return CONSTRUCTION;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     // we only support ResultsSet now

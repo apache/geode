@@ -54,6 +54,7 @@ public interface JSONWrapper extends Comparable<JSONWrapper> {
       this.jsonDocument = jsonDocument;
     }
 
+    @Override
     public String getJSON() {
       return jsonDocument;
     }

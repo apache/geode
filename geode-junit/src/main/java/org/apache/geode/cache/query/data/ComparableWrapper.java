@@ -41,6 +41,7 @@ public class ComparableWrapper implements Comparable, Serializable {
     return val;
   }
 
+  @Override
   public int compareTo(Object obj) {
     if (!(obj instanceof ComparableWrapper)) {
       throw new ClassCastException(

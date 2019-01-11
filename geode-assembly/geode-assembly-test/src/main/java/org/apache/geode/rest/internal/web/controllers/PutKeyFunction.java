@@ -30,6 +30,7 @@ public class PutKeyFunction implements Function {
 
   private static final String ID = "PutKeyFunction";
 
+  @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext regionContext = (RegionFunctionContext) context;
     Region dataSet = regionContext.getDataSet();
@@ -39,20 +40,24 @@ public class PutKeyFunction implements Function {
     context.getResultSender().lastResult(Boolean.TRUE);
   }
 
+  @Override
   public String getId() {
     return ID;
   }
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
   public void init(Properties p) {}
 
+  @Override
   public boolean optimizeForWrite() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     return true;
   }

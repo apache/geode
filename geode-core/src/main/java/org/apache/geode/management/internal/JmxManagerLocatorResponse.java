@@ -46,6 +46,7 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
 
   public JmxManagerLocatorResponse() {}
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.host = DataSerializer.readString(in);
     this.port = DataSerializer.readPrimitiveInt(in);
@@ -53,6 +54,7 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
     this.ex = DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.host, out);
     DataSerializer.writePrimitiveInt(this.port, out);
@@ -60,6 +62,7 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
     DataSerializer.writeObject(this.ex, out);
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.JMX_MANAGER_LOCATOR_RESPONSE;
   }

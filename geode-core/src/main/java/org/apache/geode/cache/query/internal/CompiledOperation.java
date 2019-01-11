@@ -78,6 +78,7 @@ public class CompiledOperation extends AbstractCompiledValue {
   }
 
 
+  @Override
   public int getType() {
     return METHOD_INV;
   }
@@ -104,6 +105,7 @@ public class CompiledOperation extends AbstractCompiledValue {
     return this.getReceiver(null);
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     CompiledValue rcvr = getReceiver(context);

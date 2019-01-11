@@ -2558,6 +2558,7 @@ public class DLockService extends DistributedLockService {
           return "Disconnect listener for DistributedLockService";
         }
 
+        @Override
         public void onDisconnect(final InternalDistributedSystem sys) {
           final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
           if (isDebugEnabled_DLS) {
@@ -2966,12 +2967,15 @@ public class DLockService extends DistributedLockService {
       return 15325;
     }
 
+    @Override
     public int getDSFID() {
       return SUSPEND_LOCKING_TOKEN;
     }
 
+    @Override
     public void fromData(DataInput in) {}
 
+    @Override
     public void toData(DataOutput out) {}
 
     @Override

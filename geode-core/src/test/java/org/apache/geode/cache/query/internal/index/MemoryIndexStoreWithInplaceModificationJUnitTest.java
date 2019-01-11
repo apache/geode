@@ -25,10 +25,12 @@ import org.apache.geode.internal.cache.LocalRegion;
 
 public class MemoryIndexStoreWithInplaceModificationJUnitTest extends MemoryIndexStoreJUnitTest {
 
+  @Override
   public void subclassPreSetup() {
     IndexManager.INPLACE_OBJECT_MODIFICATION_FOR_TEST = true;
   }
 
+  @Override
   protected Region createRegion() {
     Region region = mock(LocalRegion.class);
     RegionAttributes ra = mock(RegionAttributes.class);

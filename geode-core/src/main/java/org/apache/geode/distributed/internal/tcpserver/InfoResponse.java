@@ -42,10 +42,12 @@ public class InfoResponse implements DataSerializable {
     return info;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     info = DataSerializer.readStringArray(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeStringArray(info, out);
   }

@@ -27,9 +27,11 @@ public class AuthInitializer implements AuthInitialize {
     return new AuthInitializer();
   }
 
+  @Override
   public void init(LogWriter systemLogger, LogWriter securityLogger)
       throws AuthenticationFailedException {}
 
+  @Override
   public Properties getCredentials(Properties p, DistributedMember server, boolean isPeer)
       throws AuthenticationFailedException {
     p.put("UserName", "bruce");
@@ -37,5 +39,6 @@ public class AuthInitializer implements AuthInitialize {
     return p;
   }
 
+  @Override
   public void close() {}
 }

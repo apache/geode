@@ -225,6 +225,7 @@ public class LimitClauseJUnitTest {
       final int[] num = new int[1];
       num[0] = 0;
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterIterationEvaluation(Object result) {
           num[0] += 1;
         }
@@ -262,6 +263,7 @@ public class LimitClauseJUnitTest {
       final int[] num = new int[1];
       num[0] = 0;
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterIterationEvaluation(Object result) {
           num[0] += 1;
         }
@@ -310,10 +312,12 @@ public class LimitClauseJUnitTest {
       // consecutive order & hence only 5 iterations will yield the
       // result
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterIterationEvaluation(Object result) {
           num[0] += 1;
         }
 
+        @Override
         public void beforeIterationEvaluation(CompiledValue ritr, Object currObject) {
           if (data.contains(currObject)) {
             numRepeat[0] += 1;
@@ -368,10 +372,12 @@ public class LimitClauseJUnitTest {
       numRepeat[0] = 0;
       final Set data = new HashSet();
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterIterationEvaluation(Object result) {
           num[0] += 1;
         }
 
+        @Override
         public void beforeIterationEvaluation(CompiledValue ritr, Object currObject) {
           if (data.contains(currObject)) {
             numRepeat[0] += 1;
@@ -416,6 +422,7 @@ public class LimitClauseJUnitTest {
       final int[] num = new int[1];
       num[0] = 0;
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterIterationEvaluation(Object result) {
           num[0] += 1;
         }
@@ -452,6 +459,7 @@ public class LimitClauseJUnitTest {
       final int[] num = new int[1];
       num[0] = 0;
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterIterationEvaluation(Object result) {
           num[0] += 1;
         }
@@ -534,10 +542,12 @@ public class LimitClauseJUnitTest {
       final Set data = new HashSet();
 
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterIterationEvaluation(Object result) {
           num[0] += 1;
         }
 
+        @Override
         public void beforeIterationEvaluation(CompiledValue ritr, Object currObject) {
           if (data.contains(currObject)) {
             numRepeat[0] += 1;
@@ -591,10 +601,12 @@ public class LimitClauseJUnitTest {
       numRepeat[0] = 0;
       final Set data = new HashSet();
       QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterIterationEvaluation(Object result) {
           num[0] += 1;
         }
 
+        @Override
         public void beforeIterationEvaluation(CompiledValue ritr, Object currObject) {
           if (data.contains(currObject)) {
             numRepeat[0] += 1;
@@ -1752,11 +1764,13 @@ public class LimitClauseJUnitTest {
     public String indexName;
     public boolean indexUsed = false;
 
+    @Override
     public void limitAppliedAtIndexLevel(Index index, int limit, Collection indexResult) {
       this.limitAppliedAtIndex = true;
       this.indexName = index.getName();
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         indexUsed = true;

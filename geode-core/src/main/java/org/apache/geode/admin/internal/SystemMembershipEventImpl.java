@@ -40,10 +40,12 @@ public class SystemMembershipEventImpl implements SystemMembershipEvent {
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public String getMemberId() {
     return this.id.toString();
   }
 
+  @Override
   public DistributedMember getDistributedMember() {
     return this.id;
   }

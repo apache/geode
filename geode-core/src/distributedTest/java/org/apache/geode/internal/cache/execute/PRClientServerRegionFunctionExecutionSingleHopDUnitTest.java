@@ -492,6 +492,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
+      @Override
       public boolean done() {
         int sz = pool.getConnectedServerCount();
         LogWriterUtils.getLogWriter().info("Checking for the Live Servers : Expected  : "
@@ -503,6 +504,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
         return false;
       }
 
+      @Override
       public String description() {
         return excuse;
       }

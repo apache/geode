@@ -177,6 +177,7 @@ public class IndexCreationInternalsJUnitTest {
           name.equals("index_iter1"));
 
       Thread th1 = new Thread(new Runnable() {
+        @Override
         public void run() {
           IndexCreationInternalsJUnitTest.this.childThreadName1 =
               imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1");
@@ -185,6 +186,7 @@ public class IndexCreationInternalsJUnitTest {
       });
 
       Thread th2 = new Thread(new Runnable() {
+        @Override
         public void run() {
           IndexCreationInternalsJUnitTest.this.childThreadName2 =
               imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1");

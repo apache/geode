@@ -49,6 +49,7 @@ public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     // connect to distributed system in every VM
     Invoke.invokeInEveryVM(new SerializableRunnable("DistributionAdvisorDUnitTest: SetUp") {
+      @Override
       public void run() {
         getSystem();
       }

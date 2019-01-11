@@ -40,6 +40,7 @@ import org.apache.geode.test.fake.Fakes;
 
 public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryManagerJUnitTest {
 
+  @Override
   @Before
   public void setUp() {
     cache = Fakes.cache();
@@ -52,6 +53,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     createIndexAndRepoManager();
   }
 
+  @Override
   @After
   public void tearDown() {
     ((RawLuceneRepositoryManager) repoManager).close();
@@ -101,6 +103,7 @@ public class RawLuceneRepositoryManagerJUnitTest extends PartitionedRepositoryMa
     return mockBucket;
   }
 
+  @Override
   @Test
   public void createMissingBucket() throws BucketNotFoundException {
     setUpMockBucket(0);

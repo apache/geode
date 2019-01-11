@@ -1573,6 +1573,7 @@ public class AbstractRegionMapTest {
       return 0;
     }
 
+    @Override
     public VersionSource getMemberID() {
       return versionSource;
     }

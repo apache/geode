@@ -70,6 +70,7 @@ public abstract class SqlDatabaseConnectionRule extends ExternalResource
     return connection;
   }
 
+  @Override
   public abstract String getConnectionUrl();
 
   public abstract static class Builder {

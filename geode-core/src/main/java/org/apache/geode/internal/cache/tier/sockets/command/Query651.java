@@ -137,6 +137,7 @@ public class Query651 extends BaseCommandQuery {
     }
   }
 
+  @Override
   protected CollectionType getCollectionType(SelectResults selectResults) {
     return new CollectionTypeImpl(List.class, selectResults.getCollectionType().getElementType());
   }

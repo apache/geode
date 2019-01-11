@@ -260,6 +260,7 @@ public class SetOperationJTAJUnitTest {
   class TXFunctionSetOpStartsJTA implements Function {
     static final String id = "TXFunctionSetOpStartsJTA";
 
+    @Override
     public void execute(FunctionContext context) {
       Region r = null;
       try {
@@ -270,18 +271,22 @@ public class SetOperationJTAJUnitTest {
       context.getResultSender().lastResult(Boolean.TRUE);
     }
 
+    @Override
     public String getId() {
       return id;
     }
 
+    @Override
     public boolean hasResult() {
       return true;
     }
 
+    @Override
     public boolean optimizeForWrite() {
       return true;
     }
 
+    @Override
     public boolean isHA() {
       return false;
     }
@@ -290,6 +295,7 @@ public class SetOperationJTAJUnitTest {
   class TXFunctionSetOpDoesNoStartJTA implements Function {
     static final String id = "TXFunctionSetOpDoesNotStartJTA";
 
+    @Override
     public void execute(FunctionContext context) {
       Region r = null;
       try {
@@ -300,18 +306,22 @@ public class SetOperationJTAJUnitTest {
       context.getResultSender().lastResult(Boolean.TRUE);
     }
 
+    @Override
     public String getId() {
       return id;
     }
 
+    @Override
     public boolean hasResult() {
       return true;
     }
 
+    @Override
     public boolean optimizeForWrite() {
       return true;
     }
 
+    @Override
     public boolean isHA() {
       return false;
     }

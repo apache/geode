@@ -41,6 +41,7 @@ public class URLArgumentHandler implements ArgumentHandler {
    * @param parameters parameters supplied
    * @throws UsageException when file not found or not a workable URL
    */
+  @Override
   public void handleArgument(final Argument arg, final String form, final String[] parameters)
       throws UsageException {
     final File file = new File(parameters[0]);

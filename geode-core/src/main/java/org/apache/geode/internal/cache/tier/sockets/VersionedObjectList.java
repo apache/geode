@@ -555,10 +555,12 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     this.objects.add(value);
   }
 
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     toData(out);
   }
 
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     fromData(in);
   }
@@ -600,6 +602,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
       this.index = idx;
     }
 
+    @Override
     public Object getKey() {
       if (hasKeys) {
         return keys.get(index);
@@ -639,6 +642,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
      *
      * @see java.util.Map.Entry#getValue()
      */
+    @Override
     public Object getValue() {
       if (index < objects.size()) {
         return objects.get(index);
@@ -652,6 +656,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
      *
      * @see java.util.Map.Entry#setValue(java.lang.Object)
      */
+    @Override
     public Object setValue(Object value) {
       Object result = objects.get(index);
       objects.set(index, value);
@@ -678,6 +683,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
      *
      * @see java.util.Iterator#hasNext()
      */
+    @Override
     public boolean hasNext() {
       return index < size;
     }
@@ -687,6 +693,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
      *
      * @see java.util.Iterator#next()
      */
+    @Override
     public Entry next() {
       return new Entry(index++);
     }
@@ -696,6 +703,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
      *
      * @see java.util.Iterator#remove()
      */
+    @Override
     public void remove() {
       throw new UnsupportedOperationException();
     }

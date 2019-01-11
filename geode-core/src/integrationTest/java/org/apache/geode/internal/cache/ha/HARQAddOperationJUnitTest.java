@@ -355,6 +355,7 @@ public class HARQAddOperationJUnitTest {
     final EventID id1 = new EventID(new byte[] {1}, 1, 1);
     final EventID id2 = new EventID(new byte[] {1}, 1, 2);
     Thread t1 = new Thread() {
+      @Override
       public void run() {
         try {
           regionqueue.put(new ConflatableObject(KEY1, VALUE1, id1, true, "region1"));
@@ -368,6 +369,7 @@ public class HARQAddOperationJUnitTest {
     t1.setPriority(Thread.MAX_PRIORITY);
 
     Thread t2 = new Thread() {
+      @Override
       public void run() {
         try {
           regionqueue.removeDispatchedEvents(id2);
@@ -405,6 +407,7 @@ public class HARQAddOperationJUnitTest {
     final EventID id2 = new EventID(new byte[] {1}, 1, 2);
 
     Thread t1 = new Thread() {
+      @Override
       public void run() {
         try {
           regionqueue.put(new ConflatableObject(KEY1, VALUE1, id1, true, "region1"));
@@ -417,6 +420,7 @@ public class HARQAddOperationJUnitTest {
     };
 
     Thread t2 = new Thread() {
+      @Override
       public void run() {
         try {
           regionqueue.removeDispatchedEvents(id2);
@@ -491,6 +495,7 @@ public class HARQAddOperationJUnitTest {
     for (int i = 0; i < numOfThreads; i++) {
       final long ids = i;
       threads[i] = new Thread() {
+        @Override
         public void run() {
           for (int j = 0; j < numOfPuts; j++) {
             EventID id = new EventID(new byte[] {(byte) ids}, ids, j);
@@ -567,6 +572,7 @@ public class HARQAddOperationJUnitTest {
     for (int i = 0; i < numOfThreads; i++) {
       final long ids = i;
       threads[i] = new Thread() {
+        @Override
         public void run() {
           for (int j = 0; j < numOfPuts; j++) {
             EventID id = new EventID(new byte[] {(byte) ids}, ids, j);
@@ -627,6 +633,7 @@ public class HARQAddOperationJUnitTest {
     for (int i = 0; i < numOfThreads; i++) {
       final long ids = i;
       threads[i] = new Thread() {
+        @Override
         public void run() {
           for (int j = 0; j < numOfPuts; j++) {
             EventID id = new EventID(new byte[] {(byte) ids}, ids, j);
@@ -691,6 +698,7 @@ public class HARQAddOperationJUnitTest {
     for (int i = 0; i < numOfThreads; i++) {
       final long ids = i;
       threads[i] = new Thread() {
+        @Override
         public void run() {
           for (int j = 0; j < numOfPuts; j++) {
             EventID id = new EventID(new byte[] {(byte) ids}, ids, j);
@@ -725,6 +733,7 @@ public class HARQAddOperationJUnitTest {
       final int peakBatchSize = i * 5;
       threads_peek_remove[i - 1] = new Thread() {
 
+        @Override
         public void run() {
           try {
             List peakObjects = regionqueue.peek(peakBatchSize);
@@ -792,6 +801,7 @@ public class HARQAddOperationJUnitTest {
     for (int i = 0; i < numOfThreads; i++) {
       final long ids = i;
       threads[i] = new Thread() {
+        @Override
         public void run() {
           for (int j = 0; j < numOfPuts; j++) {
             EventID id = new EventID(new byte[] {(byte) ids}, ids, j);
@@ -825,6 +835,7 @@ public class HARQAddOperationJUnitTest {
       final int peakBatchSize = i * 5;
       threads_peek_remove[i - 1] = new Thread() {
 
+        @Override
         public void run() {
           try {
             List peakObjects = regionqueue.peek(peakBatchSize);
@@ -881,8 +892,10 @@ public class HARQAddOperationJUnitTest {
       attrs.setExpiryTime(10);
       final HARegionQueue regionqueue =
           new HARegionQueue.TestOnlyHARegionQueue("testing", cache, attrs) {
+            @Override
             CacheListener createCacheListenerForHARegion() {
               return new CacheListenerAdapter() {
+                @Override
                 public void afterInvalidate(EntryEvent event) {
                   try {
                     expireTheEventOrThreadIdentifier(event);

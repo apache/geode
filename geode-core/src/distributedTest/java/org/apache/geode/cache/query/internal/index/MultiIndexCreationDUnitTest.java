@@ -104,10 +104,12 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
         QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
           private boolean indexCalled = false;
 
+          @Override
           public void afterIndexLookup(Collection results) {
             indexCalled = true;
           }
 
+          @Override
           public void endQuery() {
             assertFalse("Index should not have been used. ", indexCalled);
           }
@@ -148,10 +150,12 @@ public class MultiIndexCreationDUnitTest extends JUnit4CacheTestCase {
         QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
           private boolean indexCalled = false;
 
+          @Override
           public void afterIndexLookup(Collection results) {
             indexCalled = true;
           }
 
+          @Override
           public void endQuery() {
             assertTrue("Index should have been used. ", indexCalled);
           }

@@ -36,6 +36,7 @@ public class BlockingHARQStatsJUnitTest extends HARegionQueueStatsJUnitTest {
    * @param name - name of the underlying region for region-queue
    * @return the BlockingHARegionQueue instance
    */
+  @Override
   protected HARegionQueue createHARegionQueue(String name)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     HARegionQueue regionqueue =
@@ -50,6 +51,7 @@ public class BlockingHARQStatsJUnitTest extends HARegionQueueStatsJUnitTest {
    * @param attrs - attributes for the BlockingHARegionQueue
    * @return the BlockingHARegionQueue instance
    */
+  @Override
   protected HARegionQueue createHARegionQueue(String name, HARegionQueueAttributes attrs)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name, cache, attrs,

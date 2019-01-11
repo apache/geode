@@ -332,6 +332,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     }
     // this could block for a while if a limit has been set on the waiting-thread-pool
     dm.getWaitingThreadPool().execute(new Runnable() {
+      @Override
       @edu.umd.cs.findbugs.annotations.SuppressWarnings(
           value = {"UL_UNRELEASED_LOCK", "IMSE_DONT_CATCH_IMSE"})
       public void run() {
@@ -1171,6 +1172,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    *
    * @see org.apache.geode.internal.DataSerializableFixedID#toData(java.io.DataOutput)
    */
+  @Override
   public void toData(DataOutput out) throws IOException {
     if (this.isLiveVector) {
       throw new IllegalStateException("serialization of this object is not allowed");
@@ -1201,6 +1203,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    *
    * @see org.apache.geode.internal.DataSerializableFixedID#fromData(java.io.DataInput)
    */
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.myId = readMember(in);
     int flags = in.readInt();
@@ -1407,11 +1410,14 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   }
 
 
+  @Override
   public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {}
 
+  @Override
   public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
       InternalDistributedMember whoSuspected, String reason) {}
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
@@ -1421,12 +1427,14 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @see org.apache.geode.distributed.internal.MembershipListener#memberDeparted(org.apache.geode.
    * distributed.internal.membership.InternalDistributedMember, boolean)
    */
+  @Override
   public void memberDeparted(DistributionManager distributionManager,
       final InternalDistributedMember id, boolean crashed) {
     // since unlockForClear uses synchronization we need to try to execute it in another
     // thread so that membership events aren't blocked
     if (distributionManager != null) {
       distributionManager.getWaitingThreadPool().execute(new Runnable() {
+        @Override
         public void run() {
           unlockForClear(id);
         }
@@ -1514,6 +1522,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     return (h != null) && h.isDepartedMember;
   }
 
+  @Override
   public Version[] getSerializationVersions() {
     return null;
   }

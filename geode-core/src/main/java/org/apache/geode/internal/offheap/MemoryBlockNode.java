@@ -52,6 +52,7 @@ public class MemoryBlockNode implements MemoryBlock {
     return this.ma.getMemoryInspector().getBlockAfter(this);
   }
 
+  @Override
   public int getSlabId() {
     return this.ma.findSlab(getAddress());
   }
@@ -61,10 +62,12 @@ public class MemoryBlockNode implements MemoryBlock {
     return this.block.getFreeListId();
   }
 
+  @Override
   public int getRefCount() {
     return this.block.getRefCount(); // delegate to fix GEODE-489
   }
 
+  @Override
   public String getDataType() {
     if (this.block.getDataType() != null) {
       return this.block.getDataType();
@@ -84,10 +87,12 @@ public class MemoryBlockNode implements MemoryBlock {
     return DataType.getDataType(bytes);
   }
 
+  @Override
   public boolean isSerialized() {
     return this.block.isSerialized();
   }
 
+  @Override
   public boolean isCompressed() {
     return this.block.isCompressed();
   }

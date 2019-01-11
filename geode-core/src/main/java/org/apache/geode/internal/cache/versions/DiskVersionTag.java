@@ -53,6 +53,7 @@ public class DiskVersionTag extends VersionTag<DiskStoreID> {
    *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.PERSISTENT_VERSION_TAG;
   }

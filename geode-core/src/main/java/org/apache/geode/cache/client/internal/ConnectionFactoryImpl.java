@@ -93,10 +93,12 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     denyList.start(background);
   }
 
+  @Override
   public ServerDenyList getDenyList() {
     return denyList;
   }
 
+  @Override
   public Connection createClientToServerConnection(ServerLocation location, boolean forQueue)
       throws GemFireSecurityException {
     FailureTracker failureTracker = denyList.getFailureTracker(location);
@@ -155,6 +157,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     }
   }
 
+  @Override
   public ServerLocation findBestServer(ServerLocation currentServer, Set excludedServers) {
     if (currentServer != null && source.isBalanced()) {
       return currentServer;
@@ -177,6 +180,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     return server;
   }
 
+  @Override
   public Connection createClientToServerConnection(Set excludedServers)
       throws GemFireSecurityException {
     final Set origExcludedServers = excludedServers;
@@ -239,6 +243,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     return conn;
   }
 
+  @Override
   public ClientUpdater createServerToClientConnection(Endpoint endpoint, QueueManager qManager,
       boolean isPrimary, ClientUpdater failedUpdater) {
     String clientUpdateName = CacheClientUpdater.CLIENT_UPDATER_THREAD_NAME + " on "

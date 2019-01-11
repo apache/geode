@@ -65,6 +65,7 @@ public class DumpAllPRConfigMessage extends PartitionMessage {
     return true;
   }
 
+  @Override
   public int getDSFID() {
     return PR_DUMP_ALL_PR_CONFIG_MESSAGE;
   }

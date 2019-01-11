@@ -639,6 +639,7 @@ public class MemoryIndexStore implements IndexStore {
      * would create a new InMemoryIndexStorageEntry for the current key and next RE from the
      * collection of values.
      */
+    @Override
     public boolean hasNext() {
       // return previous collection of values if not over
       if (valuesIterator != null && valuesIterator.hasNext()) {
@@ -685,6 +686,7 @@ public class MemoryIndexStore implements IndexStore {
      * returns a new InMemoryIndexStorageEntry with current index key and its next value which is
      * the next RE in the collection. Make sure hasNext() has been called before calling this method
      */
+    @Override
     public MemoryIndexStoreEntry next() {
       if (valuesIterator == null) {
         currentEntry.setMemoryIndexStoreEntry(currKey, (RegionEntry) currValue);
@@ -700,10 +702,12 @@ public class MemoryIndexStore implements IndexStore {
       return currentEntry;
     }
 
+    @Override
     public void remove() {
       mapIterator.remove();
     }
 
+    @Override
     public void close() {
       // do nothing
     }
@@ -725,6 +729,7 @@ public class MemoryIndexStore implements IndexStore {
     }
   }
 
+  @Override
   public String printAll() {
     StringBuffer sb = new StringBuffer();
     Iterator iterator = this.valueToEntriesMap.entrySet().iterator();

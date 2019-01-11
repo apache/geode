@@ -168,10 +168,12 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
       return sendReply;
     }
 
+    @Override
     public int getDSFID() {
       return TOMBSTONE_MESSAGE;
     }
 
+    @Override
     public Version[] getSerializationVersions() {
       return serializationVersions;
     }

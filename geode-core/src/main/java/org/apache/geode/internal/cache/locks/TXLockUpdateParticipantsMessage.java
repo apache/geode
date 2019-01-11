@@ -125,6 +125,7 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
     InternalDataSerializer.writeSet(this.updatedParticipants, out);
   }
 
+  @Override
   public int getDSFID() {
     return TX_LOCK_UPDATE_PARTICIPANTS_MESSAGE;
   }

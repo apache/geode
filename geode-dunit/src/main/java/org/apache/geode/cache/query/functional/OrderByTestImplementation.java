@@ -1160,17 +1160,20 @@ public abstract class OrderByTestImplementation {
     String indexName;
     boolean limitAppliedAtIndex = false;
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexName = index.getName();
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;
       }
     }
 
+    @Override
     public void limitAppliedAtIndexLevel(Index index, int limit, Collection indexResult) {
       this.limitAppliedAtIndex = true;
     }

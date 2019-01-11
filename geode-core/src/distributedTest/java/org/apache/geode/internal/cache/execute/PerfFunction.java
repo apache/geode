@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.execute.data.ShipmentId;
 
 public class PerfFunction implements Function {
 
+  @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext ctx = (RegionFunctionContext) context;
     Region customerPR = ctx.getDataSet();
@@ -46,18 +47,22 @@ public class PerfFunction implements Function {
     context.getResultSender().lastResult(null);
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return true;
   }
 
+  @Override
   public String getId() {
     return "perfFunction";
   }
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     return false;
   }

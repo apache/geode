@@ -136,6 +136,7 @@ public class DefaultQueryService implements InternalQueryService {
    * @throws IllegalArgumentException if the query syntax is invalid.
    * @see org.apache.geode.cache.query.Query
    */
+  @Override
   public Query newQuery(String queryString) {
     if (QueryMonitor.isLowMemory()) {
       String reason = String.format(
@@ -161,33 +162,39 @@ public class DefaultQueryService implements InternalQueryService {
     return query;
   }
 
+  @Override
   public Index createHashIndex(String indexName, String indexedExpression, String fromClause)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createHashIndex(indexName, indexedExpression, fromClause, null);
   }
 
+  @Override
   public Index createHashIndex(String indexName, String indexedExpression, String fromClause,
       String imports)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createIndex(indexName, IndexType.HASH, indexedExpression, fromClause, imports);
   }
 
+  @Override
   public Index createIndex(String indexName, String indexedExpression, String fromClause)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause, null);
   }
 
+  @Override
   public Index createIndex(String indexName, String indexedExpression, String fromClause,
       String imports)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, fromClause, imports);
   }
 
+  @Override
   public Index createKeyIndex(String indexName, String indexedExpression, String fromClause)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
     return createIndex(indexName, IndexType.PRIMARY_KEY, indexedExpression, fromClause, null);
   }
 
+  @Override
   public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
       String fromClause)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
@@ -263,6 +270,7 @@ public class DefaultQueryService implements InternalQueryService {
   }
 
 
+  @Override
   public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
       String fromClause, String imports)
       throws IndexNameConflictException, IndexExistsException, RegionNotFoundException {
@@ -322,6 +330,7 @@ public class DefaultQueryService implements InternalQueryService {
     return indexData;
   }
 
+  @Override
   public Index getIndex(Region region, String indexName) {
 
     if (pool != null) {
@@ -380,6 +389,7 @@ public class DefaultQueryService implements InternalQueryService {
     return indexManager.getBestMatchIndex(indexType, definitions, indexedExpression, context);
   }
 
+  @Override
   public Collection getIndexes() {
     ArrayList allIndexes = new ArrayList();
     Iterator rootRegions = cache.rootRegions().iterator();
@@ -396,6 +406,7 @@ public class DefaultQueryService implements InternalQueryService {
     return allIndexes;
   }
 
+  @Override
   public Collection getIndexes(Region region) {
 
     if (pool != null) {
@@ -415,6 +426,7 @@ public class DefaultQueryService implements InternalQueryService {
     return indexManager.getIndexes();
   }
 
+  @Override
   public Collection getIndexes(Region region, IndexType indexType) {
 
     if (pool != null) {
@@ -430,6 +442,7 @@ public class DefaultQueryService implements InternalQueryService {
     return indexManager.getIndexes(indexType);
   }
 
+  @Override
   public void removeIndex(Index index) {
 
     if (pool != null) {
@@ -457,6 +470,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
   }
 
+  @Override
   public void removeIndexes() {
     if (pool != null) {
       throw new UnsupportedOperationException(
@@ -474,6 +488,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
   }
 
+  @Override
   public void removeIndexes(Region region) {
 
     if (pool != null) {
@@ -518,6 +533,7 @@ public class DefaultQueryService implements InternalQueryService {
    *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
    *         parameters in the query are not yet supported.
    */
+  @Override
   public CqQuery newCq(String queryString, CqAttributes cqAttributes)
       throws QueryInvalidException, CqException {
     ClientCQ cq = null;
@@ -549,6 +565,7 @@ public class DefaultQueryService implements InternalQueryService {
    *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
    *         parameters in the query are not yet supported.
    */
+  @Override
   public CqQuery newCq(String queryString, CqAttributes cqAttributes, boolean isDurable)
       throws QueryInvalidException, CqException {
     ClientCQ cq = null;
@@ -583,6 +600,7 @@ public class DefaultQueryService implements InternalQueryService {
    *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
    *         parameters in the query are not yet supported.
    */
+  @Override
   public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes)
       throws QueryInvalidException, CqExistsException, CqException {
     if (cqName == null) {
@@ -614,6 +632,7 @@ public class DefaultQueryService implements InternalQueryService {
    *         Only one iterator in the FROM clause is supported, and it must be a region path. Bind
    *         parameters in the query are not yet supported.
    */
+  @Override
   public CqQuery newCq(String cqName, String queryString, CqAttributes cqAttributes,
       boolean isDurable) throws QueryInvalidException, CqExistsException, CqException {
     if (cqName == null) {
@@ -630,6 +649,7 @@ public class DefaultQueryService implements InternalQueryService {
    * CqQuerys created by other VMs are unaffected.
    *
    */
+  @Override
   public void closeCqs() {
     try {
       getCqService().closeAllCqs(true);
@@ -645,6 +665,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @return the CqQuery or null if not found
    */
+  @Override
   public CqQuery getCq(String cqName) {
     CqQuery cq = null;
     try {
@@ -662,6 +683,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @return null if there are no cqs.
    */
+  @Override
   public CqQuery[] getCqs() {
     CqQuery[] cqs = null;
     try {
@@ -683,6 +705,7 @@ public class DefaultQueryService implements InternalQueryService {
   /**
    * Returns all the cq on a given region.
    */
+  @Override
   public CqQuery[] getCqs(final String regionName) throws CqException {
     return toArray(getCqService().getAllCqs(regionName));
   }
@@ -695,6 +718,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @throws CqException if failure to execute CQ.
    */
+  @Override
   public void executeCqs() throws CqException {
     try {
       getCqService().executeAllClientCqs();
@@ -714,6 +738,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @throws CqException if failure to execute CQ.
    */
+  @Override
   public void stopCqs() throws CqException {
     try {
       getCqService().stopAllClientCqs();
@@ -732,6 +757,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @throws CqException if failure to stop CQs.
    */
+  @Override
   public void executeCqs(String regionName) throws CqException {
     try {
       getCqService().executeAllRegionCqs(regionName);
@@ -752,6 +778,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @throws CqException if failure to execute CQs.
    */
+  @Override
   public void stopCqs(String regionName) throws CqException {
     try {
       getCqService().stopAllRegionCqs(regionName);
@@ -768,6 +795,7 @@ public class DefaultQueryService implements InternalQueryService {
    *
    * @return CQ statistics null if the continuous query object not found for the given cqName.
    */
+  @Override
   public CqServiceStatistics getCqStatistics() {
     CqServiceStatistics stats = null;
     try {
@@ -814,6 +842,7 @@ public class DefaultQueryService implements InternalQueryService {
     }
   }
 
+  @Override
   public List<String> getAllDurableCqsFromServer() throws CqException {
     if (!isServer()) {
       if (pool != null) {
@@ -981,6 +1010,7 @@ public class DefaultQueryService implements InternalQueryService {
 
   }
 
+  @Override
   public boolean clearDefinedIndexes() {
     this.indexDefinitions.clear();
     return true;
@@ -990,6 +1020,7 @@ public class DefaultQueryService implements InternalQueryService {
     return pool;
   }
 
+  @Override
   public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
     return methodInvocationAuthorizer;
   }

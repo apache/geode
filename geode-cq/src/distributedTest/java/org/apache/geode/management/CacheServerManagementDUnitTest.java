@@ -284,6 +284,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   protected void checkNavigation(final VM vm, final DistributedMember cacheServerMember,
       final int serverPort) {
     SerializableRunnable checkNavigation = new SerializableRunnable("Check Navigation") {
+      @Override
       public void run() {
 
         final ManagementService service = helper.getManagementService();
@@ -318,18 +319,21 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   protected void addClientNotifListener(final VM vm, final int serverPort) throws Exception {
     SerializableRunnable addClientNotifListener =
         new SerializableRunnable("Add Client Notif Listener") {
+          @Override
           public void run() {
             GemFireCacheImpl cache = getInstance();
             ManagementService service = getManagementService(cache);
             final CacheServerMXBean bean = service.getLocalCacheServerMXBean(serverPort);
             assertNotNull(bean);
             WaitCriterion ev = new WaitCriterion() {
+              @Override
               public boolean done() {
                 if (bean.isRunning())
                   return true;
                 return false;
               }
 
+              @Override
               public String description() {
                 return null;
               }
@@ -356,6 +360,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   @SuppressWarnings("serial")
   protected void verifyIndex(final VM vm, final int serverPort) throws Exception {
     SerializableRunnable verifyIndex = new SerializableRunnable("Verify Index ") {
+      @Override
       public void run() {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         ManagementService service = ManagementService.getManagementService(cache);
@@ -398,6 +403,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   @SuppressWarnings("serial")
   protected void verifyClosedCQ(final VM vm) throws Exception {
     SerializableRunnable verifyClosedCQ = new SerializableRunnable("Verify Closed CQ") {
+      @Override
       public void run() {
         CqService cqService = GemFireCacheImpl.getInstance().getCqService();
         if (cqService != null) {
@@ -416,18 +422,21 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   @SuppressWarnings("serial")
   protected void verifyCacheServer(final VM vm, final int serverPort) throws Exception {
     SerializableRunnable verifyCacheServer = new SerializableRunnable("Verify Cache Server") {
+      @Override
       public void run() {
         GemFireCacheImpl cache = getInstance();
         ManagementService service = getManagementService(cache);
         final CacheServerMXBean bean = service.getLocalCacheServerMXBean(serverPort);
         assertNotNull(bean);
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             if (bean.isRunning())
               return true;
             return false;
           }
 
+          @Override
           public String description() {
             return null;
           }
@@ -465,6 +474,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
       final int serverPort) {
     SerializableRunnable verifyCacheServerRemote =
         new SerializableRunnable("Verify Cache Server Remote") {
+          @Override
           public void run() {
             GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
             try {

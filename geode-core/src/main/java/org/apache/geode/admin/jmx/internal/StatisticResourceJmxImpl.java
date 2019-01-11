@@ -170,6 +170,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
    * @param notification the JMX notification being received
    * @param hb handback object is unused
    */
+  @Override
   public void handleNotification(Notification notification, Object hb) {
     AdminDistributedSystemJmxImpl adminDSJmx =
         (AdminDistributedSystemJmxImpl) this.member.getDistributedSystem();
@@ -252,6 +253,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
     return newManagedBean;
   }
 
+  @Override
   public Statistic[] getStatistics() {
     if (!timerInited) {
       // 1st call to getStatistics would trigger
@@ -282,26 +284,32 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.STATISTIC_RESOURCE;
   }
 
+  @Override
   public void cleanupResource() {
     this.modelMBean = null;
     this.member = null;

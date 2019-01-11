@@ -42,19 +42,23 @@ public class MemberCommandService extends CommandService {
     }
   }
 
+  @Override
   public Result processCommand(String commandString) {
     return this.processCommand(commandString, EMPTY_ENV);
   }
 
+  @Override
   public Result processCommand(String commandString, Map<String, String> env) {
     return (Result) onlineCommandProcessor.executeCommand(commandString, env, null);
   }
 
+  @Override
   @Deprecated
   public CommandStatement createCommandStatement(String commandString) {
     return this.createCommandStatement(commandString, EMPTY_ENV);
   }
 
+  @Override
   @Deprecated
   public CommandStatement createCommandStatement(String commandString, Map<String, String> env) {
     if (!isUsable()) {

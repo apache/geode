@@ -59,6 +59,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
   protected VM dataStore3;
   protected VM dataStore4;
 
+  @Override
   public void postSetUp() throws Exception {
     super.postSetUp();
     dataStore3 = Host.getHost(0).getVM(2);
@@ -93,6 +94,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
   }
 
   protected SerializableRunnable createIndex = new SerializableRunnable("createIndex") {
+    @Override
     public void run() {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       ((LuceneIndexFactoryImpl) luceneService.createIndexFactory()).addField("text")
@@ -101,6 +103,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
   };
 
   protected SerializableRunnable rebalance = new SerializableRunnable("rebalance") {
+    @Override
     public void run() throws InterruptedException {
       Cache cache = getCache();
       cache.getRegion(REGION_NAME);
@@ -118,6 +121,7 @@ public class RebalanceWithRedundancyWithRegionCreatedBeforeReindexDUnitTest
   };
 
   protected SerializableRunnable doConcOps = new SerializableRunnable("doConcOps") {
+    @Override
     public void run() {
       putEntryInEachBucket(113);
     }

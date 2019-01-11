@@ -135,6 +135,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
     client1.invoke(new CacheSerializableRunnable("waitForClearToCompleteFromClient1") {
 
+      @Override
       public void run2() throws CacheException {
         synchronized (HAClearDUnitTest.class) {
           while (!gotClearCallback) {
@@ -154,6 +155,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
     client2.invoke(new CacheSerializableRunnable("waitForClearToCompleteFromClient2") {
 
+      @Override
       public void run2() throws CacheException {
         synchronized (HAClearDUnitTest.class) {
           while (!gotClearCallback) {
@@ -199,6 +201,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     server1.invoke(clearRegionFromServer());
 
     client1.invoke(new CacheSerializableRunnable("waitForClearToCompleteCleint1") {
+      @Override
       public void run2() throws CacheException {
         synchronized (HAClearDUnitTest.class) {
           while (!gotClearCallback) {
@@ -218,6 +221,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
     client2.invoke(new CacheSerializableRunnable("waitForClearToCompleteClient2") {
 
+      @Override
       public void run2() throws CacheException {
         synchronized (HAClearDUnitTest.class) {
           while (!gotClearCallback) {
@@ -285,6 +289,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
     client1.invoke(new CacheSerializableRunnable("waitForDestroyRegionToCompleteClient1") {
 
+      @Override
       public void run2() throws CacheException {
         synchronized (HAClearDUnitTest.class) {
           while (!gotDestroyRegionCallback) {
@@ -304,6 +309,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
     client2.invoke(new CacheSerializableRunnable("waitForDestroyRegionToCompleteClient2") {
 
+      @Override
       public void run2() throws CacheException {
         synchronized (HAClearDUnitTest.class) {
           while (!gotDestroyRegionCallback) {
@@ -351,6 +357,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     server1.invoke(destroyRegionFromServer());
 
     client1.invoke(new CacheSerializableRunnable("waitForDestroyRegionToCompleteFromClient1") {
+      @Override
       public void run2() throws CacheException {
         synchronized (HAClearDUnitTest.class) {
           while (!gotDestroyRegionCallback) {
@@ -369,6 +376,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
     });
 
     client2.invoke(new CacheSerializableRunnable("waitForDestroyRegionToCompleteFromClient2") {
+      @Override
       public void run2() throws CacheException {
         synchronized (HAClearDUnitTest.class) {
           while (!gotDestroyRegionCallback) {
@@ -413,6 +421,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
   private CacheSerializableRunnable putFromServer() {
     CacheSerializableRunnable putFromServer = new CacheSerializableRunnable("putFromServer") {
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);
@@ -452,6 +461,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
   // function to perform clear operation from server.
   private CacheSerializableRunnable clearRegionFromServer() {
     CacheSerializableRunnable clearFromServer = new CacheSerializableRunnable("clearFromServer") {
+      @Override
       public void run2() {
         LocalRegion region = (LocalRegion) cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);
@@ -465,6 +475,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
   private CacheSerializableRunnable destroyRegionFromServer() {
     CacheSerializableRunnable clearFromServer =
         new CacheSerializableRunnable("destroyRegionFromServer") {
+          @Override
           public void run2() {
             LocalRegion region = (LocalRegion) cache.getRegion(Region.SEPARATOR + REGION_NAME);
             assertNotNull(region);
@@ -479,6 +490,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
 
     CacheSerializableRunnable clearRegion = new CacheSerializableRunnable("checkSize") {
 
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);
@@ -492,6 +504,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
   // function to check whether region is destroyed.
   private CacheSerializableRunnable checkDestroyRegion() {
     CacheSerializableRunnable destroyRegion = new CacheSerializableRunnable("checkDestroyRegion") {
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         LogWriterUtils.getLogWriter().warning("Found region " + region);
@@ -556,6 +569,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
         -1, 2, null);
     if (isListenerAttached) {
       factory.setCacheListener(new CacheListenerAdapter() {
+        @Override
         public void afterRegionClear(RegionEvent event) {
           LogWriterUtils.getLogWriter().info("-------> afterRegionClear received");
           synchronized (HAClearDUnitTest.class) {
@@ -564,6 +578,7 @@ public class HAClearDUnitTest extends JUnit4DistributedTestCase {
           }
         }
 
+        @Override
         public void afterRegionDestroy(RegionEvent event) {
           synchronized (HAClearDUnitTest.class) {
             LogWriterUtils.getLogWriter().info("-------> afterRegionDestroy received");

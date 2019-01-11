@@ -35,6 +35,7 @@ public interface InternalClientCache extends ClientCache {
   <K, V> Region<K, V> basicCreateRegion(String name, RegionAttributes<K, V> attrs)
       throws RegionExistsException, TimeoutException;
 
+  @Override
   Pool getDefaultPool();
 
   InternalDistributedSystem getInternalDistributedSystem();

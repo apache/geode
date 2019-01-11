@@ -44,6 +44,7 @@ public class GemFireBasicDataSource extends AbstractDataSource {
    *
    * @param iface - a Class defining an interface.
    */
+  @Override
   public boolean isWrapperFor(Class iface) throws SQLException {
     return true;
   }
@@ -55,6 +56,7 @@ public class GemFireBasicDataSource extends AbstractDataSource {
    * @param iface - a Class defining an interface.
    * @return java.lang.Object
    */
+  @Override
   public Object unwrap(Class iface) throws SQLException {
     return iface;
   }

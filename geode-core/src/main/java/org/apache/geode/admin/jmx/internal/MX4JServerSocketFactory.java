@@ -100,6 +100,7 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
   // mx4j.tools.adaptor.AdaptorServerSocketFactory impl...
   // -------------------------------------------------------------------------
 
+  @Override
   public ServerSocket createServerSocket(int port, int backlog, String bindAddress)
       throws IOException {
     if ("".equals(bindAddress)) {
@@ -115,6 +116,7 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
   // java.rmi.server.RMIServerSocketFactory impl...
   // -------------------------------------------------------------------------
 
+  @Override
   public ServerSocket createServerSocket(int port) throws IOException {
     ServerSocket sock = null;
     if ("".equals(bindAddress)) {

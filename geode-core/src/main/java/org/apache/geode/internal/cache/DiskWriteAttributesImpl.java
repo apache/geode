@@ -287,6 +287,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   /**
    * Returns whether or not this <code>DiskWriteAttributes</code> configures synchronous writes.
    */
+  @Override
   public boolean isSynchronous() {
     return this.isSynchronous;
   }
@@ -294,11 +295,13 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
   /**
    * Returns true if the oplogs is to be rolled
    */
+  @Override
   public boolean isRollOplogs() {
     return this.compactOplogs;
   }
 
   /** Get the max Oplog Size in megabytes. The value is stored in bytes so division is necessary **/
+  @Override
   public int getMaxOplogSize() {
     return (int) (maxOplogSize / (1024 * 1024));
   }
@@ -314,6 +317,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * this <code>DiskWriteAttributes</code> configures synchronous writing, then
    * <code>timeInterval</code> has no meaning.
    */
+  @Override
   public long getTimeInterval() {
     return this.timeInterval;
   }
@@ -323,6 +327,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    * disk. If this <code>DiskWriteAttributes</code> configures synchronous writing, then
    * <code>bytesThreshold</code> has no meaning.
    */
+  @Override
   public long getBytesThreshold() {
     return this.bytesThreshold;
   }

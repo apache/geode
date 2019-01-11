@@ -39,11 +39,13 @@ public class ConcurrentSerialGatewaySenderOperationsDUnitTest
     super();
   }
 
+  @Override
   protected void createSenderVM5() {
     vm5.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, false, 100, 10, false, true, null,
         true, 5, OrderPolicy.KEY));
   }
 
+  @Override
   protected void createSenderVM4() {
     vm4.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, false, 100, 10, false, true, null,
         true, 5, OrderPolicy.KEY));

@@ -79,6 +79,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
     this.valueSize = objectSize;
   }
 
+  @Override
   public Object getDeserializedValue(Region r, RegionEntry re) {
     Object v = this.value;
     if (v instanceof byte[]) {
@@ -155,6 +156,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
     return v;
   }
 
+  @Override
   public Object getDeserializedForReading() {
     Object v = this.value;
     if (v instanceof byte[]) {
@@ -164,6 +166,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
     }
   }
 
+  @Override
   public Object getDeserializedWritableCopy(Region r, RegionEntry re) {
     Object v = this.value;
     if (v instanceof byte[]) {
@@ -182,6 +185,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
   /**
    * Return the serialized value as a byte[]
    */
+  @Override
   public byte[] getSerializedValue() {
     Object v = this.value;
     if (v instanceof byte[])
@@ -193,22 +197,27 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
    * Return current value regardless of whether it is serialized or deserialized: if it was
    * serialized than it is a byte[], otherwise it is not a byte[].
    */
+  @Override
   public Object getValue() {
     return this.value;
   }
 
+  @Override
   public int getSizeInBytes() {
     return MEM_OVERHEAD + this.valueSize;
   }
 
+  @Override
   public int getValueSizeInBytes() {
     return valueSize;
   }
 
+  @Override
   public int getDSFID() {
     return VM_CACHED_DESERIALIZABLE;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // fix for bug 38309
     byte[] bytes = DataSerializer.readByteArray(in);
@@ -216,6 +225,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
     this.value = bytes;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // fix for bug 38309
     DataSerializer.writeObjectAsByteArray(getValue(), out);
@@ -231,10 +241,12 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
     return getShortClassName() + "@" + this.hashCode();
   }
 
+  @Override
   public void writeValueAsByteArray(DataOutput out) throws IOException {
     toData(out);
   }
 
+  @Override
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
     Object v = this.value;
     if (v instanceof byte[]) {
@@ -246,6 +258,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
 
   }
 
+  @Override
   public String getStringForm() {
     try {
       return StringUtils.forceToString(getDeserializedForReading());

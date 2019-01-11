@@ -104,6 +104,7 @@ public class OpExecutorImpl implements ExecutablePool {
       new ThreadLocal<ServerLocation>();
 
   private final ThreadLocal<Integer> affinityRetryCount = new ThreadLocal<Integer>() {
+    @Override
     protected Integer initialValue() {
       return 0;
     };
@@ -124,10 +125,12 @@ public class OpExecutorImpl implements ExecutablePool {
     this.pool = pool;
   }
 
+  @Override
   public Object execute(Op op) {
     return execute(op, retryAttempts);
   }
 
+  @Override
   public Object execute(Op op, int retries) {
     if (this.serverAffinity.get()) {
       ServerLocation loc = this.affinityServerLocation.get();
@@ -280,6 +283,7 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
+  @Override
   public void setupServerAffinity(boolean allowFailover) {
     if (logger.isDebugEnabled()) {
       logger.debug("setting up server affinity");
@@ -288,6 +292,7 @@ public class OpExecutorImpl implements ExecutablePool {
     this.serverAffinity.set(Boolean.TRUE);
   }
 
+  @Override
   public void releaseServerAffinity() {
     if (logger.isDebugEnabled()) {
       logger.debug("reset server affinity");
@@ -296,6 +301,7 @@ public class OpExecutorImpl implements ExecutablePool {
     this.affinityServerLocation.set(null);
   }
 
+  @Override
   public ServerLocation getServerAffinityLocation() {
     return this.affinityServerLocation.get();
   }
@@ -308,6 +314,7 @@ public class OpExecutorImpl implements ExecutablePool {
     affinityRetryCount.set(retryCount);
   }
 
+  @Override
   public void setServerAffinityLocation(ServerLocation serverLocation) {
     assert this.affinityServerLocation.get() == null;
     this.affinityServerLocation.set(serverLocation);
@@ -332,10 +339,12 @@ public class OpExecutorImpl implements ExecutablePool {
    * @see org.apache.geode.cache.client.internal.OpExecutor#executeOn(org.apache.geode.distributed.
    * internal.ServerLocation, org.apache.geode.cache.client.internal.Op)
    */
+  @Override
   public Object executeOn(ServerLocation server, Op op) {
     return executeOn(server, op, true, false);
   }
 
+  @Override
   public Object executeOn(ServerLocation p_server, Op op, boolean accessed,
       boolean onlyUseExistingCnx) {
     ServerLocation server = p_server;
@@ -477,6 +486,7 @@ public class OpExecutorImpl implements ExecutablePool {
    * org.apache.geode.cache.client.internal.ExecutablePool#executeOnPrimary(org.apache.geode.cache.
    * client.internal.Op)
    */
+  @Override
   public Object executeOnPrimary(Op op) {
     if (queueManager == null) {
       throw new SubscriptionNotEnabledException();
@@ -498,6 +508,7 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
+  @Override
   public void executeOnAllQueueServers(Op op) {
     if (queueManager == null) {
       throw new SubscriptionNotEnabledException();
@@ -545,6 +556,7 @@ public class OpExecutorImpl implements ExecutablePool {
    * org.apache.geode.cache.client.internal.ExecutablePool#executeOnAllQueueServers(org.apache.geode
    * .cache.client.internal.Op)
    */
+  @Override
   public Object executeOnQueuesAndReturnPrimaryResult(Op op) {
     if (queueManager == null) {
       throw new SubscriptionNotEnabledException();
@@ -588,6 +600,7 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
+  @Override
   public void releaseThreadLocalConnection() {
     Connection conn = localConnection.get();
     localConnection.set(null);
@@ -606,6 +619,7 @@ public class OpExecutorImpl implements ExecutablePool {
   /**
    * Used by GatewayBatchOp
    */
+  @Override
   public Object executeOn(Connection conn, Op op, boolean timeoutFatal) {
     try {
       return executeWithPossibleReAuthentication(conn, op);
@@ -622,10 +636,12 @@ public class OpExecutorImpl implements ExecutablePool {
   /**
    * This is used by unit tests
    */
+  @Override
   public Object executeOn(Connection conn, Op op) {
     return executeOn(conn, op, false);
   }
 
+  @Override
   public RegisterInterestTracker getRITracker() {
     return riTracker;
   }

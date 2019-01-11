@@ -75,6 +75,7 @@ public class ObjectTraverserJUnitTest {
 
     TestVisitor visitor = new TestVisitor();
     visitor = new TestVisitor() {
+      @Override
       public boolean visit(Object parent, Object object) {
         super.visit(parent, object);
         return object != set2;
@@ -108,6 +109,7 @@ public class ObjectTraverserJUnitTest {
 
     public Map visited = new IdentityHashMap();
 
+    @Override
     public boolean visit(Object parent, Object object) {
       assertNull(visited.put(object, VALUE));
       return true;

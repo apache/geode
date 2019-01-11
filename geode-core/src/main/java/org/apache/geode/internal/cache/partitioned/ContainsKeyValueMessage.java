@@ -146,6 +146,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         .append("; bucketId=").append(this.bucketId);
   }
 
+  @Override
   public int getDSFID() {
     return PR_CONTAINS_KEY_VALUE_MESSAGE;
   }

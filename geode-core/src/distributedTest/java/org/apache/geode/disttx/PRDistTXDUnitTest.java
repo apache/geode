@@ -33,42 +33,52 @@ public class PRDistTXDUnitTest extends PRTransactionDUnitTest {
     return props;
   }
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")
   @Test
   public void testTxWithNonColocatedGet() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")
   @Test
   public void testTxWithNonColocatedOps() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")
   @Test
   public void testTxWithOpsOnMovedBucket() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as it does not apply to disttx.")
   @Test
   public void testTxWithGetOnMovedBucketUsingBucketReadHook() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Test
   public void testBasicPRTransactionRedundancy0() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Test
   public void testBasicPRTransactionRedundancy1() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Test
   public void testBasicPRTransactionRedundancy2() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Test
   public void testBasicPRTransactionNoDataRedundancy0() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Test
   public void testBasicPRTransactionNoDataRedundancy1() {}
 
+  @Override
   @Ignore("[DISTTX] TODO test overridden and intentionally left blank as they fail.")
   @Test
   public void testBasicPRTransactionNoDataRedundancy2() {}

@@ -146,6 +146,7 @@ public class ParallelBucketOperator implements BucketOperator {
   /**
    * Wait for any pending operations, and notify the the completions that the operations and done.
    */
+  @Override
   public void waitForOperations() {
     boolean interrupted = false;
     while (!executor.isShutdown()) {

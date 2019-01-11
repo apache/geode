@@ -39,6 +39,7 @@ public class DiskStoreFilter implements FilenameFilter {
     }
   }
 
+  @Override
   public boolean accept(File f, String fileName) {
     if (selected(fileName)) {
       int positionOfLastDot = fileName.lastIndexOf('_');

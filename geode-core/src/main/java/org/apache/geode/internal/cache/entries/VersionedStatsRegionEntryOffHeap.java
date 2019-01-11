@@ -36,6 +36,7 @@ public abstract class VersionedStatsRegionEntryOffHeap extends VersionedStatsReg
   }
 
   private static class VersionedStatsRegionEntryOffHeapFactory implements RegionEntryFactory {
+    @Override
     public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
@@ -63,12 +64,14 @@ public abstract class VersionedStatsRegionEntryOffHeap extends VersionedStatsReg
       return new VersionedStatsRegionEntryOffHeapObjectKey(context, key, value);
     }
 
+    @Override
     public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VersionedStatsRegionEntryOffHeapObjectKey.class;
     }
 
+    @Override
     public RegionEntryFactory makeVersioned() {
       return this;
     }

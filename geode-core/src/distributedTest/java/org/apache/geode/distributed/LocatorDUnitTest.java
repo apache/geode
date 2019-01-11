@@ -213,6 +213,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     properties.remove(START_LOCATOR);
     properties.put(LOCATORS, locators);
     SerializableRunnable startSystem = new SerializableRunnable("start system") {
+      @Override
       public void run() {
         system = getConnectedDistributedSystem(properties);
       }
@@ -871,6 +872,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       });
 
       SerializableRunnable crashSystem = new SerializableRunnable("Crash system") {
+        @Override
         public void run() {
           DistributedSystem msys = InternalDistributedSystem.getAnyInstance();
           msys.getLogWriter()
@@ -1148,6 +1150,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
     try {
       SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
+        @Override
         public void run() {
           Properties props = getBasicProperties(locators);
           props.setProperty(MEMBER_TIMEOUT, "1000");
@@ -1303,6 +1306,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       try {
 
         SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
+          @Override
           public void run() {
             Properties props = getBasicProperties(locators);
             addDSProps(props);
@@ -1501,6 +1505,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       vm2.invoke(this::forceDisconnect);
 
       SerializableRunnable waitForDisconnect = new SerializableRunnable("waitForDisconnect") {
+        @Override
         public void run() {
           GeodeAwaitility.await()
               .until(() -> InternalDistributedSystem.getConnectedInstance() == null);
@@ -1944,17 +1949,21 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     boolean quorumLostInvoked;
     final List<String> suspectReasons = new ArrayList<>(50);
 
+    @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {}
 
+    @Override
     public void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {}
 
+    @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
         InternalDistributedMember whoSuspected, String reason) {
       suspectReasons.add(reason);
     }
 
+    @Override
     public void quorumLost(DistributionManager distributionManager,
         Set<InternalDistributedMember> failures,
         List<InternalDistributedMember> remaining) {

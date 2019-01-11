@@ -48,6 +48,7 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
     }
   }
 
+  @Override
   public void handleDepartureOf(InternalDistributedMember owner, DLockGrantor grantor) {
     // get DTLS
     TXLockService dtls = TXLockService.getDTLS();

@@ -418,6 +418,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * Closes the Query. On Client side, sends the cq close request to server. On Server side, takes
    * care of repository cleanup.
    */
+  @Override
   public void close() throws CqClosedException, CqException {
     close(true);
   }

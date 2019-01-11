@@ -24,6 +24,7 @@ public abstract class HashExecutor extends AbstractExecutor {
 
   protected final int FIELD_INDEX = 2;
 
+  @Override
   @SuppressWarnings("unchecked")
   protected Region<ByteArrayWrapper, ByteArrayWrapper> getOrCreateRegion(
       ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {

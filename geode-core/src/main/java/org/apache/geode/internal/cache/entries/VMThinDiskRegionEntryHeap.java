@@ -35,6 +35,7 @@ public abstract class VMThinDiskRegionEntryHeap extends VMThinDiskRegionEntry {
   }
 
   private static class VMThinDiskRegionEntryHeapFactory implements RegionEntryFactory {
+    @Override
     public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
@@ -60,12 +61,14 @@ public abstract class VMThinDiskRegionEntryHeap extends VMThinDiskRegionEntry {
       return new VMThinDiskRegionEntryHeapObjectKey(context, key, value);
     }
 
+    @Override
     public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VMThinDiskRegionEntryHeapObjectKey.class;
     }
 
+    @Override
     public RegionEntryFactory makeVersioned() {
       return VersionedThinDiskRegionEntryHeap.getEntryFactory();
     }

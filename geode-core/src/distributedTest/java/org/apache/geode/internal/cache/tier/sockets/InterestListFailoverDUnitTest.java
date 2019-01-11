@@ -254,6 +254,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
 
+        @Override
         public boolean done() {
           Object val = r.get(key1);
           if (val == null) {
@@ -265,6 +266,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
           return true;
         }
 
+        @Override
         public String description() {
           return excuse;
         }

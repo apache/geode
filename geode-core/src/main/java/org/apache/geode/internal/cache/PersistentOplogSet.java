@@ -142,6 +142,7 @@ public class PersistentOplogSet implements OplogSet {
 
   private TreeSet<Oplog> getSortedOplogs() {
     TreeSet<Oplog> result = new TreeSet<Oplog>(new Comparator() {
+      @Override
       public int compare(Object arg0, Object arg1) {
         return Long.signum(((Oplog) arg1).getOplogId() - ((Oplog) arg0).getOplogId());
       }
@@ -160,6 +161,7 @@ public class PersistentOplogSet implements OplogSet {
    * @param id int oplogId to be got
    * @return Oplogs the oplog corresponding to the oplodId, id
    */
+  @Override
   public Oplog getChild(long id) {
     Oplog localOplog = this.child;
     if (localOplog != null && id == localOplog.getOplogId()) {

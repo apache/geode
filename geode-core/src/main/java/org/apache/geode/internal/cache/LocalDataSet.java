@@ -82,10 +82,12 @@ public class LocalDataSet implements Region, QueryExecutor {
     return this.proxy.entrySet(getBucketSet());
   }
 
+  @Override
   public Set<Region.Entry> entrySet() {
     return entrySet(false);
   }
 
+  @Override
   public Collection values() {
     this.proxy.checkReadiness();
     return this.proxy.new ValuesSet(getBucketSet());
@@ -95,6 +97,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     return this.proxy.keySet(getBucketSet());
   }
 
+  @Override
   public Set keySet() {
     return keys();
   }
@@ -132,6 +135,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     this.rfContext = fContext;
   }
 
+  @Override
   public SelectResults query(String queryPredicate) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     QueryService qs = getCache().getLocalQueryService();
@@ -141,6 +145,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     return (SelectResults) this.executeQuery(query, params, getBucketSet());
   }
 
+  @Override
   public Object selectValue(String queryPredicate) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     SelectResults result = query(queryPredicate);
@@ -164,6 +169,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    * If not , this method will return wrong results. We DO NOT DETECT COLOCATION CRITERIA IN THE
    * MULTI REGION PR BASED QUERIES.
    */
+  @Override
   public Object executeQuery(DefaultQuery query, Object[] parameters, Set buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -194,141 +200,174 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   // / Proxied calls
+  @Override
   public void becomeLockGrantor() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void clear() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void close() {
     this.proxy.close();
   }
 
+  @Override
   public boolean containsKeyOnServer(Object key) {
     return this.proxy.containsKeyOnServer(key);
   }
 
+  @Override
   public boolean containsValue(Object value) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void create(Object key, Object value)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     create(key, value, null);
   }
 
+  @Override
   public void create(Object key, Object value, Object callbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     this.proxy.create(key, value, callbackArgument);
   }
 
+  @Override
   public Region createSubregion(String subregionName, RegionAttributes regionAttributes)
       throws RegionExistsException, TimeoutException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Object destroy(Object key)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     return destroy(key, null);
   }
 
+  @Override
   public Object destroy(Object key, Object callbackArgument)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     return this.proxy.destroy(key, callbackArgument);
   }
 
+  @Override
   public void destroyRegion() throws CacheWriterException, TimeoutException {
     destroyRegion(null);
   }
 
+  @Override
   public void destroyRegion(Object callbackArgument) throws CacheWriterException, TimeoutException {
     this.proxy.destroyRegion(callbackArgument);
   }
 
+  @Override
   public boolean existsValue(String queryPredicate) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return this.proxy.existsValue(queryPredicate);
   }
 
+  @Override
   public void forceRolling() {
     this.proxy.forceRolling();
   }
 
+  @Override
   public InternalCache getCache() {
     return this.proxy.getCache();
   }
 
+  @Override
   public String getFullPath() {
     return this.proxy.getFullPath();
   }
 
+  @Override
   public List getInterestList() throws CacheWriterException {
     return this.proxy.getInterestList();
   }
 
+  @Override
   public List getInterestListRegex() throws CacheWriterException {
     return this.proxy.getInterestListRegex();
   }
 
+  @Override
   public String getName() {
     return this.proxy.getName();
   }
 
+  @Override
   public Region getParentRegion() {
     return this.proxy.getParentRegion();
   }
 
+  @Override
   public Lock getRegionDistributedLock() throws IllegalStateException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public CacheStatistics getStatistics() throws StatisticsDisabledException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Region getSubregion(String path) {
     return this.proxy.getSubregion(path);
   }
 
+  @Override
   public RegionAttributes getAttributes() {
     return this.proxy.getAttributes();
   }
 
+  @Override
   public AttributesMutator getAttributesMutator() {
     return this.proxy.getAttributesMutator();
   }
 
+  @Override
   public Lock getDistributedLock(Object key) throws IllegalStateException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void invalidate(Object key) throws TimeoutException, EntryNotFoundException {
     invalidate(key, null);
   }
 
+  @Override
   public void invalidate(Object key, Object callbackArgument)
       throws TimeoutException, EntryNotFoundException {
     this.proxy.invalidate(key, callbackArgument);
   }
 
+  @Override
   public void invalidateRegion() throws TimeoutException {
     invalidateRegion(null);
   }
 
+  @Override
   public void invalidateRegion(Object callbackArgument) throws TimeoutException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public boolean isDestroyed() {
     return this.proxy.isDestroyed();
   }
 
+  @Override
   public boolean isEmpty() {
     return size() == 0;
   }
 
+  @Override
   public Object getUserAttribute() {
     return this.proxy.getUserAttribute();
   }
@@ -337,66 +376,81 @@ public class LocalDataSet implements Region, QueryExecutor {
     return this.proxy.getDiskDirSizes();
   }
 
+  @Override
   public Set subregions(boolean recursive) {
     return this.proxy.subregions(recursive);
   }
 
+  @Override
   public void unregisterInterest(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void unregisterInterestRegex(String regex) throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void writeToDisk() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void setUserAttribute(Object value) {
     this.proxy.setUserAttribute(value);
   }
 
+  @Override
   public Object remove(Object key) {
     return this.proxy.remove(key);
   }
 
+  @Override
   public void registerInterest(Object key) throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void registerInterest(Object key, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void registerInterest(Object key, InterestResultPolicy policy)
       throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable)
       throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void registerInterestRegex(String regex) throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void registerInterestRegex(String regex, boolean isDurable) throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void registerInterestRegex(String regex, InterestResultPolicy policy)
       throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable)
       throws CacheWriterException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Set keySetOnServer() {
     return this.proxy.keySetOnServer();
   }
@@ -411,15 +465,18 @@ public class LocalDataSet implements Region, QueryExecutor {
     return this.proxy.isEmptyOnServer();
   }
 
+  @Override
   public void loadSnapshot(InputStream inputStream)
       throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Map getAll(Collection keys) {
     return getAll(keys, null);
   }
 
+  @Override
   public Map getAll(Collection keys, Object callback) {
     HashMap result = new HashMap();
     for (Iterator i = keys.iterator(); i.hasNext();) {
@@ -435,53 +492,65 @@ public class LocalDataSet implements Region, QueryExecutor {
     return result;
   }
 
+  @Override
   public void localClear() {
     this.proxy.localClear();
   }
 
+  @Override
   public void localDestroyRegion() {
     localDestroyRegion(null);
   }
 
+  @Override
   public void localDestroyRegion(Object callbackArgument) {
     this.proxy.localDestroyRegion(callbackArgument);
   }
 
+  @Override
   public void localInvalidateRegion() {
     localInvalidateRegion(null);
   }
 
+  @Override
   public void localInvalidateRegion(Object callbackArgument) {
     this.proxy.localInvalidateRegion(callbackArgument);
   }
 
+  @Override
   public void localDestroy(Object key) throws EntryNotFoundException {
     localDestroy(key, null);
   }
 
   // TODO, we could actually perform a local destroy
+  @Override
   public void localDestroy(Object key, Object callbackArgument) throws EntryNotFoundException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void localInvalidate(Object key) throws EntryNotFoundException {
     localInvalidate(key, null);
   }
 
   // TODO, we could actually perform a local invalidate
+  @Override
   public void localInvalidate(Object key, Object callbackArgument) throws EntryNotFoundException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Object put(Object key, Object value) throws TimeoutException, CacheWriterException {
     return put(key, value, null);
   }
 
+  @Override
   public Object put(Object key, Object value, Object callbackArgument)
       throws TimeoutException, CacheWriterException {
     return this.proxy.put(key, value, callbackArgument);
   }
 
+  @Override
   public void putAll(Map map) {
     this.proxy.putAll(map);
   }
@@ -495,6 +564,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   // / Read only calls
   // /
 
+  @Override
   public boolean containsKey(Object key) {
     if (isInDataSet(key, null)) {
       return this.proxy.containsKey(key);
@@ -503,6 +573,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     }
   }
 
+  @Override
   public boolean containsValueForKey(Object key) {
     if (isInDataSet(key, null)) {
       return this.proxy.containsValueForKey(key);
@@ -511,6 +582,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     }
   }
 
+  @Override
   public Entry getEntry(Object key) {
     if (isInDataSet(key, null)) {
       return this.proxy.getEntry(key);
@@ -519,14 +591,17 @@ public class LocalDataSet implements Region, QueryExecutor {
     }
   }
 
+  @Override
   public int size() {
     return this.proxy.entryCount(getBucketSet());
   }
 
+  @Override
   public Object get(Object key) throws CacheLoaderException, TimeoutException {
     return get(key, null);
   }
 
+  @Override
   public Object get(Object key, Object aCallbackArgument)
       throws TimeoutException, CacheLoaderException {
     if (isInDataSet(key, aCallbackArgument)) {
@@ -546,26 +621,31 @@ public class LocalDataSet implements Region, QueryExecutor {
     return sb.append(']').toString();
   }
 
+  @Override
   public void saveSnapshot(OutputStream outputStream) throws IOException {}
 
+  @Override
   public void registerInterest(Object key, boolean isDurable, boolean receiveValues)
       throws CacheWriterException {
     throw new UnsupportedOperationException();
 
   }
 
+  @Override
   public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) throws CacheWriterException {
     throw new UnsupportedOperationException();
 
   }
 
+  @Override
   public void registerInterestRegex(String regex, boolean isDurable, boolean receiveValues)
       throws CacheWriterException {
     throw new UnsupportedOperationException();
 
   }
 
+  @Override
   public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) throws CacheWriterException {
     throw new UnsupportedOperationException();
@@ -577,6 +657,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    *
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
    */
+  @Override
   public Object putIfAbsent(Object key, Object value) {
     return this.proxy.putIfAbsent(key, value);
   }
@@ -586,6 +667,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    *
    * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
    */
+  @Override
   public boolean remove(Object key, Object value) {
     return this.proxy.remove(key, value);
   }
@@ -595,6 +677,7 @@ public class LocalDataSet implements Region, QueryExecutor {
    *
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
    */
+  @Override
   public Object replace(Object key, Object value) {
     return this.proxy.replace(key, value);
   }
@@ -605,14 +688,17 @@ public class LocalDataSet implements Region, QueryExecutor {
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object,
    * java.lang.Object)
    */
+  @Override
   public boolean replace(Object key, Object oldValue, Object newValue) {
     return this.proxy.replace(key, oldValue, newValue);
   }
 
+  @Override
   public RegionService getRegionService() {
     return getCache();
   }
 
+  @Override
   public RegionSnapshotService<?, ?> getSnapshotService() {
     return new RegionSnapshotServiceImpl(this);
   }

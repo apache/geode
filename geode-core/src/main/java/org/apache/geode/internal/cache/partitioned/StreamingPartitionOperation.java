@@ -139,6 +139,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       super(system, members);
     }
 
+    @Override
     protected boolean stopBecauseOfExceptions() {
       return false;
     }
@@ -185,6 +186,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       }
     }
 
+    @Override
     protected synchronized void processException(DistributionMessage msg, ReplyException ex) {
       Throwable t = ex.getCause();
       if (t instanceof ForceReattemptException || t instanceof CacheClosedException) {

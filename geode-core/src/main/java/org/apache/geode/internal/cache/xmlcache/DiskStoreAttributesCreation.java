@@ -300,11 +300,13 @@ public class DiskStoreAttributesCreation extends UserSpecifiedDiskStoreAttribute
     this.setHasDiskDirs(true);
   }
 
+  @Override
   public void setDiskUsageWarningPercentage(float diskUsageWarningPercentage) {
     super.setDiskUsageWarningPercentage(diskUsageWarningPercentage);
     this.setHasDiskUsageWarningPercentage(true);
   }
 
+  @Override
   public void setDiskUsageCriticalPercentage(float diskUsageCriticalPercentage) {
     super.setDiskUsageCriticalPercentage(diskUsageCriticalPercentage);
     this.setHasDiskUsageCriticalPercentage(true);

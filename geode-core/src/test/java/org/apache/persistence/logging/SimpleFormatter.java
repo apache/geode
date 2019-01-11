@@ -23,6 +23,7 @@ import java.util.Date;
  */
 public class SimpleFormatter extends Formatter {
 
+  @Override
   public String format(LogRecord record) {
     StringBuffer sb = new StringBuffer();
     sb.append('[');

@@ -155,6 +155,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
    * Test the ResourceManager element's critical-off-heap-percentage and
    * eviction-off-heap-percentage attributes
    */
+  @Override
   @Test
   public void testResourceManagerThresholds() throws Exception {
     CacheCreation cache = new CacheCreation();

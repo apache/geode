@@ -77,6 +77,7 @@ public interface Function<T> extends Identifiable<String> {
    * @return string identifying this function
    * @since GemFire 6.0
    */
+  @Override
   default String getId() {
     return getClass().getCanonicalName();
   }

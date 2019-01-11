@@ -91,6 +91,7 @@ public class PdxString implements Comparable<PdxString>, Sendable {
     return length;
   }
 
+  @Override
   public int compareTo(PdxString o) {
     // not handling strings with different headers
     if (this.header != o.header) {

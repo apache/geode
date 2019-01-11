@@ -143,6 +143,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
     this.member = member;
   }
 
+  @Override
   public Version[] getSerializationVersions() {
     return new Version[] {Version.CURRENT};
   }

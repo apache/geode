@@ -94,6 +94,7 @@ public class HydraLineMapper implements LineMapper {
     }
   }
 
+  @Override
   public String getShortNameForLine(String lineName) {
     String name = defaultMapper.getShortNameForLine(lineName);
     if (processIdToVMName.containsKey(name)) {

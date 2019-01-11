@@ -342,20 +342,24 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
       LocalRegion lr = (LocalRegion) region;
       final PoolImpl pool = (PoolImpl) (lr.getServerProxy().getPool());
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return pool.getPrimary() != null;
         }
 
+        @Override
         public String description() {
           return null;
         }
       };
       GeodeAwaitility.await().untilAsserted(ev);
       ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return pool.getRedundants().size() >= 1;
         }
 
+        @Override
         public String description() {
           return null;
         }

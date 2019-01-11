@@ -31,6 +31,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
    * @param aListener the user defined cq listener to add to the CqQuery.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    */
+  @Override
   public void addCqListener(CqListener aListener) {
     if (true) {
       throw new IllegalStateException(
@@ -47,6 +48,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
    * @param aListener the cq listener to remove from the CqQuery.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    */
+  @Override
   public void removeCqListener(CqListener aListener) {
     if (true) {
       throw new IllegalStateException(
@@ -61,6 +63,7 @@ public class CqAttributesMutatorImpl implements CqAttributesMutator {
    * @param newListeners a possibly null or empty array of listeners to add to this CqQuery.
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
    */
+  @Override
   public void initCqListeners(CqListener[] newListeners) {
     if (true) {
       throw new IllegalStateException(

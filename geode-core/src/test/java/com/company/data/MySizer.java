@@ -28,10 +28,12 @@ public class MySizer implements ObjectSizer, Declarable {
 
   String name;
 
+  @Override
   public int sizeof(Object o) {
     return ObjectSizer.DEFAULT.sizeof(o);
   }
 
+  @Override
   public void init(Properties props) {
     this.name = props.getProperty("name", "defaultName");
   }

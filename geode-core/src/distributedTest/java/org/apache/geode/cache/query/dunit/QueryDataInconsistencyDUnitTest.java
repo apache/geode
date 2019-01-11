@@ -444,6 +444,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
 
   public class IndexManagerTestHook
       implements org.apache.geode.cache.query.internal.index.IndexManager.TestHook {
+    @Override
     public void hook(final int spot) throws RuntimeException {
       switch (spot) {
         case 9: // Before Index update and after region entry lock.

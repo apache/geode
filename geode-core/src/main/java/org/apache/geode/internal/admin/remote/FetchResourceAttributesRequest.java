@@ -42,6 +42,7 @@ public class FetchResourceAttributesRequest extends AdminRequest {
     return FetchResourceAttributesResponse.create(dm, this.getSender(), resourceUniqueId);
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_RESOURCE_ATTRIBUTES_REQUEST;
   }

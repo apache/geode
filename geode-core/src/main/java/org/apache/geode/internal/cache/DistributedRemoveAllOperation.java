@@ -169,10 +169,12 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     return new Iterator() {
       int position = 0;
 
+      @Override
       public boolean hasNext() {
         return DistributedRemoveAllOperation.this.removeAllDataSize > position;
       };
 
+      @Override
       @Unretained
       public Object next() {
         @Unretained
@@ -181,6 +183,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
         return ev;
       };
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       };
@@ -956,6 +959,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       }
 
       rgn.syncBulkOp(new Runnable() {
+        @Override
         public void run() {
           for (int i = 0; i < removeAllDataSize; ++i) {
             if (logger.isTraceEnabled()) {
@@ -969,6 +973,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
       }, ev.getEventId());
     }
 
+    @Override
     public int getDSFID() {
       return REMOVE_ALL_MESSAGE;
     }

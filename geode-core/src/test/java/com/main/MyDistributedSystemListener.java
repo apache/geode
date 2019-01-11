@@ -43,6 +43,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
   /**
    * Please note that dynamic addition of the sender id to region is not yet available.
    */
+  @Override
   public void addedDistributedSystem(int remoteDsId) {
     cache = CacheFactory.getAnyInstance();
 
@@ -88,6 +89,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
     }
   }
 
+  @Override
   public void removedDistributedSystem(int remoteDsId) {
     cache = CacheFactory.getAnyInstance();
     if (remoteDsId == 2) { // When a site with distributed-system-id = -2 joins, stop gatewaysender

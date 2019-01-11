@@ -530,6 +530,7 @@ public class DistTXState extends TXState {
    * .gemfire.internal.cache.DistributedPutAllOperation, java.util.Map,
    * org.apache.geode.internal.cache.LocalRegion)
    */
+  @Override
   public void postPutAll(final DistributedPutAllOperation putallOp,
       final VersionedObjectList successfulPuts, InternalRegion reg) {
 
@@ -549,6 +550,7 @@ public class DistTXState extends TXState {
      * We need to put this into the tx state.
      */
     theRegion.syncBulkOp(new Runnable() {
+      @Override
       public void run() {
         // final boolean requiresRegionContext =
         // theRegion.keyRequiresRegionContext();
@@ -608,6 +610,7 @@ public class DistTXState extends TXState {
      * will push them out. We need to put this into the tx state.
      */
     theRegion.syncBulkOp(new Runnable() {
+      @Override
       public void run() {
         InternalDistributedMember myId =
             theRegion.getDistributionManager().getDistributionManagerId();

@@ -134,6 +134,7 @@ public class RemovePersistentMemberMessage extends HighPriorityDistributionMessa
     }
   }
 
+  @Override
   public int getDSFID() {
     return REMOVE_PERSISTENT_MEMBER_REQUEST;
   }

@@ -197,10 +197,12 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   private static void verifyPrimaryColocation() {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return tryVerifyPrimaryColocation();
       }
 
+      @Override
       public String description() {
         dump();
         return excuse;
@@ -337,10 +339,12 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   private static void verifyColocation() {
     // TODO does having this WaitCriterion help?
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return tryVerifyColocation();
       }
 
+      @Override
       public String description() {
         return excuse;
       }
@@ -459,6 +463,7 @@ public class ColocationFailoverDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     closeCache();
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         closeCache();
       }
@@ -471,16 +476,19 @@ class KeyPartitionResolver implements PartitionResolver {
 
   public KeyPartitionResolver() {}
 
+  @Override
   public String getName() {
     return this.getClass().getName();
   }
 
+  @Override
   public Serializable getRoutingObject(EntryOperation opDetails) {
     // Serializable routingbject = null;
     String key = (String) opDetails.getKey();
     return new RoutingObject("" + key.charAt(key.length() - 1));
   }
 
+  @Override
   public void close() {}
 
   public boolean equals(Object o) {
@@ -501,10 +509,12 @@ class RoutingObject implements DataSerializable {
 
   private String value;
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.value = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.value, out);
   }

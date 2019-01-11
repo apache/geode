@@ -23,11 +23,13 @@ import org.eclipse.jetty.servlet.ServletTester;
  */
 public class MyServletTester extends ServletTester {
 
+  @Override
   public boolean isStarted() {
     // return _server.isStarted();
     return false;
   }
 
+  @Override
   public boolean isStopped() {
     // return _server.isStopped();
     return false;

@@ -1171,10 +1171,12 @@ public class RegionFactoryJUnitTest {
   }
 
   private static class MyCacheLoader implements CacheLoader {
+    @Override
     public Object load(LoaderHelper helper) throws CacheLoaderException {
       return null;
     }
 
+    @Override
     public void close() {}
   }
 
@@ -1182,10 +1184,12 @@ public class RegionFactoryJUnitTest {
   }
 
   private static class MyCustomExpiry implements CustomExpiry {
+    @Override
     public ExpirationAttributes getExpiry(Region.Entry entry) {
       return null;
     }
 
+    @Override
     public void close() {}
   }
 }

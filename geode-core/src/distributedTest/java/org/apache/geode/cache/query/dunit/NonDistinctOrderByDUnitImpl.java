@@ -171,6 +171,7 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
   protected void createIndex(VM vm, final String indexName, final String indexedExpression,
       final String regionPath) {
     vm.invoke(new SerializableRunnable("create index") {
+      @Override
       public void run() {
         try {
           Cache cache = getCache();
@@ -198,6 +199,7 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     }
     final int finalIndxTypeCode = indxTypeCode;
     vm.invoke(new SerializableRunnable("create index") {
+      @Override
       public void run() {
         try {
           Cache cache = getCache();
@@ -259,6 +261,7 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
   private void closeCache(VM... vms) {
     for (VM vm : vms) {
       vm.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           getCache().close();
         }

@@ -114,6 +114,7 @@ public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
     }
   }
 
+  @Override
   public void stopMonitor() {
     super.stopMonitor();
     parRegionMonitor.stopListener();
@@ -298,6 +299,7 @@ public class PartitionedRegionBridge<K, V> extends RegionMBeanBridge<K, V> {
     }
   }
 
+  @Override
   public int getLocalMaxMemory() {
     return partitionAttributesData.getLocalMaxMemory();
   }

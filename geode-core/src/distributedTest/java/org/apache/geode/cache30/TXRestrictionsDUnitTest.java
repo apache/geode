@@ -73,6 +73,7 @@ public class TXRestrictionsDUnitTest extends JUnit4CacheTestCase {
     Region misConfigRgn = getCache().createRegion(misConfigRegionName, getDiskRegionAttributes());
     Invoke.invokeInEveryVM(
         new SerializableRunnable("testPersistentRestriction: Illegal Region Configuration") {
+          @Override
           public void run() {
             try {
               getCache().createRegion(misConfigRegionName, getDiskRegionAttributes());

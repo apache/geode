@@ -58,6 +58,7 @@ public class CategoryWithParameterizedRunnerFactoryTest {
 
   public static class ExposedBlockJUnit4ClassRunnerWithParametersFactory
       extends BlockJUnit4ClassRunnerWithParametersFactory {
+    @Override
     public Runner createRunnerForTestWithParameters(TestWithParameters test)
         throws InitializationError {
       return new ExposedBlockJUnit4ClassRunnerWithParameters(test);

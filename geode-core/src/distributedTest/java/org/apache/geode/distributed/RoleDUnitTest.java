@@ -99,6 +99,7 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable("create system") {
+        @Override
         public void run() {
           disconnectFromDS();
           Properties config = new Properties();
@@ -114,6 +115,7 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable("verify roles") {
+        @Override
         public void run() {
           InternalDistributedSystem sys = getSystem();
           DistributionManager dm = sys.getDistributionManager();

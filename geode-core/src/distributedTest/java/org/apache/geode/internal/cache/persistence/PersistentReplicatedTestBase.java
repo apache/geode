@@ -72,13 +72,16 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
   protected void waitForBlockedInitialization(VM vm) {
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
+          @Override
           public String description() {
             return "Waiting for another persistent member to come online";
           }
 
+          @Override
           public boolean done() {
             GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
             PersistentMemberManager mm = cache.getPersistentMemberManager();
@@ -96,6 +99,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   protected SerializableRunnable createPersistentRegionWithoutCompaction(final VM vm0) {
     SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
+      @Override
       public void run() {
         Cache cache = getCache();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -121,6 +125,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   protected void closeRegion(final VM vm) {
     SerializableRunnable closeRegion = new SerializableRunnable("Close persistent region") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(REGION_NAME);
@@ -132,6 +137,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   protected void closeCache(final VM vm) {
     SerializableRunnable closeCache = new SerializableRunnable("close cache") {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.close();
@@ -142,6 +148,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   protected AsyncInvocation closeCacheAsync(VM vm0) {
     SerializableRunnable close = new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.close();
@@ -153,6 +160,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   protected void createNonPersistentRegion(VM vm) throws Exception {
     SerializableRunnable createRegion = new SerializableRunnable("Create non persistent region") {
+      @Override
       public void run() {
         Cache cache = getCache();
         RegionFactory rf = new RegionFactory();
@@ -190,6 +198,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   protected AsyncInvocation createPersistentRegionAsync(final VM vm) {
     SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
+      @Override
       public void run() {
         Cache cache = getCache();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();

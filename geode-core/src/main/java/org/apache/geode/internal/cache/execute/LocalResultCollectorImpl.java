@@ -49,6 +49,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     this.execution = (AbstractExecution) execution;
   }
 
+  @Override
   public synchronized void addResult(DistributedMember memberID, Object resultOfSingleExecution) {
     if (resultsCleared) {
       return;
@@ -86,12 +87,14 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     }
   }
 
+  @Override
   public void endResults() {
     this.endResultReceived = true;
     this.userRC.endResults();
     this.latch.countDown();
   }
 
+  @Override
   public synchronized void clearResults() {
     this.latch = new CountDownLatch(1);
     this.endResultReceived = false;
@@ -100,6 +103,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     resultsCleared = true;
   }
 
+  @Override
   public Object getResult() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException(
@@ -135,6 +139,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     }
   }
 
+  @Override
   public Object getResult(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
 
@@ -177,6 +182,7 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     }
   }
 
+  @Override
   public void setException(Throwable exception) {
     if (exception instanceof FunctionException) {
       this.functionException = (FunctionException) exception;
@@ -185,11 +191,13 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
     }
   }
 
+  @Override
   public ReplyProcessor21 getProcessor() {
     // not expected to be invoked
     return null;
   }
 
+  @Override
   public void setProcessor(ReplyProcessor21 processor) {
     // nothing to be done here since FunctionStreamingResultCollector that
     // wraps this itself implements ReplyProcessor21 and is returned as

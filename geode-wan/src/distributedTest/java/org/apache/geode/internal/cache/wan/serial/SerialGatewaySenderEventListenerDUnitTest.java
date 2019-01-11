@@ -318,6 +318,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
       WaitCriterion wc = new WaitCriterion() {
         Map listenerMap;
 
+        @Override
         public boolean done() {
           listenerMap = ((MyGatewaySenderEventListener) l).getEventsMap();
           boolean sizeCorrect = map.size() == listenerMap.size();
@@ -326,6 +327,7 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
           return sizeCorrect && keySetCorrect && valuesCorrect;
         }
 
+        @Override
         public String description() {
           return "Waiting for all sites to get updated, the sizes are " + listenerMap.size()
               + " and " + map.size();

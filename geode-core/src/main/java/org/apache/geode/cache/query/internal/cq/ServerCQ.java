@@ -69,6 +69,7 @@ public interface ServerCQ extends InternalCqQuery {
    *
    * @param sendRequestToServer true to send the request to server.
    */
+  @Override
   void close(boolean sendRequestToServer) throws CqClosedException, CqException;
 
 
@@ -76,5 +77,6 @@ public interface ServerCQ extends InternalCqQuery {
 
   ClientProxyMembershipID getClientProxyId();
 
+  @Override
   void stop() throws CqClosedException, CqException;
 }

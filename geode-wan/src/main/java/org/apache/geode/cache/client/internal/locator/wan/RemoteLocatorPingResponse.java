@@ -29,12 +29,15 @@ public class RemoteLocatorPingResponse implements DataSerializableFixedID {
     super();
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+  @Override
   public void toData(DataOutput out) throws IOException {}
 
 
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE;
   }

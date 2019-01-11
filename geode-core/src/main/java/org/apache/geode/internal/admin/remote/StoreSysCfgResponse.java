@@ -57,6 +57,7 @@ public class StoreSysCfgResponse extends AdminResponse {
 
   // instance methods
 
+  @Override
   public int getDSFID() {
     return STORE_SYS_CFG_RESPONSE;
   }

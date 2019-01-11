@@ -102,6 +102,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.fieldAnalyzers;
   }
 
+  @Override
   public RepositoryManager getRepositoryManager() {
     return this.repositoryManager;
   }
@@ -118,6 +119,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     return this.analyzer;
   }
 
+  @Override
   public LuceneSerializer getLuceneSerializer() {
     return this.luceneSerializer;
   }
@@ -126,6 +128,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     this.luceneSerializer = serializer;
   }
 
+  @Override
   public Cache getCache() {
     return this.cache;
   }
@@ -135,10 +138,12 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
         fieldAnalyzers == null ? null : Collections.unmodifiableMap(fieldAnalyzers);
   }
 
+  @Override
   public LuceneIndexStats getIndexStats() {
     return indexStats;
   }
 
+  @Override
   public void initialize() {
     /* create index region */
     dataRegion = assignDataRegion();
@@ -211,6 +216,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     dataRegion.getExtensionPoint().addExtension(creation);
   }
 
+  @Override
   public void destroy(boolean initiator) {
     // Find and delete the appropriate extension
     Extension extensionToDelete = null;

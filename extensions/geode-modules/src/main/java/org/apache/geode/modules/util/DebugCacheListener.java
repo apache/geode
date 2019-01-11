@@ -23,18 +23,22 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 @SuppressWarnings("unchecked")
 public class DebugCacheListener extends CacheListenerAdapter implements Declarable {
 
+  @Override
   public void afterCreate(EntryEvent event) {
     log(event);
   }
 
+  @Override
   public void afterUpdate(EntryEvent event) {
     log(event);
   }
 
+  @Override
   public void afterInvalidate(EntryEvent event) {
     log(event);
   }
 
+  @Override
   public void afterDestroy(EntryEvent event) {
     log(event);
   }
@@ -49,6 +53,7 @@ public class DebugCacheListener extends CacheListenerAdapter implements Declarab
     event.getRegion().getCache().getLogger().info(builder.toString());
   }
 
+  @Override
   public void init(Properties p) {}
 
   public boolean equals(Object obj) {

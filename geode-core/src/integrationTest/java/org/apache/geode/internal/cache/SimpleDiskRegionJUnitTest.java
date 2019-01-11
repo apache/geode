@@ -338,6 +338,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   class TestNewDiskId implements Runnable {
+    @Override
     public void run() {
       long keyId = 0;
       for (int i = 0; i < 10000; i++) {

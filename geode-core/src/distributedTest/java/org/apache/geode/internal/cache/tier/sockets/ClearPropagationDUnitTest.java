@@ -137,6 +137,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testVerifyClearNotReceivedBySenderReceivedByOthers() {
     CacheSerializableRunnable resetFlags = new CacheSerializableRunnable("resetFlags") {
+      @Override
       public void run2() throws CacheException {
         gotClear = false;
         gotDestroyed = false;
@@ -181,6 +182,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testEventIdGeneratedInDestroyRegionOperation() throws Exception {
     CacheSerializableRunnable resetFlags = new CacheSerializableRunnable("resetFlags") {
+      @Override
       public void run2() throws CacheException {
         gotClear = false;
         gotDestroyed = false;
@@ -216,6 +218,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private CacheSerializableRunnable checkDestroyRegion(final boolean toBlock) {
     CacheSerializableRunnable checkRegion = new CacheSerializableRunnable("checkDestroyRegion") {
+      @Override
       public void run2() throws CacheException {
         if (toBlock) {
           synchronized (ClearPropagationDUnitTest.class) {
@@ -243,6 +246,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     CacheSerializableRunnable clearRegion = new CacheSerializableRunnable("checkSize") {
 
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);
@@ -351,6 +355,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName(p.getName());
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterRegionClear(RegionEvent re) {
 
         synchronized (ClearPropagationDUnitTest.class) {
@@ -359,6 +364,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public void afterRegionDestroy(RegionEvent re) {
         synchronized (ClearPropagationDUnitTest.class) {
           gotDestroyed = true;

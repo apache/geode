@@ -55,6 +55,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
     final boolean clone = true;
 
     SerializableCallable createDataRegion = new SerializableCallable("createDataRegion") {
+      @Override
       public Object call() throws Exception {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);
@@ -77,6 +78,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(createDataRegion);
 
     SerializableRunnable createEmptyRegion = new SerializableRunnable("createEmptyRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);
@@ -105,6 +107,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(createEmptyRegion);
 
     vm0.invoke(new SerializableRunnable("doPut") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region<Integer, TestDelta> region = cache.getRegion("region1");
@@ -129,6 +132,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
   private long checkObjects(VM vm, final int serializations, final int deserializations,
       final int deltas, final int clones) {
     SerializableCallable getSize = new SerializableCallable("check objects") {
+      @Override
       public Object call() {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");

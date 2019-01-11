@@ -260,6 +260,7 @@ public class PartitionedRegionHelper {
       RegionAttributes ra = factory.create();
       // Create anonymous stats holder for Partitioned Region meta data
       final HasCachePerfStats prMetaStatsHolder = new HasCachePerfStats() {
+        @Override
         public CachePerfStats getCachePerfStats() {
           return new CachePerfStats(cache.getDistributedSystem(), "partitionMetaData");
         }
@@ -374,6 +375,7 @@ public class PartitionedRegionHelper {
           // we have determined the node to remove (Which includes the
           // serial number).
           cache.getDistributionManager().getPrMetaDataCleanupThreadPool().execute(new Runnable() {
+            @Override
             public void run() {
               cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
               if (postCleanupTask != null) {
@@ -932,19 +934,23 @@ public class PartitionedRegionHelper {
       this.cache = cache;
     }
 
+    @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {
 
     }
 
+    @Override
     public void memberDeparted(DistributionManager distributionManager,
         final InternalDistributedMember id, boolean crashed) {
       PartitionedRegionHelper.cleanUpMetaDataOnNodeFailure(cache, id);
     }
 
+    @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
         InternalDistributedMember whoSuspected, String reason) {}
 
+    @Override
     public void quorumLost(DistributionManager distributionManager,
         Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
@@ -953,6 +959,7 @@ public class PartitionedRegionHelper {
   static class FixedPartitionAttributesListener extends CacheListenerAdapter {
     private static final Logger logger = LogService.getLogger();
 
+    @Override
     public void afterCreate(EntryEvent event) {
       PartitionRegionConfig prConfig = (PartitionRegionConfig) event.getNewValue();
       if (!prConfig.getElderFPAs().isEmpty()) {
@@ -960,6 +967,7 @@ public class PartitionedRegionHelper {
       }
     }
 
+    @Override
     public void afterUpdate(EntryEvent event) {
       PartitionRegionConfig prConfig = (PartitionRegionConfig) event.getNewValue();
       if (!prConfig.getElderFPAs().isEmpty()) {

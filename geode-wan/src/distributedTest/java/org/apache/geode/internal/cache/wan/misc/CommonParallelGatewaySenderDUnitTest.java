@@ -420,6 +420,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
 
       for (final BucketRegion bucket : buckets) {
         WaitCriterion wc = new WaitCriterion() {
+          @Override
           public boolean done() {
             if (bucket.keySet().size() == 0) {
               getLogWriter().info("Bucket " + bucket.getId() + " is empty");
@@ -428,6 +429,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
             return false;
           }
 
+          @Override
           public String description() {
             return "Expected bucket entries for bucket: " + bucket.getId()
                 + " is: 0 but actual entries: " + bucket.keySet().size()

@@ -46,6 +46,7 @@ public class IndexTrackingTestHook implements PartitionedRegionQueryEvaluator.Te
   }
 
 
+  @Override
   public void hook(int spot) throws RuntimeException {
 
     QueryObserver observer = QueryObserverHolder.getInstance();

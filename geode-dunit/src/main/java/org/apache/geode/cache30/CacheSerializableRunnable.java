@@ -46,6 +46,7 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable {
    * Invokes the {@link #run2} method and will wrap any {@link CacheException} thrown by
    * <code>run2</code> in a {@link CacheSerializableRunnableException}.
    */
+  @Override
   public void run() {
     try {
       if (args == null) {

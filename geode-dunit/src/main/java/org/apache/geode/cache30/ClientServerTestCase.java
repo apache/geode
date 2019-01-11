@@ -296,6 +296,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
 
     }
 
+    @Override
     public void init(Properties props) {}
   }
 

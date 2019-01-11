@@ -116,10 +116,12 @@ public class TransactionManagerImplJUnitTest {
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
     txn.registerSynchronization(new Synchronization() {
 
+      @Override
       public void beforeCompletion() {
         throw new RuntimeException("MyException");
       }
 
+      @Override
       public void afterCompletion(int status) {
         assertTrue(status == Status.STATUS_ROLLEDBACK);
       }
@@ -141,6 +143,7 @@ public class TransactionManagerImplJUnitTest {
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
     txn.registerSynchronization(new Synchronization() {
 
+      @Override
       public void beforeCompletion() {
         try {
           utx.setRollbackOnly();
@@ -149,6 +152,7 @@ public class TransactionManagerImplJUnitTest {
         }
       }
 
+      @Override
       public void afterCompletion(int status) {
         assertTrue(status == Status.STATUS_ROLLEDBACK);
       }
@@ -169,18 +173,22 @@ public class TransactionManagerImplJUnitTest {
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
     txn.registerSynchronization(new Synchronization() {
 
+      @Override
       public void beforeCompletion() {}
 
+      @Override
       public void afterCompletion(int status) {
         assertTrue(status == Status.STATUS_ROLLEDBACK);
       }
     });
     txn.enlistResource(new XAResourceAdaptor() {
 
+      @Override
       public void commit(Xid arg0, boolean arg1) throws XAException {
         throw new XAException(5);
       }
 
+      @Override
       public void rollback(Xid arg0) throws XAException {
         throw new XAException(6);
       }
@@ -201,18 +209,22 @@ public class TransactionManagerImplJUnitTest {
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
     txn.registerSynchronization(new Synchronization() {
 
+      @Override
       public void beforeCompletion() {
         fail("Notify Before Completion should not be called in rollback");
       }
 
+      @Override
       public void afterCompletion(int status) {
         assertTrue(status == Status.STATUS_ROLLEDBACK);
       }
     });
     txn.enlistResource(new XAResourceAdaptor() {
 
+      @Override
       public void commit(Xid arg0, boolean arg1) throws XAException {}
 
+      @Override
       public void rollback(Xid arg0) throws XAException {
         throw new XAException(6);
       }
@@ -233,10 +245,12 @@ public class TransactionManagerImplJUnitTest {
     Transaction txn = (Transaction) tm.getTransactionMap().get(thread);
     txn.registerSynchronization(new Synchronization() {
 
+      @Override
       public void beforeCompletion() {
         fail("Notify Before Completion should not be called in rollback");
       }
 
+      @Override
       public void afterCompletion(int status) {
         assertTrue(status == Status.STATUS_ROLLEDBACK);
       }
@@ -253,33 +267,43 @@ public class TransactionManagerImplJUnitTest {
 // commit/rollback etc
 class XAResourceAdaptor implements XAResource {
 
+  @Override
   public int getTransactionTimeout() throws XAException {
     return 0;
   }
 
+  @Override
   public boolean setTransactionTimeout(int arg0) throws XAException {
     return false;
   }
 
+  @Override
   public boolean isSameRM(XAResource arg0) throws XAException {
     return false;
   }
 
+  @Override
   public Xid[] recover(int arg0) throws XAException {
     return null;
   }
 
+  @Override
   public int prepare(Xid arg0) throws XAException {
     return 0;
   }
 
+  @Override
   public void forget(Xid arg0) throws XAException {}
 
+  @Override
   public void rollback(Xid arg0) throws XAException {}
 
+  @Override
   public void end(Xid arg0, int arg1) throws XAException {}
 
+  @Override
   public void start(Xid arg0, int arg1) throws XAException {}
 
+  @Override
   public void commit(Xid arg0, boolean arg1) throws XAException {}
 }

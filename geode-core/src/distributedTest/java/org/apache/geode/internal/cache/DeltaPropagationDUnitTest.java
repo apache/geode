@@ -749,20 +749,24 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion wc = null;
     if (INVALIDATE.equals(op)) {
       wc = new WaitCriterion() {
+        @Override
         public boolean done() {
           return numOfInvalidates == expected;
         }
 
+        @Override
         public String description() {
           return "numOfInvalidates was expected to be " + expected + " but is " + numOfInvalidates;
         }
       };
     } else if (DESTROY.equals(op)) {
       wc = new WaitCriterion() {
+        @Override
         public boolean done() {
           return numOfInvalidates == expected;
         }
 
+        @Override
         public String description() {
           return "numOfDestroys was expected to be " + expected + " but is " + numOfDestroys;
         }
@@ -789,10 +793,12 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
             .getEvictionController();
 
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return cc.getCounters().getEvictions() > 0;
       }
 
+      @Override
       public String description() {
         return "HA Overflow did not occure.";
       }
@@ -802,10 +808,12 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private void waitForLastKey() {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return isLastKeyReceived();
       }
 
+      @Override
       public String description() {
         return "Last key NOT received.";
       }
@@ -1077,6 +1085,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         break;
       case CLIENT_LISTENER:
         listener = new CacheListenerAdapter() {
+          @Override
           public void afterCreate(EntryEvent event) {
             numOfCreates++;
             logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
@@ -1089,6 +1098,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
             }
           }
 
+          @Override
           public void afterUpdate(EntryEvent event) {
             numOfUpdates++;
             logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
@@ -1103,6 +1113,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         break;
       case CLIENT_LISTENER_2:
         listener = new CacheListenerAdapter() {
+          @Override
           public void afterCreate(EntryEvent event) {
             numOfCreates++;
             logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
@@ -1115,6 +1126,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
             }
           }
 
+          @Override
           public void afterUpdate(EntryEvent event) {
             int tmp = ++numOfUpdates;
             logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
@@ -1131,6 +1143,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         break;
       case C2S2S_SERVER_LISTENER:
         listener = new CacheListenerAdapter() {
+          @Override
           public void afterCreate(EntryEvent event) {
             numOfCreates++;
             logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
@@ -1139,18 +1152,21 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
             }
           }
 
+          @Override
           public void afterUpdate(EntryEvent event) {
             numOfUpdates++;
             logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">"
                 + ", numOfUpdates: " + numOfUpdates);
           }
 
+          @Override
           public void afterInvalidate(EntryEvent event) {
             numOfInvalidates++;
             logger.fine("Invalidate Event: <" + event.getKey() + ", " + event.getOldValue() + ">"
                 + ", numOfInvalidates: " + numOfInvalidates);
           }
 
+          @Override
           public void afterDestroy(EntryEvent event) {
             numOfDestroys++;
             logger.fine("Destroy Event: <" + event.getKey() + ", " + event.getOldValue() + ">"
@@ -1160,6 +1176,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         break;
       case LAST_KEY_LISTENER:
         listener = new CacheListenerAdapter() {
+          @Override
           public void afterCreate(EntryEvent event) {
             if (LAST_KEY.equals(event.getKey())) {
               lastKeyReceived = true;
@@ -1169,6 +1186,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         break;
       case DURABLE_CLIENT_LISTENER:
         listener = new CacheListenerAdapter() {
+          @Override
           public void afterRegionLive(RegionEvent event) {
             logger.fine("Marker received");
             if (Operation.MARKER == event.getOperation()) {
@@ -1180,6 +1198,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
             }
           }
 
+          @Override
           public void afterCreate(EntryEvent event) {
             logger.fine("CREATE received");
             if (LAST_KEY.equals(event.getKey())) {
@@ -1188,6 +1207,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
             }
           }
 
+          @Override
           public void afterUpdate(EntryEvent event) {
             assertNotNull(event.getNewValue());
           }

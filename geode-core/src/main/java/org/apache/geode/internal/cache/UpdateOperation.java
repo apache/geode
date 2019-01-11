@@ -226,6 +226,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
             updateMsg = new UpdateOperation.UpdateMessage((UpdateMessage) this);
           }
           Runnable sendMessage = new Runnable() {
+            @Override
             public void run() {
               synchronized (updateMsg) { // prevent concurrent update of
                 // recipient list
@@ -338,6 +339,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
       buff.append(deserializationPolicyToString(this.deserializationPolicy));
     }
 
+    @Override
     public int getDSFID() {
       return UPDATE_MESSAGE;
     }

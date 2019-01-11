@@ -189,6 +189,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     return this.isValid;
   }
 
+  @Override
   public int compareTo(final IndexDetails indexDetails) {
     int comparisonValue = compare(getMemberName(), indexDetails.getMemberName());
     comparisonValue = (comparisonValue != 0 ? comparisonValue

@@ -75,16 +75,19 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return result;
   }
 
+  @Override
   public DiskStoreFactory setAutoCompact(boolean autoCompact) {
     this.attrs.autoCompact = autoCompact;
     return this;
   }
 
+  @Override
   public DiskStoreFactory setAllowForceCompaction(boolean allowForceCompaction) {
     this.attrs.allowForceCompaction = allowForceCompaction;
     return this;
   }
 
+  @Override
   public DiskStoreFactory setCompactionThreshold(int compactionThreshold) {
     if (compactionThreshold < 0) {
       throw new IllegalArgumentException(
@@ -102,6 +105,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return this;
   }
 
+  @Override
   public DiskStoreFactory setTimeInterval(long timeInterval) {
     if (timeInterval < 0) {
       throw new IllegalArgumentException(
@@ -127,6 +131,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     }
   }
 
+  @Override
   public DiskStore create(String name) {
     this.attrs.name = name;
     // As a simple fix for 41290, only allow one DiskStore to be created
@@ -198,6 +203,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return existing;
   }
 
+  @Override
   public DiskStoreFactory setDiskDirsAndSizes(File[] diskDirs, int[] diskDirSizes) {
     if (diskDirSizes.length != diskDirs.length) {
       throw new IllegalArgumentException(
@@ -244,6 +250,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     }
   }
 
+  @Override
   public DiskStoreFactory setDiskDirs(File[] diskDirs) {
     checkIfDirectoriesExist(diskDirs);
     int[] diskSizes = new int[diskDirs.length];
@@ -251,6 +258,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return setDiskDirsAndSizes(diskDirs, diskSizes);
   }
 
+  @Override
   public DiskStoreFactory setMaxOplogSize(long maxOplogSize) {
     long MAX = Long.MAX_VALUE / (1024 * 1024);
     if (maxOplogSize > MAX) {
@@ -282,6 +290,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return this;
   }
 
+  @Override
   public DiskStoreFactory setQueueSize(int queueSize) {
     if (queueSize < 0) {
       throw new IllegalArgumentException(
@@ -293,6 +302,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return this;
   }
 
+  @Override
   public DiskStoreFactory setWriteBufferSize(int writeBufferSize) {
     if (writeBufferSize < 0) {
       // TODO add a message for WriteBufferSize

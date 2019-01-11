@@ -76,6 +76,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#begin()
    */
+  @Override
   public synchronized void begin() throws NotSupportedException, SystemException {
     LogWriter log = InternalDistributedSystem.getLogger();
     if (log.fineEnabled()) {
@@ -92,6 +93,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#commit()
    */
+  @Override
   public void commit() throws RollbackException, HeuristicMixedException,
       HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
     tm.commit();
@@ -102,6 +104,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#rollback()
    */
+  @Override
   public void rollback() throws IllegalStateException, SecurityException, SystemException {
     tm.rollback();
   }
@@ -111,6 +114,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#setRollbackOnly()
    */
+  @Override
   public void setRollbackOnly() throws IllegalStateException, SystemException {
     tm.setRollbackOnly();
   }
@@ -120,6 +124,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#getStatus()
    */
+  @Override
   public int getStatus() throws SystemException {
     return tm.getStatus();
   }
@@ -129,6 +134,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
    *
    * @see javax.transaction.UserTransaction#setTransactionTimeout
    */
+  @Override
   public void setTransactionTimeout(int timeOut) throws SystemException {
     if (timeOut < 0) {
       String exception =

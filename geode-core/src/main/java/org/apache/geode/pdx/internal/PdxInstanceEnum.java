@@ -53,22 +53,27 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     this.enumOrdinal = e.ordinal();
   }
 
+  @Override
   public String getClassName() {
     return this.className;
   }
 
+  @Override
   public String getName() {
     return this.enumName;
   }
 
+  @Override
   public boolean isEnum() {
     return true;
   }
 
+  @Override
   public int getOrdinal() {
     return this.enumOrdinal;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Object getObject() {
     @SuppressWarnings("rawtypes")
@@ -89,6 +94,7 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     }
   }
 
+  @Override
   public boolean hasField(String fieldName) {
     return getFieldNames().contains(fieldName);
   }
@@ -101,14 +107,17 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     fieldNames = Collections.unmodifiableList(tmp);
   }
 
+  @Override
   public List<String> getFieldNames() {
     return fieldNames;
   }
 
+  @Override
   public boolean isIdentityField(String fieldName) {
     return false;
   }
 
+  @Override
   public Object getField(String fieldName) {
     if ("name".equals(fieldName)) {
       return this.enumName;
@@ -118,10 +127,12 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     return null;
   }
 
+  @Override
   public WritablePdxInstance createWriter() {
     throw new IllegalStateException("PdxInstances that are an enum can not be modified.");
   }
 
+  @Override
   public void sendTo(DataOutput out) throws IOException {
     out.writeByte(DSCODE.PDX_INLINE_ENUM.toByte());
     DataSerializer.writeString(this.className, out);
@@ -166,12 +177,14 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     return this.enumName;
   }
 
+  @Override
   public byte[] toBytes() throws IOException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     sendTo(hdos);
     return hdos.toByteArray();
   }
 
+  @Override
   public int compareTo(Object o) {
     if (o instanceof ComparableEnum) {
       ComparableEnum other = (ComparableEnum) o;

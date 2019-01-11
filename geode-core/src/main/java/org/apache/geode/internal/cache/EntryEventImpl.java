@@ -192,6 +192,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * Reads the contents of this message from the given input.
    */
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.eventID = (EventID) DataSerializer.readObject(in);
     Object key = DataSerializer.readObject(in);
@@ -500,6 +501,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     this.eventFlags = EventFlags.set(this.eventFlags, mask, on);
   }
 
+  @Override
   public DistributedMember getDistributedMember() {
     return this.distributedMember;
   }
@@ -632,6 +634,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   // was received from a peer. This is done to force distribution of the
   // message to peers and to cause concurrency version stamping to be performed.
   // This is done by all one-hop operations, like RemoteInvalidateMessage.
+  @Override
   public boolean isOriginRemote() {
     return testEventFlag(EventFlags.FLAG_ORIGIN_REMOTE);
   }
@@ -646,6 +649,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return (this.context != null) && (this.versionTag != null);
   }
 
+  @Override
   public boolean isGenerateCallbacks() {
     return testEventFlag(EventFlags.FLAG_GENERATE_CALLBACKS);
   }
@@ -679,14 +683,17 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @return null if no event id has been set
    */
+  @Override
   public EventID getEventId() {
     return this.eventID;
   }
 
+  @Override
   public boolean isBridgeEvent() {
     return hasClientOrigin();
   }
 
+  @Override
   public boolean hasClientOrigin() {
     return getContext() != null;
   }
@@ -702,6 +709,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * gets the ID of the client that initiated this event. Null if a server-initiated event
    */
+  @Override
   public ClientProxyMembershipID getContext() {
     return this.context;
   }
@@ -717,6 +725,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @return the key.
    */
+  @Override
   public Object getKey() {
     return keyInfo.getKey();
   }
@@ -728,6 +737,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @return the value in the cache prior to this event.
    */
+  @Override
   public Object getOldValue() {
     try {
       if (isOriginRemote() && getRegion().isProxy()) {
@@ -864,6 +874,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     }
   }
 
+  @Override
   @Unretained
   public Object basicGetNewValue() {
     generateNewValueFromBytesIfNeeded();
@@ -1025,6 +1036,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    *
    * @return the value in the cache after this event.
    */
+  @Override
   public Object getNewValue() {
 
     boolean doCopyOnRead = getRegion().isCopyOnRead();
@@ -1091,6 +1103,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     basicSetNewValue(obj, true);
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return this.txId;
   }
@@ -1115,10 +1128,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * @see org.apache.geode.cache.CacheEvent#getRegion()
    */
+  @Override
   public InternalRegion getRegion() {
     return region;
   }
 
+  @Override
   public Operation getOperation() {
     return this.op;
   }
@@ -1134,6 +1149,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * @see org.apache.geode.cache.CacheEvent#getCallbackArgument()
    */
+  @Override
   public Object getCallbackArgument() {
     Object result = this.keyInfo.getCallbackArg();
     while (result instanceof WrappedCallbackArgument) {
@@ -1146,6 +1162,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return result;
   }
 
+  @Override
   public boolean isCallbackArgumentAvailable() {
     return this.getRawCallbackArgument() != Token.NOT_AVAILABLE;
   }
@@ -1180,6 +1197,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * @return null if new value is not serialized; otherwise returns a SerializedCacheValueImpl
    *         containing the new value.
    */
+  @Override
   public SerializedCacheValue<?> getSerializedNewValue() {
     // In the case where there is a delta that has not been applied yet,
     // do not apply it here since it would not produce a serialized new
@@ -1505,10 +1523,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return cd;
   }
 
+  @Override
   public void setCachedSerializedNewValue(byte[] v) {
     this.cachedSerializedNewValue = v;
   }
 
+  @Override
   public byte[] getCachedSerializedNewValue() {
     return this.cachedSerializedNewValue;
   }
@@ -1624,6 +1644,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     setNewValueInRegion(owner, reentry, null);
   }
 
+  @Override
   public void setRegionEntry(RegionEntry re) {
     this.re = re;
   }
@@ -1968,6 +1989,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return this.oldValue instanceof Token;
   }
 
+  @Override
   public boolean isOldValueAvailable() {
     if (isOriginRemote() && getRegion().isProxy()) {
       return false;
@@ -2166,10 +2188,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return buf.toString();
   }
 
+  @Override
   public int getDSFID() {
     return ENTRY_EVENT;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.eventID, out);
     DataSerializer.writeObject(this.getKey(), out);
@@ -2265,6 +2289,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * @return null if old value is not serialized; otherwise returns a SerializedCacheValueImpl
    *         containing the old value.
    */
+  @Override
   public SerializedCacheValue<?> getSerializedOldValue() {
     @Unretained(ENTRY_EVENT_OLD_VALUE)
     final Object tmp = basicGetOldValue();
@@ -2320,6 +2345,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return oldSize;
   }
 
+  @Override
   public EnumListenerEvent getEventType() {
     return this.eventType;
   }
@@ -2327,6 +2353,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * Sets the operation type.
    */
+  @Override
   public void setEventType(EnumListenerEvent eventType) {
     this.eventType = eventType;
   }
@@ -2472,6 +2499,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * sets the routing information for cache clients
    */
+  @Override
   public void setLocalFilterInfo(FilterInfo info) {
     this.filterInfo = info;
   }
@@ -2479,6 +2507,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * retrieves the routing information for cache clients in this VM
    */
+  @Override
   public FilterInfo getLocalFilterInfo() {
     return this.filterInfo;
   }
@@ -2557,6 +2586,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * @return the concurrency versioning tag for this event, if any
    */
+  @Override
   public VersionTag getVersionTag() {
     return this.versionTag;
   }
@@ -2655,20 +2685,24 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       return getDeserializedValue(this.r, this.re);
     }
 
+    @Override
     public Object getDeserializedForReading() {
       return getCd().getDeserializedForReading();
     }
 
+    @Override
     public Object getDeserializedWritableCopy(Region rgn, RegionEntry entry) {
       return getCd().getDeserializedWritableCopy(rgn, entry);
     }
 
+    @Override
     public Object getDeserializedValue(Region rgn, RegionEntry reentry) {
       return callWithOffHeapLock(cd -> {
         return cd.getDeserializedValue(rgn, reentry);
       });
     }
 
+    @Override
     public Object getValue() {
       if (this.serializedValue != null) {
         return this.serializedValue;
@@ -2676,6 +2710,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       return getCd().getValue();
     }
 
+    @Override
     public void writeValueAsByteArray(DataOutput out) throws IOException {
       if (this.serializedValue != null) {
         DataSerializer.writeByteArray(this.serializedValue, out);
@@ -2684,6 +2719,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
     }
 
+    @Override
     public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
       if (this.serializedValue != null) {
         wrapper.setData(this.serializedValue, userBits, this.serializedValue.length,
@@ -2693,14 +2729,17 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
     }
 
+    @Override
     public int getValueSizeInBytes() {
       return getCd().getValueSizeInBytes();
     }
 
+    @Override
     public int getSizeInBytes() {
       return getCd().getSizeInBytes();
     }
 
+    @Override
     public String getStringForm() {
       return getCd().getStringForm();
     }

@@ -24,8 +24,10 @@ import java.util.List;
  */
 public class LocatorDiscoveryCallbackAdapter implements LocatorDiscoveryCallback {
 
+  @Override
   public void locatorsDiscovered(List locators) {}
 
+  @Override
   public void locatorsRemoved(List locators) {}
 
 }

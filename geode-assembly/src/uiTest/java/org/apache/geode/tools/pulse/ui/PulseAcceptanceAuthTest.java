@@ -84,6 +84,7 @@ public class PulseAcceptanceAuthTest extends PulseAcceptanceTestBase {
     cluster = pulseRule.getRepository().getCluster("clusterRead", "clusterRead");
   }
 
+  @Override
   public WebDriver getWebDriver() {
     return webDriverRule.getDriver();
   }

@@ -24,6 +24,7 @@ public class LocatorListRequest extends ServerLocationRequest {
     return "LocatorListRequest{group=" + getServerGroup() + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.LOCATOR_LIST_REQUEST;
   }

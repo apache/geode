@@ -95,11 +95,13 @@ public class EventSequenceNumberHolder implements DataSerializable {
     return result.toString();
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     lastSequenceNumber = in.readLong();
     versionTag = (VersionTag) DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(lastSequenceNumber);
     DataSerializer.writeObject(versionTag, out);

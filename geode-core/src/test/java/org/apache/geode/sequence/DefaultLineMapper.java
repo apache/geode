@@ -26,6 +26,7 @@ public class DefaultLineMapper implements LineMapper {
   private static Pattern MEMBER_ID_RE =
       Pattern.compile(".*\\((\\d+)(:admin)?(:loner)?\\).*:\\d+(/\\d+|.*:.*)");
 
+  @Override
   public String getShortNameForLine(String name) {
     Matcher matcher = MEMBER_ID_RE.matcher(name);
     if (matcher.matches()) {

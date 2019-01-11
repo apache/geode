@@ -174,6 +174,7 @@ public class MultiThreadedOplogPerJUnitPerformanceTest {
 
     }
 
+    @Override
     public void run() {
       long startTime, endTime;
       startTime = System.currentTimeMillis();

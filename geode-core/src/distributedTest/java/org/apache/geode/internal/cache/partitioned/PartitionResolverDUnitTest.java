@@ -136,18 +136,21 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
   private void initAccessorAndDataStore(final int redundantCopies) {
     accessor.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         createRegion(true/* accessor */, redundantCopies);
         return null;
       }
     });
     datastore1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         createRegion(false/* accessor */, redundantCopies);
         return null;
       }
     });
     datastore2.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         createRegion(false, redundantCopies);
         populateData();
@@ -162,6 +165,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
   private int getNumberOfKeysOwnedByVM(VM datastore12) {
     final Integer numKeys = (Integer) datastore12.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         PartitionedRegion custRegion = (PartitionedRegion) getGemfireCache().getRegion(CUSTOMER);
         Set<BucketRegion> bucketSet = custRegion.getDataStore().getAllLocalPrimaryBucketRegions();
@@ -177,6 +181,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
   private void verifyResolverCountInVM(final VM vm, final int i) {
     vm.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         assertEquals("My id: " + getGemfireCache().getMyId(), i, CountingResolver.count.get());
         CountingResolver.resetResolverCount();
@@ -236,6 +241,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
   private void resolverInIteration(final IteratorType type, final VM vm) {
     initAccessorAndDataStore(0);
     SerializableCallable doIteration = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region custRegion = getGemfireCache().getRegion(CUSTOMER);
         Region orderRegion = getGemfireCache().getRegion(ORDER);
@@ -296,6 +302,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
   private void doIterationInFunction(final IteratorType type) {
     initAccessorAndDataStore(0);
     SerializableCallable registerFunction = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         FunctionService.registerFunction(new IteratorFunction());
         return null;
@@ -306,6 +313,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
     datastore2.invoke(registerFunction);
 
     accessor.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         FunctionService.onRegion(getGemfireCache().getRegion(CUSTOMER)).setArguments(type)
             .execute(IteratorFunction.id).getResult();
@@ -317,6 +325,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
   static class IteratorFunction implements Function {
     private static final String id = "IteratorFunction";
 
+    @Override
     public void execute(FunctionContext context) {
       Region custRegion =
           PartitionRegionHelper.getLocalDataForContext((RegionFunctionContext) context);
@@ -350,18 +359,22 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
       context.getResultSender().lastResult(Boolean.TRUE);
     }
 
+    @Override
     public String getId() {
       return id;
     }
 
+    @Override
     public boolean hasResult() {
       return true;
     }
 
+    @Override
     public boolean optimizeForWrite() {
       return false;
     }
 
+    @Override
     public boolean isHA() {
       return false;
     }
@@ -388,6 +401,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
   private void doOps(final boolean isTx) {
     accessor.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region custRegion = getGemfireCache().getRegion(CUSTOMER);
         CacheTransactionManager mgr = getGemfireCache().getCacheTransactionManager();
@@ -442,6 +456,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
   private int getResolverCountForVM(final VM datastore12) {
     Integer containsTestKey = (Integer) datastore12.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = PartitionRegionHelper.getLocalData(getGemfireCache().getRegion(CUSTOMER));
         Iterator it = r.keySet().iterator();

@@ -94,12 +94,14 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
         ((org.apache.geode.internal.cache.DistributedRegion) region).getCacheDistributionAdvisor();
     final int expectedProfiles = 1;
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         int numProfiles;
         numProfiles = adv.adviseReplicates().size();
         return numProfiles == expectedProfiles;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -118,6 +120,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
     // vm0.invoke(() -> MapClearGIIDUnitTest.createCacheVM0());
 
     vm0.invoke(new CacheSerializableRunnable("createCacheVM0") {
+      @Override
       public void run2() throws CacheException {
         InitialImageOperation.slowImageProcessing = 10;
         InitialImageOperation.slowImageSleeps = 0;
@@ -133,6 +136,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
       }
     });
     vm1.invoke(new CacheSerializableRunnable("createCacheVM1") {
+      @Override
       public void run2() throws CacheException {
         Properties mprops = new Properties();
         // mprops.setProperty(DistributionConfig.SystemConfigurationProperties.MCAST_PORT, "7777");
@@ -157,12 +161,15 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
       // wait until vm0's gii has done 20 slow image sleeps (10ms*20 = 200ms)
       // before starting the clear
       vm0.invoke(new CacheSerializableRunnable("wait for sleeps") {
+        @Override
         public void run2() throws CacheException {
           WaitCriterion ev = new WaitCriterion() {
+            @Override
             public boolean done() {
               return slowImageSleeps >= 20;
             }
 
+            @Override
             public String description() {
               return null;
             }
@@ -189,6 +196,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
       Assert.fail("Test failed", e);
     } finally {
       vm0.invoke(new SerializableRunnable("Set fast image processing") {
+        @Override
         public void run() {
           InitialImageOperation.slowImageProcessing = 0;
           InitialImageOperation.slowImageSleeps = 0;
@@ -200,6 +208,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
 
   public static class CacheObserverImpl extends CacheObserverAdapter {
 
+    @Override
     public void afterRegionClear(RegionEvent event) {
       LogWriterUtils.getLogWriter().info("**********Received clear event in VM0 . ");
       Region rgn = event.getRegion();

@@ -67,11 +67,13 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
     return children;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) {
     Support.assertionFailed("Should not have come here");
     return null;
   }
 
+  @Override
   public int getType() {
     return ALLGROUPJUNCTION;
   }
@@ -239,6 +241,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
     return Collections.unmodifiableList(this.iterOperands);
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return 1;

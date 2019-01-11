@@ -397,6 +397,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /**
    * Returns an unmodifiable Set of this member's Roles.
    */
+  @Override
   public Set<Role> getRoles() {
     Set<Role> tmpRolesSet = this.rolesSet;
     if (tmpRolesSet != null) {
@@ -424,6 +425,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     return tmpRolesSet;
   }
 
+  @Override
   public List<String> getGroups() {
     return Collections.unmodifiableList(Arrays.asList(netMbr.getGroups()));
   }
@@ -474,6 +476,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    *
    * @see org.apache.geode.distributed.DistributedSystem#getName
    */
+  @Override
   public String getName() {
     String result = netMbr.getName();
     if (result == null) {
@@ -485,6 +488,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /**
    * Returns this client member's durable attributes or null if no durable attributes were created.
    */
+  @Override
   public DurableClientAttributes getDurableClientAttributes() {
     assert !this.isPartial;
     DurableClientAttributes attributes = netMbr.getDurableClientAttributes();
@@ -505,6 +509,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * @exception java.lang.ClassCastException - if the specified object's type prevents it from being
    *            compared to this Object.
    */
+  @Override
   public int compareTo(DistributedMember o) {
     return compareTo(o, true);
   }
@@ -779,6 +784,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    *
    * @see Externalizable
    */
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     Assert.assertTrue(netMbr.getVmKind() > 0);
 
@@ -824,6 +830,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    *
    * @see Externalizable
    */
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     int len = in.readInt(); // IPv6 compatible
     byte addr[] = new byte[len];
@@ -867,10 +874,12 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     Assert.assertTrue(netMbr.getVmKind() > 0);
   }
 
+  @Override
   public int getDSFID() {
     return DISTRIBUTED_MEMBER;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     toDataPre_GFE_9_0_0_0(out);
     if (netMbr.getVersionOrdinal() >= Version.GFE_90.ordinal()) {
@@ -970,6 +979,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     fromDataPre_GFE_9_0_0_0(in);
     // just in case this is just a non-versioned read
@@ -1116,6 +1126,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
 
+  @Override
   public void writeEssentialData(DataOutput out) throws IOException {
     Assert.assertTrue(netMbr.getVmKind() > 0);
     DataSerializer.writeInetAddress(getInetAddress(), out);
@@ -1165,14 +1176,17 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     cachedToString = null;
   }
 
+  @Override
   public String getHost() {
     return this.netMbr.getInetAddress().getCanonicalHostName();
   }
 
+  @Override
   public int getProcessId() {
     return netMbr.getProcessId();
   }
 
+  @Override
   public String getId() {
     return toString();
   }

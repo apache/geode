@@ -39,6 +39,7 @@ public class LuceneIndexXmlGeneratorWhereRegionCreatedBeforeReindexIntegrationJU
     LuceneServiceImpl.LUCENE_REINDEX = true;
   }
 
+  @Override
   protected void createDataRegionAndLuceneIndex(LuceneService service) {
     super.cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
     ((LuceneIndexFactoryImpl) service.createIndexFactory().setFields("a", "b", "c")).create("index",
@@ -46,6 +47,7 @@ public class LuceneIndexXmlGeneratorWhereRegionCreatedBeforeReindexIntegrationJU
 
   }
 
+  @Override
   protected void createDataRegionAndLuceneIndexWithSerializer(LuceneTestSerializer luceneSerializer,
       LuceneService service) {
     cache.createRegionFactory(RegionShortcut.PARTITION).create("region");

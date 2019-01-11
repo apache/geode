@@ -121,12 +121,14 @@ public class ValueWrapper implements DataSerializable {
     return Long.valueOf(casVersion).hashCode();
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.casVersion = in.readLong();
     this.value = DataSerializer.readByteArray(in);
     this.flags = in.readInt();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(this.casVersion);
     DataSerializer.writeByteArray(value, out);

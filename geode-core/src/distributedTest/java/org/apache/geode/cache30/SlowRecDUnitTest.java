@@ -97,6 +97,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   private void doCreateOtherVm(final Properties p, final boolean addListener) {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("create root") {
+      @Override
       public void run2() throws CacheException {
         getSystem(p);
         createAckRegion(true, false);
@@ -105,6 +106,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         af.setDataPolicy(DataPolicy.REPLICATE);
         if (addListener) {
           CacheListener cl = new CacheListenerAdapter() {
+            @Override
             public void afterUpdate(EntryEvent event) {
               // make the slow receiver event slower!
               try {
@@ -117,6 +119,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           af.setCacheListener(cl);
         } else {
           CacheListener cl = new CacheListenerAdapter() {
+            @Override
             public void afterCreate(EntryEvent event) {
               if (event.getCallbackArgument() != null) {
                 lastCallback = event.getCallbackArgument();
@@ -131,6 +134,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
               }
             }
 
+            @Override
             public void afterUpdate(EntryEvent event) {
               if (event.getCallbackArgument() != null) {
                 lastCallback = event.getCallbackArgument();
@@ -145,12 +149,14 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
               }
             }
 
+            @Override
             public void afterInvalidate(EntryEvent event) {
               if (event.getCallbackArgument() != null) {
                 lastCallback = event.getCallbackArgument();
               }
             }
 
+            @Override
             public void afterDestroy(EntryEvent event) {
               if (event.getCallbackArgument() != null) {
                 lastCallback = event.getCallbackArgument();
@@ -171,14 +177,17 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   private void checkLastValueInOtherVm(final String lastValue, final Object lcb) {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("check last value") {
+      @Override
       public void run2() throws CacheException {
         Region r1 = getRootRegion("slowrec");
         if (lcb != null) {
           WaitCriterion ev = new WaitCriterion() {
+            @Override
             public boolean done() {
               return lcb.equals(lastCallback);
             }
 
+            @Override
             public String description() {
               return "waiting for callback";
             }
@@ -189,10 +198,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         if (lastValue == null) {
           final Region r = r1;
           WaitCriterion ev = new WaitCriterion() {
+            @Override
             public boolean done() {
               return r.getEntry("key") == null;
             }
 
+            @Override
             public String description() {
               return "waiting for key to become null";
             }
@@ -204,6 +215,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           {
             final Region r = r1;
             WaitCriterion ev = new WaitCriterion() {
+              @Override
               public boolean done() {
                 Entry e = r.getEntry("key");
                 if (e == null) {
@@ -212,6 +224,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
                 return e.getValue() == null;
               }
 
+              @Override
               public String description() {
                 return "waiting for invalidate";
               }
@@ -250,10 +263,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     FORCE_ASYNC_QUEUE = false;
     final DMStats stats = getSystem().getDistributionManager().getStats();
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return stats.getAsyncThreads() == 0;
       }
 
+      @Override
       public String description() {
         return "Waiting for async threads to disappear";
       }
@@ -268,10 +283,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
 
     // wait for the flusher to get its first flush in progress
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return stats.getAsyncQueueFlushesInProgress() != 0;
       }
 
+      @Override
       public String description() {
         return "waiting for flushes to start";
       }
@@ -325,10 +342,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         forceQueueFlush();
       }
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return stats.getAsyncQueueSize() == 0;
         }
 
+        @Override
         public String description() {
           return "Waiting for queues to empty";
         }
@@ -430,12 +449,14 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       long startQueuedMsgs = stats.getAsyncQueuedMsgs();
       long startConflatedMsgs = stats.getAsyncConflatedMsgs();
       Thread t = new Thread(new Runnable() {
+        @Override
         public void run() {
           ar.put("ackKey", "ackValue");
         }
       });
       t.start();
       Thread t2 = new Thread(new Runnable() {
+        @Override
         public void run() {
           ar.put("ackKey", "ackValue");
         }
@@ -482,6 +503,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     {
       VM vm = getOtherVm();
       vm.invoke(new CacheSerializableRunnable("create noConflate") {
+        @Override
         public void run2() throws CacheException {
           AttributesFactory af = new AttributesFactory();
           af.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -695,11 +717,13 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
               + queueSize + " with " + queuedMsgs + " msgs");
       // make sure we lost a connection to vm0
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return dm.getOtherDistributionManagerIds().size() <= others.size()
               && stats.getAsyncQueueSize() == 0;
         }
 
+        @Override
         public String description() {
           return "waiting for connection loss";
         }
@@ -771,6 +795,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
               + queueSize + " with " + queuedMsgs + " msgs");
       // make sure we lost a connection to vm0
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           if (dm.getOtherDistributionManagerIds().size() > others.size()) {
             return false;
@@ -778,6 +803,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           return stats.getAsyncQueueSize() == 0;
         }
 
+        @Override
         public String description() {
           return "waiting for departure";
         }
@@ -826,6 +852,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     public final LinkedList callbackTypes = new LinkedList();
     public final Object CONTROL_LOCK = new Object();
 
+    @Override
     public void afterCreate(EntryEvent event) {
       LogWriterUtils.getLogWriter()
           .info(event.getRegion().getName() + " afterCreate " + event.getKey());
@@ -840,6 +867,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       processEvent(event);
     }
 
+    @Override
     public void afterUpdate(EntryEvent event) {
       LogWriterUtils.getLogWriter()
           .info(event.getRegion().getName() + " afterUpdate " + event.getKey());
@@ -854,6 +882,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       processEvent(event);
     }
 
+    @Override
     public void afterInvalidate(EntryEvent event) {
       synchronized (this.CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
@@ -865,6 +894,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
+    @Override
     public void afterDestroy(EntryEvent event) {
       synchronized (this.CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
@@ -876,6 +906,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
+    @Override
     public void afterRegionInvalidate(RegionEvent event) {
       synchronized (this.CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
@@ -938,6 +969,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     } finally {
       // make sure other vm was notified even if test failed
       getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
+        @Override
         public void run() {
           synchronized (doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
             doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK.notifyAll();
@@ -982,6 +1014,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     p.setProperty(ASYNC_MAX_QUEUE_SIZE, "1024"); // max value
 
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
+      @Override
       public void run2() throws CacheException {
         getSystem(p);
 
@@ -1082,6 +1115,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // send notify to vm0
     LogWriterUtils.getLogWriter().info("[doTestMultipleRegionConflation] wake up vm0");
     getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
+      @Override
       public void run() {
         synchronized (doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
           doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK.notifyAll();
@@ -1092,6 +1126,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // wait for queue to be flushed
     LogWriterUtils.getLogWriter().info("[doTestMultipleRegionConflation] wait for vm0");
     getOtherVm().invoke(new SerializableRunnable("Wait for other vm") {
+      @Override
       public void run() {
         try {
           synchronized (doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
@@ -1116,6 +1151,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     LogWriterUtils.getLogWriter()
         .info("[doTestMultipleRegionConflation] assert callback arguments");
     getOtherVm().invoke(new SerializableRunnable("Assert callback arguments") {
+      @Override
       public void run() {
         synchronized (doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
           LogWriterUtils.getLogWriter()
@@ -1171,6 +1207,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     } finally {
       // make sure other vm was notified even if test failed
       getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
+        @Override
         public void run() {
           synchronized (doTestDisconnectCleanup_Listener.CONTROL_LOCK) {
             doTestDisconnectCleanup_Listener.CONTROL_LOCK.notifyAll();
@@ -1200,6 +1237,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     p.setProperty(ASYNC_MAX_QUEUE_SIZE, "1024"); // max value
 
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
+      @Override
       public void run2() throws CacheException {
         getSystem(p);
         AttributesFactory af = new AttributesFactory();
@@ -1263,6 +1301,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // send notify to vm0
     getLogWriter().info("[testDisconnectCleanup] wake up vm0");
     getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
+      @Override
       public void run() {
         synchronized (doTestDisconnectCleanup_Listener.CONTROL_LOCK) {
           doTestDisconnectCleanup_Listener.CONTROL_LOCK.notifyAll();
@@ -1273,10 +1312,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // make sure we lost a connection to vm0
     getLogWriter().info("[testDisconnectCleanup] wait for vm0 to disconnect");
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return dm.getOtherDistributionManagerIds().size() <= others.size();
       }
 
+      @Override
       public String description() {
         return "waiting for disconnect";
       }
@@ -1287,6 +1328,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // check free memory... perform wait loop with System.gc
     getLogWriter().info("[testDisconnectCleanup] wait for queue cleanup");
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (stats.getAsyncQueues() <= initialQueues) {
           return true;
@@ -1295,6 +1337,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         return false;
       }
 
+      @Override
       public String description() {
         return "waiting for queue cleanup";
       }
@@ -1317,6 +1360,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     } finally {
       // make sure other vm was notified even if test failed
       getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
+        @Override
         public void run() {
           synchronized (doTestPartialMessage_Listener.CONTROL_LOCK) {
             doTestPartialMessage_Listener.CONTROL_LOCK.notifyAll();
@@ -1346,6 +1390,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     p.setProperty(ASYNC_MAX_QUEUE_SIZE, "1024"); // max value
 
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
+      @Override
       public void run2() throws CacheException {
         getSystem(p);
         AttributesFactory af = new AttributesFactory();
@@ -1405,6 +1450,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // send notify to vm0
     LogWriterUtils.getLogWriter().info("[testPartialMessage] wake up vm0");
     getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
+      @Override
       public void run() {
         synchronized (doTestPartialMessage_Listener.CONTROL_LOCK) {
           doTestPartialMessage_Listener.CONTROL_LOCK.notify();
@@ -1415,6 +1461,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // wait for queue to be flushed
     LogWriterUtils.getLogWriter().info("[testPartialMessage] wait for vm0");
     getOtherVm().invoke(new SerializableRunnable("Wait for other vm") {
+      @Override
       public void run() {
         try {
           synchronized (doTestPartialMessage_Listener.CONTROL_LOCK) {
@@ -1443,6 +1490,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // assert values on both listeners
     LogWriterUtils.getLogWriter().info("[testPartialMessage] assert callback arguments");
     getOtherVm().invoke(new SerializableRunnable("Assert callback arguments") {
+      @Override
       public void run() {
         synchronized (doTestPartialMessage_Listener.CONTROL_LOCK) {
           LogWriterUtils.getLogWriter()

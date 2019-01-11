@@ -58,6 +58,7 @@ public class LegacyCommandResult implements CommandResult {
 
   private transient int numTimesSaved;
 
+  @Override
   public Path getFileToDownload() {
     return fileToDownload;
   }
@@ -76,6 +77,7 @@ public class LegacyCommandResult implements CommandResult {
     this.fileToDownload = fileToDownload.toAbsolutePath();
   }
 
+  @Override
   public boolean hasFileToDownload() {
     return fileToDownload != null;
   }
@@ -90,6 +92,7 @@ public class LegacyCommandResult implements CommandResult {
     this.status = status;
   }
 
+  @Override
   public ResultData getResultData() {
     return ResultBuilder.getReadOnlyResultData(resultData);
   }

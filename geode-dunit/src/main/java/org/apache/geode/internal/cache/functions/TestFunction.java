@@ -1043,6 +1043,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
    *
    * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
    */
+  @Override
   public Properties getConfig() {
     return this.props;
   }
@@ -1052,6 +1053,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
    *
    * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
    */
+  @Override
   public void init(Properties props) {
     this.props.putAll(props);
   }

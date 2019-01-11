@@ -47,6 +47,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
   private PartitionedRegion region;
   private BucketRegionQueue brq;
 
+  @Override
   protected void createGatewaySender() {
     super.createGatewaySender();
     ConcurrentParallelGatewaySenderQueue queue =
@@ -57,6 +58,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
     this.brq = mock(BucketRegionQueue.class);
   }
 
+  @Override
   protected AbstractGatewaySenderEventProcessor getEventProcessor() {
     ConcurrentParallelGatewaySenderEventProcessor processor =
         spy(new ConcurrentParallelGatewaySenderEventProcessor(this.sender, null));

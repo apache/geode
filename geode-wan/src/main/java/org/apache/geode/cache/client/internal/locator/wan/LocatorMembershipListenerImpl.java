@@ -55,10 +55,12 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     this.tcpClient = new TcpClient();
   }
 
+  @Override
   public void setPort(int port) {
     this.port = port;
   }
 
+  @Override
   public void setConfig(DistributionConfig config) {
     this.config = config;
   }
@@ -69,9 +71,11 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
    *
    */
 
+  @Override
   public void locatorJoined(final int distributedSystemId, final DistributionLocatorId locator,
       final DistributionLocatorId sourceLocator) {
     Thread distributeLocator = new Thread(new Runnable() {
+      @Override
       public void run() {
         ConcurrentMap<Integer, Set<DistributionLocatorId>> remoteLocators = getAllLocatorsInfo();
         ArrayList<DistributionLocatorId> locatorsToRemove = new ArrayList<DistributionLocatorId>();
@@ -132,6 +136,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     distributeLocator.start();
   }
 
+  @Override
   public Object handleRequest(Object request) {
     Object response = null;
     if (request instanceof RemoteLocatorJoinRequest) {
@@ -188,18 +193,22 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     return new RemoteLocatorResponse(locators);
   }
 
+  @Override
   public Set<String> getRemoteLocatorInfo(int dsId) {
     return this.allServerLocatorsInfo.get(dsId);
   }
 
+  @Override
   public ConcurrentMap<Integer, Set<DistributionLocatorId>> getAllLocatorsInfo() {
     return this.allLocatorsInfo;
   }
 
+  @Override
   public ConcurrentMap<Integer, Set<String>> getAllServerLocatorsInfo() {
     return this.allServerLocatorsInfo;
   }
 
+  @Override
   public void clearLocatorInfo() {
     allLocatorsInfo.clear();
     allServerLocatorsInfo.clear();

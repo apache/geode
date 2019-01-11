@@ -53,10 +53,12 @@ public class LuceneSearchIndexFunction<K, V> implements InternalFunction {
 
   private static final long serialVersionUID = 163818919780803222L;
 
+  @Override
   public String getId() {
     return LuceneSearchIndexFunction.class.getName();
   }
 
+  @Override
   public void execute(final FunctionContext context) {
     Set<LuceneSearchResults> result = new HashSet<>();
     final Cache cache = context.getCache();

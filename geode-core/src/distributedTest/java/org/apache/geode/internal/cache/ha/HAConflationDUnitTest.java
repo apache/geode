@@ -204,6 +204,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   private CacheSerializableRunnable putFromServer(final String key, final String value) {
     CacheSerializableRunnable performPut = new CacheSerializableRunnable("putFromServer") {
+      @Override
       public void run2() throws CacheException {
         Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
         assertNotNull(region);
@@ -219,6 +220,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
   private CacheSerializableRunnable invalidateFromServer(final String key) {
     CacheSerializableRunnable performInvalidate =
         new CacheSerializableRunnable("invalidateFromServer") {
+          @Override
           public void run2() throws CacheException {
             Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
             assertNotNull(region);
@@ -233,6 +235,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   private CacheSerializableRunnable destroyFromServer(final String key) {
     CacheSerializableRunnable performDestroy = new CacheSerializableRunnable("performDestroy") {
+      @Override
       public void run2() throws CacheException {
         Region region = basicGetCache().getRegion(Region.SEPARATOR + regionName);
         assertNotNull(region);
@@ -249,8 +252,10 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     CacheSerializableRunnable checkEvents = new CacheSerializableRunnable("checkEvents") {
       final int interval = 200; // millis
 
+      @Override
       public void run2() throws CacheException {
         WaitCriterion w = new WaitCriterion() {
+          @Override
           public boolean done() {
             synchronized (LOCK) {
 
@@ -265,6 +270,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
             return lastKeyArrived;
           }
 
+          @Override
           public String description() {
             return "expected " + expectedEvents + " events but received " + actualNoEvents;
           }
@@ -347,6 +353,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
 class HAClientCountEventListener implements CacheListener, Declarable {
 
+  @Override
   public void afterCreate(EntryEvent event) {
     String key = (String) event.getKey();
     if (key.equals(HAConflationDUnitTest.LAST_KEY)) {
@@ -360,43 +367,51 @@ class HAClientCountEventListener implements CacheListener, Declarable {
 
   }
 
+  @Override
   public void afterUpdate(EntryEvent event) {
 
     HAConflationDUnitTest.actualNoEvents++;
 
   }
 
+  @Override
   public void afterInvalidate(EntryEvent event) {
 
     HAConflationDUnitTest.actualNoEvents++;
 
   }
 
+  @Override
   public void afterDestroy(EntryEvent event) {
     HAConflationDUnitTest.actualNoEvents++;
 
   }
 
+  @Override
   public void afterRegionInvalidate(RegionEvent event) {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void afterRegionDestroy(RegionEvent event) {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void afterRegionClear(RegionEvent event) {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void afterRegionCreate(RegionEvent event) {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void afterRegionLive(RegionEvent event) {
     // TODO NOT Auto-generated method stub, added by vrao
 
@@ -404,11 +419,13 @@ class HAClientCountEventListener implements CacheListener, Declarable {
 
 
 
+  @Override
   public void close() {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void init(Properties props) {
     // TODO Auto-generated method stub
 

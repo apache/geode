@@ -75,6 +75,7 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
    * Test that starting, stopping then restarting a durable client is correctly processed by the
    * server.
    */
+  @Override
   @Test
   public void testDurableClient() {
 

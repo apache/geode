@@ -60,6 +60,7 @@ public class PersistentMembershipView implements DataSerializable {
    *
    * @see org.apache.geode.DataSerializable#fromData(java.io.DataInput)
    */
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int offlineSize = in.readInt();
     offlineMembers = new HashSet<PersistentMemberID>(offlineSize);
@@ -90,6 +91,7 @@ public class PersistentMembershipView implements DataSerializable {
 
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(offlineMembers.size());
     for (PersistentMemberID member : offlineMembers) {

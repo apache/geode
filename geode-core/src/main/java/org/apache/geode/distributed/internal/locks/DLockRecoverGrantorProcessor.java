@@ -268,6 +268,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
       processor.process(dm, this);
     }
 
+    @Override
     public int getDSFID() {
       return DLOCK_RECOVER_GRANTOR_MESSAGE;
     }
@@ -388,6 +389,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   }
 
   static class DefaultMessageProcessor implements MessageProcessor {
+    @Override
     public void process(DistributionManager dm, DLockRecoverGrantorMessage msg) {
       ReplyException replyException = null;
       int replyCode = DLockRecoverGrantorReplyMessage.OK;

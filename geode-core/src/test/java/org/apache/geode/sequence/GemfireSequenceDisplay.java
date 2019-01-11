@@ -101,6 +101,7 @@ public class GemfireSequenceDisplay {
     selectGraphs.setActionCommand("selectgraphs");
     selectGraphs.addActionListener(new ActionListener() {
 
+      @Override
       public void actionPerformed(ActionEvent e) {
         showGraphSelector();
       }
@@ -114,6 +115,7 @@ public class GemfireSequenceDisplay {
     selectGraphDialog = new SelectGraphDialog(graphs);
     selectGraphDialog.addSelectionListener(new SelectGraphDialog.SelectionListener() {
 
+      @Override
       public void selectionChanged(List<GraphID> selectedIds) {
         updateGraphs(selectedIds);
       }
@@ -277,6 +279,7 @@ public class GemfireSequenceDisplay {
     // Schedule a job for the event-dispatching thread:
     // creating and showing this application's GUI.
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
+      @Override
       public void run() {
         display.createAndShowGUI(graphs, lineMapper);
       }
@@ -316,6 +319,7 @@ public class GemfireSequenceDisplay {
       }
     }
 
+    @Override
     public boolean accept(GraphType graphType, String name, String edgeName, String source,
         String dest) {
       if (graphType.equals(GraphType.KEY)) {
@@ -331,6 +335,7 @@ public class GemfireSequenceDisplay {
       }
     }
 
+    @Override
     public boolean acceptPattern(GraphType graphType, Pattern pattern, String edgeName,
         String source, String dest) {
       return true;

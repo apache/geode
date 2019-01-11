@@ -31,6 +31,7 @@ public class DistributedRegionFunctionFunctionInvocationException extends Functi
     this.count = 0;
   }
 
+  @Override
   public void execute(FunctionContext context) {
     this.count++;
     if (retryCount != 0 && count >= retryCount) {
@@ -41,10 +42,12 @@ public class DistributedRegionFunctionFunctionInvocationException extends Functi
     }
   }
 
+  @Override
   public String getId() {
     return "DistributedRegionFunctionFunctionInvocationException";
   }
 
+  @Override
   public boolean isHA() {
     return this.isHA;
   }

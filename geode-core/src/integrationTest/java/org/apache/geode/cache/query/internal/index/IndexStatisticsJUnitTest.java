@@ -850,6 +850,7 @@ public class IndexStatisticsJUnitTest {
   public static class QueryObserverImpl extends QueryObserverAdapter {
     int readLockCount = 0;
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       readLockCount = index.getStatistics().getReadLockCount();
     }

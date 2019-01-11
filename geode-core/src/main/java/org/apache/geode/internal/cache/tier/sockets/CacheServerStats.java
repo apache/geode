@@ -930,14 +930,17 @@ public class CacheServerStats implements MessageStats {
     this.stats.incInt(outOfOrderBatchIdsId, 1);
   }
 
+  @Override
   public void incReceivedBytes(long v) {
     this.stats.incLong(receivedBytesId, v);
   }
 
+  @Override
   public void incSentBytes(long v) {
     this.stats.incLong(sentBytesId, v);
   }
 
+  @Override
   public void incMessagesBeingReceived(int bytes) {
     stats.incInt(messagesBeingReceivedId, 1);
     if (bytes > 0) {
@@ -945,6 +948,7 @@ public class CacheServerStats implements MessageStats {
     }
   }
 
+  @Override
   public void decMessagesBeingReceived(int bytes) {
     stats.incInt(messagesBeingReceivedId, -1);
     if (bytes > 0) {
@@ -999,10 +1003,12 @@ public class CacheServerStats implements MessageStats {
 
   public PoolStatHelper getCnxPoolHelper() {
     return new PoolStatHelper() {
+      @Override
       public void startJob() {
         incConnectionThreads();
       }
 
+      @Override
       public void endJob() {
         decConnectionThreads();
       }

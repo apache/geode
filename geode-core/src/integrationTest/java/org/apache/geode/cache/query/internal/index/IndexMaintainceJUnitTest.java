@@ -218,6 +218,7 @@ public class IndexMaintainceJUnitTest {
       Query q = qs.newQuery("SELECT DISTINCT * FROM /portfolio where status = 'active'");
       QueryObserverHolder.setInstance(new QueryObserverAdapter() {
 
+        @Override
         public void afterIndexLookup(Collection coll) {
           IndexMaintainceJUnitTest.this.indexUsed = true;
         }
@@ -254,14 +255,17 @@ public class IndexMaintainceJUnitTest {
       Query q = qs.newQuery("SELECT DISTINCT * FROM /portfolio where status = 'active'");
       QueryObserverHolder.setInstance(new QueryObserverAdapter() {
 
+        @Override
         public void afterIndexLookup(Collection coll) {
           IndexMaintainceJUnitTest.this.indexUsed = true;
         }
 
+        @Override
         public void beforeRerunningIndexCreationQuery() {
           // Spawn a separate thread here which does a put opertion on region
           Thread th = new Thread(new Runnable() {
 
+            @Override
             public void run() {
               // Assert that the size of region is now 0
               assertTrue(IndexMaintainceJUnitTest.region.size() == 0);

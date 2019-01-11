@@ -27,6 +27,7 @@ public class User implements DataSerializable {
 
   static {
     Instantiator.register(new Instantiator(User.class, (byte) 45) {
+      @Override
       public DataSerializable newInstance() {
         return new User();
       }
@@ -45,11 +46,13 @@ public class User implements DataSerializable {
 
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeUTF(this.name);
     out.writeInt(this.userId);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = in.readUTF();
     this.userId = in.readInt();

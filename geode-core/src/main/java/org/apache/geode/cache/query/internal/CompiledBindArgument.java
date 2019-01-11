@@ -37,6 +37,7 @@ public class CompiledBindArgument extends AbstractCompiledValue {
     this.index = index;
   }
 
+  @Override
   public int getType() {
     return QUERY_PARAM;
   }
@@ -60,6 +61,7 @@ public class CompiledBindArgument extends AbstractCompiledValue {
 
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) {
     if (!context.isBindArgsSet()) {
       return null;

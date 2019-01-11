@@ -73,6 +73,7 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
 
   protected class Listener extends CacheListenerAdapter {
 
+    @Override
     public void afterCreate(EntryEvent event) {
       if (event.getKey().equals(new Long(1))) {
         PutAllGlobalLockJUnitTest.this.thread = new Thread(new Runner());
@@ -86,6 +87,7 @@ public class PutAllGlobalLockJUnitTest { // TODO: reformat
 
   protected class Runner implements Runnable {
 
+    @Override
     public void run() {
       testRegion.put(new Long(1000), new Long(1000));
       PutAllGlobalLockJUnitTest.this.testOK = PutAllGlobalLockJUnitTest.this.done;

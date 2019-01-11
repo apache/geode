@@ -836,6 +836,7 @@ public interface AgentConfig extends DistributedSystemConfig {
    * Returns an <code>AgentConfig</code> with the same configuration as this
    * <code>AgentConfig</code>.
    */
+  @Override
   Object clone() throws CloneNotSupportedException;
 
 }

@@ -1159,6 +1159,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       return validationSuccessful;
     }
 
+    @Override
     public void beforeCreate(EntryEvent event) throws CacheWriterException {
       assertTrue(event.getOperation().isCreate());
       assertTrue(!event.getRegion().containsKey(this.key));
@@ -1167,6 +1168,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       this.validationSuccessful = true;
     }
 
+    @Override
     public void beforeDestroy(EntryEvent event) throws CacheWriterException {
       assertTrue(event.getOperation().isDestroy());
       assertTrue(event.getRegion().containsKey(this.key));
@@ -1174,10 +1176,13 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       this.validationSuccessful = true;
     }
 
+    @Override
     public void beforeRegionClear(RegionEvent event) throws CacheWriterException {}
 
+    @Override
     public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {}
 
+    @Override
     public void beforeUpdate(EntryEvent event) throws CacheWriterException {
       assertTrue(event.getOperation().isUpdate());
       assertTrue(event.getRegion().containsKey(this.key));
@@ -1187,6 +1192,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       this.validationSuccessful = true;
     }
 
+    @Override
     public void close() {}
 
   }

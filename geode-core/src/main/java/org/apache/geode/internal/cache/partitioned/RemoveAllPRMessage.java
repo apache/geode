@@ -204,6 +204,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
     this.bridgeContext = contx;
   }
 
+  @Override
   public int getDSFID() {
     return PR_REMOVE_ALL_MESSAGE;
   }

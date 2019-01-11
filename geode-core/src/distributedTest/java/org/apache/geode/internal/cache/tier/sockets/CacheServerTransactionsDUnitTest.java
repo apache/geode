@@ -411,6 +411,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
 
   private CacheSerializableRunnable resetFlags() {
     CacheSerializableRunnable resetFlags = new CacheSerializableRunnable("resetFlags") {
+      @Override
       public void run2() throws CacheException {
         destroyed = false;
         invalidated = false;
@@ -440,11 +441,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     try {
       getLogWriter().info("vlaue for the key k1" + r1.getEntry(k1).getValue());
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           yield(); // TODO is this necessary?
           return r1.getEntry(k1).getValue().equals(client_k1);
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -452,11 +455,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
       GeodeAwaitility.await().untilAsserted(ev);
 
       ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           yield(); // TODO is this necessary?
           return r1.getEntry(k2).getValue().equals(client_k2);
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -543,11 +548,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
       // condition is
       // met
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           yield(); // TODO is this necessary?
           return r1.getEntry(k1).getValue().equals(k1);
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -555,11 +562,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
       GeodeAwaitility.await().untilAsserted(ev);
 
       ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           yield(); // TODO is this necessary?
           return r1.getEntry(k2).getValue().equals(k2);
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -576,11 +585,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
 
     try {
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           yield(); // TODO is this necessary?
           return r1.getEntry(k1).getValue().equals(server1_k1);
         }
 
+        @Override
         public String description() {
           return "Value for entry " + r1 + " never became " + server1_k1 + "; it is still "
               + r1.getEntry(k1).getValue();
@@ -589,11 +600,13 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
       GeodeAwaitility.await().untilAsserted(ev);
 
       ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           yield(); // TODO is this necessary?
           return r1.getEntry(k2).getValue().equals(server1_k2);
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -657,6 +670,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterDestroy(EntryEvent event) {
         synchronized (CacheServerTransactionsDUnitTest.class) {
           destroyed = true;
@@ -664,6 +678,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
         }
       }
 
+      @Override
       public void afterInvalidate(EntryEvent event) {
         synchronized (CacheServerTransactionsDUnitTest.class) {
           invalidated = true;
@@ -691,6 +706,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterDestroy(EntryEvent event) {
         synchronized (CacheServerTransactionsDUnitTest.class) {
           destroyed = true;
@@ -698,6 +714,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
         }
       }
 
+      @Override
       public void afterInvalidate(EntryEvent event) {
         synchronized (CacheServerTransactionsDUnitTest.class) {
           invalidated = true;
@@ -727,6 +744,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterDestroy(EntryEvent event) {
         synchronized (CacheServerTransactionsDUnitTest.class) {
           destroyed = true;
@@ -734,6 +752,7 @@ public class CacheServerTransactionsDUnitTest extends JUnit4DistributedTestCase 
         }
       }
 
+      @Override
       public void afterInvalidate(EntryEvent event) {
         synchronized (CacheServerTransactionsDUnitTest.class) {
           invalidated = true;

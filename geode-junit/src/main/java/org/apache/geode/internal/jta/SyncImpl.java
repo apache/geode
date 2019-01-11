@@ -23,10 +23,12 @@ public class SyncImpl implements Synchronization {
 
   public SyncImpl() {}
 
+  @Override
   public void beforeCompletion() {
     befCompletion = true;
   }
 
+  @Override
   public void afterCompletion(int status) {
     aftCompletion = true;
   }

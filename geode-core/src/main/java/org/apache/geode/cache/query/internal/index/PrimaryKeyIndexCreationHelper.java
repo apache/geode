@@ -119,14 +119,17 @@ public class PrimaryKeyIndexCreationHelper extends IndexCreationHelper {
     this.projectionAttributes = projectionAttributes;
   }
 
+  @Override
   public Region getRegion() {
     return region;
   }
 
+  @Override
   public List getIterators() {
     return null;
   }
 
+  @Override
   public CompiledValue getCompiledIndexedExpression() {
     return null;
   }

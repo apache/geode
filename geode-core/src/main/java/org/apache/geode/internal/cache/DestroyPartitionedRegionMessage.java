@@ -197,6 +197,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
     }
   }
 
+  @Override
   public int getDSFID() {
     return DESTROY_PARTITIONED_REGION_MESSAGE;
   }

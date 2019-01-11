@@ -443,6 +443,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     this.hasOldValue = value;
   }
 
+  @Override
   public int getDSFID() {
     return R_PUT_MESSAGE;
   }
@@ -1053,6 +1054,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     }
   }
 
+  @Override
   public void importOldObject(@Unretained(ENTRY_EVENT_OLD_VALUE) Object ov, boolean isSerialized) {
     setOldValueIsSerialized(isSerialized);
     // Defer serialization until toData is called.

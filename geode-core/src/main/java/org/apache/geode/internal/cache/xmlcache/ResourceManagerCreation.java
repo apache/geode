@@ -46,6 +46,7 @@ public class ResourceManagerCreation implements ResourceManager {
    *
    * @see org.apache.geode.cache.control.ResourceManager#createRebalanceFactory()
    */
+  @Override
   public RebalanceFactory createRebalanceFactory() {
     throw new IllegalArgumentException("Unused");
   }
@@ -55,6 +56,7 @@ public class ResourceManagerCreation implements ResourceManager {
    *
    * @see org.apache.geode.cache.control.ResourceManager#getRebalanceOperations()
    */
+  @Override
   public Set<RebalanceOperation> getRebalanceOperations() {
     throw new IllegalArgumentException("Unused");
   }
@@ -64,6 +66,7 @@ public class ResourceManagerCreation implements ResourceManager {
    *
    * @see org.apache.geode.cache.control.ResourceManager#getCriticalHeapPercentage()
    */
+  @Override
   public float getCriticalHeapPercentage() {
     return this.criticalHeapPercentage;
   }
@@ -73,6 +76,7 @@ public class ResourceManagerCreation implements ResourceManager {
    *
    * @see org.apache.geode.cache.control.ResourceManager#setCriticalHeapPercentage(int)
    */
+  @Override
   public void setCriticalHeapPercentage(float heapPercentage) {
     this.criticalHeapSet = true;
     this.criticalHeapPercentage = heapPercentage;
@@ -175,6 +179,7 @@ public class ResourceManagerCreation implements ResourceManager {
    *
    * @see org.apache.geode.cache.control.ResourceManager#getEvictionHeapPercentage()
    */
+  @Override
   public float getEvictionHeapPercentage() {
     return this.evictionHeapPercentage;
   }
@@ -184,6 +189,7 @@ public class ResourceManagerCreation implements ResourceManager {
    *
    * @see org.apache.geode.cache.control.ResourceManager#setEvictionHeapPercentage(int)
    */
+  @Override
   public void setEvictionHeapPercentage(float heapPercentage) {
     this.evictionHeapSet = true;
     this.evictionHeapPercentage = heapPercentage;
@@ -207,6 +213,7 @@ public class ResourceManagerCreation implements ResourceManager {
    *
    * @see org.apache.geode.cache.control.ResourceManager#getEvictionOffHeapPercentage()
    */
+  @Override
   public float getEvictionOffHeapPercentage() {
     return this.evictionOffHeapPercentage;
   }
@@ -216,6 +223,7 @@ public class ResourceManagerCreation implements ResourceManager {
    *
    * @see org.apache.geode.cache.control.ResourceManager#setEvictionOffHeapPercentage(int)
    */
+  @Override
   public void setEvictionOffHeapPercentage(final float offHeapPercentage) {
     this.evictionOffHeapSet = true;
     this.evictionOffHeapPercentage = offHeapPercentage;

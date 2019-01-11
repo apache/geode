@@ -119,15 +119,18 @@ public class EntriesSet extends AbstractSet {
       this.nextElem = moveNext();
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException(
           "This iterator does not support modification");
     }
 
+    @Override
     public boolean hasNext() {
       return (this.nextElem != null);
     }
 
+    @Override
     public Object next() {
       final Object result = this.nextElem;
       if (result != null) {

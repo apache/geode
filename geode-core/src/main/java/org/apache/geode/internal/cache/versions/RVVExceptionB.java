@@ -39,6 +39,7 @@ public class RVVExceptionB extends RVVException {
   /**
    * add a received version
    */
+  @Override
   public void add(long receivedVersion) {
     // String me = this.toString();
     // long oldv = this.nextVersion;
@@ -63,6 +64,7 @@ public class RVVExceptionB extends RVVException {
   }
 
 
+  @Override
   protected void addReceived(long rv) {
     if (this.received == null) {
       this.receivedBaseVersion = this.previousVersion + 1;
@@ -105,6 +107,7 @@ public class RVVExceptionB extends RVVException {
    *
    * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
+  @Override
   public int compareTo(RVVException o) {
     long thisVal = this.previousVersion;
     long anotherVal = o.previousVersion;
@@ -121,11 +124,13 @@ public class RVVExceptionB extends RVVException {
     return clone;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     InternalDataSerializer.writeUnsignedVL(this.previousVersion, out);
     writeReceived(out);
   }
 
+  @Override
   protected void writeReceived(DataOutput out) throws IOException {
     LinkedList<Long> deltas = new LinkedList<>();
     long last = this.nextVersion;
@@ -195,6 +200,7 @@ public class RVVExceptionB extends RVVException {
   }
 
   /** has the given version been recorded as having been received? */
+  @Override
   public boolean contains(long version) {
     if (version <= this.previousVersion) {
       return false;
@@ -203,10 +209,12 @@ public class RVVExceptionB extends RVVException {
   }
 
   /** return false if any revisions have been recorded in the range of this exception */
+  @Override
   public boolean isEmpty() {
     return (this.received == null) || (this.received.isEmpty());
   }
 
+  @Override
   public ReceivedVersionsReverseIterator receivedVersionsReverseIterator() {
     return new ReceivedVersionsReverseIteratorB();
   }
@@ -241,10 +249,12 @@ public class RVVExceptionB extends RVVException {
       }
     }
 
+    @Override
     boolean hasNext() {
       return this.nextIndex >= 0;
     }
 
+    @Override
     long next() {
       this.index = this.nextIndex;
       if (this.index < 0) {
@@ -257,6 +267,7 @@ public class RVVExceptionB extends RVVException {
       return this.index + receivedBaseVersion;
     }
 
+    @Override
     void remove() {
       if (this.index < 0) {
         throw new NoSuchElementException("no more elements available");

@@ -88,6 +88,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     return false;
   }
 
+  @Override
   protected boolean supportsLocalDestroyAndLocalInvalidate() {
     return false;
   }
@@ -157,6 +158,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
   void setVMInfoLogLevel() {
     SerializableRunnable runnable = new SerializableRunnable() {
+      @Override
       public void run() {
         oldLogLevel = setLogLevel(getCache().getLogger(), INFO.intLevel());
       }
@@ -168,6 +170,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
   void resetVMLogLevel() {
     SerializableRunnable runnable = new SerializableRunnable() {
+      @Override
       public void run() {
         setLogLevel(getCache().getLogger(), oldLogLevel);
       }
@@ -210,6 +213,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
       pr.invalidateRegion();
       assertTrue("vm1 should have invoked the listener for an invalidateRegion operation",
           (Boolean) vm1.invoke(new SerializableCallable("getStatus") {
+            @Override
             public Object call() {
               return InvalidateInvoked;
             }
@@ -230,6 +234,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
     final String name = this.getUniqueName() + "-PR";
     vm0.invoke(new SerializableRunnable("Create partitioned Region") {
+      @Override
       public void run() {
         try {
 
@@ -241,6 +246,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create non-partitioned Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory(getNonPRRegionAttributes());
@@ -261,6 +267,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   private void setupExtendedTest(final String regionName, final int numVals) {
     Host host = Host.getHost(0);
     SerializableRunnable createPR = new SerializableRunnable("createPartitionedRegion") {
+      @Override
       public void run() {
         try {
           createRegion(regionName, "root", getRegionAttributes());
@@ -274,6 +281,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     }
     VM vm0 = host.getVM(0);
     vm0.invoke(new SerializableRunnable("Populate Partitioned Region") {
+      @Override
       public void run() {
         Region region = null;
         try {
@@ -324,6 +332,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
       vm0.invoke(new SerializableRunnable("exercise Region.values") {
+        @Override
         public void run() {
           try {
             Region region = getRootRegion().getSubregion(regionName);
@@ -471,6 +480,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     SerializableRunnable createPR = new SerializableRunnable("createPartitionedRegion") {
+      @Override
       public void run() {
         try {
           createRegion(regionName, "root", getRegionAttributes());
@@ -483,6 +493,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     vm1.invoke(createPR);
 
     vm0.invoke(new SerializableRunnable("Populate 1") {
+      @Override
       public void run() {
         Region region = getRootRegion().getSubregion(regionName);
         for (int i = 0; i < 10; i++) {
@@ -495,6 +506,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
     // Verify values are readily accessible
     vm1.invoke(new SerializableRunnable("Read 1") {
+      @Override
       public void run() {
         Region region = getRootRegion().getSubregion(regionName);
         for (int i = 0; i < 10; i++) {
@@ -507,6 +519,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
     // Bucket ID's will be screwed up with these creates.
     vm0.invoke(new SerializableRunnable("Populate 2") {
+      @Override
       public void run() {
         Region region = getRootRegion().getSubregion(regionName);
         PoisonedKey.poisoned = true;

@@ -47,6 +47,7 @@ public class CQUnitTestRule extends ExternalResource {
   public CqService cqService;
   public InternalCqQuery internalCqQuery;
 
+  @Override
   protected void before() throws Throwable {
     securityService = mock(SecurityService.class);
     message = mock(Message.class);

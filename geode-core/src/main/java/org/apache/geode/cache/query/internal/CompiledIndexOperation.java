@@ -61,6 +61,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     return list;
   }
 
+  @Override
   public int getType() {
     return TOK_LBRACK;
   }
@@ -72,6 +73,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     return context.addDependencies(this, this.indexExpr.computeDependencies(context));
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
     Object rcvr = this.receiver.evaluate(context);
@@ -158,6 +160,7 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
     receiver.generateCanonicalizedExpression(clauseBuffer, context);
   }
 
+  @Override
   public CompiledValue getReceiver() {
     return receiver;
   }
@@ -176,16 +179,19 @@ public class CompiledIndexOperation extends AbstractCompiledValue implements Map
   }
 
 
+  @Override
   public CompiledValue getMapLookupKey() {
     return this.indexExpr;
   }
 
 
+  @Override
   public CompiledValue getReceiverSansIndexArgs() {
     return this.receiver;
   }
 
 
+  @Override
   public List<CompiledValue> getIndexingKeys() {
     List<CompiledValue> list = new ArrayList<CompiledValue>(1);
     list.add(this.indexExpr);

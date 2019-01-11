@@ -165,6 +165,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   CacheSerializableRunnable invokeCreateClientRegion(final String regionName,
       final ClientRegionShortcut shortcut) {
     return new CacheSerializableRunnable("execute: createClientRegion") {
+      @Override
       public void run2() {
         try {
           createClientRegion((GemFireCache) LuceneSearchWithRollingUpgradeDUnit.cache, regionName,
@@ -184,6 +185,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
 
   CacheSerializableRunnable invokeStartCacheServer(final int port) {
     return new CacheSerializableRunnable("execute: startCacheServer") {
+      @Override
       public void run2() {
         try {
           startCacheServer((GemFireCache) LuceneSearchWithRollingUpgradeDUnit.cache, port);
@@ -203,6 +205,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   CacheSerializableRunnable invokeCreateClientCache(final Properties systemProperties,
       final String[] hosts, final int[] ports, boolean subscriptionEnabled) {
     return new CacheSerializableRunnable("execute: createClientCache") {
+      @Override
       public void run2() {
         try {
           LuceneSearchWithRollingUpgradeDUnit.cache =
@@ -554,6 +557,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   private CacheSerializableRunnable invokeStartLocator(final String serverHostName, final int port,
       final String testName, final String locatorsString, final Properties props) {
     return new CacheSerializableRunnable("execute: startLocator") {
+      @Override
       public void run2() {
         try {
           startLocator(serverHostName, port, testName, locatorsString, props);
@@ -567,6 +571,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   CacheSerializableRunnable invokeStartLocator(final String serverHostName, final int port,
       final Properties props) {
     return new CacheSerializableRunnable("execute: startLocator") {
+      @Override
       public void run2() {
         try {
           startLocator(serverHostName, port, props);
@@ -579,6 +584,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
 
   CacheSerializableRunnable invokeCreateCache(final Properties systemProperties) {
     return new CacheSerializableRunnable("execute: createCache") {
+      @Override
       public void run2() {
         try {
           LuceneSearchWithRollingUpgradeDUnit.cache = createCache(systemProperties);
@@ -591,6 +597,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
 
   private CacheSerializableRunnable invokeAssertVersion(final short version) {
     return new CacheSerializableRunnable("execute: assertVersion") {
+      @Override
       public void run2() {
         try {
           assertVersion(LuceneSearchWithRollingUpgradeDUnit.cache, version);
@@ -604,6 +611,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   CacheSerializableRunnable invokeCreateRegion(final String regionName,
       final String shortcutName) {
     return new CacheSerializableRunnable("execute: createRegion") {
+      @Override
       public void run2() {
         try {
           createRegion(LuceneSearchWithRollingUpgradeDUnit.cache, regionName, shortcutName);
@@ -617,6 +625,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   private CacheSerializableRunnable invokeCreatePersistentPartitionedRegion(final String regionName,
       final File diskstore) {
     return new CacheSerializableRunnable("execute: createPersistentPartitonedRegion") {
+      @Override
       public void run2() {
         try {
           createPersistentPartitonedRegion(LuceneSearchWithRollingUpgradeDUnit.cache, regionName,
@@ -631,6 +640,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   private CacheSerializableRunnable invokePut(final String regionName, final Object key,
       final Object value) {
     return new CacheSerializableRunnable("execute: put") {
+      @Override
       public void run2() {
         try {
           put(LuceneSearchWithRollingUpgradeDUnit.cache, regionName, key, value);
@@ -643,6 +653,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
 
   CacheSerializableRunnable invokeStopLocator() {
     return new CacheSerializableRunnable("execute: stopLocator") {
+      @Override
       public void run2() {
         try {
           stopLocator();
@@ -655,6 +666,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
 
   CacheSerializableRunnable invokeCloseCache() {
     return new CacheSerializableRunnable("execute: closeCache") {
+      @Override
       public void run2() {
         try {
           closeCache(LuceneSearchWithRollingUpgradeDUnit.cache);
@@ -667,6 +679,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
 
   private CacheSerializableRunnable invokeRebalance() {
     return new CacheSerializableRunnable("execute: rebalance") {
+      @Override
       public void run2() {
         try {
           rebalance(LuceneSearchWithRollingUpgradeDUnit.cache);

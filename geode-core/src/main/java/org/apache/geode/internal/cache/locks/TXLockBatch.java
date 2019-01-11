@@ -56,6 +56,7 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
     this.participants = participants;
   }
 
+  @Override
   public InternalDistributedMember getOwner() {
     return this.txLockId.getMemberId();
   }
@@ -64,6 +65,7 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
     return this.txLockId;
   }
 
+  @Override
   public DLockBatchId getBatchId() {
     return this.txLockId;
   }
@@ -72,10 +74,12 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
     this.participants = participants;
   }
 
+  @Override
   public void grantedBy(LockGrantorId lockGrantorId) {
     this.txLockId.setLockGrantorId(lockGrantorId);
   }
 
+  @Override
   public List getReqs() {
     if (this.reqs != null && !(this.reqs instanceof IdentityArrayList)) {
       this.reqs = new IdentityArrayList(this.reqs);
@@ -105,10 +109,12 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
 
   public TXLockBatch() {}
 
+  @Override
   public int getDSFID() {
     return TX_LOCK_BATCH;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.txLockId = TXLockIdImpl.createFromData(in);
     this.participants = InternalDataSerializer.readSet(in);
@@ -123,6 +129,7 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     InternalDataSerializer.invokeToData(this.txLockId, out);
     InternalDataSerializer.writeSet(this.participants, out);

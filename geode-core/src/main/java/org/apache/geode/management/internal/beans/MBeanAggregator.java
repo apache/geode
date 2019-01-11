@@ -194,6 +194,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class CacheServerHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
 
@@ -202,6 +203,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object obj,
         FederationComponent oldVal) {
       CacheServerMXBean serverProxy = (CacheServerMXBean) interfaceClass.cast(obj);
@@ -230,6 +232,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class GatewayReceiverHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
 
@@ -238,6 +241,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       GatewayReceiverMXBean proxy = (GatewayReceiverMXBean) interfaceClass.cast(proxyObject);
@@ -268,6 +272,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class GatewaySenderHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
 
@@ -275,6 +280,7 @@ public class MBeanAggregator implements ProxyListener {
       distributedSystemBridge.addGatewaySenderToSystem(objectName, proxy, newVal);
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       GatewaySenderMXBean proxy = (GatewaySenderMXBean) interfaceClass.cast(proxyObject);
@@ -301,6 +307,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class RegionHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
       RegionMXBean regionProxy = (RegionMXBean) interfaceClass.cast(proxyObject);
@@ -308,6 +315,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       RegionMXBean regionProxy = (RegionMXBean) interfaceClass.cast(proxyObject);
@@ -334,6 +342,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class MemberHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
       MemberMXBean memberProxy = (MemberMXBean) interfaceClass.cast(proxyObject);
@@ -341,6 +350,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       MemberMXBean memberProxy = (MemberMXBean) interfaceClass.cast(proxyObject);
@@ -368,6 +378,7 @@ public class MBeanAggregator implements ProxyListener {
    */
   private class LockServiceHandler implements AggregateHandler {
 
+    @Override
     public void handleProxyAddition(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent newVal) {
 
@@ -376,6 +387,7 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
+    @Override
     public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object proxyObject,
         FederationComponent oldVal) {
       LockServiceMXBean lockServiceProxy = (LockServiceMXBean) interfaceClass.cast(proxyObject);
@@ -405,6 +417,7 @@ public class MBeanAggregator implements ProxyListener {
 
   }
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 

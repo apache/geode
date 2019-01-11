@@ -51,6 +51,7 @@ public class FilterProfileIntegrationJUnitTest {
       FilterProfile.testHook = hook;
 
       new Thread(new Runnable() {
+        @Override
         public void run() {
           while (hook.getCount() != 1) {
 
@@ -72,6 +73,7 @@ public class FilterProfileIntegrationJUnitTest {
 
     // On first time, we know the first thread will reduce count by one
     // this allows us to start the second thread, by checking the current count
+    @Override
     public void await() {
       try {
         latch.countDown();
@@ -86,6 +88,7 @@ public class FilterProfileIntegrationJUnitTest {
       return latch.getCount();
     }
 
+    @Override
     public void release() {
       latch.countDown();
     }

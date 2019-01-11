@@ -431,6 +431,7 @@ public abstract class DeltaSessionManager extends ManagerBase
     return this.rejectedSessions.get();
   }
 
+  @Override
   public void setRejectedSessions(int rejectedSessions) {
     this.rejectedSessions.set(rejectedSessions);
   }

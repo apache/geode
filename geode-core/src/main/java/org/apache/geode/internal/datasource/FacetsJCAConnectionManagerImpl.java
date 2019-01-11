@@ -92,6 +92,7 @@ public class FacetsJCAConnectionManagerImpl
    * @param javax.resource.spi.ConnectionRequestInfo
    *
    */
+  @Override
   public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
       throws ResourceException {
     if (!isActive) {
@@ -159,6 +160,7 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @param event ConnectionEvent
    */
+  @Override
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
       // If its an XAConnection
@@ -195,6 +197,7 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @param event ConnectionEvent Object.
    */
+  @Override
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       ManagedConnection conn = (ManagedConnection) event.getSource();
@@ -218,6 +221,7 @@ public class FacetsJCAConnectionManagerImpl
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionCommitted(ConnectionEvent arg0) {
     // do nothing.
   }
@@ -225,6 +229,7 @@ public class FacetsJCAConnectionManagerImpl
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionRolledback(ConnectionEvent arg0) {
     // do nothing.
   }
@@ -232,6 +237,7 @@ public class FacetsJCAConnectionManagerImpl
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionStarted(ConnectionEvent arg0) {
     // do nothing
   }
@@ -246,6 +252,7 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @see javax.transaction.Synchronization#afterCompletion(int)
    */
+  @Override
   public void afterCompletion(int arg0) {
     // DELIST THE XARESOURCE FROM THE LIST. RETURN ALL THE CONNECTIONS TO THE
     // POOL.
@@ -264,6 +271,7 @@ public class FacetsJCAConnectionManagerImpl
    *
    * @see javax.transaction.Synchronization#beforeCompletion()
    */
+  @Override
   public void beforeCompletion() {
     // TODO Auto-generated method stub
   }

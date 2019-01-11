@@ -47,6 +47,7 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
    *
    * @return Blocking HA region-queue object
    */
+  @Override
   protected HARegionQueue createHARegionQueue(String name)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     HARegionQueue regionqueue =
@@ -59,6 +60,7 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
    *
    * @return Blocking HA region-queue object
    */
+  @Override
   protected HARegionQueue createHARegionQueue(String name, HARegionQueueAttributes attrs)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name, cache, attrs,
@@ -108,6 +110,7 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
     final HARegionQueue rq = createHARegionQueue("testBlockingTake");
     final List takenObjects = new ArrayList();
     Thread takeThread = new Thread() {
+      @Override
       public void run() {
         try {
           takenObjects.add(rq.take());
@@ -158,6 +161,7 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
     Thread[] takeThreads = new Thread[totalTakeThreads];
     for (int i = 0; i < totalTakeThreads; i++) {
       takeThreads[i] = new Thread() {
+        @Override
         public void run() {
           try {
             takenObjects.add(rq.take());

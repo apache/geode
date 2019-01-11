@@ -102,6 +102,7 @@ public class InternalClientMembership {
       // Initialize our own list of distributed systems via a connect listener
       List existingSystems = InternalDistributedSystem
           .addConnectListener(new InternalDistributedSystem.ConnectListener() {
+            @Override
             public void onConnect(InternalDistributedSystem sys) {
               addInternalDistributedSystem(sys);
             }
@@ -479,6 +480,7 @@ public class InternalClientMembership {
           return "Disconnect listener for InternalClientMembership";
         }
 
+        @Override
         public void onDisconnect(InternalDistributedSystem ss) {
           removeInternalDistributedSystem(ss);
         }
@@ -553,14 +555,17 @@ public class InternalClientMembership {
       this.client = isClient;
     }
 
+    @Override
     public DistributedMember getMember() {
       return this.member;
     }
 
+    @Override
     public String getMemberId() {
       return this.member == null ? "unknown" : this.member.getId();
     }
 
+    @Override
     public boolean isClient() {
       return this.client;
     }

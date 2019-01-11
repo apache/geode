@@ -134,6 +134,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
     // Create an accessor
     final int port0 = (Integer) vm0.invoke(new SerializableCallable() {
+      @Override
       public Object call() {
         Cache cache = getCache();
         CacheServer server = createCacheServer(cache);
@@ -148,6 +149,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
     // Create a datastore
     final int port1 = (Integer) vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() {
         Cache cache = getCache();
         CacheServer server = createCacheServer(cache);
@@ -181,6 +183,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
     // create a client connected to the accessor
     vm2.invoke(new SerializableCallable() {
 
+      @Override
       public Object call() throws Exception {
         createClient(port0);
         return null;
@@ -190,6 +193,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
     // create a client connected to the datastore
     vm3.invoke(new SerializableCallable() {
 
+      @Override
       public Object call() throws Exception {
         createClient(port1);
         return null;
@@ -200,6 +204,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
     // Disallow deserialization
     disallowDeserializationVM.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         TestSerializable.throwExceptionOnDeserialization = true;
       }
@@ -211,6 +216,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
       operationVM.invoke(new SerializableRunnable() {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           doOperations(cache.getRegion("replicate"));
@@ -224,6 +230,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
       // Ok, now allow deserialization.
       disallowDeserializationVM.invoke(new SerializableRunnable() {
 
+        @Override
         public void run() {
           TestSerializable.throwExceptionOnDeserialization = false;
         }
@@ -233,6 +240,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
     // Sanity Check to make sure the values not in some weird form
     // on the actual datastore.
     vm1.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         checkValues(cache.getRegion("replicate"));
@@ -249,6 +257,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
   private void checkRegisterInterestValues(VM vm2) {
     vm2.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         checkClientValue(cache.getRegion("replicate"));
@@ -263,10 +272,12 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
     // Because register interest is asynchronous, we need to wait for the value to arrive.
     GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
+      @Override
       public boolean done() {
         return region.get("A") != null;
       }
 
+      @Override
       public String description() {
         return "Client region never received value for key A";
       }
@@ -371,11 +382,13 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
   public static class TestCacheLoader implements CacheLoader {
 
+    @Override
     public void close() {
       // TODO Auto-generated method stub
 
     }
 
+    @Override
     public Object load(LoaderHelper helper) throws CacheLoaderException {
       return new TestSerializable();
     }
@@ -388,11 +401,13 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
     private static boolean throwExceptionOnDeserialization = false;
 
 
+    @Override
     public void toData(PdxWriter writer) {
       // TODO Auto-generated method stub
 
     }
 
+    @Override
     public void fromData(PdxReader reader) {
       if (throwExceptionOnDeserialization) {
         throw new SerializationException("Deserialization should not be happening in this VM");

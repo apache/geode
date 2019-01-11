@@ -19,10 +19,13 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 public interface PersistentStateListener {
   class PersistentStateAdapter implements PersistentStateListener {
 
+    @Override
     public void memberOffline(InternalDistributedMember member, PersistentMemberID persistentID) {}
 
+    @Override
     public void memberOnline(InternalDistributedMember member, PersistentMemberID persistentID) {}
 
+    @Override
     public void memberRemoved(PersistentMemberID persistentID, boolean revoked) {}
   }
 

@@ -128,6 +128,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
     vm3_future.join(MAX_WAIT);
 
     vm3.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         final Region region = cache.getRegion(getTestMethodName() + "_PR");
         cache.getLogger().info("vm1's region size before restart gatewayHub is " + region.size());
@@ -138,6 +139,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
     // wait for vm0 to finish its work
     vm4_future.join(MAX_WAIT);
     vm4.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Region region = cache.getRegion(getTestMethodName() + "_PR");
         assertEquals(NUM_KEYS, region.size());
@@ -146,11 +148,13 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
 
     // verify the other side (vm1)'s entries received from gateway
     vm2.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         final Region region = cache.getRegion(getTestMethodName() + "_PR");
 
         cache.getLogger().info("vm1's region size after restart gatewayHub is " + region.size());
         GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+          @Override
           public boolean done() {
             Object lastValue = region.get(NUM_KEYS - 1);
             if (lastValue != null && lastValue.equals(NUM_KEYS - 1)) {
@@ -161,6 +165,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
               return (region.size() == NUM_KEYS);
           }
 
+          @Override
           public String description() {
             return "Waiting for destination region to reach size: " + NUM_KEYS + ", current is "
                 + region.size();
@@ -175,6 +180,7 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
   private AsyncInvocation shutDownAllMembers(VM vm, final int expectedNumber, final long timeout) {
     AsyncInvocation future = vm.invokeAsync(new SerializableRunnable("Shutdown all the members") {
 
+      @Override
       public void run() {
         DistributedSystemConfig config;
         AdminDistributedSystemImpl adminDS = null;

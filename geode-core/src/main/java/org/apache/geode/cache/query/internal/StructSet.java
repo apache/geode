@@ -72,6 +72,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   protected static class ObjectArrayHashingStrategy implements ObjectOpenCustomHashSet.Strategy {
     private static final long serialVersionUID = -6407549977968716071L;
 
+    @Override
     public int hashCode(Object o) {
       // throws ClassCastException if not Object[]
       // compute hash code based on all elements
@@ -85,6 +86,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       return h;
     }
 
+    @Override
     public boolean equals(Object o1, Object o2) {
       // throws ClassCastException if not Object[]
       if (o1 == null)
@@ -203,6 +205,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   /**
    * For internal use. Just add the Object[] values for a struct with same type
    */
+  @Override
   public boolean addFieldValues(Object[] fieldValues) {
     return this.contents.add(fieldValues);
   }
@@ -223,6 +226,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   /**
    * Does this set contain a Struct of the correct type with the specified values?
    */
+  @Override
   public boolean containsFieldValues(Object[] fieldValues) {
     return this.contents.contains(fieldValues);
   }
@@ -240,11 +244,13 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   }
 
   /** Remove the field values from a struct of the correct type */
+  @Override
   public boolean removeFieldValues(Object[] fieldValues) {
     return this.contents.remove(fieldValues);
   }
 
   // downcast StructSets to call more efficient methods
+  @Override
   public boolean addAll(Collection c) {
     if (c instanceof StructSet) {
       return addAll((StructSet) c);
@@ -257,6 +263,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     }
   }
 
+  @Override
   public boolean removeAll(Collection c) {
     if (c instanceof StructSet) {
       return removeAll((StructSet) c);
@@ -269,6 +276,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     }
   }
 
+  @Override
   public boolean retainAll(Collection c) {
     if (c instanceof StructSet) {
       return retainAll((StructSet) c);
@@ -336,10 +344,12 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   }
 
   /** Returns an iterator over the fieldValues Object[] instances */
+  @Override
   public Iterator fieldValuesIterator() {
     return this.contents.iterator();
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(StructSet.class, this.structType);
   }
@@ -348,6 +358,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   // behavior if the new struct type is not compatible with the data.
   // For now just trust that the application knows what it is doing if it
   // is overriding the element type in a set of structs
+  @Override
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
@@ -356,10 +367,12 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     this.structType = (StructType) elementType;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
@@ -369,10 +382,12 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
    *
    * @return Value of property modifiable.
    */
+  @Override
   public boolean isModifiable() {
     return this.modifiable;
   }
 
+  @Override
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
@@ -417,24 +432,29 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       this.itr = itr;
     }
 
+    @Override
     public boolean hasNext() {
       return this.itr.hasNext();
     }
 
+    @Override
     public Object next() {
       return new StructImpl((StructTypeImpl) StructSet.this.structType, (Object[]) this.itr.next());
     }
 
+    @Override
     public void remove() {
       this.itr.remove();
     }
 
   }
 
+  @Override
   public int getDSFID() {
     return STRUCT_SET;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
@@ -444,6 +464,7 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.size());
     DataSerializer.writeObject(this.structType, out);

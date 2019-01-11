@@ -26,6 +26,7 @@ public class CachingSingleObjectSizer implements SingleObjectSizer {
     this.wrappedSizer = sizer;
   }
 
+  @Override
   public long sizeof(Object object) {
     Class clazz = object.getClass();
     if (clazz.isArray()) {

@@ -180,6 +180,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @return recipients who did not receive the message
    */
+  @Override
   Set<InternalDistributedMember> putOutgoing(DistributionMessage msg);
 
   /**

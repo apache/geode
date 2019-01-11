@@ -119,6 +119,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
     buff.append("; bucketId=").append(this.bucketId);
   }
 
+  @Override
   public int getDSFID() {
     return PR_DEPOSE_PRIMARY_BUCKET_MESSAGE;
   }

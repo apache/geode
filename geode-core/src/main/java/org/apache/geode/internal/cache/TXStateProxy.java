@@ -56,16 +56,19 @@ public interface TXStateProxy extends TXStateInterface {
   /**
    * Perform additional tasks required by the proxy to suspend a transaction
    */
+  @Override
   void suspend();
 
   /**
    * Perform additional tasks required by the proxy to resume a transaction
    */
+  @Override
   void resume();
 
   /**
    * record a client-side transactional operation for possible later replay
    */
+  @Override
   void recordTXOperation(ServerRegionDataAccess proxy, ServerRegionOperation op, Object key,
       Object[] arguments);
 

@@ -36,10 +36,12 @@ public class RemoteLocatorResponse implements DataSerializableFixedID {
     this.locators = locators;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.locators = DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.locators, out);
   }
@@ -53,6 +55,7 @@ public class RemoteLocatorResponse implements DataSerializableFixedID {
     return "RemoteLocatorResponse{locators=" + locators + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_RESPONSE;
   }

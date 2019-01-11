@@ -48,6 +48,7 @@ public class CompositeResultData extends AbstractResultData {
    * @return this CompositeResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
+  @Override
   public CompositeResultData setHeader(String headerText) {
     return (CompositeResultData) super.setHeader(headerText);
   }
@@ -57,6 +58,7 @@ public class CompositeResultData extends AbstractResultData {
    * @return this CompositeResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
+  @Override
   public CompositeResultData setFooter(String footerText) {
     return (CompositeResultData) super.setFooter(footerText);
   }

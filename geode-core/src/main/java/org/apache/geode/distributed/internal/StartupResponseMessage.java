@@ -189,6 +189,7 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage
     } // proc != null
   }
 
+  @Override
   public int getDSFID() {
     return STARTUP_RESPONSE_MESSAGE;
   }

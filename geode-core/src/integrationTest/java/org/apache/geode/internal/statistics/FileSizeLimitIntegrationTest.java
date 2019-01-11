@@ -76,12 +76,14 @@ public class FileSizeLimitIntegrationTest {
     this.statistics = factory.createAtomicStatistics(this.statisticsType, "statistics1", 1);
 
     Answer<Statistics[]> statisticsAnswer = new Answer<Statistics[]>() {
+      @Override
       public Statistics[] answer(InvocationOnMock invocation) throws Throwable {
         return factory.getStatistics();
       }
     };
 
     Answer<Integer> modCountAnswer = new Answer<Integer>() {
+      @Override
       public Integer answer(InvocationOnMock invocation) throws Throwable {
         return factory.getStatListModCount();
       }

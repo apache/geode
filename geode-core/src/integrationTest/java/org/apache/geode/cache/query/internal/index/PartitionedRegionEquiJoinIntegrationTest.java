@@ -49,6 +49,7 @@ public class PartitionedRegionEquiJoinIntegrationTest extends EquiJoinIntegratio
     region4 = createColocatedPartitionRegion("region4", "region1");
   }
 
+  @Override
   @Test
   public void testSingleFilterWithSingleEquijoinNestedQuery() throws Exception {
     createRegions();

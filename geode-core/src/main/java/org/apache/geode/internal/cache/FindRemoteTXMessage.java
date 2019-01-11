@@ -83,6 +83,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     return processor;
   }
 
+  @Override
   public int getDSFID() {
     return FIND_REMOTE_TX_MESSAGE;
   }

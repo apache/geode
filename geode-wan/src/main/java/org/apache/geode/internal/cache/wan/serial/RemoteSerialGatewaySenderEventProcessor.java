@@ -32,6 +32,7 @@ public class RemoteSerialGatewaySenderEventProcessor extends SerialGatewaySender
     super(sender, id, tMonitoring);
   }
 
+  @Override
   public void initializeEventDispatcher() {
     if (logger.isDebugEnabled()) {
       logger.debug(" Creating the GatewayEventRemoteDispatcher");

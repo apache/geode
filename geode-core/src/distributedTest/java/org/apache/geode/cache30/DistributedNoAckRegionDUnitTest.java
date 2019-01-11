@@ -57,6 +57,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
    */
+  @Override
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -100,6 +101,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
 
     final String name = this.getUniqueName() + "-NO_ACK";
     vm0.invoke(new SerializableRunnable("Create NO ACK Region") {
+      @Override
       public void run() {
         try {
           Region region = createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
@@ -113,6 +115,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create GLOBAL Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
@@ -132,6 +135,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
@@ -178,6 +182,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     VM vm2 = host.getVM(2);
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Mirrored Region") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("testBug30705: Start creating Mirrored Region");
         AttributesFactory factory = new AttributesFactory(getRegionAttributes());
@@ -188,6 +193,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     };
 
     SerializableRunnable put = new CacheSerializableRunnable("Distributed NoAck Puts") {
+      @Override
       public void run2() throws CacheException {
         Region rgn = getCache().getRegion("/root/" + name);
         assertNotNull(rgn);
@@ -212,6 +218,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     vm0.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Put data") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("testBug30705: starting initial data load");
         Region region = getRootRegion().getSubregion(name);
@@ -240,6 +247,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
       LogWriterUtils.getLogWriter()
           .info("testBug30705: INTERRUPTING Distributed NoAck Puts after GetInitialImage");
       vm0.invoke(new SerializableRunnable("Interrupt Puts") {
+        @Override
         public void run() {
           LogWriterUtils.getLogWriter().info("testBug30705: interrupting putter");
           stopPutting = true;
@@ -248,12 +256,15 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
       ThreadUtils.join(async, 30 * 1000);
       // wait for overflow queue to quiesce before continuing
       vm2.invoke(new SerializableRunnable("Wait for Overflow Queue") {
+        @Override
         public void run() {
           WaitCriterion ev = new WaitCriterion() {
+            @Override
             public boolean done() {
               return getSystem().getDistributionManager().getStats().getOverflowQueueSize() == 0;
             }
 
+            @Override
             public String description() {
               return "overflow queue remains nonempty";
             }

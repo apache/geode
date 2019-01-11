@@ -106,6 +106,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
     vm3.invoke(() -> HAExpiryDUnitTest.closeCache());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
       }
@@ -121,6 +122,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
     vm0.invoke(new CacheSerializableRunnable("putFromVm") {
 
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         region.put("KEY1", "VALUE1");
@@ -149,6 +151,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
 
     vm0.invoke(new CacheSerializableRunnable("putFromVm") {
 
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         region.put("KEY1", "VALUE1");
@@ -182,10 +185,12 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
     regionQueueSize = regionqueue.size();
     cache.getLogger().info("Size of the regionqueue before expiration is " + regionQueueSize);
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return regionqueue.size() >= 1;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -207,10 +212,12 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
     final HARegionQueue regionqueue = regionForQueue.getOwner();
     cache.getLogger().info("Size of the regionqueue After expiration is " + regionqueue.size());
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return regionqueue.size() <= regionQueueSize;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -261,6 +268,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
    * This listener performs the put of Conflatable object in the regionqueue.
    */
   static class VMListener extends CacheListenerAdapter {
+    @Override
     public void afterCreate(EntryEvent event) {
       Cache cache = event.getRegion().getCache();
       HARegion regionForQueue = (HARegion) cache.getRegion(

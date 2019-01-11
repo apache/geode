@@ -33,6 +33,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 public class SecurityServiceWithCustomRealmIntegrationTest
     extends SecurityServiceWithShiroIniIntegrationTest {
 
+  @Override
   @Before
   public void before() throws Exception {
     this.props.setProperty(TestSecurityManager.SECURITY_JSON,

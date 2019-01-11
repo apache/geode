@@ -52,10 +52,12 @@ public class CollectionHolder implements Serializable, DataSerializable {
     return this.arr;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.arr = DataSerializer.readStringArray(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeStringArray(this.arr, out);
   }

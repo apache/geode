@@ -152,6 +152,7 @@ public abstract class VersionTag<T extends VersionSource>
     this.entryVersion = version;
   }
 
+  @Override
   public int getEntryVersion() {
     return this.entryVersion;
   }
@@ -173,6 +174,7 @@ public abstract class VersionTag<T extends VersionSource>
     this.regionVersionLowBytes = (int) (version & 0xFFFFFFFFL);
   }
 
+  @Override
   public long getRegionVersion() {
     return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
@@ -188,6 +190,7 @@ public abstract class VersionTag<T extends VersionSource>
   /**
    * get rvv internal high byte. Used by region entries for transferring to storage
    */
+  @Override
   public short getRegionVersionHighBytes() {
     return this.regionVersionHighBytes;
   }
@@ -195,6 +198,7 @@ public abstract class VersionTag<T extends VersionSource>
   /**
    * get rvv internal low bytes. Used by region entries for transferring to storage
    */
+  @Override
   public int getRegionVersionLowBytes() {
     return this.regionVersionLowBytes;
   }
@@ -222,6 +226,7 @@ public abstract class VersionTag<T extends VersionSource>
   /**
    * @return the memberID
    */
+  @Override
   public T getMemberID() {
     return this.memberID;
   }
@@ -285,6 +290,7 @@ public abstract class VersionTag<T extends VersionSource>
     return (this.bits & BITS_ALLOWED_BY_RESOLVER) != 0;
   }
 
+  @Override
   public int getDistributedSystemId() {
     return this.distributedSystemId;
   }
@@ -323,6 +329,7 @@ public abstract class VersionTag<T extends VersionSource>
         && this.regionVersionLowBytes == 0);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     toData(out, true);
   }
@@ -372,6 +379,7 @@ public abstract class VersionTag<T extends VersionSource>
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int flags = in.readUnsignedShort();
     if (logger.isTraceEnabled(LogMarker.VERSION_TAG_VERBOSE)) {
@@ -446,6 +454,7 @@ public abstract class VersionTag<T extends VersionSource>
   /**
    * @return the time stamp of this operation. This is an unsigned integer returned as a long
    */
+  @Override
   public long getVersionTimeStamp() {
     return this.timeStamp;
   }

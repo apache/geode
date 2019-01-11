@@ -30,6 +30,7 @@ public interface DeltaSessionInterface extends Session {
 
   void abort();
 
+  @Override
   boolean isValid();
 
   void localDestroyAttribute(String name);

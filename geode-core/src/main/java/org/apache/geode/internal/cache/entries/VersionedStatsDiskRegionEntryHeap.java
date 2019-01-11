@@ -35,6 +35,7 @@ public abstract class VersionedStatsDiskRegionEntryHeap extends VersionedStatsDi
   }
 
   private static class VersionedStatsDiskRegionEntryHeapFactory implements RegionEntryFactory {
+    @Override
     public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
@@ -62,12 +63,14 @@ public abstract class VersionedStatsDiskRegionEntryHeap extends VersionedStatsDi
       return new VersionedStatsDiskRegionEntryHeapObjectKey(context, key, value);
     }
 
+    @Override
     public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VersionedStatsDiskRegionEntryHeapObjectKey.class;
     }
 
+    @Override
     public RegionEntryFactory makeVersioned() {
       return this;
     }

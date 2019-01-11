@@ -519,6 +519,7 @@ public class ClientMetadataService {
         totalRefreshTaskCount++;
       }
       Runnable fetchTask = new Runnable() {
+        @Override
         @SuppressWarnings("synthetic-access")
         public void run() {
           try {
@@ -630,6 +631,7 @@ public class ClientMetadataService {
         totalRefreshTaskCount++;
       }
       Runnable fetchTask = new Runnable() {
+        @Override
         @SuppressWarnings("synthetic-access")
         public void run() {
           try {

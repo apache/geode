@@ -36,6 +36,7 @@ public abstract class VMStatsDiskRegionEntryOffHeap extends VMStatsDiskRegionEnt
   }
 
   private static class VMStatsDiskRegionEntryOffHeapFactory implements RegionEntryFactory {
+    @Override
     public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
@@ -61,12 +62,14 @@ public abstract class VMStatsDiskRegionEntryOffHeap extends VMStatsDiskRegionEnt
       return new VMStatsDiskRegionEntryOffHeapObjectKey(context, key, value);
     }
 
+    @Override
     public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VMStatsDiskRegionEntryOffHeapObjectKey.class;
     }
 
+    @Override
     public RegionEntryFactory makeVersioned() {
       return VersionedStatsDiskRegionEntryOffHeap.getEntryFactory();
     }

@@ -747,6 +747,7 @@ public class MemoryMonitorJUnitTest {
   public void testAddListeners() {
     final InternalResourceManager internalManager = this.cache.getInternalResourceManager();
     ResourceListener<MemoryEvent> memoryListener = new ResourceListener<MemoryEvent>() {
+      @Override
       public void onEvent(MemoryEvent event) {
         cache.getLogger().info("Received MemoryEvent");
       }

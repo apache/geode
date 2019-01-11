@@ -99,6 +99,7 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
     super.appendFields(buff);
   }
 
+  @Override
   public int getDSFID() {
     return R_CLEAR_MSG;
   }

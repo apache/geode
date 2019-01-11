@@ -48,6 +48,7 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
     friendlyName = "Inspect cached object";
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
     if (resp != null) {
@@ -74,6 +75,7 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
     return resp;
   }
 
+  @Override
   public int getDSFID() {
     return OBJECT_DETAILS_REQUEST;
   }

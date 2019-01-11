@@ -213,91 +213,113 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public int getPort() {
     return this.port;
   }
 
+  @Override
   public void setPort(int port) {
     this.port = port;
   }
 
+  @Override
   public String getBindAddress() {
     return this.bindAddress;
   }
 
+  @Override
   public void setBindAddress(String address) {
     this.bindAddress = address;
   }
 
+  @Override
   public String getHostnameForClients() {
     return this.hostnameForClients;
   }
 
+  @Override
   public void setHostnameForClients(String name) {
     this.hostnameForClients = name;
   }
 
+  @Override
   public int getMaxConnections() {
     return this.maxConnections;
   }
 
+  @Override
   public void setMaxConnections(int maxCon) {
     this.maxConnections = maxCon;
   }
 
+  @Override
   public int getMaxThreads() {
     return this.maxThreads;
   }
 
+  @Override
   public void setMaxThreads(int maxThreads) {
     this.maxThreads = maxThreads;
   }
 
+  @Override
   public void start() throws IOException {
     // This method is invoked during testing, but it is not necessary
     // to do anything.
   }
 
+  @Override
   public void setNotifyBySubscription(boolean b) {
     // this.notifyBySubscription = true;
   }
 
+  @Override
   public boolean getNotifyBySubscription() {
     return this.notifyBySubscription;
   }
 
+  @Override
   public void setSocketBufferSize(int socketBufferSize) {
     this.socketBufferSize = socketBufferSize;
   }
 
+  @Override
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
 
+  @Override
   public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) {
     this.maximumTimeBetweenPings = maximumTimeBetweenPings;
   }
 
+  @Override
   public int getMaximumTimeBetweenPings() {
     return this.maximumTimeBetweenPings;
   }
 
+  @Override
   public int getMaximumMessageCount() {
     return this.maximumMessageCount;
   }
 
+  @Override
   public void setMaximumMessageCount(int maximumMessageCount) {
     this.maximumMessageCount = maximumMessageCount;
   }
 
+  @Override
   public int getMessageTimeToLive() {
     return this.messageTimeToLive;
   }
 
+  @Override
   public void setMessageTimeToLive(int messageTimeToLive) {
     this.messageTimeToLive = messageTimeToLive;
   }
 
+  @Override
   public void setGroups(String[] groups) {
     if (groups == null) {
       this.groups = CacheServer.DEFAULT_GROUPS;
@@ -311,6 +333,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
     }
   }
 
+  @Override
   public String[] getGroups() {
     String[] result = this.groups;
     if (result.length > 0) {
@@ -322,26 +345,32 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
     return result;
   }
 
+  @Override
   public ServerLoadProbe getLoadProbe() {
     return loadProbe;
   }
 
+  @Override
   public void setLoadProbe(ServerLoadProbe loadProbe) {
     this.loadProbe = loadProbe;
   }
 
+  @Override
   public long getLoadPollInterval() {
     return loadPollInterval;
   }
 
+  @Override
   public void setLoadPollInterval(long loadPollInterval) {
     this.loadPollInterval = loadPollInterval;
   }
 
+  @Override
   public void setTcpNoDelay(boolean setting) {
     this.tcpNoDelay = setting;
   }
 
+  @Override
   public boolean getTcpNoDelay() {
     return this.tcpNoDelay;
   }

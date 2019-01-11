@@ -125,6 +125,7 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
     return this.processorId;
   }
 
+  @Override
   public int getDSFID() {
     return PR_FLUSH_MESSAGE;
   }

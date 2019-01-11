@@ -873,6 +873,7 @@ public class ByteBufferInputStream extends InputStream
     }
   }
 
+  @Override
   public boolean readBoolean() {
     return this.buffer.get() != 0;
   }
@@ -886,6 +887,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readByte()
    */
+  @Override
   public byte readByte() {
     return this.buffer.get();
   }
@@ -899,6 +901,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readChar()
    */
+  @Override
   public char readChar() {
     return this.buffer.getChar();
   }
@@ -912,6 +915,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readDouble()
    */
+  @Override
   public double readDouble() {
     return this.buffer.getDouble();
   }
@@ -925,6 +929,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readFloat()
    */
+  @Override
   public float readFloat() {
     return this.buffer.getFloat();
   }
@@ -938,6 +943,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readFully(byte[])
    */
+  @Override
   public void readFully(byte[] b) {
     this.buffer.get(b);
 
@@ -948,6 +954,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readFully(byte[], int, int)
    */
+  @Override
   public void readFully(byte[] b, int off, int len) {
     this.buffer.get(b, off, len);
 
@@ -958,6 +965,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readInt()
    */
+  @Override
   public int readInt() {
     return this.buffer.getInt();
   }
@@ -971,6 +979,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readLine()
    */
+  @Override
   public String readLine() {
     throw new UnsupportedOperationException();
   }
@@ -980,6 +989,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readLong()
    */
+  @Override
   public long readLong() {
     return this.buffer.getLong();
   }
@@ -993,6 +1003,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readShort()
    */
+  @Override
   public short readShort() {
     return this.buffer.getShort();
   }
@@ -1006,6 +1017,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readUTF()
    */
+  @Override
   public String readUTF() throws IOException {
     return DataInputStream.readUTF(this);
   }
@@ -1015,6 +1027,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readUnsignedByte()
    */
+  @Override
   public int readUnsignedByte() {
     return this.buffer.get() & 0xff;
   }
@@ -1028,6 +1041,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#readUnsignedShort()
    */
+  @Override
   public int readUnsignedShort() {
     return this.buffer.getShort() & 0xffff;
   }
@@ -1041,6 +1055,7 @@ public class ByteBufferInputStream extends InputStream
    *
    * @see java.io.DataInput#skipBytes(int)
    */
+  @Override
   public int skipBytes(int n) {
     int newPosition = this.buffer.position() + n;
     if (newPosition > this.buffer.limit()) {
@@ -1095,6 +1110,7 @@ public class ByteBufferInputStream extends InputStream
     return this.buffer.slice(startOffset, endOffset);
   }
 
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     out.writeBoolean(this.buffer != null);
     if (this.buffer != null) {
@@ -1107,6 +1123,7 @@ public class ByteBufferInputStream extends InputStream
     }
   }
 
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     boolean hasBuffer = in.readBoolean();
     if (hasBuffer) {

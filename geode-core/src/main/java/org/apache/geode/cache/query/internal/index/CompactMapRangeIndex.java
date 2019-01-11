@@ -64,6 +64,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
     this.initializeIndex(true);
   }
 
+  @Override
   protected void removeMapping(RegionEntry entry, int opCode) throws IMQException {
     // this implementation has a reverse map, so it doesn't handle
     // BEFORE_UPDATE_OP
@@ -140,6 +141,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
   }
 
 
+  @Override
   protected void doIndexAddition(Object mapKey, Object indexKey, Object value, RegionEntry entry)
       throws IMQException {
     if (indexKey == null) {
@@ -187,6 +189,7 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
     mapKeyToIndexKey.put(mapKey, indexKey);
   }
 
+  @Override
   protected void saveIndexAddition(Object mapKey, Object indexKey, Object value, RegionEntry entry)
       throws IMQException {
     if (indexKey == null) {

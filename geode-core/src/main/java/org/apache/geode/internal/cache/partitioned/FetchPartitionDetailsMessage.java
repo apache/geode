@@ -125,6 +125,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     buff.append("; internal=").append(this.internal);
   }
 
+  @Override
   public int getDSFID() {
     return PR_FETCH_PARTITION_DETAILS_MESSAGE;
   }

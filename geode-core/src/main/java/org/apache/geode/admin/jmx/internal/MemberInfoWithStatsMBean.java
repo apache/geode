@@ -1182,6 +1182,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * @see NotificationEmitter#addNotificationListener(NotificationListener, NotificationFilter,
    *      Object)
    */
+  @Override
   public void addNotificationListener(NotificationListener listener, NotificationFilter filter,
       Object handback) throws IllegalArgumentException {
     forwarder.addNotificationListener(listener, filter, handback);
@@ -1190,6 +1191,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * @see NotificationEmitter#removeNotificationListener(NotificationListener)
    */
+  @Override
   public void removeNotificationListener(NotificationListener listener)
       throws ListenerNotFoundException {
     forwarder.removeNotificationListener(listener);
@@ -1198,6 +1200,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /**
    * @see NotificationEmitter#getNotificationInfo()
    */
+  @Override
   public MBeanNotificationInfo[] getNotificationInfo() {
     return getMBeanInfo().getNotifications();
   }
@@ -1206,6 +1209,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * @see NotificationEmitter#removeNotificationListener(NotificationListener, NotificationFilter,
    *      Object)
    */
+  @Override
   public void removeNotificationListener(NotificationListener listener, NotificationFilter filter,
       Object handback) throws ListenerNotFoundException {
     forwarder.removeNotificationListener(listener, filter, handback);
@@ -1257,6 +1261,7 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
    *
    * @see NotificationListener#handleNotification(Notification, Object)
    */
+  @Override
   public void handleNotification(Notification notification, Object handback) {
     Object notifSource = notification.getSource();
     if (AdminDistributedSystemJmxImpl.NOTIF_MEMBER_JOINED.equals(notification.getType())) {

@@ -121,6 +121,7 @@ public class MapRangeIndex extends AbstractMapIndex {
     }
   }
 
+  @Override
   protected void doIndexAddition(Object mapKey, Object indexKey, Object value, RegionEntry entry)
       throws IMQException {
     boolean isPr = this.region instanceof BucketRegion;
@@ -155,6 +156,7 @@ public class MapRangeIndex extends AbstractMapIndex {
     this.entryToMapKeysMap.add(entry, mapKey);
   }
 
+  @Override
   protected void saveIndexAddition(Object mapKey, Object indexKey, Object value, RegionEntry entry)
       throws IMQException {
     boolean isPr = this.region instanceof BucketRegion;

@@ -56,6 +56,7 @@ class LRUTestEntry implements EvictableEntry {
     return id;
   }
 
+  @Override
   public boolean isTombstone() {
     return false;
   }

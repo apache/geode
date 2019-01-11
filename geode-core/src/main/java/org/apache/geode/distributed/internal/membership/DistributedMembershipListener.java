@@ -60,6 +60,7 @@ public interface DistributedMembershipListener extends DirectChannelListener {
    *
    * @param o the message that should be processed.
    */
+  @Override
   void messageReceived(DistributionMessage o);
 
   /**

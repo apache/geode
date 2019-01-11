@@ -68,14 +68,17 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
     this.value = EntryEventImpl.serialize(object);
   }
 
+  @Override
   public Object getDeserializedValue(Region r, RegionEntry re) {
     return this.objValue;
   }
 
+  @Override
   public Object getDeserializedForReading() {
     return this.objValue;
   }
 
+  @Override
   public Object getDeserializedWritableCopy(Region r, RegionEntry re) {
     return EntryEventImpl.deserialize(this.value);
   }
@@ -83,10 +86,12 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
   /**
    * Return the serialized value as a byte[]
    */
+  @Override
   public byte[] getSerializedValue() {
     return this.value;
   }
 
+  @Override
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
     wrapper.setData(this.value, userBits, this.value.length,
         false /* Not Reusable as it refers to underlying value */);
@@ -96,27 +101,33 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
    * Return current value regardless of whether it is serialized or deserialized: if it was
    * serialized than it is a byte[], otherwise it is not a byte[].
    */
+  @Override
   public Object getValue() {
     return this.value;
   }
 
+  @Override
   public int getSizeInBytes() {
     return MEM_OVERHEAD + CachedDeserializableFactory.getByteSize(this.value) * 2;
   }
 
+  @Override
   public int getValueSizeInBytes() {
     return CachedDeserializableFactory.getByteSize(this.value);
   }
 
+  @Override
   public int getDSFID() {
     return STORE_ALL_CACHED_DESERIALIZABLE;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.value = DataSerializer.readByteArray(in);
     this.objValue = EntryEventImpl.deserialize(this.value);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeByteArray(this.value, out);
   }
@@ -131,10 +142,12 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
     return getShortClassName() + "@" + this.hashCode();
   }
 
+  @Override
   public void writeValueAsByteArray(DataOutput out) throws IOException {
     toData(out);
   }
 
+  @Override
   public String getStringForm() {
     return StringUtils.forceToString(this.objValue);
   }

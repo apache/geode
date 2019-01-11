@@ -80,6 +80,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
     final String regionName = getUniqueName() + "_Region";
 
     SerializableCallable createRegionXB = new SerializableCallable("create region in X and B") {
+      @Override
       public Object call() {
         Region r = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
         Object result = null;
@@ -97,21 +98,25 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
     };
 
     SerializableCallable createRegionA = new SerializableCallable("create region in A") {
+      @Override
       public Object call() {
         final GiiCallback cb = new GiiCallback(
             BeforeGetInitialImage, regionName);
         setGIITestHook(cb);
         Thread t = new Thread("create region in a thread that will block before GII") {
+          @Override
           public void run() {
             Region r = getCache().createRegionFactory(REPLICATE).create(regionName);
           }
         };
         t.start();
         WaitCriterion wc = new WaitCriterion() {
+          @Override
           public boolean done() {
             return cb.isRunning;
           }
 
+          @Override
           public String description() {
             return "waiting for GII test hook to be invoked";
           }
@@ -126,6 +131,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
     final InternalDistributedMember Xid = (InternalDistributedMember) X.invoke(createRegionXB);
 
     A.invoke(new SerializableRunnable("make sure A got keyFromX from X") {
+      @Override
       public void run() {
         // use internal methods to get the region since it's still initializing
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
@@ -136,10 +142,12 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
         // continuing the test because we didn't set up the initial
         // condition needed for the next step.
         WaitCriterion wc = new WaitCriterion() {
+          @Override
           public boolean done() {
             return r.containsKey("keyFromX");
           }
 
+          @Override
           public String description() {
             return "waiting for region " + regionName + " to contain keyFromX";
           }
@@ -152,6 +160,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
     B.invoke(createRegionXB);
 
     A.invoke(new SerializableRunnable("allow A to continue GII from B") {
+      @Override
       public void run() {
         GiiCallback cb = (GiiCallback) getGIITestHookForCheckingPurpose(
             BeforeGetInitialImage);
@@ -159,10 +168,12 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
           cb.lockObject.notify();
         }
         WaitCriterion wc = new WaitCriterion() {
+          @Override
           public boolean done() {
             return getCache().getRegion(regionName) != null;
           }
 
+          @Override
           public String description() {
             return "waiting for region " + regionName + " to initialize";
           }
@@ -184,13 +195,16 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
 
     // Now ensure the B has done the sync and received the entry
     B.invoke(new SerializableRunnable("ensure B is now consistent") {
+      @Override
       public void run() {
         final Region r = getCache().getRegion(regionName);
         WaitCriterion wc = new WaitCriterion() {
+          @Override
           public boolean done() {
             return r.containsKey("keyFromX");
           }
 
+          @Override
           public String description() {
             return "waiting for region " + regionName + " to contain keyFromX";
           }

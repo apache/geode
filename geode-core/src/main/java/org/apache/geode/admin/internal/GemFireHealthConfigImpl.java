@@ -52,14 +52,17 @@ public class GemFireHealthConfigImpl extends CacheHealthConfigImpl implements Ge
 
   /////////////////////// Instance Methods ///////////////////////
 
+  @Override
   public String getHostName() {
     return this.hostName;
   }
 
+  @Override
   public void setHealthEvaluationInterval(int interval) {
     this.interval = interval;
   }
 
+  @Override
   public int getHealthEvaluationInterval() {
     return this.interval;
   }

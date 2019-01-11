@@ -301,6 +301,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     return this.processorId;
   }
 
+  @Override
   public int getDSFID() {
     return DR_FUNCTION_STREAMING_MESSAGE;
   }
@@ -416,6 +417,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
    *
    * @see org.apache.geode.internal.cache.TransactionMessage#canStartRemoteTransaction()
    */
+  @Override
   public boolean canStartRemoteTransaction() {
     return true;
   }
@@ -425,10 +427,12 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
    *
    * @see org.apache.geode.internal.cache.TransactionMessage#getTXUniqId()
    */
+  @Override
   public int getTXUniqId() {
     return txUniqId;
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -437,6 +441,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     // TODO Auto-generated method stub
     return null;

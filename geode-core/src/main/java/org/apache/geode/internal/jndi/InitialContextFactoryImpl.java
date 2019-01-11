@@ -46,6 +46,7 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
    *        context.
    * @return ContextImpl object.
    */
+  @Override
   public synchronized Context getInitialContext(Hashtable environment) throws NamingException {
     if (ctx == null) {
       ctx = new ContextImpl();

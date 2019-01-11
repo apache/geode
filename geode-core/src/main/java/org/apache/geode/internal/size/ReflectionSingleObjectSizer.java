@@ -43,6 +43,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     unsafe = tmp;
   }
 
+  @Override
   public long sizeof(Object object) {
     return sizeof(object, true);
   }

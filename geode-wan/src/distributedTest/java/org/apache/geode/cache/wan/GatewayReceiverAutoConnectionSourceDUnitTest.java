@@ -93,6 +93,7 @@ public class GatewayReceiverAutoConnectionSourceDUnitTest extends LocatorTestBas
 
   private void addGatewayReceiverToVM(VM vm) {
     vm.invoke(new SerializableRunnable("add GatewayReceiver") {
+      @Override
       public void run() {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
         GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
@@ -105,6 +106,7 @@ public class GatewayReceiverAutoConnectionSourceDUnitTest extends LocatorTestBas
   private void verifyGetAllServers(VM vm, final String regionName, final int serverPort,
       final boolean oneServerExpected) {
     vm.invoke(new SerializableRunnable("verify getAllServers") {
+      @Override
       public void run() {
         Cache cache = (Cache) remoteObjects.get(CACHE_KEY);
         Region region = cache.getRegion(regionName);

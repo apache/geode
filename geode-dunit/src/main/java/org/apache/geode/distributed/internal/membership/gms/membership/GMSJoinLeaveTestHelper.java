@@ -41,6 +41,7 @@ public class GMSJoinLeaveTestHelper {
 
   private static void waitCriterion() {
     WaitCriterion waitCriterion = new WaitCriterion() {
+      @Override
       public boolean done() {
         try {
           return getIDS() != null;
@@ -50,6 +51,7 @@ public class GMSJoinLeaveTestHelper {
         return false; // NOTREACHED
       }
 
+      @Override
       public String description() {
         return "Distributed system is null";
       }

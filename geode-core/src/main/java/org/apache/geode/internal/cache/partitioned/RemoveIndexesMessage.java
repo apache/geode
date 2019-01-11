@@ -214,6 +214,7 @@ public class RemoveIndexesMessage extends PartitionMessage {
     return new RemoveIndexesResponse(r.getSystem(), recipients);
   }
 
+  @Override
   public int getDSFID() {
     return PR_REMOVE_INDEXES_MESSAGE;
   }

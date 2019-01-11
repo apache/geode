@@ -39,6 +39,7 @@ public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements Logo
     this.setDefaultTargetUrl(defaultTargetURL);
   }
 
+  @Override
   public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
 

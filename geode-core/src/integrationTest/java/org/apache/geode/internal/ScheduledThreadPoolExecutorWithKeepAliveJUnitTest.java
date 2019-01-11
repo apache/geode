@@ -50,6 +50,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         Executors.defaultThreadFactory(), null);
     final AtomicBoolean done = new AtomicBoolean();
     Future f = ex.submit(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(1000);
@@ -66,6 +67,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     Thread.sleep(2000); // let the thread finish with the task
 
     f = ex.submit(new Callable() {
+      @Override
       public Object call() {
         try {
           Thread.sleep(1000);
@@ -87,6 +89,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         Executors.defaultThreadFactory(), null);
 
     Runnable waitForABit = new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(1000);
@@ -123,6 +126,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
 
     final AtomicInteger counter = new AtomicInteger();
     Runnable waitForABit = new Runnable() {
+      @Override
       public void run() {
         try {
           counter.incrementAndGet();
@@ -166,6 +170,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         Executors.defaultThreadFactory(), null);
     long start = System.nanoTime();
     Future f = ex.schedule(new Runnable() {
+      @Override
       public void run() {}
     }, 10, TimeUnit.SECONDS);
     f.get();
@@ -181,6 +186,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
 
     final AtomicInteger counter = new AtomicInteger();
     Runnable run = new Runnable() {
+      @Override
       public void run() {
         counter.incrementAndGet();
       }
@@ -204,6 +210,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
     ex.schedule(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(2000);
@@ -225,6 +232,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
     ex.submit(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(3000);
@@ -248,6 +256,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
     ex.schedule(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(2000);
@@ -270,6 +279,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex = new ScheduledThreadPoolExecutorWithKeepAlive(50, 1, TimeUnit.SECONDS,
         Executors.defaultThreadFactory(), null);
     ex.submit(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(2000);
@@ -295,6 +305,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
         Executors.defaultThreadFactory(), null);
     ex.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     ex.schedule(new Runnable() {
+      @Override
       public void run() {
         try {
           Thread.sleep(2000);
@@ -320,6 +331,7 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     long start = System.nanoTime();
     for (int i = 0; i < 100; i++) {
       ex.submit(new Runnable() {
+        @Override
         public void run() {
           try {
             Thread.sleep(500);

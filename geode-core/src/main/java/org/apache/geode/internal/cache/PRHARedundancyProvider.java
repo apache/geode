@@ -156,6 +156,7 @@ public class PRHARedundancyProvider {
         region.getGemFireCache().getInternalResourceManager();
     recoveryExecutor = new OneTaskOnlyExecutor(resourceManager.getExecutor(),
         new OneTaskOnlyExecutor.ConflatedTaskListener() {
+          @Override
           public void taskDropped() {
             InternalResourceManager.getResourceObserver().recoveryConflated(region);
           }
@@ -1338,6 +1339,7 @@ public class PRHARedundancyProvider {
     }
 
     Comparator<DataStoreBuckets> comparator = new Comparator<DataStoreBuckets>() {
+      @Override
       public int compare(DataStoreBuckets d1, DataStoreBuckets d2) {
         boolean host1Used = existingHosts.contains(d1.memberId);
         boolean host2Used = existingHosts.contains(d2.memberId);
@@ -2117,6 +2119,7 @@ public class PRHARedundancyProvider {
       this.bucketToMonitor.getBucketAdvisor().removeMembershipListener(this);
     }
 
+    @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {
       if (logger.isDebugEnabled()) {
@@ -2129,9 +2132,11 @@ public class PRHARedundancyProvider {
       }
     }
 
+    @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
         InternalDistributedMember whoSuspected, String reason) {}
 
+    @Override
     public void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
       if (logger.isDebugEnabled()) {
@@ -2227,6 +2232,7 @@ public class PRHARedundancyProvider {
    *
    */
   protected class PRMembershipListener implements MembershipListener {
+    @Override
     public void memberDeparted(DistributionManager distributionManager,
         final InternalDistributedMember id, final boolean crashed) {
       try {
@@ -2244,6 +2250,7 @@ public class PRHARedundancyProvider {
           // Only schedule redundancy recovery if this not a fixed PR.
           if (!PRHARedundancyProvider.this.prRegion.isFixedPartitionedRegion()) {
             postRecoveryTask = new Runnable() {
+              @Override
               public void run() {
                 // After the metadata has been cleaned, recover redundancy.
                 scheduleRedundancyRecovery(id);
@@ -2259,14 +2266,17 @@ public class PRHARedundancyProvider {
       }
     }
 
+    @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
         InternalDistributedMember whoSuspected, String reason) {}
 
+    @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {
       // no action required
     }
 
+    @Override
     public void quorumLost(DistributionManager distributionManager,
         Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
   }

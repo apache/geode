@@ -434,8 +434,10 @@ public class DummyCachePerfStats extends CachePerfStats {
   @Override
   public PoolStatHelper getEventPoolHelper() {
     return new PoolStatHelper() {
+      @Override
       public void startJob() {}
 
+      @Override
       public void endJob() {}
     };
   }

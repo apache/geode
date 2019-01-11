@@ -280,6 +280,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     final AtomicInteger sampleCountChanged = new AtomicInteger(0);
 
     LocalStatListener listener = new LocalStatListener() {
+      @Override
       public void statValueChanged(double value) {
         sampleCountValue.set((int) value);
         sampleCountChanged.incrementAndGet();
@@ -469,6 +470,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
 
     final AtomicBoolean flag = new AtomicBoolean(false);
     final LocalStatListener listener = new LocalStatListener() {
+      @Override
       public void statValueChanged(double value) {
         flag.set(true);
       }

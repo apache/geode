@@ -76,18 +76,21 @@ public class CacheListenerJUnitTest {
   @Test
   public void testInvocationOrder() throws Exception {
     CacheListener cl1 = new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         CacheListenerJUnitTest.this.invokeCount++;
         assertEquals(1, CacheListenerJUnitTest.this.invokeCount);
       }
     };
     CacheListener cl2 = new RegionMembershipListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         CacheListenerJUnitTest.this.invokeCount++;
         assertEquals(2, CacheListenerJUnitTest.this.invokeCount);
       }
     };
     CacheListener cl3 = new RegionRoleListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         CacheListenerJUnitTest.this.invokeCount++;
         assertEquals(3, CacheListenerJUnitTest.this.invokeCount);
@@ -104,6 +107,7 @@ public class CacheListenerJUnitTest {
     assertEquals(3, this.invokeCount);
 
     CacheListener cl4 = new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         CacheListenerJUnitTest.this.invokeCount++;
         assertEquals(4, CacheListenerJUnitTest.this.invokeCount);
@@ -183,6 +187,7 @@ public class CacheListenerJUnitTest {
   @Test
   public void testAfterRegionCreate() throws Exception {
     CacheListener cl1 = new CacheListenerAdapter() {
+      @Override
       public void afterRegionCreate(RegionEvent event) {
         CacheListenerJUnitTest.this.invokeCount++;
         CacheListenerJUnitTest.this.lastEvent = event;
@@ -208,11 +213,13 @@ public class CacheListenerJUnitTest {
   @Test
   public void testTxPutThatIsCreate() throws Exception {
     CacheListener cl1 = new CacheListenerAdapter() {
+      @Override
       public void afterUpdate(EntryEvent e) {
         CacheListenerJUnitTest.this.invokeCount = 2;
         CacheListenerJUnitTest.this.lastEvent = e;
       }
 
+      @Override
       public void afterCreate(EntryEvent e) {
         CacheListenerJUnitTest.this.invokeCount = 1;
         CacheListenerJUnitTest.this.lastEvent = e;
@@ -235,6 +242,7 @@ public class CacheListenerJUnitTest {
 
     // now try it with a transaction
     TransactionListener tl1 = new TransactionListenerAdapter() {
+      @Override
       public void afterRollback(TransactionEvent e) {
         CacheListenerJUnitTest.this.invokeCount = 1;
         assertEquals(1, e.getEvents().size());
@@ -283,6 +291,7 @@ public class CacheListenerJUnitTest {
     Region r = this.c.createRegion("r", af.create());
 
     TransactionListener tl1 = new TransactionListenerAdapter() {
+      @Override
       public void afterRollback(TransactionEvent e) {
         assertEquals(3, e.getEvents().size());
         String[] keys = new String[] {(String) ((EntryEvent) e.getEvents().get(0)).getKey(),
@@ -313,6 +322,7 @@ public class CacheListenerJUnitTest {
     Region r3 = r2.createSubregion("r3", af.create());
 
     TransactionListener tl1 = new TransactionListenerAdapter() {
+      @Override
       public void afterCommit(TransactionEvent e) {
         assertEquals(3, e.getEvents().size());
         String[] keys = new String[] {(String) ((EntryEvent) e.getEvents().get(0)).getKey(),

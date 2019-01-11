@@ -42,6 +42,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
     final CountDownLatch latch = new CountDownLatch(1);
     ex.submit(new Callable() {
 
+      @Override
       public Object call() throws Exception {
         latch.await();
         return null;
@@ -52,6 +53,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     Runnable increment = new Runnable() {
 
+      @Override
       public void run() {
         counter.incrementAndGet();
       }
@@ -83,6 +85,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     Callable waitForLatch = new Callable() {
 
+      @Override
       public Object call() throws Exception {
         taskRunning.countDown();
         continueTask.await();
@@ -93,6 +96,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     Runnable increment = new Runnable() {
 
+      @Override
       public void run() {
         counter.incrementAndGet();
       }
@@ -125,6 +129,7 @@ public class OneTaskOnlyDecoratorJUnitTest {
 
     Runnable increment = new Runnable() {
 
+      @Override
       public void run() {
         counter.incrementAndGet();
       }

@@ -45,6 +45,7 @@ public class MissingPersistentIDsResponse extends AdminResponse {
     this.setRecipient(recipient);
   }
 
+  @Override
   public int getDSFID() {
     return MISSING_PERSISTENT_IDS_RESPONSE;
   }

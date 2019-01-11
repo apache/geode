@@ -72,6 +72,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
   public final void postSetUp() throws Exception {
     int hostCount = Host.getHostCount();
     SerializableRunnable createRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("portfolios");
@@ -272,6 +273,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     }
 
     vms[0].invoke(new CacheSerializableRunnable("Execute query validate results") {
+      @Override
       public void run2() throws CacheException {
         Cache cache = basicGetCache();
         String[] regionNames = new String[] {"replicateOverFlowRegion",
@@ -438,6 +440,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     }
 
     vms[0].invoke(new CacheSerializableRunnable("Execute query validate results") {
+      @Override
       public void run2() throws CacheException {
         Cache cache = basicGetCache();
         String[] regionNames = new String[] {"replicateOverFlowRegion",
@@ -615,6 +618,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     }
 
     vms[0].invoke(new CacheSerializableRunnable("Execute query validate results") {
+      @Override
       public void run2() throws CacheException {
         Cache cache = basicGetCache();
         String[] regionNames = new String[] {"replicateOverFlowRegion",
@@ -764,6 +768,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     }
 
     vms[0].invoke(new CacheSerializableRunnable("Execute query validate results") {
+      @Override
       public void run2() throws CacheException {
         Cache cache = basicGetCache();
         String[] regionNames = new String[] {"replicateOverFlowRegion",
@@ -1316,10 +1321,12 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;

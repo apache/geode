@@ -53,6 +53,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
    */
   private enum ComparisonStrategy {
     TEMPORAL {
+      @Override
       public Boolean execute(Object object1, Object object2, int comparator)
           throws ClassCastException {
         return applyComparator(getTemporalComparator().compare(object1, object2), comparator);
@@ -60,6 +61,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     },
 
     NUMERIC {
+      @Override
       public Boolean execute(Object object1, Object object2, int comparator)
           throws ClassCastException {
         return applyComparator(getNumericComparator().compare(object1, object2), comparator);
@@ -67,6 +69,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     },
 
     BOOLEAN {
+      @Override
       public Boolean execute(Object object1, Object object2, int comparator)
           throws TypeMismatchException {
         return booleanCompare(object1, object2, comparator);
@@ -74,6 +77,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     },
 
     COMPARABLE {
+      @Override
       public Boolean execute(Object object1, Object object2, int comparator)
           throws ClassCastException {
         return applyComparator(((Comparable) object1).compareTo(object2), comparator);
@@ -81,6 +85,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     },
 
     ARBITRARY {
+      @Override
       public Boolean execute(Object object1, Object object2, int comparator) {
         if (comparator == TOK_EQ) {
           return object1.equals(object2);

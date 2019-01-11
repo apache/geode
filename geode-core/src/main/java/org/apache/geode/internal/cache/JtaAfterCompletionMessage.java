@@ -96,6 +96,7 @@ public class JtaAfterCompletionMessage extends TXMessage {
     return false;
   }
 
+  @Override
   public int getDSFID() {
     return JTA_AFTER_COMPLETION_MESSAGE;
   }

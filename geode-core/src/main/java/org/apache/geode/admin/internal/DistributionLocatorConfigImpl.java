@@ -120,30 +120,36 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
     return this.locator != null && this.locator.isRunning();
   }
 
+  @Override
   public int getPort() {
     return this.port;
   }
 
+  @Override
   public void setPort(int port) {
     checkReadOnly();
     this.port = port;
     configChanged();
   }
 
+  @Override
   public String getBindAddress() {
     return this.bindAddress;
   }
 
+  @Override
   public void setBindAddress(String bindAddress) {
     checkReadOnly();
     this.bindAddress = bindAddress;
     configChanged();
   }
 
+  @Override
   public void setDistributedSystemProperties(Properties props) {
     this.dsProperties = props;
   }
 
+  @Override
   public Properties getDistributedSystemProperties() {
     return this.dsProperties;
   }

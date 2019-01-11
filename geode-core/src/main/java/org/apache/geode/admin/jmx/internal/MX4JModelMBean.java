@@ -105,6 +105,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return Log.getLogger(getClass().getName());
   }
 
+  @Override
   public ObjectName preRegister(MBeanServer server, ObjectName name) throws Exception {
     if (m_canBeRegistered) {
       m_mbeanServer = server;
@@ -115,13 +116,16 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
   }
 
+  @Override
   public void postRegister(Boolean registrationDone) {
     if (!registrationDone.booleanValue())
       clear();
   }
 
+  @Override
   public void preDeregister() throws Exception {}
 
+  @Override
   public void postDeregister() {
     clear();
   }
@@ -135,6 +139,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     // PENDING: also remove generic listeners, attribute change listeners, log4j appenders...
   }
 
+  @Override
   public void setModelMBeanInfo(ModelMBeanInfo modelMBeanInfo)
       throws MBeanException, RuntimeOperationsException {
     if (modelMBeanInfo == null)
@@ -160,6 +165,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return true;
   }
 
+  @Override
   public void setManagedResource(Object resource, String resourceType) throws MBeanException,
       RuntimeOperationsException, InstanceNotFoundException, InvalidTargetObjectTypeException {
     if (resource == null)
@@ -183,10 +189,12 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return m_managedResource;
   }
 
+  @Override
   public MBeanInfo getMBeanInfo() {
     return m_modelMBeanInfo == null ? null : (MBeanInfo) m_modelMBeanInfo.clone();
   }
 
+  @Override
   public void addAttributeChangeNotificationListener(NotificationListener listener,
       String attributeName, Object handback)
       throws MBeanException, RuntimeOperationsException, IllegalArgumentException {
@@ -212,15 +220,18 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
           + " added successfully, handback is " + handback);
   }
 
+  @Override
   public void addNotificationListener(NotificationListener listener, NotificationFilter filter,
       Object handback) throws IllegalArgumentException {
     m_generalBroadcaster.addNotificationListener(listener, filter, handback);
   }
 
+  @Override
   public MBeanNotificationInfo[] getNotificationInfo() {
     return m_modelMBeanInfo.getNotifications();
   }
 
+  @Override
   public void removeAttributeChangeNotificationListener(NotificationListener listener,
       String attributeName) throws RuntimeOperationsException, ListenerNotFoundException {
     try {
@@ -256,16 +267,19 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
           + " removed successfully, handback is " + handback);
   }
 
+  @Override
   public void removeNotificationListener(NotificationListener listener)
       throws RuntimeOperationsException, ListenerNotFoundException {
     m_generalBroadcaster.removeNotificationListener(listener);
   }
 
+  @Override
   public void removeNotificationListener(NotificationListener listener, NotificationFilter filter,
       Object handback) throws RuntimeOperationsException, ListenerNotFoundException {
     m_generalBroadcaster.removeNotificationListener(listener, filter, handback);
   }
 
+  @Override
   public void sendAttributeChangeNotification(Attribute oldAttribute, Attribute newAttribute)
       throws MBeanException, RuntimeOperationsException {
     if (oldAttribute == null || newAttribute == null)
@@ -284,6 +298,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     sendAttributeChangeNotification(n);
   }
 
+  @Override
   public void sendAttributeChangeNotification(AttributeChangeNotification notification)
       throws MBeanException, RuntimeOperationsException {
     if (notification == null)
@@ -302,11 +317,13 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       logger.debug("Attribute change notification " + notification + " sent");
   }
 
+  @Override
   public void sendNotification(String message) throws MBeanException, RuntimeOperationsException {
     Notification notification = new Notification("jmx.modelmbean.general", this, 1, message);
     sendNotification(notification);
   }
 
+  @Override
   public void sendNotification(Notification notification)
       throws MBeanException, RuntimeOperationsException {
     if (m_generalBroadcaster != null) {
@@ -314,6 +331,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
   }
 
+  @Override
   public AttributeList getAttributes(String[] attributes) {
     if (attributes == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
@@ -338,6 +356,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return list;
   }
 
+  @Override
   public Object getAttribute(String attribute)
       throws AttributeNotFoundException, MBeanException, ReflectionException {
     if (attribute == null)
@@ -467,6 +486,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return returnValue;
   }
 
+  @Override
   public AttributeList setAttributes(AttributeList attributes) {
     if (attributes == null)
       throw new RuntimeOperationsException(new IllegalArgumentException(
@@ -490,6 +510,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return list;
   }
 
+  @Override
   public void setAttribute(Attribute attribute) throws AttributeNotFoundException,
       InvalidAttributeValueException, MBeanException, ReflectionException {
     if (attribute == null)
@@ -617,6 +638,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
   }
 
+  @Override
   public Object invoke(String method, Object[] arguments, String[] params)
       throws MBeanException, ReflectionException {
     if (method == null)
@@ -781,6 +803,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     return target;
   }
 
+  @Override
   public void load() throws MBeanException, RuntimeOperationsException, InstanceNotFoundException {
     PersisterMBean persister = findPersister();
     if (persister != null) {
@@ -789,6 +812,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
   }
 
+  @Override
   public void store() throws MBeanException, RuntimeOperationsException, InstanceNotFoundException {
     PersisterMBean persister = findPersister();
     if (persister != null) {

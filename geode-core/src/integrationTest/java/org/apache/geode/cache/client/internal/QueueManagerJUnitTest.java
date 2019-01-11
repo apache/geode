@@ -304,6 +304,7 @@ public class QueueManagerJUnitTest {
 
   private class DummyPool implements InternalPool {
 
+    @Override
     public String getPoolOrCacheCancelInProgress() {
       return null;
     }
@@ -313,187 +314,235 @@ public class QueueManagerJUnitTest {
       return false;
     }
 
+    @Override
     public Object execute(Op op, int retryAttempts) {
       return null;
     }
 
+    @Override
     public Object execute(Op op) {
       return null;
     }
 
+    @Override
     public EndpointManager getEndpointManager() {
       return null;
     }
 
+    @Override
     public Object executeOn(Connection con, Op op) {
       return null;
     }
 
+    @Override
     public Object executeOn(Connection con, Op op, boolean timeoutFatal) {
       return null;
     }
 
+    @Override
     public Object executeOn(ServerLocation server, Op op) {
       return null;
     }
 
+    @Override
     public Object executeOn(ServerLocation server, Op op, boolean accessed,
         boolean onlyUseExistingCnx) {
       return null;
     }
 
+    @Override
     public void executeOnAllQueueServers(Op op)
         throws NoSubscriptionServersAvailableException, SubscriptionNotEnabledException {}
 
+    @Override
     public Object executeOnQueuesAndReturnPrimaryResult(Op op) {
       return null;
     }
 
+    @Override
     public Object executeOnPrimary(Op op) {
       return null;
     }
 
+    @Override
     public boolean isDurableClient() {
       return true;
     }
 
+    @Override
     public RegisterInterestTracker getRITracker() {
       return new RegisterInterestTracker();
     }
 
+    @Override
     public void releaseThreadLocalConnection() {}
 
+    @Override
     public void destroy() {}
 
+    @Override
     public void destroy(boolean keepAlive) {}
 
+    @Override
     public int getSocketConnectTimeout() {
       return 0;
     }
 
+    @Override
     public int getFreeConnectionTimeout() {
       return 0;
     }
 
+    @Override
     public int getLoadConditioningInterval() {
       return 0;
     }
 
+    @Override
     public long getIdleTimeout() {
       return 0;
     }
 
+    @Override
     public List getLocators() {
       return null;
     }
 
+    @Override
     public List getOnlineLocators() {
       return new ArrayList();
     }
 
+    @Override
     public int getMaxConnections() {
       return 0;
     }
 
+    @Override
     public int getMinConnections() {
       return 0;
     }
 
+    @Override
     public String getName() {
       return null;
     }
 
+    @Override
     public long getPingInterval() {
       return 0;
     }
 
+    @Override
     public int getStatisticInterval() {
       return -1;
     }
 
+    @Override
     public int getSubscriptionAckInterval() {
       return 5000;
     }
 
+    @Override
     public boolean getSubscriptionEnabled() {
       return false;
     }
 
+    @Override
     public boolean getPRSingleHopEnabled() {
       return false;
     }
 
+    @Override
     public int getSubscriptionMessageTrackingTimeout() {
       return 0;
     }
 
+    @Override
     public int getSubscriptionRedundancy() {
       return 0;
     }
 
+    @Override
     public int getReadTimeout() {
       return 0;
     }
 
+    @Override
     public int getRetryAttempts() {
       return 0;
     }
 
+    @Override
     public String getServerGroup() {
       return null;
     }
 
+    @Override
     public boolean getMultiuserAuthentication() {
       return false;
     }
 
+    @Override
     public List getServers() {
       return null;
     }
 
+    @Override
     public int getSocketBufferSize() {
       return 0;
     }
 
+    @Override
     public boolean getThreadLocalConnections() {
       return false;
     }
 
+    @Override
     public boolean isDestroyed() {
       return false;
     }
 
+    @Override
     public ScheduledExecutorService getBackgroundProcessor() {
       return null;
     }
 
+    @Override
     public CancelCriterion getCancelCriterion() {
       return new CancelCriterion() {
 
+        @Override
         public String cancelInProgress() {
           return null;
         }
 
+        @Override
         public RuntimeException generateCancelledException(Throwable e) {
           return null;
         }
       };
     }
 
+    @Override
     public Map getEndpointMap() {
       return null;
     }
 
+    @Override
     public PoolStats getStats() {
       return stats;
     }
 
+    @Override
     public void detach() {}
 
+    @Override
     public QueryService getQueryService() {
       return null;
     }
 
+    @Override
     public int getPendingEventCount() {
       return 0;
     }
@@ -507,14 +556,18 @@ public class QueueManagerJUnitTest {
       return null;
     }
 
+    @Override
     public void setupServerAffinity(boolean allowFailover) {}
 
+    @Override
     public void releaseServerAffinity() {}
 
+    @Override
     public ServerLocation getServerAffinityLocation() {
       return null;
     }
 
+    @Override
     public void setServerAffinityLocation(ServerLocation serverLocation) {}
 
   }
@@ -538,18 +591,22 @@ public class QueueManagerJUnitTest {
       nextConnections.add(new DummyConnection(endpointType, queueSize, port));
     }
 
+    @Override
     public ServerLocation findBestServer(ServerLocation currentServer, Set excludedServers) {
       return null;
     }
 
+    @Override
     public Connection createClientToServerConnection(Set excludedServers) {
       return null;
     }
 
+    @Override
     public ServerDenyList getDenyList() {
       return new ServerDenyList(1);
     }
 
+    @Override
     public Connection createClientToServerConnection(ServerLocation location, boolean forQueue) {
       if (nextConnections == null || nextConnections.isEmpty()) {
         return null;
@@ -557,6 +614,7 @@ public class QueueManagerJUnitTest {
       return (DummyConnection) nextConnections.removeFirst();
     }
 
+    @Override
     public ClientUpdater createServerToClientConnection(Endpoint endpoint,
         QueueManager queueManager, boolean isPrimary, ClientUpdater failedUpdater) {
       return new ClientUpdater() {

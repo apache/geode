@@ -76,6 +76,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
   @SuppressWarnings("unchecked")
   public List<JmxManagerProfile> adviseAlreadyManaging() {
     return fetchProfiles(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         assert profile instanceof JmxManagerProfile;
         JmxManagerProfile jmxProfile = (JmxManagerProfile) profile;
@@ -87,6 +88,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
   @SuppressWarnings("unchecked")
   public List<JmxManagerProfile> adviseWillingToManage() {
     return fetchProfiles(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         assert profile instanceof JmxManagerProfile;
         JmxManagerProfile jmxProfile = (JmxManagerProfile) profile;
@@ -206,6 +208,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       }
     }
 
+    @Override
     public int getDSFID() {
       return JMX_MANAGER_PROFILE_MESSAGE;
     }
@@ -295,6 +298,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       super(memberId, version);
     }
 
+    @Override
     public StringBuilder getToStringHeader() {
       return new StringBuilder("JmxManagerAdvisor.JmxManagerProfile");
     }

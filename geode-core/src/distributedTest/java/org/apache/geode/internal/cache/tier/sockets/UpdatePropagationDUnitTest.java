@@ -125,6 +125,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     // over to Server2.
     final CacheSerializableRunnable waitToDetectDeadServer =
         new CacheSerializableRunnable("Wait for server on port1 to be dead") {
+          @Override
           public void run2() throws CacheException {
             Region r = getCache().getRegion(REGION_NAME);
 
@@ -143,6 +144,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
     final CacheSerializableRunnable waitToDetectLiveServer =
         new CacheSerializableRunnable("Wait for servers to be alive") {
+          @Override
           public void run2() throws CacheException {
             Region r = getCache().getRegion(REGION_NAME);
             String poolName = r.getAttributes().getPoolName();

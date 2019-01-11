@@ -73,6 +73,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
   public final void postSetUp() throws Exception {
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         getSystem();
       }
@@ -150,6 +151,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
     if (hasIndex) {
       vm0.invoke(new SerializableCallable() {
+        @Override
         public Object call() throws Exception {
           QueryTestUtils utils = new QueryTestUtils();
           utils.createIndex("idIndex", "p.ID", "/portfolios p");
@@ -159,6 +161,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     }
 
     vm0.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         for (int i = 0; i < numPortfoliosPerVM; i++) {
@@ -187,6 +190,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         for (int i = numPortfoliosPerVM; i < numPortfolios; i++) {
@@ -219,6 +223,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm0.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         QueryService qs = getCache().getQueryService();
@@ -261,6 +266,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         if (hasIndex) {
@@ -278,6 +284,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm0.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         QueryService qs = getCache().getQueryService();
@@ -341,6 +348,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     // counts
     if (hasIndex) {
       vm0.invoke(new SerializableCallable() {
+        @Override
         public Object call() throws Exception {
           QueryTestUtils utils = new QueryTestUtils();
           utils.createHashIndex("idIndex", "p.ID", "/portfolios p");
@@ -350,6 +358,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
       // let's not create index on vm1 to check different scenarios
 
       vm2.invoke(new SerializableCallable() {
+        @Override
         public Object call() throws Exception {
           QueryTestUtils utils = new QueryTestUtils();
           utils.createHashIndex("idIndex", "p.ID", "/portfolios p");
@@ -360,6 +369,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
 
     vm0.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         for (int i = 0; i < numPortfolios; i++) {
@@ -377,6 +387,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         // At this point, we should only have serialized values in this vm
         Region region = getCache().getRegion("/portfolios");
@@ -386,6 +397,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm2.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         // There is an index for vm2, so we should have deserialized values at this point,
         Region region = getCache().getRegion("/portfolios");
@@ -403,6 +415,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     // modify results
     // check instance count
     vm0.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         CacheTransactionManager txManager = region.getCache().getCacheTransactionManager();
@@ -439,6 +452,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
     // Check objects in cache on vm1
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         QueryService qs = getCache().getQueryService();
@@ -485,6 +499,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
     // Check objects in cache on vm2
     vm2.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         QueryService qs = getCache().getQueryService();
@@ -538,6 +553,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
     // Check objects in cache on vm0
     vm0.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("/portfolios");
         QueryService qs = getCache().getQueryService();
@@ -568,6 +584,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
   private void destroyRegion(String regionName, VM... vms) {
     for (VM vm : vms) {
       vm.invoke(new SerializableCallable() {
+        @Override
         public Object call() throws Exception {
           QueryTestUtils utils = new QueryTestUtils();
           utils.getCache().getQueryService().removeIndexes();
@@ -582,6 +599,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
   private void createPartitionRegion(VM vm, String regionName) {
     vm.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         QueryTestUtils utils = new QueryTestUtils();
         utils.createPartitionRegion("portfolios", Portfolio.class);
@@ -592,6 +610,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
   private void createReplicatedRegion(VM vm, String regionName) {
     vm.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         QueryTestUtils utils = new QueryTestUtils();
         utils.createReplicateRegion("portfolios");
@@ -602,6 +621,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
   private void resetInstanceCount(VM vm) {
     vm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Portfolio.instanceCount.set(0);
       }
@@ -610,6 +630,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
   private void startCacheServer(VM server, final int port) throws Exception {
     server.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         getSystem(getServerProperties());
 
@@ -629,6 +650,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
   private void startClient(VM client, final VM server, final int port) {
     client.invoke(new CacheSerializableRunnable("Start client") {
+      @Override
       public void run2() throws CacheException {
         Properties props = getClientProps();
         getSystem(props);
@@ -659,10 +681,12 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     return new WaitCriterion() {
       private int expectedCount = expected;
 
+      @Override
       public boolean done() {
         return expectedCount == Portfolio.instanceCount.get();
       }
 
+      @Override
       public String description() {
         return "verifying number of object instances created";
       }

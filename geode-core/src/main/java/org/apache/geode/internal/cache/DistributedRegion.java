@@ -3499,6 +3499,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       }
     }
 
+    @Override
     public synchronized void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
       if (this.destroyed) {
@@ -3676,6 +3677,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       this.onlyPersistent = onlyPersistent;
     }
 
+    @Override
     public boolean visit(DistributionAdvisor advisor, Profile profile, int profileIndex,
         int numProfiles, DistributedMember member) {
       final CacheProfile cp = (CacheProfile) profile;

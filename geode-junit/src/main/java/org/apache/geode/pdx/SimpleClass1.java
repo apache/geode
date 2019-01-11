@@ -41,6 +41,7 @@ public class SimpleClass1 implements PdxSerializable {
     this.myFloat = myFloat;
   }
 
+  @Override
   public void toData(PdxWriter out) {
     out.writeBoolean("myFlag", this.myFlag);
     out.writeShort("myShort", this.myShort);
@@ -52,6 +53,7 @@ public class SimpleClass1 implements PdxSerializable {
     out.writeFloat("myFloat", this.myFloat);
   }
 
+  @Override
   public void fromData(PdxReader in) {
     this.myFlag = in.readBoolean("myFlag");
     this.myShort = in.readShort("myShort");

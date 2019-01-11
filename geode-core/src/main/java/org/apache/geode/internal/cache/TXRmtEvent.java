@@ -53,6 +53,7 @@ public class TXRmtEvent implements TransactionEvent {
     this.events = null;
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return this.txId;
   }
@@ -62,6 +63,7 @@ public class TXRmtEvent implements TransactionEvent {
         || !(ce.getRegion() instanceof PartitionedRegion);
   }
 
+  @Override
   public List getEvents() {
     if (this.events == null) {
       return Collections.EMPTY_LIST;
@@ -154,6 +156,7 @@ public class TXRmtEvent implements TransactionEvent {
     addEvent(createEvent(r, putOp, re, key, newValue, aCallbackArgument));
   }
 
+  @Override
   public Cache getCache() {
     return this.cache;
   }

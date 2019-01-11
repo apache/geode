@@ -109,12 +109,14 @@ public class LocatorDiscovery {
 
 
   public class LocalLocatorDiscovery implements Runnable {
+    @Override
     public void run() {
       exchangeLocalLocators();
     }
   }
 
   public class RemoteLocatorDiscovery implements Runnable {
+    @Override
     public void run() {
       exchangeRemoteLocators();
     }

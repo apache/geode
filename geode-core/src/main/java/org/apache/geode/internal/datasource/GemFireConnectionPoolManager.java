@@ -58,6 +58,7 @@ public class GemFireConnectionPoolManager implements ConnectionProvider, Seriali
    *
    * @return Connection Object from Pool.
    */
+  @Override
   public Object borrowConnection() throws PoolException {
     return connPoolCache.getPooledConnectionFromPool();
   }
@@ -67,6 +68,7 @@ public class GemFireConnectionPoolManager implements ConnectionProvider, Seriali
    *
    *
    */
+  @Override
   public void returnAndExpireConnection(Object connectionObject) {
     // Asif : The connection is already in the activeCache, but the
     // sql.Connecttion object is not valid , so this PooledConnection
@@ -80,6 +82,7 @@ public class GemFireConnectionPoolManager implements ConnectionProvider, Seriali
    * Return connection to pool
    *
    */
+  @Override
   public void returnConnection(Object connectionObject) {
     connPoolCache.returnPooledConnectionToPool(connectionObject);
   }
@@ -91,6 +94,7 @@ public class GemFireConnectionPoolManager implements ConnectionProvider, Seriali
   /**
    * Clean up the resources before restart of Cache
    */
+  @Override
   public void clearUp() {
     connPoolCache.clearUp();
   }

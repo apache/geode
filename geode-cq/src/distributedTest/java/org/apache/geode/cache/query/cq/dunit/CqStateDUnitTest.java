@@ -114,6 +114,7 @@ public class CqStateDUnitTest extends HelperTestCase {
     return props;
   }
 
+  @Override
   public Properties getClientProperties() {
     Properties props = new Properties();
     props.put(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create");

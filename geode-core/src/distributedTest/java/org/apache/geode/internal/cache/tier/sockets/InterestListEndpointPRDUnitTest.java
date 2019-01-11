@@ -37,6 +37,7 @@ public class InterestListEndpointPRDUnitTest extends InterestListEndpointDUnitTe
     impl = new InterestListEndpointPRDUnitTest();
   }
 
+  @Override
   protected RegionAttributes createServerCacheAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.PARTITION);

@@ -100,6 +100,7 @@ public class IdentityUpdateMessage extends DistributionMessage implements Messag
   }
 
 
+  @Override
   public int getDSFID() {
     return PR_IDENTITY_UPDATE_MESSAGE;
   }

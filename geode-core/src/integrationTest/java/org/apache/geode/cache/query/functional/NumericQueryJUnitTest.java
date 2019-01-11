@@ -336,6 +336,7 @@ public class NumericQueryJUnitTest {
   class MyQueryObserverAdapter extends QueryObserverAdapter {
     public boolean indexUsed = false;
 
+    @Override
     public void afterIndexLookup(Collection results) {
       super.afterIndexLookup(results);
       indexUsed = true;

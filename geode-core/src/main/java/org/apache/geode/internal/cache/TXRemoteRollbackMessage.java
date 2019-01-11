@@ -75,6 +75,7 @@ public class TXRemoteRollbackMessage extends TXMessage {
     return true;
   }
 
+  @Override
   public int getDSFID() {
     return TX_REMOTE_ROLLBACK_MESSAGE;
   }

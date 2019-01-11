@@ -122,6 +122,7 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
   public static void setClientServerObserver() {
     PoolImpl.AFTER_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void afterPrimaryIdentificationFromBackup(ServerLocation primaryEndpoint) {
         LogService.getLogger().info("After primary is set");
         afterPrimaryCount++;

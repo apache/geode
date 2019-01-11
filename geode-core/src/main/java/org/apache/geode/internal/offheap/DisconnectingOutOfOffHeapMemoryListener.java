@@ -31,6 +31,7 @@ class DisconnectingOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListe
     this.ids = ids;
   }
 
+  @Override
   public void close() {
     synchronized (lock) {
       this.ids = null; // set null to prevent memory leak after closure!

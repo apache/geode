@@ -45,6 +45,7 @@ public class FetchDistLockInfoRequest extends AdminRequest {
     return FetchDistLockInfoResponse.create(dm, this.getSender());
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_DIST_LOCK_INFO_REQUEST;
   }

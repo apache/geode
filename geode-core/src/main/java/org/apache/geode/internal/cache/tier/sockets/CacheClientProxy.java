@@ -1029,10 +1029,12 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
+  @Override
   public void registerInterestRegex(String regionName, String regex, boolean isDurable) {
     registerInterestRegex(regionName, regex, isDurable, true);
   }
 
+  @Override
   public void registerInterestRegex(String regionName, String regex, boolean isDurable,
       boolean receiveValues) {
     if (this.isPrimary) {
@@ -1045,11 +1047,13 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
+  @Override
   public void registerInterest(String regionName, Object keyOfInterest, InterestResultPolicy policy,
       boolean isDurable) {
     registerInterest(regionName, keyOfInterest, policy, isDurable, true);
   }
 
+  @Override
   public void registerInterest(String regionName, Object keyOfInterest, InterestResultPolicy policy,
       boolean isDurable, boolean receiveValues) {
     if (keyOfInterest instanceof String && keyOfInterest.equals("ALL_KEYS")) {
@@ -1164,10 +1168,12 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
+  @Override
   public void unregisterInterestRegex(String regionName, String regex, boolean isDurable) {
     unregisterInterestRegex(regionName, regex, isDurable, true);
   }
 
+  @Override
   public void unregisterInterestRegex(String regionName, String regex, boolean isDurable,
       boolean receiveValues) {
     if (this.isPrimary) {
@@ -1179,10 +1185,12 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
+  @Override
   public void unregisterInterest(String regionName, Object keyOfInterest, boolean isDurable) {
     unregisterInterest(regionName, keyOfInterest, isDurable, true);
   }
 
+  @Override
   public void unregisterInterest(String regionName, Object keyOfInterest, boolean isDurable,
       boolean receiveValues) {
     if (keyOfInterest instanceof String && keyOfInterest.equals("ALL_KEYS")) {
@@ -1843,6 +1851,7 @@ public class CacheClientProxy implements ClientSession {
     return buffer.toString();
   }
 
+  @Override
   public boolean isPrimary() {
     boolean primary = this.isPrimary;
     return primary;

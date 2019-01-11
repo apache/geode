@@ -87,6 +87,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     await().untilAsserted(() -> assertThat(agent.isConnected()).isTrue());
   }
 
+  @Override
   @After
   public void preTearDownCacheTestCase() throws Exception {
     try {

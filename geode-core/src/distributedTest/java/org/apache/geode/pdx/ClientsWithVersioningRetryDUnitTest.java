@@ -124,6 +124,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     // create an event tag in vm0 and then replay that event in vm1
     final DistributedMember memberID =
         (DistributedMember) vm0.invoke(new SerializableCallable("get id") {
+          @Override
           public Object call() {
             return ((DistributedRegion) getCache().getRegion("region")).getDistributionManager()
                 .getDistributionManagerId();
@@ -243,6 +244,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     // vm0->vm2
     // client will retry the putall
     vm3.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("region");
         Map map = new HashMap();
@@ -310,6 +312,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
     expectedExceptions.add(IgnoredException.addIgnoredException("RuntimeException", vm2));
     vm2.invoke(new SerializableRunnable("install message listener to ignore update") {
+      @Override
       public void run() {
         // Add a listener to close vm2 when we send a distributed put all operation
         // this will cause a retry after we have applied the original put all to
@@ -340,6 +343,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     // accessor->vm2 or vm1
     // version tag is recovered and put in the event & cache
     vm3.invoke(new SerializableCallable("perform putAll in accessor") {
+      @Override
       public Object call() throws Exception {
         Region region = getCache().getRegion("region");
         Map map = new HashMap();
@@ -392,6 +396,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
   private void disconnectFromDS(VM vm) {
     vm.invoke(new SerializableCallable("disconnecting vm " + vm) {
+      @Override
       public Object call() throws Exception {
         disconnectFromDS();
         return null;
@@ -403,6 +408,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
   private int createServerRegion(VM vm, final RegionShortcut shortcut) {
     SerializableCallable createRegion = new SerializableCallable("create server region") {
+      @Override
       public Object call() throws Exception {
         RegionFactory<Object, Object> rf = getCache().createRegionFactory(shortcut);
         if (!shortcut.equals(RegionShortcut.REPLICATE)) {
@@ -424,6 +430,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
   private void createRegionInPeer(VM vm, final RegionShortcut shortcut) {
     SerializableCallable createRegion = new SerializableCallable("create peer region") {
+      @Override
       public Object call() throws Exception {
         RegionFactory<Object, Object> rf = getCache().createRegionFactory(shortcut);
         if (!shortcut.equals(RegionShortcut.REPLICATE)) {
@@ -437,6 +444,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(createRegion);
   }
 
+  @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
     p.put(CONSERVE_SOCKETS, "false");
@@ -445,6 +453,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
   private int createServerRegionWithPersistence(VM vm, final boolean persistentPdxRegistry) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         CacheFactory cf = new CacheFactory();
         if (persistentPdxRegistry) {
@@ -473,6 +482,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
   private int createServerAccessor(VM vm) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
@@ -498,6 +508,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
   private void createClientRegion(final VM vm, final int port1, final int port2,
       final boolean threadLocalConnections) {
     SerializableCallable createRegion = new SerializableCallable("create client region in " + vm) {
+      @Override
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port1);

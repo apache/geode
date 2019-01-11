@@ -146,6 +146,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
     this.lifecycle.removeLifecycleListener(listener);
   }
 
+  @Override
   protected StandardSession getNewSession() {
     return new DeltaSession7(this);
   }

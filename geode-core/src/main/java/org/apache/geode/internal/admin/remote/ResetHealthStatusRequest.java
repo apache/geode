@@ -54,6 +54,7 @@ public class ResetHealthStatusRequest extends AdminRequest {
     return ResetHealthStatusResponse.create(dm, this.getSender(), this.id);
   }
 
+  @Override
   public int getDSFID() {
     return RESET_HEALTH_STATUS_REQUEST;
   }

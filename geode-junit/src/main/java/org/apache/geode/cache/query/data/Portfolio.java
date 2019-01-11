@@ -234,6 +234,7 @@ public class Portfolio implements Serializable, DataSerializable {
     throw new IllegalStateException();
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.ID = in.readInt();
     boolean isNull = DataSerializer.readPrimitiveBoolean(in);
@@ -264,6 +265,7 @@ public class Portfolio implements Serializable, DataSerializable {
     this.indexKey = in.readInt();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.ID);
     if (this.shortID == null) {

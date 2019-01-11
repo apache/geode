@@ -664,6 +664,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * Returns the value of the {@link ConfigurationProperties#STATISTIC_SAMPLING_ENABLED} property
    */
+  @Override
   @ConfigAttributeGetter(name = STATISTIC_SAMPLING_ENABLED)
   boolean getStatisticSamplingEnabled();
 
@@ -687,6 +688,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * Returns the value of the {@link ConfigurationProperties#STATISTIC_SAMPLE_RATE} property
    */
+  @Override
   @ConfigAttributeGetter(name = STATISTIC_SAMPLE_RATE)
   int getStatisticSampleRate();
 
@@ -727,6 +729,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @return <code>null</code> if no file was specified
    */
+  @Override
   @ConfigAttributeGetter(name = STATISTIC_ARCHIVE_FILE)
   File getStatisticArchiveFile();
 
@@ -849,6 +852,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * Returns the value of the {@link ConfigurationProperties#ARCHIVE_FILE_SIZE_LIMIT} property
    */
+  @Override
   @ConfigAttributeGetter(name = ARCHIVE_FILE_SIZE_LIMIT)
   int getArchiveFileSizeLimit();
 
@@ -887,6 +891,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * Returns the value of the {@link ConfigurationProperties#ARCHIVE_DISK_SPACE_LIMIT} property
    */
+  @Override
   @ConfigAttributeGetter(name = ARCHIVE_DISK_SPACE_LIMIT)
   int getArchiveDiskSpaceLimit();
 

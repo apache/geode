@@ -75,12 +75,14 @@ public class RemoteObjectName implements DataSerializable {
     return className + " \"" + value + "\"";
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.className, out);
     DataSerializer.writeString(this.value, out);
     out.writeInt(this.hashCode);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.className = DataSerializer.readString(in);
     this.value = DataSerializer.readString(in);

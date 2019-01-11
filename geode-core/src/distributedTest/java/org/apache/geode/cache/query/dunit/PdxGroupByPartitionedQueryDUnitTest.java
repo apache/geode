@@ -53,6 +53,7 @@ public class PdxGroupByPartitionedQueryDUnitTest extends GroupByDUnitImpl {
 
   private void createBuckets(VM vm) {
     vm.invoke(new SerializableRunnable("create accessor") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region");
@@ -65,6 +66,7 @@ public class PdxGroupByPartitionedQueryDUnitTest extends GroupByDUnitImpl {
 
   private void createPR(VM vm, final String regionName, final Class valueConstraint) {
     vm.invoke(new SerializableRunnable("create data store") {
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionAttributesFactory paf = new PartitionAttributesFactory();

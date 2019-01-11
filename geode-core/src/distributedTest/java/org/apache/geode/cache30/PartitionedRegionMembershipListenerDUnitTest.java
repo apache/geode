@@ -89,6 +89,7 @@ public class PartitionedRegionMembershipListenerDUnitTest
     super.createRootOtherVm(rName);
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("create PR root") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory af = new AttributesFactory();
         af.setPartitionAttributes(
@@ -104,6 +105,7 @@ public class PartitionedRegionMembershipListenerDUnitTest
     super.destroyRootOtherVm(rName);
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("local destroy PR root") {
+      @Override
       public void run2() throws CacheException {
         getRootRegion(rName + "-pr").localDestroyRegion();
       }
@@ -115,6 +117,7 @@ public class PartitionedRegionMembershipListenerDUnitTest
     super.closeRootOtherVm(rName);
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("close PR root") {
+      @Override
       public void run2() throws CacheException {
         getRootRegion(rName + "-pr").close();
       }

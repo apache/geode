@@ -44,6 +44,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     secondaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
   }
 
+  @Override
   public ArrayList<DistTxEntryEvent> getPrimaryTransactionalOperations()
       throws UnsupportedOperationInTransactionException {
     return primaryTransactionalOperations;
@@ -73,6 +74,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     }
   }
 
+  @Override
   public void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
       throws UnsupportedOperationInTransactionException {
     secondaryTransactionalOperations.add(dtop);
@@ -161,6 +163,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
    * @see org.apache.geode.internal.cache.TXStateInterface#destroyExistingEntry
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, java.lang.Object)
    */
+  @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) throws EntryNotFoundException {
     // logger.debug("DistTXStateOnCoordinator.destroyExistingEntry", new Throwable());
@@ -180,6 +183,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
    * @see org.apache.geode.internal.cache.InternalDataView#destroyOnRemote(java .lang.Integer,
    * org.apache.geode.internal.cache.EntryEventImpl, java.lang.Object)
    */
+  @Override
   public void destroyOnRemote(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
       throws DataLocationException {
     // logger.debug("DistTXStateOnCoordinator.destroyOnRemote", new Throwable());
@@ -199,6 +203,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
    * @see org.apache.geode.internal.cache.TXStateInterface#invalidateExistingEntry
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
+  @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     // logger
@@ -214,6 +219,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
    * @see org.apache.geode.internal.cache.InternalDataView#invalidateOnRemote
    * (org.apache.geode.internal.cache.EntryEventImpl, boolean, boolean)
    */
+  @Override
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) throws DataLocationException {
     // logger.debug("DistTXStateOnCoordinator.invalidateOnRemote", new Throwable());
@@ -222,6 +228,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
 
+  @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       InternalRegion reg) {
     super.postPutAll(putallOp, successfulPuts, reg);
@@ -234,6 +241,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     addPrimaryTransactionalOperations(dtop);
   }
 
+  @Override
   public void postRemoveAll(DistributedRemoveAllOperation removeAllOp,
       VersionedObjectList successfulOps, InternalRegion reg) {
     super.postRemoveAll(removeAllOp, successfulOps, reg);

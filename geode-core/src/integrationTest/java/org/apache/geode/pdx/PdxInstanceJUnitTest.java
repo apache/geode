@@ -70,10 +70,12 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testGetField() throws IOException, ClassNotFoundException {
     PdxInstance instance = getPdx(new TestPdx() {
+      @Override
       public void toData(PdxWriter out) {
         out.writeBoolean("field1", false);
         out.writeInt("field2", 53);
         out.writeObject("field3", new TestPdx() {
+          @Override
           public void toData(PdxWriter writer) {
             writer.writeString("afield", "hello");
           }
@@ -264,12 +266,14 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testEqualsDifferentTypes() throws IOException, ClassNotFoundException {
     PdxInstance instance1 = getPdx(new TestPdx() {
+      @Override
       public void toData(PdxWriter writer) {
         writer.writeBoolean("field1", true);
       }
     });
 
     PdxInstance instance2 = getPdx(new TestPdx() {
+      @Override
       public void toData(PdxWriter writer) {
         writer.writeBoolean("field1", true);
       }
@@ -296,6 +300,7 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testIdentityFields() throws IOException, ClassNotFoundException {
     PdxInstance instance1 = getPdx(getPdxSerializable(new TestPdx() {
+      @Override
       public void toData(PdxWriter out) {
         out.writeInt("field2", 53);
         out.writeBoolean("field1", false);
@@ -304,6 +309,7 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
     }));
 
     PdxInstance instance2 = getPdx(getPdxSerializable(new TestPdx() {
+      @Override
       public void toData(PdxWriter out) {
         out.writeInt("field2", 53);
         out.writeBoolean("field1", true);
@@ -321,6 +327,7 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
   // for every call to this method, even if the toDatas are different.
   private PdxSerializable getPdxSerializable(final TestPdx toData) {
     return new TestPdx() {
+      @Override
       public void toData(PdxWriter writer) {
         toData.toData(writer);
       }
@@ -342,6 +349,7 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
 
   public PdxInstance getAllFields(final int change) throws IOException, ClassNotFoundException {
     PdxInstance instance = getPdx(new TestPdx() {
+      @Override
       public void toData(PdxWriter out) {
         int x = 0;
         Number serializable1 = new BigInteger("1234");
@@ -414,6 +422,7 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
 
   abstract static class TestPdx implements PdxSerializable {
 
+    @Override
     public void fromData(PdxReader in) {}
 
   }

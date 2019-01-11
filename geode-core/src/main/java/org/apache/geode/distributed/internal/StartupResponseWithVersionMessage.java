@@ -66,6 +66,7 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
     super.process(dm);
   }
 
+  @Override
   public int getDSFID() {
     return STARTUP_RESPONSE_WITHVERSION_MESSAGE;
   }

@@ -581,6 +581,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         return;
       }
       my_executor.execute(new Runnable() {
+        @Override
         public void run() {
           basicHandlePrimaryEvent(gatewayEvent);
         }
@@ -599,6 +600,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         return;
       }
       my_executor.execute(new Runnable() {
+        @Override
         public void run() {
           basicHandlePrimaryDestroy(gatewayEvent.getEventId());
         }
@@ -887,12 +889,14 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
     return sb.toString();
   }
 
+  @Override
   public String printUnprocessedEvents() {
     synchronized (this.unprocessedEventsLock) {
       return printEventIdList(this.unprocessedEvents.keySet());
     }
   }
 
+  @Override
   public String printUnprocessedTokens() {
     synchronized (this.unprocessedEventsLock) {
       return printEventIdList(this.unprocessedTokens.keySet());

@@ -30,6 +30,7 @@ import org.apache.geode.modules.util.ContextMapper;
 public class SessionExpirationCacheListener extends CacheListenerAdapter<String, HttpSession>
     implements Declarable {
 
+  @Override
   public void afterDestroy(EntryEvent<String, HttpSession> event) {
     // A Session expired. If it was destroyed by GemFire expiration, process it.
     // If it was destroyed via Session.invalidate, ignore it since it has
@@ -58,6 +59,7 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
     }
   }
 
+  @Override
   public void init(Properties p) {}
 
 

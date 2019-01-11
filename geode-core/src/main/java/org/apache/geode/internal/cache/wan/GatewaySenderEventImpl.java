@@ -363,6 +363,7 @@ public class GatewaySenderEventImpl
    *
    * @return this event's operation
    */
+  @Override
   public Operation getOperation() {
     Operation op = null;
     switch (this.action) {
@@ -449,6 +450,7 @@ public class GatewaySenderEventImpl
    *
    * @return this event's key
    */
+  @Override
   public Object getKey() {
     // TODO:Asif : Ideally would like to have throw exception if the key
     // is TOKEN_UN_INITIALIZED, but for the time being trying to retain the GFE
@@ -471,6 +473,7 @@ public class GatewaySenderEventImpl
    *
    * @return this event's callback argument
    */
+  @Override
   public Object getCallbackArgument() {
     Object result = getSenderCallbackArgument();
     while (result instanceof WrappedCallbackArgument) {
@@ -527,6 +530,7 @@ public class GatewaySenderEventImpl
    *
    * @return this event's deserialized value
    */
+  @Override
   public Object getDeserializedValue() {
     if (this.valueIsObject == 0x00) {
       Object result = this.value;
@@ -622,6 +626,7 @@ public class GatewaySenderEventImpl
    * value object and return the serialized bytes. Use {@link #getValueIsObject()} to determine if
    * the result is raw or serialized bytes.
    */
+  @Override
   public byte[] getSerializedValue() {
     byte[] result = this.value;
     if (result == null) {
@@ -668,6 +673,7 @@ public class GatewaySenderEventImpl
     this.possibleDuplicate = possibleDuplicate;
   }
 
+  @Override
   public boolean getPossibleDuplicate() {
     return this.possibleDuplicate;
   }
@@ -676,6 +682,7 @@ public class GatewaySenderEventImpl
     return this.creationTime;
   }
 
+  @Override
   public int getDSFID() {
     return GATEWAY_SENDER_EVENT_IMPL;
   }
@@ -785,6 +792,7 @@ public class GatewaySenderEventImpl
    *
    * @return Whether to conflate this message
    */
+  @Override
   public boolean shouldBeConflated() {
     // If the message is an update, it may be conflatable. If it is a
     // create, destroy, invalidate or destroy-region, it is not conflatable.
@@ -792,14 +800,17 @@ public class GatewaySenderEventImpl
     return isUpdate();
   }
 
+  @Override
   public String getRegionToConflate() {
     return this.regionPath;
   }
 
+  @Override
   public Object getKeyToConflate() {
     return this.key;
   }
 
+  @Override
   public Object getValueToConflate() {
     // Since all the uses of this are for logging
     // changing it to return the string form of the value
@@ -807,6 +818,7 @@ public class GatewaySenderEventImpl
     return this.getValueAsString(true);
   }
 
+  @Override
   public void setLatestValue(Object value) {
     // Currently this method is never used.
     // If someone does want to use it in the future
@@ -1022,6 +1034,7 @@ public class GatewaySenderEventImpl
     }
   }
 
+  @Override
   public EventID getEventId() {
     return this.id;
   }
@@ -1030,6 +1043,7 @@ public class GatewaySenderEventImpl
    * Return the EventSequenceID of the Event
    *
    */
+  @Override
   public EventSequenceID getEventSequenceID() {
     return new EventSequenceID(id.getMembershipID(), id.getThreadID(), id.getSequenceID());
   }
@@ -1038,6 +1052,7 @@ public class GatewaySenderEventImpl
     return this.versionTimeStamp;
   }
 
+  @Override
   public int getSizeInBytes() {
     // Calculate the size of this event. This is used for overflow to disk.
 
@@ -1134,6 +1149,7 @@ public class GatewaySenderEventImpl
   // so
   // modifying the implementation a bit.
 
+  @Override
   public Region<?, ?> getRegion() {
     // The region will be null mostly for the other node where the gateway event
     // is serialized

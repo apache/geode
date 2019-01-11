@@ -407,6 +407,7 @@ public class IndexCreationMsg extends PartitionMessage {
     IndexCreationReplyMsg.send(member, procId, dm, ex, result, indexBucketsMap, numTotalBuckets);
   }
 
+  @Override
   public int getDSFID() {
     return PR_INDEX_CREATION_MSG;
   }

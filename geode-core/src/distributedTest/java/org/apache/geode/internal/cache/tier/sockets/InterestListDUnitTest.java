@@ -147,6 +147,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     interestListener = null;
 
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
         server = null;

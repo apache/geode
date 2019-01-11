@@ -170,6 +170,7 @@ public class FetchEntryMessage extends PartitionMessage {
     buff.append("; key=").append(this.key);
   }
 
+  @Override
   public int getDSFID() {
     return PR_FETCH_ENTRY_MESSAGE;
   }

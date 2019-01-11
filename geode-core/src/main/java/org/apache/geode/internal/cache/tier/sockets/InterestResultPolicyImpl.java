@@ -39,14 +39,17 @@ public class InterestResultPolicyImpl extends InterestResultPolicy
     super(name);
   }
 
+  @Override
   public int getDSFID() {
     return INTEREST_RESULT_POLICY;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeByte(getOrdinal());
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // should never be called since DSFIDFactory.readInterestResultPolicy is used
     throw new UnsupportedOperationException();

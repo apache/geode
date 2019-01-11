@@ -58,6 +58,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
    */
+  @Override
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.GLOBAL);
@@ -86,6 +87,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
 
     final String name = this.getUniqueName() + "-GLOBAL";
     vm0.invoke(new SerializableRunnable("Create GLOBAL Region") {
+      @Override
       public void run() {
         try {
           createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
@@ -97,6 +99,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create NO ACK Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
@@ -117,6 +120,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
@@ -159,9 +163,11 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = createRegion(name);
         setLoader(new TestCacheLoader<Object, Object>() {
+          @Override
           public Object load2(LoaderHelper<Object, Object> helper) throws CacheLoaderException {
 
             fail("Should not be invoked");
@@ -174,6 +180,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
 
     vm0.invoke(create);
     vm0.invoke(new CacheSerializableRunnable("Put") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         region.put(key, value);
@@ -184,6 +191,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     vm1.invoke(create);
 
     vm1.invoke(new CacheSerializableRunnable("Get") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         assertEquals(value, region.get(key));
@@ -211,6 +219,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     final int incrementsPerThread = 10;
 
     SerializableRunnable create = new CacheSerializableRunnable("Create region") {
+      @Override
       public void run2() throws CacheException {
         createRegion(name);
         Region region = getRootRegion().getSubregion(name);
@@ -232,8 +241,10 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     }
 
     SerializableRunnable increment = new CacheSerializableRunnable("Start Threads and increment") {
+      @Override
       public void run2() throws CacheException {
         final ThreadGroup group = new ThreadGroup("Incrementors") {
+          @Override
           public void uncaughtException(Thread t, Throwable e) {
             if (e instanceof VirtualMachineError) {
               SystemFailure.setFailure((VirtualMachineError) e); // don't throw
@@ -246,6 +257,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
         Thread[] threads = new Thread[threadsPerVM];
         for (int i = 0; i < threadsPerVM; i++) {
           Thread thread = new Thread(group, new Runnable() {
+            @Override
             public void run() {
               try {
                 LogWriterUtils.getLogWriter().info("testSynchronousIncrements." + this);
@@ -314,6 +326,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     }
 
     vm0.invoke(new CacheSerializableRunnable("Verify final value") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Integer value = (Integer) region.get(key);
@@ -341,6 +354,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createRegion(name);
       }
@@ -351,6 +365,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     vm1.invoke(create);
 
     vm0.invoke(new CacheSerializableRunnable("Lock entry") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Lock lock = region.getDistributedLock(key);
@@ -359,6 +374,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Attempt get/put") {
+      @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
         cache.setLockTimeout(1);
@@ -375,6 +391,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
 
         // With a loader, should try to lock and time out
         region.getAttributesMutator().setCacheLoader(new TestCacheLoader() {
+          @Override
           public Object load2(LoaderHelper helper) {
             return null;
           }
@@ -394,6 +411,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     });
 
     vm0.invoke(new CacheSerializableRunnable("Unlock entry") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Lock lock = region.getDistributedLock(key);

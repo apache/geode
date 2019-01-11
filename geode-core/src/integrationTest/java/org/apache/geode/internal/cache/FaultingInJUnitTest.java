@@ -83,6 +83,7 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
     region.put(new Integer(102), new Integer(102));
     region.put(new Integer(103), new Integer(103));
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+      @Override
       public void beforeGoingToCompact() {
         region.getCache().getLogger().info("beforeGoingToCompact before sleep");
         try {
@@ -93,6 +94,7 @@ public class FaultingInJUnitTest extends DiskRegionTestingBase {
         region.getCache().getLogger().info("beforeGoingToCompact after sleep");
       }
 
+      @Override
       public void afterHavingCompacted() {
         region.getCache().getLogger().info("afterHavingCompacted");
         synchronized (region) {

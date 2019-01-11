@@ -268,6 +268,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
         final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
         newDM.getFunctionExecutor().execute(new Runnable() {
+          @Override
           public void run() {
             executeFunctionLocally(fn, cx, sender, newDM);
             if (!sender.isLastResultReceived() && fn.hasResult()) {
@@ -296,6 +297,7 @@ public abstract class AbstractExecution implements InternalExecution {
     if (dm instanceof ClusterDistributionManager && !isTx) {
       final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
       newDM.getFunctionExecutor().execute(new Runnable() {
+        @Override
         public void run() {
           executeFunctionLocally(fn, cx, sender, newDM);
           if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
@@ -357,6 +359,7 @@ public abstract class AbstractExecution implements InternalExecution {
     }
   }
 
+  @Override
   public ResultCollector execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
@@ -373,6 +376,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return executeFunction(functionObject);
   }
 
+  @Override
   public ResultCollector execute(Function function) throws FunctionException {
     if (function == null) {
       throw new FunctionException(
@@ -392,6 +396,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return executeFunction(function);
   }
 
+  @Override
   public void setWaitOnExceptionFlag(boolean waitOnException) {
     this.setForwardExceptions(waitOnException);
     this.waitOnException = waitOnException;
@@ -401,6 +406,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return this.waitOnException;
   }
 
+  @Override
   public void setForwardExceptions(boolean forward) {
     this.forwardExceptions = forward;
   }

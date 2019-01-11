@@ -46,6 +46,7 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
    */
+  @Override
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -55,6 +56,7 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
     return factory.create();
   }
 
+  @Override
   public Properties getDistributedSystemProperties() {
     Properties p = super.getDistributedSystemProperties();
     p.put(STATISTIC_SAMPLING_ENABLED, "true");
@@ -80,6 +82,7 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
 
     final String name = this.getUniqueName() + "-ACK";
     vm0.invoke(new SerializableRunnable("Create ACK Region") {
+      @Override
       public void run() {
         try {
           createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
@@ -91,6 +94,7 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("Create GLOBAL Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
@@ -108,6 +112,7 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
       }
     });
     vm1.invoke(new SerializableRunnable("Create NOACK Region") {
+      @Override
       public void run() {
         try {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());

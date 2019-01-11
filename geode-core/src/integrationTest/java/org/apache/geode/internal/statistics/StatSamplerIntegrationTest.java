@@ -99,10 +99,12 @@ public class StatSamplerIntegrationTest {
     System.setProperty("stats.sample-rate", "100");
 
     final CancelCriterion stopper = new CancelCriterion() {
+      @Override
       public String cancelInProgress() {
         return null;
       }
 
+      @Override
       public RuntimeException generateCancelledException(Throwable e) {
         return null;
       }

@@ -42,11 +42,13 @@ public class GraphReader {
 
   public GraphSet readGraphs(boolean areGemfireLogs) throws IOException {
     return readGraphs(new Filter() {
+      @Override
       public boolean accept(GraphType graphType, String name, String edgeName, String source,
           String dest) {
         return true;
       }
 
+      @Override
       public boolean acceptPattern(GraphType graphType, Pattern pattern, String edgeName,
           String source, String dest) {
         return true;

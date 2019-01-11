@@ -43,6 +43,7 @@ public class SystemMemberCacheEventImpl extends SystemMembershipEventImpl
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public Operation getOperation() {
     return this.op;
   }

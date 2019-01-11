@@ -24,21 +24,25 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  */
 public class SimulatedBucketOperator implements BucketOperator {
 
+  @Override
   public void createRedundantBucket(InternalDistributedMember targetMember, int i,
       Map<String, Long> colocatedRegionBytes, BucketOperator.Completion completion) {
     completion.onSuccess();
   }
 
+  @Override
   public boolean moveBucket(InternalDistributedMember source, InternalDistributedMember target,
       int id, Map<String, Long> colocatedRegionBytes) {
     return true;
   }
 
+  @Override
   public boolean movePrimary(InternalDistributedMember source, InternalDistributedMember target,
       int bucketId) {
     return true;
   }
 
+  @Override
   public boolean removeBucket(InternalDistributedMember memberId, int id,
       Map<String, Long> colocatedRegionSizes) {
     return true;

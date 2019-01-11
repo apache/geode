@@ -47,6 +47,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     return Collections.singletonList(this.originalCorrectedExpression);
   }
 
+  @Override
   public int getType() {
     return SORT_CRITERION;
   }
@@ -261,6 +262,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
     private ProjectionField() {}
 
+    @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       return context.getCurrentProjectionField();

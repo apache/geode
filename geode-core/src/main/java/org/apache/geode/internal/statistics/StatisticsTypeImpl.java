@@ -153,22 +153,27 @@ public class StatisticsTypeImpl implements StatisticsType {
 
   ////////////////////// StatisticsType Methods //////////////////////
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getDescription() {
     return this.description;
   }
 
+  @Override
   public StatisticDescriptor[] getStatistics() {
     return this.stats;
   }
 
+  @Override
   public int nameToId(String name) {
     return nameToDescriptor(name).getId();
   }
 
+  @Override
   public StatisticDescriptor nameToDescriptor(String name) {
     StatisticDescriptorImpl stat = (StatisticDescriptorImpl) statsMap.get(name);
     if (stat == null) {

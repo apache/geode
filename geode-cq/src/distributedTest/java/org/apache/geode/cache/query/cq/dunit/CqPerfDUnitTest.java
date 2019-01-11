@@ -72,6 +72,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     // system before creating connection pools
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         getSystem();
       }
@@ -128,6 +129,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createValuesWithTime(client, cqDUnitTest.regions[0], size);
 
     client.invoke(new CacheSerializableRunnable("Validate CQs") {
+      @Override
       public void run2() throws CacheException {
         logger.info("### Validating CQ. ### " + cqName);
         // Get CQ Service.

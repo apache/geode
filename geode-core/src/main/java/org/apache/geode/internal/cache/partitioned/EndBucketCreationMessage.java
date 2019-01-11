@@ -118,6 +118,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
     buff.append("; newPrimary=").append(this.newPrimary);
   }
 
+  @Override
   public int getDSFID() {
     return END_BUCKET_CREATION_MESSAGE;
   }

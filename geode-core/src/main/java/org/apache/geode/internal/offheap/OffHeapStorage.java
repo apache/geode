@@ -271,34 +271,42 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     this.stats = f.createAtomicStatistics(statsType, statsName);
   }
 
+  @Override
   public void incFreeMemory(long value) {
     this.stats.incLong(freeMemoryId, value);
   }
 
+  @Override
   public void incMaxMemory(long value) {
     this.stats.incLong(maxMemoryId, value);
   }
 
+  @Override
   public void incUsedMemory(long value) {
     this.stats.incLong(usedMemoryId, value);
   }
 
+  @Override
   public void incObjects(int value) {
     this.stats.incInt(objectsId, value);
   }
 
+  @Override
   public long getFreeMemory() {
     return this.stats.getLong(freeMemoryId);
   }
 
+  @Override
   public long getMaxMemory() {
     return this.stats.getLong(maxMemoryId);
   }
 
+  @Override
   public long getUsedMemory() {
     return this.stats.getLong(usedMemoryId);
   }
 
+  @Override
   public int getObjects() {
     return this.stats.getInt(objectsId);
   }
@@ -377,6 +385,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     return this.stats.getInt(fragmentationId);
   }
 
+  @Override
   public Statistics getStats() {
     return this.stats;
   }

@@ -116,6 +116,7 @@ public class LocalManager extends Manager {
 
         // Create anonymous stats holder for Management Regions
         final HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
+          @Override
           public CachePerfStats getCachePerfStats() {
             return new CachePerfStats(cache.getDistributedSystem(), "managementRegionStats");
           }

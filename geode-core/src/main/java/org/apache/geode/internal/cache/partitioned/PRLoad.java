@@ -128,6 +128,7 @@ public class PRLoad implements DataSerializable {
     return sb.toString();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeFloat(this.weight);
     DataSerializer.writeFloatArray(this.bucketReadLoads, out);
@@ -137,6 +138,7 @@ public class PRLoad implements DataSerializable {
   /**
    * Unsupported. Use {@link PRLoad#createFromDataInput(DataInput)} instead.
    */
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     throw new UnsupportedOperationException("Use PRLoad#createFromDataInput(DataInput) instead.");
   }

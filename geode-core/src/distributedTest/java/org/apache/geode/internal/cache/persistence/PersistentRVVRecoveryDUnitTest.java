@@ -569,6 +569,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     // value
     SerializableRunnable createData = new SerializableRunnable("rollEntryVersion") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         LocalRegion region = (LocalRegion) cache.getRegion(REGION_NAME);
@@ -620,6 +621,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     // value
     SerializableRunnable createData = new SerializableRunnable("rollEntryVersion") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         LocalRegion region = (LocalRegion) cache.getRegion(REGION_NAME);
@@ -676,6 +678,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     final VM vm0 = host.getVM(1);
 
     SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
+      @Override
       public void run() {
         Cache cache = getCache();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -700,6 +703,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
 
     // In two different threads, perform updates to the same key on the same region
     AsyncInvocation ins0 = vm0.invokeAsync(new SerializableRunnable("change the entry at vm0") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(REGION_NAME);
@@ -709,6 +713,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
       }
     });
     AsyncInvocation ins1 = vm0.invokeAsync(new SerializableRunnable("change the entry at vm1") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(REGION_NAME);
@@ -935,6 +940,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   protected void createData(VM vm, final int startKey, final int endKey, final String value) {
     SerializableRunnable createData = new SerializableRunnable("createData") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(REGION_NAME);
@@ -950,6 +956,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   protected void checkData(VM vm0, final int startKey, final int endKey, final String value) {
     SerializableRunnable checkData = new SerializableRunnable("CheckData") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(REGION_NAME);
@@ -966,6 +973,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   protected void delete(VM vm, final int startKey, final int endKey) {
     SerializableRunnable createData = new SerializableRunnable("destroy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(REGION_NAME);
@@ -981,6 +989,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   protected RegionVersionVector getRVV(VM vm) throws IOException, ClassNotFoundException {
     SerializableCallable createData = new SerializableCallable("getRVV") {
 
+      @Override
       public Object call() throws Exception {
         Cache cache = getCache();
         LocalRegion region = (LocalRegion) cache.getRegion(REGION_NAME);
@@ -1002,6 +1011,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   protected RegionVersionVector getDiskRVV(VM vm) throws IOException, ClassNotFoundException {
     SerializableCallable createData = new SerializableCallable("getRVV") {
 
+      @Override
       public Object call() throws Exception {
         Cache cache = getCache();
         LocalRegion region = (LocalRegion) cache.getRegion(REGION_NAME);

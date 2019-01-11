@@ -77,6 +77,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
     return this.elementType.hashCode();
   }
 
+  @Override
   public void setElementType(ObjectType elementType) {
     if (elementType instanceof StructType)
       throw new IllegalArgumentException(
@@ -84,26 +85,32 @@ public class LinkedResultSet extends java.util.LinkedHashSet
     this.elementType = elementType;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(Ordered.class, this.elementType);
   }
 
+  @Override
   public boolean isModifiable() {
     return true;
   }
 
+  @Override
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     this.elementType = (ObjectType) DataSerializer.readObject(in);
@@ -112,6 +119,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // how do we serialize the comparator?
     out.writeInt(this.size());
@@ -121,6 +129,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
     }
   }
 
+  @Override
   public int getDSFID() {
 
     return LINKED_RESULTSET;

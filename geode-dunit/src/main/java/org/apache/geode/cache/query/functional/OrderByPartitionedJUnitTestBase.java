@@ -535,6 +535,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
     }
   }
 
+  @Override
   public String[] getQueriesForOrderByWithNullValues() {
     // IN ORDER BY NULL values are treated as smallest. E.g For an ascending
     // order by field
@@ -574,6 +575,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
     return queries;
   }
 
+  @Override
   public String[] getQueriesForLimitNotAppliedIfOrderByNotUsingIndex() {
     String queries[] = {
         // Test case No. IUMR021
@@ -600,6 +602,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
 
   }
 
+  @Override
   public String[] getQueriesForMultiColOrderByWithIndexResultWithProjection() {
     String queries[] = {
         // Test case No. IUMR021
@@ -622,6 +625,7 @@ public abstract class OrderByPartitionedJUnitTestBase extends OrderByTestImpleme
     return queries;
   }
 
+  @Override
   public String[] getQueriesForMultiColOrderByWithMultiIndexResultProjection() {
     String queries[] = {
         // Test case No. IUMR021

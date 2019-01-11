@@ -297,6 +297,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       this.socket = socket;
     }
 
+    @Override
     public void run() {
       try {
         socket.setTcpNoDelay(true);
@@ -608,6 +609,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         (InternalDistributedMember) mbr, reason);
   }
 
+  @Override
   public void start() {
     scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
     checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
@@ -690,6 +692,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   private void startHeartbeatThread() {
     checkExecutor.execute(new Runnable() {
+      @Override
       public void run() {
         Thread.currentThread().setName("Geode Heartbeat Sender");
         sendPeriodicHeartbeats();
@@ -766,6 +769,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     });
   }
 
+  @Override
   public synchronized void installView(NetView newView) {
     synchronized (suspectRequestsInView) {
       suspectRequestsInView.clear();

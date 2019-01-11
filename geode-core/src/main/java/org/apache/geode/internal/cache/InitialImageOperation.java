@@ -1754,6 +1754,7 @@ public class InitialImageOperation {
                  * @param b positive if last chunk
                  * @return true to continue to next chunk
                  */
+                @Override
                 public boolean executeWith(Object entList, int b) {
                   if (rgn.getCache().isClosed()) {
                     return false;
@@ -2055,6 +2056,7 @@ public class InitialImageOperation {
       // ...end of abortTest code
     }
 
+    @Override
     public int getDSFID() {
       return REQUEST_IMAGE_MESSAGE;
     }
@@ -2282,6 +2284,7 @@ public class InitialImageOperation {
       }
     }
 
+    @Override
     public int getDSFID() {
       return REQUEST_FILTERINFO_MESSAGE;
     }
@@ -2552,6 +2555,7 @@ public class InitialImageOperation {
       }
     }
 
+    @Override
     public int getDSFID() {
       return REQUEST_RVV_MESSAGE;
     }
@@ -2643,6 +2647,7 @@ public class InitialImageOperation {
       }
     }
 
+    @Override
     public int getDSFID() {
       return REQUEST_SYNC_MESSAGE;
     }
@@ -2992,10 +2997,12 @@ public class InitialImageOperation {
       this.versionTag = tag;
     }
 
+    @Override
     public int getDSFID() {
       return IMAGE_ENTRY;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeByte(this.entryBits);
       byte flags = (this.versionTag != null) ? HAS_VERSION : 0;
@@ -3014,6 +3021,7 @@ public class InitialImageOperation {
     static final byte HAS_VERSION = 0x01;
     static final byte PERSISTENT_VERSION = 0x02;
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.entryBits = in.readByte();
       byte flags = in.readByte();
@@ -3151,6 +3159,7 @@ public class InitialImageOperation {
       return tag;
     }
 
+    @Override
     public int size() {
       // Sanity check for entries size and versions size.
       if (isRegionVersioned) {
@@ -3161,6 +3170,7 @@ public class InitialImageOperation {
       return super.size();
     }
 
+    @Override
     public void clear() {
       super.clear();
       this.versionTags.clear();
@@ -4037,6 +4047,7 @@ public class InitialImageOperation {
 
     public abstract void reset();
 
+    @Override
     public abstract void run();
 
   }

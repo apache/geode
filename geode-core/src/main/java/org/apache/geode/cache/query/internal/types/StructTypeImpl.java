@@ -77,14 +77,17 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
   }
 
 
+  @Override
   public ObjectType[] getFieldTypes() {
     return this.fieldTypes;
   }
 
+  @Override
   public String[] getFieldNames() {
     return this.fieldNames;
   }
 
+  @Override
   public int getFieldIndex(String fieldName) {
     for (int i = 0; i < this.fieldNames.length; i++) {
       if (this.fieldNames[i].equals(fieldName)) {

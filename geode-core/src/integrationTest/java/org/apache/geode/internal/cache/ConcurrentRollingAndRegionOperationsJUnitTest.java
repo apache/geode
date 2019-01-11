@@ -54,10 +54,12 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   void putBeforeRoll(final Region region) {
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void beforeGoingToCompact() {
         region.put("Key", "Value2");
       }
 
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           region.notify();
@@ -88,10 +90,12 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   void getBeforeRoll(final Region region) {
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void beforeGoingToCompact() {
         region.get("Key");
       }
 
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           region.notify();
@@ -123,6 +127,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   void delBeforeRoll(final Region region) {
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void beforeGoingToCompact() {
         synchronized (region) {
           region.notify();
@@ -171,6 +176,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     this.hasBeenNotified = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void beforeGoingToCompact() {
         synchronized (region) {
           region.notify();
@@ -213,10 +219,12 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   void putAfterRoll(final Region region) {
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void beforeGoingToCompact() {
         region.put("Key", "Value1");
       }
 
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           region.notify();
@@ -248,6 +256,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   void getAfterRoll(final Region region) {
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           region.notify();
@@ -280,6 +289,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   void delAfterRoll(final Region region) {
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           region.notify();
@@ -327,6 +337,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   void clearAfterRoll(final Region region) {
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           region.notify();
@@ -648,10 +659,12 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
 
       boolean localHasBeenNotified = false;
 
+      @Override
       public void beforeGoingToCompact() {
         final Object obj = new Object();
         Thread thread1 = new Thread() {
 
+          @Override
           public void run() {
             RegionEntry re = ((LocalRegion) region).basicGetEntry("Key");
 
@@ -688,6 +701,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
         startTime = System.currentTimeMillis();
       }
 
+      @Override
       public void afterHavingCompacted() {
         endTime = System.currentTimeMillis();
         totalTime = endTime - startTime;
@@ -741,10 +755,12 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
 
     CacheObserver old = CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+      @Override
       public void beforeGoingToCompact() {
         for (int k = 0; k < TOTAL_KEYS; ++k) {
           final int num = k;
           Thread th = new Thread(new Runnable() {
+            @Override
             public void run() {
 
               byte[] val_on_disk = null;
@@ -814,6 +830,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     final Close th = new Close(region);
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void afterHavingCompacted() {
         LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
         try {
@@ -851,6 +868,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     final Close th = new Close(region);
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
+      @Override
       public void beforeGoingToCompact() {
         LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
         try {
@@ -891,6 +909,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
       this.region = region;
     }
 
+    @Override
     public void run() {
       try {
         region.close();

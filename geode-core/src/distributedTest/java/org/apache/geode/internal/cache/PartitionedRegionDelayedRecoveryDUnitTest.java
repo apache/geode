@@ -49,6 +49,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(null);
       }
@@ -64,6 +65,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     VM vm2 = host.getVM(2);
 
     SerializableRunnable createPrRegions = new SerializableRunnable("createRegions") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -83,6 +85,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
 
     // Do 1 put, which should create 1 bucket on both Vms
     vm0.invoke(new SerializableRunnable("putData") {
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
@@ -95,6 +98,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
 
     // destroy the region in 1 of the VM's that's hosting the bucket
     vm1.invoke(new SerializableRunnable("Destroy region") {
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
@@ -106,6 +110,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
 
     // check to make sure we didn't make a copy of the low redundancy bucket
     SerializableRunnable checkNoBucket = new SerializableRunnable("Check for bucket") {
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
@@ -136,6 +141,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     VM vm2 = host.getVM(2);
 
     SerializableRunnable createPrRegions = new SerializableRunnable("createRegions") {
+      @Override
       public void run() {
         final CountDownLatch rebalancingFinished = new CountDownLatch(1);
         InternalResourceManager.setResourceObserver(new ResourceObserverAdapter() {
@@ -170,6 +176,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
 
     // Do 1 put, which should create 1 bucket
     vm0.invoke(new SerializableRunnable("putData") {
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
@@ -185,6 +192,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     // close 1 cache, which should make the bucket drop below
     // the expected redundancy level.
     vm1.invoke(new SerializableRunnable("close cache") {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.close();
@@ -204,6 +212,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     VM vm2 = host.getVM(2);
 
     SerializableRunnable createPrRegions = new SerializableRunnable("createRegions") {
+      @Override
       public void run() {
         Cache cache = getCache();
         InternalResourceManager.setResourceObserver(new MyResourceObserver());
@@ -223,6 +232,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
 
     // Do 1 put, which should create 1 bucket
     vm0.invoke(new SerializableRunnable("putData") {
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
@@ -237,6 +247,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
     // close 1 cache, which should make the bucket drop below
     // the expected redundancy level.
     vm1.invoke(new SerializableRunnable("close cache") {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.close();
@@ -257,6 +268,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
 
     vm2.invoke(new SerializableCallable("wait for primary move") {
 
+      @Override
       public Object call() throws Exception {
         Cache cache = getCache();
         MyResourceObserver observer =
@@ -274,6 +286,7 @@ public class PartitionedRegionDelayedRecoveryDUnitTest extends JUnit4CacheTestCa
   private long waitForBucketRecovery(VM vm2, final int numBuckets, final long begin) {
     // wait for the bucket to be copied
     Long elapsed = (Long) vm2.invoke(new SerializableCallable("putData") {
+      @Override
       public Object call() {
         Cache cache = getCache();
         PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");

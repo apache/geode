@@ -188,12 +188,14 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.LOCAL);
     createPool2(host, factory, port);
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         synchronized (ClientConflationDUnitTest.class) {
           counterCreate1++;
         }
       }
 
+      @Override
       public void afterUpdate(EntryEvent event) {
         // getLogWriter().info("afterUpdate event = " + event, new Exception());
         synchronized (this) {
@@ -205,12 +207,14 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     cacheClient.createRegion(REGION_NAME1, attrs);
     createPool2(host, factory, port);
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         synchronized (ClientConflationDUnitTest.class) {
           counterCreate2++;
         }
       }
 
+      @Override
       public void afterUpdate(EntryEvent event) {
         synchronized (this) {
           counterUpdate2++;
@@ -275,6 +279,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   public static void setClientServerObserverForBeforeInterestRecovery() {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforeInterestRecovery() {
         setAllCountersZero();
       }
@@ -319,11 +324,13 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     }
 
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         yield(); // TODO is this necessary?
         return counterCreate1 == create1;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -332,11 +339,13 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
 
     final int u1 = update1;
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         yield(); // TODO is this necessary?
         return counterUpdate1 == u1;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -344,11 +353,13 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         yield(); // TODO is this necessary?
         return counterCreate2 == create2;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -357,11 +368,13 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
 
     final int u2 = update2;
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         yield(); // TODO is this necessary?
         return counterUpdate2 == u2;
       }
 
+      @Override
       public String description() {
         return null;
       }

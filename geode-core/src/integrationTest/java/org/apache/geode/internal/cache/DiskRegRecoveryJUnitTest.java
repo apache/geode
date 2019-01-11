@@ -706,6 +706,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
     // set cache observer to check oplogs rolling
     CacheObserver co = CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           if (!rollingDone) {
@@ -780,6 +781,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
         .info("<ExpectedException action=add>" + "KillCompactorException" + "</ExpectedException>");
     try {
       CacheObserver cob = CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+        @Override
         public void beforeDeletingCompactedOplog(Oplog compactedOplog) {
           // killed compactor after rolling but before deleting oplogs
           throw new DiskStoreImpl.KillCompactorException();

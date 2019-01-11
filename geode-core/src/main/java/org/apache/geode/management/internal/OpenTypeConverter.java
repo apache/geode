@@ -484,6 +484,7 @@ public abstract class OpenTypeConverter {
       super(targetClass, itemNames);
     }
 
+    @Override
     String applicable(Method[] getters) throws InvalidObjectException {
       // See if it has a method "T from(CompositeData)"
       // as is conventional for a CompositeDataView
@@ -511,6 +512,7 @@ public abstract class OpenTypeConverter {
       }
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters)
         throws InvalidObjectException {
       try {
@@ -540,6 +542,7 @@ public abstract class OpenTypeConverter {
       this.getterConverters = getterConverters;
     }
 
+    @Override
     String applicable(Method[] getters) {
       for (int i = 0; i < getters.length; i++) {
         try {
@@ -558,6 +561,7 @@ public abstract class OpenTypeConverter {
       return possibleCause;
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters) {
       throw new Error();
     }
@@ -575,6 +579,7 @@ public abstract class OpenTypeConverter {
       super(targetClass, itemNames);
     }
 
+    @Override
     String applicable(Method[] getters) {
       try {
         Constructor c = getTargetClass().getConstructor((Class[]) null);
@@ -602,6 +607,7 @@ public abstract class OpenTypeConverter {
       return null;
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters)
         throws InvalidObjectException {
       Object o;
@@ -633,6 +639,7 @@ public abstract class OpenTypeConverter {
       super(targetClass, itemNames);
     }
 
+    @Override
     String applicable(Method[] getters) throws InvalidObjectException {
 
       final Class<ConstructorProperties> propertyNamesClass = ConstructorProperties.class;
@@ -741,6 +748,7 @@ public abstract class OpenTypeConverter {
       return null;
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters)
         throws InvalidObjectException {
 
@@ -815,6 +823,7 @@ public abstract class OpenTypeConverter {
       super(targetClass, itemNames);
     }
 
+    @Override
     String applicable(Method[] getters) {
       Class targetClass = getTargetClass();
       if (!targetClass.isInterface())
@@ -840,6 +849,7 @@ public abstract class OpenTypeConverter {
       return null;
     }
 
+    @Override
     Object fromCompositeData(CompositeData cd, String[] itemNames, OpenTypeConverter[] converters) {
       final Class targetClass = getTargetClass();
       return Proxy.newProxyInstance(targetClass.getClassLoader(), new Class[] {targetClass},

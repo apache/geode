@@ -67,8 +67,10 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryContext,
     RegionAttributes, HasDiskRegion, RegionMapOwner, DiskExceptionHandler {
 
+  @Override
   CachePerfStats getCachePerfStats();
 
+  @Override
   DiskRegion getDiskRegion();
 
   RegionEntry getRegionEntry(Object key);

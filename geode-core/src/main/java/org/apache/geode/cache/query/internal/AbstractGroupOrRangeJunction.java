@@ -105,11 +105,13 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     }
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     throw new AssertionError("Should not have come here");
   }
 
+  @Override
   public int getType() {
     return GROUPJUNCTION;
   }
@@ -413,6 +415,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
   }
 
   /* Package methods */
+  @Override
   public int getOperator() {
     return _operator;
   }

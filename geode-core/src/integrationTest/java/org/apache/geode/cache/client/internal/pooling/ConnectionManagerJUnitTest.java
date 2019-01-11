@@ -96,10 +96,12 @@ public class ConnectionManagerJUnitTest {
     endpointManager = new EndpointManagerImpl("pool", ds, ds.getCancelCriterion(), poolStats);
     cancelCriterion = new CancelCriterion() {
 
+      @Override
       public String cancelInProgress() {
         return null;
       }
 
+      @Override
       public RuntimeException generateCancelledException(Throwable e) {
         return null;
       }
@@ -166,10 +168,12 @@ public class ConnectionManagerJUnitTest {
     manager.start(background);
     final String descrip = manager.toString();
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return factory.creates == 2 && factory.destroys == 0;
       }
 
+      @Override
       public String description() {
         return "waiting for manager " + descrip;
       }
@@ -604,6 +608,7 @@ public class ConnectionManagerJUnitTest {
     final int thread2 = 1;
     final boolean[] ready = new boolean[2];
     Thread thread = new Thread("ConnectionManagerJUnitTest thread") {
+      @Override
       public void run() {
         setReady(ready, thread1);
         waitUntilReady(ready, thread2);
@@ -673,6 +678,7 @@ public class ConnectionManagerJUnitTest {
     Assert.assertTrue("Should have blocked for 100 millis for a connection", elapsed >= 100);
 
     Thread returnThread = new Thread() {
+      @Override
       public void run() {
         try {
           Thread.sleep(50);
@@ -693,6 +699,7 @@ public class ConnectionManagerJUnitTest {
 
     final Connection conn3 = manager.borrowConnection(10);
     Thread invalidateThread = new Thread() {
+      @Override
       public void run() {
         try {
           Thread.sleep(50);
@@ -713,6 +720,7 @@ public class ConnectionManagerJUnitTest {
 
     final Connection conn4 = manager.borrowConnection(10);
     Thread invalidateThread2 = new Thread() {
+      @Override
       public void run() {
         try {
           Thread.sleep(50);
@@ -803,6 +811,7 @@ public class ConnectionManagerJUnitTest {
       return conn;
     }
 
+    @Override
     public void run() {
       int i = 0;
       Connection conn = null;
@@ -852,11 +861,13 @@ public class ConnectionManagerJUnitTest {
     protected volatile int closes;
     protected volatile int finds;
 
+    @Override
     public ServerDenyList getDenyList() {
       return new ServerDenyList(1);
     }
 
 
+    @Override
     public ServerLocation findBestServer(ServerLocation currentServer, Set excludedServers) {
       synchronized (this) {
         finds++;
@@ -870,6 +881,7 @@ public class ConnectionManagerJUnitTest {
       return nextServer;
     }
 
+    @Override
     public Connection createClientToServerConnection(Set excluded) {
       return createClientToServerConnection(nextServer, true);
     }
@@ -882,6 +894,7 @@ public class ConnectionManagerJUnitTest {
      * org.apache.geode.cache.client.internal.ConnectionFactory#createClientToServerConnection(org.
      * apache.geode.distributed.internal.ServerLocation)
      */
+    @Override
     public Connection createClientToServerConnection(final ServerLocation location,
         boolean forQueue) {
       synchronized (this) {
@@ -896,6 +909,7 @@ public class ConnectionManagerJUnitTest {
 
         private Endpoint endpoint = endpointManager.referenceEndpoint(location, member);
 
+        @Override
         public void destroy() {
           synchronized (DummyFactory.this) {
             destroys++;
@@ -903,22 +917,27 @@ public class ConnectionManagerJUnitTest {
           }
         }
 
+        @Override
         public ServerLocation getServer() {
           return location;
         }
 
+        @Override
         public ByteBuffer getCommBuffer() {
           return null;
         }
 
+        @Override
         public Socket getSocket() {
           return null;
         }
 
+        @Override
         public ConnectionStats getStats() {
           return null;
         }
 
+        @Override
         public void close(boolean keepAlive) throws Exception {
           synchronized (DummyFactory.this) {
             closes++;
@@ -926,50 +945,63 @@ public class ConnectionManagerJUnitTest {
           }
         }
 
+        @Override
         public Endpoint getEndpoint() {
           return endpoint;
         }
 
+        @Override
         public ServerQueueStatus getQueueStatus() {
           return null;
         }
 
+        @Override
         public Object execute(Op op) throws Exception {
           return op.attempt(this);
         }
 
+        @Override
         public boolean isDestroyed() {
           return false;
         }
 
+        @Override
         public void emergencyClose() {}
 
+        @Override
         public short getWanSiteVersion() {
           return -1;
         }
 
+        @Override
         public int getDistributedSystemId() {
           return -1;
         }
 
+        @Override
         public void setWanSiteVersion(short wanSiteVersion) {}
 
+        @Override
         public InputStream getInputStream() {
           return null;
         }
 
+        @Override
         public OutputStream getOutputStream() {
           return null;
         }
 
+        @Override
         public void setConnectionID(long id) {}
 
+        @Override
         public long getConnectionID() {
           return 0;
         }
       };
     }
 
+    @Override
     public ClientUpdater createServerToClientConnection(Endpoint endpoint, QueueManager manager,
         boolean isPrimary, ClientUpdater failedUpdater) {
       return null;

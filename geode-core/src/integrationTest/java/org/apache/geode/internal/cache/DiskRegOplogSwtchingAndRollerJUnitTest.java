@@ -160,6 +160,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           Scope.LOCAL);
 
       CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+        @Override
         public void beforeGoingToCompact() {
           synchronized (forWaitNotify) {
             forWaitNotify.notify();
@@ -210,6 +211,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           Scope.LOCAL);
 
       CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+        @Override
         public void beforeGoingToCompact() {
           synchronized (forWaitNotify) {
             forWaitNotify.notify();
@@ -249,6 +251,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskRegionProperties);
 
       CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+        @Override
         public void beforeGoingToCompact() {
           synchronized (forWaitNotify) {
             forWaitNotify.notify();
@@ -303,6 +306,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           DiskRegionHelperFactory.getAsyncPersistOnlyRegion(cache, diskRegionProperties);
 
       CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+        @Override
         public void beforeGoingToCompact() {
           synchronized (forWaitNotify) {
             forWaitNotify.notify();
@@ -351,6 +355,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       boolean callOnce = false;
 
+      @Override
       public void goingToFlush() {
         synchronized (this) {
 
@@ -448,6 +453,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       boolean callOnce = false;
 
+      @Override
       public void beforeGoingToCompact() {
         synchronized (this) {
           if (!callOnce) {
@@ -467,6 +473,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
       }
 
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           region.notify();
@@ -536,6 +543,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       boolean callOnce = false;
 
+      @Override
       public void beforeGoingToCompact() {
         synchronized (this) {
 
@@ -560,6 +568,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
       }
 
+      @Override
       public void afterHavingCompacted() {
         synchronized (region) {
           region.notify();
@@ -671,6 +680,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       boolean callOnce = false;
 
+      @Override
       public void afterWritingBytes() {
 
         synchronized (this) {
@@ -697,6 +707,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
       }
 
+      @Override
       public void afterHavingCompacted() {
         if (!afterWritingBytes) {
           fail("Roller didnt wait for Async writer to terminate!");

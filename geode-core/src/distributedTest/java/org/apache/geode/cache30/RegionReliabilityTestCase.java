@@ -478,11 +478,13 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm0 for netsearch and netload
     Host.getHost(0).getVM(0).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(null);
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(getRegionScope());
         fac.setCacheLoader(new CacheLoader() {
+          @Override
           public Object load(LoaderHelper helper) throws CacheLoaderException {
             if ("netload".equals(helper.getKey())) {
               return "netload";
@@ -491,6 +493,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
             }
           }
 
+          @Override
           public void close() {}
         });
         RegionAttributes attr = fac.create();
@@ -505,6 +508,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm1 to create role
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
@@ -560,6 +564,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm1 to create role
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
@@ -573,6 +578,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     region.put("expireMe", "expireMe");
     assertTrue(region.size() == 1);
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Close Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(name);
         region.close();
@@ -591,6 +597,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // create region again in vm1
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(getRegionScope());
@@ -648,6 +655,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // create region in vm1
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
@@ -699,11 +707,13 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm0 for netsearch and netload
     Host.getHost(0).getVM(0).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(null);
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(getRegionScope());
         fac.setCacheLoader(new CacheLoader() {
+          @Override
           public Object load(LoaderHelper helper) throws CacheLoaderException {
             if ("netload".equals(helper.getKey())) {
               return "netload";
@@ -712,6 +722,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
             }
           }
 
+          @Override
           public void close() {}
         });
         RegionAttributes attr = fac.create();
@@ -731,6 +742,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm1 to create role
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
@@ -783,6 +795,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm1 to create role
     getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
@@ -796,6 +809,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     region.put("expireMe", "expireMe");
     assertTrue(region.size() == 1);
     getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Close Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(name);
         region.close();
@@ -807,10 +821,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     AttributesMutator mutator = region.getAttributesMutator();
     mutator.setEntryTimeToLive(new ExpirationAttributes(1, LOCAL_DESTROY));
     WaitCriterion wc1 = new WaitCriterion() {
+      @Override
       public boolean done() {
         return ((LocalRegion) region).basicEntries(false).size() == 0;
       }
 
+      @Override
       public String description() {
         return "expected zero entries but have "
             + ((LocalRegion) region).basicEntries(false).size();
@@ -820,6 +836,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // create region again
     getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(getRegionScope());
@@ -917,11 +934,13 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm0 for netsearch and netload
     Host.getHost(0).getVM(0).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(null);
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(getRegionScope());
         fac.setCacheLoader(new CacheLoader() {
+          @Override
           public Object load(LoaderHelper helper) throws CacheLoaderException {
             if ("netload".equals(helper.getKey())) {
               return "netload";
@@ -930,6 +949,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
             }
           }
 
+          @Override
           public void close() {}
         });
         RegionAttributes attr = fac.create();
@@ -995,10 +1015,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
   public static void waitForRegionDestroy(final Region region) {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return region.isDestroyed();
       }
 
+      @Override
       public String description() {
         return "expected region " + region + " to be destroyed";
       }
@@ -1008,10 +1030,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
   public static void waitForEntryDestroy(final Region region, final Object key) {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return region.get(key) == null;
       }
 
+      @Override
       public String description() {
         return "expected entry " + key + " to not exist but it has the value " + region.get(key);
       }
@@ -1087,6 +1111,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
 
     RegionMembershipListener listener = new RegionMembershipListenerAdapter() {
+      @Override
       public void afterRemoteRegionDeparture(RegionEvent event) {
         synchronized (detectedDeparture_testCommitDistributionException) {
           detectedDeparture_testCommitDistributionException[0] = Boolean.TRUE;
@@ -1107,6 +1132,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm1 to create role
     Host.getHost(0).getVM(1).invoke(new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
@@ -1118,8 +1144,10 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // define the afterReleaseLocalLocks callback
     SerializableRunnableIF removeRequiredRole = new SerializableRunnableIF() {
+      @Override
       public void run() {
         Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
+          @Override
           public void run() {
             getRootRegion(name).close();
           }
@@ -1140,6 +1168,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     final String expectedExceptions = "org.apache.geode.internal.cache.CommitReplyException";
     SerializableRunnable addExpectedExceptions =
         new CacheSerializableRunnable("addExpectedExceptions") {
+          @Override
           public void run2() throws CacheException {
             getCache().getLogger().info(
                 "<ExpectedException action=add>" + expectedExceptions + "</ExpectedException>");
@@ -1147,6 +1176,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
         };
     SerializableRunnable removeExpectedExceptions =
         new CacheSerializableRunnable("removeExpectedExceptions") {
+          @Override
           public void run2() throws CacheException {
             getCache().getLogger().info(
                 "<ExpectedException action=remove>" + expectedExceptions + "</ExpectedException>");
@@ -1209,6 +1239,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     getCache();
 
     RegionMembershipListener listener = new RegionMembershipListenerAdapter() {
+      @Override
       public void afterRemoteRegionDeparture(RegionEvent event) {
         synchronized (detectedDeparture_testRegionDistributionException) {
           detectedDeparture_testRegionDistributionException[0] = Boolean.TRUE;
@@ -1231,6 +1262,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // use vm1 to create role
     CacheSerializableRunnable createRegion = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();
@@ -1246,8 +1278,10 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // define the afterReleaseLocalLocks callback
     SerializableRunnable removeRequiredRole = new SerializableRunnable() {
+      @Override
       public void run() {
         Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
+          @Override
           public void run() {
             getRootRegion(name).close();
           }
@@ -1271,6 +1305,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     });
 
     Runnable reset = new Runnable() {
+      @Override
       public void run() {
         // synchronized (detectedDeparture_testRegionDistributionException) {
         // detectedDeparture_testRegionDistributionException[0] = Boolean.FALSE;
@@ -1384,6 +1419,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     final String val = "VALUE-testReinitialization";
 
     Host.getHost(0).getVM(0).invoke(new CacheSerializableRunnable("Create Data") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {});
         AttributesFactory fac = new AttributesFactory();
@@ -1397,6 +1433,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     final Region finalRegion = region;
     Thread thread = new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           RequiredRoles.waitForRequiredRoles(finalRegion, -1);
@@ -1410,6 +1447,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // create role and verify reinitialization took place
     Host.getHost(0).getVM(1).invokeAsync(new CacheSerializableRunnable("Create Role") {
+      @Override
       public void run2() throws CacheException {
         createConnection(new String[] {roleA});
         AttributesFactory fac = new AttributesFactory();

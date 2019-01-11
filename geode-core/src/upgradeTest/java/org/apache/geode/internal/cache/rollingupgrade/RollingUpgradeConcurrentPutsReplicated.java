@@ -76,6 +76,7 @@ public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnit
       // async puts through server 2
       AsyncInvocation asyncPutsThroughOld =
           server2.invokeAsync(new CacheSerializableRunnable("async puts") {
+            @Override
             public void run2() {
               try {
                 for (int i = 0; i < 500; i++) {
@@ -98,6 +99,7 @@ public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnit
       // aync puts through server 1
       AsyncInvocation asyncPutsThroughNew =
           server1.invokeAsync(new CacheSerializableRunnable("async puts") {
+            @Override
             public void run2() {
               try {
                 for (int i = 250; i < 750; i++) {

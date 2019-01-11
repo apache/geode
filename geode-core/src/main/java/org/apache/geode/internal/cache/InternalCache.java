@@ -184,6 +184,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   ClientMetadataService getClientMetadataService();
 
+  @Override
   long cacheTimeMillis();
 
   URL getCacheXmlURL();
@@ -343,6 +344,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
       InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize);
 
+  @Override
   InternalQueryService getQueryService();
 
   Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly);

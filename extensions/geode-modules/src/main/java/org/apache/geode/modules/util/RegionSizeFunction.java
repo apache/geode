@@ -36,6 +36,7 @@ public class RegionSizeFunction implements Function, Declarable, DataSerializabl
 
   public RegionSizeFunction() {}
 
+  @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext rfc = (RegionFunctionContext) context;
     context.getResultSender().lastResult(rfc.getDataSet().size());
@@ -47,18 +48,22 @@ public class RegionSizeFunction implements Function, Declarable, DataSerializabl
         ResourcePermission.Operation.READ, regionName));
   }
 
+  @Override
   public String getId() {
     return ID;
   }
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     return true;
   }

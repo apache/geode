@@ -68,6 +68,7 @@ public class PersistentMemberID implements DataSerializable {
         && (timeStamp <= id.timeStamp && (timeStamp < id.timeStamp || version <= id.version));
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     long diskStoreIdHigh = in.readLong();
     long diskStoreIdLow = in.readLong();
@@ -89,6 +90,7 @@ public class PersistentMemberID implements DataSerializable {
     this.version = in.readShort();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(this.diskStoreId.getMostSignificantBits());
     out.writeLong(this.diskStoreId.getLeastSignificantBits());

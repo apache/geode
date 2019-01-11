@@ -83,6 +83,7 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
     vm2.invoke(() -> ClearDAckDUnitTest.closeCache());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
       }
@@ -272,6 +273,7 @@ public class ClearDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: ref
 
   public static class CacheObserverImpl extends CacheObserverAdapter {
 
+    @Override
     public void afterRegionClear(RegionEvent event) {
       IsAfterClear = true;
     }

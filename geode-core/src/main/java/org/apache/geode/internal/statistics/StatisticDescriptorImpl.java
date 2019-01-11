@@ -228,14 +228,17 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   //////////////////// StatisticDescriptor Methods ////////////////////
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getDescription() {
     return this.description;
   }
 
+  @Override
   public Class<?> getType() {
     return getTypeCodeClass(this.typeCode);
   }
@@ -244,18 +247,22 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
     return getTypeCodeBits(this.typeCode);
   }
 
+  @Override
   public boolean isCounter() {
     return this.isCounter;
   }
 
+  @Override
   public boolean isLargerBetter() {
     return this.isLargerBetter;
   }
 
+  @Override
   public String getUnit() {
     return this.unit;
   }
 
+  @Override
   public int getId() {
     // if (this.id == INVALID_OFFSET) {
     // String s = "The id has not been initialized yet.";
@@ -306,6 +313,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
    *
    * @see #getName
    */
+  @Override
   public int compareTo(StatisticDescriptor o) {
     return this.getName().compareTo(o.getName());
   }

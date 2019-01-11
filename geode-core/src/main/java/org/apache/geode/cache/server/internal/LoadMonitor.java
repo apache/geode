@@ -85,6 +85,7 @@ public class LoadMonitor implements ConnectionListener {
     probe.close();
   }
 
+  @Override
   public void connectionClosed(boolean lastConnection, CommunicationMode communicationMode) {
     if (communicationMode.isClientOperations()) {
       metrics.decConnectionCount();
@@ -98,6 +99,7 @@ public class LoadMonitor implements ConnectionListener {
     return lastLoad;
   }
 
+  @Override
   public void connectionOpened(boolean firstConnection, CommunicationMode communicationMode) {
     if (communicationMode.isClientOperations()) {
       metrics.incConnectionCount();
@@ -115,6 +117,7 @@ public class LoadMonitor implements ConnectionListener {
    */
   protected final ArrayList clientIds = new ArrayList();
 
+  @Override
   public void queueAdded(ClientProxyMembershipID id) {
     synchronized (this.clientIds) {
       metrics.incQueueCount();
@@ -122,6 +125,7 @@ public class LoadMonitor implements ConnectionListener {
     }
   }
 
+  @Override
   public void queueRemoved() {
     metrics.decQueueCount();
   }

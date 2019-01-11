@@ -171,6 +171,7 @@ public class CommandResponse {
     /**
      * @return the header
      */
+    @Override
     public String getHeader() {
       return header;
     }
@@ -178,6 +179,7 @@ public class CommandResponse {
     /**
      * @return the content
      */
+    @Override
     public Object getContent() {
       return content.getInternalJsonObject();
     }
@@ -185,6 +187,7 @@ public class CommandResponse {
     /**
      * @return the footer
      */
+    @Override
     public String getFooter() {
       return footer;
     }

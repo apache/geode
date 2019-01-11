@@ -114,6 +114,7 @@ public class TXReservationMgrJUnitTest {
     Thread[] threads = new Thread[THREAD_COUNT];
     for (int i = 0; i < THREAD_COUNT; i++) {
       threads[i] = new Thread(new Runnable() {
+        @Override
         public void run() {
           doThreadBody(mgr);
         }

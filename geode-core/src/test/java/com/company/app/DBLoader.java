@@ -30,15 +30,18 @@ public class DBLoader implements CacheLoader, Declarable {
 
   private Properties props = new Properties();
 
+  @Override
   public Object load(LoaderHelper helper) throws CacheLoaderException {
 
     throw new UnsupportedOperationException("I do NOTHING");
   }
 
+  @Override
   public void init(java.util.Properties props) {
     this.props = props;
   }
 
+  @Override
   public void close() {}
 
   public boolean equals(Object obj) {

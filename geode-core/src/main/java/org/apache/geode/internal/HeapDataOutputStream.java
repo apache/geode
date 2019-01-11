@@ -848,6 +848,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param v the boolean to be written.
    */
+  @Override
   public void writeBoolean(boolean v) {
     write(v ? 1 : 0);
   }
@@ -861,6 +862,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param v the byte value to be written.
    */
+  @Override
   public void writeByte(int v) {
     write(v);
   }
@@ -883,6 +885,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param v the <code>short</code> value to be written.
    */
+  @Override
   public void writeShort(int v) {
     if (this.ignoreWrites)
       return;
@@ -909,6 +912,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param v the <code>char</code> value to be written.
    */
+  @Override
   public void writeChar(int v) {
     if (this.ignoreWrites)
       return;
@@ -936,6 +940,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param v the <code>int</code> value to be written.
    */
+  @Override
   public void writeInt(int v) {
     if (this.ignoreWrites)
       return;
@@ -967,6 +972,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param v the <code>long</code> value to be written.
    */
+  @Override
   public void writeLong(long v) {
     if (this.ignoreWrites)
       return;
@@ -1015,6 +1021,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param v the <code>float</code> value to be written.
    */
+  @Override
   public void writeFloat(float v) {
     if (this.ignoreWrites)
       return;
@@ -1033,6 +1040,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param v the <code>double</code> value to be written.
    */
+  @Override
   public void writeDouble(double v) {
     if (this.ignoreWrites)
       return;
@@ -1054,6 +1062,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param str the string of bytes to be written.
    */
+  @Override
   public void writeBytes(String str) {
     if (this.ignoreWrites)
       return;
@@ -1088,6 +1097,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param s the string value to be written.
    */
+  @Override
   public void writeChars(String s) {
     if (this.ignoreWrites)
       return;
@@ -1158,6 +1168,7 @@ public class HeapDataOutputStream extends OutputStream
    *
    * @param str the string value to be written.
    */
+  @Override
   public void writeUTF(String str) throws UTFDataFormatException {
     if (this.ignoreWrites)
       return;
@@ -1272,6 +1283,7 @@ public class HeapDataOutputStream extends OutputStream
    * Writes the given object to this stream as a byte array. The byte array is produced by
    * serializing v. The serialization is done by calling DataSerializer.writeObject.
    */
+  @Override
   public void writeAsSerializedByteArray(Object v) throws IOException {
     if (this.ignoreWrites)
       return;

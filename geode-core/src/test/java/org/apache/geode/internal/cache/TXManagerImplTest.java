@@ -123,6 +123,7 @@ public class TXManagerImplTest {
     assertEquals(tx, oldtx);
 
     Thread t1 = new Thread(new Runnable() {
+      @Override
       public void run() {
         txMgr.removeHostedTXState(txid);
       }
@@ -155,6 +156,7 @@ public class TXManagerImplTest {
     assertEquals(tx, oldtx);
 
     Thread t1 = new Thread(new Runnable() {
+      @Override
       public void run() {
         txMgr.removeHostedTXState(txid);
         // replace with new TXState
@@ -188,6 +190,7 @@ public class TXManagerImplTest {
     assertEquals(tx, oldtx);
 
     Thread t1 = new Thread(new Runnable() {
+      @Override
       public void run() {
         when(msg.getTXOriginatorClient()).thenReturn(mock(InternalDistributedMember.class));
         TXStateProxy tx;
@@ -233,6 +236,7 @@ public class TXManagerImplTest {
     TXStateProxy tx;
 
     Thread t1 = new Thread(new Runnable() {
+      @Override
       public void run() {
         tx1 = txMgr.getHostedTXState(txid);
         assertNull(tx1);
@@ -313,6 +317,7 @@ public class TXManagerImplTest {
     when(msg.getTXOriginatorClient()).thenReturn(mock(InternalDistributedMember.class));
 
     Thread t1 = new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           tx1 = txMgr.masqueradeAs(msg);

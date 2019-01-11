@@ -43,6 +43,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
     super(cache, attrs);
   }
 
+  @Override
   public synchronized void initProxy() {
     // return if it is being used for WBCL or proxy is already created
     if (this.remoteDSId == DEFAULT_DISTRIBUTED_SYSTEM_ID

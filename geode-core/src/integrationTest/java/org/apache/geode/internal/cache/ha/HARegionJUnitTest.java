@@ -142,6 +142,7 @@ public class HARegionJUnitTest {
     AttributesFactory factory = new AttributesFactory();
 
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterDestroy(EntryEvent event) {
         assertTrue("eventId has not been set for " + event,
             ((EntryEventImpl) event).getEventId() != null);

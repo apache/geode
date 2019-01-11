@@ -60,6 +60,7 @@ public class ClientConnectionRequest extends ServerLocationRequest {
         + getExcludedServers() + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.CLIENT_CONNECTION_REQUEST;
   }

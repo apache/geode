@@ -38,11 +38,13 @@ public class CompiledLiteral extends AbstractCompiledValue {
   }
 
 
+  @Override
   public int getType() {
     return LITERAL;
   }
 
 
+  @Override
   public Object evaluate(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException {
     return _obj;
@@ -70,6 +72,7 @@ public class CompiledLiteral extends AbstractCompiledValue {
     }
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     // The literal could be true or false only in case of Filter

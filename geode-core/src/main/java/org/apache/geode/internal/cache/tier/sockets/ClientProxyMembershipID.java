@@ -251,6 +251,7 @@ public class ClientProxyMembershipID
    *
    * @see Externalizable
    */
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     // if (this.transientPort == 0) {
     // InternalDistributedSystem.getLogger().warning(
@@ -275,6 +276,7 @@ public class ClientProxyMembershipID
    *
    * @see Externalizable
    */
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     int identityLength = in.readShort();
     if (identityLength > BYTES_32KB) {
@@ -306,10 +308,12 @@ public class ClientProxyMembershipID
     }
   }
 
+  @Override
   public int getDSFID() {
     return CLIENT_PROXY_MEMBERSHIPID;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // if (this.transientPort == 0) {
     // InternalDistributedSystem.getLogger().warning(
@@ -321,6 +325,7 @@ public class ClientProxyMembershipID
     out.writeInt(this.uniqueId);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();

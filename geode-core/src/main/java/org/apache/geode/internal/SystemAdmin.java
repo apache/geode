@@ -1049,14 +1049,17 @@ public class SystemAdmin {
           + this.statId;
     }
 
+    @Override
     public int getCombineType() {
       return this.combineType;
     }
 
+    @Override
     public boolean archiveMatches(File archive) {
       return true;
     }
 
+    @Override
     public boolean statMatches(String statName) {
       if (this.sp == null) {
         return true;
@@ -1066,6 +1069,7 @@ public class SystemAdmin {
       }
     }
 
+    @Override
     public boolean typeMatches(String typeName) {
       if (this.tp == null) {
         return true;
@@ -1075,6 +1079,7 @@ public class SystemAdmin {
       }
     }
 
+    @Override
     public boolean instanceMatches(String textId, long numericId) {
       if (this.ip == null) {
         return true;

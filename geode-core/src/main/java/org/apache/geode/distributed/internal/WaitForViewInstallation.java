@@ -80,6 +80,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
    *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
+  @Override
   public int getDSFID() {
     return WAIT_FOR_VIEW_INSTALLATION;
   }

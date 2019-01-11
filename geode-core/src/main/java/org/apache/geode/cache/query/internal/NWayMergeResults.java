@@ -456,6 +456,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
     }
   }
 
+  @Override
   public int getDSFID() {
     return NWAY_MERGE_RESULTS;
   }

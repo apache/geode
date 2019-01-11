@@ -31,6 +31,7 @@ public class AsyncEventQueueStatsJUnitTest extends MBeanStatsTestCase {
 
   private AsyncEventQueueStats asyncEventQueueStats;
 
+  @Override
   public void init() {
     asyncEventQueueStats = new AsyncEventQueueStats(system, "test");
 

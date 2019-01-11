@@ -31,6 +31,7 @@ public class MyAuthenticator implements Authenticator {
 
   public MyAuthenticator() {}
 
+  @Override
   public void init(Properties systemProps, LogWriter systemLogger, LogWriter securityLogger)
       throws AuthenticationFailedException {}
 
@@ -39,11 +40,13 @@ public class MyAuthenticator implements Authenticator {
     return MyPrincipal.create();
   }
 
+  @Override
   public Principal authenticate(Properties props, DistributedMember member)
       throws AuthenticationFailedException {
     return MyPrincipal.create();
   }
 
+  @Override
   public void close() {}
 
 }

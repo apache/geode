@@ -49,6 +49,7 @@ public abstract class PushExecutor extends PushXExecutor implements Extendable {
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), listSize));
   }
 
+  @Override
   protected abstract ListDirection pushType();
 
 }

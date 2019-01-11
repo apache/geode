@@ -119,10 +119,12 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
     buff.append("; eventID=").append(this.eventID);
   }
 
+  @Override
   public int getDSFID() {
     return PR_TOMBSTONE_MESSAGE;
   }
 
+  @Override
   public Version[] getSerializationVersions() {
     return serializationVersions;
   }

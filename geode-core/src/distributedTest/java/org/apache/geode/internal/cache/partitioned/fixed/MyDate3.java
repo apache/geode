@@ -28,6 +28,7 @@ public class MyDate3 extends Date implements FixedPartitionResolver {
     super(time);
   }
 
+  @Override
   public String getPartitionName(EntryOperation opDetails, Set targetPartitions) {
     Date date = (Date) opDetails.getCallbackArgument();
     Calendar cal = Calendar.getInstance();
@@ -46,10 +47,12 @@ public class MyDate3 extends Date implements FixedPartitionResolver {
     }
   }
 
+  @Override
   public String getName() {
     return "MyDate3";
   }
 
+  @Override
   public Serializable getRoutingObject(EntryOperation opDetails) {
     Date date = (Date) opDetails.getCallbackArgument();
     Calendar cal = Calendar.getInstance();
@@ -58,6 +61,7 @@ public class MyDate3 extends Date implements FixedPartitionResolver {
     return month;
   }
 
+  @Override
   public void close() {
     // TODO Auto-generated method stub
 

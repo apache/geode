@@ -30,6 +30,7 @@ public class DiskDistributedNoAckAsyncRegionDUnitTest extends DiskDistributedNoA
     super();
   }
 
+  @Override
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);

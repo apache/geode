@@ -58,32 +58,39 @@ public class RemoteStat implements Stat, DataSerializable {
 
   // Stat methods
 
+  @Override
   public Number getValue() {
     return this.value;
   }
 
+  @Override
   public String getUnits() {
     return this.units;
   }
 
+  @Override
   public boolean isCounter() {
     return this.isCounter;
   }
 
   // GfObject methods
 
+  @Override
   public int getID() {
     return this.id;
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getType() {
     return StatisticDescriptorImpl.getTypeCodeName(this.typeCode);
   }
 
+  @Override
   public String getDescription() {
     return this.desc;
   }
@@ -96,6 +103,7 @@ public class RemoteStat implements Stat, DataSerializable {
         + isCounter() + " value=" + getValue() + " desc=\"" + getDescription() + "\">";
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     out.writeByte(this.typeCode);
@@ -106,6 +114,7 @@ public class RemoteStat implements Stat, DataSerializable {
     out.writeBoolean(this.isCounter);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.name = DataSerializer.readString(in);

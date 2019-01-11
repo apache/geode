@@ -63,6 +63,7 @@ public class FlushAllCommand extends AbstractCommand {
       r.destroyRegion();
     } else {
       StorageCommand.getExpiryExecutor().schedule(new Runnable() {
+        @Override
         public void run() {
           r.destroyRegion();
         }

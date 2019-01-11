@@ -45,40 +45,49 @@ public class StatisticInfoImpl implements StatisticInfo {
     this.descriptor = descriptor;
   }
 
+  @Override
   public String getStatisticName() {
     return descriptor.getName();
   }
 
+  @Override
   public String getStatisticsTextId() {
     return statistics.getTextId();
   }
 
+  @Override
   public void setStatisticName(String statisticName) {
     throw new UnsupportedOperationException(
         "StatisticInfoImpl class does not support setStatisticName method.");
   }
 
+  @Override
   public void setStatisticsTextId(String statisticsTextId) {
     throw new UnsupportedOperationException(
         "StatisticInfoImpl class does not support setStatisticsTextId method.");
   }
 
+  @Override
   public Number getValue() {
     return statistics.get(descriptor);
   }
 
+  @Override
   public StatisticDescriptor getStatisticDescriptor() {
     return this.descriptor;
   }
 
+  @Override
   public Statistics getStatistics() {
     return this.statistics;
   }
 
+  @Override
   public String getStatisticsTypeName() {
     return this.statistics.getType().getName();
   }
 
+  @Override
   public void setStatisticsTypeName(String statisticsType) {
     throw new UnsupportedOperationException(
         "StatisticInfoImpl class does not support setStatisticsTypeName method.");
@@ -103,8 +112,10 @@ public class StatisticInfoImpl implements StatisticInfo {
     return false;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {}
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
   @Override

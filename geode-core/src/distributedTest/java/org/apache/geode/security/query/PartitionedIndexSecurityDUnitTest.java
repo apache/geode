@@ -26,6 +26,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PartitionedIndexSecurityDUnitTest extends IndexSecurityDUnitTest {
+  @Override
   public RegionShortcut getRegionType() {
     return RegionShortcut.PARTITION;
   }

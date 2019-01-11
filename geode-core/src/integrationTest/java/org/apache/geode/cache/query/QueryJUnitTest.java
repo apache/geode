@@ -377,6 +377,7 @@ public class QueryJUnitTest {
       this.params = params;
     }
 
+    @Override
     public void run() {
       try {
         q.execute(params);

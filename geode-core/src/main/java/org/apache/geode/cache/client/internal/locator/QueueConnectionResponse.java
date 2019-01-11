@@ -43,6 +43,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     durableQueueFound = DataSerializer.readPrimitiveBoolean(in);
     servers = SerializationHelper.readServerLocationList(in);
@@ -51,6 +52,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writePrimitiveBoolean(durableQueueFound, out);
     SerializationHelper.writeServerLocationList(servers, out);
@@ -70,6 +72,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
         + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.QUEUE_CONNECTION_RESPONSE;
   }

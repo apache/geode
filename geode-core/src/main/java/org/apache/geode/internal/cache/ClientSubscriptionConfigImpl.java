@@ -56,6 +56,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * @see #DEFAULT_CAPACITY
    * @since GemFire 5.7
    */
+  @Override
   public int getCapacity() {
     return this.haQueueCapacity;
   }
@@ -67,6 +68,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * @see #DEFAULT_CAPACITY
    * @since GemFire 5.7
    */
+  @Override
   public void setCapacity(int capacity) {
     this.haQueueCapacity = capacity;
   }
@@ -78,6 +80,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * @see #DEFAULT_EVICTION_POLICY
    * @since GemFire 5.7
    */
+  @Override
   public String getEvictionPolicy() {
     return this.haEvictionPolicy;
   }
@@ -88,6 +91,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * @see #DEFAULT_EVICTION_POLICY
    * @since GemFire 5.7
    */
+  @Override
   public void setEvictionPolicy(String policy) {
     this.haEvictionPolicy = policy;
   }
@@ -99,6 +103,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * @since GemFire 5.7
    * @deprecated as of prPersistSprint2
    */
+  @Override
   @Deprecated
   public void setOverflowDirectory(String overflowDirectory) {
     if (this.getDiskStoreName() != null) {
@@ -117,6 +122,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    * @since GemFire 5.7
    * @deprecated as of prPersistSprint2
    */
+  @Override
   @Deprecated
   public String getOverflowDirectory() {
     if (this.getDiskStoreName() != null) {
@@ -143,6 +149,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    *
    * @since GemFire prPersistSprint2
    */
+  @Override
   public String getDiskStoreName() {
     return diskStoreName;
   }
@@ -152,6 +159,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    *
    * @since GemFire prPersistSprint2
    */
+  @Override
   public void setDiskStoreName(String diskStoreName) {
     if (hasOverflowDirectory()) {
       throw new IllegalStateException(

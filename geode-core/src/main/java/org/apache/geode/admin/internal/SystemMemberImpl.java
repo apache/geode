@@ -142,6 +142,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return new DistributionConfigImpl(props);
   }
 
+  @Override
   public AdminDistributedSystem getDistributedSystem() {
     return this.system;
   }
@@ -150,18 +151,22 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return internalId;
   }
 
+  @Override
   public String getId() {
     return this.id;
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getHost() {
     return this.host;
   }
 
+  @Override
   public InetAddress getHostAddress() {
     return InetAddressUtil.toInetAddress(this.getHost());
   }
@@ -170,6 +175,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   // Operations
   // -------------------------------------------------------------------------
 
+  @Override
   public String getLog() {
     String childTail = null;
     String mainTail = null;
@@ -198,6 +204,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     }
   }
 
+  @Override
   public java.util.Properties getLicense() {
     GemFireVM vm = getGemFireVM();
     if (vm == null)
@@ -205,6 +212,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return new Properties();
   }
 
+  @Override
   public String getVersion() {
     GemFireVM vm = getGemFireVM();
     if (vm == null)
@@ -212,6 +220,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return vm.getVersionInfo();
   }
 
+  @Override
   public StatisticResource[] getStat(String statisticsTypeName)
       throws org.apache.geode.admin.AdminException {
     StatisticResource[] res = new StatisticResource[0];
@@ -221,6 +230,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return res.length == 0 ? null : res;
   }
 
+  @Override
   public StatisticResource[] getStats() throws org.apache.geode.admin.AdminException {
     StatisticResource[] statsImpl = new StatisticResource[0];
     if (this.vm != null) {
@@ -229,6 +239,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return statsImpl;
   }
 
+  @Override
   public boolean hasCache() {
     GemFireVM member = getGemFireVM();
     if (member == null) {
@@ -239,6 +250,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     }
   }
 
+  @Override
   public SystemMemberCache getCache() throws org.apache.geode.admin.AdminException {
     GemFireVM vm = getGemFireVM(); // fix for bug 33505
     if (vm == null)
@@ -254,6 +266,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     }
   }
 
+  @Override
   public void refreshConfig() throws org.apache.geode.admin.AdminException {
     GemFireVM vm = getGemFireVM();
     if (vm == null)
@@ -294,12 +307,14 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     }
   }
 
+  @Override
   public ConfigurationParameter[] getConfiguration() {
     ConfigurationParameter[] array = new ConfigurationParameter[this.parms.size()];
     this.parms.values().toArray(array);
     return array;
   }
 
+  @Override
   public ConfigurationParameter[] setConfiguration(ConfigurationParameter[] parms)
       throws AdminException {
 
@@ -321,6 +336,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return this.getConfiguration();
   }
 
+  @Override
   public SystemMemberType getType() {
     return SystemMemberType.APPLICATION;
   }
@@ -330,6 +346,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   // -------------------------------------------------------------------------
 
   // -- org.apache.geode.admin.internal.ConfigurationParameterListener ---
+  @Override
   public void configurationParameterValueChanged(ConfigurationParameter parm) {
     try {
       setConfiguration(new ConfigurationParameter[] {parm});
@@ -473,6 +490,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return (StatisticResource[]) statList.toArray(new StatisticResource[0]);
   }
 
+  @Override
   public String[] getRoles() {
     Set roles = this.internalId.getRoles();
     String[] roleNames = new String[roles.size()];
@@ -484,6 +502,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     return roleNames;
   }
 
+  @Override
   public DistributedMember getDistributedMember() {
     return this.internalId;
   }

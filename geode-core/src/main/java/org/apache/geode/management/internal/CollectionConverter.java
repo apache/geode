@@ -60,6 +60,7 @@ public class CollectionConverter extends OpenTypeConverter {
     }
   }
 
+  @Override
   Object toNonNullOpenValue(Object value) throws OpenDataException {
     final Collection valueCollection = (Collection) value;
     if (valueCollection instanceof SortedSet) {
@@ -77,6 +78,7 @@ public class CollectionConverter extends OpenTypeConverter {
     return openArray;
   }
 
+  @Override
   public Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
     final Object[] openArray = (Object[]) openValue;
     final Collection<Object> valueCollection;
@@ -96,6 +98,7 @@ public class CollectionConverter extends OpenTypeConverter {
     return valueCollection;
   }
 
+  @Override
   void checkReconstructible() throws InvalidObjectException {
     elementConverter.checkReconstructible();
   }

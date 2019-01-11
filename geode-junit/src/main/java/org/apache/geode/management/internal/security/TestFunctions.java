@@ -30,10 +30,12 @@ public final class TestFunctions implements Serializable {
   public static class WriteFunction implements Function {
     public static final String SUCCESS_OUTPUT = "writeDataFunctionSucceeded";
 
+    @Override
     public void execute(FunctionContext context) {
       context.getResultSender().lastResult(SUCCESS_OUTPUT);
     }
 
+    @Override
     public String getId() {
       return "writeData";
     }
@@ -42,6 +44,7 @@ public final class TestFunctions implements Serializable {
   public static class ReadFunction implements Function<Object> {
     public static final String SUCCESS_OUTPUT = "readDataFunctionSucceeded";
 
+    @Override
     public void execute(FunctionContext context) {
       context.getResultSender().lastResult(SUCCESS_OUTPUT);
     }
@@ -51,6 +54,7 @@ public final class TestFunctions implements Serializable {
       return Collections.singletonList(new ResourcePermission(DATA, READ, onRegion));
     }
 
+    @Override
     public String getId() {
       return "readData";
     }

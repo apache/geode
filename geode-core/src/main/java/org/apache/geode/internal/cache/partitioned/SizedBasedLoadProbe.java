@@ -36,6 +36,7 @@ public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
   public static final int MIN_BUCKET_SIZE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MIN_BUCKET_SIZE", 1).intValue();
 
+  @Override
   public PRLoad getLoad(PartitionedRegion pr) {
     PartitionedRegionDataStore ds = pr.getDataStore();
     int configuredBucketCount = pr.getTotalNumberOfBuckets();
@@ -60,10 +61,13 @@ public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
     return prLoad;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+  @Override
   public void toData(DataOutput out) throws IOException {}
 
+  @Override
   public int getDSFID() {
     return SIZED_BASED_LOAD_PROBE;
   }

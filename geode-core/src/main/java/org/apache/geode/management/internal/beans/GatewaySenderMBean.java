@@ -209,6 +209,7 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
     return bridge.isParallel();
   }
 
+  @Override
   public String getGatewayReceiver() {
     return bridge.getGatewayReceiver();
   }

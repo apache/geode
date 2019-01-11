@@ -50,6 +50,7 @@ public class VersionInfoResponse extends AdminResponse {
     return this.verInfo;
   }
 
+  @Override
   public int getDSFID() {
     return VERSION_INFO_RESPONSE;
   }

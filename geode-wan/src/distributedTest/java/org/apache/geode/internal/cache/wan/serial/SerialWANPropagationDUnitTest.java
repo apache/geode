@@ -569,6 +569,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
           DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",
           "False");
       vm4.invoke(new CacheSerializableRunnable("UnSetting system property ") {
+        @Override
         public void run2() throws CacheException {
           System.setProperty(
               DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",
@@ -577,6 +578,7 @@ public class SerialWANPropagationDUnitTest extends WANTestBase {
       });
 
       vm5.invoke(new CacheSerializableRunnable("UnSetting system property ") {
+        @Override
         public void run2() throws CacheException {
           System.setProperty(
               DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",

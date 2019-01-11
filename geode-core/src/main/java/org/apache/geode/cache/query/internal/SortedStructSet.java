@@ -115,6 +115,7 @@ public class SortedStructSet extends TreeSet
   /**
    * For internal use. Just add the Object[] values for a struct with same type
    */
+  @Override
   public boolean addFieldValues(Object[] fieldValues) {
     return super.add(fieldValues);
   }
@@ -142,6 +143,7 @@ public class SortedStructSet extends TreeSet
   /**
    * Does this set contain a Struct of the correct type with the specified values?
    */
+  @Override
   public boolean containsFieldValues(Object[] fieldValues) {
     return super.contains(fieldValues);
   }
@@ -167,6 +169,7 @@ public class SortedStructSet extends TreeSet
   }
 
   /** Remove the field values from a struct of the correct type */
+  @Override
   public boolean removeFieldValues(Object[] fieldValues) {
     return super.remove(fieldValues);
 
@@ -257,10 +260,12 @@ public class SortedStructSet extends TreeSet
   }
 
   /** Returns an iterator over the fieldValues Object[] instances */
+  @Override
   public Iterator fieldValuesIterator() {
     return super.iterator();
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(SortedStructSet.class, this.structType);
   }
@@ -269,6 +274,7 @@ public class SortedStructSet extends TreeSet
   // behavior if the new struct type is not compatible with the data.
   // For now just trust that the application knows what it is doing if it
   // is overriding the element type in a set of structs
+  @Override
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
@@ -277,10 +283,12 @@ public class SortedStructSet extends TreeSet
     this.structType = (StructTypeImpl) elementType;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this);
   }
 
+  @Override
   public Set asSet() {
     return this;
   }
@@ -290,10 +298,12 @@ public class SortedStructSet extends TreeSet
    *
    * @return Value of property modifiable.
    */
+  @Override
   public boolean isModifiable() {
     return this.modifiable;
   }
 
+  @Override
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
@@ -335,24 +345,29 @@ public class SortedStructSet extends TreeSet
       this.itr = itr;
     }
 
+    @Override
     public boolean hasNext() {
       return this.itr.hasNext();
     }
 
+    @Override
     public Object next() {
       return new StructImpl((StructTypeImpl) SortedStructSet.this.structType,
           (Object[]) this.itr.next());
     }
 
+    @Override
     public void remove() {
       this.itr.remove();
     }
   }
 
+  @Override
   public int getDSFID() {
     return SORTED_STRUCT_SET;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.modifiable = in.readBoolean();
     int size = in.readInt();
@@ -363,6 +378,7 @@ public class SortedStructSet extends TreeSet
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // how do we serialize the comparator?
     out.writeBoolean(this.modifiable);

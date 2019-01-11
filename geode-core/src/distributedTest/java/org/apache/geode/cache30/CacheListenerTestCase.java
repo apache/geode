@@ -62,6 +62,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
     Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent event) {
         assertEquals(key, event.getKey());
         assertEquals(value, event.getNewValue());
@@ -69,6 +70,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         verifyEventProps(event);
       }
 
+      @Override
       public void afterDestroy2(EntryEvent event) {
         // This method will get invoked when the entry is destroyed
       }
@@ -112,14 +114,17 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
     Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent event) {
         // This method will get invoked when the region is populated
       }
 
+      @Override
       public void afterDestroy2(EntryEvent event) {
         // This method will get invoked when an entry is destroyed
       }
 
+      @Override
       public void afterUpdate2(EntryEvent event) {
         assertEquals(key, event.getKey());
         assertEquals(newValue, event.getNewValue());
@@ -174,10 +179,12 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
     // final boolean localScope = getRegionAttributes().getScope().isLocal();
 
     TestCacheListener listener = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent event) {
         // This method will get invoked when the region is populated
       }
 
+      @Override
       public void afterDestroy2(EntryEvent event) {
         assertEquals(key, event.getKey());
         assertEquals(value, event.getOldValue());
@@ -213,10 +220,12 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
     // Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent event) {
         // This method will get invoked when the region is populated
       }
 
+      @Override
       public void afterInvalidate2(EntryEvent event) {
         assertEquals(key, event.getKey());
         assertEquals(value, event.getOldValue());
@@ -258,10 +267,12 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
       TestCacheListener listener = new TestCacheListener() {
         int invalidateCount = 0;
 
+        @Override
         public void afterCreate2(EntryEvent event) {
           // This method will get invoked when the region is populated
         }
 
+        @Override
         public void afterInvalidate2(EntryEvent event) {
           invalidateCount++;
           assertEquals(key, event.getKey());
@@ -317,16 +328,19 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
       private boolean closed = false;
       private boolean destroyed = false;
 
+      @Override
       public boolean wasInvoked() {
         boolean value = closed && destroyed;
         super.wasInvoked();
         return value;
       }
 
+      @Override
       public void close2() {
         this.closed = true;
       }
 
+      @Override
       public void afterRegionDestroy2(RegionEvent event) {
         assertEquals(name, event.getRegion().getName());
         // this should be a distributed destroy unless the region
@@ -371,16 +385,19 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
       private boolean closed = false;
       private boolean invalidated = false;
 
+      @Override
       public boolean wasInvoked() {
         boolean value = invalidated;
         super.wasInvoked();
         return value;
       }
 
+      @Override
       public void close2() {
         this.closed = true;
       }
 
+      @Override
       public void afterRegionInvalidate2(RegionEvent event) {
         assertEquals(name, event.getRegion().getName());
         assertFalse(event.getOperation().isExpiration());
