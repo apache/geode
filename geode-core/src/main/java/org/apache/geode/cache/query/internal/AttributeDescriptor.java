@@ -37,6 +37,7 @@ import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.FieldNotFoundInPdxVersion;
+import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 /**
@@ -256,7 +257,7 @@ public class AttributeDescriptor {
     }
   }
 
-  private Object readFieldFromDeserializedObject(PdxInstanceImpl pdxInstance, Object target)
+  private Object readFieldFromDeserializedObject(InternalPdxInstance pdxInstance, Object target)
       throws NameNotFoundException, QueryInvocationTargetException {
     try {
       Object obj = pdxInstance.getCachedObject();

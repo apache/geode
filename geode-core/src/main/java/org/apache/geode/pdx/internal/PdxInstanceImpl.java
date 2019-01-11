@@ -185,7 +185,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     }
   }
 
-  // this is for internal use of the query engine.
+  @Override
   public Object getCachedObject() {
     Object result = this.cachedObjectForm;
     if (result == null) {

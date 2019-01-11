@@ -18,4 +18,13 @@ import org.apache.geode.internal.Sendable;
 import org.apache.geode.pdx.PdxInstance;
 
 public interface InternalPdxInstance extends PdxInstance, ConvertableToBytes, Sendable {
+  /**
+   * The same as calling getObject() but may also cache the result and future calls
+   * of this method will return the cached object instead of recomputing it.
+   * Implementors that do not want to support a cache can just use the default implementation
+   * which simply calls getObject().
+   */
+  default Object getCachedObject() {
+    return getObject();
+  }
 }
