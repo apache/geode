@@ -103,12 +103,17 @@ public class ManagementListener implements ResourceEventListener {
     if (!shouldProceed(event)) {
       return;
     }
+    // try {
+    // if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
+    // readWriteLock.writeLock().lockInterruptibly();
+    // } else if (event != ResourceEvent.SYSTEM_ALERT) {
+    // readWriteLock.readLock().lockInterruptibly();
+    // }
+    // } catch (InterruptedException e) {
+    // system.getCancelCriterion().checkCancelInProgress(null);
+    // throw new RuntimeException(e);
+    // }
     try {
-      if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
-        readWriteLock.writeLock().lock();
-      } else if (event != ResourceEvent.SYSTEM_ALERT) {
-        readWriteLock.readLock().lock();
-      }
       switch (event) {
         case CACHE_CREATE:
           InternalCache createdCache = (InternalCache) resource;
@@ -223,11 +228,11 @@ public class ManagementListener implements ResourceEventListener {
           break;
       }
     } finally {
-      if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
-        readWriteLock.writeLock().unlock();
-      } else if (event != ResourceEvent.SYSTEM_ALERT) {
-        readWriteLock.readLock().unlock();
-      }
+      // if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
+      // readWriteLock.writeLock().unlock();
+      // } else if (event != ResourceEvent.SYSTEM_ALERT) {
+      // readWriteLock.readLock().unlock();
+      // }
     }
   }
 

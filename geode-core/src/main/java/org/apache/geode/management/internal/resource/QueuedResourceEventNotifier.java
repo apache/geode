@@ -15,29 +15,33 @@
 package org.apache.geode.management.internal.resource;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
 
-/**
- * This is an implementation of {@link ResourceEventNotifier} that handles resource events in the
- * thread that triggers them, except that a cache create or destroy stops other events from
- * happening concurrently.
- */
-public class ConcurrentResourceEventNotifier implements ResourceEventNotifier {
+public class QueuedResourceEventNotifier implements ResourceEventNotifier {
   private static final Logger logger = LogService.getLogger();
 
+  private final ExecutorService executorService;
   private final Set<ResourceEventListener> resourceListeners;
 
-  ConcurrentResourceEventNotifier() {
-    resourceListeners = Collections.synchronizedSet(new HashSet<>());
+  private boolean running = true;
+
+  QueuedResourceEventNotifier() {
+    executorService = Executors.newCachedThreadPool();
+    resourceListeners = new CopyOnWriteArraySet<>();
   }
 
   @Override
@@ -52,19 +56,46 @@ public class ConcurrentResourceEventNotifier implements ResourceEventNotifier {
 
   @Override
   public void handleResourceEvent(ResourceEvent event, Object resource) {
-    notifyResourceEventListeners(event, resource);
+    if (false) {
+      notifyResourceEventListeners(event, resource);
+    } else {
+      try {
+        handleResourceEventAsync(event, resource).get();
 
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof RuntimeException) {
+          throw (RuntimeException) cause;
+        } else if (cause instanceof Error) {
+          throw (Error) cause;
+        } else {
+          throw new RuntimeException("Exception while handling ResourceEvent " + event, cause);
+        }
+      }
+    }
   }
 
   @Override
-  public Future<Void> handleResourceEventAsync(ResourceEvent event, Object resource) {
-    handleResourceEvent(event, resource);
+  public synchronized Future<Void> handleResourceEventAsync(ResourceEvent event, Object resource) {
+    if (running) {
+      return CompletableFuture.runAsync(() -> notifyResourceEventListeners(event, resource),
+          executorService);
+    }
     return CompletableFuture.completedFuture(null);
   }
 
   @Override
-  public void close() {
+  public synchronized void close() {
+    running = false;
     resourceListeners.clear();
+    shutdown();
+  }
+
+  @TestingOnly
+  List<Runnable> shutdown() {
+    return executorService.shutdownNow();
   }
 
   /**

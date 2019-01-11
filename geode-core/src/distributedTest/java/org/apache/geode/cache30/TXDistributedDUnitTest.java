@@ -1389,7 +1389,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
                 af.setDiskStoreName(diskStoreName);
                 gfc.createVMRegion(rgnName1, af.create(), ira);
                 gfc.createVMRegion(rgnName2, af.create(), ira);
-                gfc.getResourceEventNotifier().addResourceListener(new ShutdownListener());
+                gfc.getResourceEventNotifier().addResourceEventListener(new ShutdownListener());
               } catch (IOException ioe) {
                 fail(ioe.toString());
               } catch (TimeoutException e) {
@@ -1463,7 +1463,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
         @Override
         public Object call() throws Exception {
           Collection<ResourceEventListener> resourceListeners =
-              getCache().getResourceEventNotifier().getResourceListeners();
+              getCache().getResourceEventNotifier().getResourceEventListeners();
           for (ResourceEventListener l : resourceListeners) {
             if (l instanceof ShutdownListener) {
               ShutdownListener shutListener = (ShutdownListener) l;

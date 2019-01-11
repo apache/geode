@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.resource;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * No-op implementation of {@link ResourceEventNotifier}.
@@ -27,18 +29,21 @@ public class DummyResourceEventNotifier implements ResourceEventNotifier {
   }
 
   @Override
-  public void addResourceListener(ResourceEventListener listener) {
+  public void addResourceEventListener(ResourceEventListener listener) {
     // nothing
   }
 
   @Override
-  public Set<ResourceEventListener> getResourceListeners() {
+  public Set<ResourceEventListener> getResourceEventListeners() {
     return Collections.emptySet();
   }
 
   @Override
-  public void handleResourceEvent(ResourceEvent event, Object resource) {
-    // nothing
+  public void handleResourceEvent(ResourceEvent event, Object resource) {}
+
+  @Override
+  public Future<Void> handleResourceEventAsync(ResourceEvent event, Object resource) {
+    return CompletableFuture.completedFuture(null);
   }
 
   @Override

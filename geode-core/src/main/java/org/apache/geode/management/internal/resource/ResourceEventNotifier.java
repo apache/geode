@@ -15,15 +15,16 @@
 package org.apache.geode.management.internal.resource;
 
 import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * Notifies {@link ResourceEventListener}s when {@link ResourceEvent}s occur.
  */
-public interface ResourceEventNotifier {
+public interface ResourceEventNotifier extends AutoCloseable {
 
-  void addResourceListener(ResourceEventListener listener);
+  void addResourceEventListener(ResourceEventListener listener);
 
-  Set<ResourceEventListener> getResourceListeners();
+  Set<ResourceEventListener> getResourceEventListeners();
 
   /**
    * Handles a particular event associated with a resource
@@ -33,5 +34,14 @@ public interface ResourceEventNotifier {
    */
   void handleResourceEvent(ResourceEvent event, Object resource);
 
+  /**
+   * Handles a particular event associated with a resource, possibly asynchronously.
+   *
+   * @param event Resource event
+   * @param resource resource on which event is generated
+   */
+  Future<Void> handleResourceEventAsync(ResourceEvent event, Object resource);
+
+  @Override
   void close();
 }

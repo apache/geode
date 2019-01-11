@@ -36,18 +36,18 @@ public class ConcurrentResourceEventNotifierTest {
   public void setup() {
     managementListener = mock(ManagementListener.class);
     concurrentResourceEventNotifier = new ConcurrentResourceEventNotifier();
-    concurrentResourceEventNotifier.addResourceListener(managementListener);
+    concurrentResourceEventNotifier.addResourceEventListener(managementListener);
   }
 
   @Test
   public void isAFunctionalCollection() {
-    assertThat(concurrentResourceEventNotifier.getResourceListeners())
+    assertThat(concurrentResourceEventNotifier.getResourceEventListeners())
         .containsOnly(managementListener);
 
     ResourceEventListener mockListener = mock(ResourceEventListener.class);
-    concurrentResourceEventNotifier.addResourceListener(mockListener);
+    concurrentResourceEventNotifier.addResourceEventListener(mockListener);
 
-    assertThat(concurrentResourceEventNotifier.getResourceListeners())
+    assertThat(concurrentResourceEventNotifier.getResourceEventListeners())
         .containsOnly(managementListener, mockListener);
   }
 
@@ -55,13 +55,13 @@ public class ConcurrentResourceEventNotifierTest {
   public void closeClears() {
     concurrentResourceEventNotifier.close();
 
-    assertThat(concurrentResourceEventNotifier.getResourceListeners()).isEmpty();
+    assertThat(concurrentResourceEventNotifier.getResourceEventListeners()).isEmpty();
   }
 
   @Test
   public void handleResourceEventInvokesOnAllListeners() {
     ResourceEventListener mockListener = mock(ResourceEventListener.class);
-    concurrentResourceEventNotifier.addResourceListener(mockListener);
+    concurrentResourceEventNotifier.addResourceEventListener(mockListener);
 
     ResourceEvent event = ResourceEvent.CACHE_CREATE;
     Object resource = new Object();

@@ -875,7 +875,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
         // We only support management on members of a distributed system
         resourceEventNotifier = new ResourceEventNotifierFactory().createResourceEventNotifier();
-        resourceEventNotifier.addResourceListener(new ManagementListener(this.system));
+        resourceEventNotifier.addResourceEventListener(new ManagementListener(this.system));
       } else {
         resourceEventNotifier =
             new ResourceEventNotifierFactory().createDummyResourceEventNotifier();
