@@ -72,7 +72,7 @@ public class PathUtils {
       }
     }
     try {
-      return new AttributeDescriptor(
+      return new AttributeDescriptor(context.getCache().getPdxRegistry(),
           context.getCache().getQueryService().getMethodInvocationAuthorizer(), attribute)
               .read(target);
     } catch (NameNotFoundException nfe) {
@@ -112,7 +112,7 @@ public class PathUtils {
 
     for (int i = 1; i < types.length; i++) {
       ObjectType currentType = types[i - 1];
-      Member member = new AttributeDescriptor(
+      Member member = new AttributeDescriptor(context.getCache().getPdxRegistry(),
           context.getCache().getQueryService().getMethodInvocationAuthorizer(), pathArray[i - 1])
               .getReadMember(currentType.resolveClass());
 
@@ -170,7 +170,7 @@ public class PathUtils {
             stepStr = stepStr.substring(0, stepStr.length() - 2);
             member = clazz.getMethod(stepStr, (Class[]) null);
           } else {
-            member = new AttributeDescriptor(
+            member = new AttributeDescriptor(context.getCache().getPdxRegistry(),
                 context.getCache().getQueryService().getMethodInvocationAuthorizer(), stepStr)
                     .getReadMember(clazz);
           }

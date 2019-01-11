@@ -651,20 +651,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     return false;
   }
 
+  @Override
   public Object getRawField(String fieldName) {
     return getUnmodifiableReader(fieldName).readRawField(fieldName);
   }
-
-  public Object getDefaultValueIfFieldExistsInAnyPdxVersions(String fieldName, String className)
-      throws FieldNotFoundInPdxVersion {
-    PdxType pdxType =
-        GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.")
-            .getPdxRegistry().getPdxTypeForField(fieldName, className);
-    if (pdxType == null) {
-      throw new FieldNotFoundInPdxVersion(
-          "PdxType with field " + fieldName + " is not found for class " + className);
-    }
-    return pdxType.getPdxField(fieldName).getFieldType().getDefaultValue();
-  }
-
 }
