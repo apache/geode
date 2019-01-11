@@ -58,9 +58,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
     String group = "cluster";
     ConfigurationMutator configurationMutator =
         (new ConfigurationMutatorFactory()).generate(config);
+    final boolean configurationPersistenceEnabled = persistenceService != null;
 
     // exit early if config element already exists in cache config
-    if (persistenceService != null) {
+    if (configurationPersistenceEnabled) {
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
       if (configurationMutator.exists(config, currentPersistedConfig)) {
         throw new EntityExistsException("cache element " + config.getId() + " already exists.");
@@ -83,7 +84,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
             functionResult.getStatusMessage()));
 
     // persist configuration in cache config
-    if (persistenceService != null) {
+    if (configurationPersistenceEnabled) {
       persistenceService.updateCacheConfig(group, cacheConfigForGroup -> {
         try {
           configurationMutator.add(config, cacheConfigForGroup);

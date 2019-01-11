@@ -80,6 +80,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
+import org.apache.geode.management.internal.api.ClusterManagementService;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
@@ -1053,7 +1054,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
   }
 
-  public LocatorClusterManagementService getClusterManagementService() {
+  public ClusterManagementService getClusterManagementService() {
     return clusterManagementService;
   }
 

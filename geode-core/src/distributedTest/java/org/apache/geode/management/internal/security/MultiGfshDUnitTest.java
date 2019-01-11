@@ -111,7 +111,7 @@ public class MultiGfshDUnitTest {
 
     VM vm3 = lsRule.getVM(3);
     IgnoredException
-        .addIgnoredException("java.lang.IllegalArgumentException: Region doesnt exist: {0}", vm3);
+        .addIgnoredException("java.lang.IllegalArgumentException: Region does not exist: {0}", vm3);
     IgnoredException.addIgnoredException("java.lang.ClassNotFoundException: myApp.myListener", vm3);
 
     // set up vm_3 as another gfsh vm, and then connect as "super-user" and try to execute the

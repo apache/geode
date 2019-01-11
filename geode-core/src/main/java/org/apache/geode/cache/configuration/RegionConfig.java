@@ -320,15 +320,16 @@ public class RegionConfig implements CacheElement {
       throw new IllegalArgumentException("Region name cannot be null");
     }
 
-    if (value.split("/").length > 2) {
-      throw new IllegalArgumentException("Region name is invalid -- cannot have multiple slashes");
+    boolean regionPrefixedWithSlash = value.startsWith("/");
+    String[] regionSplit = value.split("/");
+
+    boolean hasSubRegions =
+        regionPrefixedWithSlash ? regionSplit.length > 2 : regionSplit.length > 1;
+    if (hasSubRegions) {
+      throw new IllegalArgumentException("Sub-regions are unsupported");
     }
 
-    if (value.startsWith("/")) {
-      this.name = value.substring(1);
-    } else {
-      this.name = value;
-    }
+    this.name = regionPrefixedWithSlash ? regionSplit[1] : value;
   }
 
   /**

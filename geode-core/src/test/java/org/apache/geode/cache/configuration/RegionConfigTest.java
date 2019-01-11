@@ -39,5 +39,7 @@ public class RegionConfigTest {
     RegionConfig config = new RegionConfig();
     assertThatThrownBy(() -> config.setName("/Parent/Child"))
         .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> config.setName("Parent/Child"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }
