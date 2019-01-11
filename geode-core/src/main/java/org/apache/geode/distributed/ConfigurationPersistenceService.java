@@ -45,4 +45,12 @@ public interface ConfigurationPersistenceService {
    *        is done to the CacheConfig, or it returns the updated CacheConfig
    */
   void updateCacheConfig(String group, UnaryOperator<CacheConfig> mutator);
+
+  /**
+   * replace the cluster configuration of a member group
+   *
+   * @param group the member group name, if null, then "cluster" is assumed
+   * @param cacheConfig the new configuration to be saved
+   */
+  void replaceCacheConfig(String group, CacheConfig cacheConfig);
 }
