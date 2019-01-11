@@ -20,20 +20,16 @@ package org.apache.geode.management.internal.configuration.realizers;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 
-public class ClusterRegionConfigRealizer extends ConfigurationRealizer {
-  public ClusterRegionConfigRealizer(CacheElement config, Cache cache) {
-    super(config, cache);
-  }
+public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig> {
+  public RegionConfigRealizer() {}
 
   @Override
-  public void create() {
-    RegionConfig regionConfig = (RegionConfig) config;
+  public void create(RegionConfig regionConfig, Cache cache) {
     String regionPath = regionConfig.getName();
     if (regionConfig.getRegionAttributes() == null) {
       regionConfig.setRegionAttributes(new RegionAttributesType());
@@ -66,4 +62,15 @@ public class ClusterRegionConfigRealizer extends ConfigurationRealizer {
             .replace("-", "_")));
     factory.create(regionPath);
   }
+
+  @Override
+  public boolean exists(RegionConfig config, Cache cache) {
+    return false;
+  }
+
+  @Override
+  public void update(RegionConfig config, Cache cache) {}
+
+  @Override
+  public void delete(RegionConfig config, Cache cache) {}
 }

@@ -17,31 +17,19 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 public class ConfigurationRealizerFactoryTest {
-  Cache cache;
-
-  @Before
-  public void setup() {
-    cache = mock(Cache.class);
-  }
-
   @Test
-  public void generatesConfigurationRealizerFromConfigObjectType() throws Exception {
-    ConfigurationRealizerFactory subject = new ConfigurationRealizerFactory(cache);
+  public void generatesConfigurationRealizerFromConfigObjectType() {
+    ConfigurationRealizerFactory subject = new ConfigurationRealizerFactory();
 
     RegionConfig config = new RegionConfig();
     ConfigurationRealizer realizer = subject.generate(config);
 
-    assertThat(realizer).isInstanceOf(ClusterRegionConfigRealizer.class);
-    assertThat(realizer.getCache()).isEqualTo(cache);
-    assertThat(realizer.getConfig()).isEqualTo(config);
+    assertThat(realizer).isInstanceOf(RegionConfigRealizer.class);
   }
 }

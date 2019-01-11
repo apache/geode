@@ -14,33 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.management.internal.configuration.persisters;
+package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 
-public class ConfigurationPersisterFactory {
-  private final CacheConfig cacheConfig;
-  private final Map<Class, Class> persisterMap = new HashMap<>();
+public class ConfigurationMutatorFactory {
+  private final Map<Class, ConfigurationMutator> configurationMutatorMap = new HashMap<>();
 
-  public ConfigurationPersisterFactory(CacheConfig cacheConfig) {
-    this.cacheConfig = cacheConfig;
-    persisterMap.put(RegionConfig.class, ClusterRegionConfigPersister.class);
+  public ConfigurationMutatorFactory() {
+    configurationMutatorMap.put(RegionConfig.class, new RegionConfigMutator());
   }
 
-  public ConfigurationPersister generate(CacheElement config) throws Exception {
-    Class persisterClass = persisterMap.get(config.getClass());
-    ConfigurationPersister persister = null;
-    if (persisterClass != null) {
-      persister = (ConfigurationPersister) persisterClass
-          .getConstructor(CacheElement.class, CacheConfig.class)
-          .newInstance(config, cacheConfig);
-    }
-
-    return persister;
+  public ConfigurationMutator generate(CacheElement config) {
+    return configurationMutatorMap.get(config.getClass());
   }
 }

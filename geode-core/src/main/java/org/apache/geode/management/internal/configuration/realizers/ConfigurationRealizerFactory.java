@@ -19,28 +19,17 @@ package org.apache.geode.management.internal.configuration.realizers;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 public class ConfigurationRealizerFactory {
-  private final Cache cache;
-  private final Map<Class, Class> realizerMap = new HashMap<>();
+  private final Map<Class, ConfigurationRealizer> realizerMap = new HashMap<>();
 
-  public ConfigurationRealizerFactory(Cache cache) {
-    this.cache = cache;
-    this.realizerMap.put(RegionConfig.class, ClusterRegionConfigRealizer.class);
+  public ConfigurationRealizerFactory() {
+    this.realizerMap.put(RegionConfig.class, new RegionConfigRealizer());
   }
 
-  public ConfigurationRealizer generate(CacheElement config) throws Exception {
-    Class realizerClass = realizerMap.get(config.getClass());
-    ConfigurationRealizer realizer = null;
-    if (realizerClass != null) {
-      realizer =
-          (ConfigurationRealizer) realizerClass.getConstructor(CacheElement.class, Cache.class)
-              .newInstance(config, cache);
-    }
-
-    return realizer;
+  public ConfigurationRealizer generate(CacheElement config) {
+    return realizerMap.get(config.getClass());
   }
 }

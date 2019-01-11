@@ -35,8 +35,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
-import org.apache.geode.management.internal.configuration.persisters.ConfigurationPersister;
-import org.apache.geode.management.internal.configuration.persisters.ConfigurationPersisterFactory;
+import org.apache.geode.management.internal.configuration.mutators.ConfigurationMutator;
+import org.apache.geode.management.internal.configuration.mutators.ConfigurationMutatorFactory;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.exceptions.NoMembersException;
 
@@ -56,19 +56,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
   public APIResult createCacheElement(CacheElement config) {
     APIResult result = new APIResult();
     String group = "cluster";
+    ConfigurationMutator configurationMutator =
+        (new ConfigurationMutatorFactory()).generate(config);
 
+    // exit early if config element already exists in cache config
     if (persistenceService != null) {
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-      ConfigurationPersisterFactory persisterFactory =
-          new ConfigurationPersisterFactory(currentPersistedConfig);
-      ConfigurationPersister persister;
-      try {
-        persister = persisterFactory.generate(config);
-      } catch (Exception e) {
-        throw new RuntimeException(e.getMessage());
-      }
-
-      if (persister.exists()) {
+      if (configurationMutator.exists(config, currentPersistedConfig)) {
         throw new EntityExistsException("cache element " + config.getId() + " already exists.");
       }
     }
@@ -88,13 +82,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
             functionResult.isSuccessful() ? APIResult.Result.SUCCESS : APIResult.Result.FAILURE,
             functionResult.getStatusMessage()));
 
-    // persist configuration
+    // persist configuration in cache config
     if (persistenceService != null) {
       persistenceService.updateCacheConfig(group, cacheConfigForGroup -> {
         try {
-          ConfigurationPersister groupPersister =
-              (new ConfigurationPersisterFactory(cacheConfigForGroup)).generate(config);
-          groupPersister.add();
+          configurationMutator.add(config, cacheConfigForGroup);
           result.setClusterConfigPersisted(APIResult.Result.SUCCESS,
               "successfully persisted config for " + group);
         } catch (Exception e) {

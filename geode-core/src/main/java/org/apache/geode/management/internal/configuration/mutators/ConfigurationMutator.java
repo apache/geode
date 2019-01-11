@@ -15,42 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.geode.management.internal.configuration.persisters;
+package org.apache.geode.management.internal.configuration.mutators;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 
 /**
- * Defines the behavior to persist a configuration change on a locator
+ * Defines the behavior to mutate a configuration change into a pre-existing cache config from a
+ * locator
  * {@link org.apache.geode.distributed.ConfigurationPersistenceService}. Created with an object of
  * type {@link CacheElement}, which represents the configuration change.
  */
 @Experimental
-public abstract class ConfigurationPersister {
-  protected CacheElement configElement;
-  protected CacheConfig existingConfig;
+public interface ConfigurationMutator<T extends CacheElement> {
+  void add(T config, CacheConfig existing);
 
-  ConfigurationPersister(CacheElement configElement, CacheConfig existingConfig) {
-    this.configElement = configElement;
-    this.existingConfig = existingConfig;
-  }
+  boolean exists(T config, CacheConfig existing);
 
-  public CacheConfig getExistingConfig() {
-    return existingConfig;
-  }
+  void update(T config, CacheConfig existing);
 
-  public CacheElement getConfigElement() {
-    return configElement;
-  }
-
-  public void add() {}
-
-  public boolean exists() {
-    return false;
-  }
-
-  public void update() {}
-
-  public void delete() {}
+  void delete(T config, CacheConfig existing);
 }

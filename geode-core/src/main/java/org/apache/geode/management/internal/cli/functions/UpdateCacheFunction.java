@@ -37,17 +37,16 @@ public class UpdateCacheFunction extends CliFunction<List> {
     CacheElementOperation operation = (CacheElementOperation) context.getArguments().get(1);
     Cache cache = context.getCache();
 
-    ConfigurationRealizer realizer =
-        (new ConfigurationRealizerFactory(cache)).generate(cacheElement);
+    ConfigurationRealizer realizer = (new ConfigurationRealizerFactory()).generate(cacheElement);
     switch (operation) {
       case ADD:
-        realizer.create();
+        realizer.create(cacheElement, cache);
         break;
       case DELETE:
-        realizer.delete();
+        realizer.delete(cacheElement, cache);
         break;
       case UPDATE:
-        realizer.update();
+        realizer.update(cacheElement, cache);
         break;
     }
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,

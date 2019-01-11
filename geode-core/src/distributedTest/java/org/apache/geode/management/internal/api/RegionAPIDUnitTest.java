@@ -142,6 +142,7 @@ public class RegionAPIDUnitTest {
       RegionConfig regionConfig = regions.get(1);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
+      assertThat(regionConfig.getRefid()).isEqualTo("PARTITION");
       assertThat(regionConfig.getIndexes()).isEmpty();
       assertThat(regionConfig.getRegions()).isEmpty();
       assertThat(regionConfig.getEntries()).isEmpty();

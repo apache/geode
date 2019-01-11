@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;

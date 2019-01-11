@@ -31,7 +31,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class ClusterRegionConfigRealizerTest {
+public class RegionConfigRealizerTest {
   InternalCache cache;
   RegionFactory regionFactory;
 
@@ -48,8 +48,8 @@ public class ClusterRegionConfigRealizerTest {
     config.setName("regionName");
     config.setRefid("PARTITION");
 
-    ClusterRegionConfigRealizer subject = new ClusterRegionConfigRealizer(config, cache);
-    subject.create();
+    RegionConfigRealizer subject = new RegionConfigRealizer();
+    subject.create(config, cache);
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
     verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());
@@ -72,8 +72,8 @@ public class ClusterRegionConfigRealizerTest {
     config.setName("regionName");
     config.setRefid("REPLICATE");
 
-    ClusterRegionConfigRealizer subject = new ClusterRegionConfigRealizer(config, cache);
-    subject.create();
+    RegionConfigRealizer subject = new RegionConfigRealizer();
+    subject.create(config, cache);
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
     verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());

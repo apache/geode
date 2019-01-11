@@ -22,35 +22,16 @@ import org.apache.geode.cache.configuration.CacheElement;
 
 /**
  * Defines the behavior to realize a configuration change in the cache on a server. Created with an
- * object of
- * type {@link org.apache.geode.cache.configuration.CacheElement}, which represents the
+ * object of type {@link org.apache.geode.cache.configuration.CacheElement}, which represents the
  * configuration change.
  */
 @Experimental
-public abstract class ConfigurationRealizer {
-  protected CacheElement config;
-  protected Cache cache;
+public interface ConfigurationRealizer<T extends CacheElement> {
+  void create(T config, Cache cache);
 
-  ConfigurationRealizer(CacheElement config, Cache cache) {
-    this.config = config;
-    this.cache = cache;
-  }
+  boolean exists(T config, Cache cache);
 
-  public Cache getCache() {
-    return cache;
-  }
+  void update(T config, Cache cache);
 
-  public CacheElement getConfig() {
-    return config;
-  }
-
-  public void create() {}
-
-  public boolean exists() {
-    return false;
-  }
-
-  public void update() {}
-
-  public void delete() {}
+  void delete(T config, Cache cache);
 }

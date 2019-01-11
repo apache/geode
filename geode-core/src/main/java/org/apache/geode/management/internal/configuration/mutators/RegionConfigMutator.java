@@ -15,20 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.geode.management.internal.configuration.persisters;
+package org.apache.geode.management.internal.configuration.mutators;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 
-public class ClusterRegionConfigPersister extends ConfigurationPersister {
+public class RegionConfigMutator implements ConfigurationMutator<RegionConfig> {
 
-  public ClusterRegionConfigPersister(CacheElement configElement, CacheConfig existingConfig) {
-    super(configElement, existingConfig);
+  public RegionConfigMutator() {}
+
+  @Override
+  public void add(RegionConfig configElement, CacheConfig existingConfig) {
+    existingConfig.getRegions().add(configElement);
   }
 
   @Override
-  public void add() {
-    existingConfig.getRegions().add((RegionConfig) configElement);
+  public boolean exists(RegionConfig config, CacheConfig existing) {
+    return false;
+  }
+
+  @Override
+  public void update(RegionConfig config, CacheConfig existing) {
+
+  }
+
+  @Override
+  public void delete(RegionConfig config, CacheConfig existing) {
+
   }
 }
