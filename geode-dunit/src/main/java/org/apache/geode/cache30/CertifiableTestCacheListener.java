@@ -54,6 +54,7 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
     this.updates.clear();
   }
 
+  @Override
   public List getEventHistory() {
     destroys.clear();
     creates.clear();
@@ -62,20 +63,24 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
     return super.getEventHistory();
   }
 
+  @Override
   public void afterCreate2(EntryEvent event) {
     this.creates.add(event.getKey());
   }
 
+  @Override
   public void afterDestroy2(EntryEvent event) {
     this.destroys.add(event.getKey());
   }
 
+  @Override
   public void afterInvalidate2(EntryEvent event) {
     Object key = event.getKey();
     // logger.fine("got invalidate for " + key);
     this.invalidates.add(key);
   }
 
+  @Override
   public void afterUpdate2(EntryEvent event) {
     this.updates.add(event.getKey());
   }
@@ -88,10 +93,12 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
 
   public boolean waitForCreated(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CertifiableTestCacheListener.this.creates.contains(key);
       }
 
+      @Override
       public String description() {
         return "Waiting for key creation: " + key;
       }
@@ -102,10 +109,12 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
 
   public boolean waitForDestroyed(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CertifiableTestCacheListener.this.destroys.contains(key);
       }
 
+      @Override
       public String description() {
         return "Waiting for key destroy: " + key;
       }
@@ -116,10 +125,12 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
 
   public boolean waitForInvalidated(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CertifiableTestCacheListener.this.invalidates.contains(key);
       }
 
+      @Override
       public String description() {
         return "Waiting for key invalidate: " + key;
       }
@@ -130,10 +141,12 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
 
   public boolean waitForUpdated(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CertifiableTestCacheListener.this.updates.contains(key);
       }
 
+      @Override
       public String description() {
         return "Waiting for key update: " + key;
       }
@@ -142,9 +155,11 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
     return true;
   }
 
+  @Override
   public Properties getConfig() {
     return null;
   }
 
+  @Override
   public void init(Properties props) {}
 }

@@ -57,6 +57,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param iface - a Class defining an interface.
    */
+  @Override
   public boolean isWrapperFor(Class iface) throws SQLException {
     return true;
   }
@@ -69,6 +70,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * @return java.lang.Object
    */
 
+  @Override
   public Object unwrap(Class iface) throws SQLException {
     return iface;
   }
@@ -143,6 +145,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param event Connection event object
    */
+  @Override
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       try {
@@ -169,6 +172,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    *
    * @param event Connection event object
    */
+  @Override
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
       try {

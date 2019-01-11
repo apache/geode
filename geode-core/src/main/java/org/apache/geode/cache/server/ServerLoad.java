@@ -126,6 +126,7 @@ public final class ServerLoad implements DataSerializable {
     this.loadPerSubscriber = loadPerSubscriber;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeFloat(connectionLoad);
     out.writeFloat(loadPerConnection);
@@ -133,6 +134,7 @@ public final class ServerLoad implements DataSerializable {
     out.writeFloat(loadPerSubscriber);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     connectionLoad = in.readFloat();
     loadPerConnection = in.readFloat();

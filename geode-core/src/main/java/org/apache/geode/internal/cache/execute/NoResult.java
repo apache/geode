@@ -39,25 +39,30 @@ public class NoResult implements ResultCollector, Serializable {
 
   private static final long serialVersionUID = -4901369422864228848L;
 
+  @Override
   public void addResult(DistributedMember memberID, Object resultOfSingleExecution) {
     throw new UnsupportedOperationException(
         "Cannot add result as the Function#hasResult() is false");
   }
 
+  @Override
   public void endResults() {
     throw new UnsupportedOperationException(
         "Cannot close result as the Function#hasResult() is false");
   }
 
+  @Override
   public Object getResult() throws FunctionException {
     throw new FunctionException("Cannot return any result as the Function#hasResult() is false");
   }
 
+  @Override
   public Object getResult(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
     throw new FunctionException("Cannot return any result as the Function#hasResult() is false");
   }
 
+  @Override
   public void clearResults() {
     throw new UnsupportedOperationException(
         "Cannot clear result as the Function#hasResult() is false");

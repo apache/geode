@@ -35,6 +35,7 @@ public class Employee implements DataSerializable {
     this.employer = employer;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.id);
     out.writeUTF(this.name);
@@ -42,6 +43,7 @@ public class Employee implements DataSerializable {
     DataSerializer.writeObject(this.employer, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.id = in.readInt();

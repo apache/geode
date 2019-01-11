@@ -77,6 +77,7 @@ public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           Properties config = new Properties();
           config.setProperty(ROLES, rolesProp[vm]);
@@ -87,10 +88,12 @@ public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
 
     // define RegionRoleListener
     final RegionRoleListener listener = new RegionRoleListenerAdapter() {
+      @Override
       public void afterRoleGain(RoleEvent event) {
         RegionReliabilityListenerDUnitTest.rolesGain = event.getRequiredRoles();
       }
 
+      @Override
       public void afterRoleLoss(RoleEvent event) {
         RegionReliabilityListenerDUnitTest.rolesLoss = event.getRequiredRoles();
       }
@@ -121,6 +124,7 @@ public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
 
     // assert gain is fired...
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(Scope.DISTRIBUTED_ACK);
@@ -167,6 +171,7 @@ public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
 
     // assert loss is fired...
     SerializableRunnable destroy = new CacheSerializableRunnable("Destroy Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(name);
         region.localDestroyRegion();

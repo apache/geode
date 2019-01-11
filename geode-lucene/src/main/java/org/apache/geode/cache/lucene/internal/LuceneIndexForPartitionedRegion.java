@@ -62,6 +62,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
 
+  @Override
   protected RepositoryManager createRepositoryManager(LuceneSerializer luceneSerializer) {
     LuceneSerializer mapper = luceneSerializer;
     if (mapper == null) {
@@ -72,6 +73,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return partitionedRepositoryManager;
   }
 
+  @Override
   public boolean isIndexingInProgress() {
     PartitionedRegion userRegion = (PartitionedRegion) cache.getRegion(this.getRegionPath());
     Set<Integer> fileRegionPrimaryBucketIds =
@@ -85,6 +87,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return false;
   }
 
+  @Override
   protected void createLuceneListenersAndFileChunkRegions(
       PartitionedRepositoryManager partitionedRepositoryManager) {
     partitionedRepositoryManager.setUserRegionForRepositoryManager((PartitionedRegion) dataRegion);

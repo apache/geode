@@ -633,6 +633,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
 
     // Put some entries from the client
     client.invoke(new CacheSerializableRunnable("Put entries from client") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(regionName);
         for (int i = 0; i < numLocalValues; i++) {
@@ -642,6 +643,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     });
 
     server.invoke(new CacheSerializableRunnable("Put entries from server") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(regionName);
         for (int i = numLocalValues; i < numLocalValues * 2; i++) {
@@ -654,6 +656,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
 
     // Run getAll
     client.invoke(new CacheSerializableRunnable("Get all entries from server") {
+      @Override
       public void run2() throws CacheException {
         // Build collection of keys
         Collection keys = new ArrayList();
@@ -769,6 +772,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
   private void createBridgeServerWithoutLoader(VM server, final String regionName,
       final int serverPort, final boolean createPR) {
     server.invoke(new CacheSerializableRunnable("Create server") {
+      @Override
       public void run2() throws CacheException {
         // Create DS
         Properties config = new Properties();

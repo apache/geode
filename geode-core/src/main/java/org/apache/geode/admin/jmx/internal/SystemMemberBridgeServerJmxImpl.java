@@ -70,26 +70,32 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
     this.objectName = MBeanUtil.createMBean(this);
   }
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.SYSTEM_MEMBER_CACHE_SERVER;
   }
 
+  @Override
   public void cleanupResource() {}
 
   /**

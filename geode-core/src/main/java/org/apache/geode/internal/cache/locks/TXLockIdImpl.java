@@ -51,18 +51,22 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
     }
   }
 
+  @Override
   public int getCount() {
     return this.id;
   }
 
+  @Override
   public InternalDistributedMember getMemberId() {
     return this.memberId;
   }
 
+  @Override
   public void setLockGrantorId(LockGrantorId lockGrantorId) {
     this.grantedBy = lockGrantorId;
   }
 
+  @Override
   public LockGrantorId getLockGrantorId() {
     return this.grantedBy;
   }
@@ -109,15 +113,18 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
 
   public TXLockIdImpl() {}
 
+  @Override
   public int getDSFID() {
     return TRANSACTION_LOCK_ID;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.memberId = (InternalDistributedMember) DataSerializer.readObject(in);
     this.id = in.readInt();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.memberId, out);
     out.writeInt(this.id);

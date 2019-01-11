@@ -73,6 +73,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
     buff.append(" regionName=").append(this.regionName);
   }
 
+  @Override
   public int getDSFID() {
     return PR_SANITY_CHECK_MESSAGE;
   }

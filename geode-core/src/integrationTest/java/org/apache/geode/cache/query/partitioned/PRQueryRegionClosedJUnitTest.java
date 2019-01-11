@@ -110,6 +110,7 @@ public class PRQueryRegionClosedJUnitTest {
           "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Creating a Thread which will fire queries on the datastore");
 
       Thread t1 = new Thread(new Runnable() {
+        @Override
         public void run() {
           final String expectedRegionDestroyedException = RegionDestroyedException.class.getName();
 
@@ -173,6 +174,7 @@ public class PRQueryRegionClosedJUnitTest {
           "PRQueryRegionClosedJUnitTest#testQueryingWithRegionClose: Creating a Thread which will call Region.destroyRegion() on the datastore ");
 
       Thread t2 = new Thread(new Runnable() {
+        @Override
         public void run() {
           try {
             Thread.sleep(2500);

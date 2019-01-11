@@ -40,6 +40,7 @@ public class CompiledRegion extends AbstractCompiledValue {
     this.regionPath = regionPath;
   }
 
+  @Override
   public int getType() {
     return RegionPath;
   }
@@ -48,6 +49,7 @@ public class CompiledRegion extends AbstractCompiledValue {
     return this.regionPath;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws RegionNotFoundException {
     Region rgn;
     Cache cache = context.getCache();

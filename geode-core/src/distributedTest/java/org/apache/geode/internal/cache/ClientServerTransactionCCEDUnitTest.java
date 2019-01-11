@@ -51,6 +51,7 @@ public class ClientServerTransactionCCEDUnitTest extends ClientServerTransaction
   }
 
 
+  @Override
   protected final void postSetUpClientServerTransactionDUnitTest() throws Exception {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("SocketTimeoutException");
@@ -101,6 +102,7 @@ public class ClientServerTransactionCCEDUnitTest extends ClientServerTransaction
     });
   }
 
+  @Override
   public void verifyVersionTags(VM client, VM server1, VM server2, VM server3) {
     Map<Object, VersionTag> clientTags = getVersionTagsForRegion(client, D_REFERENCE);
     Map<Object, VersionTag> serverTags = getVersionTagsForRegion(server1, D_REFERENCE);

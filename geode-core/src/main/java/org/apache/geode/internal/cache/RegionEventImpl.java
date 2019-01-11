@@ -115,10 +115,12 @@ public class RegionEventImpl
    *
    * @see org.apache.geode.cache.CacheEvent#getRegion()
    */
+  @Override
   public Region getRegion() {
     return region;
   }
 
+  @Override
   public Operation getOperation() {
     return this.op;
   }
@@ -131,6 +133,7 @@ public class RegionEventImpl
     this.versionTag = tag;
   }
 
+  @Override
   public VersionTag getVersionTag() {
     return this.versionTag;
   }
@@ -138,6 +141,7 @@ public class RegionEventImpl
   /**
    * @see org.apache.geode.cache.CacheEvent#getCallbackArgument()
    */
+  @Override
   public Object getCallbackArgument() {
     Object result = this.callbackArgument;
     while (result instanceof WrappedCallbackArgument) {
@@ -150,6 +154,7 @@ public class RegionEventImpl
     return result;
   }
 
+  @Override
   public boolean isCallbackArgumentAvailable() {
     return this.callbackArgument != Token.NOT_AVAILABLE;
   }
@@ -167,14 +172,17 @@ public class RegionEventImpl
   /**
    * @see org.apache.geode.cache.CacheEvent#isOriginRemote()
    */
+  @Override
   public boolean isOriginRemote() {
     return originRemote;
   }
 
+  @Override
   public DistributedMember getDistributedMember() {
     return this.distributedMember;
   }
 
+  @Override
   public boolean isGenerateCallbacks() {
     return true;
   }
@@ -188,6 +196,7 @@ public class RegionEventImpl
     }
   }
 
+  @Override
   public int getDSFID() {
     return REGION_EVENT;
   }
@@ -195,6 +204,7 @@ public class RegionEventImpl
   /**
    * Writes the contents of this message to the given output.
    */
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.regionPath, out);
     DataSerializer.writeObject(this.callbackArgument, out);
@@ -206,6 +216,7 @@ public class RegionEventImpl
   /**
    * Reads the contents of this message from the given input.
    */
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.regionPath = DataSerializer.readString(in);
     this.callbackArgument = DataSerializer.readObject(in);
@@ -214,10 +225,12 @@ public class RegionEventImpl
     this.distributedMember = DSFIDFactory.readInternalDistributedMember(in);
   }
 
+  @Override
   public boolean isReinitializing() {
     return this.op == Operation.REGION_LOAD_SNAPSHOT || this.op == Operation.REGION_REINITIALIZE;
   }
 
+  @Override
   public EventID getEventId() {
     return this.eventId;
   }
@@ -234,6 +247,7 @@ public class RegionEventImpl
    * Returns the Operation type.
    *
    */
+  @Override
   public EnumListenerEvent getEventType() {
     return this.eventType;
   }
@@ -242,10 +256,12 @@ public class RegionEventImpl
    * Sets the operation type.
    *
    */
+  @Override
   public void setEventType(EnumListenerEvent eventType) {
     this.eventType = eventType;
   }
 
+  @Override
   public ClientProxyMembershipID getContext() {
     // regular region events do not have a context - see ClientRegionEventImpl
     return null;
@@ -254,6 +270,7 @@ public class RegionEventImpl
   /**
    * sets the routing information for cache clients
    */
+  @Override
   public void setLocalFilterInfo(FilterInfo info) {
     this.filterInfo = info;
   }
@@ -261,14 +278,17 @@ public class RegionEventImpl
   /**
    * retrieves the routing information for cache clients in this VM
    */
+  @Override
   public FilterInfo getLocalFilterInfo() {
     return this.filterInfo;
   }
 
+  @Override
   public boolean isBridgeEvent() {
     return hasClientOrigin();
   }
 
+  @Override
   public boolean hasClientOrigin() {
     return this.getContext() != null;
   }

@@ -865,10 +865,12 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return (regionMetaData.size() == 1);
       }
 
+      @Override
       public String description() {
         return "expected no metadata to be refreshed";
       }
@@ -878,10 +880,12 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == totalBuckets);
       }
 
+      @Override
       public String description() {
         return "expected no metadata to be refreshed.  Expected " + totalBuckets
             + " entries but found " + prMetaData.getBucketServerLocationsMap_TEST_ONLY();

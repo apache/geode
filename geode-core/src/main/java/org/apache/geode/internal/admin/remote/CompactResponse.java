@@ -53,6 +53,7 @@ public class CompactResponse extends AdminResponse {
     this.setRecipient(sender);
   }
 
+  @Override
   public int getDSFID() {
     return COMPACT_RESPONSE;
   }

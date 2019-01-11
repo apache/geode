@@ -62,6 +62,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
   CacheSerializableRunnable createPrRegionWithDS_DACK =
       new CacheSerializableRunnable("createPrRegionWithDS") {
 
+        @Override
         public void run2() throws CacheException {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -135,6 +136,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
       super(sys, regionId);
     }
 
+    @Override
     protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
       TestStreamingPartitionMessageOneProviderNoExceptions msg =
           new TestStreamingPartitionMessageOneProviderNoExceptions(recipients, this.regionId,
@@ -142,6 +144,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
       return msg;
     }
 
+    @Override
     protected synchronized boolean processData(List objects, InternalDistributedMember sender,
         int sequenceNum, boolean lastInSequence) {
       LogWriter logger = this.sys.getLogWriter();
@@ -230,6 +233,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
     }
 
 
+    @Override
     protected Object getNextReplyObject(PartitionedRegion pr) throws ReplyException {
       if (++count > NUM_INTEGERS) {
         return Token.END_OF_STREAM;
@@ -238,6 +242,7 @@ public class StreamingPartitionOperationOneDUnitTest extends JUnit4CacheTestCase
       return new Integer(nextInt);
     }
 
+    @Override
     public int getDSFID() {
       return NO_FIXED_ID;
     }

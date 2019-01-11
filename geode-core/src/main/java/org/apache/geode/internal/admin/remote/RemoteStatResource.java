@@ -56,14 +56,17 @@ public class RemoteStatResource implements StatResource, DataSerializable {
 
   // StatResource methods
 
+  @Override
   public long getResourceID() {
     return rsrcId;
   }
 
+  @Override
   public long getResourceUniqueID() {
     return rsrcUniqueId;
   }
 
+  @Override
   public String getSystemName() {
     if (systemName == null) {
       if (vm == null) {
@@ -75,10 +78,12 @@ public class RemoteStatResource implements StatResource, DataSerializable {
     return systemName;
   }
 
+  @Override
   public GemFireVM getGemFireVM() {
     return vm;
   }
 
+  @Override
   public Stat[] getStats() {
     if (vm != null) {
       return vm.getResourceStatsByID(this.rsrcUniqueId);
@@ -87,6 +92,7 @@ public class RemoteStatResource implements StatResource, DataSerializable {
     }
   }
 
+  @Override
   public Stat getStatByName(String name) {
     Stat[] stats = getStats();
     for (int i = 0; i < stats.length; i++) {
@@ -99,18 +105,22 @@ public class RemoteStatResource implements StatResource, DataSerializable {
 
   // GfObject methods
 
+  @Override
   public int getID() {
     return -1;
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public String getType() {
     return typeName;
   }
 
+  @Override
   public String getDescription() {
     return typeDesc;
   }
@@ -138,6 +148,7 @@ public class RemoteStatResource implements StatResource, DataSerializable {
     this.vm = vm;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(this.rsrcId);
     out.writeLong(this.rsrcUniqueId);
@@ -146,6 +157,7 @@ public class RemoteStatResource implements StatResource, DataSerializable {
     DataSerializer.writeString(this.typeDesc, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.rsrcId = in.readLong();

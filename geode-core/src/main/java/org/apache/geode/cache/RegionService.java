@@ -115,6 +115,7 @@ public interface RegionService extends AutoCloseable {
    *
    * @throws CacheClosedException if the service is already closed.
    */
+  @Override
   void close();
 
   /**

@@ -110,10 +110,12 @@ public class MembershipManagerHelper {
   public static void waitForMemberDeparture(final DistributedSystem sys,
       final DistributedMember member, final long timeout) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return !getMembershipManager(sys).getView().contains(member);
       }
 
+      @Override
       public String description() {
         return "Waited over " + timeout + " ms for " + member + " to depart, but it didn't";
       }

@@ -77,20 +77,24 @@ public class CacheServerConfigImpl extends ManagedEntityConfigImpl
 
   ////////////////////// Instance Methods //////////////////////
 
+  @Override
   public String getCacheXMLFile() {
     return this.cacheXMLFile;
   }
 
+  @Override
   public void setCacheXMLFile(String cacheXMLFile) {
     checkReadOnly();
     this.cacheXMLFile = cacheXMLFile;
     configChanged();
   }
 
+  @Override
   public String getClassPath() {
     return this.classpath;
   }
 
+  @Override
   public void setClassPath(String classpath) {
     checkReadOnly();
     this.classpath = classpath;

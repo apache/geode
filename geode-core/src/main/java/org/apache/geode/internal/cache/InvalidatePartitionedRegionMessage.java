@@ -72,6 +72,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
    *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
+  @Override
   public int getDSFID() {
     return INVALIDATE_PARTITIONED_REGION_MESSAGE;
   }

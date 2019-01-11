@@ -219,6 +219,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.updateTime = updateTime;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writePrimitiveInt(numOfGets, out);
     DataSerializer.writePrimitiveInt(numOfPuts, out);
@@ -242,6 +243,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writeDate(updateTime, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveInt(in);
     this.numOfPuts = DataSerializer.readPrimitiveInt(in);
@@ -290,6 +292,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     return buf.toString();
   }
 
+  @Override
   public int getDSFID() {
     return CLIENT_HEALTH_STATS;
   }

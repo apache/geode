@@ -170,10 +170,12 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     broadcast.addAll(listeners);
   }
 
+  @Override
   public File getDirectory() {
     return directory;
   }
 
+  @Override
   public String getCommand() {
     return command;
   }
@@ -187,14 +189,17 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     return displayName;
   }
 
+  @Override
   public List<String> getArguments() {
     return Collections.unmodifiableList(arguments);
   }
 
+  @Override
   public Map<String, String> getEnvironment() {
     return Collections.unmodifiableMap(environment);
   }
 
+  @Override
   public ExecHandleState getState() {
     lock.lock();
     try {
@@ -271,6 +276,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
         : format("A problem occurred waiting for process '%s' to complete.", displayName);
   }
 
+  @Override
   public ExecHandle start() {
     LOGGER.info("Starting process '{}'. Working directory: {} Command: {}",
         displayName, directory, command + ' ' + Joiner.on(' ').useForNull("null").join(arguments));
@@ -312,6 +318,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     return this;
   }
 
+  @Override
   public void abort() {
     lock.lock();
     try {
@@ -330,6 +337,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     }
   }
 
+  @Override
   public ExecResult waitForFinish() {
     lock.lock();
     try {
@@ -393,10 +401,12 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     setEndStateInfo(ExecHandleState.FAILED, -1, failureCause);
   }
 
+  @Override
   public void addListener(ExecHandleListener listener) {
     broadcast.add(listener);
   }
 
+  @Override
   public void removeListener(ExecHandleListener listener) {
     broadcast.remove(listener);
   }
@@ -405,6 +415,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     return displayName;
   }
 
+  @Override
   public boolean getRedirectErrorStream() {
     return redirectErrorStream;
   }
@@ -502,10 +513,12 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       this.displayName = displayName;
     }
 
+    @Override
     public int getExitValue() {
       return exitValue;
     }
 
+    @Override
     public ExecResult assertNormalExitValue() throws ExecException {
       // all exit values are ok
 //            if (exitValue != 0) {
@@ -514,6 +527,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
       return this;
     }
 
+    @Override
     public ExecResult rethrowFailure() throws ExecException {
       if (failure != null) {
         throw failure;

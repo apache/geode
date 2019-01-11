@@ -75,22 +75,28 @@ public class PersistenceObserverHolder {
 
   public static class PersistenceObserverAdapter implements PersistenceObserver {
 
+    @Override
     public boolean memberOffline(String region, PersistentMemberID persistentID) {
       return true;
     }
 
+    @Override
     public boolean memberOnline(String region, PersistentMemberID persistentID) {
       return true;
     }
 
+    @Override
     public boolean memberRemoved(String region, PersistentMemberID persistentID) {
       return true;
     }
 
+    @Override
     public void afterPersistedOffline(String fullPath, PersistentMemberID persistentID) {}
 
+    @Override
     public void afterPersistedOnline(String fullPath, PersistentMemberID persistentID) {}
 
+    @Override
     public void afterRemovePersisted(String fullPath, PersistentMemberID persistentID) {}
   }
 }

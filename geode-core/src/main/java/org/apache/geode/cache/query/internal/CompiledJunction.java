@@ -114,10 +114,12 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
     return Arrays.asList(this._operands);
   }
 
+  @Override
   public int getType() {
     return JUNCTION;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Object r = _operands[0].evaluate(context); // UNDEFINED, null, or a Boolean
@@ -390,6 +392,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
    * invariant: all operands are known to be evaluated as a filter no operand organization is
    * necessary
    */
+  @Override
   public void negate() {
     _operator = inverseOperator(_operator);
     for (int i = 0; i < _operands.length; i++) {
@@ -425,6 +428,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
   }
 
   /* Package methods */
+  @Override
   public int getOperator() {
     return _operator;
   }
@@ -752,6 +756,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
   }
 
   // This is called only if the CompiledJunction was either independent or filter evaluable.
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     if (this.isDependentOnCurrentScope(context)) {

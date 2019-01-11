@@ -633,6 +633,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     startSenderInVMs("ln", vm4, vm5);
 
     SerializableRunnable check = new SerializableRunnable("assert no cache servers") {
+      @Override
       public void run() {
         InternalLocator inl = (InternalLocator) Locator.getLocator();
         ServerLocator server = inl.getServerLocatorAdvisee();
@@ -756,6 +757,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
       this(TestObject.class, (byte) 99);
     }
 
+    @Override
     public DataSerializable newInstance() {
       return new TestObject();
     }
@@ -796,10 +798,12 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
       this.id = id;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writeString(this.id, out);
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.id = DataSerializer.readString(in);
     }

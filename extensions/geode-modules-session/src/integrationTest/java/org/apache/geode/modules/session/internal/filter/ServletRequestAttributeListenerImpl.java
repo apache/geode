@@ -21,16 +21,19 @@ import javax.servlet.ServletRequestAttributeListener;
 public class ServletRequestAttributeListenerImpl extends AbstractListener
     implements ServletRequestAttributeListener {
 
+  @Override
   public synchronized void attributeAdded(ServletRequestAttributeEvent srae) {
     events.add(ListenerEventType.SERVLET_REQUEST_ATTRIBUTE_ADDED);
     latch.countDown();
   }
 
+  @Override
   public synchronized void attributeRemoved(ServletRequestAttributeEvent srae) {
     events.add(ListenerEventType.SERVLET_REQUEST_ATTRIBUTE_REMOVED);
     latch.countDown();
   }
 
+  @Override
   public synchronized void attributeReplaced(ServletRequestAttributeEvent srae) {
     events.add(ListenerEventType.SERVLET_REQUEST_ATTRIBUTE_REPLACED);
     latch.countDown();

@@ -653,6 +653,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    */
   public Set<InternalDistributedMember> adviseInitializedDataStore() {
     Set<InternalDistributedMember> s = adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         // probably not needed as all profiles for a partitioned region are Partition profiles
         if (profile instanceof PartitionProfile) {
@@ -670,6 +671,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    */
   public Set<InternalDistributedMember> adviseNotAtShutDownAllStatus(final int status) {
     Set<InternalDistributedMember> s = adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         // probably not needed as all profiles for a partitioned region are Partition profiles
         if (profile instanceof PartitionProfile) {
@@ -715,6 +717,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    */
   public Set<InternalDistributedMember> adviseDataStore(boolean realHashSet) {
     Set<InternalDistributedMember> s = adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         // probably not needed as all profiles for a partitioned region are Partition profiles
         if (profile instanceof PartitionProfile) {
@@ -745,6 +748,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
   public Set<InternalDistributedMember> adviseFixedPartitionDataStores(final String partitionName) {
     Set<InternalDistributedMember> s = adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         // probably not needed as all profiles for a partitioned region are
         // Partition profiles
@@ -781,6 +785,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     final List<InternalDistributedMember> fixedPartitionDataStore =
         new ArrayList<InternalDistributedMember>(1);
     fetchProfiles(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         if (profile instanceof PartitionProfile) {
           PartitionProfile p = (PartitionProfile) profile;
@@ -818,6 +823,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     final List<FixedPartitionAttributesImpl> allFPAs =
         new ArrayList<FixedPartitionAttributesImpl>();
     fetchProfiles(new Filter() {
+      @Override
       public boolean include(final Profile profile) {
         if (profile instanceof PartitionProfile) {
           final PartitionProfile pp = (PartitionProfile) profile;
@@ -843,6 +849,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         new ArrayList<FixedPartitionAttributesImpl>();
 
     fetchProfiles(new Filter() {
+      @Override
       public boolean include(final Profile profile) {
         if (profile instanceof PartitionProfile) {
           final PartitionProfile pp = (PartitionProfile) profile;
@@ -872,6 +879,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         new ArrayList<FixedPartitionAttributesImpl>();
 
     fetchProfiles(new Filter() {
+      @Override
       public boolean include(final Profile profile) {
         if (profile instanceof PartitionProfile) {
           final PartitionProfile pp = (PartitionProfile) profile;
@@ -907,6 +915,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     adviseFilter(new Filter() {
       short numBucks = Short.MAX_VALUE;
 
+      @Override
       public boolean include(Profile profile) {
         if (profile instanceof PartitionProfile) {
           PartitionProfile p = (PartitionProfile) profile;
@@ -927,6 +936,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     final List<DistributedMember> orderedList = new ArrayList<DistributedMember>();
     final DistributedMember self = getDistributionManager().getDistributionManagerId();
     adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         if (profile instanceof PartitionProfile && nodes.contains(profile.getDistributedMember())) {
           PartitionProfile p = (PartitionProfile) profile;
@@ -960,6 +970,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       this.member = member;
     }
 
+    @Override
     public int compareTo(Object o) {
       assert o instanceof NodeBucketSize;
       NodeBucketSize node = (NodeBucketSize) o;
@@ -994,6 +1005,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
   public Set adviseAllPRNodes() {
     return adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         CacheProfile prof = (CacheProfile) profile;
         return prof.isPartitioned;
@@ -1003,6 +1015,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
   public Set adviseAllServersWithInterest() {
     return adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         CacheProfile prof = (CacheProfile) profile;
         return prof.hasCacheServer && prof.filterProfile != null
@@ -1012,6 +1025,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   private static final Filter prServerWithInterestFilter = new Filter() {
+    @Override
     public boolean include(Profile profile) {
       CacheProfile prof = (CacheProfile) profile;
       return prof.isPartitioned && prof.hasCacheServer && prof.filterProfile != null
@@ -1030,6 +1044,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    */
   public Set adviseRequiresNotification(final EntryEventImpl event) {
     return adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         if (profile instanceof PartitionProfile) {
           PartitionProfile prof = (PartitionProfile) profile;
@@ -1346,6 +1361,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       private int currentItem = -1;
 
 
+      @Override
       public void remove() {
         throw new UnsupportedOperationException();
       }
@@ -1356,6 +1372,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
        * (due to loss of bucket storage). Its also equally possible for hasNext() to return false
        * and a subsequent call to next() will return a valid bucketid.
        */
+      @Override
       public boolean hasNext() {
         if (getPartitionedRegion().isFixedPartitionedRegion()) {
           if (this.currentItem + 1 < BucketSet.this.pbrs.length) {
@@ -1385,6 +1402,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         }
       }
 
+      @Override
       public Object next() {
         if (++this.currentItem < BucketSet.this.pbrs.length) {
           if (isStorageAssignedForBucket(this.currentItem)) {
@@ -1453,6 +1471,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     final ArrayList<DataStoreBuckets> ds = new ArrayList<DataStoreBuckets>(memberFilter.size());
     adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         if (profile instanceof PartitionProfile) {
           PartitionProfile p = (PartitionProfile) profile;
@@ -1697,6 +1716,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   public long adviseTotalMemoryAllocation() {
     final AtomicLong total = new AtomicLong();
     adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         // probably not needed as all profiles for a partitioned region are Partition profiles
         if (profile instanceof PartitionProfile) {
@@ -1712,6 +1732,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   public long adviseTotalMemoryAllocationForFPR() {
     final AtomicLong total = new AtomicLong();
     adviseFilter(new Filter() {
+      @Override
       public boolean include(Profile profile) {
         // probably not needed as all profiles for a partitioned region are Partition profiles
         if (profile instanceof PartitionProfile) {
@@ -1863,6 +1884,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       return this.bp;
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.id = in.readInt();
       this.isServerBucketProfile = in.readBoolean();
@@ -1874,6 +1896,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       InternalDataSerializer.invokeFromData(this.bp, in);
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeInt(this.id);
       out.writeBoolean(this.isServerBucketProfile);
@@ -1910,10 +1933,12 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
     }
 
+    @Override
     public void profileCreated(Profile profile) {
       profileUpdated(profile);
     }
 
+    @Override
     public void profileRemoved(Profile profile, boolean regionDestroyed) {
       // if a profile is gone, notify
       synchronized (this) {
@@ -1922,6 +1947,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
     }
 
+    @Override
     public void profileUpdated(Profile profile) {
       // when updated, notify the loop in GFC to check the list again
       synchronized (this) {

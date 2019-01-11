@@ -138,6 +138,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * @param notification the JMX notification being received
    * @param hb handback object is unused
    */
+  @Override
   void handleNotification(Notification notification, Object hb);
 
   /**

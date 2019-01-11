@@ -64,30 +64,37 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
    */
   public RemoteRegionSnapshot() {}
 
+  @Override
   public Object getName() {
     return this.name;
   }
 
+  @Override
   public long getLastModifiedTime() {
     return stats.getLastModifiedTime();
   }
 
+  @Override
   public long getLastAccessTime() {
     return stats.getLastAccessedTime();
   }
 
+  @Override
   public long getNumberOfHits() {
     return stats.getHitCount();
   }
 
+  @Override
   public long getNumberOfMisses() {
     return stats.getMissCount();
   }
 
+  @Override
   public float getHitRatio() {
     return stats.getHitRatio();
   }
 
+  @Override
   public RegionAttributes getAttributes() {
     return this.attributes;
     // if (rUserAttributes != null) {
@@ -107,6 +114,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     return subregionCount;
   }
 
+  @Override
   public Object getUserAttribute() {
     return userAttribute;
   }
@@ -140,6 +148,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     return getName().toString();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     DataSerializer.writeObject(this.stats, out);
@@ -149,6 +158,7 @@ public class RemoteRegionSnapshot implements RegionSnapshot, DataSerializable {
     DataSerializer.writeObject(this.userAttribute, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readString(in);
     this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);

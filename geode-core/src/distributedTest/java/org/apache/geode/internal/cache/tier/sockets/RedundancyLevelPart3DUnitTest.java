@@ -66,15 +66,18 @@ public class RedundancyLevelPart3DUnitTest extends RedundancyLevelTestBase {
     registerInterestCalled = false;
     makePrimaryCalled = false;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforeInterestRegistration() {
         registerInterestCalled = true;
       }
 
+      @Override
       public void beforeInterestRecovery() {
         registerInterestCalled = true;
 
       }
 
+      @Override
       public void beforePrimaryIdentificationFromBackup() {
         makePrimaryCalled = true;
       }

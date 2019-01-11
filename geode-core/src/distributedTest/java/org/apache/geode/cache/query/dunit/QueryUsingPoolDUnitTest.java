@@ -631,6 +631,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Execute client queries
     vm1.invoke(new CacheSerializableRunnable("Execute queries") {
+      @Override
       public void run2() throws CacheException {
         SelectResults results = null;
         QueryService qService = null;
@@ -752,6 +753,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Execute client queries
     SerializableRunnable executeQueries = new CacheSerializableRunnable("Execute queries") {
+      @Override
       public void run2() throws CacheException {
         SelectResults results = null;
         QueryService qService = null;
@@ -1110,6 +1112,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Execute client query multiple times and validate results.
     SerializableRunnable executeSameQueries = new CacheSerializableRunnable("Execute queries") {
+      @Override
       public void run2() throws CacheException {
         QueryService qService = null;
         SelectResults[][] rs = new SelectResults[1][2];
@@ -1149,6 +1152,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Execute client queries and validate results.
     SerializableRunnable executeQueries = new CacheSerializableRunnable("Execute queries") {
+      @Override
       public void run2() throws CacheException {
         QueryService qService = null;
         SelectResults[][] rs = new SelectResults[1][2];
@@ -1394,6 +1398,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       final Region region1 = createRegion(name, factory.createRegionAttributes());
       final Region region2 = createRegion(name + "_2", factory.createRegionAttributes());
       QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
         public void afterQueryEvaluation(Object result) {
           // Destroy the region in the test
           region1.close();
@@ -1844,6 +1849,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   private static class IdComparator implements Comparator {
 
+    @Override
     public int compare(Object obj1, Object obj2) {
       int obj1Id = ((TestObject) obj1).getId();
       int obj2Id = ((TestObject) obj2).getId();
@@ -1859,6 +1865,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   private static class IdValueComparator implements Comparator {
 
+    @Override
     public int compare(Object obj1, Object obj2) {
       int obj1Id = ((Integer) obj1).intValue();
       int obj2Id = ((Integer) obj2).intValue();
@@ -1874,6 +1881,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   private static class StructIdComparator implements Comparator {
 
+    @Override
     public int compare(Object obj1, Object obj2) {
       int obj1Id = ((Integer) ((Struct) obj1).get("id")).intValue();
       int obj2Id = ((Integer) ((Struct) obj2).get("id")).intValue();

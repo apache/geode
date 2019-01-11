@@ -82,6 +82,7 @@ public class ProductUseLogDUnitTest extends JUnit4CacheTestCase {
 
     assertTrue(logFile.exists());
     int serverPort = (Integer) vm0.invoke(new SerializableCallable("get system") {
+      @Override
       public Object call() {
         getSystem();
         Cache cache = getCache();
@@ -98,6 +99,7 @@ public class ProductUseLogDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableRunnable("create a client") {
+      @Override
       public void run() {
         ClientCache clientCache = new ClientCacheFactory().setPoolSubscriptionEnabled(true)
             .addPoolServer("localhost", serverPort).create();
@@ -109,6 +111,7 @@ public class ProductUseLogDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm0.invoke(new SerializableRunnable("check region") {
+      @Override
       public void run() {
         Region r = getCache().getRegion("myregion");
         Assert.assertNotNull(r.get("somekey"));

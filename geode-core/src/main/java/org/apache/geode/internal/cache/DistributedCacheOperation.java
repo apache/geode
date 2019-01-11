@@ -958,10 +958,12 @@ public abstract class DistributedCacheOperation {
       return true;
     }
 
+    @Override
     public DirectReplyProcessor getDirectReplyProcessor() {
       return processor;
     }
 
+    @Override
     public void registerProcessor() {
       if (processor != null) {
         this.processorId = this.processor.register();
@@ -1483,6 +1485,7 @@ public abstract class DistributedCacheOperation {
       }
     }
 
+    @Override
     public boolean supportsDirectAck() {
       return this.directAck;
     }

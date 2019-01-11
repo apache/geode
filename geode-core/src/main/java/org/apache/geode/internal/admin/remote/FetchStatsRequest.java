@@ -46,6 +46,7 @@ public class FetchStatsRequest extends AdminRequest {
     return FetchStatsResponse.create(dm, this.getSender(), this.statisticsTypeName);
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_STATS_REQUEST;
   }

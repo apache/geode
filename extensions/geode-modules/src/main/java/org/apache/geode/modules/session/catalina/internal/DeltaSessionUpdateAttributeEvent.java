@@ -45,15 +45,18 @@ public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEv
     return this.attributeValue;
   }
 
+  @Override
   public void apply(DeltaSessionInterface session) {
     session.localUpdateAttribute(this.attributeName, this.attributeValue);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.attributeName = DataSerializer.readString(in);
     this.attributeValue = DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.attributeName, out);
     DataSerializer.writeObject(this.attributeValue, out);
@@ -61,6 +64,7 @@ public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEv
 
   public static void registerInstantiator(int id) {
     Instantiator.register(new Instantiator(DeltaSessionUpdateAttributeEvent.class, id) {
+      @Override
       public DataSerializable newInstance() {
         return new DeltaSessionUpdateAttributeEvent();
       }

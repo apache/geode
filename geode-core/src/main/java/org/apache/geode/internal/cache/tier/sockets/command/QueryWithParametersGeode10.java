@@ -26,6 +26,7 @@ public class QueryWithParametersGeode10 extends Query651 {
     return singleton;
   }
 
+  @Override
   protected CollectionType getCollectionType(SelectResults selectResults) {
     return selectResults.getCollectionType();
   }

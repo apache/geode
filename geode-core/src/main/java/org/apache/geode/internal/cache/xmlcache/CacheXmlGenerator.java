@@ -428,6 +428,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Called by the transformer to parse the "input source". We ignore the input source and, instead,
    * generate SAX events to the {@link #setContentHandler ContentHandler}.
    */
+  @Override
   public void parse(InputSource input) throws SAXException {
     Assert.assertTrue(this.handler != null);
 
@@ -1162,6 +1163,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * Compare regions by name
    */
   class RegionComparator implements Comparator {
+    @Override
     public int compare(Object o1, Object o2) {
       return (((Region) o1).getFullPath().compareTo(((Region) o2).getFullPath()));
     }
@@ -2690,59 +2692,72 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Keep track of the content handler for use during {@link #parse(String)}.
    */
+  @Override
   public void setContentHandler(ContentHandler handler) {
     this.handler = handler;
   }
 
+  @Override
   public ContentHandler getContentHandler() {
     return this.handler;
   }
 
+  @Override
   public ErrorHandler getErrorHandler() {
     return this;
   }
 
+  @Override
   public boolean getFeature(String name)
       throws SAXNotRecognizedException, SAXNotSupportedException {
     return false;
   }
 
+  @Override
   public void setFeature(String name, boolean value)
       throws SAXNotRecognizedException, SAXNotSupportedException {
     // nothing
   }
 
+  @Override
   public Object getProperty(String name)
       throws SAXNotRecognizedException, SAXNotSupportedException {
 
     return null;
   }
 
+  @Override
   public void setProperty(String name, Object value)
       throws SAXNotRecognizedException, SAXNotSupportedException {
     // nothing
   }
 
+  @Override
   public void setEntityResolver(EntityResolver resolver) {
     // nothing
   }
 
+  @Override
   public EntityResolver getEntityResolver() {
     return this;
   }
 
+  @Override
   public void setDTDHandler(DTDHandler handler) {
     // nothing
   }
 
+  @Override
   public DTDHandler getDTDHandler() {
     return null;
   }
 
+  @Override
   public void setErrorHandler(ErrorHandler handler) {
     // nothing
   }
 
+  @Override
   public void parse(String systemId) throws IOException, SAXException {
     // nothing
   }

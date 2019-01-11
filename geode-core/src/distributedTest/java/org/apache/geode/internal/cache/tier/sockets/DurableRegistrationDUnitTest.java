@@ -139,6 +139,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
       }
@@ -199,6 +200,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
       }
@@ -267,6 +269,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
       }
@@ -327,6 +330,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 9: Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
       }
@@ -427,6 +431,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
       }
@@ -451,6 +456,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Check server2 got all the interests registered by the durable client.
     server2VM.invoke(new CacheSerializableRunnable("Verify Interests.") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter()
             .info("### Verifying interests registered by DurableClient. ###");
@@ -526,6 +532,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
       }
@@ -555,6 +562,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
       }
@@ -568,6 +576,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Check server2 got all the interests registered by the durable client.
     server2VM.invoke(new CacheSerializableRunnable("Verify Interests.") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter()
             .info("### Verifying interests registered by DurableClient. ###");
@@ -733,10 +742,12 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   private static void checkNumberOfClientProxies(final int expected) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return expected == getNumberOfClientProxies();
       }
 
+      @Override
       public String description() {
         return null;
       }

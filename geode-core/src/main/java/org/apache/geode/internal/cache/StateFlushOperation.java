@@ -470,6 +470,7 @@ public class StateFlushOperation {
       }
     }
 
+    @Override
     public int getDSFID() {
       return STATE_MARKER_MESSAGE;
     }
@@ -551,6 +552,7 @@ public class StateFlushOperation {
       // ensure that datagram channnels are flushed, we need to execute
       // in the waiting pool to avoid blocking those connections
       dm.getWaitingThreadPool().execute(new Runnable() {
+        @Override
         public void run() {
           if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {
             logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "Processing {}", this);
@@ -625,6 +627,7 @@ public class StateFlushOperation {
       dout.writeBoolean(this.isSingleFlushTo);
     }
 
+    @Override
     public int getDSFID() {
       return STATE_STABILIZATION_MESSAGE;
     }

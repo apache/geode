@@ -52,12 +52,14 @@ public class ObjectWithAuthz implements DataSerializable {
     return this.authz;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.val = DataSerializer.readObject(in);
     this.authz = DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
 
     DataSerializer.writeObject(this.val, out);

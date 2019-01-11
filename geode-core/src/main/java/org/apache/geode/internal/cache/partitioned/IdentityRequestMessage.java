@@ -136,6 +136,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
   }
 
 
+  @Override
   public int getDSFID() {
     return PR_IDENTITY_REQUEST_MESSAGE;
   }
@@ -221,6 +222,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
       out.writeInt(this.Id);
     }
 
+    @Override
     public int getDSFID() {
       return PR_IDENTITY_REPLY_MESSAGE;
     }

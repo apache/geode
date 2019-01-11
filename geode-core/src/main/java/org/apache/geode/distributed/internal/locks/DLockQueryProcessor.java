@@ -213,6 +213,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
     private void executeBasicProcess(final DistributionManager dm) {
       final DLockQueryMessage msg = this;
       dm.getWaitingThreadPool().execute(new Runnable() {
+        @Override
         public void run() {
           if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {
             logger.trace(LogMarker.DLS_VERBOSE, "[executeBasicProcess] {}", msg);
@@ -312,6 +313,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
       }
     }
 
+    @Override
     public int getDSFID() {
       return DLOCK_QUERY_MESSAGE;
     }

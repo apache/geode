@@ -114,6 +114,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
    * Given a public id, attempt to resolve it to a DTD. Returns an <code>InputSoure</code> for the
    * DTD.
    */
+  @Override
   public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
 
     if (publicId == null || systemId == null) {
@@ -141,6 +142,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   /**
    * Warnings are ignored
    */
+  @Override
   public void warning(SAXParseException ex) throws SAXException {
 
   }
@@ -148,6 +150,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   /**
    * Throws a {@link org.apache.geode.cache.CacheXmlException}
    */
+  @Override
   public void error(SAXParseException ex) throws SAXException {
     IllegalArgumentException ex2 = new IllegalArgumentException(
         "Error while parsing XML.");
@@ -158,6 +161,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   /**
    * Throws a {@link org.apache.geode.cache.CacheXmlException}
    */
+  @Override
   public void fatalError(SAXParseException ex) throws SAXException {
     IllegalArgumentException ex2 = new IllegalArgumentException(
         "Fatal error while parsing XML.");

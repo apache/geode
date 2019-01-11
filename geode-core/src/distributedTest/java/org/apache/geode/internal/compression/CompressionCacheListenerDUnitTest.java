@@ -102,6 +102,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
    */
   private static final CacheListener<String, String> CACHE_LISTENER =
       new CacheListenerAdapter<String, String>() {
+        @Override
         public void afterCreate(EntryEvent<String, String> event) {
           EntryEventImpl copy = new EntryEventImpl((EntryEventImpl) event);
           copy.copyOffHeapToHeap();
@@ -141,6 +142,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
    */
   private static final CacheWriter<String, String> CACHE_WRITER =
       new CacheWriterAdapter<String, String>() {
+        @Override
         public void beforeCreate(EntryEvent<String, String> event) {
           EntryEventImpl copy = new EntryEventImpl((EntryEventImpl) event);
           copy.copyOffHeapToHeap();

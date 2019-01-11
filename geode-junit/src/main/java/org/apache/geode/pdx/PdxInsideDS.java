@@ -37,6 +37,7 @@ class PdxInsideDS implements DataSerializable {
     this.myString2 = str2;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.myString1, out);
     DataSerializer.writePrimitiveLong(this.myLong, out);
@@ -44,6 +45,7 @@ class PdxInsideDS implements DataSerializable {
     DataSerializer.writeString(this.myString2, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.myString1 = DataSerializer.readString(in);
     this.myLong = DataSerializer.readPrimitiveLong(in);

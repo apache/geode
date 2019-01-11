@@ -71,6 +71,7 @@ public class JtaBeforeCompletionMessage extends TXMessage {
     return true;
   }
 
+  @Override
   public int getDSFID() {
     return JTA_BEFORE_COMPLETION_MESSAGE;
   }

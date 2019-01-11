@@ -78,6 +78,7 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
     return resolveClass().getName() + "<" + this.elementType.resolveClass().getName() + ">";
   }
 
+  @Override
   public boolean allowsDuplicates() {
     Class cls = resolveClass();
     return !Set.class.isAssignableFrom(cls) && !Map.class.isAssignableFrom(cls)
@@ -86,10 +87,12 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
         && !SortedResultSet.class.isAssignableFrom(cls) && !ResultsSet.class.isAssignableFrom(cls);
   }
 
+  @Override
   public ObjectType getElementType() {
     return this.elementType;
   }
 
+  @Override
   public boolean isOrdered() {
     Class cls = resolveClass();
     return List.class.isAssignableFrom(cls) || cls.isArray() || Ordered.class.isAssignableFrom(cls)

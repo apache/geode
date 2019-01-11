@@ -520,6 +520,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   }
 
 
+  @Override
   public boolean isValid() {
     return this.isValid;
   }

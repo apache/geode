@@ -31,6 +31,7 @@ public abstract class AbstractLRURegionEntry extends AbstractRegionEntry impleme
   // Do not add any instance fields to this class.
   // Instead add them to the LRU section of LeafRegionEntry.cpp.
 
+  @Override
   protected void appendToEvictionList(EvictionList evictionList) {
     if (evictionList != null) {
       evictionList.appendEntry(this);

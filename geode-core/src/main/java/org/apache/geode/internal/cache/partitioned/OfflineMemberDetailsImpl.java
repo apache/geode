@@ -40,12 +40,14 @@ public class OfflineMemberDetailsImpl
 
 
 
+  @Override
   public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
     return offlineMembers[bucketId];
   }
 
 
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int offlineMembersLength = in.readInt();
     this.offlineMembers = new Set[offlineMembersLength];
@@ -62,6 +64,7 @@ public class OfflineMemberDetailsImpl
   }
 
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(offlineMembers.length);
     for (Set<PersistentMemberID> set : offlineMembers) {

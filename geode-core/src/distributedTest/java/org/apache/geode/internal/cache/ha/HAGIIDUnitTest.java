@@ -254,10 +254,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
       // have a dead
       // server
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return r.getEntry("key-1").getValue().equals("key-1");
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -267,10 +269,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
       // have a dead
       // server
       ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return r.getEntry("key-2").getValue().equals("key-2");
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -282,10 +286,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
       // have a dead
       // server
       ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return r.getEntry("key-3").getValue().equals("key-3");
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -301,10 +307,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
     // Check whether just the 3 expected updates arrive.
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return checker.gotFirst();
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -312,10 +320,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return checker.gotSecond();
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -323,10 +333,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return checker.gotThird();
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -344,10 +356,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
       // we have a
       // dead server
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return r.getEntry("key-1").getValue().equals("value-1");
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -358,10 +372,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
       // we have a
       // dead server
       ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return r.getEntry("key-2").getValue().equals("value-2");
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -373,10 +389,12 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
       // we have a
       // dead server
       ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return r.getEntry("key-3").getValue().equals("value-3");
         }
 
+        @Override
         public String description() {
           return null;
         }

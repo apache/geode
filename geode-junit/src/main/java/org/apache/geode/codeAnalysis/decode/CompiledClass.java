@@ -205,6 +205,7 @@ public class CompiledClass implements Comparable {
     return ((CpClass) constant_pool[super_class]).className(this);
   }
 
+  @Override
   public int compareTo(Object other) {
     if (!(other instanceof CompiledClass)) {
       return -1;

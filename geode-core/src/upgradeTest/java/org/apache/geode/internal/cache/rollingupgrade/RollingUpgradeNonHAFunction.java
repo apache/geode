@@ -112,6 +112,7 @@ public class RollingUpgradeNonHAFunction extends RollingUpgrade2DUnitTestBase {
 
   private CacheSerializableRunnable invokeAssertFunctionResults(final String queryString) {
     return new CacheSerializableRunnable("execute: assertQueryResults") {
+      @Override
       public void run2() {
         try {
           invokeAssertFunctionResult(RollingUpgrade2DUnitTestBase.cache, queryString);

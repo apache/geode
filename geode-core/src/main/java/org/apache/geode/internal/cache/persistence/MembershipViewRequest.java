@@ -146,6 +146,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
     }
   }
 
+  @Override
   public int getDSFID() {
     return PERSISTENT_MEMBERSHIP_VIEW_REQUEST;
   }

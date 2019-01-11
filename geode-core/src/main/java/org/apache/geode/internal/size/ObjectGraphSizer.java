@@ -123,6 +123,7 @@ public class ObjectGraphSizer {
       this.filter = filter;
     }
 
+    @Override
     public boolean visit(Object parent, Object object) {
       if (!filter.accept(parent, object)) {
         return false;
@@ -191,6 +192,7 @@ public class ObjectGraphSizer {
 
 
 
+      @Override
       public int compareTo(HistogramEntry o) {
         int diff = size.compareTo(o.size);
         if (diff == 0) {
@@ -214,6 +216,7 @@ public class ObjectGraphSizer {
       this.filter = filter;
     }
 
+    @Override
     public boolean visit(Object parent, Object object) {
       if (!filter.accept(parent, object)) {
         return false;

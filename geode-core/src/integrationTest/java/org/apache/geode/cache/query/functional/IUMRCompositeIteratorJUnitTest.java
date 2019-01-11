@@ -234,11 +234,13 @@ public class IUMRCompositeIteratorJUnitTest {
     ArrayList indexesUsed = new ArrayList();
     String IndexName;
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       IndexName = index.getName();
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;

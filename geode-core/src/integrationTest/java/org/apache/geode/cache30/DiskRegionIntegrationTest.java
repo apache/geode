@@ -181,6 +181,7 @@ public class DiskRegionIntegrationTest {
   @Test
   public void testCacheEvents() {
     TestCacheListener listener = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent event) {}
     };
 
@@ -190,6 +191,7 @@ public class DiskRegionIntegrationTest {
     assertTrue(listener.wasInvoked());
 
     listener = new TestCacheListener() {
+      @Override
       public void close2() {}
     };
 
@@ -200,6 +202,7 @@ public class DiskRegionIntegrationTest {
     assertFalse(listener.wasInvoked());
 
     listener = new TestCacheListener() {
+      @Override
       public void afterUpdate2(EntryEvent event) {
         assertEquals(null, event.getOldValue());
         assertEquals(false, event.isOldValueAvailable());
@@ -549,10 +552,12 @@ public class DiskRegionIntegrationTest {
   @Test
   public void testLRUCacheLoader() throws CacheException {
     region.getAttributesMutator().setCacheLoader(new CacheLoader() {
+      @Override
       public Object load(LoaderHelper helper) throws CacheLoaderException {
         return "LOADED VALUE";
       }
 
+      @Override
       public void close() {}
 
     });

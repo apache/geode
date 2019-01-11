@@ -150,6 +150,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
       getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           Properties config = new Properties();
           config.setProperty(ROLES, rolesProp[vm]);
@@ -182,6 +183,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // create thread to call waitForRequiredRoles
     Runnable runWaitForRequiredRoles = new Runnable() {
+      @Override
       public void run() {
         startTestWaitForRequiredRoles = true;
         try {
@@ -198,10 +200,12 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     Thread threadA = new Thread(group, runWaitForRequiredRoles);
     threadA.start();
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return RequiredRolesDUnitTest.this.startTestWaitForRequiredRoles;
       }
 
+      @Override
       public String description() {
         return "waiting for test start";
       }
@@ -212,6 +216,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // create region in vms and assert impact on threadA
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(DISTRIBUTED_ACK);
@@ -240,6 +245,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // assert loss is fired...
     SerializableRunnable destroy = new CacheSerializableRunnable("Destroy Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(name);
         region.localDestroyRegion();
@@ -283,10 +289,12 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // assert thread is waiting
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return RequiredRolesDUnitTest.this.startTestWaitForRequiredRoles;
       }
 
+      @Override
       public String description() {
         return "waiting for test start";
       }
@@ -329,6 +337,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           Properties config = new Properties();
           config.setProperty(ROLES, rolesProp[vm]);
@@ -365,6 +374,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     }
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory fac = new AttributesFactory();
         fac.setScope(Scope.DISTRIBUTED_ACK);
@@ -402,6 +412,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     }
 
     SerializableRunnable destroy = new CacheSerializableRunnable("Destroy Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(name);
         region.localDestroyRegion();
@@ -438,6 +449,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
   }
 
   private final transient ThreadGroup group = new ThreadGroup("RequiredRolesDUnitTest Threads") {
+    @Override
     public void uncaughtException(Thread t, Throwable e) {
       if (e instanceof VirtualMachineError) {
         SystemFailure.setFailure((VirtualMachineError) e); // don't throw

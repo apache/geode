@@ -155,6 +155,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
   public void testTwoMembersSameName() {
     disconnectFromDS(); // or assertion on # members fails when run-dunit-tests
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Properties config = new Properties();
         config.setProperty(NAME, "name0");
@@ -162,6 +163,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       }
     });
     Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Properties config = new Properties();
         config.setProperty(NAME, "name1");
@@ -169,6 +171,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       }
     });
     Host.getHost(0).getVM(2).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Properties config = new Properties();
         config.setProperty(NAME, "name0");
@@ -194,6 +197,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           // disconnectFromDS();
           Properties config = new Properties();
@@ -207,6 +211,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           InternalDistributedSystem sys = getSystem();
           assertNotNull(sys.getConfig().getRoles());
@@ -321,6 +326,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < 4; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           // disconnectFromDS();
           Properties config = new Properties();
@@ -334,6 +340,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < 4; i++) {
       final int vm = i;
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           InternalDistributedSystem sys = getSystem();
           final String expectedMyGroup = makeGroupsString(vm);
@@ -422,6 +429,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     final DistributedMember member1 = createSystemAndGetId(vm1, "name1");
     final DistributedMember member2 = createSystemAndGetId(vm2, "name2");
     vm0.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         DistributedSystem system = getSystem();
         assertEquals(member0, system.findDistributedMember("name0"));

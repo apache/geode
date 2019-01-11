@@ -50,6 +50,7 @@ public class RegionAttributesResponse extends AdminResponse {
     return this.attributes;
   }
 
+  @Override
   public int getDSFID() {
     return REGION_ATTRIBUTES_RESPONSE;
   }

@@ -3202,14 +3202,17 @@ public class ConnectionStats implements MessageStats {
     this.sendStats.close();
   }
 
+  @Override
   public void incReceivedBytes(long v) {
     this.stats.incLong(receivedBytesId, v);
   }
 
+  @Override
   public void incSentBytes(long v) {
     this.stats.incLong(sentBytesId, v);
   }
 
+  @Override
   public void incMessagesBeingReceived(int bytes) {
     stats.incInt(messagesBeingReceivedId, 1);
     if (bytes > 0) {
@@ -3217,6 +3220,7 @@ public class ConnectionStats implements MessageStats {
     }
   }
 
+  @Override
   public void decMessagesBeingReceived(int bytes) {
     stats.incInt(messagesBeingReceivedId, -1);
     if (bytes > 0) {

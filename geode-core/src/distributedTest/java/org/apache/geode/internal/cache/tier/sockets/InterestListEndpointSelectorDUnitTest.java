@@ -28,6 +28,7 @@ public class InterestListEndpointSelectorDUnitTest extends InterestListEndpointD
     super();
   }
 
+  @Override
   protected int getMaxThreads() {
     return 2;
   }

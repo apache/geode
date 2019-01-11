@@ -236,10 +236,12 @@ public class AutoSerializableJUnitTest {
       this.v = v;
     }
 
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
       out.writeInt(v);
     }
 
+    @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
       this.v = in.readInt();
     }
@@ -309,6 +311,7 @@ public class AutoSerializableJUnitTest {
   public static class MyComparator implements Comparator, PdxSerializerObject {
     public MyComparator() {}
 
+    @Override
     public int compare(Object o1, Object o2) {
       return 0;
     }

@@ -51,6 +51,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS = false;
         System.setProperty(DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, "false");
@@ -62,6 +63,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
   protected final void postSetUpPersistentPartitionedRegionTestBase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
 
+      @Override
       public void run() {
         TXManagerImpl.ALLOW_PERSISTENT_TRANSACTIONS = true;
         System.setProperty(DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, "true");
@@ -116,6 +118,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
       final String value) {
     SerializableRunnable createData = new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
 
@@ -141,6 +144,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
     LogWriterUtils.getLogWriter().info("creating runnable to create data for region " + regionName);
     SerializableRunnable createData = new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         LogWriterUtils.getLogWriter().info("getting region " + regionName);
@@ -173,6 +177,7 @@ public class PersistentPartitionedRegionWithTransactionDUnitTest
       final String regionName) {
     SerializableRunnable checkData = new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         LogWriterUtils.getLogWriter().info("checking data in " + regionName);

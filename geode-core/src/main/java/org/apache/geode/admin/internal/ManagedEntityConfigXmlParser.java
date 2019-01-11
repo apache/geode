@@ -106,6 +106,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
   ////////////////////// Instance Methods //////////////////////
 
+  @Override
   public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
       throws SAXException {
 
@@ -164,6 +165,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
     }
   }
 
+  @Override
   public void endElement(String namespaceURI, String localName, String qName) throws SAXException {
 
     if (qName.equals(DISTRIBUTED_SYSTEM)) {
@@ -458,6 +460,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
    * Long strings in XML files may generate multiple <code>characters</code> callbacks. Coalesce
    * multiple callbacks into one big string by using a <code>StringBuffer</code>. See bug 32122.
    */
+  @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
 
     Object top = stack.peek();
@@ -476,20 +479,28 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
   ////////// Inherited methods that don't do anything //////////
 
+  @Override
   public void setDocumentLocator(Locator locator) {}
 
+  @Override
   public void startDocument() throws SAXException {}
 
+  @Override
   public void endDocument() throws SAXException {}
 
+  @Override
   public void startPrefixMapping(String prefix, String uri) throws SAXException {}
 
+  @Override
   public void endPrefixMapping(String prefix) throws SAXException {}
 
+  @Override
   public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {}
 
+  @Override
   public void processingInstruction(String target, String data) throws SAXException {}
 
+  @Override
   public void skippedEntity(String name) throws SAXException {}
 
   /////////////////////// Inner Classes ///////////////////////

@@ -73,6 +73,7 @@ public class GraphID implements Comparable<GraphID>, Serializable {
     return true;
   }
 
+  @Override
   public int compareTo(GraphID o) {
     if (o == null) {
       return -1;

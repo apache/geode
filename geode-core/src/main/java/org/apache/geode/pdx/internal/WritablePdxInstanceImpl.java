@@ -111,6 +111,7 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements Writable
     return new PdxReaderImpl(this);
   }
 
+  @Override
   public void setField(String fieldName, Object value) {
     PdxField f = getPdxType().getPdxField(fieldName);
     if (f == null) {

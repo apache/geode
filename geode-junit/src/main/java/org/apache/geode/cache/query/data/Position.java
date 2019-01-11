@@ -114,6 +114,7 @@ public class Position implements Serializable, DataSerializable, Comparable {
     return pid;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.avg20DaysVol = in.readLong();
     this.bondRating = DataSerializer.readString(in);
@@ -134,6 +135,7 @@ public class Position implements Serializable, DataSerializable, Comparable {
     this.portfolioId = in.readInt();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(this.avg20DaysVol);
     DataSerializer.writeString(this.bondRating, out);
@@ -155,6 +157,7 @@ public class Position implements Serializable, DataSerializable, Comparable {
   }
 
 
+  @Override
   public int compareTo(Object o) {
     if (o == this) {
       return 0;

@@ -48,11 +48,13 @@ public class DiskRegCbkChkJUnitTest extends DiskRegionTestingBase {
 
     // testing create callbacks
     region.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         intoCreateAfterCbk = true;
       }
     });
     region.getAttributesMutator().setCacheWriter(new CacheWriterAdapter() {
+      @Override
       public void beforeCreate(EntryEvent event) {
         region.clear();
       }
@@ -62,11 +64,13 @@ public class DiskRegCbkChkJUnitTest extends DiskRegionTestingBase {
 
     // testing update callbacks
     region.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterUpdate(EntryEvent event) {
         intoUpdateAfterCbk = true;
       }
     });
     region.getAttributesMutator().setCacheWriter(new CacheWriterAdapter() {
+      @Override
       public void beforeUpdate(EntryEvent event) {
         region.clear();
       }
@@ -77,11 +81,13 @@ public class DiskRegCbkChkJUnitTest extends DiskRegionTestingBase {
 
     // testing destroy callbacks
     region.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterDestroy(EntryEvent event) {
         intoDestroyAfterCbk = true;
       }
     });
     region.getAttributesMutator().setCacheWriter(new CacheWriterAdapter() {
+      @Override
       public void beforeDestroy(EntryEvent event) {
         region.clear();
       }

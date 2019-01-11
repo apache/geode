@@ -1666,6 +1666,7 @@ public class Connection implements Runnable {
    * in order to read non-NIO socket-based messages we need to have a thread actively trying to grab
    * bytes out of the sockets input queue. This is that thread.
    */
+  @Override
   public void run() {
     this.readerThread = Thread.currentThread();
     this.readerThread.setName(p2pReaderName());

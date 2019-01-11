@@ -29,6 +29,7 @@ class StreamGobbler implements Runnable {
     this.consumeInputLine = consumeInputLine;
   }
 
+  @Override
   public void run() {
     try {
       new BufferedReader(new InputStreamReader(inputStream)).lines().forEach(consumeInputLine);

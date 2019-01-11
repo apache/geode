@@ -245,6 +245,7 @@ public class JAXBServiceTest {
       this.id = id;
     }
 
+    @Override
     public String getId() {
       return id;
     }
@@ -277,6 +278,7 @@ public class JAXBServiceTest {
       this.id = id;
     }
 
+    @Override
     public String getId() {
       return id;
     }

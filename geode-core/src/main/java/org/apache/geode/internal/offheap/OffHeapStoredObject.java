@@ -754,6 +754,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
     return null;
   }
 
+  @Override
   public StoredObject slice(int position, int limit) {
     return new OffHeapStoredObjectSlice(this, position, limit);
   }

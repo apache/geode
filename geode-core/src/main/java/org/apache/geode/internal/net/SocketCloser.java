@@ -185,6 +185,7 @@ public class SocketCloser {
           doItInline = true;
         } else {
           submittedTask = asyncExecute(address, new Runnable() {
+            @Override
             public void run() {
               Thread.currentThread().setName("AsyncSocketCloser for " + address);
               try {

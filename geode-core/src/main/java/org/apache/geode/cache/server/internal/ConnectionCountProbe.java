@@ -47,6 +47,7 @@ public class ConnectionCountProbe extends ServerLoadProbeAdapter
   /**
    * Get a loads object representing the number of connections to this cache server
    */
+  @Override
   public ServerLoad getLoad(ServerMetrics metrics) {
     float load = metrics.getConnectionCount() / (float) metrics.getMaxConnections();
     int queueLoad = metrics.getSubscriptionConnectionCount();
@@ -55,10 +56,12 @@ public class ConnectionCountProbe extends ServerLoadProbeAdapter
     return new ServerLoad(load, loadPerConnection, queueLoad, 1);
   }
 
+  @Override
   public Properties getConfig() {
     return new Properties();
   }
 
+  @Override
   public void init(Properties props) {}
 
   @Override
@@ -77,10 +80,12 @@ public class ConnectionCountProbe extends ServerLoadProbeAdapter
     return "ConnectionCountProbe";
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // do nothing, we have no state
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // do nothing, we have no state
   }

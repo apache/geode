@@ -31,6 +31,7 @@ public class CustomerFixedPartitionResolver implements FixedPartitionResolver, D
 
   public CustomerFixedPartitionResolver() {}
 
+  @Override
   public String getPartitionName(EntryOperation opDetails, Set allAvailablePartitions) {
 
     int customerID = -1;
@@ -61,6 +62,7 @@ public class CustomerFixedPartitionResolver implements FixedPartitionResolver, D
 
   }
 
+  @Override
   public Serializable getRoutingObject(EntryOperation opDetails) {
 
     Serializable routingbject = null;
@@ -80,20 +82,24 @@ public class CustomerFixedPartitionResolver implements FixedPartitionResolver, D
   }
 
 
+  @Override
   public String getName() {
     return "CustomerFixedPartitionResolver";
   }
 
+  @Override
   public void close() {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // TODO Auto-generated method stub
 

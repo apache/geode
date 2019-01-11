@@ -255,6 +255,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
   }
 
+  @Override
   public void allocatedResourceType(ResourceType resourceType) {
     if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
       logger.trace(LogMarker.STATISTICS_VERBOSE,
@@ -319,6 +320,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
   }
 
+  @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
       justification = "This is only for debugging and there is never more than one instance being traced because there is only one stat sampler.")
@@ -373,6 +375,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
   }
 
+  @Override
   public void destroyedResourceInstance(ResourceInstance resourceInstance) {
     if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
       logger.trace(LogMarker.STATISTICS_VERBOSE,
@@ -487,6 +490,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
     }
   }
 
+  @Override
   public void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances) {
     if (logger.isTraceEnabled(LogMarker.STATISTICS_VERBOSE)) {
       logger.trace(LogMarker.STATISTICS_VERBOSE,
@@ -794,71 +798,85 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
       this.dataOut.close();
     }
 
+    @Override
     public void write(int b) throws IOException {
       throw new RuntimeException(
           "method unimplemented");
     }
 
+    @Override
     public void write(byte[] b, int off, int len) throws IOException {
       throw new RuntimeException(
           "method unimplemented");
     }
 
+    @Override
     public void write(byte[] b) throws IOException {
       throw new RuntimeException(
           "method unimplemented");
     }
 
+    @Override
     public void writeBytes(String v) throws IOException {
       throw new RuntimeException(
           "method unimplemented");
     }
 
+    @Override
     public void writeChar(int v) throws IOException {
       throw new RuntimeException(
           "method unimplemented");
     }
 
+    @Override
     public void writeChars(String v) throws IOException {
       throw new RuntimeException(
           "method unimplemented");
     }
 
+    @Override
     public void writeDouble(double v) throws IOException {
       throw new RuntimeException(
           "method unimplemented");
     }
 
+    @Override
     public void writeFloat(float v) throws IOException {
       throw new RuntimeException(
           "method unimplemented");
     }
 
+    @Override
     public void writeBoolean(boolean v) throws IOException {
       this.dataOut.writeBoolean(v);
       this.bytesWritten += 1;
     }
 
+    @Override
     public void writeByte(int v) throws IOException {
       this.dataOut.writeByte(v);
       this.bytesWritten += 1;
     }
 
+    @Override
     public void writeShort(int v) throws IOException {
       this.dataOut.writeShort(v);
       this.bytesWritten += 2;
     }
 
+    @Override
     public void writeInt(int v) throws IOException {
       this.dataOut.writeInt(v);
       this.bytesWritten += 4;
     }
 
+    @Override
     public void writeLong(long v) throws IOException {
       this.dataOut.writeLong(v);
       this.bytesWritten += 8;
     }
 
+    @Override
     public void writeUTF(String v) throws IOException {
       this.dataOut.writeUTF(v);
       this.bytesWritten += v.length() + 2; // this is the minimum. The max is v.size()*3 +2

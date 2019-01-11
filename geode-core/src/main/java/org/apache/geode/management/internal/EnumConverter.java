@@ -30,10 +30,12 @@ public class EnumConverter<T extends Enum<T>> extends OpenTypeConverter {
     this.enumClass = enumClass;
   }
 
+  @Override
   Object toNonNullOpenValue(Object value) {
     return ((Enum) value).name();
   }
 
+  @Override
   public Object fromNonNullOpenValue(Object value) throws InvalidObjectException {
     try {
       return Enum.valueOf(enumClass, (String) value);

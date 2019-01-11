@@ -332,10 +332,12 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     return getOptimizedByteArrayForEventID(getThreadID(), getSequenceID());
   }
 
+  @Override
   public int getDSFID() {
     return EVENT_ID;
   }
 
+  @Override
   public void toData(DataOutput dop) throws IOException {
     Version version = InternalDataSerializer.getVersionForDataStream(dop);
     // if we are sending to old clients we need to reserialize the ID
@@ -364,6 +366,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
         dop);
   }
 
+  @Override
   public void fromData(DataInput di) throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
@@ -380,6 +383,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     this.sequenceID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
   }
 
+  @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     DataSerializer.writeByteArray(this.membershipID, out);
     DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
@@ -387,6 +391,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     out.writeInt(this.bucketID);
   }
 
+  @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(in);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(in));

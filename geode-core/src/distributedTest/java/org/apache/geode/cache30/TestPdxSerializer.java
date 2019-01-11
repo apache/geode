@@ -25,19 +25,23 @@ public class TestPdxSerializer implements PdxSerializer, Declarable2 {
 
   private Properties properties;
 
+  @Override
   public boolean toData(Object o, PdxWriter out) {
     return false;
   }
 
+  @Override
   public Object fromData(Class<?> clazz, PdxReader in) {
     return null;
   }
 
+  @Override
   public void init(Properties props) {
     this.properties = props;
 
   }
 
+  @Override
   public Properties getConfig() {
     return properties;
   }

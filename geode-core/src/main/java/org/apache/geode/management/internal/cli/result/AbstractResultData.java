@@ -60,10 +60,12 @@ public abstract class AbstractResultData implements ResultData {
     this.contentObject = gfJsonObject.getJSONObject(RESULT_CONTENT);
   }
 
+  @Override
   public GfJsonObject getGfJsonObject() {
     return gfJsonObject;
   }
 
+  @Override
   public abstract String getType();
 
   @Override

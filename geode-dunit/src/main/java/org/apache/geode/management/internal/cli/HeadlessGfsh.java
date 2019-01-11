@@ -203,6 +203,7 @@ public class HeadlessGfsh implements ResultHandler {
       this.handler = handler;
     }
 
+    @Override
     protected void handleExecutionResult(Object result) {
       if (!result.equals(ERROR_RESULT)) {
         super.handleExecutionResult(result);
@@ -225,6 +226,7 @@ public class HeadlessGfsh implements ResultHandler {
       stop();
     }
 
+    @Override
     public void stop() {
       super.stop();
       stopCalledThroughAPI = true;

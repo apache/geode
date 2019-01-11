@@ -45,6 +45,7 @@ public class FaultyDelta implements Delta, DataSerializable {
 
   protected byte deltaBits = 0x0;
 
+  @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     try {
       byte deltaBits = DataSerializer.readByte(in);
@@ -78,10 +79,12 @@ public class FaultyDelta implements Delta, DataSerializable {
     }
   }
 
+  @Override
   public boolean hasDelta() {
     return this.hasDelta;
   }
 
+  @Override
   public void toDelta(DataOutput out) throws IOException {
     try {
       DataSerializer.writeByte(this.deltaBits, out);
@@ -116,11 +119,13 @@ public class FaultyDelta implements Delta, DataSerializable {
 
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.intVal = DataSerializer.readPrimitiveInt(in);
     this.bigObj = DataSerializer.readByteArray(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writePrimitiveInt(this.intVal, out);
     DataSerializer.writeByteArray(this.bigObj, out);

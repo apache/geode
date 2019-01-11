@@ -27,6 +27,7 @@ public class ASTLimit extends GemFireAST {
     super(t);
   }
 
+  @Override
   public void compile(QCompiler compiler) {
     super.compile(compiler);
     compiler.compileLimit(this.getText());

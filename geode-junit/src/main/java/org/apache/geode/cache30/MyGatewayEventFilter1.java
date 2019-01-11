@@ -28,29 +28,35 @@ public class MyGatewayEventFilter1 implements GatewayEventFilter, Declarable2 {
     this.resolveProps = new Properties();
   }
 
+  @Override
   public void close() {
 
   }
 
+  @Override
   public Properties getConfig() {
     return this.resolveProps;
   }
 
+  @Override
   public void init(Properties props) {
     this.resolveProps.putAll(props);
   }
 
 
+  @Override
   public boolean beforeEnqueue(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
     return false;
   }
 
+  @Override
   public boolean beforeTransmit(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
     return false;
   }
 
+  @Override
   public void afterAcknowledgement(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
 

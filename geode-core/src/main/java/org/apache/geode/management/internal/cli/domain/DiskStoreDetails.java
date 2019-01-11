@@ -158,10 +158,12 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
     this.compactionThreshold = compactionThreshold;
   }
 
+  @Override
   public UUID getId() {
     return id;
   }
 
+  @Override
   public void setId(final UUID id) {
     this.id = id;
   }
@@ -291,6 +293,7 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
     return regionDetailsSet.add(regionDetails);
   }
 
+  @Override
   public int compareTo(final DiskStoreDetails diskStoreDetails) {
     int comparisonValue = compare(getMemberName(), diskStoreDetails.getMemberName());
     comparisonValue = (comparisonValue != 0 ? comparisonValue
@@ -325,6 +328,7 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
     return hashValue;
   }
 
+  @Override
   public Iterator<DiskDirDetails> iterator() {
     return Collections.unmodifiableSet(diskDirDetailsSet).iterator();
   }
@@ -403,6 +407,7 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
       return id;
     }
 
+    @Override
     public int compareTo(final AsyncEventQueueDetails asyncEventQueueDetails) {
       return getId().compareTo(asyncEventQueueDetails.getId());
     }
@@ -466,6 +471,7 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
       return port;
     }
 
+    @Override
     public int compareTo(final CacheServerDetails cacheServerDetails) {
       final int valueOfBindAddressComparison =
           getBindAddress().compareTo(cacheServerDetails.getBindAddress());
@@ -533,6 +539,7 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
       return size;
     }
 
+    @Override
     public int compareTo(final DiskDirDetails diskDirDetails) {
       return getAbsolutePath().compareTo(diskDirDetails.getAbsolutePath());
     }
@@ -596,6 +603,7 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
       this.persistent = persistent;
     }
 
+    @Override
     public int compareTo(final GatewayDetails gatewayDetails) {
       return getId().compareTo(gatewayDetails.getId());
     }
@@ -672,6 +680,7 @@ public class DiskStoreDetails implements Comparable<DiskStoreDetails>, MutableId
       this.persistent = persistent;
     }
 
+    @Override
     public int compareTo(final RegionDetails regionDetails) {
       return getFullPath().compareTo(regionDetails.getFullPath());
     }

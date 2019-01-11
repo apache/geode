@@ -60,10 +60,12 @@ public class SequenceLoggerImpl implements SequenceLogger {
     }
   }
 
+  @Override
   public boolean isEnabled(GraphType type) {
     return enabledTypes.contains(type);
   }
 
+  @Override
   public void logTransition(GraphType type, Object graphName, Object edgeName, Object state,
       Object source, Object dest) {
     if (isEnabled(type)) {
@@ -72,6 +74,7 @@ public class SequenceLoggerImpl implements SequenceLogger {
     }
   }
 
+  @Override
   public void flush() throws InterruptedException {
     FlushToken token = new FlushToken();
     edges.add(token);

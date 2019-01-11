@@ -55,6 +55,7 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
   private static final long serialVersionUID = 1L;
 
   protected SerializableRunnable createIndex = new SerializableRunnable("createIndex") {
+    @Override
     public void run() {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       ((LuceneIndexFactoryImpl) luceneService.createIndexFactory()).addField("text")

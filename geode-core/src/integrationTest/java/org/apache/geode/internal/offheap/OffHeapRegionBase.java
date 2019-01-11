@@ -169,10 +169,12 @@ public abstract class OffHeapRegionBase {
       assertEquals(0, ma.getUsedMemory());
 
       final WaitCriterion waitForDisconnect = new WaitCriterion() {
+        @Override
         public boolean done() {
           return gfc.isClosed();
         }
 
+        @Override
         public String description() {
           return "Waiting for disconnect to complete";
         }

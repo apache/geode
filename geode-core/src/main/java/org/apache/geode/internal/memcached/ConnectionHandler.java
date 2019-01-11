@@ -52,6 +52,7 @@ public class ConnectionHandler implements Runnable {
     }
   }
 
+  @Override
   public void run() {
     RequestReader request = new RequestReader(this.socket, this.protocol);
     while (!Thread.currentThread().isInterrupted()) {

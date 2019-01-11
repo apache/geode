@@ -34,18 +34,22 @@ public class ServerMetricsImpl implements ServerMetrics {
     this.maxConnections = maxConnections;
   }
 
+  @Override
   public int getClientCount() {
     return clientCount.get();
   }
 
+  @Override
   public int getConnectionCount() {
     return connectionCount.get();
   }
 
+  @Override
   public int getMaxConnections() {
     return maxConnections;
   }
 
+  @Override
   public int getSubscriptionConnectionCount() {
     return queueCount.get();
   }

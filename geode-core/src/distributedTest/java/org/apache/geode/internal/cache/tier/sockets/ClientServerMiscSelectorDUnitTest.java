@@ -29,6 +29,7 @@ public class ClientServerMiscSelectorDUnitTest extends ClientServerMiscDUnitTest
     super();
   }
 
+  @Override
   protected int getMaxThreads() {
     return 2;
   }

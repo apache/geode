@@ -57,11 +57,13 @@ public class QueueConnectionImpl implements Connection {
     this.failureTracker = failureTracker;
   }
 
+  @Override
   public void close(boolean keepAlive) throws Exception {
     throw new UnsupportedOperationException(
         "Subscription connections should only be closed by subscription manager");
   }
 
+  @Override
   public void emergencyClose() {
     Connection conn = (Connection) clientToServerConn.getAndSet(null);
     if (conn != null) {
@@ -79,6 +81,7 @@ public class QueueConnectionImpl implements Connection {
     }
   }
 
+  @Override
   public void destroy() {
     Connection conn = (Connection) this.clientToServerConn.get();
     if (conn != null) {
@@ -123,6 +126,7 @@ public class QueueConnectionImpl implements Connection {
     return this.updater;
   }
 
+  @Override
   public boolean isDestroyed() {
     return clientToServerConn.get() == null;
   }
@@ -131,38 +135,47 @@ public class QueueConnectionImpl implements Connection {
     return shouldDestroy;
   }
 
+  @Override
   public ByteBuffer getCommBuffer() throws SocketException {
     return getConnection().getCommBuffer();
   }
 
+  @Override
   public Endpoint getEndpoint() {
     return this.endpoint;
   }
 
+  @Override
   public ServerQueueStatus getQueueStatus() {
     return getConnection().getQueueStatus();
   }
 
+  @Override
   public ServerLocation getServer() {
     return getEndpoint().getLocation();
   }
 
+  @Override
   public Socket getSocket() {
     return getConnection().getSocket();
   }
 
+  @Override
   public OutputStream getOutputStream() {
     return getConnection().getOutputStream();
   }
 
+  @Override
   public InputStream getInputStream() {
     return getConnection().getInputStream();
   }
 
+  @Override
   public ConnectionStats getStats() {
     return getEndpoint().getStats();
   }
 
+  @Override
   public Object execute(Op op) throws Exception {
     return getConnection().execute(op);
   }
@@ -202,22 +215,27 @@ public class QueueConnectionImpl implements Connection {
     ConnectionImpl.loadEmergencyClasses();
   }
 
+  @Override
   public short getWanSiteVersion() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public int getDistributedSystemId() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void setWanSiteVersion(short wanSiteVersion) {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void setConnectionID(long id) {
     ((Connection) this.clientToServerConn.get()).setConnectionID(id);
   }
 
+  @Override
   public long getConnectionID() {
     return ((Connection) this.clientToServerConn.get()).getConnectionID();
   }

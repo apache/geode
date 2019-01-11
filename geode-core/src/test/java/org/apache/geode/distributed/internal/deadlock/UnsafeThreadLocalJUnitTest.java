@@ -48,6 +48,7 @@ public class UnsafeThreadLocalJUnitTest {
     final CountDownLatch localSet = new CountDownLatch(1);
 
     Thread test = new Thread() {
+      @Override
       public void run() {
         unsafeThreadLocal.set("hello");
         localSet.countDown();

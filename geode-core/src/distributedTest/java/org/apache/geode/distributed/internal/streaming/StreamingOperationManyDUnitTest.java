@@ -77,6 +77,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
       super(sys);
     }
 
+    @Override
     protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
       TestRequestStreamingMessageManyProviderNoExceptions msg =
           new TestRequestStreamingMessageManyProviderNoExceptions();
@@ -85,6 +86,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
       return msg;
     }
 
+    @Override
     protected synchronized boolean processData(List objects, InternalDistributedMember sender,
         int sequenceNum, boolean lastInSequence) {
       LogWriter logger = this.sys.getLogWriter();
@@ -208,6 +210,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
     private int nextInt = -10;
     private int count = 0;
 
+    @Override
     protected Object getNextReplyObject() throws ReplyException {
       if (++count > NUM_INTEGERS) {
         return Token.END_OF_STREAM;
@@ -216,6 +219,7 @@ public class StreamingOperationManyDUnitTest extends JUnit4DistributedTestCase {
       return new Integer(nextInt);
     }
 
+    @Override
     public int getDSFID() {
       return NO_FIXED_ID;
     }

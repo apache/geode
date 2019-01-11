@@ -208,12 +208,15 @@ public class TXFarSideCMTracker {
     final Object lock = new Object();
     final MembershipListener memEar = new MembershipListener() {
       // MembershipListener implementation
+      @Override
       public void memberJoined(DistributionManager distributionManager,
           InternalDistributedMember id) {}
 
+      @Override
       public void memberSuspect(DistributionManager distributionManager,
           InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {}
 
+      @Override
       public void memberDeparted(DistributionManager distributionManager,
           InternalDistributedMember id, boolean crashed) {
         if (memberId.equals(id)) {
@@ -223,6 +226,7 @@ public class TXFarSideCMTracker {
         }
       }
 
+      @Override
       public void quorumLost(DistributionManager distributionManager,
           Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
     };
@@ -337,6 +341,7 @@ public class TXFarSideCMTracker {
   // TODO we really need to keep around only one msg for each thread on a client
   private Map<TXId, TXCommitMessage> failoverMap =
       Collections.synchronizedMap(new LinkedHashMap<TXId, TXCommitMessage>() {
+        @Override
         protected boolean removeEldestEntry(Entry eldest) {
           return size() > TXManagerImpl.FAILOVER_TX_MAP_SIZE;
         };

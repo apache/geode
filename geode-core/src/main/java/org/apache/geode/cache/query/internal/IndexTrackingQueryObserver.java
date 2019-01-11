@@ -44,6 +44,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   private static final ThreadLocal lastIndexUsed = new ThreadLocal();
   private volatile TestHook th;
 
+  @Override
   public void beforeIndexLookup(Index index, int oper, Object key) {
     Map<String, IndexInfo> indexMap = (Map) this.indexInfo.get();
     if (indexMap == null) {
@@ -66,6 +67,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
     }
   }
 
+  @Override
   public void beforeIndexLookup(Index index, int lowerBoundOperator, Object lowerBoundKey,
       int upperBoundOperator, Object upperBoundKey, Set NotEqualKeys) {
     Map<String, IndexInfo> indexMap = (Map) this.indexInfo.get();
@@ -92,6 +94,7 @@ public class IndexTrackingQueryObserver extends QueryObserverAdapter {
   /**
    * appends the size of the lookup to the last index name in the list
    */
+  @Override
   public void afterIndexLookup(Collection results) {
     if (results == null) {
       // according to javadocs in QueryObserver, can be null if there

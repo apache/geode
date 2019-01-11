@@ -314,9 +314,11 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
   public static void setClientServerObserverForBeforeInterestRecoveryFailure() {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforeInterestRecovery() {
         synchronized (HAInterestTestCase.class) {
           Thread t = new Thread() {
+            @Override
             public void run() {
               getBackupVM().invoke(() -> HAInterestTestCase.startServer());
               getPrimaryVM().invoke(() -> HAInterestTestCase.stopServer());
@@ -339,9 +341,11 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
   public static void setClientServerObserverForBeforeInterestRecovery() {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforeInterestRecovery() {
         synchronized (HAInterestTestCase.class) {
           Thread t = new Thread() {
+            @Override
             public void run() {
               Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
               assertNotNull(r1);
@@ -370,6 +374,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
   public static void setClientServerObserverForBeforeRegistration(final VM vm) {
     PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforeInterestRegistration() {
         synchronized (HAInterestTestCase.class) {
           vm.invoke(() -> HAInterestTestCase.startServer());
@@ -393,6 +398,7 @@ public class HAInterestTestCase extends JUnit4DistributedTestCase {
   public static void setClientServerObserverForAfterRegistration(final VM vm) {
     PoolImpl.AFTER_REGISTER_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void afterInterestRegistration() {
         synchronized (HAInterestTestCase.class) {
           vm.invoke(() -> HAInterestTestCase.startServer());

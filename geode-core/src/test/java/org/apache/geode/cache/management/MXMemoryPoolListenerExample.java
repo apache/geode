@@ -63,6 +63,7 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
    * @see javax.management.NotificationListener#handleNotification(javax.management.Notification,
    * java.lang.Object)
    */
+  @Override
   public void handleNotification(Notification arg0, Object arg1) {
     this.logger.info("Notification: " + arg0 + "; o: " + arg1 + "; m: " + arg0.getMessage());
     this.critical.set(true);

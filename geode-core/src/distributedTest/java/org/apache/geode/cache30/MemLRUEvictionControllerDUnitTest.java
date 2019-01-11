@@ -214,6 +214,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
       this.dataSize = dataSize;
     }
 
+    @Override
     public int sizeof(Object o) {
       this.wasCalled = true;
       return dataSize;

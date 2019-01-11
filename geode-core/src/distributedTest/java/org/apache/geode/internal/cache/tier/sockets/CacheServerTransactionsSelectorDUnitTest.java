@@ -29,6 +29,7 @@ public class CacheServerTransactionsSelectorDUnitTest extends CacheServerTransac
     super();
   }
 
+  @Override
   protected int getMaxThreads() {
     return 2;
   }

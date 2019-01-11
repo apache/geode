@@ -72,11 +72,13 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
     VM ds1 = host.getVM(1);
 
     ds0.invoke(new SerializableRunnable("Set system property") {
+      @Override
       public void run() {
         DefaultQuery.QUERY_VERBOSE = true;
       }
     });
     ds1.invoke(new SerializableRunnable("Set system property") {
+      @Override
       public void run() {
         DefaultQuery.QUERY_VERBOSE = true;
       }
@@ -102,6 +104,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
     async2.join();
 
     ds0.invoke(new SerializableRunnable("Test Query Verbose Data") {
+      @Override
       public void run() {
         // Reset the observer.
         QueryObserverHolder.reset();
@@ -111,6 +114,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
     });
     ds1.invoke(new SerializableRunnable("Test Query Verbose Data") {
 
+      @Override
       public void run() {
         // Reset the observer.
         QueryObserverHolder.reset();
@@ -136,6 +140,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable createDS = new SerializableRunnable("Creating PR Datastore") {
 
+      @Override
       public void run() {
 
         QueryObserver observer = QueryObserverHolder.setInstance(new IndexTrackingQueryObserver());
@@ -158,6 +163,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable initRegion = new SerializableRunnable("Initialize the PR") {
 
+      @Override
       public void run() {
 
         Region region = getCache().getRegion("portfolio");
@@ -178,6 +184,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable createIndex = new SerializableRunnable("Create index on PR") {
 
+      @Override
       public void run() {
 
         // Query VERBOSE has to be true for the test
@@ -214,6 +221,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable runQuery = new SerializableRunnable("Run Query on PR") {
 
+      @Override
       public void run() {
 
         QueryService qs = getCache().getQueryService();
@@ -238,6 +246,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable testQueryVerbose = new SerializableRunnable("Test Query Verbose Data") {
 
+      @Override
       public void run() {
         // Query VERBOSE has to be true for the test
         assertTrue(QUERY_VERBOSE);
@@ -251,6 +260,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
 
         GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
+          @Override
           public boolean done() {
             if (th.getRegionMap() != null) {
               return th.getRegionMap().getResults() != null;
@@ -258,6 +268,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
             return false;
           }
 
+          @Override
           public String description() {
             return null;
           }

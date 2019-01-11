@@ -53,11 +53,13 @@ public class ShutdownAllGatewayHubsRequest extends DistributionMessage {
     ReplyMessage.send(getSender(), this.rpid, null, dm, true /* ignored */, false, false);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.rpid = in.readInt();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     out.writeInt(this.rpid);

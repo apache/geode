@@ -38,10 +38,12 @@ public class CustomerIDPartitionResolver implements PartitionResolver {
     id = resolverID;
   }
 
+  @Override
   public String getName() {
     return this.resolverName;
   }
 
+  @Override
   public Serializable getRoutingObject(EntryOperation opDetails) {
 
     Serializable routingbject = null;
@@ -60,6 +62,7 @@ public class CustomerIDPartitionResolver implements PartitionResolver {
     return routingbject;
   }
 
+  @Override
   public void close() {}
 
   @Override

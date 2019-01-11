@@ -41,5 +41,6 @@ public interface HAContainerWrapper extends Map {
 
   CacheClientProxy getProxy(String haRegionName);
 
+  @Override
   Object putIfAbsent(Object key, Object value);
 }

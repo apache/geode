@@ -120,6 +120,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     return this.clientVersion;
   }
 
+  @Override
   public Version getVersion() {
     return this.clientVersion;
   }
@@ -215,6 +216,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     }
   }
 
+  @Override
   public int getClientReadTimeout() {
     return this.clientReadTimeout;
   }

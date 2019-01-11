@@ -631,6 +631,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
   }
 
+  @Override
   protected void initDataStore(RegionTestableType regionTestType) throws Exception {
     regionTestType.createDataStore(getCache(), REGION_NAME);
   }

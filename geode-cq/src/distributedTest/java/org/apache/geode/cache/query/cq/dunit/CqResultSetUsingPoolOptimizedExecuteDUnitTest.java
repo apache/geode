@@ -52,6 +52,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
   @Override
   protected final void postSetUpCqResultSetUsingPoolDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -61,6 +62,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
       }
@@ -100,6 +102,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
 
     // initialize Region.
     server1.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -111,6 +114,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
 
     // Keep updating region (async invocation).
     server1.invokeAsync(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + cqDUnitTest.regions[0]);
         // Update (totalObjects - 1) entries.
@@ -140,6 +144,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
 
     // Verify CQ Cache results.
     server1.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqServiceImpl CqServiceImpl = null;
         try {
@@ -199,6 +204,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
 
     // Verify CQ Cache results.
     server2.invoke(new CacheSerializableRunnable("Verify CQ Cache results") {
+      @Override
       public void run2() throws CacheException {
         CqServiceImpl CqServiceImpl = null;
         try {

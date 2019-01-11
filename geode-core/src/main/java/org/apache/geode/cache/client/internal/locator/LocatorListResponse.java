@@ -39,6 +39,7 @@ public class LocatorListResponse extends ServerLocationResponse {
     this.isBalanced = isBalanced;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.controllers = SerializationHelper.readServerLocationList(in);
     this.isBalanced = in.readBoolean();
@@ -47,6 +48,7 @@ public class LocatorListResponse extends ServerLocationResponse {
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     SerializationHelper.writeServerLocationList(this.controllers, out);
     out.writeBoolean(isBalanced);
@@ -76,6 +78,7 @@ public class LocatorListResponse extends ServerLocationResponse {
     return "LocatorListResponse{locators=" + controllers + ",isBalanced=" + isBalanced + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.LOCATOR_LIST_RESPONSE;
   }

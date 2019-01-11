@@ -774,6 +774,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
    * DTD.
    *
    */
+  @Override
   public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId)
       throws SAXException, IOException {
     if (publicId == null || systemId == null) {
@@ -887,11 +888,13 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /**
    * Warnings are ignored
    */
+  @Override
   public void warning(SAXParseException ex) throws SAXException {}
 
   /**
    * Throws a {@link CacheXmlException}
    */
+  @Override
   public void error(SAXParseException ex) throws SAXException {
     throw new CacheXmlException(
         "Error while parsing XML", ex);
@@ -900,6 +903,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   /**
    * Throws a {@link CacheXmlException}
    */
+  @Override
   public void fatalError(SAXParseException ex) throws SAXException {
     throw new CacheXmlException(
         "Fatal error while parsing XML", ex);

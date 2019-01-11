@@ -128,6 +128,7 @@ abstract class RVVException
   /** internal method to add a new version to the received-versions collection */
   protected abstract void addReceived(long version);
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     InternalDataSerializer.writeUnsignedVL(this.previousVersion, out);
     writeReceived(out);
@@ -145,6 +146,7 @@ abstract class RVVException
     return this.previousVersion + 1 >= this.nextVersion;
   }
 
+  @Override
   public abstract RVVException clone();
 
   /*
@@ -152,6 +154,7 @@ abstract class RVVException
    *
    * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
+  @Override
   public int compareTo(RVVException o) {
     long thisVal = this.previousVersion;
     long anotherVal = o.previousVersion;

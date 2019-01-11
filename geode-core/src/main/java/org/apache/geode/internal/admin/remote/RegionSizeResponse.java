@@ -61,6 +61,7 @@ public class RegionSizeResponse extends AdminResponse implements Cancellable {
     this.subregionCount = subRegions.size();
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
   }
@@ -74,6 +75,7 @@ public class RegionSizeResponse extends AdminResponse implements Cancellable {
     return this.subregionCount;
   }
 
+  @Override
   public int getDSFID() {
     return REGION_SIZE_RESPONSE;
   }

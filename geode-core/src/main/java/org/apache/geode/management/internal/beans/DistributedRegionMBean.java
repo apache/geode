@@ -170,6 +170,7 @@ public class DistributedRegionMBean implements DistributedRegionMXBean {
     return bridge.getParentRegion();
   }
 
+  @Override
   public String[] listSubRegionPaths(boolean recursive) {
     return bridge.listSubRegionPaths(recursive);
   }

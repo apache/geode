@@ -1648,6 +1648,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
 
   private void closeCache(VM vm) {
     vm.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         closeCache();
         return null;

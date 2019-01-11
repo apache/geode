@@ -73,10 +73,12 @@ public class CommitFunction implements Function, DataSerializable {
 
   public CommitFunction() {}
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
+  @Override
   public void execute(FunctionContext context) {
     Cache cache = CacheFactory.getAnyInstance();
     TXId txId = null;
@@ -129,14 +131,17 @@ public class CommitFunction implements Function, DataSerializable {
     context.getResultSender().lastResult(result);
   }
 
+  @Override
   public String getId() {
     return getClass().getName();
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     // GEM-207
     return true;

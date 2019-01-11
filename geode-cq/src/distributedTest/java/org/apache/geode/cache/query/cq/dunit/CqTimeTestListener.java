@@ -62,6 +62,7 @@ public class CqTimeTestListener implements CqListener {
     this.logger = logger;
   }
 
+  @Override
   public void onEvent(CqEvent cqEvent) {
     this.totalEventCount++;
 
@@ -105,6 +106,7 @@ public class CqTimeTestListener implements CqListener {
 
   }
 
+  @Override
   public void onError(CqEvent cqEvent) {
     this.eventErrorCount++;
   }
@@ -157,6 +159,7 @@ public class CqTimeTestListener implements CqListener {
     return this.eventQueryInsertTime;
   }
 
+  @Override
   public void close() {
     this.eventClose = true;
   }
@@ -173,10 +176,12 @@ public class CqTimeTestListener implements CqListener {
 
   public boolean waitForCreated(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CqTimeTestListener.this.creates.contains(key);
       }
 
+      @Override
       public String description() {
         return "never got create event for CQ " + CqTimeTestListener.this.cqName;
       }
@@ -187,10 +192,12 @@ public class CqTimeTestListener implements CqListener {
 
   public boolean waitForDestroyed(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CqTimeTestListener.this.destroys.contains(key);
       }
 
+      @Override
       public String description() {
         return "never got destroy event for CQ " + CqTimeTestListener.this.cqName;
       }
@@ -201,10 +208,12 @@ public class CqTimeTestListener implements CqListener {
 
   public boolean waitForInvalidated(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CqTimeTestListener.this.invalidates.contains(key);
       }
 
+      @Override
       public String description() {
         return "never got invalidate event for CQ " + CqTimeTestListener.this.cqName;
       }
@@ -215,10 +224,12 @@ public class CqTimeTestListener implements CqListener {
 
   public boolean waitForUpdated(final Object key) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CqTimeTestListener.this.updates.contains(key);
       }
 
+      @Override
       public String description() {
         return "never got update event for CQ " + CqTimeTestListener.this.cqName;
       }
@@ -229,10 +240,12 @@ public class CqTimeTestListener implements CqListener {
 
   public boolean waitForClose() {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return CqTimeTestListener.this.eventClose;
       }
 
+      @Override
       public String description() {
         return "never got close event for CQ " + CqTimeTestListener.this.cqName;
       }

@@ -74,26 +74,32 @@ public class DistributedSystemHealthConfigJmxImpl extends DistributedSystemHealt
     this.health.setDistributedSystemHealthConfig(this);
   }
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.DISTRIBUTED_SYSTEM_HEALTH_CONFIG;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public void cleanupResource() {}
 
 }

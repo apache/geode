@@ -74,6 +74,7 @@ public class DataTypeJUnitTest {
   @BeforeClass
   public static void beforeClass() {
     Instantiator.register(new Instantiator(CustId.class, (short) 1) {
+      @Override
       public DataSerializable newInstance() {
         return new CustId();
       }

@@ -28,22 +28,28 @@ public interface CommandResult extends Result {
 
   boolean hasFileToDownload();
 
+  @Override
   Status getStatus();
 
   void setStatus(Status status);
 
   Object getResultData();
 
+  @Override
   void resetToFirstLine();
 
+  @Override
   boolean hasIncomingFiles();
 
   int getNumTimesSaved();
 
+  @Override
   void saveIncomingFiles(String directory) throws IOException;
 
+  @Override
   boolean hasNextLine();
 
+  @Override
   String nextLine();
 
   String toJson();
@@ -92,8 +98,10 @@ public interface CommandResult extends Result {
 
   String toString();
 
+  @Override
   boolean failedToPersist();
 
+  @Override
   void setCommandPersisted(boolean commandPersisted);
 
   void setFileToDownload(Path fileToDownload);

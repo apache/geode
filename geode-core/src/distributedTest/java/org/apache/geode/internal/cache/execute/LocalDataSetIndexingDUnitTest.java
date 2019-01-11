@@ -83,6 +83,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testLocalDataSetIndexing() {
     final CacheSerializableRunnable createPRs = new CacheSerializableRunnable("create prs ") {
+      @Override
       public void run2() {
         AttributesFactory<Integer, RegionValue> factory =
             new AttributesFactory<Integer, RegionValue>();
@@ -98,6 +99,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
 
     final CacheSerializableRunnable createIndexesOnPRs =
         new CacheSerializableRunnable("create prs ") {
+          @Override
           public void run2() {
             try {
               QueryService qs = getCache().getQueryService();
@@ -110,6 +112,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
           }
         };
     final CacheSerializableRunnable execute = new CacheSerializableRunnable("execute function") {
+      @Override
       public void run2() {
 
         final PartitionedRegion pr1 = (PartitionedRegion) getRootRegion("pr1");
@@ -128,6 +131,7 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
 
         ArrayList<List> result = (ArrayList<List>) FunctionService.onRegion(pr1).withFilter(filter)
             .execute(new FunctionAdapter() {
+              @Override
               public void execute(FunctionContext context) {
                 try {
                   RegionFunctionContext rContext = (RegionFunctionContext) context;
@@ -222,12 +226,14 @@ class QueryObserverImpl extends QueryObserverAdapter {
 
   String indexName;
 
+  @Override
   public void beforeIndexLookup(Index index, int oper, Object key) {
     indexName = index.getName();
     indexesUsed.add(index.getName());
 
   }
 
+  @Override
   public void afterIndexLookup(Collection results) {
     if (results != null) {
       isIndexesUsed = true;
@@ -253,6 +259,7 @@ class RegionValue implements Serializable, Comparable<RegionValue> {
     this.value2 = value;
   }
 
+  @Override
   public int compareTo(RegionValue o) {
     if (this.value > o.value) {
       return 1;

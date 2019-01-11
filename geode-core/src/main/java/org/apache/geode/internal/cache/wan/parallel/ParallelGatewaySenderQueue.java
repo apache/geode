@@ -182,6 +182,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       this.bucketId = bId;
     }
 
+    @Override
     public void run() {
       PartitionedRegion prQ = null;
       GatewaySenderEventImpl event = (GatewaySenderEventImpl) conflatableObject;
@@ -645,6 +646,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
+  @Override
   public boolean put(Object object) throws InterruptedException, CacheException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     boolean putDone = false;
@@ -871,6 +873,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
    * This returns queueRegion if there is only one PartitionedRegion using the GatewaySender
    * Otherwise it returns null.
    */
+  @Override
   public Region getRegion() {
     return this.userRegionNameToshadowPRMap.size() == 1
         ? (Region) this.userRegionNameToshadowPRMap.values().toArray()[0] : null;
@@ -1190,10 +1193,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     bucketIdToDispatchedKeys.put(bucketId, dispatchedKeys);
   }
 
+  @Override
   public List peek(int batchSize) throws InterruptedException, CacheException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public List peek(int batchSize, int timeToWait) throws InterruptedException, CacheException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -1815,10 +1820,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       return false;
     }
 
+    @Override
     public boolean isUsedForParallelGatewaySenderQueue() {
       return true;
     }
 
+    @Override
     public AbstractGatewaySender getParallelGatewaySender() {
       return this.sender;
     }

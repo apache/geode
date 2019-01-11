@@ -35,10 +35,12 @@ public class GfshConsoleReader extends GfeConsoleReader {
     gfsh = Gfsh.getCurrentInstance();
   }
 
+  @Override
   public boolean isSupported() {
     return gfsh != null && !gfsh.isHeadlessMode();
   }
 
+  @Override
   public String readLine(String textToPrompt) {
     String lineRead = null;
     if (isSupported()) {
@@ -47,6 +49,7 @@ public class GfshConsoleReader extends GfeConsoleReader {
     return lineRead;
   }
 
+  @Override
   public char[] readPassword(String textToPrompt) {
     char[] password = null;
     if (isSupported()) {

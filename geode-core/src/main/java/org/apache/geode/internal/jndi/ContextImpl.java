@@ -88,6 +88,7 @@ public class ContextImpl implements Context {
    * Not implemented
    *
    */
+  @Override
   public Object addToEnvironment(String key, Object value) throws NamingException {
     throw new NamingException(
         "addToEnvironment(String key, Object value) is not implemented");
@@ -105,6 +106,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException if name has more than one atomic name and intermediate atomic name
    *         is bound to object that is not context.
    */
+  @Override
   public void bind(Name name, Object obj) throws NamingException {
     checkIsDestroyed();
     // Do not check for already bound name.
@@ -120,6 +122,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if naming error occurs
    *
    */
+  @Override
   public void bind(String name, Object obj) throws NamingException {
     bind(nameParser.parse(name), obj);
   }
@@ -127,6 +130,7 @@ public class ContextImpl implements Context {
   /**
    * Does nothing.
    */
+  @Override
   public void close() throws NamingException {}
 
   /**
@@ -136,6 +140,7 @@ public class ContextImpl implements Context {
    * @param prefix name of this context Example: composeName("a","b") : b/a composeName("a","") : a
    *
    */
+  @Override
   public Name composeName(Name name, Name prefix) throws NamingException {
     checkIsDestroyed();
     // We do not want to modify any of the parameters (JNDI requirement).
@@ -152,6 +157,7 @@ public class ContextImpl implements Context {
    * @param prefix name of this context Example: composeName("a","b") : b/a composeName("a","") : a
    *
    */
+  @Override
   public String composeName(String name, String prefix) throws NamingException {
     checkIsDestroyed();
     return composeName(nameParser.parse(name), nameParser.parse(prefix)).toString();
@@ -170,6 +176,7 @@ public class ContextImpl implements Context {
    *         javax.naming.Context.
    *
    */
+  @Override
   public Context createSubcontext(Name name) throws NamingException {
     checkIsDestroyed();
     Name parsedName = getParsedName(name);
@@ -212,6 +219,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if naming error occurs.
    *
    */
+  @Override
   public Context createSubcontext(String name) throws NamingException {
     return createSubcontext(nameParser.parse(name));
   }
@@ -230,6 +238,7 @@ public class ContextImpl implements Context {
    * @throws NotContextException if name is not bound to instance of ContextImpl.
    *
    */
+  @Override
   public void destroySubcontext(Name name) throws NamingException {
     checkIsDestroyed();
     Name parsedName = getParsedName(name);
@@ -269,6 +278,7 @@ public class ContextImpl implements Context {
    * @param name name of subcontext to destroy.
    * @throws NamingException if naming error occurs
    */
+  @Override
   public void destroySubcontext(String name) throws NamingException {
     destroySubcontext(nameParser.parse(name));
   }
@@ -277,6 +287,7 @@ public class ContextImpl implements Context {
    * Not implemented
    *
    */
+  @Override
   public Hashtable getEnvironment() throws NamingException {
     throw new NamingException(
         "getEnvironment() is not implemented");
@@ -286,6 +297,7 @@ public class ContextImpl implements Context {
    * Not implemented
    *
    */
+  @Override
   public String getNameInNamespace() throws NamingException {
     throw new NamingException(
         "getNameInNamespace() is not implemented");
@@ -300,6 +312,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming error occurs.
    *
    */
+  @Override
   public NameParser getNameParser(Name name) throws NamingException {
     checkIsDestroyed();
     return nameParser;
@@ -314,6 +327,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming error occurs.
    *
    */
+  @Override
   public NameParser getNameParser(String name) throws NamingException {
     checkIsDestroyed();
     return nameParser;
@@ -328,6 +342,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if naming error occurs
    *
    */
+  @Override
   public NamingEnumeration list(Name name) throws NamingException {
     return listBindings(name);
   }
@@ -341,6 +356,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if naming error occurs
    *
    */
+  @Override
   public NamingEnumeration list(String name) throws NamingException {
     return list(nameParser.parse(name));
   }
@@ -359,6 +375,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming error occurs
    *
    */
+  @Override
   public NamingEnumeration listBindings(Name name) throws NamingException {
     checkIsDestroyed();
     Name parsedName = getParsedName(name);
@@ -404,6 +421,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming error occurs
    *
    */
+  @Override
   public NamingEnumeration listBindings(String name) throws NamingException {
     return listBindings(nameParser.parse(name));
   }
@@ -421,6 +439,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming error occurs
    *
    */
+  @Override
   public Object lookup(Name name) throws NamingException {
     checkIsDestroyed();
     try {
@@ -472,6 +491,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if naming error occurs.
    *
    */
+  @Override
   public Object lookup(String name) throws NamingException {
     checkIsDestroyed();
     try {
@@ -490,6 +510,7 @@ public class ContextImpl implements Context {
    * Not implemented
    *
    */
+  @Override
   public Object lookupLink(Name name) throws NamingException {
     throw new NamingException(
         "lookupLink(Name name) is not implemented");
@@ -499,6 +520,7 @@ public class ContextImpl implements Context {
    * Not implemented
    *
    */
+  @Override
   public Object lookupLink(String name) throws NamingException {
     throw new NamingException(
         "lookupLink(String name) is not implemented");
@@ -517,6 +539,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming error occurs
    *
    */
+  @Override
   public void rebind(Name name, Object obj) throws NamingException {
     checkIsDestroyed();
     Name parsedName = getParsedName(name);
@@ -560,6 +583,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming error occurs
    *
    */
+  @Override
   public void rebind(String name, Object obj) throws NamingException {
     rebind(nameParser.parse(name), obj);
   }
@@ -568,6 +592,7 @@ public class ContextImpl implements Context {
    * Not implemented
    *
    */
+  @Override
   public Object removeFromEnvironment(String key) throws NamingException {
     throw new NamingException(
         "removeFromEnvironment(String key) is not implemented");
@@ -577,6 +602,7 @@ public class ContextImpl implements Context {
    * Not implemented
    *
    */
+  @Override
   public void rename(Name name1, Name name2) throws NamingException {
     throw new NamingException(
         "rename(Name name1, Name name2) is not implemented");
@@ -586,6 +612,7 @@ public class ContextImpl implements Context {
    * Not implemented
    *
    */
+  @Override
   public void rename(String name1, String name2) throws NamingException {
     throw new NamingException(
         "rename(String name1, String name2) is not implemented");
@@ -604,6 +631,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming exception occurs
    *
    */
+  @Override
   public void unbind(Name name) throws NamingException {
     checkIsDestroyed();
     Name parsedName = getParsedName(name);
@@ -649,6 +677,7 @@ public class ContextImpl implements Context {
    * @throws NamingException if any other naming exception occurs
    *
    */
+  @Override
   public void unbind(String name) throws NamingException {
     unbind(nameParser.parse(name));
   }
@@ -770,15 +799,18 @@ public class ContextImpl implements Context {
       this.currentElement = 0;
     }
 
+    @Override
     public void close() {
       currentElement = 0;
       elements.clear();
     }
 
+    @Override
     public boolean hasMore() {
       return hasMoreElements();
     }
 
+    @Override
     public boolean hasMoreElements() {
       if (currentElement < elements.size()) {
         return true;
@@ -787,10 +819,12 @@ public class ContextImpl implements Context {
       return false;
     }
 
+    @Override
     public Object next() {
       return nextElement();
     }
 
+    @Override
     public Object nextElement() {
       if (hasMoreElements()) {
         return elements.get(currentElement++);

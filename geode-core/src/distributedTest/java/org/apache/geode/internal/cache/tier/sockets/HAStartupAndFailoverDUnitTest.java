@@ -334,6 +334,7 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
   public static void setClientServerObserver() {
     PoolImpl.AFTER_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void afterPrimaryIdentificationFromBackup(ServerLocation primaryEndpoint) {
         synchronized (HAStartupAndFailoverDUnitTest.class) {
           HAStartupAndFailoverDUnitTest.identifiedPrimary = true;
@@ -422,10 +423,12 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
 
+        @Override
         public boolean done() {
           return cache.getCacheServers().size() == 1;
         }
 
+        @Override
         public String description() {
           return excuse;
         }
@@ -440,10 +443,12 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       wc = new WaitCriterion() {
         String excuse;
 
+        @Override
         public boolean done() {
           return ccn.getClientProxies().size() > 0;
         }
 
+        @Override
         public String description() {
           return excuse;
         }
@@ -458,10 +463,12 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
         wc = new WaitCriterion() {
           String excuse;
 
+          @Override
           public boolean done() {
             return proxy._messageDispatcher.isAlive();
           }
 
+          @Override
           public String description() {
             return excuse;
           }
@@ -482,10 +489,12 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       WaitCriterion wc = new WaitCriterion() {
         String excuse;
 
+        @Override
         public boolean done() {
           return cache.getCacheServers().size() == 1;
         }
 
+        @Override
         public String description() {
           return excuse;
         }
@@ -500,10 +509,12 @@ public class HAStartupAndFailoverDUnitTest extends JUnit4DistributedTestCase {
       wc = new WaitCriterion() {
         String excuse;
 
+        @Override
         public boolean done() {
           return ccn.getClientProxies().size() > 0;
         }
 
+        @Override
         public String description() {
           return excuse;
         }

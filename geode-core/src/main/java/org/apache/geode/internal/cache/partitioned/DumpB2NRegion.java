@@ -146,6 +146,7 @@ public class DumpB2NRegion extends PartitionMessage {
     return false;
   }
 
+  @Override
   public int getDSFID() {
     return PR_DUMP_B2N_REGION_MSG;
   }

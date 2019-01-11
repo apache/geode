@@ -417,6 +417,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     return this.freeList.findSlab(addr);
   }
 
+  @Override
   public OffHeapMemoryStats getStats() {
     return this.stats;
   }

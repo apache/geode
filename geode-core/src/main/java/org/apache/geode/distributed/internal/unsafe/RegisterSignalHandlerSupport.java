@@ -25,6 +25,7 @@ public abstract class RegisterSignalHandlerSupport {
 
   public static void registerSignalHandlers() {
     sun.misc.Signal.handle(new sun.misc.Signal("INT"), new sun.misc.SignalHandler() {
+      @Override
       public void handle(final sun.misc.Signal sig) {}
     });
   }

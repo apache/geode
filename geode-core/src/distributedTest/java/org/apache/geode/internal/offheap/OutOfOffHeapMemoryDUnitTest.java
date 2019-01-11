@@ -210,6 +210,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
     final int smallerVM = 1;
 
     Host.getHost(0).getVM(smallerVM).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         OutOfOffHeapMemoryDUnitTest.isSmallerVM.set(true);
       }
@@ -218,6 +219,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
     // create off-heap region in all members
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           OutOfOffHeapMemoryDUnitTest.cache.set(getCache());
           OutOfOffHeapMemoryDUnitTest.system.set(getSystem());
@@ -232,6 +234,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
     // make sure there are vmCount+1 members total
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           assertFalse(OutOfOffHeapMemoryDUnitTest.cache.get().isClosed());
           assertTrue(OutOfOffHeapMemoryDUnitTest.system.get().isConnected());
@@ -251,6 +254,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
 
     // perform puts in bigger member until smaller member goes OOOHME
     Host.getHost(0).getVM(biggerVM).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         final long TIME_LIMIT = 30 * 1000;
         final StopWatch stopWatch = new StopWatch(true);
@@ -275,6 +279,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
 
     // verify that member with OOOHME closed
     Host.getHost(0).getVM(smallerVM).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         assertTrue(OutOfOffHeapMemoryDUnitTest.cache.get().isClosed());
         assertFalse(OutOfOffHeapMemoryDUnitTest.system.get().isConnected());
@@ -287,6 +292,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
         continue;
       }
       Host.getHost(0).getVM(i).invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           final int countMembersPlusLocator = vmCount + 1 - 1; // +1 for locator, -1 for OOOHME
                                                                // member

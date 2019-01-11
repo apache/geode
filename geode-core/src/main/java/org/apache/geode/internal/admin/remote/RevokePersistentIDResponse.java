@@ -23,6 +23,7 @@ public class RevokePersistentIDResponse extends AdminResponse {
     this.setRecipient(sender);
   }
 
+  @Override
   public int getDSFID() {
     return REVOKE_PERSISTENT_ID_RESPONSE;
   }

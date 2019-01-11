@@ -870,11 +870,13 @@ public class MultiRegionIndexUsageJUnitTest {
     ArrayList indexesUsed = new ArrayList();
     String indexName;
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexName = index.getName();
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;

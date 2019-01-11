@@ -186,6 +186,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * return the ID for serialization of instances of DLockRemoteToken
    */
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.DLOCK_REMOTE_TOKEN;
   }
@@ -193,6 +194,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * Writes the contents of this object to the given output.
    */
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.name, out);
     DataSerializer.writeObject(this.lesseeThread.getDistributedMember(), out);
@@ -204,6 +206,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * Unsupported. Use {@link DLockRemoteToken#createFromDataInput(DataInput)} instead.
    */
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     throw new UnsupportedOperationException(
         "Use DLockRemoteToken#createFromDataInput(DataInput) instead.");

@@ -95,6 +95,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     }
   }
 
+  @Override
   public void addResult(DistributedMember memId, Object resultOfSingleExecution) {
     if (this.userRC != null && !this.endResultReceived) {
       try {
@@ -107,6 +108,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     }
   }
 
+  @Override
   public void endResults() {
     if (this.userRC != null) {
       this.userRC.endResults();
@@ -114,6 +116,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     }
   }
 
+  @Override
   public void clearResults() {
     if (userRC != null) {
       this.endResultReceived = false;
@@ -122,6 +125,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     this.fites.clear();
   }
 
+  @Override
   public Object getResult() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException(
@@ -233,6 +237,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     return null;
   }
 
+  @Override
   public Object getResult(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
     long timeoutInMillis = unit.toMillis(timeout);

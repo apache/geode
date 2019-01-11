@@ -87,10 +87,12 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -137,10 +139,12 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -198,22 +202,27 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -273,22 +282,27 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -347,22 +361,27 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -423,22 +442,27 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -499,22 +523,27 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -574,22 +603,27 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -649,23 +683,28 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -726,23 +765,28 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexesUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -803,23 +847,28 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexesUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -880,29 +929,35 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexesUsed.add(index);
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int lowerBoundOperator, Object lowerBoundKey,
           int upperBoundOperator, Object upperBoundKey, Set NotEqualKeys) {
         actualIndexUsed[i] = true;
         indexesUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -963,23 +1018,28 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexesUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -1040,23 +1100,28 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -1119,23 +1184,28 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -1195,23 +1265,28 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }
@@ -1272,23 +1347,28 @@ public class CustomerOptimizationsJUnitTest {
     QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private int i = 0;
 
+      @Override
       public void invokedQueryUtilsUnion(SelectResults r1, SelectResults r2) {
         actualUnionCallback[i] = true;
       }
 
+      @Override
       public void invokedQueryUtilsIntersection(SelectResults r1, SelectResults r2) {
         actualIntersectionCallback[i] = true;
       }
 
+      @Override
       public void beforeIndexLookup(Index index, int oper, Object key) {
         actualIndexUsed[i] = true;
         indexUsed.add(index);
       }
 
+      @Override
       public void beforeApplyingProjectionOnFilterEvaluatedResults(Object preProjectionApplied) {
         actualProjectionCallback[i] = true;
       }
 
+      @Override
       public void afterQueryEvaluation(Object result) {
         ++i;
       }

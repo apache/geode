@@ -876,8 +876,10 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
   }
 
   /* Close Client */
+  @Override
   public void closeClient(VM client) {
     SerializableRunnable closeCache = new CacheSerializableRunnable("Close Client") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Close Client. ###");
         try {
@@ -912,6 +914,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
     for (int i = 0; i < 4; i++) {
       VM vm = host.getVM(i);
       vm.invoke(new CacheSerializableRunnable("Create cache server") {
+        @Override
         public void run2() throws CacheException {
           TestObject.numInstance = 0;
           PortfolioPdx.numInstance = 0;

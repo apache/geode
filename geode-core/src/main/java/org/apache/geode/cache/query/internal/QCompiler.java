@@ -708,23 +708,28 @@ public class QCompiler implements OQLLexerTokenTypes {
       this.indexList = indexList;
     }
 
+    @Override
     public CompiledValue getReceiverSansIndexArgs() {
       return rcvr;
     }
 
+    @Override
     public CompiledValue getMapLookupKey() {
       throw new UnsupportedOperationException("Function invocation not expected");
     }
 
+    @Override
     public List<CompiledValue> getIndexingKeys() {
       return (List<CompiledValue>) indexList;
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       throw new UnsupportedOperationException("Method execution not expected");
     }
 
+    @Override
     public int getType() {
       throw new UnsupportedOperationException("Method execution not expected");
     }

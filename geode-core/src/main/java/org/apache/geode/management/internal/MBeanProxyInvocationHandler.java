@@ -440,6 +440,7 @@ public class MBeanProxyInvocationHandler implements InvocationHandler {
     /**
      * Last refreshed time
      */
+    @Override
     public long getLastRefreshedTime() {
       return lastRefreshedTime;
     }
@@ -447,6 +448,7 @@ public class MBeanProxyInvocationHandler implements InvocationHandler {
     /**
      * sets the proxy refresh time
      */
+    @Override
     public void setLastRefreshedTime(long lastRefreshedTime) {
       this.lastRefreshedTime = lastRefreshedTime;
     }

@@ -118,6 +118,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     // wait till all the duplicates are received by client
     client1.invoke(new CacheSerializableRunnable("waitForPutToComplete") {
 
+      @Override
       public void run2() throws CacheException {
         synchronized (dummyObj) {
           while (waitFlag) {
@@ -136,6 +137,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
     // validate the duplicates received by client
     client1.invoke(new CacheSerializableRunnable("validateDuplicates") {
+      @Override
       public void run2() throws CacheException {
         if (!isEventDuplicate)
           fail(" Not all duplicates received");
@@ -153,6 +155,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     createClientServerConfiguration();
     server1.invoke(new CacheSerializableRunnable("putKey") {
 
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);
@@ -167,6 +170,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
     CacheSerializableRunnable putforknownkeys = new CacheSerializableRunnable("putforknownkeys") {
 
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);
@@ -184,6 +188,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
   private CacheSerializableRunnable stopServer() {
 
     CacheSerializableRunnable stopserver = new CacheSerializableRunnable("stopServer") {
+      @Override
       public void run2() throws CacheException {
         server.stop();
       }
@@ -277,11 +282,13 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
 // Listener class for the validation purpose
 class HAValidateDuplicateListener extends CacheListenerAdapter {
+  @Override
   public void afterCreate(EntryEvent event) {
     System.out.println("After Create");
     HADuplicateDUnitTest.storeEvents.put(event.getKey(), event.getNewValue());
   }
 
+  @Override
   public void afterUpdate(EntryEvent event) {
     Object value = HADuplicateDUnitTest.storeEvents.get(event.getKey());
     if (value == null)

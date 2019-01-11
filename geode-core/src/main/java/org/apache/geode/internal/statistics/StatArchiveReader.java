@@ -166,6 +166,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
   /**
    * Closes all archives.
    */
+  @Override
   public void close() throws IOException {
     if (!this.closed) {
       StatArchiveReader.StatArchiveFile[] archives = getArchives();
@@ -243,22 +244,27 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       this.spec = wrappedSpec;
     }
 
+    @Override
     public int getCombineType() {
       return StatSpec.NONE;
     }
 
+    @Override
     public boolean typeMatches(String typeName) {
       return spec.typeMatches(typeName);
     }
 
+    @Override
     public boolean statMatches(String statName) {
       return spec.statMatches(statName);
     }
 
+    @Override
     public boolean instanceMatches(String textId, long numericId) {
       return spec.instanceMatches(textId, numericId);
     }
 
+    @Override
     public boolean archiveMatches(File archive) {
       return spec.archiveMatches(archive);
     }
@@ -564,44 +570,53 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       }
     }
 
+    @Override
     public int getSnapshotsSize() {
       calcStats();
       return this.size;
     }
 
+    @Override
     public double getSnapshotsMinimum() {
       calcStats();
       return this.min;
     }
 
+    @Override
     public double getSnapshotsMaximum() {
       calcStats();
       return this.max;
     }
 
+    @Override
     public double getSnapshotsAverage() {
       calcStats();
       return this.avg;
     }
 
+    @Override
     public double getSnapshotsStandardDeviation() {
       calcStats();
       return this.stddev;
     }
 
+    @Override
     public double getSnapshotsMostRecent() {
       calcStats();
       return this.mostRecent;
     }
 
+    @Override
     public StatDescriptor getDescriptor() {
       return this.descriptor;
     }
 
+    @Override
     public int getFilter() {
       return this.filter;
     }
 
+    @Override
     public void setFilter(int filter) {
       if (filter != this.filter) {
         if (filter != FILTER_NONE && filter != FILTER_PERSEC && filter != FILTER_PERSAMPLE) {
@@ -771,6 +786,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       }
     }
 
+    @Override
     public StatValue createTrimmed(long startTime, long endTime) {
       if (startTime == this.startTime && endTime == this.endTime) {
         return this;
@@ -779,10 +795,12 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       }
     }
 
+    @Override
     public ResourceType getType() {
       return this.type;
     }
 
+    @Override
     public ResourceInst[] getResources() {
       Set set = new HashSet();
       for (int i = 0; i < values.length; i++) {
@@ -792,6 +810,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return (ResourceInst[]) set.toArray(result);
     }
 
+    @Override
     public boolean hasValueChanged() {
       return true;
     }
@@ -816,10 +835,12 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return (nextIdx < valueTimeStamps.length) && (valueTimeStamps[nextIdx] <= tsAtInsertPoint);
     }
 
+    @Override
     public long[] getRawAbsoluteTimeStampsWithSecondRes() {
       return getRawAbsoluteTimeStamps();
     }
 
+    @Override
     public long[] getRawAbsoluteTimeStamps() {
       if (values.length == 0) {
         return new long[0];
@@ -913,6 +934,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return ourTimeStamps;
     }
 
+    @Override
     public double[] getRawSnapshots() {
       return getRawSnapshots(getRawAbsoluteTimeStamps());
     }
@@ -932,6 +954,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return closer(ts, timeStamps[curIdx], timeStamps[curIdx + 1]);
     }
 
+    @Override
     public boolean isTrimmedLeft() {
       for (int i = 0; i < this.values.length; i++) {
         if (this.values[i].isTrimmedLeft()) {
@@ -988,6 +1011,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return result;
     }
 
+    @Override
     public double[] getSnapshots() {
       double[] result;
       if (filter != FILTER_NONE) {
@@ -1026,6 +1050,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     private boolean valueChangeNoticed = false;
 
 
+    @Override
     public StatValue createTrimmed(long startTime, long endTime) {
       if (startTime == this.startTime && endTime == this.endTime) {
         return this;
@@ -1059,14 +1084,17 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       this.valueChangeNoticed = true;
     }
 
+    @Override
     public ResourceType getType() {
       return this.resource.getType();
     }
 
+    @Override
     public ResourceInst[] getResources() {
       return new ResourceInst[] {this.resource};
     }
 
+    @Override
     public boolean isTrimmedLeft() {
       return getStartIdx() != 0;
     }
@@ -1105,6 +1133,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return endIdx;
     }
 
+    @Override
     public double[] getSnapshots() {
       double[] result;
       int startIdx = getStartIdx();
@@ -1134,6 +1163,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return result;
     }
 
+    @Override
     public double[] getRawSnapshots() {
       int startIdx = getStartIdx();
       int endIdx = getEndIdx(startIdx);
@@ -1141,6 +1171,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return series.getValuesEx(descriptor.getTypeCode(), startIdx, resultSize);
     }
 
+    @Override
     public long[] getRawAbsoluteTimeStampsWithSecondRes() {
       long[] result = getRawAbsoluteTimeStamps();
       for (int i = 0; i < result.length; i++) {
@@ -1151,6 +1182,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return result;
     }
 
+    @Override
     public long[] getRawAbsoluteTimeStamps() {
       int startIdx = getStartIdx();
       int endIdx = getEndIdx(startIdx);
@@ -1169,6 +1201,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       }
     }
 
+    @Override
     public boolean hasValueChanged() {
       if (valueChangeNoticed) {
         valueChangeNoticed = false;

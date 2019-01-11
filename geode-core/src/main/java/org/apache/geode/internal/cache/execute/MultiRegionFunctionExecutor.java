@@ -118,6 +118,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     this.isReExecute = isReExecute;
   }
 
+  @Override
   public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(
@@ -145,10 +146,12 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     return new MultiRegionFunctionExecutor(this, args);
   }
 
+  @Override
   public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
+  @Override
   public Execution withCollector(ResultCollector rc) {
     if (rc == null) {
       throw new IllegalArgumentException(
@@ -158,6 +161,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     return new MultiRegionFunctionExecutor(this, rc);
   }
 
+  @Override
   public Execution withFilter(Set filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for multi region function",

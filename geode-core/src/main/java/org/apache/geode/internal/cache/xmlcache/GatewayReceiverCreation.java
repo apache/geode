@@ -69,14 +69,17 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     this.manualStart = manualStart;
   }
 
+  @Override
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
     return this.transFilter;
   }
 
+  @Override
   public int getMaximumTimeBetweenPings() {
     return this.maxTimeBetweenPings;
   }
 
+  @Override
   public int getPort() {
     return this.startPort;
   }
@@ -85,6 +88,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     return this.portRange;
   }
 
+  @Override
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
@@ -105,14 +109,17 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     this.socketBufferSize = socketBufferSize;
   }
 
+  @Override
   public String getHostnameForSenders() {
     return this.hostnameForSenders;
   }
 
+  @Override
   public String getHost() {
     throw new IllegalStateException("getHost should not be invoked on GatewayReceiverCreation");
   }
 
+  @Override
   public String getBindAddress() {
     return this.bindAddress;
   }
@@ -121,6 +128,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     this.bindAddress = address;
   }
 
+  @Override
   public void start() throws IOException {
     if (receiver == null) {
       // add a cache server and set its port to random port. See defect 45630 for more details.
@@ -129,14 +137,17 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     }
   }
 
+  @Override
   public void stop() {
 
   }
 
+  @Override
   public void destroy() {
 
   }
 
+  @Override
   public boolean isRunning() {
     return false;
   }
@@ -150,6 +161,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
    *
    * @see org.apache.geode.cache.wan.GatewayReceiver#getStartPort()
    */
+  @Override
   public int getStartPort() {
     return this.startPort;
   }
@@ -159,10 +171,12 @@ public class GatewayReceiverCreation implements GatewayReceiver {
    *
    * @see org.apache.geode.cache.wan.GatewayReceiver#getEndPort()
    */
+  @Override
   public int getEndPort() {
     return this.endPort;
   }
 
+  @Override
   public boolean isManualStart() {
     return this.manualStart;
   }

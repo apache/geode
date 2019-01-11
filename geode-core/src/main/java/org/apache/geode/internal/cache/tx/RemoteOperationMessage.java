@@ -313,6 +313,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     this.isTransactionDistributed = in.readBoolean();
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     return this.txMemberId;
   }
@@ -433,10 +434,12 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * @return the txUniqId
    */
+  @Override
   public int getTXUniqId() {
     return txUniqId;
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -444,6 +447,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     return txMemberId;
   }
 
+  @Override
   public boolean canStartRemoteTransaction() {
     return true;
   }

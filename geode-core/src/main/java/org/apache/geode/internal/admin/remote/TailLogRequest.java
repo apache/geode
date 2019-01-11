@@ -37,6 +37,7 @@ public class TailLogRequest extends AdminRequest {
     friendlyName = "Tail system log";
   }
 
+  @Override
   public int getDSFID() {
     return TAIL_LOG_REQUEST;
   }

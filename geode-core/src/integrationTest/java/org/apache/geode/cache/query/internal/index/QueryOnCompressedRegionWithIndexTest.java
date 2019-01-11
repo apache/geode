@@ -227,6 +227,7 @@ public class QueryOnCompressedRegionWithIndexTest {
   class QueryObserverImpl extends QueryObserverAdapter {
     List indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }

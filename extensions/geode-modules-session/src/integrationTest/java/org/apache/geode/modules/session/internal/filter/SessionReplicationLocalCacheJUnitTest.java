@@ -30,6 +30,7 @@ import org.apache.geode.test.junit.categories.SessionTest;
 @Category({SessionTest.class})
 public class SessionReplicationLocalCacheJUnitTest extends CommonTests {
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();

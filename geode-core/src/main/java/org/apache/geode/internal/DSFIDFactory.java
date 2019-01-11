@@ -427,18 +427,22 @@ public class DSFIDFactory implements DataSerializableFixedID {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public int getDSFID() {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public Version[] getSerializationVersions() {
     throw new UnsupportedOperationException();
   }

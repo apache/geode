@@ -134,6 +134,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     return new ObjectIntHashMap(this.size);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.elementType = (ObjectType) DataSerializer.readObject(in);
     this.size = in.readInt();
@@ -152,10 +153,12 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     }
   }
 
+  @Override
   public int getDSFID() {
     return RESULTS_BAG;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.elementType, out);
     out.writeInt(this.size());

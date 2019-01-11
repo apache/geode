@@ -120,6 +120,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     Arrays.stream(new File(".").listFiles()).forEach(file -> deleteBACKUPDiskStoreFile(file));
   }
 
+  @Override
   public final String getName() {
     if (this.distributedTestFixture != this) {
       return this.distributedTestFixture.getName();

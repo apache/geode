@@ -47,6 +47,7 @@ public class DiskRegionTestImpl implements Serializable {
 
   private CacheSerializableRunnable createRgnRunnable(final String name) {
     return new CacheSerializableRunnable("Create region") {
+      @Override
       public void run2() throws CacheException {
         DiskRegionTestImpl.this.rtc.createRegion(name);
       }
@@ -96,6 +97,7 @@ public class DiskRegionTestImpl implements Serializable {
     // VM vm2 = host.getVM(2);
 
     vm0.invoke(new CacheSerializableRunnable("Create backup Region in VM0") {
+      @Override
       public void run2() throws CacheException {
         Region rgn = DiskRegionTestImpl.this.rtc.createRegion(name);
         rgn.create(key1, value1);
@@ -111,6 +113,7 @@ public class DiskRegionTestImpl implements Serializable {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Create & Populate non-mirrored in VM1") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         // set scope to be same as test region
@@ -133,6 +136,7 @@ public class DiskRegionTestImpl implements Serializable {
     });
 
     vm0.invoke(new CacheSerializableRunnable("Close Cache in VM0") {
+      @Override
       public void run2() throws CacheException {
         CacheTestCase.closeCache();
       }
@@ -141,6 +145,7 @@ public class DiskRegionTestImpl implements Serializable {
     String runnableName =
         "Re-create backup region in VM0 with mirror " + "KEYS_VALUES and Do Verification";
     vm0.invoke(new CacheSerializableRunnable(runnableName) {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory factory =
             new AttributesFactory(DiskRegionTestImpl.this.rtc.getRegionAttributes());

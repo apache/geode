@@ -108,6 +108,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(null);
         System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads");
@@ -133,6 +134,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -152,6 +154,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -166,6 +169,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -188,6 +192,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     vm0.invoke(new SerializableRunnable("simulateRebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -220,6 +225,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkLowRedundancy") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -249,6 +255,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm3 = host.getVM(3);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -269,6 +276,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -280,6 +288,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -294,6 +303,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(checkLowRedundancy);
 
     SerializableRunnable closePrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         disconnectFromDS();
         // Cache cache = getCache();
@@ -312,6 +322,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Now simulate a rebalance
       vm1.invoke(new SerializableRunnable("simulateRebalance") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           ResourceManager manager = cache.getResourceManager();
@@ -339,6 +350,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   public void enforceIp(final boolean simulate) {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         Properties props = new Properties();
         props.setProperty(ENFORCE_UNIQUE_HOST, "true");
@@ -351,6 +363,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       VM vm1 = host.getVM(1);
 
       SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+        @Override
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -370,6 +383,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Create some buckets
       vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -384,6 +398,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -406,6 +421,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Now simulate a rebalance
       vm0.invoke(new SerializableRunnable("simulateRebalance") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           ResourceManager manager = cache.getResourceManager();
@@ -436,6 +452,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     } finally {
       disconnectFromDS();
       Invoke.invokeInEveryVM(new SerializableRunnable() {
+        @Override
         public void run() {
           disconnectFromDS();
         }
@@ -471,6 +488,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       final DistributedMember zoneBMember = setRedundancyZone(vm2, "B");
 
       SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+        @Override
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -490,6 +508,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Create some buckets
       vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -504,6 +523,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -527,6 +547,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Now simulate a rebalance
       vm0.invoke(new SerializableRunnable("simulateRebalance") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           ResourceManager manager = cache.getResourceManager();
@@ -571,6 +592,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     } finally {
       disconnectFromDS();
       Invoke.invokeInEveryVM(new SerializableRunnable() {
+        @Override
         public void run() {
           // clear the redundancy zone setting
           disconnectFromDS();
@@ -671,6 +693,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       };
 
       SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+        @Override
         public void run() {
           ParallelRecoveryObserver ob =
               (ParallelRecoveryObserver) InternalResourceManager.getResourceObserver();
@@ -689,6 +712,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Create some buckets
       vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+        @Override
         public void run() {
           doPuts("region1");
           doPuts("region2");
@@ -697,6 +721,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -728,6 +753,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Now do a rebalance
       vm0.invoke(new SerializableRunnable("simulateRebalance") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           ResourceManager manager = cache.getResourceManager();
@@ -780,6 +806,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     } finally {
       disconnectFromDS();
       Invoke.invokeInEveryVM(new SerializableRunnable() {
+        @Override
         public void run() {
           // clear the redundancy zone setting
           disconnectFromDS();
@@ -791,6 +818,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   private void checkBucketCount(VM vm0, final String regionName, final int numLocalBuckets) {
     vm0.invoke(new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
@@ -802,6 +830,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   private DistributedMember setRedundancyZone(VM vm, final String zone) {
     return (DistributedMember) vm.invoke(new SerializableCallable("set redundancy zone") {
+      @Override
       public Object call() {
         System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", "2");
         Properties props = new Properties();
@@ -865,6 +894,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -877,6 +907,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkRedundancy = new SerializableRunnable("checkRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -900,6 +931,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     vm0.invoke(new SerializableRunnable("rebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -938,6 +970,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkLowRedundancy") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -957,6 +990,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   private DistributedMember createPrRegion(VM vm, final String region, final int localMaxMemory,
       final String colocatedWith) {
     SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
+      @Override
       public Object call() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -989,6 +1023,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1001,6 +1036,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkRedundancy = new SerializableRunnable("checkRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1099,6 +1135,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1136,6 +1173,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets.
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1151,6 +1189,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // check to make sure our redundancy is impaired
     SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1180,6 +1219,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     vm0.invoke(new SerializableRunnable("rebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -1217,6 +1257,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkLowRedundancy") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
@@ -1278,6 +1319,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets. Put enough data to cause the queue to overflow (more than 1 MB)
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1295,6 +1337,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // check to make sure our redundancy is impaired
     SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1326,6 +1369,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     vm0.invoke(new SerializableRunnable("rebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -1363,6 +1407,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkLowRedundancy") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
@@ -1394,6 +1439,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   private DistributedMember createPRRegionWithAsyncQueue(VM vm0, final int localMaxMemory) {
     SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
+      @Override
       public Object call() {
         Cache cache = getCache();
 
@@ -1441,6 +1487,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1460,6 +1507,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1469,6 +1517,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1491,6 +1540,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now do a rebalance, but cancel it in the middle
     vm0.invoke(new SerializableCallable("D rebalance") {
 
+      @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         InternalResourceManager manager = cache.getInternalResourceManager();
@@ -1554,6 +1604,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     final VM vm2 = host.getVM(2);
 
     final SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1573,6 +1624,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1592,6 +1644,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now do a rebalance, but start another member in the middle
     vm0.invoke(new SerializableCallable("D rebalance") {
 
+      @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         InternalResourceManager manager = cache.getInternalResourceManager();
@@ -1663,6 +1716,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1683,6 +1737,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1701,6 +1756,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     vm0.invoke(new SerializableRunnable("simulateRebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -1732,6 +1788,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkRedundancyFixed") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -1757,6 +1814,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       SerializableRunnable checkBug40228Fixed = new SerializableRunnable("checkBug40228Fixed") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Bug40228Loader loader =
@@ -1805,6 +1863,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     EXPECTED_REBALANCED.add("/region1");
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1826,6 +1885,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         for (int i = 0; i < NUM_REGIONS; i++) {
@@ -1843,6 +1903,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     vm0.invoke(new SerializableRunnable("simulateRebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -1880,6 +1941,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkRedundancyFixed") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           for (String name : EXPECTED_REBALANCED) {
@@ -1936,6 +1998,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1956,6 +2019,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -1971,6 +2035,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     final Long totalSize = (Long) vm0.invoke(new SerializableCallable("simulateRebalance") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -2014,6 +2079,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkBalance = new SerializableRunnable("checkBalance") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -2051,6 +2117,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm3 = host.getVM(3);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -2073,6 +2140,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -2089,6 +2157,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Do some puts and gets, to trigger eviction
     SerializableRunnable doOps = new SerializableRunnable("doOps") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -2118,6 +2187,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now do a rebalance
     final Long totalSize = (Long) vm0.invoke(new SerializableCallable("simulateRebalance") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -2158,6 +2228,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkBalance = new SerializableRunnable("checkBalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -2186,6 +2257,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Do another rebalance
     vm0.invoke(new SerializableCallable("simulateRebalance") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -2227,6 +2299,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     checkBalance = new SerializableRunnable("checkBalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -2261,6 +2334,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Region parent;
         Cache cache = getCache();
@@ -2287,6 +2361,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("parent/region1");
@@ -2302,6 +2377,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     final Long totalSize = (Long) vm0.invoke(new SerializableCallable("simulateRebalance") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -2342,6 +2418,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkBalance = new SerializableRunnable("checkBalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("parent/region1");
@@ -2394,6 +2471,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets.
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -2415,6 +2493,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // the colocated region in the new VMs.
     vm0.invoke(new SerializableRunnable("rebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -2441,6 +2520,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(new SerializableRunnable("rebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -2469,6 +2549,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkLowRedundancy") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           PartitionedRegion region1 = (PartitionedRegion) cache.getRegion("region1");
@@ -2505,6 +2586,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testWaitForPut() throws Exception {
     runTestWaitForOperation(new Operation() {
+      @Override
       public void execute(Region region, Integer key) {
         region.put(key, "B");
       }
@@ -2518,6 +2600,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testWaitForInvalidate() throws Exception {
     runTestWaitForOperation(new Operation() {
+      @Override
       public void execute(Region region, Integer key) {
         region.invalidate(key);
       }
@@ -2531,6 +2614,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testWaitForDestroy() throws Exception {
     runTestWaitForOperation(new Operation() {
+      @Override
       public void execute(Region region, Integer key) {
         region.destroy(key);
       }
@@ -2544,6 +2628,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testWaitForCacheLoader() throws Exception {
     runTestWaitForOperation(new Operation() {
+      @Override
       public void execute(Region region, Integer key) {
         PartitionedRegion r = (PartitionedRegion) region;
         // get a key that doesn't exist, but is in the same bucket as the given key
@@ -2562,14 +2647,17 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
         attr.setCacheLoader(new CacheLoader() {
+          @Override
           public Object load(LoaderHelper helper) throws CacheLoaderException {
             return "anobject";
           }
 
+          @Override
           public void close() {}
         });
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -2588,10 +2676,12 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     Cache cache = getCache();
     AttributesFactory attr = new AttributesFactory();
     attr.setCacheLoader(new CacheLoader() {
+      @Override
       public Object load(LoaderHelper helper) throws CacheLoaderException {
         return "anobject";
       }
 
+      @Override
       public void close() {}
     });
 
@@ -2616,6 +2706,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // will try to move one of these buckets, but it shouldn't
     // be able to because of the in progress operation.
     Thread thread1 = new Thread() {
+      @Override
       public void run() {
         op.execute(region, Integer.valueOf(1));
       }
@@ -2623,6 +2714,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     thread1.start();
 
     Thread thread2 = new Thread() {
+      @Override
       public void run() {
         op.execute(region, Integer.valueOf(2));
       }
@@ -2632,6 +2724,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkLowRedundancy = new SerializableRunnable("checkLowRedundancy") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -2684,6 +2777,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkRedundancyFixed") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -2728,6 +2822,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm3 = host.getVM(3);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         Cache cache = getCache();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -2753,6 +2848,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM rebalanceVM;
     SerializableRunnable createAccessor = new SerializableRunnable(("createAccessor")) {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -2780,6 +2876,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -2793,6 +2890,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     });
 
     SerializableRunnable closeCache = new SerializableRunnable("close cache") {
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.getRegion("region1").close();
@@ -2806,6 +2904,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     SerializableRunnable checkLowRedundancyBeforeRebalance =
         new SerializableRunnable("checkLowRedundancyBeforeRebalance") {
 
+          @Override
           public void run() {
             Cache cache = getCache();
             Region region = cache.getRegion("region1");
@@ -2819,6 +2918,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     SerializableRunnable checkLowRedundancyAfterRebalance =
         new SerializableRunnable("checkLowRedundancyAfterRebalance") {
 
+          @Override
           public void run() {
             Cache cache = getCache();
             Region region = cache.getRegion("region1");
@@ -2845,6 +2945,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
      */
     rebalanceVM.invoke(new SerializableRunnable("simulateRebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -2916,6 +3017,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       rebalanceVM.invoke(new SerializableRunnable("rebalance") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           ResourceManager manager = cache.getResourceManager();
@@ -2995,6 +3097,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     LoadProbe oldProbe = setLoadProbe(vm0, new BucketCountLoadProbe());
     try {
       SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+        @Override
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -3015,6 +3118,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Create some buckets with very uneven sizes
       vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -3033,6 +3137,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       // Now simulate a rebalance
       vm0.invoke(new SerializableRunnable("simulateRebalance") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           ResourceManager manager = cache.getResourceManager();
@@ -3065,6 +3170,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
         SerializableRunnable checkRedundancyFixed =
             new SerializableRunnable("checkRedundancyFixed") {
 
+              @Override
               public void run() {
                 Cache cache = getCache();
                 Region region = cache.getRegion("region1");
@@ -3096,6 +3202,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   private LoadProbe setLoadProbe(VM vm, final LoadProbe probe) {
     LoadProbe oldProbe = (LoadProbe) vm.invoke(new SerializableCallable("set load probe") {
 
+      @Override
       public Object call() {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         InternalResourceManager mgr = cache.getInternalResourceManager();
@@ -3116,6 +3223,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      @Override
       public void run() {
         System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
         try {
@@ -3148,6 +3256,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Create some buckets
     vm0.invoke(new SerializableRunnable("createSomeBuckets") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -3163,6 +3272,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     final long[] bucketSizes =
         (long[]) vm0.invoke(new SerializableCallable("get sizes and close cache") {
 
+          @Override
           public Object call() {
             PartitionedRegion region = (PartitionedRegion) getCache().getRegion("region1");
             PartitionedRegionDataStore dataStore = region.getDataStore();
@@ -3185,6 +3295,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(new SerializableRunnable("check sizes") {
 
+      @Override
       public void run() {
         PartitionedRegion region = (PartitionedRegion) getCache().getRegion("region1");
         PartitionedRegionDataStore dataStore = region.getDataStore();
@@ -3206,6 +3317,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // Now simulate a rebalance
     vm0.invoke(new SerializableRunnable("simulateRebalance") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         ResourceManager manager = cache.getResourceManager();
@@ -3238,6 +3350,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     if (!simulate) {
       SerializableRunnable checkRedundancyFixed = new SerializableRunnable("checkRedundancyFixed") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Region region = cache.getRegion("region1");
@@ -3263,6 +3376,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       SerializableRunnable checkBug40228Fixed = new SerializableRunnable("checkBug40228Fixed") {
 
+        @Override
         public void run() {
           Cache cache = getCache();
           Bug40228Loader loader =
@@ -3316,6 +3430,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   private Set<Integer> getBucketList(final String regionName, VM vm0) {
     SerializableCallable getBuckets = new SerializableCallable("get buckets") {
 
+      @Override
       public Object call() throws Exception {
         Cache cache = getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
@@ -3330,6 +3445,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       final Collection<Integer> expected) {
     SerializableCallable getBuckets = new SerializableCallable("get buckets") {
 
+      @Override
       public Object call() throws Exception {
         Cache cache = getCache();
         final PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
@@ -3375,6 +3491,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     }
 
+    @Override
     public void close() {
 
     }
@@ -3423,6 +3540,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   private static class Bug40228Loader implements CacheLoader {
     private volatile boolean closed = false;
 
+    @Override
     public Object load(LoaderHelper helper) throws CacheLoaderException {
       return null;
     }
@@ -3431,6 +3549,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       return closed;
     }
 
+    @Override
     public void close() {
       closed = true;
     }

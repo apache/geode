@@ -688,6 +688,7 @@ public class MBeanUtil {
       // the MBeanServerDelegate name is spec'ed as the following...
       ObjectName delegate = ObjectName.getInstance("JMImplementation:type=MBeanServerDelegate");
       mbeanServer.addNotificationListener(delegate, new NotificationListener() {
+        @Override
         public void handleNotification(Notification notification, Object handback) {
           MBeanServerNotification serverNotification = (MBeanServerNotification) notification;
           if (MBeanServerNotification.UNREGISTRATION_NOTIFICATION

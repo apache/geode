@@ -65,19 +65,23 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
   }
 
   /************** HealthMonitor interface implementation ******************/
+  @Override
   public int getId() {
     return this.id;
   }
 
+  @Override
   public void resetStatus() {
     this.currentStatus = GemFireHealth.GOOD_HEALTH;
     this.eval.reset();
   }
 
+  @Override
   public String[] getDiagnosis(GemFireHealth.Health healthCode) {
     return this.eval.getDiagnosis(healthCode);
   }
 
+  @Override
   public void stop() {
     if (this.t.isAlive()) {
       this.stopRequested = true;
@@ -103,6 +107,7 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
 
   /********** Runnable interface implementation **********/
 
+  @Override
   public void run() {
     final int sleepTime = this.eval.getEvaluationInterval() * 1000;
     if (logger.isDebugEnabled()) {

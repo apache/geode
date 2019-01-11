@@ -41,6 +41,7 @@ public class CacheTransactionManagerCreation implements CacheTransactionManager 
    */
   public CacheTransactionManagerCreation() {}
 
+  @Override
   public TransactionListener setListener(TransactionListener newListener) {
     TransactionListener result = getListener();
     this.txListeners.clear();
@@ -50,6 +51,7 @@ public class CacheTransactionManagerCreation implements CacheTransactionManager 
     return result;
   }
 
+  @Override
   public void initListeners(TransactionListener[] newListeners) {
     this.txListeners.clear();
     if (newListeners != null && newListeners.length > 0) {
@@ -57,22 +59,26 @@ public class CacheTransactionManagerCreation implements CacheTransactionManager 
     }
   }
 
+  @Override
   public void addListener(TransactionListener newListener) {
     if (!this.txListeners.contains(newListener)) {
       this.txListeners.add(newListener);
     }
   }
 
+  @Override
   public void removeListener(TransactionListener newListener) {
     this.txListeners.remove(newListener);
   }
 
+  @Override
   public TransactionListener[] getListeners() {
     TransactionListener[] result = new TransactionListener[this.txListeners.size()];
     this.txListeners.toArray(result);
     return result;
   }
 
+  @Override
   public TransactionListener getListener() {
     if (this.txListeners.isEmpty()) {
       return null;
@@ -84,74 +90,89 @@ public class CacheTransactionManagerCreation implements CacheTransactionManager 
     }
   }
 
+  @Override
   public TransactionId getTransactionId() {
     throw new UnsupportedOperationException(
         "Getting a TransactionId not supported");
   }
 
+  @Override
   public void begin() {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public void commit() throws CommitConflictException {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public void rollback() {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public boolean exists() {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public void setWriter(TransactionWriter writer) {
     this.writer = writer;
   }
 
+  @Override
   public TransactionWriter getWriter() {
     return writer;
   }
 
+  @Override
   public TransactionId suspend() {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public void resume(TransactionId transactionId) {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public boolean isSuspended(TransactionId transactionId) {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public boolean tryResume(TransactionId transactionId) {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public boolean tryResume(TransactionId transactionId, long time, TimeUnit unit) {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public boolean exists(TransactionId transactionId) {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public void setDistributed(boolean distributed) {
     throw new UnsupportedOperationException(
         "Transactions not supported");
   }
 
+  @Override
   public boolean isDistributed() {
     throw new UnsupportedOperationException(
         "Transactions not supported");

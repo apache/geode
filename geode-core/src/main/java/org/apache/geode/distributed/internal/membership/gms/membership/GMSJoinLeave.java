@@ -299,6 +299,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    *
    * @return true if successful, false if not
    */
+  @Override
   public boolean join() {
 
     try {
@@ -1376,6 +1377,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     return currentView;
   }
 
+  @Override
   public NetView getPreviousView() {
     return previousView;
   }
@@ -1385,6 +1387,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     return this.localAddress;
   }
 
+  @Override
   public void installView(NetView newView) {
 
     synchronized (viewInstallationLock) {
@@ -1587,12 +1590,15 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     isCoordinator = false;
   }
 
+  @Override
   public void beSick() {}
 
+  @Override
   public void playDead() {
     playingDead = true;
   }
 
+  @Override
   public void beHealthy() {
     playingDead = false;
   }

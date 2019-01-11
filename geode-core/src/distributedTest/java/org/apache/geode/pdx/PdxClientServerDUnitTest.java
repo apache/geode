@@ -85,6 +85,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
       return null;
     });
     final SerializableCallable checkValue = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getRootRegion("testSimplePdx");
         assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
@@ -186,6 +187,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
     System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "true");
       }
@@ -247,6 +249,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     } finally {
       System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "false");
       Invoke.invokeInEveryVM(new SerializableRunnable() {
+        @Override
         public void run() {
           System.setProperty(AutoSerializableManager.NO_HARDCODED_EXCLUDES_PARAM, "false");
         }
@@ -272,6 +275,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     createClientRegion(vm3, port);
 
     SerializableCallable createValue = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getRootRegion("testSimplePdx");
         try {
@@ -310,6 +314,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
       return null;
     });
     final SerializableCallable checkValue = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getRootRegion("testSimplePdx");
         assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
@@ -341,6 +346,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
       return null;
     });
     final SerializableCallable checkValue = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getRootRegion("testSimplePdx");
         Boolean previousPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
@@ -385,6 +391,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     final int port2 = createLonerServerRegion(vm1, "region2", "2");
 
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(MCAST_PORT, "0");
@@ -457,6 +464,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     });
 
     SerializableCallable checkValue = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getRootRegion("testSimplePdx");
         byte[] bytes = (byte[]) r.get(1);
@@ -483,6 +491,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
     final int port = vm0.invoke(() -> createServerRegion(SimpleClass.class));
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(MCAST_PORT, "0");
@@ -508,6 +517,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
       return null;
     });
     final SerializableCallable checkValue = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getRootRegion("testSimplePdx");
         assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
@@ -531,6 +541,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
     final int port = vm0.invoke(() -> createServerRegion(SimpleClass.class));
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(MCAST_PORT, "0");
@@ -602,6 +613,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
   private int createServerRegion(VM vm) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
@@ -620,6 +632,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
   private int createServerRegion(VM vm, final int port) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
@@ -638,6 +651,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
   private int createServerRegionWithPersistence(VM vm, final boolean persistentPdxRegistry) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         CacheFactory cf = new CacheFactory();
         if (persistentPdxRegistry) {
@@ -666,6 +680,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
   private int createServerAccessor(VM vm) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
@@ -685,6 +700,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
   private int createLonerServerRegion(VM vm, final String regionName, final String dsId) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Properties props = new Properties();
         props.setProperty(LOCATORS, "");
@@ -718,6 +734,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
   private void createClientRegion(final VM vm, final int port, final boolean threadLocalConnections,
       final boolean setPdxTypeClearProp, final String... autoSerializerPatterns) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         if (setPdxTypeClearProp) {
           System.setProperty(PoolImpl.ON_DISCONNECT_CLEAR_PDXTYPEIDS, "true");

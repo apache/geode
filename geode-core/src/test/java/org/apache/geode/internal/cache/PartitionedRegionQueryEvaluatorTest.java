@@ -98,10 +98,12 @@ public class PartitionedRegionQueryEvaluatorTest {
 
     PartitionedQueryScenario scenario = new PartitionedQueryScenario(localNode, allNodes,
         noFailingMembers, createFakeBucketMap(), new ProcessDataFaker() {
+          @Override
           public void processData(PartitionedRegionQueryEvaluator prqe) {
             // this test won't have any remote nodes responding
           }
 
+          @Override
           public void executeQueryLocally(Collection resultsCollector) {
             resultsCollector.add(resultsForMember1);
           }
@@ -127,10 +129,12 @@ public class PartitionedRegionQueryEvaluatorTest {
 
     PartitionedQueryScenario scenario = new PartitionedQueryScenario(localNode, allNodes,
         noFailingMembers, createFakeBucketMap(), new ProcessDataFaker() {
+          @Override
           public void processData(PartitionedRegionQueryEvaluator prqe) {
             prqe.processData(resultsForMember2, remoteNodeA, 0, true);
           }
 
+          @Override
           public void executeQueryLocally(Collection resultsCollector) {
             resultsCollector.add(resultsForMember1);
           }
@@ -164,10 +168,12 @@ public class PartitionedRegionQueryEvaluatorTest {
     failingMembers.add(remoteNodeB);
     PartitionedQueryScenario allNodesUpAtBeginning = new PartitionedQueryScenario(localNode,
         allNodes, failingMembers, createFakeBucketMap(), new ProcessDataFaker() {
+          @Override
           public void processData(PartitionedRegionQueryEvaluator prqe) {
             prqe.processData(resultsForMember2, remoteNodeA, 0, true);
           }
 
+          @Override
           public void executeQueryLocally(Collection resultsCollector) {
             resultsCollector.add(resultsForMember1);
           }
@@ -176,10 +182,12 @@ public class PartitionedRegionQueryEvaluatorTest {
     PartitionedQueryScenario afterFailureScenario =
         new PartitionedQueryScenario(localNode, allNodes, noFailingMembers,
             createFakeBucketMapFailedNodesToLocalMember(), new ProcessDataFaker() {
+              @Override
               public void processData(PartitionedRegionQueryEvaluator prqe) {
                 // on retry we do not need to fake a retry on a remote node for this test
               }
 
+              @Override
               public void executeQueryLocally(Collection resultsCollector) {
                 resultsCollector.add(resultsForMember1);
               }

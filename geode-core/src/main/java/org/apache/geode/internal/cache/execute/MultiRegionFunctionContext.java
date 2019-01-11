@@ -40,6 +40,7 @@ public interface MultiRegionFunctionContext extends FunctionContext {
    * @since GemFire 6.5
    * @see Function#isHA()
    */
+  @Override
   boolean isPossibleDuplicate();
 
 }

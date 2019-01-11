@@ -27,6 +27,7 @@ import org.junit.Test;
 
 public class GfshHeadlessModeUnitTest extends GfshAbstractUnitTest {
 
+  @Override
   @Before
   public void before() {
     super.before();

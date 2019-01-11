@@ -27,6 +27,7 @@ public class Customer implements Declarable {
 
   }
 
+  @Override
   public void init(java.util.Properties props) {
 
   }

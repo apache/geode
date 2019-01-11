@@ -297,6 +297,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
     }
   }
 
+  @Override
   public int getDSFID() {
     return CUMULATIVE_RESULTS;
   }

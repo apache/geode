@@ -133,6 +133,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   // }
 
 
+  @Override
   protected boolean needWriteLock(EntryEventImpl event) {
     return false;
   }
@@ -445,6 +446,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
   }
 
+  @Override
   public boolean isInitialized() {
     return this.initialized;
   }

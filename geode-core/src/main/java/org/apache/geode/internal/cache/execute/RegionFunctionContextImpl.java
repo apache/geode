@@ -79,6 +79,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
    *
    * @return Returns the Region on which function is executed
    */
+  @Override
   public <K, V> Region<K, V> getDataSet() {
     return this.dataSet;
   }
@@ -91,6 +92,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
    *
    * @return the objects should be local to this context
    */
+  @Override
   public Set<?> getFilter() {
     return this.filter;
   }
@@ -109,6 +111,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
     return buf.toString();
   }
 
+  @Override
   public Region getLocalDataSet(Region r) {
     if (this.colocatedLocalDataMap != null) {
       return this.colocatedLocalDataMap.get(r.getFullPath());
@@ -117,6 +120,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
     }
   }
 
+  @Override
   public Map<String, LocalDataSet> getColocatedLocalDataSets() {
     if (this.colocatedLocalDataMap != null) {
       HashMap<String, LocalDataSet> ret =
@@ -128,10 +132,12 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
     }
   }
 
+  @Override
   public boolean isPossibleDuplicate() {
     return this.isPossibleDuplicate;
   }
 
+  @Override
   public <K, V> Set<Integer> getLocalBucketSet(Region<K, V> region) {
     if (!region.getAttributes().getDataPolicy().withPartitioning()) {
       return null;

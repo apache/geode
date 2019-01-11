@@ -71,6 +71,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
    *
    * @return Connection Connection object for the Database connection.
    */
+  @Override
   public abstract Connection getConnection() throws SQLException;
 
   /**
@@ -81,6 +82,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
    * @param password Passowrd used for making database connection.
    * @return ???
    */
+  @Override
   public abstract Connection getConnection(String username, String password) throws SQLException;
 
   // DataSource Interface functions
@@ -89,6 +91,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
    *
    * @return PrintWriter for logs.
    */
+  @Override
   public PrintWriter getLogWriter() throws SQLException {
     return dataSourcePW;
   }
@@ -99,6 +102,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
    *
    * @return int login time out.
    */
+  @Override
   public int getLoginTimeout() throws SQLException {
     return loginTimeOut;
   }
@@ -108,6 +112,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
    *
    * @param out PrintWriter for writing the logs.
    */
+  @Override
   public void setLogWriter(java.io.PrintWriter out) throws SQLException {
     dataSourcePW = out;
   }
@@ -117,6 +122,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
    *
    * @param seconds login time out in seconds.
    */
+  @Override
   public void setLoginTimeout(int seconds) throws SQLException {
     loginTimeOut = seconds;
   }

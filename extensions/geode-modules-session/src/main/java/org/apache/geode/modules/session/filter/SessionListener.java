@@ -31,11 +31,13 @@ public class SessionListener implements HttpSessionListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(SessionListener.class.getName());
 
+  @Override
   public void sessionCreated(HttpSessionEvent httpSessionEvent) {}
 
   /**
    * This will receive events from the container using the native sessions.
    */
+  @Override
   public void sessionDestroyed(HttpSessionEvent event) {
     // No op
   }

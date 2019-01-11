@@ -31,14 +31,17 @@ public class EnumId implements DataSerializableFixedID {
 
   public EnumId() {}
 
+  @Override
   public int getDSFID() {
     return ENUM_ID;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.id);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.id = in.readInt();
   }

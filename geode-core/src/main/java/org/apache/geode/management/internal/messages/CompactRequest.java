@@ -118,6 +118,7 @@ public class CompactRequest extends AdminRequest {
     return notExecutedMembers;
   }
 
+  @Override
   public int getDSFID() {
     return MGMT_COMPACT_REQUEST;
   }

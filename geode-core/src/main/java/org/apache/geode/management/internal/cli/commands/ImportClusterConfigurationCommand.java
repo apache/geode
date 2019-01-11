@@ -200,6 +200,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
   }
 
   public static class ImportInterceptor extends AbstractCliAroundInterceptor {
+    @Override
     public Object preExecution(GfshParseResult parseResult) {
       String zip = parseResult.getParamValueAsString(CliStrings.IMPORT_SHARED_CONFIG__ZIP);
       String xmlFile = parseResult.getParamValueAsString(XML_FILE);

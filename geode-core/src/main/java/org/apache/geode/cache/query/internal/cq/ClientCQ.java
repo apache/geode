@@ -27,6 +27,7 @@ public interface ClientCQ extends InternalCqQuery {
    *
    * @param sendRequestToServer true to send the request to server.
    */
+  @Override
   void close(boolean sendRequestToServer) throws CqClosedException, CqException;
 
   void setProxyCache(ProxyCache proxyCache);

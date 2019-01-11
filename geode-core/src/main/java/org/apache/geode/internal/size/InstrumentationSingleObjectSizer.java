@@ -33,6 +33,7 @@ public class InstrumentationSingleObjectSizer implements SingleObjectSizer {
 
   }
 
+  @Override
   public long sizeof(Object object) {
     return instrumentation.getObjectSize(object);
   }

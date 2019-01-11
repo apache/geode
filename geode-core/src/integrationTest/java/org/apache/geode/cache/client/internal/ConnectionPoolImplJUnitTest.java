@@ -192,6 +192,7 @@ public class ConnectionPoolImplJUnitTest {
     Op testOp = new Op() {
       int attempts = 0;
 
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         if (attempts == 0) {
           attempts++;
@@ -216,6 +217,7 @@ public class ConnectionPoolImplJUnitTest {
         location1.equals(usedServer) || location2.equals(usedServer));
 
     testOp = new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         throw new SocketTimeoutException();
       }
@@ -251,6 +253,7 @@ public class ConnectionPoolImplJUnitTest {
     ServerLocation location1 = new ServerLocation("localhost", port1);
 
     Op testOp = new Op() {
+      @Override
       public Object attempt(Connection cnx) throws Exception {
         return cnx.getServer();
       }

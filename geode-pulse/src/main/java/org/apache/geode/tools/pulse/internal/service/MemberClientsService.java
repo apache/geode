@@ -51,6 +51,7 @@ public class MemberClientsService implements PulseService {
   private final String NAME = "name";
   private final String HOST = "host";
 
+  @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
 
     // get cluster object

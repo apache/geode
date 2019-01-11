@@ -342,6 +342,7 @@ public class NativeCallsJNAImpl {
       }
     }
 
+    @Override
     public boolean isTTY() {
       try {
         return isatty(0) == 1;
@@ -430,6 +431,7 @@ public class NativeCallsJNAImpl {
 
       public int[] fsid = new int[2];
 
+      @Override
       protected List getFieldOrder() {
         return Arrays.asList(new String[] {"fsid"});
       }
@@ -439,6 +441,7 @@ public class NativeCallsJNAImpl {
 
       public int[] fspare = new int[5];
 
+      @Override
       protected List getFieldOrder() {
         return Arrays.asList(new String[] {"fspare"});
       }
@@ -524,6 +527,7 @@ public class NativeCallsJNAImpl {
 
       public long[] fspare = new long[5];
 
+      @Override
       protected List getFieldOrder() {
         return Arrays.asList(new String[] {"fspare"});
       }
@@ -634,6 +638,7 @@ public class NativeCallsJNAImpl {
      * getUsableSpace can hang. See bug #49155. On platforms other than Linux this will return false
      * even if it on local file system for now.
      */
+    @Override
     public boolean isOnLocalFileSystem(final String path) {
       if (!isStatFSEnabled) {
         // if (logger != null && logger.fineEnabled()) {

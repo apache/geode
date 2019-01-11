@@ -468,13 +468,16 @@ public class ReplyProcessor21 implements MembershipListener {
         new Object[] {ex.getUnknownDSFID(), msg.getSender(), versionStr}), ex);
   }
 
+  @Override
   public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
     // Nothing to do - member wasn't sent the operation, anyway.
   }
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
+  @Override
   public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
       InternalDistributedMember whoSuspected, String reason) {
     if (isSevereAlertProcessingEnabled()) {
@@ -492,6 +495,7 @@ public class ReplyProcessor21 implements MembershipListener {
     }
   }
 
+  @Override
   public void memberDeparted(DistributionManager distributionManager,
       final InternalDistributedMember id, final boolean crashed) {
     removeMember(id, true);

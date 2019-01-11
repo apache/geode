@@ -50,6 +50,7 @@ public class RegionAttributesRequest extends RegionAdminRequest {
     return RegionAttributesResponse.create(dm, this.getSender(), this.getRegion(dm.getSystem()));
   }
 
+  @Override
   public int getDSFID() {
     return REGION_ATTRIBUTES_REQUEST;
   }

@@ -155,6 +155,7 @@ public class InitialImageFlowControl implements MembershipListener {
     return id;
   }
 
+  @Override
   public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
       boolean crashed) {
     if (id.equals(target)) {
@@ -171,13 +172,16 @@ public class InitialImageFlowControl implements MembershipListener {
     }
   }
 
+  @Override
   public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
     // Do nothing
   }
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
+  @Override
   public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
       InternalDistributedMember whoSuspected, String reason) {
     // Do nothing
@@ -225,6 +229,7 @@ public class InitialImageFlowControl implements MembershipListener {
       }
     }
 
+    @Override
     public int getDSFID() {
       return FLOW_CONTROL_PERMIT_MESSAGE;
     }

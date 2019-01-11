@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID {
   private static final long serialVersionUID = 7040814060882774875L;
 
+  @Override
   public PRLoad getLoad(PartitionedRegion pr) {
     PartitionedRegionDataStore ds = pr.getDataStore();
     int configuredBucketCount = pr.getTotalNumberOfBuckets();
@@ -51,10 +52,13 @@ public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID 
     return prLoad;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+  @Override
   public void toData(DataOutput out) throws IOException {}
 
+  @Override
   public int getDSFID() {
     return BUCKET_COUNT_LOAD_PROBE;
   }

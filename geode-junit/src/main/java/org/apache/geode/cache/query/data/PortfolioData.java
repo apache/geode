@@ -123,6 +123,7 @@ public class PortfolioData implements Declarable, Serializable {
     }
   }
 
+  @Override
   public void init(Properties props) {
     this.ID = Integer.parseInt(props.getProperty("id"));
     this.type = props.getProperty("type", "type1");

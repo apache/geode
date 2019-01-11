@@ -47,6 +47,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
     try {
@@ -64,6 +65,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public Entry getEntry(KeyInfo keyInfo, boolean allowTombstone) {
     try {
       // TODO change RemoteFetchEntryMessage to allow tombstones to be returned
@@ -84,6 +86,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     }
   }
 
+  @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     try {
@@ -101,6 +104,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public boolean containsKey(KeyInfo keyInfo) {
     try {
       RemoteContainsKeyValueResponse response = RemoteContainsKeyValueMessage
@@ -117,6 +121,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public boolean containsValueForKey(KeyInfo keyInfo) {
     try {
       RemoteContainsKeyValueResponse response = RemoteContainsKeyValueMessage
@@ -133,6 +138,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public Object findObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object value, boolean preferCD, ClientProxyMembershipID requestingClient,
       EntryEventImpl clientEvent) {
@@ -156,11 +162,13 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
+  @Override
   public Object getEntryForIterator(KeyInfo keyInfo, boolean allowTombstone) {
     return getEntry(keyInfo, allowTombstone);
   }
 
 
+  @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
@@ -186,6 +194,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     return retVal;
   }
 
+  @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       InternalRegion region) {
     try {

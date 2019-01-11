@@ -71,6 +71,7 @@ public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
 
     // Do Puts
     queryVM.invoke(new SerializableRunnable("putting data") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("portfolio");
@@ -83,6 +84,7 @@ public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     queryVM.invoke(new SerializableRunnable("query") {
+      @Override
       public void run() {
         try {
           QueryService qs = getCache().getQueryService();
@@ -116,6 +118,7 @@ public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
 
   private void createBuckets(VM vm) {
     vm.invoke(new SerializableRunnable("create accessor") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region");
@@ -128,6 +131,7 @@ public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
 
   private void createPR(VM vm) {
     vm.invoke(new SerializableRunnable("create data store") {
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -141,6 +145,7 @@ public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
   private void createAccessor(VM vm) {
     vm.invoke(new SerializableRunnable("create accessor") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -155,6 +160,7 @@ public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
   private void createIndex(VM vm, final String indexName, final String indexedExpression,
       final String regionPath) {
     vm.invoke(new SerializableRunnable("create index") {
+      @Override
       public void run() {
         try {
           Cache cache = getCache();
@@ -173,6 +179,7 @@ public class GroupByQueryDUnitTest extends JUnit4CacheTestCase {
   private void closeCache(VM... vms) {
     for (VM vm : vms) {
       vm.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           getCache().close();
         }

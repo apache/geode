@@ -622,6 +622,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
    *
    * @return a shallow copy of this map
    */
+  @Override
   public Object clone() {
     ObjectIntHashMap result = null;
     try {
@@ -849,6 +850,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       }
     }
 
+    @Override
     public boolean hasNext() {
       return next != null;
     }
@@ -868,6 +870,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       return e;
     }
 
+    @Override
     public void remove() {
       if (current == null)
         throw new IllegalStateException();
@@ -882,12 +885,14 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
   }
 
   private class KeyIterator extends HashIterator<Object> {
+    @Override
     public Object next() {
       return nextEntry().getKey();
     }
   }
 
   private class EntryIterator extends HashIterator<Entry> {
+    @Override
     public Entry next() {
       return nextEntry();
     }
@@ -923,22 +928,27 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
   }
 
   private class KeySet extends AbstractSet<Object> {
+    @Override
     public Iterator<Object> iterator() {
       return newKeyIterator();
     }
 
+    @Override
     public int size() {
       return size;
     }
 
+    @Override
     public boolean contains(Object o) {
       return containsKey(o);
     }
 
+    @Override
     public boolean remove(Object o) {
       return ObjectIntHashMap.this.removeEntryForKey(o) != null;
     }
 
+    @Override
     public void clear() {
       ObjectIntHashMap.this.clear();
     }
@@ -966,10 +976,12 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
   }
 
   private class EntrySet extends AbstractSet<Entry> {
+    @Override
     public Iterator<Entry> iterator() {
       return newEntryIterator();
     }
 
+    @Override
     public boolean contains(Object o) {
       if (!(o instanceof Entry))
         return false;
@@ -978,14 +990,17 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       return candidate != null && candidate.equals(e);
     }
 
+    @Override
     public boolean remove(Object o) {
       return removeMapping(o) != null;
     }
 
+    @Override
     public int size() {
       return size;
     }
 
+    @Override
     public void clear() {
       ObjectIntHashMap.this.clear();
     }

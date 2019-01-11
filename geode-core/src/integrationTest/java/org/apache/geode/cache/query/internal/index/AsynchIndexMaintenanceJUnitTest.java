@@ -94,10 +94,12 @@ public class AsynchIndexMaintenanceJUnitTest {
     // assertIndexDetailsEquals(0, getIndexSize(ri));
     region.put("50", new Portfolio(50));
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return (getIndexSize(ri) == 50);
       }
 
+      @Override
       public String description() {
         return "valueToEntriesMap never became 50";
       }
@@ -123,10 +125,12 @@ public class AsynchIndexMaintenanceJUnitTest {
     // assertIndexDetailsEquals(0, getIndexSize(ri));
 
     WaitCriterion evSize = new WaitCriterion() {
+      @Override
       public boolean done() {
         return (getIndexSize(ri) == size);
       }
 
+      @Override
       public String description() {
         return "valueToEntriesMap never became size :" + size;
       }
@@ -138,10 +142,12 @@ public class AsynchIndexMaintenanceJUnitTest {
     region.clear();
 
     WaitCriterion evClear = new WaitCriterion() {
+      @Override
       public boolean done() {
         return (getIndexSize(ri) == 0);
       }
 
+      @Override
       public String description() {
         return "valueToEntriesMap never became size :" + 0;
       }
@@ -171,10 +177,12 @@ public class AsynchIndexMaintenanceJUnitTest {
     }
 
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return (getIndexSize(ri) == 3);
       }
 
+      @Override
       public String description() {
         return "valueToEntries map never became size 3";
       }
@@ -214,6 +222,7 @@ public class AsynchIndexMaintenanceJUnitTest {
     for (int i = 0; i < TOTAL_THREADS; ++i) {
       final int k = i;
       threads[i] = new Thread(new Runnable() {
+        @Override
         public void run() {
           try {
             barrier.await();

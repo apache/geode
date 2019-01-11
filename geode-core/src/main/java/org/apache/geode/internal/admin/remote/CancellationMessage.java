@@ -42,6 +42,7 @@ public class CancellationMessage extends PooledDistributionMessage {
     CancellationRegistry.getInstance().cancelMessage(this.getSender(), msgToCancel);
   }
 
+  @Override
   public int getDSFID() {
     return CANCELLATION_MESSAGE;
   }

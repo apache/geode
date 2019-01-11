@@ -443,6 +443,7 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
       this.load = load;
     }
 
+    @Override
     public ServerLoad getLoad(ServerMetrics metrics) {
       float connectionLoad =
           load.getConnectionLoad() + metrics.getConnectionCount() * load.getLoadPerConnection();

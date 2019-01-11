@@ -90,6 +90,7 @@ public class ManagementMembershipListener implements MembershipListener {
     }
   }
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 }

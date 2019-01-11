@@ -61,6 +61,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
 
   public abstract Region createRegion(String regionName, Class constraint);
 
+  @Override
   @Test
   public void testConvertibleGroupByQuery_1() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -79,6 +80,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertFalse(cs.isGroupBy());
   }
 
+  @Override
   @Test
   public void testConvertibleGroupByQuery_refer_column() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -100,6 +102,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals(39, counter - 1);
   }
 
+  @Override
   @Test
   public void testConvertibleGroupByQuery_refer_column_alias_Bug520141() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -122,6 +125,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals(39, counter - 1);
   }
 
+  @Override
   @Test
   public void testAggregateFuncCountStar() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -176,6 +180,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
 
   }
 
+  @Override
   @Test
   public void testAggregateFuncCountDistinctStar_1() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -231,6 +236,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Integer", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testAggregateFuncCountDistinctStar_2() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -286,6 +292,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Integer", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testAggregateFuncSum() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -341,6 +348,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Number", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testAggregateFuncSumDistinct() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -404,6 +412,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Number", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testAggregateFuncNoGroupBy() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -447,6 +456,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     }
   }
 
+  @Override
   @Test
   public void testAggregateFuncAvg() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -506,6 +516,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Number", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testAggregateFuncAvgDistinct() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -572,6 +583,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Number", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testAggregateFuncWithOrderBy() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -608,6 +620,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     ssOrrs.compareExternallySortedQueriesWithOrderBy(queries, r);
   }
 
+  @Override
   @Test
   public void testComplexValueAggregateFuncAvgDistinct() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -675,6 +688,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Number", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testAggregateFuncMax() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -734,6 +748,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Number", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testSumWithMultiColumnGroupBy() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -791,6 +806,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
 
   }
 
+  @Override
   @Test
   public void testAggregateFuncMin() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
@@ -850,6 +866,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     assertEquals("Number", fieldTypes[1].getSimpleClassName());
   }
 
+  @Override
   @Test
   public void testCompactRangeIndex() throws Exception {
 
@@ -910,6 +927,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true, queries);
   }
 
+  @Override
   public void testDistinctCountWithoutGroupBy() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
     for (int i = 1; i < 200; ++i) {
@@ -967,6 +985,7 @@ public abstract class GroupByTestImpl implements GroupByTestInterface {
     ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true, queries);
   }
 
+  @Override
   public void testLimitWithGroupBy() throws Exception {
     Region region = this.createRegion("portfolio", Portfolio.class);
     for (int i = 1; i < 200; ++i) {

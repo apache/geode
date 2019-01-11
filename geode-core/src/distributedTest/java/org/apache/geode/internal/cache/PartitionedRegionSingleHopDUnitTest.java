@@ -786,10 +786,12 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     final Map<Integer, List<BucketServerLocation66>> clientMap =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return (clientMap.size() == 4);
       }
 
+      @Override
       public String description() {
         return "expected no metadata to be refreshed";
       }
@@ -817,6 +819,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     cms = ((GemFireCacheImpl) cache).getClientMetadataService();
 
     wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
         Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
@@ -839,6 +842,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
         return finished;
       }
 
+      @Override
       public String description() {
         return "bucket copies are not created";
       }
@@ -855,10 +859,12 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     final Map<Integer, List<BucketServerLocation66>> clientMap2 =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
     wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return (clientMap2.size() == 4);
       }
 
+      @Override
       public String description() {
         return "expected no metadata to be refreshed";
       }
@@ -919,6 +925,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     final Map<Integer, List<BucketServerLocation66>> fclientMap = clientMap;
     GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
+      @Override
       public boolean done() {
         try {
           // member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(fclientMap));
@@ -932,6 +939,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
         return true;
       }
 
+      @Override
       public String description() {
         return "verification of metadata on all members";
       }
@@ -1126,6 +1134,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   public static void waitForLocalBucketsCreation(final int numBuckets) {
     final PartitionedRegion pr = (PartitionedRegion) region;
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (pr.getDataStore().getAllLocalBuckets().size() == numBuckets) {
           return true;
@@ -1133,6 +1142,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
         return false;
       }
 
+      @Override
       public String description() {
         return "bucket copies are not created, the total number of buckets expected are "
             + numBuckets + " but the total num of buckets are "

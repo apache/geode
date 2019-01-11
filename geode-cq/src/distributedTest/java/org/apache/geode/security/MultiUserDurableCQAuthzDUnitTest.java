@@ -63,6 +63,7 @@ public class MultiUserDurableCQAuthzDUnitTest extends ClientAuthorizationTestCas
   public final void preSetUpClientAuthorizationTestBase() throws Exception {
     getSystem();
     invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         getSystem();
       }

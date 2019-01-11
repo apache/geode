@@ -83,6 +83,7 @@ public class LoaderHelperImpl implements LoaderHelper {
    * @throws TimeoutException if the netSearch times out before getting a response from another
    *         cache
    */
+  @Override
   public Object netSearch(final boolean doNetLoad) throws CacheLoaderException, TimeoutException {
 
     if (this.region.getAttributes().getScope().isLocal()) {
@@ -131,6 +132,7 @@ public class LoaderHelperImpl implements LoaderHelper {
    * @return The name Object for the object being loaded.
    * @see CacheLoader#load(LoaderHelper) load
    */
+  @Override
   public Object getKey() {
     return this.key;
   }
@@ -141,6 +143,7 @@ public class LoaderHelperImpl implements LoaderHelper {
    * @return The name of the region for the object being loaded.
    * @see CacheLoader#load(LoaderHelper) load
    */
+  @Override
   public Region getRegion() {
     return region;
   }
@@ -151,6 +154,7 @@ public class LoaderHelperImpl implements LoaderHelper {
    *
    * @return the argument or null if one was not supplied
    */
+  @Override
   public Object getArgument() {
     return aCallbackArgument;
   }

@@ -186,6 +186,7 @@ public class SizeMessage extends PartitionMessage {
     buff.append("; bucketIds=").append(this.bucketIds);
   }
 
+  @Override
   public int getDSFID() {
     return PR_SIZE_MESSAGE;
   }

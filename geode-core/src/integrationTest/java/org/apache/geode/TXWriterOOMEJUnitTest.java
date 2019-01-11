@@ -38,10 +38,12 @@ public class TXWriterOOMEJUnitTest extends TXWriterTestCase {
 
     // install TransactionWriter
     ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+      @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new OutOfMemoryError("this is expected!");
       }
 
+      @Override
       public void close() {}
     });
 

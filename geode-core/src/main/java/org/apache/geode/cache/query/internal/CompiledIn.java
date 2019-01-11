@@ -67,6 +67,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return list;
   }
 
+  @Override
   public int getType() {
     return LITERAL_in;
   }
@@ -93,6 +94,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return evalColln;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Object evalElm = this.elm.evaluate(context);
@@ -153,6 +155,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * will be null in both the indexes as key is not a meaningful entity. The 0th element will refer
    * to LHS operand and 1th element will refer to RHS operannd
    */
+  @Override
   public IndexInfo[] getIndexInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     IndexInfo[] indexInfo = privGetIndexInfo(context);
@@ -205,6 +208,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   /**
    * Invariant: the receiver is dependent on the current iterator.
    */
+  @Override
   protected PlanInfo protGetPlanInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     PlanInfo result = new PlanInfo();
@@ -230,6 +234,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return result;
   }
 
+  @Override
   public Set computeDependencies(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     context.addDependencies(this, this.elm.computeDependencies(context));
@@ -361,6 +366,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * down the index resultset
    *
    */
+  @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults,
       boolean completeExpansionNeeded, CompiledValue iterOperands, RuntimeIterator[] indpndntItrs,
       boolean isIntersection, boolean conditioningNeeded, boolean evalProj)
@@ -381,6 +387,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
   }
 
+  @Override
   public int getOperator() {
     return TOK_EQ;
   }
@@ -586,6 +593,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     }
   }
 
+  @Override
   public boolean isProjectionEvaluationAPossibility(ExecutionContext context) {
     return true;
   }
@@ -602,6 +610,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return false;
   }
 
+  @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
@@ -634,6 +643,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * @param intermediateResults if this parameter is provided, and we have to iterate, then iterate
    *        over this result set instead of the entire base collection.
    */
+  @Override
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -674,6 +684,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * auxFilterEvalutae. Overriding this function just for ensuring that auxFilterEvaluate is not
    * being called by mistake.
    */
+  @Override
   public SelectResults auxFilterEvaluate(ExecutionContext context,
       SelectResults intermediateResults) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
@@ -681,6 +692,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return null;
   }
 
+  @Override
   public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, final int thisSize)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -719,6 +731,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return isThisBetter;
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     IndexInfo[] idxInfo = getIndexInfo(context);
@@ -825,6 +838,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     return size;
   }
 
+  @Override
   public boolean isRangeEvaluatable() {
     return false;
   }

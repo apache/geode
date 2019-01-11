@@ -55,6 +55,7 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
     }
   }
 
+  @Override
   public int getDSFID() {
     return HEALTH_LISTENER_MESSAGE;
   }

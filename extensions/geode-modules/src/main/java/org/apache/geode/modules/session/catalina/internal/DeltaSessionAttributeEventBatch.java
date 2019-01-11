@@ -43,6 +43,7 @@ public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
     return this.eventQueue;
   }
 
+  @Override
   public void apply(Cache cache) {
     Region<String, DeltaSessionInterface> region = getRegion(cache);
     DeltaSessionInterface session = region.get(this.key);
@@ -61,11 +62,13 @@ public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.eventQueue = DataSerializer.readArrayList(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeArrayList((ArrayList) this.eventQueue, out);

@@ -164,6 +164,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
 
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+      @Override
       public void run() {
         try {
           RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
@@ -179,6 +180,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
     vm1.invoke(createRegion);
     // vm2.invoke(createRegion);
     vm1.invoke(new SerializableRunnable("Create local tombstone and adjust time") {
+      @Override
       public void run() {
         // make the entry for cckey0 a tombstone in this VM and set its
         // modification time to be older than the tombstone GC interval. This
@@ -200,6 +202,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
     // perform a CREATE with a new version number
     vm0.invoke(new SerializableRunnable(
         "Locally destroy the entry and do a create that will be propagated with v1") {
+      @Override
       public void run() {
         CCRegion.getRegionMap().removeEntry("cckey0", CCRegion.getRegionEntry("cckey0"), true);
         if (CCRegion.getRegionEntry("ckey0") != null) {
@@ -209,6 +212,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
       }
     });
     vm1.invoke(new SerializableRunnable("Check that the create() was applied") {
+      @Override
       public void run() {
         RegionEntry entry = CCRegion.getRegionEntry("cckey0");
         assertTrue(entry.getVersionStamp().getEntryVersion() == 1);

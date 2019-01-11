@@ -65,6 +65,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
     this.diskUsageCriticalPct = DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE;
   }
 
+  @Override
   public UUID getDiskStoreUUID() {
     throw new UnsupportedOperationException("Not Implemented!");
   }
@@ -74,6 +75,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getAllowForceCompaction()
    */
+  @Override
   public boolean getAllowForceCompaction() {
     return this.allowForceCompaction;
   }
@@ -83,6 +85,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getAutoCompact()
    */
+  @Override
   public boolean getAutoCompact() {
     return this.autoCompact;
   }
@@ -92,6 +95,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getCompactionThreshold()
    */
+  @Override
   public int getCompactionThreshold() {
     return this.compactionThreshold;
   }
@@ -101,6 +105,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getDiskDirSizes()
    */
+  @Override
   public int[] getDiskDirSizes() {
     int[] result = new int[this.diskDirSizes.length];
     System.arraycopy(this.diskDirSizes, 0, result, 0, this.diskDirSizes.length);
@@ -112,6 +117,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getDiskDirs()
    */
+  @Override
   public File[] getDiskDirs() {
     File[] result = new File[this.diskDirs.length];
     System.arraycopy(this.diskDirs, 0, result, 0, this.diskDirs.length);
@@ -123,6 +129,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getMaxOplogSize()
    */
+  @Override
   public long getMaxOplogSize() {
     // TODO Auto-generated method stub
     return this.maxOplogSizeInBytes / (1024 * 1024);
@@ -140,6 +147,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getName()
    */
+  @Override
   public String getName() {
     return this.name;
   }
@@ -149,6 +157,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getQueueSize()
    */
+  @Override
   public int getQueueSize() {
     return this.queueSize;
   }
@@ -158,6 +167,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getTimeInterval()
    */
+  @Override
   public long getTimeInterval() {
     return this.timeInterval;
   }
@@ -167,18 +177,22 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    *
    * @see org.apache.geode.cache.DiskStore#getWriteBufferSize()
    */
+  @Override
   public int getWriteBufferSize() {
     return this.writeBufferSize;
   }
 
+  @Override
   public void flush() {
     // nothing needed
   }
 
+  @Override
   public void forceRoll() {
     // nothing needed
   }
 
+  @Override
   public boolean forceCompaction() {
     return false;
   }

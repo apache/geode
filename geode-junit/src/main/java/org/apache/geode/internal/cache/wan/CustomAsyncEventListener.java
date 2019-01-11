@@ -30,6 +30,7 @@ public class CustomAsyncEventListener implements AsyncEventListener {
     this.eventsMap = new HashMap<Long, AsyncEvent>();
   }
 
+  @Override
   public boolean processEvents(List<AsyncEvent> events) {
     int i = 0;
     for (AsyncEvent event : events) {
@@ -50,5 +51,6 @@ public class CustomAsyncEventListener implements AsyncEventListener {
     return eventsMap;
   }
 
+  @Override
   public void close() {}
 }

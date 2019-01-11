@@ -31,6 +31,7 @@ public abstract class SeekableInputStream extends InputStream {
    */
   public abstract void seek(long position) throws IOException;
 
+  @Override
   public abstract SeekableInputStream clone();
 
 

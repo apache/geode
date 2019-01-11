@@ -66,6 +66,7 @@ public class CompiledID extends AbstractCompiledValue {
     return true;
   }
 
+  @Override
   public int getType() {
     return Identifier;
   }
@@ -77,6 +78,7 @@ public class CompiledID extends AbstractCompiledValue {
     return context.addDependencies(this, v.computeDependencies(context));
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     CompiledValue v = context.resolve(getId());

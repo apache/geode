@@ -32,10 +32,12 @@ public class RemoteLocatorRequest implements DataSerializableFixedID {
     this.distributedSystemId = dsId;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.distributedSystemId = in.readInt();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.distributedSystemId);
   }
@@ -44,6 +46,7 @@ public class RemoteLocatorRequest implements DataSerializableFixedID {
     return this.distributedSystemId;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_REQUEST;
   }

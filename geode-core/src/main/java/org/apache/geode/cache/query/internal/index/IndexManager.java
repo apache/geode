@@ -1587,6 +1587,7 @@ public class IndexManager {
     /*
      * Creates and initializes the index.
      */
+    @Override
     public Index call() {
       Index index = null;
       String indexedExpression = helper.getCanonicalizedIndexedExpression();

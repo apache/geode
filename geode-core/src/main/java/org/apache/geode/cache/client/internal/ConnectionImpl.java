@@ -125,6 +125,7 @@ public class ConnectionImpl implements Connection {
     return status;
   }
 
+  @Override
   public void close(boolean keepAlive) throws Exception {
 
     try {
@@ -153,6 +154,7 @@ public class ConnectionImpl implements Connection {
     }
   }
 
+  @Override
   public void emergencyClose() {
     commBuffer = null;
     try {
@@ -162,10 +164,12 @@ public class ConnectionImpl implements Connection {
     }
   }
 
+  @Override
   public boolean isDestroyed() {
     return this.destroyed.get();
   }
 
+  @Override
   public void destroy() {
     if (!this.destroyed.compareAndSet(false, true)) {
       // was already set to true so someone else did the destroy
@@ -207,6 +211,7 @@ public class ConnectionImpl implements Connection {
     }
   }
 
+  @Override
   public ByteBuffer getCommBuffer() throws SocketException {
     if (isDestroyed()) {
       // see bug 52193. Since the code used to see this
@@ -217,23 +222,28 @@ public class ConnectionImpl implements Connection {
     return commBuffer;
   }
 
+  @Override
   public ServerLocation getServer() {
     return endpoint.getLocation();
   }
 
+  @Override
   public Socket getSocket() {
     return theSocket;
   }
 
+  @Override
   public OutputStream getOutputStream() {
     return out;
   }
 
+  @Override
   public InputStream getInputStream() {
     return in;
   }
 
 
+  @Override
   public ConnectionStats getStats() {
     return endpoint.getStats();
   }
@@ -243,14 +253,17 @@ public class ConnectionImpl implements Connection {
     return "Connection[" + endpoint + "]@" + this.hashCode();
   }
 
+  @Override
   public Endpoint getEndpoint() {
     return endpoint;
   }
 
+  @Override
   public ServerQueueStatus getQueueStatus() {
     return status;
   }
 
+  @Override
   public Object execute(Op op) throws Exception {
     Object result;
     // Do not synchronize when used for GatewaySender
@@ -284,22 +297,27 @@ public class ConnectionImpl implements Connection {
     // do nothing
   }
 
+  @Override
   public short getWanSiteVersion() {
     return wanSiteVersion;
   }
 
+  @Override
   public void setWanSiteVersion(short wanSiteVersion) {
     this.wanSiteVersion = wanSiteVersion;
   }
 
+  @Override
   public int getDistributedSystemId() {
     return ((InternalDistributedSystem) this.ds).getDistributionManager().getDistributedSystemId();
   }
 
+  @Override
   public void setConnectionID(long id) {
     this.connectionID = id;
   }
 
+  @Override
   public long getConnectionID() {
     return this.connectionID;
   }

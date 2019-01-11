@@ -79,6 +79,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm1.invoke(() -> ClearMultiVmDUnitTest.closeCache());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
       }
@@ -126,6 +127,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
     // verifying Single VM clear functionalities
     vm0.invoke(new CacheSerializableRunnable("temp1") {
+      @Override
       public void run2() throws CacheException {
         region.put(new Integer(1), new String("first"));
         region.put(new Integer(2), new String("second"));
@@ -136,6 +138,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     });
 
     vm1.invoke(new CacheSerializableRunnable("temp1vm1") {
+      @Override
       public void run2() throws CacheException {
         assertEquals(0, region.size());
       }
@@ -143,6 +146,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
     // verifying Single VM and single transaction clear functionalities
     vm1.invoke(new CacheSerializableRunnable("temp2") {
+      @Override
       public void run2() throws CacheException {
         try {
           region.put(new Integer(1), new String("first"));
@@ -178,6 +182,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
     // verifying that region.clear does not clear the entries from sub region
     vm0.invoke(new CacheSerializableRunnable("temp3") {
+      @Override
       public void run2() throws CacheException {
         region.put(new Integer(1), new String("first"));
         region.put(new Integer(2), new String("second"));
@@ -249,6 +254,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
     vm1.invoke(() -> ClearMultiVmDUnitTest.localDestroyRegionMethod());
     vm0.invoke(new CacheSerializableRunnable("exception in vm0") {
+      @Override
       public void run2() throws CacheException {
         try {
           region.clear();
@@ -259,6 +265,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     });
 
     vm1.invoke(new CacheSerializableRunnable("exception in vm1") {
+      @Override
       public void run2() throws CacheException {
         try {
           region.clear();
@@ -281,6 +288,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       VM vm1 = host.getVM(1);
 
       SerializableRunnable create = new CacheSerializableRunnable("create mirrored region") {
+        @Override
         public void run2() throws CacheException {
           AttributesFactory factory1 = new AttributesFactory();
           factory1.setScope(Scope.DISTRIBUTED_ACK);
@@ -296,6 +304,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       vm0.invoke(create);
 
       vm0.invoke(new CacheSerializableRunnable("put initial data") {
+        @Override
         public void run2() throws CacheException {
           for (int i = 0; i < 1000; i++) {
             mirroredRegion.put(new Integer(i), (new Integer(i)).toString());
@@ -305,6 +314,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
       // slow down image processing to make it more likely to get async updates
       vm1.invoke(new SerializableRunnable("set slow image processing") {
+        @Override
         public void run() {
           // if this is a no_ack test, then we need to slow down more because of the
           // pauses in the nonblocking operations
@@ -318,6 +328,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
 
       // try to time a distributed clear to happen in the middle of gii
       vm0.invoke(new SerializableRunnable("call clear when gii") {
+        @Override
         public void run() {
           try {
             Thread.sleep(3 * 1000);
@@ -335,6 +346,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       }
 
       SerializableRunnable validate = new CacheSerializableRunnable("validate for region size") {
+        @Override
         public void run2() throws CacheException {
           assertEquals(0, mirroredRegion.size());
         }

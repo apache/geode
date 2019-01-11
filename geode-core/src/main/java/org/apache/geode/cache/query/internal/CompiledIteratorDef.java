@@ -68,6 +68,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
    * Returns a RuntimeIterator (or null if evaluates to null or UNDEFINED); the collection expr is
    * evaluated lazily after dependencies are known
    */
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     throw new UnsupportedOperationException(
@@ -199,6 +200,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
     return prepareIteratorDef(coll, this.elementType, context);
   }
 
+  @Override
   public int getType() {
     return OQLLexerTokenTypes.ITERATOR_DEF;
   }

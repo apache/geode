@@ -158,12 +158,14 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   public static void setCreationTimeTidAndSeq() {
     final Map map = pool.getThreadIdToSequenceIdMap();
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         synchronized (map) {
           return map.entrySet().size() > 0;
         }
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -280,6 +282,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   public static void setClientServerObserverForBeforeSendingClientAck() throws Exception {
     PoolImpl.BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG = true;
     origObserver = ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforeSendingClientAck() {
         LogWriterUtils.getLogWriter().info("beforeSendingClientAck invoked");
         setCreationTimeTidAndSeq();

@@ -35,11 +35,13 @@ public class ShipmentId implements DataSerializable {
     this.orderId = orderId;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.shipmentId = DataSerializer.readInteger(in);
     this.orderId = (OrderId) DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeInteger(this.shipmentId, out);
     DataSerializer.writeObject(this.orderId, out);

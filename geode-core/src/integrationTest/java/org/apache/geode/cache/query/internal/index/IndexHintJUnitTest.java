@@ -554,10 +554,12 @@ public class IndexHintJUnitTest {
   class QueryObserverImpl extends QueryObserverAdapter {
     ArrayList indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void beforeIndexLookup(Index index, int lowerBoundOperator, Object lowerBoundKey,
         int upperBoundOperator, Object upperBoundKey, Set NotEqualKeys) {
       indexesUsed.add(index.getName());

@@ -64,6 +64,7 @@ public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
 
   private static long testStartTime = NanoTimer.getTime();
 
+  @Override
   public void init() {
     cachePerfStats = new CachePerfStats(system);
     funcServiceStats = new FunctionServiceStats(system, "FunctionExecution");

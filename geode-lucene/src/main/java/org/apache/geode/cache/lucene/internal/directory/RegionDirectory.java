@@ -81,6 +81,7 @@ public class RegionDirectory extends BaseDirectory {
     return new OutputStreamIndexOutput(name, name, out, 1000);
   }
 
+  @Override
   public IndexOutput createTempOutput(String prefix, String suffix, IOContext context)
       throws IOException {
     String name = prefix + "_temp_" + UUID.randomUUID() + suffix;

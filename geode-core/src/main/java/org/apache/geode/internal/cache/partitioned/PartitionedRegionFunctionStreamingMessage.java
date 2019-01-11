@@ -164,6 +164,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
     }
   }
 
+  @Override
   public int getDSFID() {
     return PR_FUNCTION_STREAMING_MESSAGE;
   }

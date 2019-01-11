@@ -218,14 +218,17 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
     }
   }
 
+  @Override
   public void afterRegionClear(RegionEvent<K, V> event) {
     addEvent(event, false);
   }
 
+  @Override
   public void afterRegionCreate(RegionEvent<K, V> event) {
     addEvent(event, false);
   }
 
+  @Override
   public void afterRegionLive(RegionEvent<K, V> event) {
     addEvent(event, false);
   }

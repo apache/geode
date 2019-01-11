@@ -91,6 +91,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
       final BlockingQueue<Runnable> takeQueue = q;
       final BlockingQueue<Runnable> putQueue = getQueue();
       Runnable r = new Runnable() {
+        @Override
         public void run() {
           try {
             for (;;) {
@@ -201,6 +202,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    * This handler does a put which will just wait until the queue has room.
    */
   public static class BlockHandler implements RejectedExecutionHandler {
+    @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException(
@@ -225,6 +227,7 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    * used to consume off the buffer queue and put into the synchronous queue.
    */
   public static class BufferHandler implements RejectedExecutionHandler {
+    @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException(

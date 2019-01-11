@@ -402,11 +402,13 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     }
   }
 
+  @Override
   public String printUnprocessedEvents() {
     return this.processors.stream().map(processor -> processor.printUnprocessedEvents())
         .collect(Collectors.joining(", "));
   }
 
+  @Override
   public String printUnprocessedTokens() {
     return this.processors.stream().map(processor -> processor.printUnprocessedTokens())
         .collect(Collectors.joining(", "));

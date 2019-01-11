@@ -264,6 +264,7 @@ public class EncryptorImpl implements Encryptor {
     }
   }
 
+  @Override
   public byte[] decryptBytes(byte[] data) throws Exception {
     if (this.appSecureMode == CREDENTIALS_DHENCRYPT) {
       String algo = null;
@@ -281,6 +282,7 @@ public class EncryptorImpl implements Encryptor {
 
 
 
+  @Override
   public byte[] encryptBytes(byte[] data) throws Exception {
     if (this.appSecureMode == CREDENTIALS_DHENCRYPT) {
       String algo = null;

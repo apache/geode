@@ -404,6 +404,7 @@ public class ManagerInfo implements DataSerializable {
   private int port;
   private InetAddress bindAddress;
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.managerPid);
     out.writeInt(this.managerStatus);
@@ -417,6 +418,7 @@ public class ManagerInfo implements DataSerializable {
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     this.managerPid = in.readInt();

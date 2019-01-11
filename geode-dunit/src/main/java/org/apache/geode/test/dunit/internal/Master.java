@@ -34,14 +34,17 @@ public class Master extends UnicastRemoteObject implements MasterRemote {
     this.registry = registry;
   }
 
+  @Override
   public int getLocatorPort() throws RemoteException {
     return DUnitLauncher.locatorPort;
   }
 
+  @Override
   public synchronized void signalVMReady() {
     processManager.signalVMReady();
   }
 
+  @Override
   public void ping() {
     // do nothing
   }

@@ -82,6 +82,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
   }
 
+  @Override
   public synchronized void lastResult(Object oneResult) {
     if (lastResultReceived) {
       return;
@@ -176,6 +177,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     }
   }
 
+  @Override
   public synchronized void sendResult(Object oneResult) {
     if (lastResultReceived) {
       return;
@@ -295,6 +297,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
     this.headerSent = true;
   }
 
+  @Override
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
     this.lastResult(iFunxtionException);

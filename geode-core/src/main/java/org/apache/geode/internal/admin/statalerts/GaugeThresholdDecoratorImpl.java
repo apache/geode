@@ -47,6 +47,7 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
     this.upperLimit = upperLimit;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.STAT_ALERT_DEFN_GAUGE_THRESHOLD;
   }

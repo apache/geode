@@ -285,10 +285,12 @@ public class GemfireSessionManager implements SessionManager {
     return referenceClassLoader;
   }
 
+  @Override
   public String getSessionCookieName() {
     return sessionCookieName;
   }
 
+  @Override
   public String getJvmId() {
     return jvmId;
   }

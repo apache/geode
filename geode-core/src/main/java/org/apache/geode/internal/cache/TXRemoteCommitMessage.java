@@ -111,6 +111,7 @@ public class TXRemoteCommitMessage extends TXMessage {
     return false;
   }
 
+  @Override
   public int getDSFID() {
     return TX_REMOTE_COMMIT_MESSAGE;
   }

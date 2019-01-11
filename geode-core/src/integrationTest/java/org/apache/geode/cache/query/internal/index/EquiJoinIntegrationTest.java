@@ -186,6 +186,7 @@ public class EquiJoinIntegrationTest {
     }
 
     executeQueriesWithIndexCombinations(queries, new DefaultIndexCreatorCallback(qs) {
+      @Override
       protected String[] createIndexTypesForRegion2() {
         return new String[] {"Compact", "Hash"};
       }
@@ -242,6 +243,7 @@ public class EquiJoinIntegrationTest {
     }
 
     executeQueriesWithIndexCombinations(queries, new DefaultIndexCreatorCallback(qs) {
+      @Override
       protected String[] createIndexTypesForRegion1() {
         return new String[] {"Compact", "Hash"};
       }
@@ -392,20 +394,24 @@ public class EquiJoinIntegrationTest {
       return new String[] {"Compact", "Hash", "PrimaryKey"};
     }
 
+    @Override
     public int getNumIndexTypesForRegion1() {
       return indexTypesForRegion1.length;
     }
 
+    @Override
     public int getNumIndexTypesForRegion2() {
       return indexTypesForRegion2.length;
     }
 
+    @Override
     public void createIndexForRegion1(int indexTypeId)
         throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
       indexOnR1 = createIndex(indexTypesForRegion1[indexTypeId], "region1", "pkid");
 
     }
 
+    @Override
     public void createIndexForRegion2(int indexTypeId)
         throws RegionNotFoundException, IndexExistsException, IndexNameConflictException {
       indexOnR2 = createIndex(indexTypesForRegion2[indexTypeId], "region2", "pkid");
@@ -413,10 +419,12 @@ public class EquiJoinIntegrationTest {
 
     // Type id is not used here but at some future time we could store a map of indexes or find a
     // use for this id?
+    @Override
     public void destroyIndexForRegion1(int indexTypeId) {
       qs.removeIndex(indexOnR1);
     }
 
+    @Override
     public void destroyIndexForRegion2(int indexTypeId) {
       qs.removeIndex(indexOnR2);
     }

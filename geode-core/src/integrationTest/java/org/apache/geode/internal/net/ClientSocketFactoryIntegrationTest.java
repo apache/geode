@@ -92,6 +92,7 @@ public class ClientSocketFactoryIntegrationTest {
 
     public TSocketFactory() {}
 
+    @Override
     public Socket createSocket(final InetAddress address, final int port) throws IOException {
       invokedCreateSocket = true;
       throw new IOException(EXCEPTION_MESSAGE);

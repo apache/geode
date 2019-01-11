@@ -27,6 +27,7 @@ public class WaitingAsyncEventListener implements AsyncEventListener {
 
   private final AtomicInteger numberOfEvents = new AtomicInteger();
 
+  @Override
   public boolean processEvents(List<AsyncEvent> events) {
     try {
       waitToStartProcessingEvents();
@@ -59,5 +60,6 @@ public class WaitingAsyncEventListener implements AsyncEventListener {
     return this.numberOfEvents.get();
   }
 
+  @Override
   public void close() {}
 }

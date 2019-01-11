@@ -44,6 +44,7 @@ public class TransportFilterSocket extends Socket {
     this.gatewayTransportFilters = transportFilters;
   }
 
+  @Override
   public InputStream getInputStream() throws IOException {
     if (in == null) {
       in = super.getInputStream();
@@ -54,6 +55,7 @@ public class TransportFilterSocket extends Socket {
     return in;
   }
 
+  @Override
   public OutputStream getOutputStream() throws IOException {
     if (out == null) {
       out = super.getOutputStream();
@@ -67,6 +69,7 @@ public class TransportFilterSocket extends Socket {
   /*
    * Flush the OutputStream before closing the socket.
    */
+  @Override
   public synchronized void close() throws IOException {
     OutputStream o = getOutputStream();
     o.flush();

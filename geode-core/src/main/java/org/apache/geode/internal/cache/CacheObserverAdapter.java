@@ -33,24 +33,30 @@ public class CacheObserverAdapter implements CacheObserver {
    *
    * @param event RegionEvent object
    */
+  @Override
   public void afterRegionClear(RegionEvent event) {}
 
+  @Override
   public void beforeDiskClear() {
     // TODO Auto-generated method stub
   }
 
+  @Override
   public void goingToFlush() {
     // TODO Auto-generated method stub
   }
 
   public void beforeWritingBytes() {}
 
+  @Override
   public void afterWritingBytes() {}
 
+  @Override
   public void beforeGoingToCompact() {
     // TODO Auto-generated method stub
   }
 
+  @Override
   public void afterHavingCompacted() {
     // TODO Auto-generated method stub
   }
@@ -61,6 +67,7 @@ public class CacheObserverAdapter implements CacheObserver {
    * @see org.apache.geode.internal.cache.CacheObserver#afterConflation(java.nio.ByteBuffer,
    * java.nio.ByteBuffer)
    */
+  @Override
   public void afterConflation(ByteBuffer origBB, ByteBuffer conflatedBB) {
     // TODO Auto-generated method stub
   }
@@ -70,18 +77,22 @@ public class CacheObserverAdapter implements CacheObserver {
    *
    * @see org.apache.geode.internal.cache.CacheObserver#afterSettingOplogOffSet()
    */
+  @Override
   public void afterSettingOplogOffSet(long offset) {
     // TODO Auto-generated method stub
   }
 
+  @Override
   public void beforeSwitchingOplog() {
     // TODO Auto-generated method stub
   }
 
+  @Override
   public void afterSwitchingOplog() {
     // TODO Auto-generated method stub
   }
 
+  @Override
   public void afterKrfCreated() {
 
   }
@@ -91,22 +102,27 @@ public class CacheObserverAdapter implements CacheObserver {
    *
    * @see org.apache.geode.internal.cache.CacheObserver#beforeStoppingCompacter()
    */
+  @Override
   public void beforeStoppingCompactor() {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void afterStoppingCompactor() {
 
   }
 
+  @Override
   public void afterSignallingCompactor() {}
 
+  @Override
   public void afterMarkingGIICompleted() {
     // TODO Auto-generated method stub
 
   }
 
+  @Override
   public void afterMarkingGIIStarted() {
     // TODO Auto-generated method stub
 
@@ -117,16 +133,21 @@ public class CacheObserverAdapter implements CacheObserver {
    *
    * @see org.apache.geode.internal.cache.CacheObserver#afterSwitchingWriteAndFlushMaps()
    */
+  @Override
   public void afterSwitchingWriteAndFlushMaps() {
 
   }
 
+  @Override
   public void afterSettingDiskRef() {}
 
+  @Override
   public void beforeSettingDiskRef() {}
 
+  @Override
   public void beforeDeletingCompactedOplog(Oplog compactedOplog) {}
 
+  @Override
   public void beforeDeletingEmptyOplog(Oplog emptyOplog) {}
 
   @Override

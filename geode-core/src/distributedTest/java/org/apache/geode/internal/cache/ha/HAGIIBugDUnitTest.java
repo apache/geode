@@ -125,6 +125,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     vm3.invoke(() -> HAGIIBugDUnitTest.closeCache());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
       }
@@ -147,6 +148,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(putFromVmBeforeGII("vm0_1"));
     populateKeySet("vm0_1");
     Thread t1 = new Thread() {
+      @Override
       public void run() {
         try {
 
@@ -269,6 +271,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
   private CacheSerializableRunnable putFromVmBeforeGII(final String whichVm) {
 
     CacheSerializableRunnable putBeforeGII = new CacheSerializableRunnable("putBeforeGII") {
+      @Override
       public void run2() throws CacheException {
 
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
@@ -285,6 +288,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
   private CacheSerializableRunnable putFrmVm(final String whichVm) {
 
     CacheSerializableRunnable putFromVM = new CacheSerializableRunnable("putFromVM") {
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         int j = 0;
@@ -306,6 +310,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   protected CacheSerializableRunnable setStopFlag() {
     CacheSerializableRunnable setFlag = new CacheSerializableRunnable("setFlag") {
+      @Override
       public void run2() throws CacheException {
         isStop = true;
       }
@@ -347,6 +352,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
  */
 
 class vmListenerToPutInHARegionQueue extends CacheListenerAdapter {
+  @Override
   public void afterCreate(EntryEvent event) {
 
     Cache cache = event.getRegion().getCache();
@@ -365,6 +371,7 @@ class vmListenerToPutInHARegionQueue extends CacheListenerAdapter {
 
 
 class vmListenerToCheckHARegionQueue extends CacheListenerAdapter {
+  @Override
   public void afterCreate(EntryEvent event) {
     if (HAGIIBugDUnitTest.isHARegionQueueUp) {
       Cache cache = event.getRegion().getCache();

@@ -140,6 +140,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @see org.apache.geode.internal.cache.Conflatable#getEventId()
    */
+  @Override
   public EventID getEventId() {
     return this.eventIdentifier;
   }
@@ -149,6 +150,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @see org.apache.geode.internal.cache.Conflatable#getKeyToConflate()
    */
+  @Override
   public Object getKeyToConflate() {
     return this.keyOfInterest;
   }
@@ -158,6 +160,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @see org.apache.geode.internal.cache.Conflatable#getRegionToConflate()
    */
+  @Override
   public String getRegionToConflate() {
     return this.regionName;
   }
@@ -167,6 +170,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @see org.apache.geode.internal.cache.Conflatable#getValueToConflate()
    */
+  @Override
   public Object getValueToConflate() {
     return null;
   }
@@ -176,6 +180,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @see org.apache.geode.internal.cache.Conflatable#setLatestValue(java.lang.Object)
    */
+  @Override
   public void setLatestValue(Object value) {
     // this.value = (byte[])value;
   }
@@ -185,6 +190,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @see org.apache.geode.internal.cache.Conflatable#shouldBeConflated()
    */
+  @Override
   public boolean shouldBeConflated() {
     return this.shouldConflate;
   }
@@ -263,6 +269,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @param out The output stream which the object should be written to.
    */
+  @Override
   public void toData(DataOutput out) throws IOException {
     ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl) this.haContainer.get(this);
 
@@ -291,6 +298,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @param in The input stream from which the object should be constructed.
    */
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     if (DataSerializer.readPrimitiveBoolean(in)) {
       // Indicates that we have a ClientUpdateMessage along with the HAEW instance in inputstream.
@@ -363,6 +371,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     }
   }
 
+  @Override
   public int getDSFID() {
     return HA_EVENT_WRAPPER;
   }
@@ -374,6 +383,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    * @return int Size of this instance in bytes.
    */
+  @Override
   public int getSizeInBytes() {
     return 0;
   }

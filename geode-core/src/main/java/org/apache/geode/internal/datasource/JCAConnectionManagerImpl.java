@@ -81,6 +81,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
    * @param javax.resource.spi.ConnectionRequestInfo
    *
    */
+  @Override
   public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
       throws ResourceException {
     if (!isActive) {
@@ -138,6 +139,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
    *
    * @param event ConnectionEvent
    */
+  @Override
   public void connectionErrorOccurred(ConnectionEvent event) {
     if (isActive) {
       // If its an XAConnection
@@ -170,6 +172,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
    *
    * @param event ConnectionEvent Object.
    */
+  @Override
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       ManagedConnection conn = (ManagedConnection) event.getSource();
@@ -196,6 +199,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionCommitted(ConnectionEvent arg0) {
     // do nothing.
   }
@@ -203,6 +207,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionRolledback(ConnectionEvent arg0) {
     // do nothing.
   }
@@ -210,6 +215,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
   /*
    * Local Transactions are not supported by Gemfire cache.
    */
+  @Override
   public void localTransactionStarted(ConnectionEvent arg0) {
     // do nothing
   }

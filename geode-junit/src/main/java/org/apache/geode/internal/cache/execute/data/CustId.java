@@ -37,10 +37,12 @@ public class CustId implements DataSerializable {
     return i;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.custId = DataSerializer.readInteger(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeInteger(this.custId, out);
   }

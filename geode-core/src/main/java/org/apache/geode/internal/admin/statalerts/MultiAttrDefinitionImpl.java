@@ -47,6 +47,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     _id = getName().toUpperCase().hashCode();
   }
 
+  @Override
   public int getId() {
     return _id;
   }
@@ -68,6 +69,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     return _id == that._id;
   }
 
+  @Override
   public boolean verify(StatisticsFactory factory) {
     if (statisticInfo == null || statisticInfo.length == 0) {
       // System.out.println("No attributes defined for this definition.");
@@ -113,6 +115,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     return buffer.toString();
   }
 
+  @Override
   public String getStringRepresentation() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("StatAlertDefinition [\n");
@@ -127,6 +130,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
    *
    * @return Name of the StatAlertDefinition
    */
+  @Override
   public String getName() {
     return _name;
   }
@@ -136,10 +140,12 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
    *
    * @param name name to be set for this StatAlertDefinition.
    */
+  @Override
   public void setName(String name) {
     this._name = name;
   }
 
+  @Override
   public void setStatisticInfo(StatisticInfo[] info) {
     if (info == null || info.length == 0)
       throw new IllegalArgumentException(
@@ -148,10 +154,12 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     statisticInfo = info;
   }
 
+  @Override
   public StatisticInfo[] getStatisticInfo() {
     return statisticInfo;
   }
 
+  @Override
   public Number[] getValue() {
     Number[] vals = new Number[statisticInfo.length];
     for (int i = 0; i < vals.length; i++) {
@@ -160,22 +168,27 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     return vals;
   }
 
+  @Override
   public Number[] getValue(Number[] vals) {
     return vals;
   }
 
+  @Override
   public boolean evaluate(Number[] params) {
     return evaluate() && params != null;
   }
 
+  @Override
   public boolean evaluate() {
     return statisticInfo != null && statisticInfo.length != 0;
   }
 
+  @Override
   public StatAlert evaluateAndAlert(Number[] params) {
     return evaluate() ? getAlert(params) : null;
   }
 
+  @Override
   public StatAlert evaluateAndAlert() {
     return evaluate() ? getAlert(getValue()) : null;
   }
@@ -184,20 +197,24 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     return new StatAlert(this.getId(), val);
   }
 
+  @Override
   public boolean hasDecorator(String decoratorID) {
     return false;
   }
 
+  @Override
   public StatAlertDefinition getDecorator(String decoratorID) {
     return null;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this._name, out);
     DataSerializer.writePrimitiveInt(this._id, out);
     DataSerializer.writeObjectArray(this.statisticInfo, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this._name = DataSerializer.readString(in);
     this._id = DataSerializer.readPrimitiveInt(in);

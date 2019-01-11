@@ -27,10 +27,12 @@ public class MyDate2 extends Date implements PartitionResolver {
     super(time);
   }
 
+  @Override
   public String getName() {
     return "MyDate2";
   }
 
+  @Override
   public Serializable getRoutingObject(EntryOperation opDetails) {
     Date date = (Date) opDetails.getKey();
     Calendar cal = Calendar.getInstance();
@@ -40,6 +42,7 @@ public class MyDate2 extends Date implements PartitionResolver {
 
   }
 
+  @Override
   public void close() {
     // TODO Auto-generated method stub
   }

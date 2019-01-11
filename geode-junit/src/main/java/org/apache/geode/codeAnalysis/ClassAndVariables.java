@@ -48,6 +48,7 @@ public class ClassAndVariables implements Comparable {
 
   }
 
+  @Override
   public int compareTo(Object other) {
     if (!(other instanceof ClassAndVariables)) {
       return -1;

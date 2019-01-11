@@ -47,6 +47,7 @@ public class ReflectionObjectSizer implements ObjectSizer, Serializable {
 
   private static final ObjectFilter FILTER = new ObjectFilter() {
 
+    @Override
     public boolean accept(Object parent, Object object) {
       // Protect the user from a couple of pitfalls. If their object
       // has a link to a region or cache, we don't want to size the whole thing.
@@ -61,6 +62,7 @@ public class ReflectionObjectSizer implements ObjectSizer, Serializable {
 
   };
 
+  @Override
   public int sizeof(Object o) {
     try {
       return (int) ObjectGraphSizer.size(o, FILTER, false);

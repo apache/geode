@@ -107,6 +107,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
     assertThat(isProcessAlive(pid)).isTrue();
   }
 
+  @Override
   protected ServerLauncher givenRunningServer() {
     return givenRunningServer(serverCommand);
   }

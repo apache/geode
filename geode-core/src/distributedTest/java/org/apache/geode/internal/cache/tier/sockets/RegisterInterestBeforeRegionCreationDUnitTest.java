@@ -121,6 +121,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
 
   private CacheSerializableRunnable putFromServer() {
     CacheSerializableRunnable putFromServer = new CacheSerializableRunnable("putFromServer") {
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);
@@ -136,14 +137,17 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
   private CacheSerializableRunnable verifyIfAllPutsGot() {
     CacheSerializableRunnable putFromServer =
         new CacheSerializableRunnable("createRegionOnServer") {
+          @Override
           public void run2() throws CacheException {
             final Region region = cache.getRegion(SEPARATOR + REGION_NAME);
             assertNotNull(region);
             WaitCriterion ev = new WaitCriterion() {
+              @Override
               public boolean done() {
                 return region.size() == 1000;
               }
 
+              @Override
               public String description() {
                 return null;
               }
@@ -158,6 +162,7 @@ public class RegisterInterestBeforeRegionCreationDUnitTest extends JUnit4Distrib
   private CacheSerializableRunnable createRegionOnServer() {
     CacheSerializableRunnable putFromServer =
         new CacheSerializableRunnable("createRegionOnServer") {
+          @Override
           public void run2() throws CacheException {
             AttributesFactory factory = new AttributesFactory();
             factory.setScope(Scope.DISTRIBUTED_ACK);

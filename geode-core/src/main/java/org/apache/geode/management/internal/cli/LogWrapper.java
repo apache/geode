@@ -143,6 +143,7 @@ public class LogWrapper {
    * Make logger null when the singleton (which was referred by INSTANCE) gets garbage collected.
    * Makes an attempt at removing associated {@link Handler}s of the {@link Logger}.
    */
+  @Override
   protected void finalize() throws Throwable {
     cleanupLogger(this.logger);
     this.logger = null;

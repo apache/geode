@@ -83,10 +83,13 @@ public interface EndpointManager {
 
   class EndpointListenerAdapter implements EndpointListener {
 
+    @Override
     public void endpointCrashed(Endpoint endpoint) {}
 
+    @Override
     public void endpointNoLongerInUse(Endpoint endpoint) {}
 
+    @Override
     public void endpointNowInUse(Endpoint endpoint) {}
   }
 

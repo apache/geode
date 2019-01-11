@@ -42,16 +42,19 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public boolean containsKey(KeyInfo keyInfo) {
     return proxy.containsKey(keyInfo.getKey());
   }
 
 
+  @Override
   public boolean containsValueForKey(KeyInfo keyInfo) {
     return proxy.containsValueForKey(keyInfo.getKey());
   }
 
 
+  @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
     if (event.getOperation().isLocal()) {
@@ -66,6 +69,7 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public Object findObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object value, boolean preferCD, ClientProxyMembershipID requestingClient,
       EntryEventImpl event) {
@@ -73,16 +77,19 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public Entry<?, ?> getEntry(KeyInfo keyInfo, boolean allowTombstones) {
     return proxy.getEntry(keyInfo.getKey());
   }
 
 
+  @Override
   public Object getEntryForIterator(KeyInfo keyInfo, boolean allowTombstones) {
     return getEntry(keyInfo, allowTombstones);
   }
 
 
+  @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     if (event.getOperation().isLocal()) {
@@ -93,6 +100,7 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
@@ -130,15 +138,18 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
+  @Override
   public int entryCount() {
     return proxy.size();
   }
 
 
+  @Override
   public Set getRegionKeysForIteration() {
     return proxy.keySet();
   }
 
+  @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       InternalRegion r) {
     /*

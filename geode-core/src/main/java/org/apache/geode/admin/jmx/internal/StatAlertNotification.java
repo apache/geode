@@ -48,6 +48,7 @@ public class StatAlertNotification extends StatAlert
     this.memberId = memberId;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.STAT_ALERT_NOTIFICATION;
   }
@@ -123,6 +124,7 @@ public class StatAlertNotification extends StatAlert
     return memberId.hashCode();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     // Do not modify StatAlert to allow 57 cacheservers to function with 57+ agent
     // However, update of a new StatAlertDefn on 57 server from 57+ agent not covered with this
@@ -133,6 +135,7 @@ public class StatAlertNotification extends StatAlert
     DataSerializer.writeString(this.memberId, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // Do not modify StatAlert to allow 57 cacheservers to function with 57+ agent
     // However, update of a new StatAlertDefn on 57 server from 57+ agent not covered with this

@@ -133,6 +133,7 @@ public class UninterruptibleRandomAccessFile {
     public long read(final ByteBuffer[] dsts, final int offset, final int length)
         throws IOException {
       return doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           return channel.read(dsts, offset, length);
         }
@@ -142,6 +143,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public long read(final ByteBuffer[] dsts) throws IOException {
       return doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           return channel.read(dsts);
         }
@@ -152,6 +154,7 @@ public class UninterruptibleRandomAccessFile {
     public long write(final ByteBuffer[] srcs, final int offset, final int length)
         throws IOException {
       return doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           return channel.write(srcs, offset, length);
         }
@@ -161,6 +164,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public long write(final ByteBuffer[] srcs) throws IOException {
       return doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           return channel.write(srcs);
         }
@@ -170,6 +174,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public int read(final ByteBuffer dst) throws IOException {
       return (int) doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           return channel.read(dst);
         }
@@ -179,6 +184,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public int write(final ByteBuffer src) throws IOException {
       return (int) doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           return channel.write(src);
         }
@@ -188,6 +194,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public long position() throws IOException {
       return doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           return channel.position();
         }
@@ -197,6 +204,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public SeekableByteChannel position(final long newPosition) throws IOException {
       doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           channel.position(newPosition);
           return 0;
@@ -208,6 +216,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public long size() throws IOException {
       return doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           return channel.size();
         }
@@ -217,6 +226,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public SeekableByteChannel truncate(final long size) throws IOException {
       doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           channel.truncate(size);
           return 0;
@@ -238,6 +248,7 @@ public class UninterruptibleRandomAccessFile {
     @Override
     public void force(final boolean b) throws IOException {
       doUninterruptibly(new FileOperation() {
+        @Override
         public long doOp(FileChannel channel) throws IOException {
           channel.force(b);
           return 0;

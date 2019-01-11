@@ -177,10 +177,12 @@ public abstract class PartitionMessage extends DistributionMessage
     this.isTransactionDistributed = other.isTransactionDistributed;
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     return txMemberId;
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -673,10 +675,12 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * @return the txUniqId
    */
+  @Override
   public int getTXUniqId() {
     return txUniqId;
   }
 
+  @Override
   public boolean canStartRemoteTransaction() {
     return false;
   }

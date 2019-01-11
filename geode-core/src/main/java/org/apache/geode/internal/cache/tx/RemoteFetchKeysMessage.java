@@ -81,6 +81,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     return false;
   }
 
+  @Override
   public int getDSFID() {
     return R_FETCH_KEYS_MESSAGE;
   }
@@ -168,6 +169,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
              * @param b positive if last chunk
              * @return true to continue to next chunk
              */
+            @Override
             public boolean executeWith(Object a, int b) {
               HeapDataOutputStream chunk = (HeapDataOutputStream) a;
               this.last = b > 0;

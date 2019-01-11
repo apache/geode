@@ -44,6 +44,7 @@ public class TextDisplay {
           new InputStreamReader(new BufferedInputStream(new FileInputStream(file)));
       reader.addToGraphs(new GraphReaderCallback() {
 
+        @Override
         public void addEdge(long timestamp, GraphType graphType, String graphName, String edgeName,
             String state, String source, String dest) {
           System.out.println(timestamp + ": (" + graphType + ", " + graphName + ", " + edgeName
@@ -51,6 +52,7 @@ public class TextDisplay {
 
         }
 
+        @Override
         public void addEdgePattern(long timestamp, GraphType graphType, Pattern graphNamePattern,
             String edgeName, String state, String source, String dest) {
           System.out.println(timestamp + ": (" + graphType + ", " + graphNamePattern + ", "
@@ -58,11 +60,13 @@ public class TextDisplay {
         }
       }, new Filter() {
 
+        @Override
         public boolean accept(GraphType graphType, String name, String edgeName, String source,
             String dest) {
           return true;
         }
 
+        @Override
         public boolean acceptPattern(GraphType graphType, Pattern pattern, String edgeName,
             String source, String dest) {
           return true;

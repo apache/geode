@@ -43,6 +43,7 @@ public class LocatorJoinMessage extends ServerLocationRequest {
     this.sourceLocator = sourceLocator;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.locator = DataSerializer.readObject(in);
@@ -50,6 +51,7 @@ public class LocatorJoinMessage extends ServerLocationRequest {
     this.sourceLocator = DataSerializer.readObject(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(locator, out);
@@ -69,6 +71,7 @@ public class LocatorJoinMessage extends ServerLocationRequest {
     return sourceLocator;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.LOCATOR_JOIN_MESSAGE;
   }

@@ -410,6 +410,7 @@ public class AgentLauncher {
 
   private Runnable createAgentProcessRunnable(final Agent agent) {
     return new Runnable() {
+      @Override
       public void run() {
         try {
           agent.start();

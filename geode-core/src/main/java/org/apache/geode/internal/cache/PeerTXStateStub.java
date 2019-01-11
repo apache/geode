@@ -219,6 +219,7 @@ public class PeerTXStateStub extends TXStateStub {
     }
   }
 
+  @Override
   public InternalDistributedMember getOriginatingMember() {
     /*
      * This needs to be set to the clients member id if the client originated the tx

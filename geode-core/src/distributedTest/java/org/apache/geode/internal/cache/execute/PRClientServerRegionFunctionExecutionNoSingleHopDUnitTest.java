@@ -400,6 +400,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
 
   public static void registerFunction() {
     FunctionService.registerFunction(new FunctionAdapter() {
+      @Override
       public void execute(FunctionContext context) {
         if (context.getArguments() instanceof String) {
           context.getResultSender().lastResult("Failure");
@@ -408,10 +409,12 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
         }
       }
 
+      @Override
       public String getId() {
         return "Function";
       }
 
+      @Override
       public boolean hasResult() {
         return true;
       }
@@ -432,6 +435,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     }
     HashMap resultMap = (HashMap) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
         .execute(new FunctionAdapter() {
+          @Override
           public void execute(FunctionContext context) {
             if (context.getArguments() instanceof String) {
               context.getResultSender().lastResult("Success");
@@ -440,10 +444,12 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
             }
           }
 
+          @Override
           public String getId() {
             return "Function";
           }
 
+          @Override
           public boolean hasResult() {
             return true;
           }
@@ -473,6 +479,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
+      @Override
       public boolean done() {
         int sz = pool.getConnectedServerCount();
         LogWriterUtils.getLogWriter().info("Checking for the Live Servers : Expected  : "
@@ -484,6 +491,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
         return false;
       }
 
+      @Override
       public String description() {
         return excuse;
       }
@@ -875,6 +883,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
       List l = null;
       ResultCollector rc1 =
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+            @Override
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -883,10 +892,12 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
               }
             }
 
+            @Override
             public String getId() {
               return getClass().getName();
             }
 
+            @Override
             public boolean hasResult() {
               return true;
             }
@@ -925,6 +936,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     try {
       rc1 =
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+            @Override
             public void execute(FunctionContext context) {
               if (((RegionFunctionContext) context).isPossibleDuplicate()) {
                 context.getResultSender().lastResult(new Integer(retryCount));
@@ -935,10 +947,12 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
               }
             }
 
+            @Override
             public String getId() {
               return getClass().getName();
             }
 
+            @Override
             public boolean hasResult() {
               return true;
             }
@@ -1074,6 +1088,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
               + "|Server could not send the reply" + "|Unexpected exception during"
               + "</ExpectedException>");
       dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+        @Override
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -1081,10 +1096,12 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
           context.getResultSender().lastResult("Failure");
         }
 
+        @Override
         public String getId() {
           return getClass().getName();
         }
 
+        @Override
         public boolean hasResult() {
           return true;
         }
@@ -1105,6 +1122,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     try {
       ResultCollector rs =
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+            @Override
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -1113,10 +1131,12 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
               }
             }
 
+            @Override
             public String getId() {
               return getClass().getName();
             }
 
+            @Override
             public boolean hasResult() {
               return true;
             }
@@ -1125,6 +1145,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
 
       ResultCollector rs2 =
           dataSet.withFilter(testKeysSet).setArguments(testKey).execute(new FunctionAdapter() {
+            @Override
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -1133,10 +1154,12 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
               }
             }
 
+            @Override
             public String getId() {
               return getClass().getName();
             }
 
+            @Override
             public boolean hasResult() {
               return true;
             }

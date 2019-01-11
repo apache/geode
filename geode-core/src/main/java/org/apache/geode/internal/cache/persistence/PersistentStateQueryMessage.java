@@ -154,6 +154,7 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
     }
   }
 
+  @Override
   public int getDSFID() {
     return PERSISTENT_STATE_QUERY_REQUEST;
   }

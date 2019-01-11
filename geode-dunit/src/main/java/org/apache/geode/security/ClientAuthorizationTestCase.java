@@ -981,6 +981,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
       this.numErrors = 0;
     }
 
+    @Override
     public void onEvent(final CqEvent aCqEvent) {
       Operation op = aCqEvent.getBaseOperation();
       if (op.isCreate()) {
@@ -995,10 +996,12 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
       eventList.add(aCqEvent);
     }
 
+    @Override
     public void onError(final CqEvent aCqEvent) {
       ++this.numErrors;
     }
 
+    @Override
     public void close() {
       this.eventList.clear();
     }
@@ -1390,16 +1393,19 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
       this.authzGen = authzGen;
     }
 
+    @Override
     public Properties getAllowedCredentials(final OperationCode[] opCodes,
         final String[] regionNames, final int[] keyIndices, final int num) {
       return this.authzGen.getAllowedCredentials(opCodes, regionNames, num);
     }
 
+    @Override
     public Properties getDisallowedCredentials(final OperationCode[] opCodes,
         final String[] regionNames, final int[] keyIndices, final int num) {
       return this.authzGen.getDisallowedCredentials(opCodes, regionNames, num);
     }
 
+    @Override
     public CredentialGenerator getCredentialGenerator() {
       return authzGen.getCredentialGenerator();
     }

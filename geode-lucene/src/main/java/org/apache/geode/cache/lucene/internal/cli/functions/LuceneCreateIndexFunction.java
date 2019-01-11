@@ -58,10 +58,12 @@ public class LuceneCreateIndexFunction implements InternalFunction {
 
   private static final long serialVersionUID = 3061443846664615818L;
 
+  @Override
   public String getId() {
     return LuceneCreateIndexFunction.class.getName();
   }
 
+  @Override
   public void execute(final FunctionContext context) {
     String memberId = null;
     try {

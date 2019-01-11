@@ -39,6 +39,7 @@ public class CqDataOptimizedExecuteDUnitTest extends CqDataDUnitTest {
     // disconnects.
     IgnoredException.addIgnoredException("Connection reset");
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -48,6 +49,7 @@ public class CqDataOptimizedExecuteDUnitTest extends CqDataDUnitTest {
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
       }

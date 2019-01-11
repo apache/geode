@@ -23,6 +23,7 @@ import org.apache.geode.cache.Declarable;
  */
 public class MyDeclarable implements Declarable {
 
+  @Override
   public void init(java.util.Properties props) {
 
   }

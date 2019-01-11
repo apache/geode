@@ -278,10 +278,12 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
     }
     logger.debug("runTest1 got all of the goodies and is now sleeping");
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return runTest2Done;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -293,10 +295,12 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
     try {
       logger.debug("runTest2 sleeping");
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return runTest1Ready;
         }
 
+        @Override
         public String description() {
           return null;
         }

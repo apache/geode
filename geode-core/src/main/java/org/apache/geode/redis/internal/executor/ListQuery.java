@@ -17,42 +17,49 @@ package org.apache.geode.redis.internal.executor;
 public enum ListQuery {
 
   LINDEX {
+    @Override
     public String getQueryString(String fullpath) {
       return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
           + ".entrySet entry WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
     }
   },
   LRANGE {
+    @Override
     public String getQueryString(String fullpath) {
       return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
           + ".entrySet entry WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
     }
   },
   LREMG {
+    @Override
     public String getQueryString(String fullpath) {
       return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
           + ".entrySet entry WHERE value = $1 AND key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $2";
     }
   },
   LREML {
+    @Override
     public String getQueryString(String fullpath) {
       return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
           + ".entrySet entry WHERE value = $1 AND key != 'head' AND key != 'tail' ORDER BY key desc LIMIT $2";
     }
   },
   LREME {
+    @Override
     public String getQueryString(String fullpath) {
       return "SELECT DISTINCT entry.key, entry.value FROM " + fullpath
           + ".entrySet entry WHERE value = $1 ORDER BY key asc";
     }
   },
   LSET {
+    @Override
     public String getQueryString(String fullpath) {
       return "SELECT DISTINCT * FROM " + fullpath
           + ".keySet key WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";
     }
   },
   LTRIM {
+    @Override
     public String getQueryString(String fullpath) {
       return "SELECT DISTINCT * FROM " + fullpath
           + ".keySet key WHERE key != 'head' AND key != 'tail' ORDER BY key asc LIMIT $1";

@@ -509,10 +509,12 @@ public class DataSerializableJUnitTest implements Serializable {
       this.f = (WOABA2) v;
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writeObjectAsByteArray(this.f, out);
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.deserialized = DataSerializer.readByteArray(in);
     }
@@ -524,10 +526,12 @@ public class DataSerializableJUnitTest implements Serializable {
 
     public WOABA2() {}
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writeObjectAsByteArray(this.f, out);
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.deserialized = DataSerializer.readByteArray(in);
     }
@@ -1461,6 +1465,7 @@ public class DataSerializableJUnitTest implements Serializable {
       this.id = id;
     }
 
+    @Override
     public int compare(Object o1, Object o2) {
       return 0; // noop
     }
@@ -1816,10 +1821,12 @@ public class DataSerializableJUnitTest implements Serializable {
   }
 
   private static class DS0 extends DataSerializerImpl {
+    @Override
     public int getId() {
       return 0;
     }
 
+    @Override
     public Class[] getSupportedClasses() {
       return new Class[] {this.getClass()};
     }
@@ -1899,6 +1906,7 @@ public class DataSerializableJUnitTest implements Serializable {
     InternalDataSerializer.unregister(id);
 
     ThreadGroup group = new ThreadGroup("Group") {
+      @Override
       public void uncaughtException(Thread t, Throwable e) {
         if (e instanceof VirtualMachineError) {
           SystemFailure.setFailure((VirtualMachineError) e); // don't throw
@@ -1907,6 +1915,7 @@ public class DataSerializableJUnitTest implements Serializable {
       }
     };
     Thread thread = new Thread(group, "Registrar") {
+      @Override
       public void run() {
         try {
           Thread.sleep(300);
@@ -1946,6 +1955,7 @@ public class DataSerializableJUnitTest implements Serializable {
     final byte id = (byte) 100;
     final Class c = DataSerializableImpl.class;
     final Instantiator inst = new Instantiator(c, id) {
+      @Override
       public DataSerializable newInstance() {
         return new DataSerializableImpl();
       }
@@ -1957,6 +1967,7 @@ public class DataSerializableJUnitTest implements Serializable {
     InternalInstantiator.unregister(c, id);
 
     ThreadGroup group = new ThreadGroup("Group") {
+      @Override
       public void uncaughtException(Thread t, Throwable e) {
         if (e instanceof VirtualMachineError) {
           SystemFailure.setFailure((VirtualMachineError) e); // don't throw
@@ -1965,6 +1976,7 @@ public class DataSerializableJUnitTest implements Serializable {
       }
     };
     Thread thread = new Thread(group, "Registrar") {
+      @Override
       public void run() {
         try {
           Thread.sleep(300);
@@ -2024,6 +2036,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
     try {
       new Instantiator(null, (byte) 42) {
+        @Override
         public DataSerializable newInstance() {
           return null;
         }
@@ -2043,6 +2056,7 @@ public class DataSerializableJUnitTest implements Serializable {
     }
 
     Instantiator.register(new Instantiator(DataSerializableImpl.class, (byte) 42) {
+      @Override
       public DataSerializable newInstance() {
         return null;
       }
@@ -2051,6 +2065,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
       try {
         Instantiator.register(new Instantiator(DataSerializableImpl.class, (byte) 41) {
+          @Override
           public DataSerializable newInstance() {
             return null;
           }
@@ -2063,6 +2078,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
       try {
         Instantiator.register(new Instantiator(DSIntWrapper.class, (byte) 42) {
+          @Override
           public DataSerializable newInstance() {
             return null;
           }
@@ -2085,6 +2101,7 @@ public class DataSerializableJUnitTest implements Serializable {
   public void testInstantiator() throws Exception {
     final boolean[] wasInvoked = new boolean[] {false};
     Instantiator.register(new Instantiator(DataSerializableImpl.class, (byte) 45) {
+      @Override
       public DataSerializable newInstance() {
         wasInvoked[0] = true;
         return new DataSerializableImpl();
@@ -2112,6 +2129,7 @@ public class DataSerializableJUnitTest implements Serializable {
   public void testInstantiator2() throws Exception {
     final boolean[] wasInvoked = new boolean[] {false};
     Instantiator.register(new Instantiator(DataSerializableImpl.class, 20000) {
+      @Override
       public DataSerializable newInstance() {
         wasInvoked[0] = true;
         return new DataSerializableImpl();
@@ -2139,6 +2157,7 @@ public class DataSerializableJUnitTest implements Serializable {
   public void testInstantiator4() throws Exception {
     final boolean[] wasInvoked = new boolean[] {false};
     Instantiator.register(new Instantiator(DataSerializableImpl.class, 123456789) {
+      @Override
       public DataSerializable newInstance() {
         wasInvoked[0] = true;
         return new DataSerializableImpl();
@@ -2165,14 +2184,17 @@ public class DataSerializableJUnitTest implements Serializable {
   private static class Class_testInstantiator extends DataSerializerImpl {
     public static Class supClass;
 
+    @Override
     public int getId() {
       return 57;
     }
 
+    @Override
     public Class[] getSupportedClasses() {
       return new Class[] {supClass};
     }
 
+    @Override
     public boolean toData(Object o, DataOutput out) throws IOException {
       if (o instanceof DataSerializableImpl) {
         fail("toData() should not be invoked with a " + o.getClass().getName());
@@ -2189,6 +2211,7 @@ public class DataSerializableJUnitTest implements Serializable {
     final boolean[] wasInvoked = new boolean[] {false};
     Instantiator
         .register(new CanonicalInstantiator(CanonicalDataSerializableImpl.class, (byte) 45) {
+          @Override
           public DataSerializable newInstance(DataInput di) throws IOException {
             wasInvoked[0] = true;
             return CanonicalDataSerializableImpl.create(di.readByte());
@@ -2288,14 +2311,17 @@ public class DataSerializableJUnitTest implements Serializable {
   }
 
   private static class Class_testSupportedClasses1 extends DataSerializerImpl {
+    @Override
     public int getId() {
       return 29;
     }
 
+    @Override
     public Class[] getSupportedClasses() {
       return new Class[] {this.getClass()};
     }
 
+    @Override
     public boolean toData(Object o, DataOutput out) throws IOException {
 
       if (o instanceof NonDataSerializable) {
@@ -2310,20 +2336,24 @@ public class DataSerializableJUnitTest implements Serializable {
     public static boolean toDataInvoked = false;
     public static boolean fromDataInvoked = false;
 
+    @Override
     public int getId() {
       return 30;
     }
 
+    @Override
     public Class[] getSupportedClasses() {
       wasInvoked = true;
       return super.getSupportedClasses();
     }
 
+    @Override
     public boolean toData(Object o, DataOutput out) throws IOException {
       toDataInvoked = true;
       return super.toData(o, out);
     }
 
+    @Override
     public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
       fromDataInvoked = true;
       return super.fromData(in);
@@ -2335,20 +2365,24 @@ public class DataSerializableJUnitTest implements Serializable {
     public static boolean toDataInvoked = false;
     public static boolean fromDataInvoked = false;
 
+    @Override
     public int getId() {
       return 32767;
     }
 
+    @Override
     public Class[] getSupportedClasses() {
       wasInvoked = true;
       return super.getSupportedClasses();
     }
 
+    @Override
     public boolean toData(Object o, DataOutput out) throws IOException {
       toDataInvoked = true;
       return super.toData(o, out);
     }
 
+    @Override
     public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
       fromDataInvoked = true;
       return super.fromData(in);
@@ -2361,6 +2395,7 @@ public class DataSerializableJUnitTest implements Serializable {
     public static boolean toDataInvoked = false;
     public static boolean fromDataInvoked = false;
 
+    @Override
     public int getId() {
       return 1000000;
     }
@@ -2609,10 +2644,12 @@ public class DataSerializableJUnitTest implements Serializable {
   private static class IllegalDS extends DataSerializerImpl {
     public IllegalDS() {}
 
+    @Override
     public int getId() {
       return 337788;
     }
 
+    @Override
     public Class[] getSupportedClasses() {
       return new Class[] {illegalClass};
     }
@@ -2757,11 +2794,13 @@ public class DataSerializableJUnitTest implements Serializable {
 
     public DataSerializerImpl() {}
 
+    @Override
     public boolean toData(Object o, DataOutput out) throws IOException {
       fail("toData() should not be invoked");
       return false;
     }
 
+    @Override
     public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
       fail("fromData() should not be invoked");
       return null;

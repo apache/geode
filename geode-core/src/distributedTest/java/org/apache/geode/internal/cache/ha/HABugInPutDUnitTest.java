@@ -153,6 +153,7 @@ public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
   public void testBugInPut() throws Exception {
     client1.invoke(new CacheSerializableRunnable("putFromClient1") {
 
+      @Override
       public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         assertNotNull(region);

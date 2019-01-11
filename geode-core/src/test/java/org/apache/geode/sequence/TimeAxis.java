@@ -53,6 +53,7 @@ public class TimeAxis extends JComponent {
     setPreferredSize(new Dimension(pw, SIZE));
   }
 
+  @Override
   protected void paintComponent(Graphics g) {
     Rectangle drawHere = g.getClipBounds();
 

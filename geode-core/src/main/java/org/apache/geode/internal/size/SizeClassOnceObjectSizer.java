@@ -44,6 +44,7 @@ public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Decl
 
   private final transient ReflectionObjectSizer sizer = ReflectionObjectSizer.getInstance();
 
+  @Override
   public int sizeof(Object o) {
     if (o == null) {
       return 0;
@@ -84,6 +85,7 @@ public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Decl
 
   }
 
+  @Override
   public void init(Properties props) {
     // TODO Auto-generated method stub
 

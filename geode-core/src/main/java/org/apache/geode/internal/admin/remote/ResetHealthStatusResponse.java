@@ -50,6 +50,7 @@ public class ResetHealthStatusResponse extends AdminResponse {
   }
 
   // instance methods
+  @Override
   public int getDSFID() {
     return RESET_HEALTH_STATUS_RESPONSE;
   }

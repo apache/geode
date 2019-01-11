@@ -92,26 +92,32 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
   }
 
   // attributes
+  @Override
   public String getName() {
     return this.r.getName();
   }
 
+  @Override
   public String getFullPath() {
     return this.r.getFullPath();
   }
 
+  @Override
   public java.util.Set getSubregionNames() {
     return this.subregionNames;
   }
 
+  @Override
   public java.util.Set getSubregionFullPaths() {
     return this.subregionFullPaths;
   }
 
+  @Override
   public String getUserAttribute() {
     return (String) r.getUserAttribute();
   }
 
+  @Override
   public String getCacheLoader() {
     Object o = this.ra.getCacheLoader();
     if (o == null) {
@@ -121,6 +127,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public String getCacheWriter() {
     Object o = this.ra.getCacheWriter();
     if (o == null) {
@@ -130,6 +137,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public String getKeyConstraint() {
     Class constraint = this.ra.getKeyConstraint();
     if (constraint == null) {
@@ -139,6 +147,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public String getValueConstraint() {
     Class constraint = this.ra.getValueConstraint();
     if (constraint == null) {
@@ -148,26 +157,32 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public boolean getEarlyAck() {
     return this.ra.getEarlyAck();
   }
 
+  @Override
   public int getRegionTimeToLiveTimeLimit() {
     return this.ra.getRegionTimeToLive().getTimeout();
   }
 
+  @Override
   public ExpirationAction getRegionTimeToLiveAction() {
     return this.ra.getRegionTimeToLive().getAction();
   }
 
+  @Override
   public int getEntryTimeToLiveTimeLimit() {
     return this.ra.getEntryTimeToLive().getTimeout();
   }
 
+  @Override
   public ExpirationAction getEntryTimeToLiveAction() {
     return this.ra.getEntryTimeToLive().getAction();
   }
 
+  @Override
   public String getCustomEntryTimeToLive() {
     Object o = this.ra.getCustomEntryTimeToLive();
     if (o == null) {
@@ -177,22 +192,27 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public int getRegionIdleTimeoutTimeLimit() {
     return this.ra.getRegionIdleTimeout().getTimeout();
   }
 
+  @Override
   public ExpirationAction getRegionIdleTimeoutAction() {
     return this.ra.getRegionIdleTimeout().getAction();
   }
 
+  @Override
   public int getEntryIdleTimeoutTimeLimit() {
     return this.ra.getEntryIdleTimeout().getTimeout();
   }
 
+  @Override
   public ExpirationAction getEntryIdleTimeoutAction() {
     return this.ra.getEntryIdleTimeout().getAction();
   }
 
+  @Override
   public String getCustomEntryIdleTimeout() {
     Object o = this.ra.getCustomEntryIdleTimeout();
     if (o == null) {
@@ -202,18 +222,22 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public MirrorType getMirrorType() {
     return this.ra.getMirrorType();
   }
 
+  @Override
   public DataPolicy getDataPolicy() {
     return this.ra.getDataPolicy();
   }
 
+  @Override
   public Scope getScope() {
     return this.ra.getScope();
   }
 
+  @Override
   public EvictionAttributes getEvictionAttributes() {
     return this.ra.getEvictionAttributes();
   }
@@ -227,6 +251,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
    * @return String the region's <code>CacheListener</code> description
    * @deprecated as of 6.0, use {@link #getCacheListeners} instead
    */
+  @Override
   @Deprecated
   public String getCacheListener() {
     String[] o = this.getCacheListeners();
@@ -245,6 +270,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
    * @return String[] the region's <code>CacheListeners</code> descriptions as a String array
    * @since GemFire 6.0
    */
+  @Override
   public String[] getCacheListeners() {
     Object[] o = this.ra.getCacheListeners();
     String[] ret = null;
@@ -259,46 +285,57 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     return ret;
   }
 
+  @Override
   public int getInitialCapacity() {
     return this.ra.getInitialCapacity();
   }
 
+  @Override
   public float getLoadFactor() {
     return this.ra.getLoadFactor();
   }
 
+  @Override
   public int getConcurrencyLevel() {
     return this.ra.getConcurrencyLevel();
   }
 
+  @Override
   public boolean getConcurrencyChecksEnabled() {
     return this.ra.getConcurrencyChecksEnabled();
   }
 
+  @Override
   public boolean getStatisticsEnabled() {
     return this.ra.getStatisticsEnabled();
   }
 
+  @Override
   public boolean getPersistBackup() {
     return this.ra.getPersistBackup();
   }
 
+  @Override
   public DiskWriteAttributes getDiskWriteAttributes() {
     return this.ra.getDiskWriteAttributes();
   }
 
+  @Override
   public File[] getDiskDirs() {
     return this.ra.getDiskDirs();
   }
 
+  @Override
   public int getEntryCount() {
     return this.entryCount;
   }
 
+  @Override
   public int getSubregionCount() {
     return this.subregionCount;
   }
 
+  @Override
   public long getLastModifiedTime() {
     if (this.rs == null) {
       return 0;
@@ -307,6 +344,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public long getLastAccessedTime() {
     if (this.rs == null) {
       return 0;
@@ -315,6 +353,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public long getHitCount() {
     if (this.rs == null) {
       return 0;
@@ -323,6 +362,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public long getMissCount() {
     if (this.rs == null) {
       return 0;
@@ -331,6 +371,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     }
   }
 
+  @Override
   public float getHitRatio() {
     if (this.rs == null) {
       return 0;
@@ -340,6 +381,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
   }
 
   // operations
+  @Override
   public void refresh() {
     refreshFields();
   }
@@ -354,6 +396,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
     return getName();
   }
 
+  @Override
   public SystemMemberRegion createSubregion(String name, RegionAttributes attrs)
       throws AdminException {
 
@@ -368,14 +411,17 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   }
 
+  @Override
   public MembershipAttributes getMembershipAttributes() {
     return this.ra.getMembershipAttributes();
   }
 
+  @Override
   public SubscriptionAttributes getSubscriptionAttributes() {
     return this.ra.getSubscriptionAttributes();
   }
 
+  @Override
   public PartitionAttributes getPartitionAttributes() {
     return this.ra.getPartitionAttributes();
   }

@@ -150,6 +150,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    *
    * @see javax.transaction.TransactionManager#begin()
    */
+  @Override
   public void begin() throws NotSupportedException, SystemException {
     if (loggedJTATransactionManagerDeprecatedWarning.compareAndSet(false, true)) {
       logger.warn(
@@ -208,6 +209,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    *
    * @see javax.transaction.TransactionManager#commit()
    */
+  @Override
   public void commit() throws HeuristicRollbackException, RollbackException,
       HeuristicMixedException, SystemException {
     if (!isActive) {
@@ -389,6 +391,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    *
    * @see javax.transaction.TransactionManager#commit()
    */
+  @Override
   public void rollback() throws IllegalStateException, SecurityException, SystemException {
     if (!isActive) {
       throw new SystemException(
@@ -487,6 +490,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    *
    * @see javax.transaction.TransactionManager#setRollbackOnly()
    */
+  @Override
   public void setRollbackOnly() throws IllegalStateException, SystemException {
     if (!isActive) {
       throw new SystemException(
@@ -530,6 +534,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    *
    * @see javax.transaction.TransactionManager#getStatus()
    */
+  @Override
   public int getStatus() throws SystemException {
     if (!isActive) {
       throw new SystemException(
@@ -547,6 +552,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    *
    * @see javax.transaction.TransactionManager#setTransactionTimeout(int)
    */
+  @Override
   public void setTransactionTimeout(int seconds) throws SystemException {
     if (!isActive) {
       throw new SystemException(
@@ -614,6 +620,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * @see javax.transaction.TransactionManager#suspend()
    */
+  @Override
   public Transaction suspend() throws SystemException {
     if (!isActive) {
       throw new SystemException(
@@ -637,6 +644,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * @see javax.transaction.TransactionManager#resume(javax.transaction.Transaction)
    */
+  @Override
   public void resume(Transaction txn)
       throws InvalidTransactionException, IllegalStateException, SystemException {
     if (!isActive) {
@@ -684,6 +692,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    *
    * @see javax.transaction.TransactionManager#getTransaction()
    */
+  @Override
   public Transaction getTransaction() throws SystemException {
     if (!isActive) {
       throw new SystemException(
@@ -763,6 +772,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
 
     protected volatile boolean toContinueRunning = true;
 
+    @Override
     public void run() {
       GlobalTransaction currentGtx = null;
       long lag = 0;
@@ -884,6 +894,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     /**
      * Sort the array in ascending order of expiration times
      */
+    @Override
     public int compare(Object obj1, Object obj2) {
       GlobalTransaction gtx1 = (GlobalTransaction) obj1;
       GlobalTransaction gtx2 = (GlobalTransaction) obj2;

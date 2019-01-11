@@ -138,6 +138,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     return sb.toString();
   }
 
+  @Override
   public void fillInProfile(Profile profile) {
     assert profile instanceof GatewaySenderProfile;
     GatewaySenderProfile pf = (GatewaySenderProfile) profile;

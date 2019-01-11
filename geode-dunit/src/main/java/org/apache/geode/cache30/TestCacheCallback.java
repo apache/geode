@@ -59,10 +59,12 @@ public abstract class TestCacheCallback implements CacheCallback {
   public boolean waitForInvocation(int timeoutMs, long interval) {
     if (!this.invoked) {
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return invoked;
         }
 
+        @Override
         public String description() {
           return "listener was never invoked";
         }
@@ -77,6 +79,7 @@ public abstract class TestCacheCallback implements CacheCallback {
     return this.isClosed;
   }
 
+  @Override
   public void close() {
     this.isClosed = true;
     close2();

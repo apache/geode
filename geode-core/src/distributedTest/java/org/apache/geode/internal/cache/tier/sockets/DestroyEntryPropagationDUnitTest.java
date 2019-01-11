@@ -200,6 +200,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     // Wait for 10 seconds to allow fail over. This would mean that Interest
     // has failed over to Server2.
     vm2.invoke(new CacheSerializableRunnable("Wait for server on port1 to be dead") {
+      @Override
       public void run2() throws CacheException {
         Region r = cache.getRegion(REGION_NAME);
 
@@ -217,10 +218,12 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
         final PoolImpl pool = (PoolImpl) find(poolName);
         assertNotNull(pool);
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             return pool.getConnectedServerCount() != 2;
           }
 
+          @Override
           public String description() {
             return null;
           }
@@ -234,6 +237,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     vm0.invoke(() -> DestroyEntryPropagationDUnitTest.startServer(new Integer(PORT1)));
 
     vm2.invoke(new CacheSerializableRunnable("Wait for server on port1 to spring to life") {
+      @Override
       public void run2() throws CacheException {
         Region r = cache.getRegion(REGION_NAME);
         String poolName = r.getAttributes().getPoolName();
@@ -241,10 +245,12 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
         final PoolImpl pool = (PoolImpl) find(poolName);
         assertNotNull(pool);
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             return pool.getConnectedServerCount() == 2;
           }
 
+          @Override
           public String description() {
             return null;
           }
@@ -393,10 +399,12 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     final CertifiableTestCacheListener ccl =
         (CertifiableTestCacheListener) r.getAttributes().getCacheListener();
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return ccl.destroys.contains(key);
       }
 
+      @Override
       public String description() {
         return "waiting for destroy event for " + key;
       }

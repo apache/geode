@@ -67,6 +67,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
   private void stopStuckThreads() {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
 
+      @Override
       public void run() {
         for (Thread thread : stuckThreads) {
           thread.interrupt();
@@ -156,6 +157,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
       final String gateToSignal, final String gateToWaitOn) {
     return vm0.invokeAsync(new SerializableRunnable() {
 
+      @Override
       public void run() {
         lock.lock();
         try {
@@ -222,6 +224,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
   private AsyncInvocation lockTheDLocks(VM vm, final String first, final String second) {
     return vm.invokeAsync(new SerializableRunnable() {
 
+      @Override
       public void run() {
         try {
           getCache();
@@ -247,6 +250,7 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
 
   private InternalDistributedMember createCache(VM vm) {
     return (InternalDistributedMember) vm.invoke(new SerializableCallable() {
+      @Override
       public Object call() {
         getCache();
         return getSystem().getDistributedMember();
@@ -260,11 +264,13 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
 
     private static final int LOCK_WAIT_TIME = 1000;
 
+    @Override
     public boolean hasResult() {
       return true;
     }
 
 
+    @Override
     public void execute(FunctionContext context) {
       boolean acquired = false;
       try {
@@ -281,14 +287,17 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
+    @Override
     public String getId() {
       return getClass().getCanonicalName();
     }
 
+    @Override
     public boolean optimizeForWrite() {
       return false;
     }
 
+    @Override
     public boolean isHA() {
       return false;
     }

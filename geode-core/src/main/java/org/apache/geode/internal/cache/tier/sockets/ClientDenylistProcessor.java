@@ -129,6 +129,7 @@ public class ClientDenylistProcessor extends ReplyProcessor21 {
       }
     }
 
+    @Override
     public int getDSFID() {
       return CLIENT_DENYLIST_MESSAGE;
     }

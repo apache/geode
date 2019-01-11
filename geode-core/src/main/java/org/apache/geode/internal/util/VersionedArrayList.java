@@ -113,6 +113,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    *
    * @return a list Iterator
    */
+  @Override
   public synchronized Iterator<Node> iterator() {
     return this.list.iterator();
   }
@@ -200,6 +201,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   }
 
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     long v = -1;
     final List<Node> l;
@@ -225,6 +227,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   }
 
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     final ArrayList<Node> l = new ArrayList<Node>();
     final long v = in.readLong();
@@ -252,10 +255,12 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    *
    * @see org.apache.geode.internal.util.Versionable#getVersion()
    */
+  @Override
   public synchronized Comparable getVersion() {
     return Long.valueOf(this.version);
   }
 
+  @Override
   public boolean isNewerThan(Versionable other) {
     if (other instanceof VersionedArrayList) {
       final long v = ((Long) other.getVersion()).longValue();
@@ -268,6 +273,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     }
   }
 
+  @Override
   public boolean isOlderThan(Versionable other) {
     if (other instanceof VersionedArrayList) {
       final long v;
@@ -283,6 +289,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     }
   }
 
+  @Override
   public boolean isSame(Versionable other) {
     if (other instanceof VersionedArrayList) {
       final long v;

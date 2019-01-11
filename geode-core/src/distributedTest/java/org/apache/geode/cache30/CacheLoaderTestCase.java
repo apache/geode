@@ -60,6 +60,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
     final String exception = "EXCEPTION";
 
     TestCacheLoader loader = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) throws CacheLoaderException {
 
         assertEquals(key, helper.getKey());
@@ -188,6 +189,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
   @Test
   public void testCacheLoaderNull() throws CacheException {
     TestCacheLoader loader = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) throws CacheLoaderException {
 
         return null;
@@ -215,12 +217,14 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
     final Object newValue = new Integer(43);
 
     TestCacheLoader loader = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) throws CacheLoaderException {
         return oldValue;
       }
     };
 
     TestCacheWriter writer = new TestCacheWriter() {
+      @Override
       public void beforeCreate2(EntryEvent event) throws CacheWriterException {
 
         assertEquals(oldValue, event.getNewValue());
@@ -242,6 +246,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
     assertTrue(writer.wasInvoked());
 
     writer = new TestCacheWriter() {
+      @Override
       public void beforeUpdate2(EntryEvent event) throws CacheWriterException {
 
         assertEquals(oldValue, event.getOldValue());
@@ -272,12 +277,14 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
     final Object newValue = new Integer(43);
 
     TestCacheLoader loader = new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) throws CacheLoaderException {
         return oldValue;
       }
     };
 
     TestCacheListener listener = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent event) {
         assertEquals(oldValue, event.getNewValue());
         assertTrue(event.getOperation().isLoad());
@@ -299,6 +306,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
     assertTrue(listener.wasInvoked());
 
     listener = new TestCacheListener() {
+      @Override
       public void afterUpdate2(EntryEvent event) {
         assertEquals(oldValue, event.getOldValue());
         assertEquals(newValue, event.getNewValue());

@@ -49,11 +49,13 @@ public abstract class AbstractGatewayDeltaEvent implements GatewayDeltaEvent, Da
     return cache.getRegion(this.regionName);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.regionName = DataSerializer.readString(in);
     this.key = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.regionName, out);
     DataSerializer.writeString(this.key, out);

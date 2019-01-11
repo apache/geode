@@ -117,6 +117,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * @param connectionObject PooledConnection object for return.
    *
    */
+  @Override
   public void returnPooledConnectionToPool(Object connectionObject) {
     boolean returnedHappened = false;
     if (connectionObject != null) {
@@ -187,6 +188,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    *        or not
    *
    */
+  @Override
   public void expirePooledConnection(Object connectionObject) {
     synchronized (connectionObject) {
       if (this.activeCache.containsKey(connectionObject)) {
@@ -216,6 +218,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    *
    * @return Object connection object from the pool.
    */
+  @Override
   public Object getPooledConnectionFromPool() throws PoolException {
     Object poolConn = null;
     // checkCredentials(username, password);
@@ -419,6 +422,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
   /**
    * It will clean all the thread
    */
+  @Override
   public void clearUp() {
     cleaner.toContinueRunning = false;
     try {
@@ -461,6 +465,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     /*
      * public ConnectionCleanUpThread(int time) { // poolCache = pool; sleepTime = time;
      */
+    @Override
     public void run() {
       while (toContinueRunning) {
         SystemFailure.checkFailure();

@@ -99,6 +99,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return schedule(task, 0, TimeUnit.NANOSECONDS);
   }
 
+  @Override
   public ScheduledFuture schedule(Callable callable, long delay, TimeUnit unit) {
     DelegatingScheduledFuture future = new DelegatingScheduledFuture(callable);
     ScheduledFuture timerFuture = timer.schedule(new HandOffTask(future), delay, unit);
@@ -106,6 +107,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return future;
   }
 
+  @Override
   public ScheduledFuture schedule(Runnable command, long delay, TimeUnit unit) {
     return schedule(command, delay, unit, null);
   }
@@ -117,6 +119,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return future;
   }
 
+  @Override
   public ScheduledFuture scheduleAtFixedRate(Runnable command, long initialDelay, long period,
       TimeUnit unit) {
     DelegatingScheduledFuture future = new DelegatingScheduledFuture(command, null, true);
@@ -126,6 +129,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
     return future;
   }
 
+  @Override
   public ScheduledFuture scheduleWithFixedDelay(Runnable command, long initialDelay, long delay,
       TimeUnit unit) {
     DelegatingScheduledFuture future = new DelegatingScheduledFuture(command, null, true);
@@ -225,6 +229,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
       this.task = task;
     }
 
+    @Override
     public void run() {
       try {
         ScheduledThreadPoolExecutorWithKeepAlive.super.execute(task);
@@ -284,10 +289,12 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
       return super.cancel(mayInterruptIfRunning);
     }
 
+    @Override
     public long getDelay(TimeUnit unit) {
       return delegate.getDelay(unit);
     }
 
+    @Override
     public int compareTo(Delayed o) {
       return delegate.compareTo(o);
     }
@@ -308,6 +315,7 @@ public class ScheduledThreadPoolExecutorWithKeepAlive extends ThreadPoolExecutor
    * for the task.
    */
   protected static class BlockCallerPolicy implements RejectedExecutionHandler {
+    @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       if (executor.isShutdown()) {
         throw new RejectedExecutionException("executor has been shutdown");

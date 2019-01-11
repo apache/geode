@@ -113,6 +113,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   /**
    * Does the work of monitoring the health of the distributed system.
    */
+  @Override
   public void run() {
     if (logger.isDebugEnabled()) {
       logger.debug("Monitoring health of {} every {} seconds", this.eval.getDescription(),
@@ -200,6 +201,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
 
   ////////////////////// GemFireVM Methods //////////////////////
 
+  @Override
   public java.net.InetAddress getHost() {
     try {
       return SocketCreator.getLocalHost();
@@ -210,20 +212,24 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     }
   }
 
+  @Override
   public String getName() {
     throw new UnsupportedOperationException("Not a real GemFireVM");
   }
 
+  @Override
   public java.io.File getWorkingDirectory() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public java.io.File getGeodeHomeDir() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public java.util.Date getBirthDate() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
@@ -234,54 +240,65 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
         "Not a real GemFireVM");
   }
 
+  @Override
   public GemFireMemberStatus getSnapshot() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public RegionSubRegionSnapshot getRegionSnapshot() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public StatResource[] getStats(String statisticsTypeName) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public StatResource[] getAllStats() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public DLockInfo[] getDistributedLockInfo() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public void addStatListener(StatListener observer, StatResource observedResource,
       Stat observedStat) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public void removeStatListener(StatListener observer) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public void addHealthListener(HealthListener observer, GemFireHealthConfig cfg) {
 
   }
 
+  @Override
   public void removeHealthListener() {
 
   }
 
+  @Override
   public void resetHealthStatus() {
     this.prevHealth = GemFireHealth.GOOD_HEALTH;
   }
 
+  @Override
   public String[] getHealthDiagnosis(GemFireHealth.Health healthCode) {
     if (healthCode == GemFireHealth.GOOD_HEALTH) {
       return new String[0];
@@ -299,114 +316,136 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     }
   }
 
+  @Override
   public Config getConfig() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public void setConfig(Config cfg) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public GfManagerAgent getManagerAgent() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public String[] getSystemLogs() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public void setInspectionClasspath(String classpath) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public String getInspectionClasspath() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public Region[] getRootRegions() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public Region getRegion(CacheInfo c, String path) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public Region createVMRootRegion(CacheInfo c, String name, RegionAttributes attrs) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public Region createSubregion(CacheInfo c, String parentPath, String name,
       RegionAttributes attrs) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public void setCacheInspectionMode(int mode) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public int getCacheInspectionMode() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public void takeRegionSnapshot(String regionName, int snapshotId) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public InternalDistributedMember getId() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public CacheInfo getCacheInfo() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public String getVersionInfo() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public CacheInfo setCacheLockTimeout(CacheInfo c, int v) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public CacheInfo setCacheLockLease(CacheInfo c, int v) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public CacheInfo setCacheSearchTimeout(CacheInfo c, int v) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public AdminBridgeServer addCacheServer(CacheInfo cache) throws AdminException {
 
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public AdminBridgeServer getBridgeInfo(CacheInfo cache, int id) throws AdminException {
 
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }
 
+  @Override
   public AdminBridgeServer startBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
       throws AdminException {
 
@@ -414,6 +453,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
         "Not a real GemFireVM");
   }
 
+  @Override
   public AdminBridgeServer stopBridgeServer(CacheInfo cache, AdminBridgeServer bridge)
       throws AdminException {
 
@@ -425,6 +465,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
    * This operation is not supported for this object. Will throw UnsupportedOperationException if
    * invoked.
    */
+  @Override
   public void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval,
       boolean setRemotely) {
     throw new UnsupportedOperationException(
@@ -435,6 +476,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
    * This operation is not supported for this object. Will throw UnsupportedOperationException if
    * invoked.
    */
+  @Override
   public void setRefreshInterval(long refreshInterval) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
@@ -444,6 +486,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
    * This operation is not supported for this object. Will throw UnsupportedOperationException if
    * invoked.
    */
+  @Override
   public void updateAlertDefinitions(StatAlertDefinition[] alertDefs, int actionCode) {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");

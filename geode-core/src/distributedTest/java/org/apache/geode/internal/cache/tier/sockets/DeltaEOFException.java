@@ -30,6 +30,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
  */
 public class DeltaEOFException extends FaultyDelta {
 
+  @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     try {
       byte deltaBits = DataSerializer.readByte(in);
@@ -68,6 +69,7 @@ public class DeltaEOFException extends FaultyDelta {
     }
   }
 
+  @Override
   public void toDelta(DataOutput out) throws IOException {
     try {
       DataSerializer.writeByte(this.deltaBits, out);

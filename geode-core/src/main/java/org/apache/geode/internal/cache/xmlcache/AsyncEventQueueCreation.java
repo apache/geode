@@ -78,10 +78,12 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
     this.gatewayEventFilters.add(filter);
   }
 
+  @Override
   public List<GatewayEventFilter> getGatewayEventFilters() {
     return this.gatewayEventFilters;
   }
 
+  @Override
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter() {
     return this.gatewayEventSubstitutionFilter;
   }
@@ -204,6 +206,7 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
 
   public void resume() {}
 
+  @Override
   public boolean isParallel() {
     return this.isParallel;
   }

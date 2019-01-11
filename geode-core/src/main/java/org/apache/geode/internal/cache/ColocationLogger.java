@@ -54,6 +54,7 @@ public class ColocationLogger implements Runnable {
     loggerThread.start();
   }
 
+  @Override
   public void run() {
     CancelCriterion stopper = region.getGemFireCache().getDistributedSystem().getCancelCriterion();
     DistributedSystem.setThreadsSocketPolicy(true /* conserve sockets */);

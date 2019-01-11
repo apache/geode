@@ -28,14 +28,17 @@ public class IdentityConverter extends OpenTypeConverter {
     super(targetType, openType, openClass);
   }
 
+  @Override
   boolean isIdentity() {
     return true;
   }
 
+  @Override
   Object toNonNullOpenValue(Object value) {
     return value;
   }
 
+  @Override
   public Object fromNonNullOpenValue(Object value) {
     return value;
   }

@@ -229,6 +229,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         .append("; context=").append(this.context);
   }
 
+  @Override
   public int getDSFID() {
     return PR_GET_MESSAGE;
   }

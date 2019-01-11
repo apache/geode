@@ -118,6 +118,7 @@ public class RMIException extends GemFireException {
    * Returns the cause of this exception. Note that this is not necessarily the exception that gets
    * printed out with the stack trace.
    */
+  @Override
   public Throwable getCause() {
     return this.cause;
   }
@@ -143,6 +144,7 @@ public class RMIException extends GemFireException {
       this.stackTrace = stackTrace;
     }
 
+    @Override
     public void printStackTrace(java.io.PrintWriter pw) {
       pw.print(this.stackTrace);
       pw.flush();

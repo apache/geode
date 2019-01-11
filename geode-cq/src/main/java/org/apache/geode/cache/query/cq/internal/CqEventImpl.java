@@ -56,6 +56,7 @@ public class CqEventImpl implements CqEvent {
     this.eventId = eventId;
   }
 
+  @Override
   public CqQuery getCq() {
     return this.cQuery;
   }
@@ -63,6 +64,7 @@ public class CqEventImpl implements CqEvent {
   /**
    * Get the operation on the base region that triggered this event.
    */
+  @Override
   public Operation getBaseOperation() {
     return this.baseOp;
   }
@@ -71,6 +73,7 @@ public class CqEventImpl implements CqEvent {
    * Get the the operation on the query results. Supported operations include update, create, and
    * destroy.
    */
+  @Override
   public Operation getQueryOperation() {
     return this.queryOp;
   }
@@ -80,6 +83,7 @@ public class CqEventImpl implements CqEvent {
    *
    * @return Object key.
    */
+  @Override
   public Object getKey() {
     return this.key;
   }
@@ -96,6 +100,7 @@ public class CqEventImpl implements CqEvent {
    * Get the new value of the modification. If there is no new value because this is a delete, then
    * return null.
    */
+  @Override
   public Object getNewValue() {
     if (this.newValue == null && this.delta != null) {
       throw new InvalidDeltaException();
@@ -108,10 +113,12 @@ public class CqEventImpl implements CqEvent {
    * this event will be passed to the <code>onError</code> method of the CqListener instead of the
    * <code>onEvent</code> method.
    */
+  @Override
   public Throwable getThrowable() {
     return this.throwable;
   }
 
+  @Override
   public byte[] getDeltaValue() {
     return this.delta;
   }

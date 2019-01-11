@@ -269,10 +269,12 @@ public class PdxInstanceFactoryJUnitTest {
   public static class MyDS implements DataSerializable {
     Long[] longArray = new Long[] {Long.valueOf(1)};
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writeObjectArray(this.longArray, out);
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.longArray = (Long[]) DataSerializer.readObjectArray(in);
     }
@@ -315,8 +317,10 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   public static class MyPdx implements PdxSerializable {
+    @Override
     public void toData(PdxWriter writer) {}
 
+    @Override
     public void fromData(PdxReader reader) {}
   }
 

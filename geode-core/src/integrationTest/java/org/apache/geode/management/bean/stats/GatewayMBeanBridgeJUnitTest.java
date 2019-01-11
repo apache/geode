@@ -38,6 +38,7 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
 
   private AbstractGatewaySender sender;
 
+  @Override
   public void init() {
     senderStats = new GatewaySenderStats(system, "test");
 

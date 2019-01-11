@@ -62,6 +62,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
     final String exception = "EXCEPTION";
 
     TestCacheWriter writer = new TestCacheWriter() {
+      @Override
       public void beforeCreate2(EntryEvent event) throws CacheWriterException {
 
         assertEquals(key, event.getKey());
@@ -85,6 +86,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
         }
       }
 
+      @Override
       public void beforeDestroy2(EntryEvent event) throws CacheWriterException {
         // This method will get invoked when the region is populated
       }
@@ -148,14 +150,17 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
     final String exception = "EXCEPTION";
 
     TestCacheWriter writer = new TestCacheWriter() {
+      @Override
       public void beforeCreate2(EntryEvent event) throws CacheWriterException {
         // This method will get invoked when the region is populated
       }
 
+      @Override
       public void beforeDestroy2(EntryEvent event) throws CacheWriterException {
         // This method will get invoked when the region is populated
       }
 
+      @Override
       public void beforeUpdate2(EntryEvent event) throws CacheWriterException {
 
         assertEquals(key, event.getKey());
@@ -251,10 +256,12 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
     final String exception = "EXCEPTION";
 
     TestCacheWriter writer = new TestCacheWriter() {
+      @Override
       public void beforeCreate2(EntryEvent event) throws CacheWriterException {
         // This method will get invoked when the region is populated
       }
 
+      @Override
       public void beforeDestroy2(EntryEvent event) throws CacheWriterException {
 
         assertEquals(key, event.getKey());
@@ -322,16 +329,19 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
       private boolean closed = false;
       private boolean destroyed = false;
 
+      @Override
       public boolean wasInvoked() {
         boolean value = closed && destroyed;
         super.wasInvoked();
         return value;
       }
 
+      @Override
       public void close2() {
         this.closed = true;
       }
 
+      @Override
       public void beforeRegionDestroy2(RegionEvent event) throws CacheWriterException {
 
         assertEquals(name, event.getRegion().getName());
@@ -421,21 +431,25 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
         }
       }
 
+      @Override
       public void beforeCreate2(EntryEvent event) throws CacheWriterException {
 
         handleEvent(event.getCallbackArgument());
       }
 
+      @Override
       public void beforeUpdate2(EntryEvent event) throws CacheWriterException {
 
         handleEvent(event.getCallbackArgument());
       }
 
+      @Override
       public void beforeDestroy2(EntryEvent event) throws CacheWriterException {
 
         handleEvent(event.getCallbackArgument());
       }
 
+      @Override
       public void beforeRegionDestroy2(RegionEvent event) throws CacheWriterException {
 
         handleEvent(event.getCallbackArgument());

@@ -132,6 +132,7 @@ public class OneTaskOnlyExecutor {
       this.runnable = runnable;
     }
 
+    @Override
     public void run() {
       synchronized (OneTaskOnlyExecutor.this) {
         future = null;
@@ -152,6 +153,7 @@ public class OneTaskOnlyExecutor {
       this.callable = callable;
     }
 
+    @Override
     public T call() throws Exception {
       synchronized (OneTaskOnlyExecutor.this) {
         future = null;
@@ -165,6 +167,7 @@ public class OneTaskOnlyExecutor {
   }
 
   public static class ConflatedTaskListenerAdapter implements ConflatedTaskListener {
+    @Override
     public void taskDropped() {
 
     }

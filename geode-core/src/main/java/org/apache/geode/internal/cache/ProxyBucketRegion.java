@@ -150,6 +150,7 @@ public class ProxyBucketRegion implements Bucket {
     }
   }
 
+  @Override
   public CancelCriterion getCancelCriterion() {
     return this.partitionedRegion.getCache().getCancelCriterion();
   }
@@ -164,48 +165,59 @@ public class ProxyBucketRegion implements Bucket {
     }
   }
 
+  @Override
   public int getSerialNumber() {
     // always return the serial number for this proxy, NOT the bucket region
     return this.serialNumber;
   }
 
+  @Override
   public DistributionManager getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 
+  @Override
   public DistributionAdvisor getDistributionAdvisor() {
     return this.advisor;
   }
 
+  @Override
   public CacheDistributionAdvisor getCacheDistributionAdvisor() {
     return this.advisor;
   }
 
+  @Override
   public Profile getProfile() {
     return this.advisor.createProfile();
   }
 
+  @Override
   public DistributionAdvisee getParentAdvisee() {
     return this.partitionedRegion;
   }
 
+  @Override
   public PartitionedRegion getPartitionedRegion() {
     return this.partitionedRegion;
   }
 
+  @Override
   public InternalDistributedSystem getSystem() {
     return this.partitionedRegion.getCache().getInternalDistributedSystem();
   }
 
+  @Override
   public String getName() {
     return getPartitionedRegion().getBucketName(this.bid);
   }
 
+  @Override
   public String getFullPath() {
     return Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR
         + getPartitionedRegion().getBucketName(this.bid);
   }
 
+  @Override
   public InternalCache getCache() {
     return this.partitionedRegion.getCache();
   }
@@ -214,10 +226,12 @@ public class ProxyBucketRegion implements Bucket {
     return this.partitionedRegion.getRegionService();
   }
 
+  @Override
   public RegionAttributes getAttributes() {
     return this.partitionedRegion.getAttributes();
   }
 
+  @Override
   public BucketAdvisor getBucketAdvisor() {
     return this.advisor;
   }
@@ -286,6 +300,7 @@ public class ProxyBucketRegion implements Bucket {
     return getBucketAdvisor().getBucketRedundancy();
   }
 
+  @Override
   public boolean isPrimary() {
     return this.advisor.isPrimary();
   }
@@ -315,10 +330,12 @@ public class ProxyBucketRegion implements Bucket {
     }
   }
 
+  @Override
   public boolean isHosting() {
     return this.advisor.isHosting();
   }
 
+  @Override
   public void fillInProfile(Profile profile) {
     if (logger.isDebugEnabled()) {
       logger.debug("ProxyBucketRegion filling in profile: {}", profile);
@@ -336,6 +353,7 @@ public class ProxyBucketRegion implements Bucket {
     return this;
   }
 
+  @Override
   public Set<InternalDistributedMember> getBucketOwners() {
     Set<InternalDistributedMember> s = this.advisor.adviseInitialized();
     if (s == Collections.<InternalDistributedMember>emptySet()) {
@@ -360,6 +378,7 @@ public class ProxyBucketRegion implements Bucket {
     return this.bid;
   }
 
+  @Override
   public int getId() {
     return getBucketId();
   }
@@ -502,10 +521,12 @@ public class ProxyBucketRegion implements Bucket {
     }
   }
 
+  @Override
   public BucketPersistenceAdvisor getPersistenceAdvisor() {
     return this.persistenceAdvisor;
   }
 
+  @Override
   public DiskRegion getDiskRegion() {
     return this.diskRegion;
   }

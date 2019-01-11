@@ -134,6 +134,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   }
 
   // this must be getting called directly from function
+  @Override
   public void lastResult(Object oneResult) {
     if (!this.function.hasResult()) {
       throw new IllegalStateException(
@@ -326,6 +327,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     }
   }
 
+  @Override
   public void sendResult(Object oneResult) {
     if (!this.function.hasResult()) {
       throw new IllegalStateException(
@@ -369,12 +371,14 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     this.serverSender.lastResult(lastResult, memberID);
   }
 
+  @Override
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
     this.lastResult(iFunxtionException);
     this.localLastResultReceived = true;
   }
 
+  @Override
   public void setException(Throwable exception) {
     if (this.serverSender != null) {
       this.serverSender.setException(exception);
@@ -387,14 +391,17 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     this.localLastResultReceived = true;
   }
 
+  @Override
   public void enableOrderedResultStreming(boolean enable) {
     this.enableOrderedResultStreming = enable;
   }
 
+  @Override
   public boolean isLocallyExecuted() {
     return this.msg == null;
   }
 
+  @Override
   public boolean isLastResultReceived() {
     return localLastResultReceived;
   }

@@ -150,34 +150,42 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
         droppedEvent);
   }
 
+  @Override
   public void clear(PartitionedRegion pr, int bucketId) {
     ((ParallelGatewaySenderQueue) this.queue).clear(pr, bucketId);
   }
 
+  @Override
   public void notifyEventProcessorIfRequired(int bucketId) {
     ((ParallelGatewaySenderQueue) this.queue).notifyEventProcessorIfRequired();
   }
 
+  @Override
   public BlockingQueue<GatewaySenderEventImpl> getBucketTmpQueue(int bucketId) {
     return ((ParallelGatewaySenderQueue) this.queue).getBucketToTempQueueMap().get(bucketId);
   }
 
+  @Override
   public PartitionedRegion getRegion(String prRegionName) {
     return ((ParallelGatewaySenderQueue) this.queue).getRegion(prRegionName);
   }
 
+  @Override
   public void removeShadowPR(String prRegionName) {
     ((ParallelGatewaySenderQueue) this.queue).removeShadowPR(prRegionName);
   }
 
+  @Override
   public void conflateEvent(Conflatable conflatableObject, int bucketId, Long tailKey) {
     ((ParallelGatewaySenderQueue) this.queue).conflateEvent(conflatableObject, bucketId, tailKey);
   }
 
+  @Override
   public void addShadowPartitionedRegionForUserPR(PartitionedRegion pr) {
     ((ParallelGatewaySenderQueue) this.queue).addShadowPartitionedRegionForUserPR(pr);
   }
 
+  @Override
   public void addShadowPartitionedRegionForUserRR(DistributedRegion userRegion) {
     ((ParallelGatewaySenderQueue) this.queue).addShadowPartitionedRegionForUserRR(userRegion);
   }

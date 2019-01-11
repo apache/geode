@@ -208,11 +208,13 @@ public class PartitionedRegionLoaderWriterDUnitTest extends JUnit4CacheTestCase 
 
     }
 
+    @Override
     public Object load(LoaderHelper helper) throws CacheLoaderException {
 
       return null;
     }
 
+    @Override
     public void close() {
 
     }

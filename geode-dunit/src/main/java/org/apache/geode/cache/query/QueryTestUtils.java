@@ -1521,6 +1521,7 @@ public class QueryTestUtils implements Serializable {
     SerializableRunnable createCacheServer = new CacheSerializableRunnable("Create Cache Server") {
       private static final long serialVersionUID = 1L;
 
+      @Override
       public void run2() throws CacheException {
         createCache(prop);
       }
@@ -1544,6 +1545,7 @@ public class QueryTestUtils implements Serializable {
     vm.invoke(new CacheSerializableRunnable("Create Partition region") {
       private static final long serialVersionUID = 1L;
 
+      @Override
       public void run2() throws CacheException {
         createPartitionRegion(name, constraint);
       }
@@ -1566,6 +1568,7 @@ public class QueryTestUtils implements Serializable {
     vm.invoke(new CacheSerializableRunnable("Create Replicated region") {
       private static final long serialVersionUID = 1L;
 
+      @Override
       public void run2() throws CacheException {
         getLogger().fine("### Create replicated region. ###");
         createReplicateRegion(name);
@@ -1579,6 +1582,7 @@ public class QueryTestUtils implements Serializable {
 
   public void createHashIndex(VM vm, final String name, final String field, final String region) {
     vm.invoke(new CacheSerializableRunnable("Create Replicated region") {
+      @Override
       public void run2() throws CacheException {
         createHashIndex(name, field, region);
       }
@@ -1598,6 +1602,7 @@ public class QueryTestUtils implements Serializable {
   public void createIndex(VM vm, final String name, final String field, final String region)
       throws CacheException {
     vm.invoke(new CacheSerializableRunnable("Create Index") {
+      @Override
       public void run2() throws CacheException {
         createIndex(name, field, region);
       }
@@ -1628,6 +1633,7 @@ public class QueryTestUtils implements Serializable {
     vm.invoke(new CacheSerializableRunnable("Create Local region") {
       private static final long serialVersionUID = 1L;
 
+      @Override
       public void run2() throws CacheException {
         getLogger().fine("### Create Local region. ###");
         createLocalRegion(name);
@@ -1644,6 +1650,7 @@ public class QueryTestUtils implements Serializable {
     vm.invoke(new CacheSerializableRunnable("Creating subregion") {
       private static final long serialVersionUID = 1L;
 
+      @Override
       public void run2() throws CacheException {
         getLogger().fine("### Create subregion. ###");
         Region root = cache.getRegion(rootName);
@@ -1663,6 +1670,7 @@ public class QueryTestUtils implements Serializable {
     server.invoke(new CacheSerializableRunnable("Closing Cache Server") {
       private static final long serialVersionUID = 1L;
 
+      @Override
       public void run2() throws CacheException {
         getLogger().fine("### Close Cache Server. ###");
         closeCache();
@@ -1706,6 +1714,7 @@ public class QueryTestUtils implements Serializable {
    */
   public void executeQueriesWithoutDistinct(VM vm, final String qarr[]) {
     vm.invoke(new CacheSerializableRunnable("Executing query without distinct") {
+      @Override
       public void run2() {
         executeQueriesWithoutDistinct(qarr);
       }
@@ -1744,6 +1753,7 @@ public class QueryTestUtils implements Serializable {
    */
   public void executeQueriesWithDistinct(VM vm, final String qarr[]) {
     vm.invoke(new CacheSerializableRunnable("Executing query with distinct") {
+      @Override
       public void run2() {
         executeQueriesWithDistinct(qarr);
       }

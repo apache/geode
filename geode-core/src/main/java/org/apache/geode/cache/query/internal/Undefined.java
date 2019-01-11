@@ -51,15 +51,18 @@ public class Undefined implements DataSerializableFixedID, Comparable, Serializa
     return "UNDEFINED";
   }
 
+  @Override
   public int getDSFID() {
     return UNDEFINED;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // Serialized simply as a one-byte class id, as a class well known to
     // DataSerializer
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {}
 
   @Override

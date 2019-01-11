@@ -65,6 +65,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
    * @param removeFromQueueOnException Unused.
    * @return whether the batch of messages was successfully processed
    */
+  @Override
   public boolean dispatchBatch(List events, boolean removeFromQueueOnException, boolean isRetry) {
     GatewaySenderStats statistics = this.eventProcessor.sender.getStatistics();
     boolean success = false;

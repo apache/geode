@@ -106,6 +106,7 @@ public class CompiledField implements Comparable {
     return signature;
   }
 
+  @Override
   public int compareTo(Object other) {
     if (this == other) {
       return 0;

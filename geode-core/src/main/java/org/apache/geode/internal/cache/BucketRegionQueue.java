@@ -234,6 +234,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     // NOOP since we want the value in the region queue to stay in object form.
   }
 
+  @Override
   protected void clearQueues() {
     getInitializationLock().writeLock().lock();
     try {
@@ -443,6 +444,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
+  @Override
   protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event) {
     if (didPut) {
       if (this.initialized) {
@@ -556,6 +558,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * eventSeqNumQueue if EntryNotFoundException is encountered during basicDestroy. This change is
    * done during selective merge from r41425 from gemfire701X_maint.
    */
+  @Override
   public void destroyKey(Object key) throws ForceReattemptException {
     destroyKey(key, false);
   }
@@ -595,6 +598,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     this.notifyEntriesRemoved();
   }
 
+  @Override
   public EntryEventImpl newDestroyEntryEvent(Object key, Object aCallbackArgument) {
     return getPartitionedRegion().newDestroyEntryEvent(key, aCallbackArgument);
   }

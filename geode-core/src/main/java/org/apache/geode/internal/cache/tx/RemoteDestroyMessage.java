@@ -393,6 +393,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     }
   }
 
+  @Override
   public int getDSFID() {
     return R_DESTROY_MESSAGE;
   }

@@ -70,6 +70,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     VM vm3 = host.getVM(2);
 
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
@@ -88,6 +89,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
     vm3.invoke(new SerializableCallable("check for PDX") {
 
+      @Override
       public Object call() throws Exception {
         assertNotNull(getRootRegion(PeerTypeRegistration.REGION_NAME));
         return null;
@@ -127,6 +129,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(1);
 
     SerializableCallable createRegionAndAddPoisonedListener = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);
@@ -147,6 +150,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
   public void testPersistenceDefaultDiskStore() throws Throwable {
 
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         // Make sure the type registry is persistent
         CacheFactory cf = new CacheFactory();
@@ -166,6 +170,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testPersistenceExplicitDiskStore() throws Throwable {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         // Make sure the type registry is persistent
         CacheFactory cf = new CacheFactory();
@@ -197,6 +202,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(() -> doSimplePut(false));
 
     final SerializableCallable checkForObject = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getRootRegion(TEST_REGION_NAME);
         assertEquals(ANOBJECT, r.get(1));
@@ -209,6 +215,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
     vm2.invoke(checkForObject);
 
     SerializableCallable closeCache = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         closeCache();
         return null;
@@ -311,6 +318,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
       // now we register a new Id for our enum in a different thread. This will
       // block in vm1 due to its message observer
       Thread t = new Thread("PdxSerializableDUnitTest async thread") {
+        @Override
         public void run() {
           bb.signalGate("asyncThreadReady");
           // pdxRegion.put(new EnumId(0x3010101), new EnumInfo(TestPdxObject.AnEnum.TWO));

@@ -392,10 +392,12 @@ public class AttributesFactoryJUnitTest {
   @Test
   public void testConnectionPool() {
     CacheLoader cl = new CacheLoader() {
+      @Override
       public Object load(LoaderHelper helper) throws CacheLoaderException {
         return null;
       }
 
+      @Override
       public void close() {}
     };
 

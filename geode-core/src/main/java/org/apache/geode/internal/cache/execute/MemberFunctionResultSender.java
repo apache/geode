@@ -76,6 +76,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
     this.serverSender = sender;
   }
 
+  @Override
   public void lastResult(Object oneResult) {
     if (!this.function.hasResult()) {
       throw new IllegalStateException(
@@ -179,6 +180,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
     FunctionStats.getFunctionStats(function.getId(), this.dm.getSystem()).incResultsReturned();
   }
 
+  @Override
   public void sendResult(Object oneResult) {
     if (!this.function.hasResult()) {
       throw new IllegalStateException(
@@ -212,12 +214,14 @@ public class MemberFunctionResultSender implements InternalResultSender {
   }
 
 
+  @Override
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
     this.lastResult(iFunxtionException);
     this.localLastResultReceived = true;
   }
 
+  @Override
   public void setException(Throwable exception) {
     ((LocalResultCollector) this.rc).setException(exception);
     // this.lastResult(exception);
@@ -227,14 +231,17 @@ public class MemberFunctionResultSender implements InternalResultSender {
     this.localLastResultReceived = true;
   }
 
+  @Override
   public void enableOrderedResultStreming(boolean enable) {
     this.enableOrderedResultStreming = enable;
   }
 
+  @Override
   public boolean isLocallyExecuted() {
     return this.msg == null;
   }
 
+  @Override
   public boolean isLastResultReceived() {
     return this.localLastResultReceived;
   }

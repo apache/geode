@@ -31,6 +31,7 @@ public class ClassAndMethods implements Comparable {
     this.dclass = parsedClass;
   }
 
+  @Override
   public int compareTo(Object other) {
     if (!(other instanceof ClassAndMethods)) {
       return -1;

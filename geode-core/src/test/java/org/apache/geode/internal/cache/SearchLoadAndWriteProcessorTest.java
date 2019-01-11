@@ -120,6 +120,7 @@ public class SearchLoadAndWriteProcessorTest {
 
 
     Thread t1 = new Thread(new Runnable() {
+      @Override
       public void run() {
         await()
             .until(() -> processor.getSelectedNode() != null);
@@ -131,6 +132,7 @@ public class SearchLoadAndWriteProcessorTest {
     t1.start();
 
     Thread t2 = new Thread(new Runnable() {
+      @Override
       public void run() {
         await()
             .until(() -> departedMember != null && processor.getSelectedNode() != null
@@ -144,6 +146,7 @@ public class SearchLoadAndWriteProcessorTest {
     t2.start();
 
     Thread t3 = new Thread(new Runnable() {
+      @Override
       public void run() {
         await()
             .until(() -> departedMember != null && processor.getSelectedNode() != null

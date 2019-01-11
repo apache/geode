@@ -81,6 +81,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
 
     SerializableRunnable tearDown = new SerializableRunnable("tearDown") {
+      @Override
       public void run() {
         Locator locator = (Locator) remoteObjects.get(LOCATOR_KEY);
         if (locator != null) {
@@ -242,6 +243,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   protected void startBridgeClientInVM(VM vm, final Pool pool, final String... regions)
       throws Exception {
     SerializableRunnable connect = new SerializableRunnable("Start bridge client") {
+      @Override
       public void run() throws Exception {
         startBridgeClient(pool, regions);
       }
@@ -292,6 +294,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
 
   protected void stopBridgeMemberVM(VM vm) {
     vm.invoke(new SerializableRunnable("Stop bridge member") {
+      @Override
       public void run() {
         Cache cache = (Cache) remoteObjects.remove(CACHE_KEY);
         cache.close();
@@ -321,11 +324,13 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     private final Set discoveredLocators = new HashSet();
     private final Set removedLocators = new HashSet();
 
+    @Override
     public synchronized void locatorsDiscovered(List locators) {
       discoveredLocators.addAll(locators);
       notifyAll();
     }
 
+    @Override
     public synchronized void locatorsRemoved(List locators) {
       removedLocators.addAll(locators);
       notifyAll();

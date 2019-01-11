@@ -73,6 +73,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
   private void clean() {
     SerializableRunnable cleanVM = new CacheSerializableRunnable("clean VM") {
+      @Override
       public void run2() throws CacheException {
         disconnectFromDS();
       }
@@ -84,6 +85,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   public void testMulticastEnabled() {
     final String name = "mcastRegion";
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
       public void run2() throws CacheException {
         createRegion(name, getRegionAttributes());
       }
@@ -106,6 +108,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
      */
 
     SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
+      @Override
       public void run2() throws CacheException {
         final Region region = getRootRegion().getSubregion(name);
         for (int i = 0; i < 5; i++) {
@@ -118,6 +121,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable validateMulticastAfterRegionOps =
         new CacheSerializableRunnable("validateMulticast after region ops") {
+          @Override
           public void run2() throws CacheException {
             validateMulticastOpsAfterRegionOps();
           }
@@ -189,6 +193,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
       closeLocator();
     } finally {
       SerializableRunnable unsetSysProp = new CacheSerializableRunnable("Create Region") {
+        @Override
         public void run2() throws CacheException {
           CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = false;
         }
@@ -212,6 +217,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     return factory.create();
   }
 
+  @Override
   public Properties getDistributedSystemProperties() {
     Properties p = new Properties();
     p.put(STATISTIC_SAMPLING_ENABLED, "true");

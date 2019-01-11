@@ -98,6 +98,7 @@ public class Query extends BaseCommandQuery {
     }
   }
 
+  @Override
   protected CollectionType getCollectionType(SelectResults selectResults) {
     return new CollectionTypeImpl(List.class, selectResults.getCollectionType().getElementType());
   }

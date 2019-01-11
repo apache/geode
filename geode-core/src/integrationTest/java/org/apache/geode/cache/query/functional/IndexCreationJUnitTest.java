@@ -1040,10 +1040,12 @@ public class IndexCreationJUnitTest {
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;

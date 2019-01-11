@@ -52,11 +52,13 @@ public class DiskInstantiatorsJUnitTest {
   @BeforeClass
   public static void beforeClass() {
     Instantiator.register(new Instantiator(Payload.class, (byte) 22) {
+      @Override
       public DataSerializable newInstance() {
         return new Payload();
       }
     });
     Instantiator.register(new Instantiator(Key.class, (byte) 21) {
+      @Override
       public DataSerializable newInstance() {
         return new Key();
       }
@@ -153,10 +155,12 @@ public class DiskInstantiatorsJUnitTest {
       this.data = new byte[size];
     }
 
+    @Override
     public void toData(DataOutput dataOutput) throws IOException {
       DataSerializer.writeByteArray(this.data, dataOutput);
     }
 
+    @Override
     public void fromData(DataInput dataInput) throws IOException {
       this.data = DataSerializer.readByteArray(dataInput);
     }
@@ -182,10 +186,12 @@ public class DiskInstantiatorsJUnitTest {
       this.key = new Long(k);
     }
 
+    @Override
     public void toData(DataOutput dataOutput) throws IOException {
       dataOutput.writeLong(this.key.longValue());
     }
 
+    @Override
     public void fromData(DataInput dataInput) throws IOException {
       this.key = new Long(dataInput.readLong());
     }

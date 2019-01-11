@@ -1156,6 +1156,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
       // With same Key Based Partition Resolver
       accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
+        @Override
         public Object call() throws Exception {
           PartitionedRegion prForCustomer =
               (PartitionedRegion) basicGetCache().getRegion(CustomerPartitionedRegionName);
@@ -1479,6 +1480,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // create a few buckets in dataStore1
     dataStore1.invoke(new SerializableRunnable("put data in region") {
+      @Override
       public void run() {
         Region region1 = basicGetCache().getRegion(CustomerPartitionedRegionName);
         Region region2 = basicGetCache().getRegion(OrderPartitionedRegionName);
@@ -1491,6 +1493,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // add a listener for region recovery
     dataStore2.invoke(new SerializableRunnable("Add recovery listener") {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(new MyResourceObserver());
       }
@@ -1501,6 +1504,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     // Make sure no redundant copies of buckets get created for the first PR in datastore2 because
     // the second PR has not yet been created.
     SerializableRunnable checkForBuckets = new SerializableRunnable("check for buckets") {
+      @Override
       public void run() {
         PartitionedRegion region1 =
             (PartitionedRegion) basicGetCache().getRegion(CustomerPartitionedRegionName);
@@ -1523,6 +1527,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // create another bucket in dataStore1
     dataStore1.invoke(new SerializableRunnable("put data in region") {
+      @Override
       public void run() {
         Region region1 = basicGetCache().getRegion(CustomerPartitionedRegionName);
         Region region2 = basicGetCache().getRegion(OrderPartitionedRegionName);
@@ -1539,6 +1544,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // Now we should get redundant copies of buckets for both PRs
     dataStore2.invoke(new SerializableRunnable("check for bucket creation") {
+      @Override
       public void run() {
         PartitionedRegion region1 =
             (PartitionedRegion) basicGetCache().getRegion(CustomerPartitionedRegionName);
@@ -1620,6 +1626,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // add a listener for region recovery
     dataStore1.invoke(new SerializableRunnable("Add recovery listener") {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(new MyResourceObserver());
       }
@@ -1627,6 +1634,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // add a listener for region recovery
     dataStore2.invoke(new SerializableRunnable("Add recovery listener") {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(new MyResourceObserver());
       }
@@ -1646,6 +1654,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // create a few buckets in dataStore1
     dataStore1.invoke(new SerializableRunnable("put data in region") {
+      @Override
       public void run() {
         Region region1 = basicGetCache().getRegion(CustomerPartitionedRegionName);
         region1.put(Integer.valueOf(1), "A");
@@ -1655,6 +1664,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     SerializableRunnable checkForBuckets_ForCustomer =
         new SerializableRunnable("check for buckets") {
+          @Override
           public void run() {
             PartitionedRegion region1 =
                 (PartitionedRegion) basicGetCache().getRegion(CustomerPartitionedRegionName);
@@ -1682,6 +1692,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     dataStore1.invoke(PRColocationDUnitTest.class, "createPR", attributeObjects2);
 
     SerializableRunnable checkForBuckets_ForOrder = new SerializableRunnable("check for buckets") {
+      @Override
       public void run() {
         PartitionedRegion region =
             (PartitionedRegion) basicGetCache().getRegion(OrderPartitionedRegionName);
@@ -1702,6 +1713,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     dataStore2.invoke(PRColocationDUnitTest.class, "createPR", attributeObjects1);
 
     SerializableRunnable checkForBuckets = new SerializableRunnable("check for buckets") {
+      @Override
       public void run() {
         PartitionedRegion region1 =
             (PartitionedRegion) basicGetCache().getRegion(CustomerPartitionedRegionName);
@@ -1722,6 +1734,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // create another bucket in dataStore1
     dataStore1.invoke(new SerializableRunnable("put data in region") {
+      @Override
       public void run() {
         Region region1 = basicGetCache().getRegion(CustomerPartitionedRegionName);
         region1.put(Integer.valueOf(3), "C");
@@ -1736,6 +1749,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // Now we should get redundant copies of buckets for both PRs
     dataStore2.invoke(new SerializableRunnable("check for bucket creation") {
+      @Override
       public void run() {
         PartitionedRegion region1 =
             (PartitionedRegion) basicGetCache().getRegion(CustomerPartitionedRegionName);
@@ -1756,6 +1770,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     });
 
     dataStore1.invoke(new SerializableRunnable("check for bucket creation") {
+      @Override
       public void run() {
         PartitionedRegion region2 =
             (PartitionedRegion) basicGetCache().getRegion(OrderPartitionedRegionName);
@@ -1777,6 +1792,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // add a listener for region recovery
     dataStore1.invoke(new SerializableRunnable("Add recovery listener") {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(new MyResourceObserver());
       }
@@ -1784,6 +1800,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // add a listener for region recovery
     dataStore2.invoke(new SerializableRunnable("Add recovery listener") {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(new MyResourceObserver());
       }
@@ -1804,6 +1821,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     // create a few buckets in dataStore1
     dataStore1.invoke(new SerializableRunnable("put data in region") {
+      @Override
       public void run() {
         Region region1 = basicGetCache().getRegion(CustomerPartitionedRegionName);
         for (int i = 0; i < 50; i++) {
@@ -1836,6 +1854,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
     Wait.pause(5000);
     SerializableRunnable checkForBuckets_ForOrder = new SerializableRunnable("check for buckets") {
+      @Override
       public void run() {
         PartitionedRegion region =
             (PartitionedRegion) basicGetCache().getRegion(OrderPartitionedRegionName);
@@ -2549,6 +2568,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         InternalResourceManager.setResourceObserver(null);
       }
@@ -2588,23 +2608,28 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
       this.dummyID = new Integer(id);
     }
 
+    @Override
     public String getName() {
       // TODO Auto-generated method stub
       return null;
     }
 
+    @Override
     public Serializable getRoutingObject(EntryOperation opDetails) {
       return (Serializable) opDetails.getKey();
     }
 
+    @Override
     public void close() {
       // TODO Auto-generated method stub
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.dummyID = DataSerializer.readInteger(in);
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writeInteger(this.dummyID, out);
     }

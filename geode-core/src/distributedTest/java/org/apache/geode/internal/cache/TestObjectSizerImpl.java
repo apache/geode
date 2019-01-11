@@ -40,6 +40,7 @@ public class TestObjectSizerImpl implements ObjectSizer, Serializable {
     three = "THREE";
   }
 
+  @Override
   public int sizeof(Object o) {
     if (o instanceof Integer) {
       return 5;

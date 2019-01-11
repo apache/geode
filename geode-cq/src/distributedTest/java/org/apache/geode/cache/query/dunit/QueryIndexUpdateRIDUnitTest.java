@@ -474,6 +474,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   public void registerInterestList(VM vm, final String regionName, final int keySize,
       final int policy, final int start) {
     vm.invoke(new CacheSerializableRunnable("Register InterestList") {
+      @Override
       public void run2() throws CacheException {
 
         // Get Query Service.
@@ -519,6 +520,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   public void asyncRegisterInterestList(VM vm, final String regionName, final int keySize,
       final int policy, final int start) {
     vm.invokeAsync(new CacheSerializableRunnable("Register InterestList") {
+      @Override
       public void run2() throws CacheException {
 
         // Get Query Service.
@@ -562,6 +564,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
   public void createServer(VM server, final int thePort, final boolean partitioned) {
     SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory factory = new AttributesFactory();
@@ -623,6 +626,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
    */
   public void createValues(VM vm, final String regionName, final int size, final int start) {
     vm.invoke(new CacheSerializableRunnable("Create values") {
+      @Override
       public void run2() throws CacheException {
         Region region1;
         if (!"root".equals(regionName)) {
@@ -655,6 +659,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   public void createClient(VM client, final int[] serverPorts, final String serverHost,
       final String redundancyLevel, final String poolName) {
     SerializableRunnable createQService = new CacheSerializableRunnable("Create Client") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Create Client. ###");
         // Region region1 = null;
@@ -700,6 +705,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   public void validateQueryOnIndexWithRegion(VM vm, final String query, final int resultSize,
       final String region) {
     vm.invoke(new CacheSerializableRunnable("Validate Query") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Validating Query. ###");
         QueryService qs = getCache().getQueryService();
@@ -740,6 +746,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
   public void asyncClearRegion(VM vm, final String regionName) {
     vm.invokeAsync(new CacheSerializableRunnable("Destroy entries") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Clearing Region. ###");
         Region region1;
@@ -757,6 +764,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
   private SerializableRunnable getSRClearRegion(final String regionName) {
     SerializableRunnable sr = new CacheSerializableRunnable("Destroy entries") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Clearing Region. ###");
         Region region1;
@@ -776,6 +784,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   private SerializableRunnable getSRRegisterInterestList(final String regionName, final int keySize,
       final int policy, final int start) {
     SerializableRunnable sr = new CacheSerializableRunnable("Register InterestList") {
+      @Override
       public void run2() throws CacheException {
 
         // Get Query Service.
@@ -822,10 +831,12 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;

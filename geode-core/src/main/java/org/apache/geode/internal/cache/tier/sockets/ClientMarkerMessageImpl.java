@@ -55,6 +55,7 @@ public class ClientMarkerMessageImpl implements ClientMessage {
    */
   public ClientMarkerMessageImpl() {}
 
+  @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     Version clientVersion = proxy.getVersion();
     Message message = null;
@@ -76,42 +77,51 @@ public class ClientMarkerMessageImpl implements ClientMessage {
     return message;
   }
 
+  @Override
   public boolean shouldBeConflated() {
     return true;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.eventId, out);
   }
 
+  @Override
   public int getDSFID() {
     return CLIENT_MARKER_MESSAGE_IMPL;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.eventId = (EventID) DataSerializer.readObject(in);
   }
 
+  @Override
   public EventID getEventId() {
     return this.eventId;
   }
 
+  @Override
   public String getRegionToConflate() {
     return "gemfire_reserved_region_name_for_durable_client_marker";
   }
 
+  @Override
   public Object getKeyToConflate() {
     // This method can be called by HARegionQueue.
     // Use this to identify the message type.
     return "marker";
   }
 
+  @Override
   public Object getValueToConflate() {
     // This method can be called by HARegionQueue
     // Use this to identify the message type.
     return "marker";
   }
 
+  @Override
   public void setLatestValue(Object value) {
     return;
   }

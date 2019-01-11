@@ -122,6 +122,7 @@ public class PRQueryCacheClosedJUnitTest {
           "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Creating a Thread which will fire queries on the datastore");
 
       Thread t1 = new Thread(new Runnable() {
+        @Override
         public void run() {
           final String expectedCacheClosedException = CacheClosedException.class.getName();
 
@@ -186,6 +187,7 @@ public class PRQueryCacheClosedJUnitTest {
           "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Creating a Thread which will call cache.close() on the datastore ");
 
       Thread t2 = new Thread(new Runnable() {
+        @Override
         public void run() {
           PartitionedRegionTestHelper.closeCache();
           try {

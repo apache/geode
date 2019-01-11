@@ -123,6 +123,7 @@ public class TcpServerJUnitTest {
 
     final AtomicBoolean done = new AtomicBoolean();
     Thread delayedThread = new Thread() {
+      @Override
       public void run() {
         Boolean delay = Boolean.valueOf(true);
         try {
@@ -214,10 +215,12 @@ public class TcpServerJUnitTest {
 
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException {
       id = in.readInt();
     }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       out.writeInt(id);
     }
@@ -229,24 +232,30 @@ public class TcpServerJUnitTest {
     protected/* GemStoneAddition */ boolean shutdown;
 
 
+    @Override
     public void init(TcpServer tcpServer) {
       // TODO Auto-generated method stub
 
     }
 
+    @Override
     public Object processRequest(Object request) throws IOException {
       return request;
     }
 
+    @Override
     public void shutDown() {
       shutdown = true;
     }
 
+    @Override
     public void restarting(DistributedSystem ds, GemFireCache cache,
         InternalConfigurationPersistenceService sharedConfig) {}
 
+    @Override
     public void endRequest(Object request, long startTime) {}
 
+    @Override
     public void endResponse(Object request, long startTime) {}
 
   }
@@ -259,8 +268,10 @@ public class TcpServerJUnitTest {
       this.latch = latch;
     }
 
+    @Override
     public void init(TcpServer tcpServer) {}
 
+    @Override
     public Object processRequest(Object request) throws IOException {
       Boolean delay = (Boolean) request;
       if (delay.booleanValue()) {
@@ -273,13 +284,17 @@ public class TcpServerJUnitTest {
       return delay;
     }
 
+    @Override
     public void shutDown() {}
 
+    @Override
     public void restarting(DistributedSystem ds, GemFireCache cache,
         InternalConfigurationPersistenceService sharedConfig) {}
 
+    @Override
     public void endRequest(Object request, long startTime) {}
 
+    @Override
     public void endResponse(Object request, long startTime) {}
   }
 
@@ -288,10 +303,12 @@ public class TcpServerJUnitTest {
     AtomicInteger ended = new AtomicInteger();
 
 
+    @Override
     public void endJob() {
       started.incrementAndGet();
     }
 
+    @Override
     public void startJob() {
       ended.incrementAndGet();
     }

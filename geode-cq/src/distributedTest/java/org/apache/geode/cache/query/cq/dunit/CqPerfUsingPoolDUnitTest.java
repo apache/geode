@@ -72,6 +72,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // system before creating connection pools
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         getSystem();
       }
@@ -100,6 +101,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final String cqName = "testCQPerf_0";
 
     client.invoke(new CacheSerializableRunnable("Create CQ :" + cqName) {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
         // Get CQ Service.
@@ -143,6 +145,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createValuesWithTime(client, cqDUnitTest.regions[0], size);
 
     client.invoke(new CacheSerializableRunnable("Validate CQs") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Validating CQ. ### " + cqName);
         // Get CQ Service.
@@ -224,6 +227,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // Entry is made into the CQs cache hashset.
     // testKeyMaintainance_0 with 1 entry and testKeyMaintainance_1 with 0
     server.invoke(new CacheSerializableRunnable("LookForCachedEventKeys1") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -256,6 +260,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // Entry/check is made into the CQs cache hashset.
     // testKeyMaintainance_0 with 1 entry and testKeyMaintainance_1 with 1
     server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate1") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -287,6 +292,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // Entry/check is made into the CQs cache hashset.
     // testKeyMaintainance_0 with 1 entry and testKeyMaintainance_1 with 1
     server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate2") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -320,6 +326,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // Entry/check is made into the CQs cache hashset.
     // testKeyMaintainance_0 with 1 entry and testKeyMaintainance_1 with 1
     server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate2") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -349,6 +356,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createValues(server, cqDUnitTest.regions[0], 12);
 
     server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate2") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -380,6 +388,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // This will remove the caching for this CQ.
     cqDUnitTest.closeCQ(client, "testKeyMaintainance_1");
     server.invoke(new CacheSerializableRunnable("LookForCachedEventKeysAfterUpdate2") {
+      @Override
       public void run2() throws CacheException {
         CqService cqService = null;
         try {
@@ -889,6 +898,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
   public void validateMatchingCqs(VM server, final int mapSize, final String query,
       final int numCqSize) {
     server.invoke(new CacheSerializableRunnable("validateMatchingCqs") {
+      @Override
       public void run2() throws CacheException {
         CqServiceImpl cqService = null;
         try {
@@ -921,6 +931,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   public void printCqQueryExecutionTime(VM server) {
     server.invoke(new CacheSerializableRunnable("printCqQueryExecutionTime") {
+      @Override
       public void run2() throws CacheException {
         CqServiceImpl cqService = null;
         try {

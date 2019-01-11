@@ -575,6 +575,7 @@ public class PartitionedRegion extends LocalRegion
       return "Shutdown listener for PartitionedRegion";
     }
 
+    @Override
     public void onDisconnect(InternalDistributedSystem sys) {
       clearPRIdMap();
     }
@@ -1198,6 +1199,7 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
+  @Override
   public void addGatewaySenderId(String gatewaySenderId) {
     super.addGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
@@ -1231,15 +1233,18 @@ public class PartitionedRegion extends LocalRegion
     updatePRConfig(prConfig, false);
   }
 
+  @Override
   public void removeGatewaySenderId(String gatewaySenderId) {
     super.removeGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
   }
 
+  @Override
   public void addAsyncEventQueueId(String asyncEventQueueId) {
     addAsyncEventQueueId(asyncEventQueueId, false);
   }
 
+  @Override
   public void addAsyncEventQueueId(String asyncEventQueueId, boolean isInternal) {
     super.addAsyncEventQueueId(asyncEventQueueId, isInternal);
     new UpdateAttributesProcessor(this).distribute();
@@ -1253,11 +1258,13 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
+  @Override
   public void removeAsyncEventQueueId(String asyncEventQueueId) {
     super.removeAsyncEventQueueId(asyncEventQueueId);
     new UpdateAttributesProcessor(this).distribute();
   }
 
+  @Override
   public void checkSameSenderIdsAvailableOnAllNodes() {
     List senderIds =
         this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
@@ -1862,6 +1869,7 @@ public class PartitionedRegion extends LocalRegion
    *
    * @since GemFire 5.1
    */
+  @Override
   public Object executeQuery(DefaultQuery query, Object[] parameters, Set buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -4891,10 +4899,12 @@ public class PartitionedRegion extends LocalRegion
     return prid;
   }
 
+  @Override
   public DistributionAdvisor getDistributionAdvisor() {
     return this.distAdvisor;
   }
 
+  @Override
   public CacheDistributionAdvisor getCacheDistributionAdvisor() {
     return this.distAdvisor;
   }
@@ -4904,10 +4914,12 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /** Returns the distribution profile; lazily creates one if needed */
+  @Override
   public Profile getProfile() {
     return this.distAdvisor.createProfile();
   }
 
+  @Override
   public void fillInProfile(Profile p) {
     CacheProfile profile = (CacheProfile) p;
     // set fields on CacheProfile...
@@ -5973,6 +5985,7 @@ public class PartitionedRegion extends LocalRegion
         return getRegionAdvisor().getBucketSet().iterator();
       }
 
+      @Override
       public boolean hasNext() {
         PartitionedRegion.this.checkReadiness();
         if (this.currentBucketI.hasNext()) {
@@ -5986,6 +5999,7 @@ public class PartitionedRegion extends LocalRegion
         }
       }
 
+      @Override
       public Object next() {
         if (myTX != null) {
           checkTX();
@@ -6026,6 +6040,7 @@ public class PartitionedRegion extends LocalRegion
         }
       }
 
+      @Override
       public void remove() {
         if (this.currentKey == null) {
           throw new IllegalStateException();
@@ -6041,10 +6056,12 @@ public class PartitionedRegion extends LocalRegion
         }
       }
 
+      @Override
       public PartitionedRegion getPartitionedRegion() {
         return PartitionedRegion.this;
       }
 
+      @Override
       public int getBucketId() {
         return this.currentBucketId;
       }
@@ -9279,6 +9296,7 @@ public class PartitionedRegion extends LocalRegion
         }
         if (!bucketList.isEmpty()) {
           Collections.sort(bucketList, new Comparator<BucketRegion>() {
+            @Override
             public int compare(BucketRegion buk1, BucketRegion buk2) {
               long buk1NumEntries = buk1.getSizeForEviction();
               long buk2NumEntries = buk2.getSizeForEviction();

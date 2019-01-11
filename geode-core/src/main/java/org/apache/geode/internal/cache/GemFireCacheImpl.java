@@ -1478,6 +1478,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public synchronized void initializePdxRegistry() {
     if (this.pdxRegistry == null) {
       // The member with locator is initialized with a NullTypePdxRegistration
@@ -1494,6 +1495,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Call to make this vm's dynamic region factory ready. Public so it can be called from
    * CacheCreation during xml processing
    */
+  @Override
   public void readyDynamicRegionFactory() {
     try {
       ((DynamicRegionFactoryImpl) DynamicRegionFactory.get()).internalInit(this);
@@ -1519,6 +1521,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *
    * @since GemFire prPersistSprint2
    */
+  @Override
   public DiskStoreFactory createDiskStoreFactory(DiskStoreAttributes attrs) {
     return new DiskStoreFactoryImpl(this, attrs);
   }
@@ -1611,6 +1614,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /** if the cache was forcibly closed this exception will reflect the cause */
+  @Override
   public Throwable getDisconnectCause() {
     return this.disconnectCause;
   }
@@ -2102,6 +2106,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final boolean DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE = Boolean
       .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
 
+  @Override
   public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
       boolean keepDS) {
     securityService.close();
@@ -2807,6 +2812,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *
    * @since GemFire 3.5
    */
+  @Override
   public int getUpTime() {
     return (int) (System.currentTimeMillis() - this.creationDate.getTime()) / 1000;
   }
@@ -2872,6 +2878,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Used to set the default pool on a new GemFireCache.
    */
+  @Override
   public synchronized void determineDefaultPool() {
     if (!isClient()) {
       throw new UnsupportedOperationException();
@@ -2930,6 +2937,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @param poolFactory Prospective pool factory.
    * @throws IllegalStateException When the specified pool factory does not match.
    */
+  @Override
   public void validatePoolFactory(PoolFactory poolFactory) {
     // If the specified pool factory is null, by definition there is no pool factory to validate.
     if (poolFactory != null && !Objects.equals(this.poolFactory, poolFactory)) {
@@ -2944,6 +2952,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return basicCreateRegion(name, aRegionAttributes);
   }
 
+  @Override
   public <K, V> Region<K, V> basicCreateRegion(String name, RegionAttributes<K, V> attrs)
       throws RegionExistsException, TimeoutException {
     try {
@@ -3157,6 +3166,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *
    * @since GemFire 6.0
    */
+  @Override
   public Set<InternalRegion> getAllRegions() {
     Set<InternalRegion> result = new HashSet<>();
     synchronized (this.rootRegions) {
@@ -3352,6 +3362,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return rootRegions(false);
   }
 
+  @Override
   public Set<Region<?, ?>> rootRegions(boolean includePRAdminRegions) {
     return rootRegions(includePRAdminRegions, true);
   }
@@ -3769,6 +3780,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return cacheServer;
   }
 
+  @Override
   public boolean removeCacheServer(CacheServer cacheServer) {
     boolean removed = this.allCacheServers.remove(cacheServer);
     sendRemoveCacheServerProfileMessage();
@@ -3858,6 +3870,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public void removeGatewayReceiver(GatewayReceiver receiver) {
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
@@ -4001,6 +4014,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * add a partitioned region to the set of tracked partitioned regions. This is used to notify the
    * regions when this cache requires, or does not require notification of all region/entry events.
    */
+  @Override
   public void addPartitionedRegion(PartitionedRegion region) {
     synchronized (this.partitionedRegions) {
       if (region.isDestroyed()) {
@@ -4341,6 +4355,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return this.resourceManager;
   }
 
+  @Override
   public void setBackupFiles(List<File> backups) {
     this.backupFiles = backups;
   }
@@ -5026,6 +5041,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Returns true if any of the GemFire services prefers PdxInstance. And application has not
    * requested getObject() on the PdxInstance.
    */
+  @Override
   public boolean getPdxReadSerializedByAnyGemFireServices() {
     TypeRegistry pdxRegistry = this.getPdxRegistry();
     boolean pdxReadSerializedOverriden = false;
@@ -5136,6 +5152,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.cacheConfig.setPdxReadSerialized(value);
   }
 
+  @Override
   public void setDeclarativeCacheConfig(CacheConfig cacheConfig) {
     this.cacheConfig.setDeclarativeConfig(cacheConfig);
     basicSetPdxSerializer(this.cacheConfig.getPdxSerializer());
@@ -5147,6 +5164,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *
    * @param mapOfNewDeclarableProps Map of the declarable properties to add
    */
+  @Override
   public void addDeclarableProperties(final Map<Declarable, Properties> mapOfNewDeclarableProps) {
     synchronized (this.declarablePropertiesMap) {
       for (Entry<Declarable, Properties> newEntry : mapOfNewDeclarableProps.entrySet()) {
@@ -5195,6 +5213,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return this.initializerProps;
   }
 
+  @Override
   public void setInitializer(Declarable initializer, Properties initializerProps) {
     this.initializer = initializer;
     this.initializerProps = initializerProps;
@@ -5215,6 +5234,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return PdxInstanceFactoryImpl.createPdxEnum(className, enumName, enumOrdinal, this);
   }
 
+  @Override
   public JmxManagerAdvisor getJmxManagerAdvisor() {
     return this.jmxAdvisor;
   }

@@ -67,6 +67,7 @@ public class PoolFactoryImpl implements PoolFactory {
     this.pm = pm;
   }
 
+  @Override
   public PoolFactory setSocketConnectTimeout(int socketConnectTimeout) {
     if (socketConnectTimeout <= -1) {
       throw new IllegalArgumentException("socketConnectTimeout must be greater than -1");
@@ -75,6 +76,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setFreeConnectionTimeout(int connectionTimeout) {
     if (connectionTimeout <= 0) {
       throw new IllegalArgumentException("connectionTimeout must be greater than zero");
@@ -83,6 +85,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setLoadConditioningInterval(int connectionLifetime) {
     if (connectionLifetime < -1) {
       throw new IllegalArgumentException("connectionLifetime must be greater than or equal to -1");
@@ -91,6 +94,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setSocketBufferSize(int bufferSize) {
     if (bufferSize <= 0) {
       throw new IllegalArgumentException("socketBufferSize must be greater than zero");
@@ -99,11 +103,13 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setThreadLocalConnections(boolean threadLocalConnections) {
     this.attributes.threadLocalConnections = threadLocalConnections;
     return this;
   }
 
+  @Override
   public PoolFactory setIdleTimeout(long idleTimout) {
     if (idleTimout < -1) {
       throw new IllegalArgumentException("idleTimeout must be greater than or equal to -1");
@@ -112,6 +118,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setMaxConnections(int maxConnections) {
     if (maxConnections < this.attributes.minConnections && maxConnections != -1) {
       throw new IllegalArgumentException(
@@ -126,6 +133,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setMinConnections(int minConnections) {
     if (minConnections > attributes.maxConnections && attributes.maxConnections != -1) {
       throw new IllegalArgumentException(
@@ -138,6 +146,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setPingInterval(long pingInterval) {
     if (pingInterval <= 0) {
       throw new IllegalArgumentException("pingInterval must be greater than zero");
@@ -146,6 +155,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setStatisticInterval(int statisticInterval) {
     if (statisticInterval < -1) {
       throw new IllegalArgumentException("statisticInterval must be greater than or equal to -1");
@@ -154,6 +164,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setRetryAttempts(int retryAttempts) {
     if (retryAttempts < -1) {
       throw new IllegalArgumentException("retryAttempts must be greater than or equal to -1");
@@ -162,6 +173,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setReadTimeout(int timeout) {
     if (timeout < 0) {
       throw new IllegalArgumentException("readTimeout must be greater than or equal to zero");
@@ -170,6 +182,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setServerGroup(String group) {
     if (group == null) {
       group = DEFAULT_SERVER_GROUP;
@@ -178,16 +191,19 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setSubscriptionEnabled(boolean enabled) {
     this.attributes.queueEnabled = enabled;
     return this;
   }
 
+  @Override
   public PoolFactory setPRSingleHopEnabled(boolean enabled) {
     this.attributes.prSingleHopEnabled = enabled;
     return this;
   }
 
+  @Override
   public PoolFactory setMultiuserAuthentication(boolean enabled) {
     this.attributes.multiuserSecureModeEnabled = enabled;
     return this;
@@ -203,6 +219,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setSubscriptionRedundancy(int redundancyLevel) {
     if (redundancyLevel < -1) {
       throw new IllegalArgumentException(
@@ -212,6 +229,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory setSubscriptionMessageTrackingTimeout(int messageTrackingTimeout) {
     if (messageTrackingTimeout <= 0) {
       throw new IllegalArgumentException("queueMessageTrackingTimeout must be greater than zero");
@@ -248,6 +266,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return sockAddr;
   }
 
+  @Override
   public PoolFactory setSubscriptionAckInterval(int ackInterval) {
     if (ackInterval <= 0) {
       throw new IllegalArgumentException("ackInterval must be greater than 0");
@@ -257,6 +276,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory addLocator(String host, int port) {
     if (this.attributes.servers.size() > 0) {
       throw new IllegalStateException(
@@ -268,6 +288,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory addServer(String host, int port) {
     if (this.attributes.locators.size() > 0) {
       throw new IllegalStateException(
@@ -277,6 +298,7 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
   public PoolFactory reset() {
     // preserve the startDisabled across resets
     boolean sd = this.attributes.startDisabled;
@@ -335,6 +357,7 @@ public class PoolFactoryImpl implements PoolFactory {
    * @return the newly created connection pool.
    * @since GemFire 5.7
    */
+  @Override
   public Pool create(String name) throws CacheException {
     InternalDistributedSystem distributedSystem = InternalDistributedSystem.getAnyInstance();
     InternalCache cache = GemFireCacheImpl.getInstance();
@@ -532,6 +555,7 @@ public class PoolFactoryImpl implements PoolFactory {
       return this.subscriptionTimeoutMultipler;
     }
 
+    @Override
     public List/* <InetSocketAddress> */ getLocators() {
       if (this.locators.size() == 0 && this.servers.size() == 0) {
         throw new IllegalStateException(
@@ -546,6 +570,7 @@ public class PoolFactoryImpl implements PoolFactory {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public List/* <InetSocketAddress> */ getServers() {
       if (this.locators.size() == 0 && this.servers.size() == 0) {
         throw new IllegalStateException(
@@ -555,30 +580,37 @@ public class PoolFactoryImpl implements PoolFactory {
       return Collections.unmodifiableList(new ArrayList(this.servers));
     }
 
+    @Override
     public String getName() {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void destroy() throws CacheException {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void destroy(boolean keepAlive) throws CacheException {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public boolean isDestroyed() {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public void releaseThreadLocalConnection() {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public QueryService getQueryService() {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public int getPendingEventCount() {
       throw new UnsupportedOperationException();
     }

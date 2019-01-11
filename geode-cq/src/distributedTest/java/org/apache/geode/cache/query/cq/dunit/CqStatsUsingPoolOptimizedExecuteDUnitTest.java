@@ -34,6 +34,7 @@ public class CqStatsUsingPoolOptimizedExecuteDUnitTest extends CqStatsUsingPoolD
   @Override
   public final void postSetUpCqStatsUsingPoolDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -43,6 +44,7 @@ public class CqStatsUsingPoolOptimizedExecuteDUnitTest extends CqStatsUsingPoolD
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
       }

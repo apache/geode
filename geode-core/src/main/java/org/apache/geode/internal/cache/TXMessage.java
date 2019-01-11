@@ -60,6 +60,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     this.processorId = processor == null ? 0 : processor.getProcessorId();
   }
 
+  @Override
   public boolean canStartRemoteTransaction() {
     return false;
   }
@@ -170,6 +171,7 @@ public abstract class TXMessage extends SerialDistributionMessage
   protected abstract boolean operateOnTx(TXId txId, ClusterDistributionManager dm)
       throws RemoteOperationException;
 
+  @Override
   public int getTXUniqId() {
     return this.txUniqId;
   }
@@ -190,6 +192,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     this.txMemberId = DataSerializer.readObject(in);
   }
 
+  @Override
   public InternalDistributedMember getMemberToMasqueradeAs() {
     if (txMemberId == null) {
       return getSender();
@@ -202,6 +205,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     return this.processorId;
   }
 
+  @Override
   public InternalDistributedMember getTXOriginatorClient() {
     return this.txMemberId;
   }

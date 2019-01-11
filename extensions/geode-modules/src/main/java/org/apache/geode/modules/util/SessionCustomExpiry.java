@@ -34,6 +34,7 @@ public class SessionCustomExpiry
   private static final ExpirationAttributes EXPIRE_NOW =
       new ExpirationAttributes(1, ExpirationAction.DESTROY);
 
+  @Override
   public ExpirationAttributes getExpiry(Region.Entry<String, HttpSession> entry) {
     HttpSession session = entry.getValue();
     if (session != null) {
@@ -44,8 +45,10 @@ public class SessionCustomExpiry
     }
   }
 
+  @Override
   public void close() {}
 
+  @Override
   public void init(Properties props) {}
 
   public boolean equals(Object obj) {

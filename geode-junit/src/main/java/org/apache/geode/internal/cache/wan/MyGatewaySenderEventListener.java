@@ -37,6 +37,7 @@ public class MyGatewaySenderEventListener implements AsyncEventListener, Seriali
   /**
    * Processes events by recording their latencies.
    */
+  @Override
   public boolean processEvents(List<AsyncEvent> events) {
     synchronized (eventsMap) {
       for (AsyncEvent event : events) {
@@ -46,6 +47,7 @@ public class MyGatewaySenderEventListener implements AsyncEventListener, Seriali
     return true;
   }
 
+  @Override
   public void close() {}
 
   public Map getEventsMap() {

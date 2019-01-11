@@ -127,6 +127,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     buff.append("; key=").append(this.key);
   }
 
+  @Override
   public int getDSFID() {
     return R_FETCH_ENTRY_MESSAGE;
   }

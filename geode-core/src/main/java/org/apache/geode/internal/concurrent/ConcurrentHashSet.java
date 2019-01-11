@@ -53,31 +53,38 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E>, Seri
   }
 
 
+  @Override
   public boolean add(E o) {
     return map.put(o, PRESENT) == null;
   }
 
+  @Override
   public void clear() {
     map.clear();
   }
 
+  @Override
   public boolean contains(Object o) {
     return map.containsKey(o);
   }
 
+  @Override
   public boolean isEmpty() {
     return map.isEmpty();
   }
 
+  @Override
   public Iterator<E> iterator() {
     return map.keySet().iterator();
   }
 
+  @Override
   public boolean remove(Object o) {
     return map.remove(o) == PRESENT;
   }
 
 
+  @Override
   public int size() {
     return map.size();
   }

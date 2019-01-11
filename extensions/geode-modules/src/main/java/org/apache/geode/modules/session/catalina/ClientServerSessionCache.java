@@ -159,6 +159,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     return true;
   }
 
+  @Override
   public GemFireCache getCache() {
     return this.cache;
   }

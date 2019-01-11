@@ -727,150 +727,180 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   // Agent specific properties
   // -------------------------------------------------------------------------
 
+  @Override
   public boolean isAgentSSLEnabled() {
     return this.agentSSLEnabled;
   }
 
+  @Override
   public void setAgentSSLEnabled(boolean agentSSLEnabled) {
     checkReadOnly();
     this.agentSSLEnabled = agentSSLEnabled;
     configChanged();
   }
 
+  @Override
   public String getAgentSSLProtocols() {
     return this.agentSSLProtocols;
   }
 
+  @Override
   public void setAgentSSLProtocols(String agentSSLProtocols) {
     checkReadOnly();
     this.agentSSLProtocols = agentSSLProtocols;
     configChanged();
   }
 
+  @Override
   public String getAgentSSLCiphers() {
     return this.agentSSLCiphers;
   }
 
+  @Override
   public void setAgentSSLCiphers(String agentSSLCiphers) {
     checkReadOnly();
     this.agentSSLCiphers = agentSSLCiphers;
     configChanged();
   }
 
+  @Override
   public boolean isAgentSSLRequireAuth() {
     return this.agentSSLRequireAuth;
   }
 
+  @Override
   public void setAgentSSLRequireAuth(boolean agentSSLRequireAuth) {
     checkReadOnly();
     this.agentSSLRequireAuth = agentSSLRequireAuth;
     configChanged();
   }
 
+  @Override
   public boolean isHttpSSLRequireAuth() {
     return this.httpSSLRequireAuth;
   }
 
+  @Override
   public void setHttpSSLRequireAuth(boolean httpSSLRequireAuth) {
     checkReadOnly();
     this.httpSSLRequireAuth = httpSSLRequireAuth;
     configChanged();
   }
 
+  @Override
   public boolean isHttpAuthEnabled() {
     return this.httpAuthEnabled;
   }
 
+  @Override
   public void setHttpAuthEnabled(boolean httpAuthEnabled) {
     checkReadOnly();
     this.httpAuthEnabled = httpAuthEnabled;
     configChanged();
   }
 
+  @Override
   public String getHttpAuthUser() {
     return this.httpAuthUser;
   }
 
+  @Override
   public void setHttpAuthUser(String httpAuthUser) {
     checkReadOnly();
     this.httpAuthUser = httpAuthUser;
     configChanged();
   }
 
+  @Override
   public String getHttpAuthPassword() {
     return this.httpAuthPassword;
   }
 
+  @Override
   public void setHttpAuthPassword(String httpAuthPassword) {
     checkReadOnly();
     this.httpAuthPassword = httpAuthPassword;
     configChanged();
   }
 
+  @Override
   public boolean isSnmpEnabled() {
     return this.snmpEnabled;
   }
 
+  @Override
   public void setSnmpEnabled(boolean snmpEnabled) {
     checkReadOnly();
     this.snmpEnabled = snmpEnabled;
     configChanged();
   }
 
+  @Override
   public String getSnmpBindAddress() {
     return this.snmpBindAddress;
   }
 
+  @Override
   public void setSnmpBindAddress(String snmpBindAddress) {
     checkReadOnly();
     this.snmpBindAddress = validateSnmpBindAddress(snmpBindAddress);
     configChanged();
   }
 
+  @Override
   public String getSnmpDirectory() {
     return this.snmpDirectory;
   }
 
+  @Override
   public void setSnmpDirectory(String snmpDirectory) {
     checkReadOnly();
     this.snmpDirectory = validateSnmpDirectory(snmpDirectory);
     configChanged();
   }
 
+  @Override
   public boolean isRmiEnabled() {
     return this.rmiEnabled;
   }
 
+  @Override
   public void setRmiEnabled(boolean rmiEnabled) {
     checkReadOnly();
     this.rmiEnabled = rmiEnabled;
     configChanged();
   }
 
+  @Override
   public boolean isRmiRegistryEnabled() {
     return this.rmiRegistryEnabled;
   }
 
+  @Override
   public void setRmiRegistryEnabled(boolean rmiRegistryEnabled) {
     checkReadOnly();
     this.rmiRegistryEnabled = rmiRegistryEnabled;
     configChanged();
   }
 
+  @Override
   public String getRmiBindAddress() {
     return this.rmiBindAddress;
   }
 
+  @Override
   public void setRmiBindAddress(String rmiBindAddress) {
     checkReadOnly();
     this.rmiBindAddress = validateRmiBindAddress(rmiBindAddress);
     configChanged();
   }
 
+  @Override
   public int getRmiPort() {
     return this.rmiPort;
   }
 
+  @Override
   public void setRmiPort(int rmiPort) {
     checkReadOnly();
     this.rmiPort = validateRmiPort(rmiPort);
@@ -886,6 +916,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    *
    * @since GemFire 6.5
    */
+  @Override
   public int getRmiServerPort() {
     return this.rmiServerPort;
   }
@@ -897,36 +928,43 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    *
    * @since GemFire 6.5
    */
+  @Override
   public void setRmiServerPort(int port) {
     checkReadOnly();
     this.rmiServerPort = validateRmiServerPort(rmiServerPort);
     configChanged();
   }
 
+  @Override
   public boolean isHttpEnabled() {
     return this.httpEnabled;
   }
 
+  @Override
   public void setHttpEnabled(boolean httpEnabled) {
     checkReadOnly();
     this.httpEnabled = httpEnabled;
     configChanged();
   }
 
+  @Override
   public int getHttpPort() {
     return this.httpPort;
   }
 
+  @Override
   public void setHttpPort(int httpPort) {
     checkReadOnly();
     this.httpPort = validateHttpPort(httpPort);
     configChanged();
   }
 
+  @Override
   public String getHttpBindAddress() {
     return this.httpBindAddress;
   }
 
+  @Override
   public void setHttpBindAddress(String httpBindAddress) {
     checkReadOnly();
     this.httpBindAddress = validateHttpBindAddress(httpBindAddress);
@@ -939,10 +977,12 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     configChanged();
   }
 
+  @Override
   public boolean getAutoConnect() {
     return this.autoConnect;
   }
 
+  @Override
   public void setAutoConnect(boolean v) {
     checkReadOnly();
     this.autoConnect = v;
@@ -1781,48 +1821,58 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     configChanged();
   }
 
+  @Override
   public String getStateSaveFile() {
     return this.stateSaveFile;
   }
 
+  @Override
   public void setStateSaveFile(String file) {
     checkReadOnly();
     this.stateSaveFile = file;
     configChanged();
   }
 
+  @Override
   public boolean isEmailNotificationEnabled() {
     return this.isEmailNotificationEnabled;
   }
 
+  @Override
   public void setEmailNotificationEnabled(boolean enabled) {
     checkReadOnly();
     this.isEmailNotificationEnabled = enabled;
     configChanged();
   }
 
+  @Override
   public String getEmailNotificationFrom() {
     return this.emailNotificationFrom;
   }
 
+  @Override
   public void setEmailNotificationFrom(String emailID) {
     this.emailNotificationFrom = emailID;
     configChanged();
   }
 
+  @Override
   public String getEmailNotificationHost() {
     return this.emailNotificationHostName;
   }
 
+  @Override
   public void setEmailNotificationHost(String hostName) {
     this.emailNotificationHostName = hostName;
     configChanged();
   }
 
+  @Override
   public String getEmailNotificationToList() {
     return this.emailNotificationToList;
   }
 
+  @Override
   public void setEmailNotificationToList(String emailIDs) {
     this.emailNotificationToList = emailIDs;
     configChanged();

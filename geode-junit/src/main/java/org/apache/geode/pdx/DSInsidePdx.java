@@ -35,6 +35,7 @@ public class DSInsidePdx implements PdxSerializable {
     this.myFloat = myFloat;
   }
 
+  @Override
   public void toData(PdxWriter out) {
     out.writeString("myString1", this.myString1);
     out.writeLong("myLong", this.myLong);
@@ -43,6 +44,7 @@ public class DSInsidePdx implements PdxSerializable {
     out.writeFloat("myFloat", this.myFloat);
   }
 
+  @Override
   public void fromData(PdxReader in) {
     this.myString1 = in.readString("myString1");
     this.myLong = in.readLong("myLong");

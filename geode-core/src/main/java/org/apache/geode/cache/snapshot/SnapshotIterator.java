@@ -56,5 +56,6 @@ public interface SnapshotIterator<K, V> extends AutoCloseable {
    *
    * @throws IOException error closing the iterator
    */
+  @Override
   void close() throws IOException;
 }

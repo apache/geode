@@ -173,6 +173,7 @@ public class IndexRepositoryImpl implements IndexRepository {
     }
   }
 
+  @Override
   public IndexWriter getWriter() {
     return writer;
   }

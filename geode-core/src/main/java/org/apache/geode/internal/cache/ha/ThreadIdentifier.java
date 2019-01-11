@@ -309,11 +309,13 @@ public class ThreadIdentifier implements DataSerializable {
     return Arrays.equals(this.membershipID, other.membershipID);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     membershipID = DataSerializer.readByteArray(in);
     threadID = in.readLong();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeByteArray(membershipID, out);
     out.writeLong(threadID);

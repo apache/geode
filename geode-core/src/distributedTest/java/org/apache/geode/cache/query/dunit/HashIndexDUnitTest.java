@@ -42,6 +42,7 @@ public class HashIndexDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         getSystem();
       }
@@ -81,6 +82,7 @@ public class HashIndexDUnitTest extends JUnit4DistributedTestCase {
 
   public void doPut(final int entries) {
     vm0.invokeAsync(new CacheSerializableRunnable("Putting values") {
+      @Override
       public void run2() {
         putPortfolios("exampleRegion", entries);
       }
@@ -89,6 +91,7 @@ public class HashIndexDUnitTest extends JUnit4DistributedTestCase {
 
   public void doUpdate(final int entries) {
     vm0.invokeAsync(new CacheSerializableRunnable("Updating values") {
+      @Override
       public void run2() {
         putOffsetPortfolios("exampleRegion", entries);
       }
@@ -99,6 +102,7 @@ public class HashIndexDUnitTest extends JUnit4DistributedTestCase {
   public void doQuery() throws Exception {
     final String[] qarr = {"173", "174", "176", "180"};
     vm0.invokeAsync(new CacheSerializableRunnable("Executing query") {
+      @Override
       public void run2() throws CacheException {
         try {
           for (int i = 0; i < 50; i++) {
@@ -113,6 +117,7 @@ public class HashIndexDUnitTest extends JUnit4DistributedTestCase {
 
   public void doDestroy(final int entries) {
     vm0.invokeAsync(new CacheSerializableRunnable("Destroying values") {
+      @Override
       public void run2() throws CacheException {
         try {
           Thread.sleep(500);

@@ -317,6 +317,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyRegionToProxyMapForFullRegistrationRetry() {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         try {
           verifyRegionToProxyMapForFullRegistration();
@@ -331,6 +332,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -354,6 +356,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyRegisterK4toK5Retry() {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         try {
           verifyRegisterK4toK5();
@@ -368,6 +371,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public String description() {
         return "verifyRegisterK4toK5Retry";
       }
@@ -391,6 +395,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
 
   public static void verifyRegionToProxyMapForNoRegistrationRetry() {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         try {
           verifyRegionToProxyMapForNoRegistration();
@@ -405,6 +410,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -464,11 +470,13 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
+      @Override
       public boolean done() {
         int sz = pool.getConnectedServerCount();
         return sz == expectedLiveServers;
       }
 
+      @Override
       public String description() {
         return excuse;
       }

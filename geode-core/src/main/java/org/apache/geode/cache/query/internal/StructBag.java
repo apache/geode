@@ -51,11 +51,13 @@ public class StructBag extends ResultsBag implements StructFields {
    */
   protected static class ObjectArrayHashingStrategy implements HashingStrategy {
 
+    @Override
     public int hashCode(Object o) {
       Object[] oa = (Object[]) o;
       return Arrays.deepHashCode(oa);
     }
 
+    @Override
     public boolean equals(Object o1, Object o2) {
       if (o1 == null)
         return o2 == null;
@@ -72,6 +74,7 @@ public class StructBag extends ResultsBag implements StructFields {
   protected static class ObjectArrayFUHashingStrategy implements Hash.Strategy<Object> {
     private static final long serialVersionUID = 8975047264555337042L;
 
+    @Override
     public int hashCode(Object o) {
       // throws ClassCastException if not Object[]
       // compute hash code based on all elements
@@ -89,6 +92,7 @@ public class StructBag extends ResultsBag implements StructFields {
       return h;
     }
 
+    @Override
     public boolean equals(Object o1, Object o2) {
       // throws ClassCastException if not Object[]
       if (o1 == null)
@@ -193,6 +197,7 @@ public class StructBag extends ResultsBag implements StructFields {
   /**
    * For internal use. Just add the Object[] values for a struct with same type
    */
+  @Override
   public boolean addFieldValues(Object[] fieldValues) {
     return super.add(fieldValues);
   }
@@ -213,6 +218,7 @@ public class StructBag extends ResultsBag implements StructFields {
   /**
    * Does this set contain a Struct of the correct type with the specified values?
    */
+  @Override
   public boolean containsFieldValues(Object[] fieldValues) {
     // Asif: The fieldValues can never be null . If the Struc contained
     // null , then the the getFieldValues would have returned
@@ -278,6 +284,7 @@ public class StructBag extends ResultsBag implements StructFields {
   }
 
   /** Remove the field values from a struct of the correct type */
+  @Override
   public boolean removeFieldValues(Object[] fieldValues) {
     if (this.hasLimitIterator) {
       // Asif : Get the field value Iterator
@@ -294,6 +301,7 @@ public class StructBag extends ResultsBag implements StructFields {
     }
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(StructBag.class, this.elementType);
   }
@@ -389,6 +397,7 @@ public class StructBag extends ResultsBag implements StructFields {
   }
 
   /** Returns an iterator over the fieldValues Object[] instances */
+  @Override
   public Iterator fieldValuesIterator() {
     return super.iterator();
   }
@@ -452,8 +461,10 @@ public class StructBag extends ResultsBag implements StructFields {
     out.writeBoolean(this.modifiable);
   }
 
+  @Override
   void writeNumNulls(DataOutput out) {}
 
+  @Override
   void readNumNulls(DataInput in) {}
 
   void createTObjectIntHashMap() {

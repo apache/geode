@@ -73,6 +73,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     vm1.invoke(() -> RemoveAllMultiVmDUnitTest.closeCache());
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         cache = null;
       }
@@ -125,6 +126,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     VM vm0 = host.getVM(0);
 
     vm0.invoke(new CacheSerializableRunnable("testLocalRemoveAll") {
+      @Override
       public void run2() throws CacheException {
         int cntr = 0, cntr1 = 0;
         for (int i = 1; i < 6; i++) {
@@ -157,6 +159,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     VM vm0 = host.getVM(0);
 
     vm0.invoke(new CacheSerializableRunnable("testSimpleRemoveAllTx") {
+      @Override
       public void run2() throws CacheException {
         cacheTxnMgr = cache.getCacheTransactionManager();
         int cntr = 0;
@@ -196,12 +199,14 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     VM vm1 = host.getVM(1);
 
     vm1.invoke(new CacheSerializableRunnable("create mirrored region") {
+      @Override
       public void run2() throws CacheException {
         createMirroredRegion();
       }
     });
 
     vm0.invoke(new CacheSerializableRunnable("testDistributedRemoveAll1") {
+      @Override
       public void run2() throws CacheException {
         createMirroredRegion();
         int cntr = 0, cntr1 = 0;
@@ -229,6 +234,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     });
 
     vm1.invoke(new CacheSerializableRunnable("testDistributedRemoveAllVerifyRemote") {
+      @Override
       public void run2() throws CacheException {
         assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(5)));
         assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(4)));
@@ -247,12 +253,14 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     VM vm1 = host.getVM(1);
 
     vm1.invoke(new CacheSerializableRunnable("create mirrored region") {
+      @Override
       public void run2() throws CacheException {
         createMirroredRegion();
       }
     });
 
     vm0.invoke(new CacheSerializableRunnable("testDistributedTxRemoveAll1") {
+      @Override
       public void run2() throws CacheException {
         createMirroredRegion();
         int cntr = 0, cntr1 = 0;
@@ -289,6 +297,7 @@ public class RemoveAllMultiVmDUnitTest extends JUnit4DistributedTestCase { // TO
     });
 
     vm1.invoke(new CacheSerializableRunnable("testDistributedTxRemoveAllVerifyRemote") {
+      @Override
       public void run2() throws CacheException {
         assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(5)));
         assertEquals(true, mirroredRegion.containsKey(Integer.valueOf(4)));

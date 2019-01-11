@@ -50,6 +50,7 @@ public class LicenseInfoResponse extends AdminResponse {
     return p;
   }
 
+  @Override
   public int getDSFID() {
     return LICENSE_INFO_RESPONSE;
   }

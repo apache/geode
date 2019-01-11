@@ -147,10 +147,12 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
     final CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return bs.getAcceptor().getCacheClientNotifier().getClientProxies().size() == 1;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -184,10 +186,12 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
   public static void VerifyClientProxyOnServerAfterClose() {
     final Cache c = getAnyInstance();
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return c.getCacheServers().size() == 1;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -196,10 +200,12 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
     final CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return c.getRegion("/" + clientMembershipId) == null;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -207,10 +213,12 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     GeodeAwaitility.await().untilAsserted(ev);
 
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return bs.getAcceptor().getCacheClientNotifier().getClientProxies().size() != 1;
       }
 
+      @Override
       public String description() {
         return null;
       }

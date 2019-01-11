@@ -76,6 +76,7 @@ public class IndexElemArray implements Iterable, Collection {
    *
    * @return the number of elements in this list
    */
+  @Override
   public int size() {
     return size & 0xff;
   }
@@ -85,6 +86,7 @@ public class IndexElemArray implements Iterable, Collection {
    *
    * @return <tt>true</tt> if this list contains no elements
    */
+  @Override
   public boolean isEmpty() {
     return size == 0;
   }
@@ -97,6 +99,7 @@ public class IndexElemArray implements Iterable, Collection {
    * @param o element whose presence in this list is to be tested
    * @return <tt>true</tt> if this list contains the specified element
    */
+  @Override
   public boolean contains(Object o) {
     return indexOf(o) >= 0;
   }
@@ -162,6 +165,7 @@ public class IndexElemArray implements Iterable, Collection {
    * @param e element to be appended to this list
    * @return <tt>true</tt> (as specified by {@link Collection#add})
    */
+  @Override
   public boolean add(Object e) {
     synchronized (lock) {
       int currentSize = size(); // byte to int
@@ -188,6 +192,7 @@ public class IndexElemArray implements Iterable, Collection {
    * @param o element to be removed from this list, if present
    * @return <tt>true</tt> if this list contained the specified element
    */
+  @Override
   public boolean remove(Object o) {
     synchronized (lock) {
       int currentSize = size(); // byte to int
@@ -226,6 +231,7 @@ public class IndexElemArray implements Iterable, Collection {
   /**
    * Removes all of the elements from this list. The list will be empty after this call returns.
    */
+  @Override
   public void clear() {
     synchronized (lock) {
       Arrays.fill(this.elementData, null);

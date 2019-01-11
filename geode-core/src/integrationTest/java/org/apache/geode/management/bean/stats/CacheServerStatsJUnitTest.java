@@ -32,6 +32,7 @@ public class CacheServerStatsJUnitTest extends MBeanStatsTestCase {
 
   private CacheServerStats cacheServerStats;
 
+  @Override
   public void init() {
     cacheServerStats = new CacheServerStats("Test Sock Name");
 

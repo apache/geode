@@ -167,6 +167,7 @@ public class CompactRangeIndexJUnitTest {
       final CountDownLatch threadsDone = new CountDownLatch(2);
 
       Thread t1 = new Thread(new Runnable() {
+        @Override
         public void run() {
           r.put("1", p1);
           threadsDone.countDown();
@@ -175,6 +176,7 @@ public class CompactRangeIndexJUnitTest {
       t1.start();
 
       Thread t0 = new Thread(new Runnable() {
+        @Override
         public void run() {
           r.remove("0");
           threadsDone.countDown();
@@ -234,6 +236,7 @@ public class CompactRangeIndexJUnitTest {
       DefaultQuery.testHook = new MemoryIndexStoreIndexElemToTokenToConcurrentHashSetTestHook();
       final CountDownLatch threadsDone = new CountDownLatch(2);
       Thread t2 = new Thread(new Runnable() {
+        @Override
         public void run() {
           r.put("2", p2);
           threadsDone.countDown();
@@ -243,6 +246,7 @@ public class CompactRangeIndexJUnitTest {
       t2.start();
 
       Thread t0 = new Thread(new Runnable() {
+        @Override
         public void run() {
           r.remove("0");
           threadsDone.countDown();

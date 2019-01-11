@@ -51,12 +51,14 @@ public abstract class GridAdvisor extends DistributionAdvisor {
   private volatile Set/* <DistributedMember> */ cachedControllerAdvise;
 
   private static final Filter CONTROLLER_FILTER = new Filter() {
+    @Override
     public boolean include(Profile profile) {
       return profile instanceof ControllerAdvisor.ControllerProfile;
     }
   };
 
   private static final Filter BRIDGE_SERVER_FILTER = new Filter() {
+    @Override
     public boolean include(Profile profile) {
       return profile instanceof CacheServerAdvisor.CacheServerProfile;
     }

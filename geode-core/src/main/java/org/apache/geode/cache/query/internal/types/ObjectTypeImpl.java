@@ -48,10 +48,12 @@ public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {
     this.clazz = InternalDataSerializer.getCachedClass(className);
   }
 
+  @Override
   public Class resolveClass() {
     return this.clazz;
   }
 
+  @Override
   public String getSimpleClassName() {
     String cn = this.clazz.getName();
     int i = cn.lastIndexOf('.');
@@ -75,26 +77,32 @@ public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {
     return this.clazz.getName();
   }
 
+  @Override
   public boolean isCollectionType() {
     return false;
   }
 
+  @Override
   public boolean isMapType() {
     return false;
   }
 
+  @Override
   public boolean isStructType() {
     return false;
   }
 
+  @Override
   public int getDSFID() {
     return OBJECT_TYPE_IMPL;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.clazz = DataSerializer.readClass(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeClass(this.clazz, out);
   }

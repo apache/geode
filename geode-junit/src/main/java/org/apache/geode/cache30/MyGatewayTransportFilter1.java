@@ -25,25 +25,30 @@ import org.apache.geode.internal.cache.xmlcache.Declarable2;
 public class MyGatewayTransportFilter1
     implements GatewayTransportFilter, Declarable2, Serializable {
 
+  @Override
   public InputStream getInputStream(InputStream stream) {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @Override
   public OutputStream getOutputStream(OutputStream stream) {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @Override
   public void close() {
     // TODO Auto-generated method stub
   }
 
+  @Override
   public Properties getConfig() {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @Override
   public void init(Properties props) {
     // TODO Auto-generated method stub
 

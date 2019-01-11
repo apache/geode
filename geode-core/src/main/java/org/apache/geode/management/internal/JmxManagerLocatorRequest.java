@@ -39,10 +39,13 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  */
 public class JmxManagerLocatorRequest implements DataSerializableFixedID {
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+  @Override
   public void toData(DataOutput out) throws IOException {}
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.JMX_MANAGER_LOCATOR_REQUEST;
   }

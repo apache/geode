@@ -76,6 +76,7 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
 
     // Start server
     vm0.invoke(new CacheSerializableRunnable("Create cache server") {
+      @Override
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
@@ -101,6 +102,7 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
     final int port = vm0.invoke(() -> PutAllWithIndexPerfDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
+      @Override
       public void run2() throws CacheException {
         Properties config = new Properties();
         config.setProperty(MCAST_PORT, "0");

@@ -80,6 +80,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#commit()
    */
+  @Override
   public void commit() throws RollbackException, HeuristicMixedException,
       HeuristicRollbackException, SecurityException, SystemException {
     tm.commit();
@@ -97,6 +98,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#rollback()
    */
+  @Override
   public void rollback() throws IllegalStateException, SystemException {
     tm.rollback();
   }
@@ -106,6 +108,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#setRollbackOnly()
    */
+  @Override
   public void setRollbackOnly() throws IllegalStateException, SystemException {
     gtx = tm.getGlobalTransaction();
     if (gtx == null) {
@@ -124,6 +127,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#getStatus()
    */
+  @Override
   public int getStatus() throws SystemException {
     gtx = tm.getGlobalTransaction();
     if (gtx == null) {
@@ -158,6 +162,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#enlistResource(javax.transaction.xa.XAResource)
    */
+  @Override
   public boolean enlistResource(XAResource xaRes)
       throws RollbackException, IllegalStateException, SystemException {
     gtx = tm.getGlobalTransaction();
@@ -185,6 +190,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#delistResource(javax.transaction.xa.XAResource, int)
    */
+  @Override
   public boolean delistResource(XAResource xaRes, int flag)
       throws IllegalStateException, SystemException {
     gtx = tm.getGlobalTransaction();
@@ -207,6 +213,7 @@ public class TransactionImpl implements Transaction {
    *
    * @see javax.transaction.Transaction#registerSynchronization(javax.transaction.Synchronization)
    */
+  @Override
   public void registerSynchronization(Synchronization synchronisation)
       throws SystemException, IllegalStateException, RollbackException {
     {

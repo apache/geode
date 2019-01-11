@@ -105,6 +105,7 @@ public class MembershipFlushRequest extends PooledDistributionMessage implements
     }
   }
 
+  @Override
   public int getDSFID() {
     return PERSISTENT_MEMBERSHIP_FLUSH_REQUEST;
   }

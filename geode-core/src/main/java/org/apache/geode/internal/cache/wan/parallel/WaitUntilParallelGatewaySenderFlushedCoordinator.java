@@ -48,6 +48,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     super(sender, timeout, unit, initiator);
   }
 
+  @Override
   public boolean waitUntilFlushed() throws Throwable {
     boolean localResult = true;
     Throwable exceptionToThrow = null;

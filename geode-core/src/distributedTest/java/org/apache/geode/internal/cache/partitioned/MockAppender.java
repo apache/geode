@@ -53,6 +53,7 @@ public class MockAppender implements AutoCloseable {
     return loggingEventCaptor.getAllValues();
   }
 
+  @Override
   public void close() {
     logger.removeAppender(mockAppender);
   }

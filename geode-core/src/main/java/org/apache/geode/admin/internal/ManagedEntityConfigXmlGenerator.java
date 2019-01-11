@@ -124,6 +124,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
    * Called by the transformer to parse the "input source". We ignore the input source and, instead,
    * generate SAX events to the {@link #setContentHandler ContentHandler}.
    */
+  @Override
   public void parse(InputSource input) throws SAXException {
     Assert.assertTrue(this.handler != null);
 
@@ -321,61 +322,74 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
   /**
    * Keep track of the content handler for use during {@link #parse(String)}.
    */
+  @Override
   public void setContentHandler(ContentHandler handler) {
     this.handler = handler;
   }
 
+  @Override
   public ContentHandler getContentHandler() {
     return this.handler;
   }
 
+  @Override
   public ErrorHandler getErrorHandler() {
     return this;
   }
 
   ////////// Inherited methods that don't do anything //////////
 
+  @Override
   public boolean getFeature(String name)
       throws SAXNotRecognizedException, SAXNotSupportedException {
     return false;
   }
 
+  @Override
   public void setFeature(String name, boolean value)
       throws SAXNotRecognizedException, SAXNotSupportedException {
 
   }
 
+  @Override
   public Object getProperty(String name)
       throws SAXNotRecognizedException, SAXNotSupportedException {
 
     return null;
   }
 
+  @Override
   public void setProperty(String name, Object value)
       throws SAXNotRecognizedException, SAXNotSupportedException {
 
   }
 
+  @Override
   public void setEntityResolver(EntityResolver resolver) {
 
   }
 
+  @Override
   public EntityResolver getEntityResolver() {
     return this;
   }
 
+  @Override
   public void setDTDHandler(DTDHandler handler) {
 
   }
 
+  @Override
   public DTDHandler getDTDHandler() {
     return null;
   }
 
+  @Override
   public void setErrorHandler(ErrorHandler handler) {
 
   }
 
+  @Override
   public void parse(String systemId) throws IOException, SAXException {
 
   }

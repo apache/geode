@@ -28,6 +28,7 @@ public interface InternalCqQuery extends CqQuery {
    */
   void setName(String cqName);
 
+  @Override
   String getName();
 
   /**
@@ -65,13 +66,18 @@ public interface InternalCqQuery extends CqQuery {
    */
   CqQueryVsdStats getVsdStats();
 
+  @Override
   CqState getState();
 
+  @Override
   String getQueryString();
 
+  @Override
   boolean isDurable();
 
+  @Override
   void close() throws CqClosedException, CqException;
 
+  @Override
   void stop() throws CqClosedException, CqException;
 }

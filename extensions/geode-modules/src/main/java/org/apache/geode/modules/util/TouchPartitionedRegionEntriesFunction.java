@@ -43,6 +43,7 @@ public class TouchPartitionedRegionEntriesFunction
 
   public static final String ID = "touch-partitioned-region-entries";
 
+  @Override
   @SuppressWarnings("unchecked")
   public void execute(FunctionContext context) {
     RegionFunctionContext rfc = (RegionFunctionContext) context;
@@ -75,22 +76,27 @@ public class TouchPartitionedRegionEntriesFunction
         ResourcePermission.Operation.READ, regionName));
   }
 
+  @Override
   public String getId() {
     return ID;
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     return false;
   }
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
+  @Override
   public void init(Properties properties) {}
 
   @Override

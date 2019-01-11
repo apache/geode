@@ -33,10 +33,12 @@ public class Shipment implements DataSerializable {
     this.shipmentName = shipmentName + PRColocationDUnitTestHelper.getDefaultAddOnString();
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.shipmentName = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.shipmentName, out);
   }

@@ -72,6 +72,7 @@ public class TabularResultData extends AbstractResultData {
   /**
    * @return the gfJsonObject
    */
+  @Override
   public GfJsonObject getGfJsonObject() {
     return gfJsonObject;
   }
@@ -86,6 +87,7 @@ public class TabularResultData extends AbstractResultData {
    * @return this TabularResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
+  @Override
   public TabularResultData setHeader(String headerText) {
     return (TabularResultData) super.setHeader(headerText);
   }
@@ -95,6 +97,7 @@ public class TabularResultData extends AbstractResultData {
    * @return this TabularResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
+  @Override
   public TabularResultData setFooter(String footerText) {
     return (TabularResultData) super.setFooter(footerText);
   }

@@ -139,6 +139,7 @@ public class QRegion implements SelectResults {
     return TypeUtils.getObjectType(constraint);
   }
 
+  @Override
   public void setElementType(ObjectType elementType) {
     this.values.setElementType(elementType);
   }
@@ -205,10 +206,12 @@ public class QRegion implements SelectResults {
    *
    * @return Value of property modifiable.
    */
+  @Override
   public boolean isModifiable() {
     return false;
   }
 
+  @Override
   public int occurrences(Object element) {
     // expensive!!
     int count = 0;
@@ -221,29 +224,35 @@ public class QRegion implements SelectResults {
     return count;
   }
 
+  @Override
   public List asList() {
     return new ArrayList(this.values);
   }
 
+  @Override
   public Set asSet() {
     return new HashSet(this.values);
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(QRegion.class, this.values.getCollectionType().getElementType());
   }
 
   //////////// Set methods ///////////////////////////////////
+  @Override
   public boolean add(Object obj) {
     throw new UnsupportedOperationException(
         "Region values is not modifiable");
   }
 
+  @Override
   public boolean addAll(Collection collection) {
     throw new UnsupportedOperationException(
         "Region values is not modifiable");
   }
 
+  @Override
   public void clear() {
     throw new UnsupportedOperationException(
         "Region values is not modifiable");
@@ -253,18 +262,22 @@ public class QRegion implements SelectResults {
   // invalid values
   // @todo in the future calling this.region.values().isEmpty()
   // might be more efficient, but it isn't at the time this was written
+  @Override
   public boolean isEmpty() {
     return this.values.isEmpty();
   }
 
+  @Override
   public boolean contains(Object obj) {
     return this.values.contains(obj);
   }
 
+  @Override
   public boolean containsAll(Collection collection) {
     return this.values.containsAll(collection);
   }
 
+  @Override
   public Iterator iterator() {
     return this.values.iterator();
   }
@@ -273,21 +286,25 @@ public class QRegion implements SelectResults {
     // no need to do anything
   }
 
+  @Override
   public boolean remove(Object obj) {
     throw new UnsupportedOperationException(
         "Region values is not modifiable");
   }
 
+  @Override
   public boolean removeAll(Collection collection) {
     throw new UnsupportedOperationException(
         "Region values is not modifiable");
   }
 
+  @Override
   public boolean retainAll(Collection collection) {
     throw new UnsupportedOperationException(
         "Region values is not modifiable");
   }
 
+  @Override
   public int size() {
     // must call getValuesSet() to get the correct size -- expensive.
     // this size must reflect the dropping of null values (invalid entries),
@@ -295,10 +312,12 @@ public class QRegion implements SelectResults {
     return this.values.size();
   }
 
+  @Override
   public Object[] toArray() {
     return this.values.toArray();
   }
 
+  @Override
   public Object[] toArray(Object[] obj) {
     return this.values.toArray(obj);
   }

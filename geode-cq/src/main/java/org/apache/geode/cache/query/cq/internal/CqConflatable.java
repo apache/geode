@@ -70,6 +70,7 @@ public class CqConflatable implements Conflatable, Serializable {
    *
    * @return whether the object should be conflated
    */
+  @Override
   public boolean shouldBeConflated() {
     return this.conflate;
   }
@@ -79,6 +80,7 @@ public class CqConflatable implements Conflatable, Serializable {
    *
    * @return the name of the region for this <code>Conflatable</code>
    */
+  @Override
   public String getRegionToConflate() {
     return this.regionname;
   }
@@ -88,6 +90,7 @@ public class CqConflatable implements Conflatable, Serializable {
    *
    * @return the key for this <code>Conflatable</code>
    */
+  @Override
   public Object getKeyToConflate() {
     return this.key;
   }
@@ -97,6 +100,7 @@ public class CqConflatable implements Conflatable, Serializable {
    *
    * @return the value for this <code>Conflatable</code>
    */
+  @Override
   public Object getValueToConflate() {
     return this.value;
   }
@@ -106,6 +110,7 @@ public class CqConflatable implements Conflatable, Serializable {
    *
    * @param value The latest value
    */
+  @Override
   public void setLatestValue(Object value) {
     throw new UnsupportedOperationException(
         "setLatestValue should not be used");
@@ -116,6 +121,7 @@ public class CqConflatable implements Conflatable, Serializable {
    *
    * @return this event's identifier
    */
+  @Override
   public EventID getEventId() {
     return this.id;
   }

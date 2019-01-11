@@ -918,6 +918,7 @@ public abstract class PdxGroupByTestImpl implements GroupByTestInterface {
     ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true, queries);
   }
 
+  @Override
   @Test
   public void testDistinctCountWithoutGroupBy() throws Exception {
     Region region = this.createRegion("portfolio", PortfolioPdx.class);

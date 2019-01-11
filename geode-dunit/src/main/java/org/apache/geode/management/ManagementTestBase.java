@@ -307,6 +307,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
 
   protected DistributedMember getMember(final VM vm) {
     SerializableCallable getMember = new SerializableCallable("Get Member") {
+      @Override
       public Object call() {
         InternalCache cache = GemFireCacheImpl.getInstance();
         return cache.getDistributedSystem().getDistributedMember();

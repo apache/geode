@@ -847,6 +847,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     Set<GatewaySender> senders = ((GemFireCacheImpl) cache).getAllGatewaySenders();
     final GatewaySender sender = getGatewaySenderById(senders, senderId);
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (sender != null && ((AbstractGatewaySender) sender).isPrimary()) {
           return true;
@@ -854,6 +855,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         return false;
       }
 
+      @Override
       public String description() {
         return "Expected sender primary state to be true but is false";
       }
@@ -1084,6 +1086,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       final Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
       WaitCriterion wc = new WaitCriterion() {
+        @Override
         public boolean done() {
           if (r.keySet().size() == regionSize) {
             return true;
@@ -1091,6 +1094,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           return false;
         }
 
+        @Override
         public String description() {
           return "Expected region entries: " + regionSize + " but actual entries: "
               + r.keySet().size() + " present region keyset " + r.keySet();
@@ -1173,6 +1177,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     final Map eventsMap = ((MyAsyncEventListener) theListener).getEventsMap();
     assertNotNull(eventsMap);
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (eventsMap.size() == expectedSize) {
           return true;
@@ -1180,6 +1185,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         return false;
       }
 
+      @Override
       public String description() {
         return "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size();
       }
@@ -1202,6 +1208,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     final Map eventsMap = ((MyAsyncEventListener_CacheLoader) theListener).getEventsMap();
     assertNotNull(eventsMap);
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (eventsMap.size() == expectedSize) {
           return true;
@@ -1209,6 +1216,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         return false;
       }
 
+      @Override
       public String description() {
         return "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size();
       }
@@ -1238,6 +1246,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     final Map eventsMap = ((CustomAsyncEventListener) theListener).getEventsMap();
     assertNotNull(eventsMap);
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (eventsMap.size() == expectedSize) {
           return true;
@@ -1245,6 +1254,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         return false;
       }
 
+      @Override
       public String description() {
         return "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size();
       }
@@ -1267,6 +1277,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       final Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
 
       WaitCriterion wc = new WaitCriterion() {
+        @Override
         public boolean done() {
           int size = 0;
           for (RegionQueue q : queues) {
@@ -1278,6 +1289,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           return false;
         }
 
+        @Override
         public String description() {
           int size = 0;
           for (RegionQueue q : queues) {
@@ -1290,6 +1302,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
     } else {
       WaitCriterion wc = new WaitCriterion() {
+        @Override
         public boolean done() {
           Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
           int size = 0;
@@ -1302,6 +1315,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           return false;
         }
 
+        @Override
         public String description() {
           Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
           int size = 0;
@@ -1499,11 +1513,13 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
     private final Set removedLocators = new HashSet();
 
+    @Override
     public synchronized void locatorsDiscovered(List locators) {
       discoveredLocators.addAll(locators);
       notifyAll();
     }
 
+    @Override
     public synchronized void locatorsRemoved(List locators) {
       removedLocators.addAll(locators);
       notifyAll();
@@ -1635,6 +1651,7 @@ class MyAsyncEventListener_CacheLoader implements AsyncEventListener {
     this.eventsMap = new ConcurrentHashMap();
   }
 
+  @Override
   public boolean processEvents(List<AsyncEvent> events) {
     for (AsyncEvent event : events) {
       this.eventsMap.put(event.getKey(), event);
@@ -1646,19 +1663,23 @@ class MyAsyncEventListener_CacheLoader implements AsyncEventListener {
     return eventsMap;
   }
 
+  @Override
   public void close() {}
 }
 
 
 class MyCacheLoader implements CacheLoader, Declarable {
 
+  @Override
   public Object load(LoaderHelper helper) {
     Long key = (Long) helper.getKey();
     return "LoadedValue" + "_" + key;
   }
 
+  @Override
   public void close() {}
 
+  @Override
   public void init(Properties props) {}
 
 }
@@ -1670,12 +1691,15 @@ class SizeableGatewayEventSubstitutionFilter implements GatewayEventSubstitution
 
   protected static final String SUBSTITUTION_PREFIX = "substituted_";
 
+  @Override
   public Object getSubstituteValue(EntryEvent event) {
     return new GatewayEventSubstituteObject(this, SUBSTITUTION_PREFIX + event.getKey());
   }
 
+  @Override
   public void close() {}
 
+  @Override
   public void init(Properties properties) {}
 
   protected void incNumToDataInvocations() {
@@ -1703,15 +1727,18 @@ class GatewayEventSubstituteObject implements DataSerializable, Sizeable {
     return this.id;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     this.filter.incNumToDataInvocations();
     DataSerializer.writeString(this.id, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.id = DataSerializer.readString(in);
   }
 
+  @Override
   public int getSizeInBytes() {
     return 0;
   }
@@ -1729,13 +1756,16 @@ class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter
 
   protected static final String SUBSTITUTION_PREFIX = "substituted_";
 
+  @Override
   public Object getSubstituteValue(EntryEvent event) {
     this.numInvocations.incrementAndGet();
     return SUBSTITUTION_PREFIX + event.getKey();
   }
 
+  @Override
   public void close() {}
 
+  @Override
   public void init(Properties properties) {}
 
   protected int getNumInvocations() {

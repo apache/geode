@@ -46,6 +46,7 @@ public abstract class RecoveryRunnable implements Runnable {
     }
   }
 
+  @Override
   public void run() {
     CancelCriterion stopper =
         redundancyProvider.prRegion.getGemFireCache().getDistributedSystem().getCancelCriterion();

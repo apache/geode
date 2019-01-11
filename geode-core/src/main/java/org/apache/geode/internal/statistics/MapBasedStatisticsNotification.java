@@ -38,30 +38,37 @@ public class MapBasedStatisticsNotification implements StatisticsNotification {
     this.stats = Collections.unmodifiableMap(stats);
   }
 
+  @Override
   public long getTimeStamp() {
     return this.millisTimeStamp;
   }
 
+  @Override
   public Type getType() {
     return this.type;
   }
 
+  @Override
   public Iterator<StatisticId> iterator() {
     return this.stats.keySet().iterator();
   }
 
+  @Override
   public Iterator<StatisticId> iterator(StatisticDescriptor statDesc) {
     throw new UnsupportedOperationException("Not yet implemented");
   }
 
+  @Override
   public Iterator<StatisticId> iterator(Statistics statistics) {
     throw new UnsupportedOperationException("Not yet implemented");
   }
 
+  @Override
   public Iterator<StatisticId> iterator(StatisticsType statisticsType) {
     throw new UnsupportedOperationException("Not yet implemented");
   }
 
+  @Override
   public Number getValue(StatisticId statId) throws StatisticNotFoundException {
     Number value = this.stats.get(statId);
     if (value == null) {

@@ -189,6 +189,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
   private CacheObserver getCacheObserver() {
     return (new CacheObserverAdapter() {
 
+      @Override
       public void beforeGoingToCompact() {
 
         if (logWriter.fineEnabled()) {
@@ -198,6 +199,7 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
 
       }
 
+      @Override
       public void afterHavingCompacted() {
         FLAG = true;
         if (CALLBACK_SET) {

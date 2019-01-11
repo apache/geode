@@ -48,10 +48,12 @@ public class LuceneListIndexFunction implements InternalFunction {
 
   private static final long serialVersionUID = -2320432506763893879L;
 
+  @Override
   public String getId() {
     return LuceneListIndexFunction.class.getName();
   }
 
+  @Override
   public void execute(final FunctionContext context) {
     final Set<LuceneIndexDetails> indexDetailsSet = new HashSet<>();
     final Cache cache = context.getCache();

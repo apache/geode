@@ -32,6 +32,7 @@ public class MemberGroupConverter extends BaseStringConverter {
     return ConverterHint.MEMBERGROUP;
   }
 
+  @Override
   public Set<String> getCompletionValues() {
     final Gfsh gfsh = Gfsh.getCurrentInstance();
     final Set<String> memberGroups = new TreeSet<>();

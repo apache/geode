@@ -43,10 +43,12 @@ public class DistributedSystemHealthConfigImpl implements DistributedSystemHealt
 
   ///////////////////// Instance Methods /////////////////////
 
+  @Override
   public long getMaxDepartedApplications() {
     return this.maxDepartedApplications;
   }
 
+  @Override
   public void setMaxDepartedApplications(long maxDepartedApplications) {
     this.maxDepartedApplications = maxDepartedApplications;
   }

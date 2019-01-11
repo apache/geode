@@ -114,6 +114,7 @@ public class UnitTestDoclet {
 
       ClassDoc[] classes = root.classes();
       Arrays.sort(classes, new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
           ClassDoc c1 = (ClassDoc) o1;
           ClassDoc c2 = (ClassDoc) o2;

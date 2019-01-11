@@ -57,6 +57,7 @@ public class VMStats implements VMStatsContract {
     this.vmStats = f.createStatistics(vmType, "vmStats", id);
   }
 
+  @Override
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
     this.vmStats.setInt(cpusId, rt.availableProcessors());
@@ -66,6 +67,7 @@ public class VMStats implements VMStatsContract {
 
   }
 
+  @Override
   public void close() {
     this.vmStats.close();
   }

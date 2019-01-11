@@ -65,6 +65,7 @@ public class OriginalServerConnection extends ServerConnection {
     return true;
   }
 
+  @Override
   protected void doOneMessage() {
     if (this.doHandshake) {
       doHandshake();

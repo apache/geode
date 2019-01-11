@@ -91,18 +91,22 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   // Attribute accessors and mutators
   // -------------------------------------------------------------------------
 
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public String getDescription() {
     return this.description;
   }
 
+  @Override
   public Object getValue() {
     return this.value;
   }
 
+  @Override
   public String getValueAsString() {
     if (isString()) {
       return (String) this.value;
@@ -124,34 +128,42 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     }
   }
 
+  @Override
   public Class getValueType() {
     return this.type;
   }
 
+  @Override
   public boolean isModifiable() {
     return this.userModifiable;
   }
 
+  @Override
   public boolean isArray() {
     return "manager-parameters".equals(this.name) || "manager-classpaths".equals(this.name);
   }
 
+  @Override
   public boolean isInetAddress() {
     return java.net.InetAddress.class.isAssignableFrom(this.type);
   }
 
+  @Override
   public boolean isFile() {
     return java.io.File.class.equals(this.type);
   }
 
+  @Override
   public boolean isOctal() {
     return "shared-memory-permissions".equals(this.name);
   }
 
+  @Override
   public boolean isString() {
     return java.lang.String.class.equals(this.type);
   }
 
+  @Override
   public void setValue(Object value) throws UnmodifiableConfigurationException {
     if (!isModifiable()) {
       throw new UnmodifiableConfigurationException(

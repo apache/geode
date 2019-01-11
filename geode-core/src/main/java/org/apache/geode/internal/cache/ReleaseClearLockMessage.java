@@ -88,6 +88,7 @@ public class ReleaseClearLockMessage extends HighPriorityDistributionMessage
     }
   }
 
+  @Override
   public int getDSFID() {
     return RELEASE_CLEAR_LOCK_MESSAGE;
   }

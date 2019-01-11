@@ -168,6 +168,7 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
     }
   }
 
+  @Override
   public int getDSFID() {
     return QUEUE_REMOVAL_MESSAGE;
   }

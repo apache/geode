@@ -38,11 +38,13 @@ public class TXRecoverGrantorMessageProcessor
 
   private static final Logger logger = LogService.getLogger();
 
+  @Override
   public void process(final DistributionManager dm,
       final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
 
     try {
       dm.getWaitingThreadPool().execute(new Runnable() {
+        @Override
         public void run() {
           processDLockRecoverGrantorMessage(dm, msg);
         }

@@ -135,6 +135,7 @@ public class MessageJUnitTest {
     final ServerSocket serverSocket = new ServerSocket();
     serverSocket.bind(new InetSocketAddress(InetAddress.getLocalHost(), 0));
     Thread serverThread = new Thread("acceptor thread") {
+      @Override
       public void run() {
         Socket client = null;
         try {

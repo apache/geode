@@ -58,18 +58,22 @@ public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
 
   }
 
+  @Override
   public String getPartitionName() {
     return this.partitionName;
   }
 
+  @Override
   public int getNumBuckets() {
     return this.numBuckets;
   }
 
+  @Override
   public boolean isPrimary() {
     return this.isPrimary;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.partitionName = DataSerializer.readString(in);
     this.isPrimary = in.readBoolean();
@@ -78,6 +82,7 @@ public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
 
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.partitionName, out);
     out.writeBoolean(this.isPrimary);

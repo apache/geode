@@ -876,6 +876,7 @@ public class InternalInstantiator {
       }
     }
 
+    @Override
     public int getDSFID() {
       return REGISTRATION_MESSAGE;
     }

@@ -24,6 +24,7 @@ public class TestSerialGatewaySenderEventProcessor extends SerialGatewaySenderEv
     super(sender, id, tMonitoring);
   }
 
+  @Override
   protected void initializeMessageQueue(String id) {
     // Overridden to not create the RegionQueue in the constructor.
   }

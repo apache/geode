@@ -26,15 +26,18 @@ import org.apache.geode.cache.LoaderHelper;
  */
 public class DatabaseLoader implements CacheLoader, Declarable {
 
+  @Override
   public Object load(LoaderHelper helper) throws CacheLoaderException {
 
     throw new UnsupportedOperationException("I do NOTHING");
   }
 
+  @Override
   public void init(java.util.Properties props) {
 
   }
 
+  @Override
   public void close() {
 
   }

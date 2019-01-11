@@ -138,6 +138,7 @@ public class FetchHostResponse extends AdminResponse {
     return this.isDedicatedCacheServer;
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_HOST_RESPONSE;
   }

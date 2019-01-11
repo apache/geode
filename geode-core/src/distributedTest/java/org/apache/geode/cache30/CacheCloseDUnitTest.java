@@ -58,11 +58,13 @@ public class CacheCloseDUnitTest extends JUnit4CacheTestCase {
     }
     {
       TestCacheLoader loader = new TestCacheLoader() {
+        @Override
         public Object load2(LoaderHelper helper) throws CacheLoaderException {
           fail("load2 should not be called by this test");
           return null;
         }
 
+        @Override
         public void close2() {
           throw new RuntimeException(
               "make sure exceptions from close callbacks are logged and ignored");

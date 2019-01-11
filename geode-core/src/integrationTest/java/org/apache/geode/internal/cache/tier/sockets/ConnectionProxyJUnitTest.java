@@ -150,6 +150,7 @@ public class ConnectionProxyJUnitTest {
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setCacheListener(new CacheListenerAdapter() {
+        @Override
         public void afterCreate(EntryEvent event) {
           synchronized (ConnectionProxyJUnitTest.this) {
             try {
@@ -241,10 +242,12 @@ public class ConnectionProxyJUnitTest {
         fail("Failed to create server");
       }
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return proxy.getConnectedServerCount() == 1;
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -298,10 +301,12 @@ public class ConnectionProxyJUnitTest {
         fail("Failed to create server");
       }
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return proxy.getConnectedServerCount() == 1;
         }
 
+        @Override
         public String description() {
           return null;
         }
@@ -428,10 +433,12 @@ public class ConnectionProxyJUnitTest {
         }
 
         WaitCriterion ev = new WaitCriterion() {
+          @Override
           public boolean done() {
             return proxy.verifyIfDuplicate(eid);
           }
 
+          @Override
           public String description() {
             return null;
           }
@@ -779,10 +786,12 @@ public class ConnectionProxyJUnitTest {
 
   private void verifyAckSend(long timeToWait, final boolean expectedAckSend) {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return expectedAckSend == seo.getAckSend();
       }
 
+      @Override
       public String description() {
         return "ack flag never became " + expectedAckSend;
       }
@@ -792,10 +801,12 @@ public class ConnectionProxyJUnitTest {
 
   private void verifyExpiry(long timeToWait) {
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return 0 == proxy.getThreadIdToSequenceIdMap().size();
       }
 
+      @Override
       public String description() {
         return "Entry never expired";
       }

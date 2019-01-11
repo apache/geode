@@ -119,6 +119,7 @@ public class BucketSizeMessage extends PartitionMessage {
     buff.append("; bucketId=").append(this.bucketId);
   }
 
+  @Override
   public int getDSFID() {
     return PR_BUCKET_SIZE_MESSAGE;
   }
@@ -191,6 +192,7 @@ public class BucketSizeMessage extends PartitionMessage {
       dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
     }
 
+    @Override
     public int getDSFID() {
       return PR_BUCKET_SIZE_REPLY_MESSAGE;
     }

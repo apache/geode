@@ -62,6 +62,7 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
     return this.snapshotId;
   }
 
+  @Override
   public int getDSFID() {
     return SNAPSHOT_RESULT_MESSAGE;
   }

@@ -66,6 +66,7 @@ public class ErrorResultData extends InfoResultData {
    *
    * @return this ErrorResultData
    */
+  @Override
   public ErrorResultData setHeader(String headerText) {
     return (ErrorResultData) super.setHeader(headerText);
   }
@@ -75,6 +76,7 @@ public class ErrorResultData extends InfoResultData {
    * @param line message to add
    * @return this ErrorResultData
    */
+  @Override
   public ErrorResultData addLine(String line) {
     return (ErrorResultData) super.addLine(line);
   }
@@ -83,10 +85,12 @@ public class ErrorResultData extends InfoResultData {
    *
    * @return this InfoResultData
    */
+  @Override
   public ErrorResultData setFooter(String footerText) {
     return (ErrorResultData) super.setFooter(footerText);
   }
 
+  @Override
   public String getType() {
     return TYPE_ERROR;
   }

@@ -182,6 +182,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     }
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeBoolean(this.hasKeys);
     if (this.objectTypeArray != null) {
@@ -210,6 +211,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.hasKeys = in.readBoolean();
     if (this.hasKeys) {
@@ -237,6 +239,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     }
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.OBJECT_PART_LIST;
   }

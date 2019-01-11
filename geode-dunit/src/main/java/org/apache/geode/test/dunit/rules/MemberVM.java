@@ -44,10 +44,12 @@ public class MemberVM extends VMProvider implements Member {
     this.vm = vm;
   }
 
+  @Override
   public boolean isLocator() {
     return (member instanceof Locator);
   }
 
+  @Override
   public VM getVM() {
     return vm;
   }

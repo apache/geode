@@ -85,10 +85,12 @@ public abstract class AbstractSessionCache implements SessionCache {
     return this.sessionManager;
   }
 
+  @Override
   public Region<String, HttpSession> getSessionRegion() {
     return this.sessionRegion;
   }
 
+  @Override
   public Region<String, HttpSession> getOperatingRegion() {
     return this.operatingRegion;
   }

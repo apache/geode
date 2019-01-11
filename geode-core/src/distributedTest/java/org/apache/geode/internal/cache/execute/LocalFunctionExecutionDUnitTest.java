@@ -174,6 +174,7 @@ public class LocalFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
     }
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
+      @Override
       public void run() {
         if (cache != null) {
           cache.close();

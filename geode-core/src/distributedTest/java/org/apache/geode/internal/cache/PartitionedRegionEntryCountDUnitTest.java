@@ -55,6 +55,7 @@ public class PartitionedRegionEntryCountDUnitTest extends JUnit4CacheTestCase {
     final SerializableRunnable create = new CacheSerializableRunnable(
         "Create Entry LRU with local destroy on a partitioned Region having max entries "
             + maxEntriesForVm1) {
+      @Override
       public void run2() {
         final AttributesFactory factory = new AttributesFactory();
         factory.setPartitionAttributes(
@@ -70,6 +71,7 @@ public class PartitionedRegionEntryCountDUnitTest extends JUnit4CacheTestCase {
     final SerializableRunnable create2 = new SerializableRunnable(
         "Create Entry LRU with local destroy on a partitioned Region having max entries "
             + maxEntriesForOtherVm) {
+      @Override
       public void run() {
         try {
           final AttributesFactory factory = new AttributesFactory();
@@ -89,6 +91,7 @@ public class PartitionedRegionEntryCountDUnitTest extends JUnit4CacheTestCase {
     vm3.invoke(create2);
 
     final SerializableRunnable putData = new SerializableRunnable("Puts Data") {
+      @Override
       public void run() {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
         assertNotNull(pr);
@@ -101,6 +104,7 @@ public class PartitionedRegionEntryCountDUnitTest extends JUnit4CacheTestCase {
 
     final SerializableCallable getTotalEntryCount =
         new SerializableCallable("Get total entry count") {
+          @Override
           public Object call() throws Exception {
             try {
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
@@ -121,6 +125,7 @@ public class PartitionedRegionEntryCountDUnitTest extends JUnit4CacheTestCase {
 
     final SerializableCallable getLocalEntryCount =
         new SerializableCallable("Get local entry count") {
+          @Override
           public Object call() throws Exception {
             try {
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);

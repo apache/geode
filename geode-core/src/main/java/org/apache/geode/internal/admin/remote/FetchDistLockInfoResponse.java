@@ -70,6 +70,7 @@ public class FetchDistLockInfoResponse extends AdminResponse {
     return lockInfos;
   }
 
+  @Override
   public int getDSFID() {
     return FETCH_DIST_LOCK_INFO_RESPONSE;
   }

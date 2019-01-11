@@ -130,6 +130,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
    */
   public ClientInterestMessageImpl() {}
 
+  @Override
   public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     Version clientVersion = proxy.getVersion();
     Message message = null;
@@ -186,10 +187,12 @@ public class ClientInterestMessageImpl implements ClientMessage {
     return message;
   }
 
+  @Override
   public boolean shouldBeConflated() {
     return false;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.CLIENT_INTEREST_MESSAGE;
   }
@@ -202,6 +205,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
     fromData(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.eventId, out);
     DataSerializer.writeString(this.regionName, out);
@@ -213,6 +217,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
     DataSerializer.writePrimitiveByte(this.action, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.eventId = (EventID) DataSerializer.readObject(in);
     this.regionName = DataSerializer.readString(in);
@@ -224,6 +229,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
     this.action = DataSerializer.readPrimitiveByte(in);
   }
 
+  @Override
   public EventID getEventId() {
     return this.eventId;
   }
@@ -260,22 +266,26 @@ public class ClientInterestMessageImpl implements ClientMessage {
     return this.action == REGISTER;
   }
 
+  @Override
   public String getRegionToConflate() {
     return null;
   }
 
+  @Override
   public Object getKeyToConflate() {
     // This method can be called by HARegionQueue.
     // Use this to identify the message type.
     return "interest";
   }
 
+  @Override
   public Object getValueToConflate() {
     // This method can be called by HARegionQueue
     // Use this to identify the message type.
     return "interest";
   }
 
+  @Override
   public void setLatestValue(Object value) {}
 
   public String toString() {

@@ -57,10 +57,12 @@ public class TXFailoverOpTest {
     return new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3, 10, false,
         cancelCriterion, mockPool) {
 
+      @Override
       public ServerLocation getNextOpServerLocation() {
         return mock(ServerLocation.class);
       }
 
+      @Override
       protected Object executeOnServer(ServerLocation p_server, Op op, boolean accessed,
           boolean onlyUseExistingCnx) {
         throw new ServerConnectivityException();

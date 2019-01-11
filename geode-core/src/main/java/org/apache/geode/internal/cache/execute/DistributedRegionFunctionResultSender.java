@@ -69,6 +69,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
     this.sender = sender;
   }
 
+  @Override
   public void lastResult(Object oneResult) {
     if (!this.functionObject.hasResult()) {
       throw new IllegalStateException(
@@ -142,6 +143,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
 
   }
 
+  @Override
   public synchronized void sendResult(Object oneResult) {
     if (!this.functionObject.hasResult()) {
       throw new IllegalStateException(
@@ -206,12 +208,14 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
     }
   }
 
+  @Override
   public void sendException(Throwable exception) {
     InternalFunctionException iFunxtionException = new InternalFunctionException(exception);
     this.lastResult(iFunxtionException);
     this.localLastResultReceived = true;
   }
 
+  @Override
   public void setException(Throwable exception) {
     if (this.sender != null) {
       this.sender.setException(exception);
@@ -226,14 +230,17 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
     this.localLastResultReceived = true;
   }
 
+  @Override
   public void enableOrderedResultStreming(boolean enable) {
     this.enableOrderedResultStreming = enable;
   }
 
+  @Override
   public boolean isLocallyExecuted() {
     return this.msg == null;
   }
 
+  @Override
   public boolean isLastResultReceived() {
     return this.localLastResultReceived;
   }

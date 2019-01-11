@@ -66,6 +66,7 @@ public class DestroyEntryMessage extends RegionAdminMessage {
     }
   }
 
+  @Override
   public int getDSFID() {
     return DESTROY_ENTRY_MESSAGE;
   }

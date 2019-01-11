@@ -1529,14 +1529,17 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     AttributesFactory fac = new AttributesFactory(getRegionAttributes());
 
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent event) {
         // do nothing
       }
 
+      @Override
       public void afterRegionDestroy2(RegionEvent re) {
         assertEquals(Operation.REGION_CLOSE, re.getOperation());
       }
 
+      @Override
       public void close2() {
         // okay
       }
@@ -2152,10 +2155,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setCustomEntryTimeToLive(new TestExpiry(key2, expire2));
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {}
     };
     factory.addCacheListener(list);
@@ -2232,20 +2238,25 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setCustomEntryTimeToLive(new TestExpiry(key1, expire1));
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {
         eventCount++;
       }
     };
     // Disk regions are VERY slow, so we need to wait for the event...
     WaitCriterion waitForEventCountToBeOne = new WaitCriterion() {
+      @Override
       public boolean done() {
         return eventCount == 1;
       }
 
+      @Override
       public String description() {
         return "eventCount never became 1";
       }
@@ -2347,10 +2358,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setEntryTimeToLive(expire1);
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {
         eventCount++;
       }
@@ -2399,10 +2413,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     ExpirationAttributes expire4 = new ExpirationAttributes(1, INVALIDATE);
     mutt.setEntryTimeToLive(expire4);
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return fetchEntryValue(entry) == null;
       }
 
+      @Override
       public String description() {
         return "entry never became invalid";
       }
@@ -2410,10 +2426,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     GeodeAwaitility.await().untilAsserted(wc);
 
     WaitCriterion waitForEventCountToBeOne = new WaitCriterion() {
+      @Override
       public boolean done() {
         return eventCount == 1;
       }
 
+      @Override
       public String description() {
         return "eventCount never became 1";
       }
@@ -2439,6 +2457,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setEntryTimeToLive(expire);
     factory.setStatisticsEnabled(true);
     factory.setCacheLoader(new TestCacheLoader() {
+      @Override
       public Object load2(LoaderHelper helper) {
         return value;
       }
@@ -2520,6 +2539,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final String name = this.getUniqueName();
 
     vm0.invoke(new CacheSerializableRunnable("testRegionTtlInvalidate") {
+      @Override
       public void run2() throws CacheException {
         final int timeout = 22; // ms
         final Object key = "KEY";
@@ -2615,10 +2635,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setEntryIdleTimeout(expire);
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {}
     };
     factory.setCacheListener(list);
@@ -2673,6 +2696,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
      *
      * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       // getCache().getLogger().fine("Calculating expiry for " + entry.getKey()
       // , new Exception("here")
@@ -2688,6 +2712,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
      *
      * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
+    @Override
     public void init(Properties props) {}
 
     /*
@@ -2695,6 +2720,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
      *
      * @see org.apache.geode.cache.CacheCallback#close()
      */
+    @Override
     public void close() {}
   }
 
@@ -2716,10 +2742,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setCustomEntryIdleTimeout(new TestExpiry(key2, expire));
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {}
     };
     factory.addCacheListener(list);
@@ -2793,10 +2822,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setCustomEntryIdleTimeout(new TestExpiry(key2, expire2));
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {}
     };
     factory.addCacheListener(list);
@@ -2870,10 +2902,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setCustomEntryIdleTimeout(new TestExpiry(key1, expire1));
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {
         eventCount++;
       }
@@ -2922,10 +2957,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     ExpirationAttributes expire4 = new ExpirationAttributes(1, INVALIDATE);
     mutt.setCustomEntryIdleTimeout(new TestExpiry(key1, expire4));
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return fetchEntryValue(entry) == null;
       }
 
+      @Override
       public String description() {
         return "entry never became invalid";
       }
@@ -2933,10 +2970,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     GeodeAwaitility.await().untilAsserted(wc);
 
     WaitCriterion waitForEventCountToBeOne = new WaitCriterion() {
+      @Override
       public boolean done() {
         return eventCount == 1;
       }
 
+      @Override
       public String description() {
         return "eventCount never became 1";
       }
@@ -2964,10 +3003,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setEntryIdleTimeout(expire1);
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {
         eventCount++;
       }
@@ -3016,10 +3058,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     ExpirationAttributes expire4 = new ExpirationAttributes(1, INVALIDATE);
     mutt.setEntryIdleTimeout(expire4);
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         return fetchEntryValue(entry) == null;
       }
 
+      @Override
       public String description() {
         return "entry never became invalid";
       }
@@ -3027,10 +3071,12 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     GeodeAwaitility.await().untilAsserted(wc);
 
     WaitCriterion waitForEventCountToBeOne = new WaitCriterion() {
+      @Override
       public boolean done() {
         return eventCount == 1;
       }
 
+      @Override
       public String description() {
         return "eventCount never became 1";
       }
@@ -3061,6 +3107,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
      *
      * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
+    @Override
     public ExpirationAttributes getExpiry(Entry entry) {
       Object key = entry.getKey();
       synchronized (CountExpiry.class) {
@@ -3082,6 +3129,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
      *
      * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
+    @Override
     public void init(Properties props) {}
 
     /*
@@ -3089,6 +3137,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
      *
      * @see org.apache.geode.cache.CacheCallback#close()
      */
+    @Override
     public void close() {}
   }
 
@@ -3181,10 +3230,13 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setCustomEntryIdleTimeout(new TestExpiry(key1, expire));
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterUpdate2(EntryEvent e) {}
 
+      @Override
       public void afterInvalidate2(EntryEvent e) {}
     };
     factory.addCacheListener(list);
@@ -3302,8 +3354,10 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     factory.setEntryIdleTimeout(expire);
     factory.setStatisticsEnabled(true);
     TestCacheListener list = new TestCacheListener() {
+      @Override
       public void afterCreate2(EntryEvent e) {}
 
+      @Override
       public void afterDestroy2(EntryEvent e) {}
     };
     factory.setCacheListener(list);
@@ -3580,20 +3634,25 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     vm0.invoke(new CacheSerializableRunnable("testRegionIdleInvalidate") {
+      @Override
       public void run2() throws CacheException {
         TestCacheListener list = new TestCacheListener() {
           private int createCount = 0;
 
+          @Override
           public void afterInvalidate2(EntryEvent e) {
             e.getRegion().getCache().getLogger().info("invalidate2 key=" + e.getKey());
           }
 
+          @Override
           public void afterRegionInvalidate2(RegionEvent e) {}
 
+          @Override
           public void afterUpdate2(EntryEvent e) {
             this.wasInvoked(); // Clear the flag
           }
 
+          @Override
           public void afterCreate2(EntryEvent e) {
             this.createCount++;
             // we only expect one create; all the rest should be updates
@@ -3746,6 +3805,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     boolean isDistributed = getRegionAttributes().getScope().isDistributed();
     if (isDistributed) {
       invokeInEveryVM(new CacheSerializableRunnable("create presnapshot region") {
+        @Override
         public void run2() throws CacheException {
           preSnapshotRegion = createRegion(name);
         }
@@ -3788,6 +3848,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       // test postSnapshot behavior in other VMs if distributed
       if (isDistributed) {
         invokeInEveryVM(new CacheSerializableRunnable("postSnapshot") {
+          @Override
           public void run2() throws CacheException {
             RegionTestCase.this.remoteTestPostSnapshot(name, false, false);
           }
@@ -3809,6 +3870,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     boolean isDistributed = getRegionAttributes().getScope().isDistributed();
     if (isDistributed) {
       invokeInEveryVM(new CacheSerializableRunnable("create presnapshot region") {
+        @Override
         public void run2() throws CacheException {
           preSnapshotRegion = createRootRegion(name, getRegionAttributes());
         }
@@ -3857,6 +3919,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       if (isDistributed) {
         log.info("before distributed remoteTestPostSnapshot");
         invokeInEveryVM(new CacheSerializableRunnable("postSnapshot") {
+          @Override
           public void run2() throws CacheException {
             RegionTestCase.this.remoteTestPostSnapshot(name, false, true);
           }

@@ -122,12 +122,14 @@ public class DeltaSession extends StandardSession
   /**
    * Return the <code>HttpSession</code> for which this object is the facade.
    */
+  @Override
   @SuppressWarnings("unchecked")
   public HttpSession getSession() {
     if (facade == null) {
       if (SecurityUtil.isPackageProtectionEnabled()) {
         final DeltaSession fsession = this;
         facade = (DeltaSessionFacade) AccessController.doPrivileged(new PrivilegedAction() {
+          @Override
           public Object run() {
             return new DeltaSessionFacade(fsession);
           }
@@ -139,6 +141,7 @@ public class DeltaSession extends StandardSession
     return (facade);
   }
 
+  @Override
   public Principal getPrincipal() {
     if (this.principal == null && this.serializedPrincipal != null) {
       SerializablePrincipal sp = null;
@@ -164,6 +167,7 @@ public class DeltaSession extends StandardSession
     return this.principal;
   }
 
+  @Override
   public void setPrincipal(Principal principal) {
     super.setPrincipal(principal);
 
@@ -208,14 +212,17 @@ public class DeltaSession extends StandardSession
     return mgr.isCommitValveEnabled();
   }
 
+  @Override
   public GatewayDeltaEvent getCurrentGatewayDeltaEvent() {
     return this.currentGatewayDeltaEvent;
   }
 
+  @Override
   public void setCurrentGatewayDeltaEvent(GatewayDeltaEvent currentGatewayDeltaEvent) {
     this.currentGatewayDeltaEvent = currentGatewayDeltaEvent;
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public void setOwner(Object manager) {
     if (manager instanceof DeltaSessionManager) {
@@ -248,6 +255,7 @@ public class DeltaSession extends StandardSession
     }
   }
 
+  @Override
   public void setAttribute(String name, Object value, boolean notify) {
     checkBackingCacheAvailable();
     synchronized (this.changeLock) {
@@ -277,6 +285,7 @@ public class DeltaSession extends StandardSession
     }
   }
 
+  @Override
   public void removeAttribute(String name, boolean notify) {
     checkBackingCacheAvailable();
     if (expired) {
@@ -297,6 +306,7 @@ public class DeltaSession extends StandardSession
     }
   }
 
+  @Override
   public Object getAttribute(String name) {
     checkBackingCacheAvailable();
     Object value = super.getAttribute(name);
@@ -325,12 +335,14 @@ public class DeltaSession extends StandardSession
     return value;
   }
 
+  @Override
   public void invalidate() {
     super.invalidate();
     // getOperatingRegion().destroy(this.id, true); // already done in super (remove)
     ((DeltaSessionManager) getManager()).getStatistics().incSessionsInvalidated();
   }
 
+  @Override
   public void processExpired() {
     DeltaSessionManager manager = (DeltaSessionManager) getManager();
     if (manager != null && manager.getLogger() != null && manager.getLogger().isDebugEnabled()) {
@@ -358,18 +370,22 @@ public class DeltaSession extends StandardSession
     }
   }
 
+  @Override
   public void setMaxInactiveInterval(int interval) {
     super.setMaxInactiveInterval(interval);
   }
 
+  @Override
   public void localUpdateAttribute(String name, Object value) {
     super.setAttribute(name, value, false); // don't do notification since this is a replication
   }
 
+  @Override
   public void localDestroyAttribute(String name) {
     super.removeAttribute(name, false); // don't do notification since this is a replication
   }
 
+  @Override
   public void applyAttributeEvents(Region<String, DeltaSessionInterface> region,
       List<DeltaSessionAttributeEvent> events) {
     for (DeltaSessionAttributeEvent event : events) {
@@ -426,6 +442,7 @@ public class DeltaSession extends StandardSession
     this.eventQueue.clear();
   }
 
+  @Override
   public void commit() {
     if (!isValidInternal())
       throw new IllegalStateException("commit: Session " + getId() + " already invalidated");
@@ -447,6 +464,7 @@ public class DeltaSession extends StandardSession
     }
   }
 
+  @Override
   public void abort() {
     synchronized (this.changeLock) {
       this.eventQueue.clear();
@@ -457,18 +475,22 @@ public class DeltaSession extends StandardSession
     this.expired = expired;
   }
 
+  @Override
   public boolean getExpired() {
     return this.expired;
   }
 
+  @Override
   public String getContextName() {
     return contextName;
   }
 
+  @Override
   public boolean hasDelta() {
     return this.hasDelta;
   }
 
+  @Override
   public void toDelta(DataOutput out) throws IOException {
     // Write whether to apply the changes to another DS if necessary
     out.writeBoolean(this.applyRemotely);
@@ -480,6 +502,7 @@ public class DeltaSession extends StandardSession
     out.writeInt(this.maxInactiveInterval);
   }
 
+  @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     // Read whether to apply the changes to another DS if necessary
     this.applyRemotely = in.readBoolean();

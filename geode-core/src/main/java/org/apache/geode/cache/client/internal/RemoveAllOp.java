@@ -288,6 +288,7 @@ public class RemoveAllOp {
       final boolean isDebugEnabled = logger.isDebugEnabled();
       try {
         processChunkedResponse((ChunkedMessage) msg, "removeAll", new ChunkHandler() {
+          @Override
           public void handle(ChunkedMessage cm) throws Exception {
             int numParts = msg.getNumberOfParts();
             if (isDebugEnabled) {

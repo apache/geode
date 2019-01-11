@@ -39,10 +39,12 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
     return Collections.singletonList(this._value);
   }
 
+  @Override
   public int getType() {
     return LITERAL_sum;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return minus(_value.evaluate(context));

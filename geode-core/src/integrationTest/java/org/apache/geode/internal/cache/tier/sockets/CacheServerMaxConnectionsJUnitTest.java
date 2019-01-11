@@ -147,10 +147,12 @@ public class CacheServerMaxConnectionsJUnitTest {
       this.system.getLogWriter().info("acquired connection[" + i + "]=" + cnxs[i]);
     }
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return s.getInt("currentClientConnections") == MAX_CNXS;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -185,10 +187,12 @@ public class CacheServerMaxConnectionsJUnitTest {
       cnxs[i].close(false);
     }
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return s.getInt("currentClients") == 0;
       }
 
+      @Override
       public String description() {
         return null;
       }

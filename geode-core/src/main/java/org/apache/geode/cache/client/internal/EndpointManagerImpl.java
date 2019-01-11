@@ -62,6 +62,7 @@ public class EndpointManagerImpl implements EndpointManager {
    * @see org.apache.geode.cache.client.internal.EndpointManager#referenceEndpoint(org.apache.geode.
    * distributed.internal.ServerLocation)
    */
+  @Override
   public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
     Endpoint endpoint = endpointMap.get(server);
     boolean addedEndpoint = false;
@@ -98,6 +99,7 @@ public class EndpointManagerImpl implements EndpointManager {
    * org.apache.geode.cache.client.internal.EndpointManager#serverCrashed(org.apache.geode.cache.
    * client.internal.Endpoint)
    */
+  @Override
   public void serverCrashed(Endpoint endpoint) {
     removeEndpoint(endpoint, true);
   }
@@ -171,6 +173,7 @@ public class EndpointManagerImpl implements EndpointManager {
    *
    * @see org.apache.geode.cache.client.internal.EndpointManager#getEndpointMap()
    */
+  @Override
   public Map<ServerLocation, Endpoint> getEndpointMap() {
     return endpointMap;
   }
@@ -180,6 +183,7 @@ public class EndpointManagerImpl implements EndpointManager {
    *
    * @see org.apache.geode.cache.client.internal.EndpointManager#close()
    */
+  @Override
   public synchronized void close() {
     for (Iterator<ConnectionStats> itr = statMap.values().iterator(); itr.hasNext();) {
       ConnectionStats stats = itr.next();
@@ -197,6 +201,7 @@ public class EndpointManagerImpl implements EndpointManager {
    * @see org.apache.geode.cache.client.internal.EndpointManager#addListener(org.apache.geode.cache.
    * client.internal.EndpointManagerImpl.EndpointListener)
    */
+  @Override
   public void addListener(EndpointManager.EndpointListener listener) {
     this.listener.addListener(listener);
   }
@@ -208,6 +213,7 @@ public class EndpointManagerImpl implements EndpointManager {
    * org.apache.geode.cache.client.internal.EndpointManager#removeListener(org.apache.geode.cache.
    * client.internal.EndpointManagerImpl.EndpointListener)
    */
+  @Override
   public void removeListener(EndpointManager.EndpointListener listener) {
     this.listener.removeListener(listener);
   }
@@ -234,10 +240,12 @@ public class EndpointManagerImpl implements EndpointManager {
     return stats;
   }
 
+  @Override
   public synchronized Map<ServerLocation, ConnectionStats> getAllStats() {
     return new HashMap<ServerLocation, ConnectionStats>(statMap);
   }
 
+  @Override
   public int getConnectedServerCount() {
     return getEndpointMap().size();
   }
@@ -267,6 +275,7 @@ public class EndpointManagerImpl implements EndpointManager {
       endpointListeners = Collections.unmodifiableSet(tmpListeners);
     }
 
+    @Override
     public void endpointCrashed(Endpoint endpoint) {
       for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
         EndpointManager.EndpointListener listener = itr.next();
@@ -274,6 +283,7 @@ public class EndpointManagerImpl implements EndpointManager {
       }
     }
 
+    @Override
     public void endpointNoLongerInUse(Endpoint endpoint) {
       for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
         EndpointManager.EndpointListener listener = itr.next();
@@ -281,6 +291,7 @@ public class EndpointManagerImpl implements EndpointManager {
       }
     }
 
+    @Override
     public void endpointNowInUse(Endpoint endpoint) {
       for (Iterator<EndpointListener> itr = endpointListeners.iterator(); itr.hasNext();) {
         EndpointManager.EndpointListener listener = itr.next();
@@ -305,6 +316,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   public class EndpointListenerForBridgeMembership implements EndpointManager.EndpointListener {
 
+    @Override
     public void endpointCrashed(Endpoint endpoint) {
       if (cancelCriterion.isCancelInProgress()) {
         return;
@@ -312,6 +324,7 @@ public class EndpointManagerImpl implements EndpointManager {
       InternalClientMembership.notifyServerCrashed(endpoint.getLocation());
     }
 
+    @Override
     public void endpointNoLongerInUse(Endpoint endpoint) {
       if (cancelCriterion.isCancelInProgress()) {
         return;
@@ -319,6 +332,7 @@ public class EndpointManagerImpl implements EndpointManager {
       InternalClientMembership.notifyServerLeft(endpoint.getLocation());
     }
 
+    @Override
     public void endpointNowInUse(Endpoint endpoint) {
       if (cancelCriterion.isCancelInProgress()) {
         return;
@@ -327,6 +341,7 @@ public class EndpointManagerImpl implements EndpointManager {
     }
   }
 
+  @Override
   public String getPoolName() {
     return poolName;
   }

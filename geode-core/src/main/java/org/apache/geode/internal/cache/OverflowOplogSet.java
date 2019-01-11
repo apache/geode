@@ -215,6 +215,7 @@ public class OverflowOplogSet implements OplogSet {
     }
   }
 
+  @Override
   public OverflowOplog getChild(long oplogId) {
     // the oplog id is cast to an integer because the overflow
     // map uses integer oplog ids.

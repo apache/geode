@@ -52,6 +52,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
   @Override
   protected final void postSetUpCqQueryDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = false;
       }
@@ -61,6 +62,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         CqServiceImpl.EXECUTE_QUERY_DURING_INIT = true;
         CqServiceProvider.MAINTAIN_KEYS = true;
@@ -94,6 +96,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     executeCQ(client, cqName, false, null);
 
     server.invoke(new CacheSerializableRunnable("execute cq") {
+      @Override
       public void run2() throws CacheException {
         assertFalse("CqServiceImpl.EXECUTE_QUERY_DURING_INIT flag should be false ",
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
@@ -106,6 +109,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
     // Create more values.
     server.invoke(new CacheSerializableRunnable("Create values") {
+      @Override
       public void run2() throws CacheException {
         Region region1 = getRootRegion().getSubregion(regions[0]);
         for (int i = numOfEntries + 1; i <= numOfEntries * 2; i++) {
@@ -156,6 +160,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     final String cqName = "testCqExecuteWithoutQueryExecution_1";
 
     server.invoke(new CacheSerializableRunnable("execute cq") {
+      @Override
       public void run2() throws CacheException {
         CqServiceProvider.MAINTAIN_KEYS = false;
       }
@@ -179,6 +184,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     executeCQ(client, cqName, false, null);
 
     server.invoke(new CacheSerializableRunnable("execute cq") {
+      @Override
       public void run2() throws CacheException {
         assertFalse("CqServiceImpl.EXECUTE_QUERY_DURING_INIT flag should be false ",
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
@@ -193,6 +199,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
     // Create more values.
     server.invoke(new CacheSerializableRunnable("Create values") {
+      @Override
       public void run2() throws CacheException {
         Region region1 = getRootRegion().getSubregion(regions[0]);
         for (int i = numOfEntries + 1; i <= numOfEntries * 2; i++) {
@@ -238,6 +245,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
   // Each cq uses a different pool and the servers are shutdown.
   // The listeners for each cq should receive a connect and disconnect
   // when their respective servers are shutdown
+  @Override
   @Test
   public void testCQAllServersLeaveMultiplePool() throws Exception {
     final Host host = Host.getHost(0);

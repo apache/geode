@@ -53,12 +53,14 @@ public class TestObject implements DataSerializable {
     return this._price;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.id);
     DataSerializer.writeString(this._ticker, out);
     out.writeInt(this._price);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.id = in.readInt();
     this._ticker = DataSerializer.readString(in);

@@ -67,12 +67,14 @@ public class IteratorDUnitTest extends JUnit4CacheTestCase {
     final String regionName = getUniqueName();
 
     accessor.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         getGemfireCache().createRegionFactory(RegionShortcut.PARTITION_PROXY).create(regionName);
         return null;
       }
     });
     datastore.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r =
             getGemfireCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
@@ -88,6 +90,7 @@ public class IteratorDUnitTest extends JUnit4CacheTestCase {
       }
     });
     accessor.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getGemfireCache().getRegion(regionName);
         Iterator it = r.keySet().iterator();

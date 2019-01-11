@@ -89,16 +89,19 @@ public class CqEntry implements DataSerializableFixedID {
 
   /* DataSerializableFixedID methods ---------------------------------------- */
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.key = DataSerializer.readObject(in);
     this.value = DataSerializer.readObject(in);
   }
 
 
+  @Override
   public int getDSFID() {
     return CQ_ENTRY_EVENT;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.key, out);
     DataSerializer.writeObject(this.value, out);

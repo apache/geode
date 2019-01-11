@@ -24,6 +24,7 @@ import org.junit.runners.model.Statement;
 public abstract class SerializableExternalResource extends ExternalResource
     implements SerializableTestRule {
 
+  @Override
   public Statement apply(final Statement base, final Description description) {
     return statement(base);
   }

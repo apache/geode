@@ -52,6 +52,7 @@ public class RegionSubRegionSizeRequest extends AdminRequest implements Cancella
     return resp;
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
     if (resp != null) {
@@ -72,6 +73,7 @@ public class RegionSubRegionSizeRequest extends AdminRequest implements Cancella
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
+  @Override
   public int getDSFID() {
     return REGION_SUB_SIZE_REQUEST;
   }

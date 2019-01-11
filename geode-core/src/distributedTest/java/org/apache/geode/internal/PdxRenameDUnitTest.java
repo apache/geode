@@ -81,6 +81,7 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(1);
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         disconnectFromDS();
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[0] + "]");
@@ -99,6 +100,7 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm2.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         disconnectFromDS();
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[1] + "]");
@@ -118,6 +120,7 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Cache cache = CacheFactory.getAnyInstance();
         if (cache != null && !cache.isClosed()) {
@@ -128,6 +131,7 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Collection<Object> renameResults =
             DiskStoreImpl.pdxRename(DS_NAME, new File[] {f}, "apache", "pivotal");
@@ -148,6 +152,7 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[0] + "]");
         final Cache cache =
@@ -164,6 +169,7 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm2.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         disconnectFromDS();
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[1] + "]");
@@ -186,6 +192,7 @@ public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Cache cache = CacheFactory.getAnyInstance();
         if (cache != null && !cache.isClosed()) {

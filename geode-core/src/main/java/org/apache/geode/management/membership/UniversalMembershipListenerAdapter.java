@@ -218,6 +218,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * Invoked when a member has joined the distributed system. Also invoked when a client has
    * connected to this process or when this process has connected to a <code>CacheServer</code>.
    */
+  @Override
   public void memberJoined(MembershipEvent event) {}
 
   /**
@@ -225,6 +226,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * has gracefully disconnected from this process. or when this process has gracefully disconnected
    * from a <code>CacheServer</code>.
    */
+  @Override
   public void memberLeft(MembershipEvent event) {}
 
   /**
@@ -232,6 +234,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * has unexpectedly disconnected from this process or when this process has unexpectedly
    * disconnected from a <code>CacheServer</code>.
    */
+  @Override
   public void memberCrashed(MembershipEvent event) {}
 
   /** Adapts ClientMembershipEvent to look like a MembershipEvent */
@@ -250,10 +253,12 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
       return event.isClient();
     }
 
+    @Override
     public String getMemberId() {
       return event.getMemberId();
     }
 
+    @Override
     public DistributedMember getDistributedMember() {
       return event.getMember();
     }
@@ -289,32 +294,38 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
   }
 
   private final ClientMembershipListener clientMembershipListener = new ClientMembershipListener() {
+    @Override
     public void memberJoined(ClientMembershipEvent event) {
       membershipListener.memberJoined(new AdaptedMembershipEvent(event));
     }
 
+    @Override
     public void memberLeft(ClientMembershipEvent event) {
       membershipListener.memberLeft(new AdaptedMembershipEvent(event));
     }
 
+    @Override
     public void memberCrashed(ClientMembershipEvent event) {
       membershipListener.memberCrashed(new AdaptedMembershipEvent(event));
     }
   };
 
   protected final MembershipListener membershipListener = new MembershipListener() {
+    @Override
     public void memberJoined(MembershipEvent event) {
       if (!isDuplicate(event, true)) {
         UniversalMembershipListenerAdapter.this.memberJoined(event);
       }
     }
 
+    @Override
     public void memberLeft(MembershipEvent event) {
       if (!isDuplicate(event, false)) {
         UniversalMembershipListenerAdapter.this.memberLeft(event);
       }
     }
 
+    @Override
     public void memberCrashed(MembershipEvent event) {
       if (!isDuplicate(event, false)) {
         UniversalMembershipListenerAdapter.this.memberCrashed(event);

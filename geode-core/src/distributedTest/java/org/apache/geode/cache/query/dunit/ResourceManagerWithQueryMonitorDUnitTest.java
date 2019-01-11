@@ -107,6 +107,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   }
 
   private SerializableCallable setHeapMemoryMonitorTestMode = new SerializableCallable() {
+    @Override
     public Object call() throws Exception {
       HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
       return null;
@@ -114,6 +115,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   };
 
   private SerializableCallable resetResourceManager = new SerializableCallable() {
+    @Override
     public Object call() throws Exception {
       InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
       // Reset CRITICAL_UP by informing all that heap usage is now 1 byte (0 would disable).
@@ -135,6 +137,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   };
 
   private SerializableCallable resetQueryMonitor = new SerializableCallable() {
+    @Override
     public Object call() throws Exception {
       InternalCache cache = getCache();
       if (cache.getQueryMonitor() != null) {
@@ -331,6 +334,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       client.invoke(new CacheSerializableRunnable("Executing query when system is 'Normal'") {
+        @Override
         public void run2() {
           try {
             QueryService qs = getCache().getQueryService();
@@ -385,6 +389,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       createCancelDuringGatherTestHook(server1);
       server1.invoke(new SerializableCallable("create index") {
+        @Override
         public Object call() {
           QueryService qs = null;
           try {
@@ -443,6 +448,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       createCancelDuringAddResultsTestHook(server1);
       client.invoke(new SerializableCallable("executing query to be canceled during add results") {
+        @Override
         public Object call() {
           QueryService qs = null;
           try {
@@ -475,6 +481,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       client.invoke(new CacheSerializableRunnable("Executing query when system is 'Normal'") {
+        @Override
         public void run2() {
           try {
             QueryService qs = getCache().getQueryService();
@@ -527,6 +534,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       createCancelDuringGatherTestHook(server1);
       client.invoke(new SerializableCallable("executing query to be canceled by gather") {
+        @Override
         public Object call() {
           QueryService qs = null;
           try {
@@ -566,6 +574,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       client.invoke(new CacheSerializableRunnable("Executing query when system is 'Normal'") {
+        @Override
         public void run2() {
           try {
             QueryService qs = getCache().getQueryService();
@@ -634,6 +643,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       client.invoke(new CacheSerializableRunnable("Executing query when system is 'Normal'") {
+        @Override
         public void run2() {
           try {
             QueryService qs = getCache().getQueryService();
@@ -702,6 +712,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       // Check to see if query execution is ok under "normal" or "healthy" conditions
       server.invoke(new CacheSerializableRunnable("Executing query when system is 'Normal'") {
+        @Override
         public void run2() {
           try {
             QueryService qs = getCache().getQueryService();
@@ -872,6 +883,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private AsyncInvocation executeQueryWithTimeout(VM client, final String regionName,
       final int queryTimeout) {
     return client.invokeAsync(new SerializableCallable("execute query from client") {
+      @Override
       public Object call() throws CacheException {
         QueryService qs = null;
         try {
@@ -914,6 +926,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       final int queryTimeout,
       final boolean hitCriticalThreshold) {
     return client.invokeAsync(new SerializableCallable("execute query from client") {
+      @Override
       public Object call() throws CacheException {
         QueryService qs = null;
         try {
@@ -1026,6 +1039,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private void vmHitsCriticalHeap(VM vm) {
     vm.invoke(new CacheSerializableRunnable("vm hits critical heap") {
+      @Override
       public void run2() {
         InternalResourceManager resourceManager =
             (InternalResourceManager) getCache().getResourceManager();
@@ -1036,6 +1050,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private void vmRecoversFromCriticalHeap(VM vm) {
     vm.invoke(new CacheSerializableRunnable("vm hits critical heap") {
+      @Override
       public void run2() {
         InternalResourceManager resourceManager =
             (InternalResourceManager) getCache().getResourceManager();
@@ -1046,6 +1061,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private void createLatchTestHook(VM vm) {
     vm.invoke(new CacheSerializableRunnable("create latch test Hook") {
+      @Override
       public void run2() {
         DefaultQuery.TestHook hook = getPauseHook();
         DefaultQuery.testHook = hook;
@@ -1055,6 +1071,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private void createCancelDuringGatherTestHook(VM vm) {
     vm.invoke(new CacheSerializableRunnable("create cancel during gather test Hook") {
+      @Override
       public void run2() {
         DefaultQuery.TestHook hook = getCancelDuringGatherHook();
         DefaultQuery.testHook = hook;
@@ -1064,6 +1081,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private void createCancelDuringAddResultsTestHook(VM vm) {
     vm.invoke(new CacheSerializableRunnable("create cancel during gather test Hook") {
+      @Override
       public void run2() {
         DefaultQuery.TestHook hook = getCancelDuringAddResultsHook();
         DefaultQuery.testHook = hook;
@@ -1074,6 +1092,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private void releaseHook(VM vm) {
     vm.invoke(new CacheSerializableRunnable("release latch Hook") {
+      @Override
       public void run2() {
         PauseTestHook hook = (PauseTestHook) DefaultQuery.testHook;
         hook.countDown();
@@ -1085,6 +1104,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private void verifyRejectedObjects(VM vm, final boolean disabledQueryMonitorForLowMem,
       final int queryTimeout, final boolean hitCriticalThreshold) {
     vm.invoke(new CacheSerializableRunnable("verify dropped objects") {
+      @Override
       public void run2() {
         if ((disabledQueryMonitorForLowMem == false && hitCriticalThreshold)) {
           if (DefaultQuery.testHook instanceof PauseTestHook) {
@@ -1105,6 +1125,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private void populateData(VM vm, final String regionName, final int numObjects) {
     vm.invoke(new CacheSerializableRunnable("populate data for " + regionName) {
+      @Override
       public void run2() {
         Region region = getCache().getRegion(regionName);
         for (int i = 0; i < numObjects; i++) {
@@ -1116,6 +1137,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private void stopServer(VM server) {
     server.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         cache.MAX_QUERY_EXECUTION_TIME = -1;
@@ -1131,6 +1153,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       final int prRedundancy) throws Exception {
 
     server.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         getSystem(getServerProperties(disableQueryMonitorForLowMemory, queryTimeout));
         if (disableQueryMonitorForLowMemory == true) {
@@ -1187,6 +1210,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private void startClient(VM client, final VM server, final int port, final String regionName) {
 
     client.invoke(new CacheSerializableRunnable("Start client") {
+      @Override
       public void run2() throws CacheException {
         Properties props = getClientProps();
         getSystem(props);
@@ -1202,6 +1226,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       final String regionName) {
 
     client.invoke(new CacheSerializableRunnable("Start peer client") {
+      @Override
       public void run2() throws CacheException {
         Properties props = getClientProps();
         getSystem(props);

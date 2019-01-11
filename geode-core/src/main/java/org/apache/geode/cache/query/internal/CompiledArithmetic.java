@@ -55,8 +55,10 @@ public abstract class CompiledArithmetic extends AbstractCompiledValue
     return list;
   }
 
+  @Override
   public abstract int getType();
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Object left = _left.evaluate(context);

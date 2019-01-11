@@ -37,14 +37,17 @@ public class DeltaSessionDestroyAttributeEvent implements DeltaSessionAttributeE
     return this.attributeName;
   }
 
+  @Override
   public void apply(DeltaSessionInterface session) {
     session.localDestroyAttribute(this.attributeName);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.attributeName = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.attributeName, out);
   }

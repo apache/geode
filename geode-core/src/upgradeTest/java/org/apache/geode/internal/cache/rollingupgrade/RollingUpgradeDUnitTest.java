@@ -389,6 +389,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       final String testName, final String locatorsString, final Properties props,
       boolean fastStart) {
     return new CacheSerializableRunnable("execute: startLocator") {
+      @Override
       public void run2() {
         try {
           startLocator(serverHostName, port, testName, locatorsString, props, fastStart);
@@ -401,6 +402,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
 
   private CacheSerializableRunnable invokeCreateCache(final Properties systemProperties) {
     return new CacheSerializableRunnable("execute: createCache") {
+      @Override
       public void run2() {
         try {
           RollingUpgradeDUnitTest.cache = createCache(systemProperties);
@@ -413,6 +415,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
 
   private CacheSerializableRunnable invokeAssertVersion(final short version) {
     return new CacheSerializableRunnable("execute: assertVersion") {
+      @Override
       public void run2() {
         try {
           assertVersion(RollingUpgradeDUnitTest.cache, version);
@@ -426,6 +429,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private CacheSerializableRunnable invokeCreateRegion(final String regionName,
       final String shortcutName) {
     return new CacheSerializableRunnable("execute: createRegion") {
+      @Override
       public void run2() {
         try {
           createRegion(RollingUpgradeDUnitTest.cache, regionName, shortcutName);
@@ -439,6 +443,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private CacheSerializableRunnable invokeCreatePersistentReplicateRegion(final String regionName,
       final File diskstore) {
     return new CacheSerializableRunnable("execute: createPersistentReplicateRegion") {
+      @Override
       public void run2() {
         try {
           createPersistentReplicateRegion(RollingUpgradeDUnitTest.cache, regionName, diskstore);
@@ -452,6 +457,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private CacheSerializableRunnable invokePut(final String regionName, final Object key,
       final Object value) {
     return new CacheSerializableRunnable("execute: put") {
+      @Override
       public void run2() {
         try {
           put(RollingUpgradeDUnitTest.cache, regionName, key, value);
@@ -465,6 +471,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private CacheSerializableRunnable invokeAssertEntriesEqual(final String regionName,
       final int start, final int end) {
     return new CacheSerializableRunnable("execute: assertEntriesEqual") {
+      @Override
       public void run2() {
         try {
           for (int i = start; i < end; i++) {
@@ -481,6 +488,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private CacheSerializableRunnable invokeAssertEntriesExist(final String regionName,
       final int start, final int end) {
     return new CacheSerializableRunnable("execute: assertEntryExists") {
+      @Override
       public void run2() {
         try {
           for (int i = start; i < end; i++) {
@@ -495,6 +503,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
 
   private CacheSerializableRunnable invokeStopLocator() {
     return new CacheSerializableRunnable("execute: stopLocator") {
+      @Override
       public void run2() {
         try {
           stopLocator();
@@ -507,6 +516,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
 
   private CacheSerializableRunnable invokeCloseCache() {
     return new CacheSerializableRunnable("execute: closeCache") {
+      @Override
       public void run2() {
         try {
           closeCache(RollingUpgradeDUnitTest.cache);
@@ -519,6 +529,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
 
   private CacheSerializableRunnable invokeRebalance() {
     return new CacheSerializableRunnable("execute: rebalance") {
+      @Override
       public void run2() {
         try {
           rebalance(RollingUpgradeDUnitTest.cache);

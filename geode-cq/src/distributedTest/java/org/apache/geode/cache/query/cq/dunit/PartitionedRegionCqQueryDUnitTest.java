@@ -919,6 +919,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
     // initialize Region.
     server1.invoke(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + regions[0]);
         for (int i = 1; i <= numObjects; i++) {
@@ -930,6 +931,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
     // Keep updating region (async invocation).
     server1.invokeAsync(new CacheSerializableRunnable("Update Region") {
+      @Override
       public void run2() throws CacheException {
         Region region = getCache().getRegion("/root/" + regions[0]);
         for (int i = numObjects + 1; i <= totalObjects; i++) {
@@ -941,6 +943,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
     // Execute CQ while update is in progress.
     client.invoke(new CacheSerializableRunnable("Execute CQ") {
+      @Override
       public void run2() throws CacheException {
         QueryService cqService = getCache().getQueryService();
         // Get CqQuery object.
@@ -1144,6 +1147,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   public void createServer(VM server, final int port, final boolean isAccessor,
       final int redundantCopies) {
     SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory attr = new AttributesFactory();
@@ -1184,6 +1188,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   public void createServerWithoutRootRegion(VM server, final int port, final boolean isAccessor,
       final int redundantCopies) {
     SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Create Cache Server. ###");
         AttributesFactory attr = new AttributesFactory();
@@ -1243,6 +1248,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   public void createClient(VM client, final int[] serverPorts, final String serverHost,
       final String redundancyLevel) {
     SerializableRunnable createQService = new CacheSerializableRunnable("Create Client") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Create Client. ###");
         LogWriterUtils.getLogWriter().info(
@@ -1279,6 +1285,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
   public void createCQ(VM vm, final String cqName, final String queryStr) {
     vm.invoke(new CacheSerializableRunnable("Create CQ :" + cqName) {
+      @Override
       public void run2() throws CacheException {
 
         LogWriterUtils.getLogWriter().info("### Create CQ. ###" + cqName);
@@ -1334,6 +1341,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   /* Create/Init values */
   public void createValues(VM vm, final String regionName, final int size) {
     vm.invoke(new CacheSerializableRunnable("Create values for region : " + regionName) {
+      @Override
       public void run2() throws CacheException {
         Region region1 = getRootRegion().getSubregion(regionName);
         for (int i = 1; i <= size; i++) {
@@ -1347,6 +1355,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
 
   private void assertLocalMaxMemory(VM vm) {
     vm.invoke(new CacheSerializableRunnable("Create values") {
+      @Override
       public void run2() throws CacheException {
         for (int i = 0; i < regions.length; i++) {
           Region region = getRootRegion().getSubregion(regions[i]);
@@ -1365,6 +1374,7 @@ public class PartitionedRegionCqQueryDUnitTest extends JUnit4CacheTestCase {
   public void createCacheClient(VM vm, final String[] serverHosts, final int[] serverPorts,
       final String redundancyLevel) {
     vm.invoke(new CacheSerializableRunnable("createCacheClient") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("Will connect to server at por: " + serverPorts[0]
             + " and at host : " + serverHosts[0]);

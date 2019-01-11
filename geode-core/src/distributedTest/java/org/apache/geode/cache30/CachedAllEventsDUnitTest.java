@@ -45,6 +45,7 @@ public class CachedAllEventsDUnitTest extends JUnit4CacheTestCase {
   private void doCreateOtherVm() {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("create root") {
+      @Override
       public void run2() throws CacheException {
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_ACK);

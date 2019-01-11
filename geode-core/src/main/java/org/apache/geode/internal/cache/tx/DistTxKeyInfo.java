@@ -46,6 +46,7 @@ public class DistTxKeyInfo extends KeyInfo {
     this.checkPrimary = checkPrimary;
   }
 
+  @Override
   public boolean isDistKeyInfo() {
     return true;
   }

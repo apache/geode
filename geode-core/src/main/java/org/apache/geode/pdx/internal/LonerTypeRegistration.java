@@ -116,21 +116,25 @@ public class LonerTypeRegistration implements TypeRegistration {
     return isLoner && !pdxConfigured/* && !hasGateways */;
   }
 
+  @Override
   public int getEnumId(Enum<?> v) {
     initializeRegistry();
     return this.delegate.getEnumId(v);
   }
 
+  @Override
   public void addRemoteEnum(int enumId, EnumInfo newInfo) {
     initializeRegistry();
     this.delegate.addRemoteEnum(enumId, newInfo);
   }
 
+  @Override
   public int defineEnum(EnumInfo newInfo) {
     initializeRegistry();
     return delegate.defineEnum(newInfo);
   }
 
+  @Override
   public EnumInfo getEnumById(int enumId) {
     initializeRegistry();
     return delegate.getEnumById(enumId);

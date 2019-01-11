@@ -91,6 +91,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < 4; i++) {
       final int vm = i;
       host.getVM(vm).invoke(new CacheSerializableRunnable("testBug32356_step1") {
+        @Override
         public void run2() throws CacheException {
           region_testBug32356 = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
           Lock lock = region_testBug32356.getDistributedLock(key);
@@ -106,6 +107,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     for (int i = 0; i < 4; i++) {
       final int vm = i;
       host.getVM(vm).invoke(new CacheSerializableRunnable("testBug32356_step2") {
+        @Override
         public void run2() throws CacheException {
           Lock lock = region_testBug32356.getDistributedLock(key);
           // bug 32356 should cause this to fail...
@@ -178,6 +180,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getUniqueName();
     final Object key = new Integer(5);
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
       public void run2() throws CacheException {
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
         Lock lock = r.getDistributedLock(key);
@@ -186,6 +189,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Lock timeout creating entry") {
+      @Override
       public void run2() throws CacheException {
         getOrCreateRootRegion().getCache().setLockTimeout(2);
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
@@ -211,6 +215,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getUniqueName();
     final Object key = new Integer(5);
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
       public void run2() throws CacheException {
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
         Lock lock = r.getDistributedLock(key);
@@ -219,6 +224,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Lock timeout putting entry") {
+      @Override
       public void run2() throws CacheException {
         getOrCreateRootRegion().getCache().setLockTimeout(2);
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
@@ -245,6 +251,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
     // In first VM, get a lock on the entry
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
       public void run2() throws CacheException {
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
         Lock lock = r.getDistributedLock(key);
@@ -254,14 +261,17 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
     // In second VM, do a get that tries to invoke a loader
     vm1.invoke(new CacheSerializableRunnable("Lock timeout local loader") {
+      @Override
       public void run2() throws CacheException {
         getOrCreateRootRegion().getCache().setLockTimeout(2);
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
         r.getAttributesMutator().setCacheLoader(new CacheLoader() {
+          @Override
           public Object load(LoaderHelper helper) throws CacheLoaderException {
             throw new CacheLoaderException("Made it into the loader!");
           }
 
+          @Override
           public void close() {}
         });
         try {
@@ -285,6 +295,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getUniqueName();
     final Object key = new Integer(5);
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
       public void run2() throws CacheException {
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
         Lock lock = r.getDistributedLock(key);
@@ -293,6 +304,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Lock timeout invalidating entry") {
+      @Override
       public void run2() throws CacheException {
         getOrCreateRootRegion().getCache().setLockTimeout(2);
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
@@ -317,6 +329,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getUniqueName();
     final Object key = new Integer(5);
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
+      @Override
       public void run2() throws CacheException {
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
         Lock lock = r.getDistributedLock(key);
@@ -326,6 +339,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("Lock timeout destroying entry") {
+      @Override
       public void run2() throws CacheException {
         getOrCreateRootRegion().getCache().setLockTimeout(2);
         Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
@@ -360,6 +374,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
     // Now, make sure a locking operation times out in another VM
     vm0.invoke(new CacheSerializableRunnable("Unsuccessful locking operation") {
+      @Override
       public void run2() throws CacheException {
         try {
           getOrCreateRootRegion().getCache().setLockTimeout(2);
@@ -379,6 +394,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
     // Finally, successfully perform a locking in other VM
     vm1.invoke(new CacheSerializableRunnable("Successful locking operation") {
+      @Override
       public void run2() throws CacheException {
         getOrCreateRootRegion().getCache().setLockTimeout(2);
         Region r2 = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());

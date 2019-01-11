@@ -1956,6 +1956,7 @@ public class TXEntryState implements Releasable {
       return TXEntryState.this.getSortValue();
     }
 
+    @Override
     public int compareTo(Object o) {
       TxEntryEventImpl other = (TxEntryEventImpl) o;
       return getSortValue() - other.getSortValue();
@@ -1976,10 +1977,12 @@ public class TXEntryState implements Releasable {
 
   private static final TXEntryStateFactory factory = new TXEntryStateFactory() {
 
+    @Override
     public TXEntryState createEntry() {
       return new TXEntryState();
     }
 
+    @Override
     public TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue,
         Object entryKey, TXRegionState txrs, boolean isDistributed) {
       return new TXEntryState(re, vId, pendingValue, txrs, isDistributed);

@@ -101,6 +101,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
     super.appendFields(buff);
   }
 
+  @Override
   public int getDSFID() {
     return R_SIZE_MESSAGE;
   }

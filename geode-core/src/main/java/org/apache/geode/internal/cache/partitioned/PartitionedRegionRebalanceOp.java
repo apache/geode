@@ -433,11 +433,13 @@ public class PartitionedRegionRebalanceOp {
     final DistributionManager dm = leaderRegion.getDistributionManager();
     AddressComparor comparor = new AddressComparor() {
 
+      @Override
       public boolean areSameZone(InternalDistributedMember member1,
           InternalDistributedMember member2) {
         return dm.areInSameZone(member1, member2);
       }
 
+      @Override
       public boolean enforceUniqueZones() {
         return dm.enforceUniqueZone();
       }
@@ -601,6 +603,7 @@ public class PartitionedRegionRebalanceOp {
 
   private class MembershipChangeListener implements MembershipListener {
 
+    @Override
     public void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
       if (logger.isDebugEnabled()) {
@@ -611,6 +614,7 @@ public class PartitionedRegionRebalanceOp {
       membershipChange = true;
     }
 
+    @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {
       if (logger.isDebugEnabled()) {
@@ -621,11 +625,13 @@ public class PartitionedRegionRebalanceOp {
       membershipChange = true;
     }
 
+    @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
         InternalDistributedMember whoSuspected, String reason) {
       // do nothing.
     }
 
+    @Override
     public void quorumLost(DistributionManager distributionManager,
         Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
   }

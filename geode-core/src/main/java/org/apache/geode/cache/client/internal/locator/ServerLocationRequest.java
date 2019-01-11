@@ -36,10 +36,12 @@ public abstract class ServerLocationRequest implements DataSerializableFixedID {
 
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     serverGroup = DataSerializer.readString(in);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(serverGroup, out);
   }

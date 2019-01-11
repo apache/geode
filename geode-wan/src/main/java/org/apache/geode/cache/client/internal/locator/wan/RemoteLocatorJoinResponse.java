@@ -52,11 +52,13 @@ public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
     }
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.locators = DataSerializer.readHashMap(in);
 
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeHashMap(locators, out);
   }
@@ -70,6 +72,7 @@ public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
     return "RemoteLocatorJoinResponse{locators=" + locators + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_JOIN_RESPONSE;
   }

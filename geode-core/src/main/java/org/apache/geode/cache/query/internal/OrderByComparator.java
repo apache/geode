@@ -100,6 +100,7 @@ public class OrderByComparator implements Comparator {
    * @throws ClassCastException if the arguments' types prevent them from being compared by this
    *         Comparator.
    */
+  @Override
   public int compare(Object obj1, Object obj2) {
     int result;
     if (obj1 == null && obj2 == null) {

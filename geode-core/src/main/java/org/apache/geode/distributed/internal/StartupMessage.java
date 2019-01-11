@@ -299,6 +299,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     return myMcastHostAddr.equals(otherMcastHostAddr);
   }
 
+  @Override
   public int getDSFID() {
     return STARTUP_MESSAGE;
   }

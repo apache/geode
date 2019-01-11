@@ -31,14 +31,17 @@ public class NullAlertingService extends AlertingService {
     // nothing
   }
 
+  @Override
   public void addAlertListener(final DistributedMember member, final AlertLevel alertLevel) {
     // nothing
   }
 
+  @Override
   public boolean removeAlertListener(final DistributedMember member) {
     return false;
   }
 
+  @Override
   public boolean hasAlertListener(final DistributedMember member, final AlertLevel alertLevel) {
     return false;
   }

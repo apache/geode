@@ -47,6 +47,7 @@ public class RegionStatsJUnitTest extends MBeanStatsTestCase {
 
   private DiskRegionStats diskRegionStats;
 
+  @Override
   protected void init() {
     cachePerfStats = new CachePerfStats(system);
     partitionedRegionStats = new PartitionedRegionStats(system, "/tests");

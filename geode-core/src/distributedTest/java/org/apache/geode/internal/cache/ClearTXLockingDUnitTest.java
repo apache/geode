@@ -366,6 +366,7 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
       callCount = 0;
     }
 
+    @Override
     public void run() {
       callCount++;
       if (callCount == releasePoint) {

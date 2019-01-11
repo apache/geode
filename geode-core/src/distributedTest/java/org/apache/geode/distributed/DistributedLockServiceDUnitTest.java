@@ -165,6 +165,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       for (int j = 0; j < vmThreads[vm]; j++) {
         SerializableCallable<Integer> fairnessRunnable = new SerializableCallable<Integer>() {
+          @Override
           public Integer call() {
             // lock, inc count, and unlock until stop_testFairness is set true
             final AtomicInteger lockCount = new AtomicInteger(0);
@@ -214,6 +215,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     assertThat(service.lock(lock, -1, -1)).isTrue();
     for (VM vm : vms) {
       vm.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           stop_testFairness = true;
         }
@@ -435,6 +437,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     }
 
     VM.getVM(originalGrantorVM).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         disconnectFromDS();
       }
@@ -814,6 +817,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // try to lock in another thread, with a timeout shorter than above lease
     final boolean[] resultHolder = new boolean[] {false};
     Thread thread = new Thread(new Runnable() {
+      @Override
       public void run() {
         resultHolder[0] = !service.lock(objName, 1000, -1);
       }
@@ -1142,6 +1146,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       logger.debug("[testLockIsNotInterruptible] attempt lock in second thread");
     }
     Thread thread2 = new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           started = true;
@@ -1251,6 +1256,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vm1 is the grantor... use debugHandleSuspendTimeouts
     vm1.invoke(new SerializableRunnable("setDebugHandleSuspendTimeouts") {
+      @Override
       public void run() {
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(name);
         assertThat(dls.isLockGrantor()).isTrue();
@@ -1265,6 +1271,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     service.resumeLocking();
 
     vm1.invoke(new SerializableRunnable("unsetDebugHandleSuspendTimeouts") {
+      @Override
       public void run() {
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(name);
         assertThat(dls.isLockGrantor()).isTrue();
@@ -1288,6 +1295,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       doTestSuspendLockingBehaves();
     } finally {
       Invoke.invokeInEveryVM(new SerializableRunnable() {
+        @Override
         public void run() {
           try {
             if (suspendClientSuspendLockingBehaves != null) {
@@ -1330,6 +1338,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // define some SerializableRunnables
     final SerializableRunnable createDLS = new SerializableRunnable("Create " + dlsName) {
+      @Override
       public void run() {
         DistributedLockService.create(dlsName, getSystem());
         lockClientSuspendLockingBehaves = new BasicLockClient(dlsName, key1);
@@ -1339,22 +1348,26 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     };
     final SerializableRunnable suspendLocking =
         new SerializableRunnable("Suspend locking " + dlsName) {
+          @Override
           public void run() {
             suspendClientSuspendLockingBehaves.suspend();
           }
         };
     final SerializableRunnable resumeLocking =
         new SerializableRunnable("Resume locking " + dlsName) {
+          @Override
           public void run() {
             suspendClientSuspendLockingBehaves.resume();
           }
         };
     final SerializableRunnable lockKey = new SerializableRunnable("Get lock " + dlsName) {
+      @Override
       public void run() {
         lockClientSuspendLockingBehaves.lock();
       }
     };
     final SerializableRunnable unlockKey = new SerializableRunnable("Unlock " + dlsName) {
+      @Override
       public void run() {
         lockClientSuspendLockingBehaves.unlock();
       }
@@ -1363,6 +1376,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // create grantor
     logger.info("[testSuspendLockingBehaves] Create grantor " + dlsName);
     vmGrantor.invoke(new SerializableRunnable("Create grantor " + dlsName) {
+      @Override
       public void run() {
         DistributedLockService.create(dlsName, getSystem());
         DistributedLockService.getServiceNamed(dlsName).lock(key1, -1, -1);
@@ -1467,6 +1481,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // invoke asynchronously, get lock, wait to be notified, then unlock.
     VM vm1 = getVM(1);
     vm1.invokeAsync(new SerializableRunnable("Lock & unlock in vm1") {
+      @Override
       public void run() {
         DistributedLockService service2 = getServiceNamed(name);
         assertThat(service2.lock("lock", -1, -1)).isTrue();
@@ -1485,6 +1500,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     sleep(100);
 
     Thread thread = new Thread(new Runnable() {
+      @Override
       public void run() {
         setGot(service.suspendLocking(-1));
         setDone(true);
@@ -1501,6 +1517,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         .withFailMessage("Before release, got: " + getGot() + ", done: " + getDone()).isFalse();
 
     vm1.invoke(new SerializableRunnable("notify vm1 to unlock") {
+      @Override
       public void run() {
         synchronized (monitor) {
           monitor.notify();
@@ -1510,10 +1527,12 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Let thread finish, make sure it successfully suspended and is done
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return getDone();
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -1541,6 +1560,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Start second thread that tries to lock in second thread
     Thread thread2 = new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           started = true;
@@ -1587,6 +1607,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // Start second thread that tries to lock in second thread
     Thread thread2 = new Thread(new Runnable() {
+      @Override
       public void run() {
         try {
           started = true;
@@ -1655,6 +1676,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // Create service in other VM
     VM otherVm = VM.getVM(0);
     otherVm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         DistributedLockService service2 = DistributedLockService.create(serviceName, dlstSystem);
         service2.lock("key", -1, 360000);
@@ -1686,6 +1708,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // Create service in other VM
     VM otherVm = VM.getVM(0);
     otherVm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         DistributedLockService service2 = DistributedLockService.create(serviceName, dlstSystem);
         service2.lock("key", -1, -1);
@@ -1729,6 +1752,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     }
 
     VM.getVM(VM_A).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         remoteCreateService(serviceName);
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
@@ -1743,6 +1767,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     }
 
     VM.getVM(VM_B).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         remoteCreateService(serviceName);
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
@@ -1757,6 +1782,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     }
 
     VM.getVM(VM_C).invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         remoteCreateService(serviceName);
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
@@ -1784,6 +1810,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // Create service in other VM
     VM otherVm = VM.getVM(0);
     otherVm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         DistributedLockService service2 = DistributedLockService.create(serviceName, dlstSystem);
         service2.lock(keyWithLease, -1, 360000);
@@ -1823,6 +1850,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // thread to get lock and wait and then unlock
       final Thread thread1 = new Thread(new Runnable() {
+        @Override
         public void run() {
           logger.info("[testReleaseOrphanedGrant_Local] get the lock");
           assertThat(service.lock("obj", -1, -1)).isTrue();
@@ -1848,6 +1876,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // thread to interrupt lockInterruptibly call to cause zombie grant
       final Thread thread2 = new Thread(new Runnable() {
+        @Override
         public void run() {
           try {
             logger
@@ -1926,6 +1955,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // thread to get lock and wait and then unlock
       vm1.invokeAsync(new SerializableRunnable() {
+        @Override
         public void run() {
           logger.info("[testReleaseOrphanedGrant_Remote] get the lock");
           threadVM1_testReleaseOrphanedGrant_Remote = Thread.currentThread();
@@ -1949,6 +1979,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         }
       });
       vm1.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           while (!startedThreadVM1_testReleaseOrphanedGrant_Remote) {
             Thread.yield();
@@ -1959,6 +1990,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // thread to interrupt lockInterruptibly call to cause zombie grant
       vm2.invokeAsync(new SerializableRunnable() {
+        @Override
         public void run() {
           logger
               .info("[testReleaseOrphanedGrant_Remote] call lockInterruptibly");
@@ -1976,6 +2008,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
         }
       });
       vm2.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           while (!startedThreadVM2_testReleaseOrphanedGrant_Remote) {
             Thread.yield();
@@ -1986,6 +2019,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // release first thread to unlock
       vm1.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           logger
               .info("[testReleaseOrphanedGrant_Remote] release 1st thread");
@@ -2000,6 +2034,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       // while first thread is stuck on waitToProcessDLockResponse,
       // interrupt 2nd thread
       vm2.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           logger
               .info("[testReleaseOrphanedGrant_Remote] interrupt 2nd thread");
@@ -2017,6 +2052,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // release waitToProcessDLockResponse
       vm2.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           logger
               .info("[testReleaseOrphanedGrant_Remote] process lock response");
@@ -2030,6 +2066,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       assertThat(service.lock("obj", 1000, -1)).isTrue();
     } finally {
       vm2.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           logger
               .info("[testReleaseOrphanedGrant_Remote] clean up DebugReleaseOrphanedGrant");
@@ -2069,6 +2106,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     vm0.invoke(new SerializableRunnable("check to make sure the lock is not orphaned") {
 
+      @Override
       public void run() {
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
@@ -2108,6 +2146,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     vm0.invoke(new SerializableRunnable("check to make sure the lock is not orphaned") {
 
+      @Override
       public void run() {
         final DistributedLockService service = DistributedLockService.getServiceNamed(serviceName);
 
@@ -2330,6 +2369,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vmGrantor creates grantor
     vmGrantor.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testTokenCleanup] vmGrantor creates grantor");
         connectDistributedSystem();
@@ -2358,6 +2398,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vm1 locks and frees key1
     vm1.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testTokenCleanup] vm1 locks key1");
         connectDistributedSystem();
@@ -2385,6 +2426,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vm1 tests recursion
     vm1.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testTokenCleanup] vm1 tests recursion");
         connectDistributedSystem();
@@ -2452,6 +2494,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vmGrantor creates grantor
     vmGrantor.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testGrantTokenCleanup] vmGrantor creates grantor");
         connectDistributedSystem();
@@ -2470,6 +2513,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vm1 locks and frees key1
     vm1.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testTokenCleanup] vm1 locks key1");
         connectDistributedSystem();
@@ -2497,6 +2541,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vmGrantor frees key1
     vmGrantor.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testTokenCleanup] vmGrantor frees key1");
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
@@ -2536,6 +2581,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vmGrantor creates grantor
     vmGrantor.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testLockQuery] vmGrantor creates grantor");
         connectDistributedSystem();
@@ -2552,6 +2598,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     try {
       // vm1 locks key1
       whileVM1Locks = vm1.invokeAsync(new SerializableRunnable() {
+        @Override
         public void run() {
           logger.info("[testLockQuery] vm1 locks key1");
           connectDistributedSystem();
@@ -2607,6 +2654,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // vmGrantor tests positive local dlock query
       vmGrantor.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           logger.info("[testLockQuery] vmGrantor tests local query");
           DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
@@ -2626,6 +2674,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
       // vm2 tests positive remote dlock query
       vm2.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           logger.info("[testLockQuery] vm2 tests remote query");
           connectDistributedSystem();
@@ -2647,6 +2696,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     } finally { // guarantee that testLockQuery_whileVM1Locks is notfied!
       // vm1 sets and notifies testLockQuery_whileVM1Locks to release lock
       vm1.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           logger.info("[testLockQuery] vm1 notifies/releases key1");
           synchronized (testLockQuery_whileVM1Locks) {
@@ -2664,6 +2714,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vmGrantor tests negative local dlock query
     vmGrantor.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testLockQuery] vmGrantor tests negative query");
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
@@ -2680,6 +2731,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     // vm2 tests negative remote dlock query
     vm2.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         logger.info("[testLockQuery] vm2 tests negative query");
         DLockService dls = (DLockService) DistributedLockService.getServiceNamed(dlsName);
@@ -2812,6 +2864,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
       this.thread.start();
     }
 
+    @Override
     public void run() {
       logger.info("BasicLockClient running");
       while (this.stayinAlive) {

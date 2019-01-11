@@ -666,6 +666,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
       return j;
     }
 
+    @Override
     public void fromData(PdxReader in) {
       this.ID = in.readInt("ID");
       this.position1 = (SimplePositionPdx) in.readObject("position1");
@@ -677,6 +678,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
       this.intArr = in.readIntArray("intArr");
     }
 
+    @Override
     public void toData(PdxWriter out) {
       out.writeInt("ID", this.ID);
       out.writeObject("position1", this.position1);
@@ -743,6 +745,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
           + this.sharesOutstanding + "]";
     }
 
+    @Override
     public void fromData(PdxReader in) {
       this.country = in.readString("country");
       this.secId = in.readString("secId");
@@ -751,6 +754,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
       this.portfolioId = in.readInt("portfolioId");
     }
 
+    @Override
     public void toData(PdxWriter out) {
       out.writeString("country", this.country);
       out.writeString("secId", this.secId);
@@ -762,6 +766,7 @@ public class NestedObjectSeralizerIntegrationTest extends LuceneIntegrationTest 
     }
 
 
+    @Override
     public int compareTo(Object o) {
       if (o == this || ((SimplePositionPdx) o).secId.equals(this.secId)) {
         return 0;

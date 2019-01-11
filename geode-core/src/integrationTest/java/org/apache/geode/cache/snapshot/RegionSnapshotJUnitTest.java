@@ -329,6 +329,7 @@ public class RegionSnapshotJUnitTest extends SnapshotTestCase {
     }
   }
 
+  @Override
   @Before
   public void setUp() throws Exception {
     super.setUp();

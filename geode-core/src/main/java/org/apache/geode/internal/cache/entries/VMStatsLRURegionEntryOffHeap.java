@@ -36,6 +36,7 @@ public abstract class VMStatsLRURegionEntryOffHeap extends VMStatsLRURegionEntry
   }
 
   private static class VMStatsLRURegionEntryOffHeapFactory implements RegionEntryFactory {
+    @Override
     public RegionEntry createEntry(RegionEntryContext context, Object key, Object value) {
       if (InlineKeyHelper.INLINE_REGION_KEYS) {
         Class<?> keyClass = key.getClass();
@@ -61,12 +62,14 @@ public abstract class VMStatsLRURegionEntryOffHeap extends VMStatsLRURegionEntry
       return new VMStatsLRURegionEntryOffHeapObjectKey(context, key, value);
     }
 
+    @Override
     public Class getEntryClass() {
       // The class returned from this method is used to estimate the memory size.
       // This estimate will not take into account the memory saved by inlining the keys.
       return VMStatsLRURegionEntryOffHeapObjectKey.class;
     }
 
+    @Override
     public RegionEntryFactory makeVersioned() {
       return VersionedStatsLRURegionEntryOffHeap.getEntryFactory();
     }

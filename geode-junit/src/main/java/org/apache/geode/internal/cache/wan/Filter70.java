@@ -26,6 +26,7 @@ public class Filter70 implements GatewayEventFilter, Serializable {
 
   public int eventTransmitted = 0;
 
+  @Override
   public boolean beforeEnqueue(GatewayQueueEvent event) {
     if ((Long) event.getKey() >= 0 && (Long) event.getKey() < 500) {
       return false;
@@ -33,11 +34,13 @@ public class Filter70 implements GatewayEventFilter, Serializable {
     return true;
   }
 
+  @Override
   public boolean beforeTransmit(GatewayQueueEvent event) {
     eventEnqued++;
     return true;
   }
 
+  @Override
   public void close() {
 
   }
@@ -47,6 +50,7 @@ public class Filter70 implements GatewayEventFilter, Serializable {
     return Id;
   }
 
+  @Override
   public void afterAcknowledgement(GatewayQueueEvent event) {}
 
   @Override

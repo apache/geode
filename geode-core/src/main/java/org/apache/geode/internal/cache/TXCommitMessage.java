@@ -760,6 +760,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
   }
 
+  @Override
   public int getDSFID() {
     // on near side send old TX_COMMIT_MESSAGE if there is at least one 7.0
     // member in the system, otherwise send the new 7.0.1 message.
@@ -1630,6 +1631,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         return this.modSerialNum;
       }
 
+      @Override
       public int compareTo(Object o) {
         FarSideEntryOp other = (FarSideEntryOp) o;
         return getSortValue() - other.getSortValue();
@@ -1714,6 +1716,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       basicProcess(mess, dm);
     }
 
+    @Override
     public int getDSFID() {
       return COMMIT_PROCESS_FOR_LOCKID_MESSAGE;
     }
@@ -1766,6 +1769,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       basicProcess(mess, dm);
     }
 
+    @Override
     public int getDSFID() {
       return COMMIT_PROCESS_FOR_TXID_MESSAGE;
     }
@@ -1854,6 +1858,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       out.writeInt(this.processorId);
     }
 
+    @Override
     public int getDSFID() {
       return COMMIT_PROCESS_QUERY_MESSAGE;
     }

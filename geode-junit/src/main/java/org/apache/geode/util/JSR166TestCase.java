@@ -287,18 +287,22 @@ public class JSR166TestCase { // TODO: reformat
       perms = new Permissions();
     }
 
+    @Override
     public PermissionCollection getPermissions(CodeSource cs) {
       return perms;
     }
 
+    @Override
     public PermissionCollection getPermissions(ProtectionDomain pd) {
       return perms;
     }
 
+    @Override
     public boolean implies(ProtectionDomain pd, Permission p) {
       return perms.implies(p);
     }
 
+    @Override
     public void refresh() {}
   }
 
@@ -306,6 +310,7 @@ public class JSR166TestCase { // TODO: reformat
   // Some convenient Runnable classes
 
   static class NoOpRunnable implements Runnable {
+    @Override
     public void run() {}
   }
 
@@ -314,6 +319,7 @@ public class JSR166TestCase { // TODO: reformat
    */
 
   class ShortRunnable implements Runnable {
+    @Override
     public void run() {
       try {
         Thread.sleep(SHORT_DELAY_MS);
@@ -324,6 +330,7 @@ public class JSR166TestCase { // TODO: reformat
   }
 
   class ShortInterruptedRunnable implements Runnable {
+    @Override
     public void run() {
       try {
         Thread.sleep(SHORT_DELAY_MS);
@@ -334,6 +341,7 @@ public class JSR166TestCase { // TODO: reformat
   }
 
   class SmallRunnable implements Runnable {
+    @Override
     public void run() {
       try {
         Thread.sleep(SMALL_DELAY_MS);
@@ -344,6 +352,7 @@ public class JSR166TestCase { // TODO: reformat
   }
 
   class SmallPossiblyInterruptedRunnable implements Runnable {
+    @Override
     public void run() {
       try {
         Thread.sleep(SMALL_DELAY_MS);
@@ -359,6 +368,7 @@ public class JSR166TestCase { // TODO: reformat
    */
 
   class SmallInterruptedRunnable implements Runnable {
+    @Override
     public void run() {
       try {
         Thread.sleep(SMALL_DELAY_MS);
@@ -370,6 +380,7 @@ public class JSR166TestCase { // TODO: reformat
 
 
   class MediumRunnable implements Runnable {
+    @Override
     public void run() {
       try {
         Thread.sleep(MEDIUM_DELAY_MS);
@@ -380,6 +391,7 @@ public class JSR166TestCase { // TODO: reformat
   }
 
   class MediumInterruptedRunnable implements Runnable {
+    @Override
     public void run() {
       try {
         Thread.sleep(MEDIUM_DELAY_MS);
@@ -390,6 +402,7 @@ public class JSR166TestCase { // TODO: reformat
   }
 
   class MediumPossiblyInterruptedRunnable implements Runnable {
+    @Override
     public void run() {
       try {
         Thread.sleep(MEDIUM_DELAY_MS);
@@ -409,6 +422,7 @@ public class JSR166TestCase { // TODO: reformat
   static class TrackedShortRunnable implements Runnable {
     volatile boolean done = false;
 
+    @Override
     public void run() {
       try {
         Thread.sleep(SMALL_DELAY_MS);
@@ -421,6 +435,7 @@ public class JSR166TestCase { // TODO: reformat
   static class TrackedMediumRunnable implements Runnable {
     volatile boolean done = false;
 
+    @Override
     public void run() {
       try {
         Thread.sleep(MEDIUM_DELAY_MS);
@@ -433,6 +448,7 @@ public class JSR166TestCase { // TODO: reformat
   static class TrackedLongRunnable implements Runnable {
     volatile boolean done = false;
 
+    @Override
     public void run() {
       try {
         Thread.sleep(LONG_DELAY_MS);
@@ -445,6 +461,7 @@ public class JSR166TestCase { // TODO: reformat
   static class TrackedNoOpRunnable implements Runnable {
     volatile boolean done = false;
 
+    @Override
     public void run() {
       done = true;
     }

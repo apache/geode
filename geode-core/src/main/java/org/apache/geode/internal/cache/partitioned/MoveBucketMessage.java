@@ -125,6 +125,7 @@ public class MoveBucketMessage extends PartitionMessage {
     buff.append("; source=").append(this.source);
   }
 
+  @Override
   public int getDSFID() {
     return PR_MOVE_BUCKET_MESSAGE;
   }

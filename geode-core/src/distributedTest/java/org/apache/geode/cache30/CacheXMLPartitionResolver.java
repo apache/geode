@@ -30,14 +30,17 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
     this.resolveProps.setProperty("routingType", "key");
   }
 
+  @Override
   public String getName() {
     return getClass().getName();
   }
 
+  @Override
   public Serializable getRoutingObject(EntryOperation opDetails) {
     return null;
   }
 
+  @Override
   public void close() {}
 
   // @Override
@@ -64,6 +67,7 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
    *
    * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
    */
+  @Override
   public Properties getConfig() {
     return this.resolveProps;
   }
@@ -73,6 +77,7 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
    *
    * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
    */
+  @Override
   public void init(Properties props) {
     this.resolveProps.putAll(props);
   }

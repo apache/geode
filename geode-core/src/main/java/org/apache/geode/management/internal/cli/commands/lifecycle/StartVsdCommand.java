@@ -159,6 +159,7 @@ public class StartVsdCommand extends OfflineGfshCommand {
 
     protected static final StatisticsArchiveFileFilter INSTANCE = new StatisticsArchiveFileFilter();
 
+    @Override
     public boolean accept(final File pathname) {
       return (pathname.isFile() && pathname.getAbsolutePath().endsWith(".gfs"));
     }

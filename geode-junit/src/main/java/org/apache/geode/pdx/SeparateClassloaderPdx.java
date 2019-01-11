@@ -25,6 +25,7 @@ class SeparateClassloaderPdx implements PdxSerializable {
 
 
 
+  @Override
   public void toData(PdxWriter writer) {
     if (fieldOneFirst) {
       writer.writeString("field1", "hello");
@@ -35,5 +36,6 @@ class SeparateClassloaderPdx implements PdxSerializable {
     }
   }
 
+  @Override
   public void fromData(PdxReader in) {}
 }

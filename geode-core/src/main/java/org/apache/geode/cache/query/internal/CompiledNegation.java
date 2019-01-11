@@ -46,10 +46,12 @@ public class CompiledNegation extends AbstractCompiledValue {
     return Collections.singletonList(this._value);
   }
 
+  @Override
   public int getType() {
     return LITERAL_not;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     return negateObject(_value.evaluate(context));

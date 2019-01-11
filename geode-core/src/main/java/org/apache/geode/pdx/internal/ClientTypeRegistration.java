@@ -57,6 +57,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public int defineType(PdxType newType) {
     Collection<Pool> pools = getAllPools();
 
@@ -86,6 +87,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public PdxType getType(int typeId) {
     Collection<Pool> pools = getAllPools();
 
@@ -131,6 +133,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     return pools;
   }
 
+  @Override
   public void addRemoteType(int typeId, PdxType type) {
     throw new UnsupportedOperationException("Clients will not be asked to add remote types");
   }
@@ -139,22 +142,27 @@ public class ClientTypeRegistration implements TypeRegistration {
     throw new UnsupportedOperationException("Clients does not keep track of last allocated id");
   }
 
+  @Override
   public void initialize() {
     // do nothing
   }
 
+  @Override
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
     // do nothing
   }
 
+  @Override
   public void creatingPersistentRegion() {
     // do nothing
   }
 
+  @Override
   public void creatingPool() {
     // do nothing
   }
 
+  @Override
   public int getEnumId(Enum<?> v) {
     EnumInfo enumInfo = new EnumInfo(v);
     return processEnumInfoForEnumId(enumInfo);
@@ -186,14 +194,17 @@ public class ClientTypeRegistration implements TypeRegistration {
     }
   }
 
+  @Override
   public void addRemoteEnum(int enumId, EnumInfo newInfo) {
     throw new UnsupportedOperationException("Clients will not be asked to add remote enums");
   }
 
+  @Override
   public int defineEnum(EnumInfo newInfo) {
     return processEnumInfoForEnumId(newInfo);
   }
 
+  @Override
   public EnumInfo getEnumById(int enumId) {
     Collection<Pool> pools = getAllPools();
 

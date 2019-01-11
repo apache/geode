@@ -134,6 +134,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
   public int startServer(VM vm) {
     return (Integer) vm.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
         CacheServer s = getCache().addCacheServer();
@@ -1414,6 +1415,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         // The reason this is run in a separate thread instead of controller thread
         // is that this is going to block because the secondary is going to wait.
         new Thread() {
+          @Override
           public void run() {
             CacheTransactionManager mgr = getGemfireCache().getTxManager();
             mgr.setDistributed(true);
@@ -1852,6 +1854,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       // spawn a new thread modify and custIdOne in another tx
       // so that outer thread fails
       class TxThread extends Thread {
+        @Override
         public void run() {
           CacheTransactionManager mgr = getGemfireCache().getTxManager();
           mgr.setDistributed(true);
@@ -1949,6 +1952,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         public boolean gotOtherException = false;
         public Exception ex = new Exception();
 
+        @Override
         public void run() {
           LogWriterUtils.getLogWriter()
               .info("Inside TxConflictRunnable.TxThread after aquiring locks");
@@ -2086,6 +2090,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         public boolean gotException = false;
         public Exception ex = new Exception();
 
+        @Override
         public void run() {
           LogWriterUtils.getLogWriter().info("Inside TxRunnable.TxThread after aquiring locks");
           CacheTransactionManager mgr = getGemfireCache().getTxManager();

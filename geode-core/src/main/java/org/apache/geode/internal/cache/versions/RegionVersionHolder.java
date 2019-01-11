@@ -635,6 +635,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    * Version Holders serialized to disk, so if the serialization format of version holder changes,
    * we need to upgrade our persistence format.
    */
+  @Override
   public synchronized void toData(DataOutput out) throws IOException {
     mergeBitSet();
     InternalDataSerializer.writeUnsignedVL(this.version, out);
@@ -653,6 +654,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    *
    * @see org.apache.geode.DataSerializable#fromData(java.io.DataInput)
    */
+  @Override
   public void fromData(DataInput in) throws IOException {
     this.version = InternalDataSerializer.readUnsignedVL(in);
     int size = (int) InternalDataSerializer.readUnsignedVL(in);

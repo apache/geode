@@ -213,16 +213,19 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
 
     if (addListener.booleanValue()) {
       factory.addCacheListener(new CacheListenerAdapter() {
+        @Override
         public void afterInvalidate(EntryEvent event) {
           logger.fine("Invalidate Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
           numOfInvalidates++;
         }
 
+        @Override
         public void afterCreate(EntryEvent event) {
           logger.fine("Create Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
           numOfCreates++;
         }
 
+        @Override
         public void afterUpdate(EntryEvent event) {
           logger.fine("Update Event: <" + event.getKey() + ", " + event.getNewValue() + ">");
           numOfUpdates++;

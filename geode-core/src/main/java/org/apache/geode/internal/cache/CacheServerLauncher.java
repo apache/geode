@@ -1281,6 +1281,7 @@ public class CacheServerLauncher {
       lastLogMessage = status;
     }
 
+    @Override
     public synchronized void run() {
       while (running) {
         try {

@@ -39,6 +39,7 @@ class NumericComparator implements Comparator {
 
 
   // throws ClassCastExcepton if obj1 or obj2 is not a Number
+  @Override
   public int compare(Object obj1, Object obj2) {
     Number num1 = (Number) obj1;
     Number num2 = (Number) obj2;

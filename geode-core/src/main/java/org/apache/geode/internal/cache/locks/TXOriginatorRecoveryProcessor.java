@@ -138,6 +138,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
 
       try {
         dm.getWaitingThreadPool().execute(new Runnable() {
+          @Override
           public void run() {
             processTXOriginatorRecoveryMessage(dm, msg);
           }
@@ -226,6 +227,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
       }
     }
 
+    @Override
     public int getDSFID() {
       return TX_ORIGINATOR_RECOVERY_MESSAGE;
     }

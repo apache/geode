@@ -90,6 +90,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * For internal use. Just add the Object[] values for a struct with same type
    */
+  @Override
   public boolean addFieldValues(Object[] fieldValues) {
     return super.add(fieldValues);
   }
@@ -107,6 +108,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
     return containsFieldValues(s.getFieldValues());
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(SortedStructBag.class, this.elementType);
   }
@@ -114,6 +116,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   /**
    * Does this set contain a Struct of the correct type with the specified values?
    */
+  @Override
   public boolean containsFieldValues(Object[] fieldValues) {
     // Asif: The fieldValues can never be null . If the Struc contained
     // null , then the the getFieldValues would have returned
@@ -174,6 +177,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   }
 
   /** Remove the field values from a struct of the correct type */
+  @Override
   public boolean removeFieldValues(Object[] fieldValues) {
     if (this.hasLimitIterator) {
       // Asif : Get the field value Iterator
@@ -281,6 +285,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   }
 
   /** Returns an iterator over the fieldValues Object[] instances */
+  @Override
   public Iterator fieldValuesIterator() {
     return super.iterator();
   }

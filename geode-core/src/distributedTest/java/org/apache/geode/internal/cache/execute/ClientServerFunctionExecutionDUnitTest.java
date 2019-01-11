@@ -228,6 +228,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
 
   public static void registerFunction() {
     FunctionService.registerFunction(new FunctionAdapter() {
+      @Override
       public void execute(FunctionContext context) {
         if (context.getArguments() instanceof String) {
           context.getResultSender().lastResult("Failure");
@@ -236,10 +237,12 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
         }
       }
 
+      @Override
       public String getId() {
         return "Function";
       }
 
+      @Override
       public boolean hasResult() {
         return true;
       }
@@ -251,6 +254,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     Execution member = FunctionService.onServers(pool);
     try {
       ResultCollector rs = member.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+        @Override
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -259,10 +263,12 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
           }
         }
 
+        @Override
         public String getId() {
           return "Function";
         }
 
+        @Override
         public boolean hasResult() {
           return true;
         }
@@ -571,6 +577,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
+      @Override
       public boolean done() {
         int sz = pool.getConnectedServerCount();
         getLogWriter().info("Checking for the Live Servers : Expected  : "
@@ -582,6 +589,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
         return false;
       }
 
+      @Override
       public String description() {
         return excuse;
       }
@@ -711,6 +719,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
 
     try {
       ResultCollector rs = member.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+        @Override
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -719,10 +728,12 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
           }
         }
 
+        @Override
         public String getId() {
           return getClass().getName();
         }
 
+        @Override
         public boolean hasResult() {
           return true;
         }
@@ -743,6 +754,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
 
     try {
       ResultCollector rs = member.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+        @Override
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -751,14 +763,17 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
           }
         }
 
+        @Override
         public String getId() {
           return getClass().getName();
         }
 
+        @Override
         public boolean hasResult() {
           return false;
         }
 
+        @Override
         public boolean isHA() {
           return true;
         }
@@ -900,6 +915,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     Execution member = FunctionService.onServers(pool);
     try {
       ResultCollector rs = member.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+        @Override
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -908,10 +924,12 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
           }
         }
 
+        @Override
         public String getId() {
           return getClass().getName();
         }
 
+        @Override
         public boolean hasResult() {
           return true;
         }

@@ -167,41 +167,49 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   protected abstract void configChanged();
 
+  @Override
   public String getHost() {
     return this.host;
   }
 
+  @Override
   public void setHost(String host) {
     checkReadOnly();
     this.host = host;
     configChanged();
   }
 
+  @Override
   public String getWorkingDirectory() {
     String dir = this.workingDirectory;
     return dir;
   }
 
+  @Override
   public void setWorkingDirectory(String workingDirectory) {
     checkReadOnly();
     this.workingDirectory = workingDirectory;
     configChanged();
   }
 
+  @Override
   public String getProductDirectory() {
     return this.productDirectory;
   }
 
+  @Override
   public void setProductDirectory(String productDirectory) {
     checkReadOnly();
     this.productDirectory = productDirectory;
     configChanged();
   }
 
+  @Override
   public String getRemoteCommand() {
     return this.remoteCommand;
   }
 
+  @Override
   public void setRemoteCommand(String remoteCommand) {
     checkReadOnly();
     this.remoteCommand = remoteCommand;
@@ -213,6 +221,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    *
    * @throws IllegalStateException If this config is not valid
    */
+  @Override
   public void validate() {
     if (InetAddressUtil.validateHost(this.host) == null) {
       throw new IllegalStateException(

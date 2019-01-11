@@ -64,6 +64,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
    */
+  @Override
   protected RegionAttributes getRegionAttributes() {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -72,6 +73,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     return factory.create();
   }
 
+  @Override
   protected RegionAttributes getRegionAttributes(String type) {
     RegionAttributes ra = getCache().getRegionAttributes(type);
     if (ra == null) {
@@ -156,6 +158,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
   static void addBlockingListener() {
     ListenerBlocking = true;
     CCRegion.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterCreate(EntryEvent event) {
         onEvent(event);
       }
@@ -292,6 +295,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
+      @Override
       public void run() {
         try {
           final RegionFactory f;
@@ -326,6 +330,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     final String destroyKey = "destroyKey";
     SerializableRunnable test =
         new SerializableRunnable("case 1: second invalidation not applied or distributed") {
+          @Override
           public void run() {
             CCRegion.put(invalidationKey, "initialValue");
 

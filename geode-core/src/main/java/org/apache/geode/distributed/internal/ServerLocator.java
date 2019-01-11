@@ -141,10 +141,12 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     return this.port;
   }
 
+  @Override
   public CancelCriterion getCancelCriterion() {
     return this.ds.getCancelCriterion();
   }
 
+  @Override
   public void init(TcpServer tcpServer) {
     // if the ds is reconnecting we don't want to start server
     // location services until the DS finishes connecting
@@ -162,6 +164,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     return this.ds != null;
   }
 
+  @Override
   public Object processRequest(Object request) {
     if (!readyToProcessRequests()) {
       return null;
@@ -272,11 +275,13 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     return new QueueConnectionResponse(durableQueueFound, servers);
   }
 
+  @Override
   public void shutDown() {
     this.advisor.close();
     this.loadSnapshot.shutDown();
   }
 
+  @Override
   public void restarting(DistributedSystem ds, GemFireCache cache,
       InternalConfigurationPersistenceService sharedConfig) {
     if (ds != null) {
@@ -291,34 +296,42 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   }
 
   // DistributionAdvisee methods
+  @Override
   public DistributionManager getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 
+  @Override
   public DistributionAdvisor getDistributionAdvisor() {
     return this.advisor;
   }
 
+  @Override
   public Profile getProfile() {
     return getDistributionAdvisor().createProfile();
   }
 
+  @Override
   public DistributionAdvisee getParentAdvisee() {
     return null;
   }
 
+  @Override
   public InternalDistributedSystem getSystem() {
     return this.ds;
   }
 
+  @Override
   public String getName() {
     return "ServerLocator";
   }
 
+  @Override
   public int getSerialNumber() {
     return this.serialNumber;
   }
 
+  @Override
   public String getFullPath() {
     return getName();
   }
@@ -331,6 +344,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     return profileSN.incrementAndGet();
   }
 
+  @Override
   public void fillInProfile(Profile profile) {
     assert profile instanceof ControllerProfile;
     ControllerProfile cp = (ControllerProfile) profile;
@@ -349,10 +363,12 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     this.stats.setServerCount(count);
   }
 
+  @Override
   public void endRequest(Object request, long startTime) {
     stats.endLocatorRequest(startTime);
   }
 
+  @Override
   public void endResponse(Object request, long startTime) {
     stats.endLocatorResponse(startTime);
   }

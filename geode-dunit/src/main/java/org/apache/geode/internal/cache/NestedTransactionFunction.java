@@ -58,10 +58,12 @@ public class NestedTransactionFunction implements Function, DataSerializable {
 
   public NestedTransactionFunction() {}
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
+  @Override
   public void execute(FunctionContext context) {
     Cache cache = CacheFactory.getAnyInstance();
     ArrayList args = (ArrayList) context.getArguments();
@@ -103,14 +105,17 @@ public class NestedTransactionFunction implements Function, DataSerializable {
     context.getResultSender().lastResult(result);
   }
 
+  @Override
   public String getId() {
     return getClass().getName();
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     return false;
   }

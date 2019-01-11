@@ -24,16 +24,19 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 public class MyGatewayTransportFilter2 implements GatewayTransportFilter, Serializable {
   String Id = "MyGatewayTransportFilter2";
 
+  @Override
   public InputStream getInputStream(InputStream stream) {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @Override
   public OutputStream getOutputStream(OutputStream stream) {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @Override
   public void close() {
     // TODO Auto-generated method stub
 

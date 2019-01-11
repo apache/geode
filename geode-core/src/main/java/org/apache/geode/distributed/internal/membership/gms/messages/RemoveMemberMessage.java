@@ -60,6 +60,7 @@ public class RemoveMemberMessage extends HighPriorityDistributionMessage impleme
     throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
+  @Override
   public InternalDistributedMember getMemberID() {
     return memberID;
   }

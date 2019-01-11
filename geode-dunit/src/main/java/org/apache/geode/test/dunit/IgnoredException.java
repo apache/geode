@@ -96,6 +96,7 @@ public class IgnoredException implements Serializable, AutoCloseable {
     @SuppressWarnings("serial")
     SerializableRunnable removeRunnable =
         new SerializableRunnable(IgnoredException.class.getSimpleName() + " remove") {
+          @Override
           public void run() {
             logger.info(removeMessage);
           }
@@ -143,6 +144,7 @@ public class IgnoredException implements Serializable, AutoCloseable {
     @SuppressWarnings("serial")
     SerializableRunnable addRunnable =
         new SerializableRunnable(IgnoredException.class.getSimpleName() + " addIgnoredException") {
+          @Override
           public void run() {
             logger.info(addMessage);
           }

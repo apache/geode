@@ -59,26 +59,32 @@ public class RemoteDLockInfo implements DLockInfo, DataSerializable {
    */
   public RemoteDLockInfo() {}
 
+  @Override
   public String getService() {
     return serviceName;
   }
 
+  @Override
   public String getThreadId() {
     return threadId;
   }
 
+  @Override
   public String getLockName() {
     return lockName;
   }
 
+  @Override
   public boolean isAcquired() {
     return acquired;
   }
 
+  @Override
   public int getRecursionCount() {
     return recursion;
   }
 
+  @Override
   public InternalDistributedMember getOwner() {
     return owner;
   }
@@ -87,6 +93,7 @@ public class RemoteDLockInfo implements DLockInfo, DataSerializable {
     return startTime;
   }
 
+  @Override
   public synchronized Date getLeaseExpireTime() {
     if (expirationDate == null && leaseExpiration > -1) {
       expirationDate = new Date(leaseExpiration);
@@ -95,6 +102,7 @@ public class RemoteDLockInfo implements DLockInfo, DataSerializable {
 
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(serviceName, out);
     DataSerializer.writeString(threadId, out);
@@ -106,6 +114,7 @@ public class RemoteDLockInfo implements DLockInfo, DataSerializable {
     out.writeLong(leaseExpiration);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.serviceName = DataSerializer.readString(in);
     this.threadId = DataSerializer.readString(in);

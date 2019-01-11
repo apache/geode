@@ -36,6 +36,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class IndexSecurityDUnitTest extends QuerySecurityBase {
+  @Override
   public RegionShortcut getRegionType() {
     return RegionShortcut.REPLICATE;
   }

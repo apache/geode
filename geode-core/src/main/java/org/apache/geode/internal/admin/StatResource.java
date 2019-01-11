@@ -34,10 +34,12 @@ public interface StatResource extends GfObject {
 
   Stat getStatByName(String name);
 
+  @Override
   String getName();
 
   /**
    * @return the full description of this statistic resource
    */
+  @Override
   String getDescription();
 }

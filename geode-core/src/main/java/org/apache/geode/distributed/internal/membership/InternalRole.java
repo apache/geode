@@ -59,6 +59,7 @@ public class InternalRole implements Role {
     this.name = name;
   }
 
+  @Override
   public String getName() {
     return this.name;
   }
@@ -73,6 +74,7 @@ public class InternalRole implements Role {
    * @exception java.lang.ClassCastException if the specified object's type prevents it from being
    *            compared to this Object.
    */
+  @Override
   public int compareTo(Role o) {
     if ((o == null) || !(o instanceof InternalRole)) {
       throw new ClassCastException(
@@ -135,6 +137,7 @@ public class InternalRole implements Role {
     }
   }
 
+  @Override
   public boolean isPresent() {
     InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
     if (sys == null) {
@@ -145,6 +148,7 @@ public class InternalRole implements Role {
     return dm.isRolePresent(this);
   }
 
+  @Override
   public int getCount() {
     InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
     if (sys == null) {

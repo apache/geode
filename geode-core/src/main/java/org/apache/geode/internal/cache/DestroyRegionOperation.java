@@ -156,6 +156,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     private Runnable destroyOp(final ClusterDistributionManager dm, final LocalRegion lclRgn,
         final boolean sendReply) {
       return new Runnable() {
+        @Override
         public void run() {
           final int oldLevel =
               LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
@@ -363,6 +364,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                                 // basicProcess
 
           rgn.getDistributionManager().getWaitingThreadPool().execute(new Runnable() {
+            @Override
             public void run() {
               try {
                 rgn.reinitializeFromImageTarget(getSender());
@@ -428,6 +430,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
           .append("; notifyOfRegionDeparture=").append(this.notifyOfRegionDeparture);
     }
 
+    @Override
     public int getDSFID() {
       return DESTROY_REGION_MESSAGE;
     }

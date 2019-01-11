@@ -360,6 +360,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
       region.put("" + j, val);
     }
     Thread t1 = new Thread(new Runnable() {
+      @Override
       public void run() {
         for (int i = 0; i < 100; ++i) {
           region.forceRolling();
@@ -374,6 +375,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
     });
     Thread t2 = new Thread(new Runnable() {
 
+      @Override
       public void run() {
         try {
           for (int i = 0; i < 100; ++i) {
@@ -724,6 +726,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
     final Thread th = new Thread(new Runnable() {
 
+      @Override
       public void run() {
         region.destroyRegion();
       }
@@ -733,6 +736,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
     CacheObserver old = CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       boolean skip = false;
 
+      @Override
       public void beforeStoppingCompactor() {
         if (!skip) {
           skip = true;
@@ -756,6 +760,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
   @SuppressWarnings("synthetic-access")
   class DoesPuts implements Runnable {
 
+    @Override
     public void run() {
       waitForAllStartersToBeReady();
       while (!isItTimeToStop()) {
@@ -768,6 +773,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
   @SuppressWarnings("synthetic-access")
   class DoesGets implements Runnable {
 
+    @Override
     public void run() {
       waitForAllStartersToBeReady();
       while (!isItTimeToStop()) {
@@ -780,6 +786,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
   @SuppressWarnings("synthetic-access")
   class DoesDestroy implements Runnable {
 
+    @Override
     public void run() {
       waitForAllStartersToBeReady();
       while (!isItTimeToStop()) {
@@ -791,6 +798,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
 
   @SuppressWarnings("synthetic-access")
   class DoesClear implements Runnable {
+    @Override
     public void run() {
       waitForAllStartersToBeReady();
       while (!isItTimeToStop()) {
@@ -807,6 +815,7 @@ public class ConcurrentRegionOperationsJUnitTest extends DiskRegionTestingBase {
   @SuppressWarnings("synthetic-access")
   class DoesForceRoll implements Runnable {
 
+    @Override
     public void run() {
       waitForAllStartersToBeReady();
       while (!isItTimeToStop()) {

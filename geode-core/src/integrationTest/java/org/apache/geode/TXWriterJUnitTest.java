@@ -42,10 +42,12 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
     installCacheListenerAndWriter();
 
     ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+      @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new TransactionWriterException("Rollback now!");
       }
 
+      @Override
       public void close() {}
     });
 
@@ -146,10 +148,12 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
     installCacheListenerAndWriter();
 
     ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+      @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new TransactionWriterException("Rollback now!");
       }
 
+      @Override
       public void close() {}
     });
 
@@ -180,10 +184,12 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
     installCacheListenerAndWriter();
 
     ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+      @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new TransactionWriterException("Rollback now!");
       }
 
+      @Override
       public void close() {}
     });
 
@@ -214,10 +220,12 @@ public class TXWriterJUnitTest extends TXWriterTestCase {
     installCacheListenerAndWriter();
 
     ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+      @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new NullPointerException("this is expected!");
       }
 
+      @Override
       public void close() {}
     });
 

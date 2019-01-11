@@ -557,6 +557,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see CacheWriter#beforeCreate
    * @see CacheWriter#beforeUpdate
    */
+  @Override
   V get(Object key) throws CacheLoaderException, TimeoutException;
 
   /**
@@ -651,6 +652,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see CacheWriter#beforeCreate
    * @see CacheWriter#beforeUpdate
    */
+  @Override
   V put(K key, V value) throws TimeoutException, CacheWriterException;
 
 
@@ -973,6 +975,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @return a Set of all the keys
    */
+  @Override
   Set<K> keySet();
 
   /**
@@ -993,6 +996,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @return a Collection of all the objects cached in this region
    */
+  @Override
   Collection<V> values();
 
   /**
@@ -1085,6 +1089,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @param key the key to check for an existing entry
    * @return true if there is an entry in this region for the specified key
    */
+  @Override
   boolean containsKey(Object key);
 
 
@@ -1299,6 +1304,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see CacheWriter#beforeRegionClear
    * @throws UnsupportedOperationException If the region is a partitioned region
    */
+  @Override
   void clear();
 
   /**
@@ -1310,6 +1316,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @since GemFire 5.0
    * @see java.util.Map#containsValue(Object)
    */
+  @Override
   boolean containsValue(Object value);
 
   /**
@@ -1333,6 +1340,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @since GemFire 5.0
    * @see java.util.Map#entrySet()
    */
+  @Override
   Set<Map.Entry<K, V>> entrySet(); // @todo darrel: should be Region.Entry
 
   /**
@@ -1342,6 +1350,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see java.util.Map#isEmpty()
    * @return true if this region contains no entries.
    */
+  @Override
   boolean isEmpty();
 
   /**
@@ -1355,6 +1364,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see java.util.Map#putAll(Map map)
    * @throws LowMemoryException if a low memory condition is detected.
    */
+  @Override
   void putAll(Map<? extends K, ? extends V> map);
 
   /**
@@ -1465,6 +1475,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @since GemFire 5.0
    */
+  @Override
   V remove(Object key);
 
   /**
@@ -1480,6 +1491,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see java.util.Map#size()
    * @return the number of entries present in this region
    */
+  @Override
   int size();
 
   /**
@@ -2531,6 +2543,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @since GemFire 6.5
    *
    */
+  @Override
   V putIfAbsent(K key, V value);
 
   /**
@@ -2577,6 +2590,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @throws LowMemoryException if a low memory condition is detected.
    * @since GemFire 6.5
    */
+  @Override
   boolean remove(Object key, Object value);
 
   /**
@@ -2625,6 +2639,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @throws LowMemoryException if a low memory condition is detected.
    * @since GemFire 6.5
    */
+  @Override
   boolean replace(K key, V oldValue, V newValue);
 
   /**
@@ -2668,6 +2683,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @throws LowMemoryException if a low memory condition is detected.
    * @since GemFire 6.5
    */
+  @Override
   V replace(K key, V value);
 
   /**
@@ -2686,6 +2702,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
      *
      * @return the key for this entry
      */
+    @Override
     K getKey();
 
     /**
@@ -2694,6 +2711,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
      *
      * @return the value or <code>null</code> if this entry is invalid
      */
+    @Override
     V getValue();
 
     /**
@@ -2762,6 +2780,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
      * @since GemFire 5.0
      * @see Region#put(Object, Object)
      */
+    @Override
     V setValue(V value);
   }
 }

@@ -334,10 +334,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return internalRegionArgs.getBucketAdvisor();
   }
 
+  @Override
   public BucketAdvisor getBucketAdvisor() {
     return (BucketAdvisor) getDistributionAdvisor();
   }
 
+  @Override
   public boolean isHosting() {
     return getBucketAdvisor().isHosting();
   }
@@ -708,6 +710,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  @Override
   protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
     // We don't need to clone the event for new Gateway Senders.
     // Preserve the bucket reference for resetting it later.
@@ -1390,6 +1393,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return this.redundancy;
   }
 
+  @Override
   public boolean isPrimary() {
     throw new UnsupportedOperationException(
         String.format("This should never be called on %s",
@@ -1990,6 +1994,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  @Override
   public int getId() {
     return getBucketAdvisor().getProxyBucketRegion().getId();
   }
@@ -2051,6 +2056,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    *
    * @since GemFire 5.9
    */
+  @Override
   public Set getBucketOwners() {
     return getBucketAdvisor().getProxyBucketRegion().getBucketOwners();
   }

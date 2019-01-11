@@ -48,6 +48,7 @@ class DirectReplySender implements ReplySender {
     this.conn = connection;
   }
 
+  @Override
   public Set<InternalDistributedMember> putOutgoing(DistributionMessage msg) {
     Assert.assertTrue(!this.sentReply, "Trying to reply twice to a message");
     // Using an ArrayList, rather than Collections.singletonList here, because the MsgStreamer

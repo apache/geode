@@ -61,6 +61,7 @@ public class ChangeRefreshIntervalMessage extends PooledDistributionMessage {
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
+  @Override
   public int getDSFID() {
     return CHANGE_REFRESH_INT_MESSAGE;
   }

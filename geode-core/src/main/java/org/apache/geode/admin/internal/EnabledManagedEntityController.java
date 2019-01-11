@@ -229,6 +229,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
    *
    * @param executable The name of the executable that resides in <code>$GEMFIRE/bin</code>.
    */
+  @Override
   public String getProductExecutable(InternalManagedEntity entity, String executable) {
     String productDirectory = entity.getEntityConfig().getProductDirectory();
     String path = null;
@@ -252,6 +253,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
    * Builds optional SSL command-line arguments. Returns null if SSL is not enabled for the
    * distributed system.
    */
+  @Override
   public String buildSSLArguments(DistributedSystemConfig config) {
     Properties sslProps = buildSSLProperties(config, true);
     if (sslProps == null)
@@ -297,6 +299,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
   /**
    * Starts a managed entity.
    */
+  @Override
   public void start(final InternalManagedEntity entity) {
     final String command = arrangeRemoteCommand(entity, entity.getStartCommand());
     Thread start = new LoggingThread("Start " + entity.getEntityType(),
@@ -307,6 +310,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
   /**
    * Stops a managed entity.
    */
+  @Override
   public void stop(final InternalManagedEntity entity) {
     final String command = arrangeRemoteCommand(entity, entity.getStopCommand());
     Thread stop = new LoggingThread("Stop " + entity.getEntityType(),
@@ -317,6 +321,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
   /**
    * Returns whether or not a managed entity is running
    */
+  @Override
   public boolean isRunning(InternalManagedEntity entity) {
     final String command = arrangeRemoteCommand(entity, entity.getIsRunningCommand());
     String output = execute(command, entity);
@@ -339,6 +344,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
    * Returns the contents of a locator's log file. Other APIs are used to get the log file of
    * managed entities that are also system members.
    */
+  @Override
   public String getLog(DistributionLocatorImpl locator) {
     String command = arrangeRemoteCommand(locator, locator.getLogCommand());
     return execute(command, locator);

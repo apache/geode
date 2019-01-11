@@ -56,6 +56,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     this.props = props;
   }
 
+  @Override
   public int getPropertyOverridden() {
     return propertyOverridden;
   }
@@ -73,6 +74,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     this.ignoreUnresolvedProperties = ignoreUnresolvedProperties;
   }
 
+  @Override
   public boolean isIgnoreUnresolvedProperties() {
     return ignoreUnresolvedProperties;
   }
@@ -84,6 +86,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
    * <code>ignoreUnresolvedProperties</code> flag being set by {@link CacheXmlParser}.
    *
    */
+  @Override
   public String resolveReplaceString(String replaceString) {
     String replacement = null;
 
@@ -101,6 +104,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     return replacement;
   }
 
+  @Override
   public String processUnresolvableString(String stringWithPrefixAndSuffix, String prefix,
       String suffix) {
     String resolvedString = null;
@@ -129,6 +133,7 @@ public class CacheXmlPropertyResolver implements PropertyResolver {
     this.props = props;
   }
 
+  @Override
   public String processUnresolvableString(String stringWithPrefixAndSuffix) {
     return processUnresolvableString(stringWithPrefixAndSuffix, null, null);
   }

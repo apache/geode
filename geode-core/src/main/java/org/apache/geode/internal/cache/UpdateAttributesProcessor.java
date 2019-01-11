@@ -346,6 +346,7 @@ public class UpdateAttributesProcessor {
       return buff.toString();
     }
 
+    @Override
     public int getDSFID() {
       return UPDATE_ATTRIBUTES_MESSAGE;
     }

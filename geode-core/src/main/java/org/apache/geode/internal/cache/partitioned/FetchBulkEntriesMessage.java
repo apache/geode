@@ -144,6 +144,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     buff.append("; recipient=").append(this.getRecipient());
   }
 
+  @Override
   public int getDSFID() {
     return PR_FETCH_BULK_ENTRIES_MESSAGE;
   }
@@ -650,6 +651,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     }
   }
 
+  @Override
   public Version[] getSerializationVersions() {
     return null;
   }

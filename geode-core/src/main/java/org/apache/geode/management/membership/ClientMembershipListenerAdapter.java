@@ -28,18 +28,21 @@ public abstract class ClientMembershipListenerAdapter implements ClientMembershi
    * Invoked when a client has connected to this process or when this process has connected to a
    * CacheServer.
    */
+  @Override
   public void memberJoined(ClientMembershipEvent event) {}
 
   /**
    * Invoked when a client has gracefully disconnected from this process or when this process has
    * gracefully disconnected from a CacheServer.
    */
+  @Override
   public void memberLeft(ClientMembershipEvent event) {}
 
   /**
    * Invoked when a client has unexpectedly disconnected from this process or when this process has
    * unexpectedly disconnected from a CacheServer.
    */
+  @Override
   public void memberCrashed(ClientMembershipEvent event) {}
 
 }

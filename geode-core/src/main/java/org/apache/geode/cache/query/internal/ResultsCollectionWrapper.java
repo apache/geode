@@ -152,6 +152,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   }
 
   /// java.util.Collection interface
+  @Override
   public boolean add(Object o) {
     // checkConstraint(o);
     if (this.limitImposed) {
@@ -161,6 +162,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     return this.base.add(o);
   }
 
+  @Override
   public boolean addAll(Collection c) {
     if (this.limitImposed) {
       throw new UnsupportedOperationException(
@@ -175,6 +177,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     // return changed;
   }
 
+  @Override
   public int size() {
     // return this.limit == -1 ? this.base.size():this.limit;
     // Asif: If the number of elements in Collection is more than limit, size is
@@ -188,6 +191,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public Iterator iterator() {
     if (this.hasLimitIterator) {
       return new LimitIterator();
@@ -196,6 +200,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public void clear() {
     /*
      * if( this.limit > -1) { throw new
@@ -208,6 +213,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   /*
    * Asif: May throw ConcurrentModificationException
    */
+  @Override
   public boolean contains(Object obj) {
     if (this.hasLimitIterator) {
       // Keith: Optimize case where contains is false, avoids iteration
@@ -231,6 +237,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
 
   // Asif :The limit case has a very inefficient implementation
   // May throw ConcurrentModificationException
+  @Override
   public boolean containsAll(Collection collection) {
     if (this.hasLimitIterator) {
       Iterator itr = collection.iterator();
@@ -244,6 +251,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public boolean isEmpty() {
     int size = -1;
     synchronized (this.limitLock) {
@@ -253,6 +261,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   }
 
   // Asif: May throw ConucrrentModificationException
+  @Override
   public boolean remove(Object obj) {
     /*
      * if( this.limit > -1) { throw new UnsupportedOperationException("Removal from the
@@ -276,6 +285,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public boolean removeAll(Collection collection) {
     /*
      * if( this.limit > -1) { throw new UnsupportedOperationException("Removal from the
@@ -298,6 +308,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public boolean retainAll(Collection collection) {
     /*
      * if( this.limit > -1) { throw new UnsupportedOperationException("Modification of the
@@ -390,6 +401,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public Object[] toArray() {
     if (this.hasLimitIterator) {
       return collectionToArray(this);
@@ -398,6 +410,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public Object[] toArray(Object[] obj) {
     if (this.hasLimitIterator) {
       return collectionToArray(this, obj);
@@ -410,6 +423,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   // when exposed by this method is modified externally
   // then the ResultsCollectionWrapper object's limit
   // functionality may not work correctly
+  @Override
   public List asList() {
     if (this.hasLimitIterator) {
       List returnList = null;
@@ -439,6 +453,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   // then the ResultsCollectionWrapper object's limit
   // functionality may not work correctly
 
+  @Override
   public Set asSet() {
     if (this.hasLimitIterator) {
       Set returnSet = null;
@@ -462,10 +477,12 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     }
   }
 
+  @Override
   public void setElementType(ObjectType elementType) {
     this.collectionType = new CollectionTypeImpl(getBaseClass(), elementType);
   }
 
+  @Override
   public CollectionType getCollectionType() {
     return this.collectionType;
   }
@@ -475,6 +492,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    *
    * @return Value of property modifiable.
    */
+  @Override
   public boolean isModifiable() {
     return this.modifiable;
   }
@@ -494,6 +512,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   // but if the underlying collection is not ordered , it will
   // not allow duplicates, but then since we have already truncated
   // the unordered set, it will work correctly.
+  @Override
   public int occurrences(Object element) {
     if (!this.getCollectionType().allowsDuplicates() && !this.hasLimitIterator) {
       return this.base.contains(element) ? 1 : 0;
@@ -509,6 +528,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     return count;
   }
 
+  @Override
   public int getDSFID() {
     return RESULTS_COLLECTION_WRAPPER;
   }
@@ -519,6 +539,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
+  @Override
   public void toData(DataOutput out) throws IOException {
     // special case when wrapping a ResultsBag.SetView
     boolean isBagSetView = this.base instanceof Bag.SetView;
@@ -538,6 +559,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     boolean isBagSetView = in.readBoolean();
     if (isBagSetView) {
@@ -583,10 +605,12 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
       }
     }
 
+    @Override
     public boolean hasNext() {
       return this.currPos < this.localLimit;
     }
 
+    @Override
     public Object next() {
       if (this.currPos == this.localLimit) {
         throw new NoSuchElementException();
@@ -600,6 +624,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     /**
      * No thread safe
      */
+    @Override
     public void remove() {
       if (currPos == 0) {
         throw new IllegalStateException("next() must be called before remove()");

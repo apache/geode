@@ -1483,6 +1483,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   public static class TestTXListener extends TransactionListenerAdapter implements Declarable {
+    @Override
     public void init(Properties props) {}
 
     @Override
@@ -1717,14 +1718,18 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
   // A bunch of classes for use in testing the serialization schtuff
   public static class DS1 implements DataSerializable {
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
   };
 
   public static class DS2 implements DataSerializable {
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+    @Override
     public void toData(DataOutput out) throws IOException {}
   };
 
@@ -2424,6 +2429,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     VM vm0 = Host.getHost(0).getVM(0);
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     vm0.invoke(new SerializableCallable("Create cache server") {
+      @Override
       public Object call() throws IOException {
         DynamicRegionFactory.get().open();
         Cache cache = getCache();
@@ -4568,15 +4574,18 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       return this.initialized;
     }
 
+    @Override
     public void init(Properties props) {
       this.initialized = true;
       assertEquals(this.props, props);
     }
 
+    @Override
     public Properties getConfig() {
       return this.props;
     }
 
+    @Override
     public Object load(LoaderHelper helper) throws CacheLoaderException {
 
       fail("Loader shouldn't be invoked");
@@ -4593,11 +4602,13 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
       }
     }
 
+    @Override
     public void close() {}
 
   }
 
   public static class TestDeclarable implements Declarable {
+    @Override
     public void init(Properties props) {}
 
     public boolean equals(Object o) {

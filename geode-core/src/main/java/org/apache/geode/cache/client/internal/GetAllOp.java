@@ -183,6 +183,7 @@ public class GetAllOp {
       final VersionedObjectList result = new VersionedObjectList(false);
       final Exception[] exceptionRef = new Exception[1];
       processChunkedResponse((ChunkedMessage) msg, "getAll", new ChunkHandler() {
+        @Override
         public void handle(ChunkedMessage cm) throws Exception {
           Part part = cm.getPart(0);
           try {

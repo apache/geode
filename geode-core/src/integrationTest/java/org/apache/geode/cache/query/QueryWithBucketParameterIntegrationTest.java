@@ -88,14 +88,17 @@ public class QueryWithBucketParameterIntegrationTest {
 
   private PartitionResolver getPartitionResolver() {
     return new PartitionResolver() {
+      @Override
       public String getName() {
         return "PartitionResolverForTest";
       }
 
+      @Override
       public Serializable getRoutingObject(EntryOperation opDetails) {
         return (Serializable) opDetails.getKey();
       }
 
+      @Override
       public void close() {}
     };
   }

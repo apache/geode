@@ -253,10 +253,12 @@ public class QueryAndJtaJUnitTest {
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;
@@ -423,12 +425,14 @@ public class QueryAndJtaJUnitTest {
     public int creates = 0;
     public int updates = 0;
 
+    @Override
     public void afterCreate(EntryEvent event) {
       // TODO Auto-generated method stub
       CacheUtils.log("SimpleListener.create!:" + event);
       creates++;
     }
 
+    @Override
     public void afterUpdate(EntryEvent event) {
       // TODO Auto-generated method stub
       updates++;

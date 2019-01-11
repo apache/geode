@@ -59,16 +59,19 @@ public class DurableClientInfoRequest extends AdminRequest {
    * Must return a proper response to this request.
    *
    */
+  @Override
   protected AdminResponse createResponse(DistributionManager dm) {
     return DurableClientInfoResponse.create(dm, this.getSender(), this);
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeString(this.durableId, out);
     out.writeInt(this.action);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.durableId = DataSerializer.readString(in);
@@ -85,6 +88,7 @@ public class DurableClientInfoRequest extends AdminRequest {
    *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
+  @Override
   public int getDSFID() {
     return DURABLE_CLIENT_INFO_REQUEST;
   }

@@ -135,6 +135,7 @@ public class ConnectionPoolingJUnitTest {
         th[i] = new Thread(new Runnable() {
           private int key = threadID;
 
+          @Override
           public void run() {
             try {
               Context ctx = cache.getJNDIContext();
@@ -220,6 +221,7 @@ public class ConnectionPoolingJUnitTest {
   }
 
   private class PoolClient_1 implements Runnable {
+    @Override
     public void run() {
       String threadName = Thread.currentThread().getName();
       logger.debug(" Inside Run method of " + threadName);
@@ -283,6 +285,7 @@ public class ConnectionPoolingJUnitTest {
 
     List poolConnlist = new ArrayList();
 
+    @Override
     public void run() {
       try {
         String threadName = Thread.currentThread().getName();

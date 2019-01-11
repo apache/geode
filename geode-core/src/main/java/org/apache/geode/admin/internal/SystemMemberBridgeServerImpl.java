@@ -69,23 +69,28 @@ public class SystemMemberBridgeServerImpl
     }
   }
 
+  @Override
   public int getPort() {
     return this.bridgeInfo.getPort();
   }
 
+  @Override
   public void setPort(int port) throws AdminException {
     checkRunning();
     this.bridgeInfo.setPort(port);
   }
 
+  @Override
   public void start() throws AdminException {
     this.vm.startBridgeServer(this.cache, this.bridgeInfo);
   }
 
+  @Override
   public boolean isRunning() {
     return this.bridgeInfo.isRunning();
   }
 
+  @Override
   public void stop() throws AdminException {
     this.vm.stopBridgeServer(this.cache, this.bridgeInfo);
   }
@@ -97,6 +102,7 @@ public class SystemMemberBridgeServerImpl
     return this.bridgeInfo.getId();
   }
 
+  @Override
   public void refresh() {
     try {
       this.bridgeInfo = this.vm.getBridgeInfo(this.cache, this.bridgeInfo.getId());
@@ -108,38 +114,46 @@ public class SystemMemberBridgeServerImpl
     }
   }
 
+  @Override
   public String getBindAddress() {
     return this.bridgeInfo.getBindAddress();
   }
 
+  @Override
   public void setBindAddress(String address) throws AdminException {
     checkRunning();
     this.bridgeInfo.setBindAddress(address);
   }
 
+  @Override
   public String getHostnameForClients() {
     return this.bridgeInfo.getHostnameForClients();
   }
 
+  @Override
   public void setHostnameForClients(String name) throws AdminException {
     checkRunning();
     this.bridgeInfo.setHostnameForClients(name);
   }
 
+  @Override
   public void setNotifyBySubscription(boolean b) throws AdminException {
     checkRunning();
     this.bridgeInfo.setNotifyBySubscription(b);
   }
 
+  @Override
   public boolean getNotifyBySubscription() {
     return this.bridgeInfo.getNotifyBySubscription();
   }
 
+  @Override
   public void setSocketBufferSize(int socketBufferSize) throws AdminException {
     checkRunning();
     this.bridgeInfo.setSocketBufferSize(socketBufferSize);
   }
 
+  @Override
   public int getSocketBufferSize() {
     return this.bridgeInfo.getSocketBufferSize();
   }
@@ -153,64 +167,78 @@ public class SystemMemberBridgeServerImpl
     return this.bridgeInfo.getTcpNoDelay();
   }
 
+  @Override
   public void setMaximumTimeBetweenPings(int maximumTimeBetweenPings) throws AdminException {
     checkRunning();
     this.bridgeInfo.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
   }
 
+  @Override
   public int getMaximumTimeBetweenPings() {
     return this.bridgeInfo.getMaximumTimeBetweenPings();
   }
 
+  @Override
   public int getMaxConnections() {
     return this.bridgeInfo.getMaxConnections();
   }
 
+  @Override
   public void setMaxConnections(int maxCons) throws AdminException {
     checkRunning();
     this.bridgeInfo.setMaxConnections(maxCons);
   }
 
+  @Override
   public int getMaxThreads() {
     return this.bridgeInfo.getMaxThreads();
   }
 
+  @Override
   public void setMaxThreads(int maxThreads) throws AdminException {
     checkRunning();
     this.bridgeInfo.setMaxThreads(maxThreads);
   }
 
+  @Override
   public int getMaximumMessageCount() {
     return this.bridgeInfo.getMaximumMessageCount();
   }
 
+  @Override
   public void setMaximumMessageCount(int maxMessageCount) throws AdminException {
     checkRunning();
     this.bridgeInfo.setMaximumMessageCount(maxMessageCount);
   }
 
+  @Override
   public int getMessageTimeToLive() {
     return this.bridgeInfo.getMessageTimeToLive();
   }
 
+  @Override
   public void setMessageTimeToLive(int messageTimeToLive) throws AdminException {
     checkRunning();
     this.bridgeInfo.setMessageTimeToLive(messageTimeToLive);
   }
 
+  @Override
   public void setGroups(String[] groups) throws AdminException {
     checkRunning();
     this.bridgeInfo.setGroups(groups);
   }
 
+  @Override
   public String[] getGroups() {
     return this.bridgeInfo.getGroups();
   }
 
+  @Override
   public String getLoadProbe() {
     return this.bridgeInfo.getLoadProbe().toString();
   }
 
+  @Override
   public void setLoadProbe(ServerLoadProbe loadProbe) throws AdminException {
     checkRunning();
     if (!(loadProbe instanceof Serializable)) {
@@ -220,10 +248,12 @@ public class SystemMemberBridgeServerImpl
     this.bridgeInfo.setLoadProbe(loadProbe);
   }
 
+  @Override
   public long getLoadPollInterval() {
     return this.bridgeInfo.getLoadPollInterval();
   }
 
+  @Override
   public void setLoadPollInterval(long loadPollInterval) throws AdminException {
     checkRunning();
     this.bridgeInfo.setLoadPollInterval(loadPollInterval);

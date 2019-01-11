@@ -43,6 +43,7 @@ public class CqStatisticsImpl implements CqStatistics {
    *
    * @return the number of insert events
    */
+  @Override
   public long numInserts() {
     return this.cqQuery.getVsdStats().getNumInserts();
   }
@@ -52,6 +53,7 @@ public class CqStatisticsImpl implements CqStatistics {
    *
    * @return the number of delete events
    */
+  @Override
   public long numDeletes() {
     return this.cqQuery.getVsdStats().getNumDeletes();
   }
@@ -61,6 +63,7 @@ public class CqStatisticsImpl implements CqStatistics {
    *
    * @return the number of update events
    */
+  @Override
   public long numUpdates() {
     return this.cqQuery.getVsdStats().getNumUpdates();
   }
@@ -70,6 +73,7 @@ public class CqStatisticsImpl implements CqStatistics {
    *
    * @return the total number of insert, update, and delete events
    */
+  @Override
   public long numEvents() {
     return cqQuery.getVsdStats().getNumEvents();
   }

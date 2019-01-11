@@ -356,6 +356,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void run() throws InterruptedException {
       Runnable putThread1 = new Runnable() {
+        @Override
         public void run() {
           DistributedSystem.setThreadsSocketPolicy(false);
           doPut();
@@ -364,6 +365,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       };
 
       Runnable putThread2 = new Runnable() {
+        @Override
         public void run() {
           DistributedSystem.setThreadsSocketPolicy(false);
           awaitStep1Latch();
@@ -521,6 +523,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
 
   private InternalDistributedMember createCache(VM vm) {
     return (InternalDistributedMember) vm.invoke(new SerializableCallable<Object>() {
+      @Override
       public Object call() {
         cache = getCache(new CacheFactory().set("conserve-sockets", "true"));
         return getSystem().getDistributedMember();
@@ -530,6 +533,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
 
   private InternalDistributedMember createNoConserveSocketsCache(VM vm) {
     return (InternalDistributedMember) vm.invoke(new SerializableCallable<Object>() {
+      @Override
       public Object call() {
         cache = getCache(new CacheFactory().set("conserve-sockets", "false"));
         return getSystem().getDistributedMember();

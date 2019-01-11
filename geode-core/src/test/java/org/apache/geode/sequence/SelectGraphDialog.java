@@ -63,6 +63,7 @@ public class SelectGraphDialog extends JDialog {
 
     JButton apply = new JButton("Apply");
     apply.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         selectedIds = (List) Arrays.asList(list.getSelectedValues());
         fireSelectionChanged();
@@ -72,6 +73,7 @@ public class SelectGraphDialog extends JDialog {
 
     JButton cancel = new JButton("Cancel");
     cancel.addActionListener(new ActionListener() {
+      @Override
       public void actionPerformed(ActionEvent e) {
         setVisible(false);
       }
@@ -86,14 +88,17 @@ public class SelectGraphDialog extends JDialog {
 
     final JTextField searchField = new JTextField(10);
     searchField.getDocument().addDocumentListener(new DocumentListener() {
+      @Override
       public void removeUpdate(DocumentEvent e) {
         doUpdate();
       }
 
+      @Override
       public void insertUpdate(DocumentEvent e) {
         doUpdate();
       }
 
+      @Override
       public void changedUpdate(DocumentEvent e) {
         doUpdate();
       }
@@ -141,10 +146,12 @@ public class SelectGraphDialog extends JDialog {
       this.filteredElements = new ArrayList<Object>(elements);
     }
 
+    @Override
     public int getSize() {
       return filteredElements.size();
     }
 
+    @Override
     public Object getElementAt(int index) {
       return filteredElements.get(index);
     }

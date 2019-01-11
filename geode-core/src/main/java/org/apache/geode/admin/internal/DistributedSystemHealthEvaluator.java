@@ -135,6 +135,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     this.dm.removeMembershipListener(this);
   }
 
+  @Override
   public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
 
   }
@@ -160,9 +161,11 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     } // synchronized
   }
 
+  @Override
   public void quorumLost(DistributionManager distributionManager,
       Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
+  @Override
   public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
       InternalDistributedMember whoSuspected, String reason) {}
 

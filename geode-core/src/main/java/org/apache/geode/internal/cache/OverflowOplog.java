@@ -240,6 +240,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    *        present. @param faultingIn @param bitOnly boolean indicating whether to extract just the
    *        UserBit or UserBit with value @return BytesAndBits object wrapping the value & user bit
    */
+  @Override
   public BytesAndBits getBytesAndBits(DiskRegionView dr, DiskId id, boolean faultingIn,
       boolean bitOnly) {
     OverflowOplog retryOplog = null;
@@ -314,6 +315,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
    *
    * @param id A DiskId object for which the value on disk will be fetched
    */
+  @Override
   public BytesAndBits getNoBuffer(DiskRegion dr, DiskId id) {
     if (logger.isTraceEnabled()) {
       logger.trace("Oplog::getNoBuffer:Before invoking Oplog.basicGet for DiskID ={}", id);
@@ -1079,6 +1081,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
         handleEmpty(true);
       } else {
         getParent().executeDiskStoreTask(new Runnable() {
+          @Override
           public void run() {
             handleEmpty(false);
           }
@@ -1200,6 +1203,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
     return this.compacting;
   }
 
+  @Override
   public void prepareForCompact() {
     this.compacting = true;
   }
@@ -1223,6 +1227,7 @@ class OverflowOplog implements CompactableOplog, Flushable {
     this.compactorLock.unlock();
   }
 
+  @Override
   public int compact(OplogCompactor compactor) {
     if (!needsCompaction()) {
       return 0;

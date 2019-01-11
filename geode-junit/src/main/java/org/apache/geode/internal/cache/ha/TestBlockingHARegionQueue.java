@@ -55,6 +55,7 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
    * @return boolean whether object was successfully put onto the queue
    */
 
+  @Override
   public boolean put(Object object) throws CacheException, InterruptedException {
     boolean putDone = super.put(object);
 
@@ -75,6 +76,7 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
    *
    */
 
+  @Override
   public Object peek() throws InterruptedException {
     Object object = null;
     while (true) {

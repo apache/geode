@@ -21,6 +21,7 @@ public class MyPrincipal implements java.security.Principal {
     return new MyPrincipal();
   }
 
+  @Override
   public String getName() {
     return "Bruce";
   }

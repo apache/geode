@@ -47,6 +47,7 @@ public class FutureResult implements Future {
     this.latch = null;
   }
 
+  @Override
   public boolean cancel(boolean mayInterruptIfRunning) {
     if (this.isCancelled)
       return false; // already cancelled
@@ -56,6 +57,7 @@ public class FutureResult implements Future {
     return true;
   }
 
+  @Override
   public Object get() throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException(); // check in case latch is null
@@ -72,6 +74,7 @@ public class FutureResult implements Future {
     return this.value;
   }
 
+  @Override
   public Object get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
     if (Thread.interrupted())
       throw new InterruptedException(); // check in case latch is null
@@ -87,10 +90,12 @@ public class FutureResult implements Future {
     return this.value;
   }
 
+  @Override
   public boolean isCancelled() {
     return this.isCancelled;
   }
 
+  @Override
   public boolean isDone() {
     return this.latch == null || this.latch.getCount() == 0L || this.isCancelled;
   }

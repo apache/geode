@@ -50,6 +50,7 @@ public class FunctionStreamingOrderedReplyMessage extends FunctionStreamingReply
     return FUNCTION_STREAMING_ORDERED_REPLY_MESSAGE;
   }
 
+  @Override
   public int getProcessorType() {
     return ClusterDistributionManager.SERIAL_EXECUTOR;
   }

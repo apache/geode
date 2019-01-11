@@ -1140,6 +1140,7 @@ public class CacheCreation implements InternalCache {
     return addCacheServer(false);
   }
 
+  @Override
   public CacheServer addCacheServer(boolean isGatewayReceiver) {
     CacheServer bridge = new CacheServerCreation(this, false);
     this.bridgeServers.add(bridge);
@@ -1342,10 +1343,12 @@ public class CacheCreation implements InternalCache {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
   public void addGatewayReceiver(GatewayReceiver receiver) {
     this.gatewayReceivers.add(receiver);
   }
 
+  @Override
   public void removeGatewayReceiver(GatewayReceiver receiver) {
     throw new UnsupportedOperationException("Should not be invoked");
   }

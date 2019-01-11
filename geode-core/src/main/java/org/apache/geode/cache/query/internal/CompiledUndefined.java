@@ -52,10 +52,12 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     return Collections.singletonList(this._value);
   }
 
+  @Override
   public int getType() {
     return FUNCTION;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     boolean b = _value.evaluate(context) == QueryService.UNDEFINED;
@@ -110,6 +112,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
         completeExpansionNeeded, iterOperands, indpndntItrs);
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     IndexInfo[] idxInfo = getIndexInfo(context);
@@ -126,6 +129,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     return idxInfo[0]._index.getSizeEstimate(QueryService.UNDEFINED, op, idxInfo[0]._matchLevel);
   }
 
+  @Override
   public int getOperator() {
     return _is_defined ? TOK_NE : TOK_EQ;
   }
@@ -169,6 +173,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     return context.addDependencies(this, this._value.computeDependencies(context));
   }
 
+  @Override
   public void negate() {
     _is_defined = !_is_defined;
   }
@@ -189,6 +194,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
   }
 
 
+  @Override
   public IndexInfo[] getIndexInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     IndexInfo[] indexInfo = privGetIndexInfo(context);
@@ -250,22 +256,26 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
     context.cachePut(this, indexInfo);
   }
 
+  @Override
   public boolean isRangeEvaluatable() {
     return false;
   }
 
+  @Override
   public boolean isProjectionEvaluationAPossibility(ExecutionContext context) {
     return true;
   }
 
   // TODO:Asif: This should ideally be treated like CompiledComparison in terms evaluation of
   // iter operands etc
+  @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     return true;
   }
 
+  @Override
   public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, int thisSize)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {

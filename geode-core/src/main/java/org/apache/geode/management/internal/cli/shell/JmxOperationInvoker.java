@@ -210,6 +210,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
   }
 
+  @Override
   public String getRemoteVersion() {
     return memberMXBeanProxy.getReleaseVersion();
   }
@@ -251,6 +252,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
   }
 
+  @Override
   public Set<ObjectName> queryNames(final ObjectName objectName, final QueryExp queryExpression) {
     try {
       return getMBeanServerConnection().queryNames(objectName, queryExpression);
@@ -308,6 +310,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     return this.isConnected.get();
   }
 
+  @Override
   public DistributedSystemMXBean getDistributedSystemMXBean() {
     if (distributedSystemMXBeanProxy == null) {
       throw new IllegalStateException(
@@ -320,6 +323,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     return this.url;
   }
 
+  @Override
   public <T> T getMBeanProxy(final ObjectName objectName, final Class<T> mbeanInterface) {
     if (DistributedSystemMXBean.class.equals(mbeanInterface)
         && ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN.equals(objectName.toString())) {
@@ -338,6 +342,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     return this.mbsc;
   }
 
+  @Override
   public boolean isReady() {
     try {
       return this.mbsc.isRegistered(managerMemberObjectName);
@@ -351,6 +356,7 @@ public class JmxOperationInvoker implements OperationInvoker {
     return this.endpoints;
   }
 
+  @Override
   public int getClusterId() {
     return this.clusterId;
   }

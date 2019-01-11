@@ -638,6 +638,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
     static byte[] savedCompressInput = null;
 
+    @Override
     public byte[] compress(byte[] input) {
       if (savedCompressInput == null) {
         savedCompressInput = input;
@@ -645,6 +646,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
       return POST_COMPRESS_BYTES;
     }
 
+    @Override
     public byte[] decompress(byte[] input) {
       return savedCompressInput;
     }

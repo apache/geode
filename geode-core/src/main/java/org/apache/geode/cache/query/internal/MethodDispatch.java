@@ -164,6 +164,7 @@ public class MethodDispatch {
 
   private void sortByDecreasingSpecificity(List methods) {
     Collections.sort(methods, new Comparator() {
+      @Override
       public int compare(Object o1, Object o2) {
         Method m1 = (Method) o1;
         Method m2 = (Method) o2;

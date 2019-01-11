@@ -23,24 +23,31 @@ import org.apache.geode.Statistics;
 public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
   private boolean isClosed;
 
+  @Override
   public void incFreeMemory(long value) {}
 
+  @Override
   public void incMaxMemory(long value) {}
 
+  @Override
   public void incUsedMemory(long value) {}
 
   public void incSlabSize(long value) {}
 
+  @Override
   public void incObjects(int value) {}
 
+  @Override
   public long getFreeMemory() {
     return 0;
   }
 
+  @Override
   public long getMaxMemory() {
     return 0;
   }
 
+  @Override
   public long getUsedMemory() {
     return 0;
   }
@@ -49,6 +56,7 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
     return 0;
   }
 
+  @Override
   public int getObjects() {
     return 0;
   }

@@ -181,6 +181,7 @@ public class GatewaySenderBatchOp {
      * @return the result of the operation or <code>null</code> if the operation has no result.
      * @throws Exception if the execute failed
      */
+    @Override
     protected Object attemptReadResponse(Connection cnx) throws Exception {
       Message msg = createResponseMessage();
       if (msg != null) {

@@ -64,34 +64,42 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
    */
   public RemoteEntrySnapshot() {}
 
+  @Override
   public Object getName() {
     return this.name;
   }
 
+  @Override
   public long getLastModifiedTime() {
     return stats.getLastModifiedTime();
   }
 
+  @Override
   public long getLastAccessTime() {
     return stats.getLastAccessedTime();
   }
 
+  @Override
   public long getNumberOfHits() {
     return stats.getHitCount();
   }
 
+  @Override
   public long getNumberOfMisses() {
     return stats.getMissCount();
   }
 
+  @Override
   public float getHitRatio() {
     return stats.getHitRatio();
   }
 
+  @Override
   public Object getValue() {
     return value;
   }
 
+  @Override
   public Object getUserAttribute() {
     return userAttribute;
   }
@@ -117,6 +125,7 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
     return getName().toString();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.name, out);
     DataSerializer.writeObject(this.value, out);
@@ -124,6 +133,7 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
     DataSerializer.writeObject(this.userAttribute, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.name = DataSerializer.readObject(in);
     this.value = DataSerializer.readObject(in);

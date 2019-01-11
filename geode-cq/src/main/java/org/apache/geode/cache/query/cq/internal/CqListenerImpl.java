@@ -28,6 +28,7 @@ public class CqListenerImpl implements CqListener {
   /**
    * An event occurred that modifies the results of the query. This event does not contain an error.
    */
+  @Override
   public void onEvent(CqEvent aCqEvent) {
     if (true) {
       throw new IllegalStateException(
@@ -39,6 +40,7 @@ public class CqListenerImpl implements CqListener {
    * An error occurred in the processing of a CQ. This event does contain an error. The newValue and
    * oldValue in the may or may not be available, and will be null if not available.
    */
+  @Override
   public void onError(CqEvent aCqEvent) {
     if (true) {
       throw new IllegalStateException(
@@ -47,5 +49,6 @@ public class CqListenerImpl implements CqListener {
   }
 
   /** CQ is being closed, do any cleanup here */
+  @Override
   public void close() {}
 }

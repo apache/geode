@@ -199,6 +199,7 @@ public class CountedMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
       return 1;
     }
 
+    @Override
     public void run() {
       try {
         barrier.await();

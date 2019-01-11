@@ -22,6 +22,7 @@ public class CompiledMultiplication extends CompiledArithmetic implements OQLLex
     super(left, right, op);
   }
 
+  @Override
   public int getType() {
     return MULTIPLICATION;
   }

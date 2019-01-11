@@ -175,6 +175,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
       throws Throwable {
     SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -197,6 +198,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
       final String regionName) {
     SerializableRunnable createData = new SerializableRunnable("createData") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
@@ -212,6 +214,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
   protected List<Integer> getPrimariesOn(VM vm, final String regionName) {
     SerializableCallable getPrimariesOn = new SerializableCallable("getPrimariesOn") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
@@ -225,6 +228,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
   protected List<Integer> getPrimariesCreated(VM vm, final String regionName) {
     SerializableCallable getPrimariesCreated = new SerializableCallable("getPrimariesCreated") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
@@ -239,6 +243,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
   protected String getRegionNameFromListener(VM vm, final String regionName) {
     SerializableCallable getRegionName = new SerializableCallable("getRegionName") {
 
+      @Override
       public Object call() {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
@@ -254,6 +259,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable getBucketsAndKeysRemoved =
         new SerializableCallable("getBucketsAndKeysRemoved") {
 
+          @Override
           public Object call() {
             Cache cache = getCache();
             Region region = cache.getRegion(regionName);
@@ -269,6 +275,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable getBucketsAndKeysAdded =
         new SerializableCallable("getBucketsAndKeysAdded") {
 
+          @Override
           public Object call() {
             Cache cache = getCache();
             Region region = cache.getRegion(regionName);
@@ -284,6 +291,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable getAfterSecondaryCallbackBucketIds =
         new SerializableCallable("getAfterSecondaryCallbackBucketIds") {
 
+          @Override
           public Object call() {
             Cache cache = getCache();
             Region region = cache.getRegion(regionName);
@@ -298,6 +306,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
   protected void rebalance(VM vm) {
     vm.invoke(new SerializableCallable() {
 
+      @Override
       public Object call() throws Exception {
         RebalanceOperation rebalance =
             getCache().getResourceManager().createRebalanceFactory().start();
@@ -342,14 +351,17 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
       return this.regionName;
     }
 
+    @Override
     public void afterRegionCreate(Region<?, ?> region) {
       this.regionName = region.getName();
     }
 
+    @Override
     public void afterPrimary(int bucketId) {
       this.primariesCreated.add(bucketId);
     }
 
+    @Override
     public void afterSecondary(int bucketId) {
       this.afterSecondaryCalled.add(bucketId);
     }
@@ -358,6 +370,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
       return afterSecondaryCalled;
     }
 
+    @Override
     public void afterBucketRemoved(int bucketId, Iterable<?> keys) {
       Collection<Integer> keysCol = (Collection) keys;
       // If the keys collection is not empty, create a serializable list to hold
@@ -372,6 +385,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
+    @Override
     public void afterBucketCreated(int bucketId, Iterable<?> keys) {
       Collection<Integer> keysCol = (Collection) keys;
       // If the keys collection is not empty, create a serializable list to hold

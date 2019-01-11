@@ -1218,6 +1218,7 @@ public class JGroupsMessenger implements Messenger {
     }
   }
 
+  @Override
   public QuorumChecker getQuorumChecker() {
     NetView view = this.view;
     if (view == null) {

@@ -163,6 +163,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
   public void testRegisterInterest_Destroy_Concurrent() throws Exception {
     PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      @Override
       public void beforeInterestRegistration() {
         Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         r.put(KEY, "AgainDummyValue");
@@ -181,6 +182,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
 
   private void waitForValue(final Region r, final Object key, final Object expected) {
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         Entry entry = r.getEntry(KEY);
         if (expected == null) {
@@ -197,6 +199,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
         return false;
       }
 
+      @Override
       public String description() {
         return null;
       }

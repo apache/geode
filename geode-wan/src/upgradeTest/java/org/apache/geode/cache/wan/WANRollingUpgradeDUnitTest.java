@@ -398,10 +398,12 @@ public abstract class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
 
     AtomicInteger eventsReceived = new AtomicInteger();
 
+    @Override
     public void afterCreate(EntryEvent event) {
       process(event);
     }
 
+    @Override
     public void afterUpdate(EntryEvent event) {
       process(event);
     }

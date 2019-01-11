@@ -31,34 +31,42 @@ import org.springframework.web.multipart.MultipartFile;
 @SuppressWarnings("unused")
 public class MultipartFileAdapter implements MultipartFile {
 
+  @Override
   public byte[] getBytes() throws IOException {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
   public String getContentType() {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
   public boolean isEmpty() {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
   public InputStream getInputStream() throws IOException {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
   public String getName() {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
   public String getOriginalFilename() {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
   public long getSize() {
     throw new UnsupportedOperationException("Not Implemented!");
   }
 
+  @Override
   public void transferTo(final File dest) throws IOException, IllegalStateException {
     throw new UnsupportedOperationException("Not Implemented!");
   }

@@ -120,6 +120,7 @@ public class RemoveBucketMessage extends PartitionMessage {
     buff.append("; bucketId=").append(this.bucketId);
   }
 
+  @Override
   public int getDSFID() {
     return PR_REMOVE_BUCKET_MESSAGE;
   }

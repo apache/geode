@@ -130,6 +130,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       member2 = null;
       member3 = null;
       Invoke.invokeInEveryVM(new SerializableRunnable() {
+        @Override
         public void run() {
           cache = null;
           orderRegion = null;
@@ -603,6 +604,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (regionMetaData.size() == numRegions) {
           return true;
@@ -610,6 +612,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
         return false;
       }
 
+      @Override
       public String description() {
         return "expected metadata for each region to be" + numRegions + " but it is "
             + regionMetaData.size() + "Metadata is " + regionMetaData.keySet();
@@ -639,6 +642,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (regionMetaData.size() == numRegions) {
           return true;
@@ -646,6 +650,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
         return false;
       }
 
+      @Override
       public String description() {
         return "expected metadata for each region to be " + numRegions + " but it is "
             + regionMetaData.size() + " they are " + regionMetaData.keySet();
@@ -701,6 +706,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
+      @Override
       public boolean done() {
         if (regionMetaData.size() == numRegions) {
           return true;
@@ -708,6 +714,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
         return false;
       }
 
+      @Override
       public String description() {
         return "expected metadata for each region to be " + numRegions + " but it is "
             + regionMetaData.size() + " they are " + regionMetaData.keySet();

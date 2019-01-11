@@ -63,6 +63,7 @@ public class RegionSizeRequest extends RegionAdminRequest implements Cancellable
     friendlyName = "Fetch region size";
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
     if (resp != null) {
@@ -70,6 +71,7 @@ public class RegionSizeRequest extends RegionAdminRequest implements Cancellable
     }
   }
 
+  @Override
   public int getDSFID() {
     return REGION_SIZE_REQUEST;
   }

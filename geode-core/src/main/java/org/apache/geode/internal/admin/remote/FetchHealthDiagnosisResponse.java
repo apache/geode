@@ -57,6 +57,7 @@ public class FetchHealthDiagnosisResponse extends AdminResponse {
   }
 
   // instance methods
+  @Override
   public int getDSFID() {
     return FETCH_HEALTH_DIAGNOSIS_RESPONSE;
   }

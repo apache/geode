@@ -49,6 +49,7 @@ public class CompiledFunction extends AbstractCompiledValue {
   }
 
 
+  @Override
   public int getType() {
     return FUNCTION;
   }
@@ -57,6 +58,7 @@ public class CompiledFunction extends AbstractCompiledValue {
     return this._function;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     if (this._function == LITERAL_element) {

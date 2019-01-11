@@ -65,6 +65,7 @@ public class TestExecuter
     final WorkerTestClassProcessorFactory testInstanceFactory = testFramework.getProcessorFactory();
     final Set<File> classpath = ImmutableSet.copyOf(testExecutionSpec.getClasspath());
     final Factory<TestClassProcessor> forkingProcessorFactory = new Factory<TestClassProcessor>() {
+      @Override
       public TestClassProcessor create() {
         return new ForkingTestClassProcessor(workerFactory, testInstanceFactory,
             testExecutionSpec.getJavaForkOptions(),
@@ -72,6 +73,7 @@ public class TestExecuter
       }
     };
     Factory<TestClassProcessor> reforkingProcessorFactory = new Factory<TestClassProcessor>() {
+      @Override
       public TestClassProcessor create() {
         return new RestartEveryNTestClassProcessor(forkingProcessorFactory,
             testExecutionSpec.getForkEvery());
@@ -108,6 +110,7 @@ public class TestExecuter
         .run();
   }
 
+  @Override
   public void stopNow() {
     if (processor != null) {
       processor.stopNow();

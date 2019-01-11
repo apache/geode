@@ -93,6 +93,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
   private void initOtherId() {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("Connect") {
+      @Override
       public void run2() throws CacheException {
         getCache();
       }
@@ -103,6 +104,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
   protected void createRootOtherVm(final String rName) {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("create root") {
+      @Override
       public void run2() throws CacheException {
         Region r = createRootRegion(rName, createRootRegionAttributes(null));
         r.createSubregion("mysub", createSubRegionAttributes(null));
@@ -125,6 +127,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
   protected void destroyRootOtherVm(final String rName) {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("local destroy root") {
+      @Override
       public void run2() throws CacheException {
         getRootRegion(rName).localDestroyRegion();
       }
@@ -134,6 +137,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
   protected void closeRootOtherVm(final String rName) {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("close root") {
+      @Override
       public void run2() throws CacheException {
         getRootRegion(rName).close();
       }
@@ -143,6 +147,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
   private void closeCacheOtherVm() {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("close cache") {
+      @Override
       public void run2() throws CacheException {
         getCache().close();
       }
@@ -152,6 +157,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
   private void crashCacheOtherVm() {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("crash cache") {
+      @Override
       public void run2() throws CacheException {
         // shut down the gms before the distributed system to simulate
         // a crash. In post-5.1.x, this could use SystemFailure.initFailure()
@@ -403,10 +409,12 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
 
     private boolean waitForOp(final Op op) {
       WaitCriterion ev = new WaitCriterion() {
+        @Override
         public boolean done() {
           return MyRML.this.lastOp == op;
         }
 
+        @Override
         public String description() {
           return MyRML.this.toString() + " waiting for Op " + op + " when lastOp was "
               + getOpName(MyRML.this.lastOp);
@@ -431,6 +439,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
       return Arrays.asList(this.initialMembers);
     }
 
+    @Override
     public void initialMembers(Region r, DistributedMember[] initialMembers) {
       this.lastOp = Op.Initial;
       this.lastEvent = null;
@@ -440,6 +449,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
               + " with members " + Arrays.deepToString(initialMembers));
     }
 
+    @Override
     public void afterRemoteRegionCreate(RegionEvent event) {
       this.lastOp = Op.Create;
       this.lastEvent = event;
@@ -460,6 +470,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
+    @Override
     public void afterRemoteRegionDeparture(RegionEvent event) {
       this.lastOp = Op.Departure;
       this.lastEvent = event;
@@ -467,6 +478,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
           this.toString() + " received afterRemoteRegionDeparture notification for event " + event);
     }
 
+    @Override
     public void afterRemoteRegionCrash(RegionEvent event) {
       this.lastOp = Op.Crash;
       this.lastEvent = event;

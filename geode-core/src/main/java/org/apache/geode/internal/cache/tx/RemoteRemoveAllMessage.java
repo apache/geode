@@ -211,6 +211,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
     this.bridgeContext = contx;
   }
 
+  @Override
   public int getDSFID() {
     return REMOTE_REMOVE_ALL_MESSAGE;
   }
@@ -351,6 +352,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         final VersionedObjectList versions =
             new VersionedObjectList(removeAllDataCount, true, dr.getConcurrencyChecksEnabled());
         dr.syncBulkOp(new Runnable() {
+          @Override
           @SuppressWarnings("synthetic-access")
           public void run() {
             InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();

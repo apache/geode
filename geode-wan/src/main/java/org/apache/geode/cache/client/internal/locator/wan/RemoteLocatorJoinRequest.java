@@ -46,11 +46,13 @@ public class RemoteLocatorJoinRequest implements DataSerializableFixedID {
     this.locator = locator;
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.locator = DataSerializer.readObject(in);
     this.distributedSystemId = in.readInt();
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(locator, out);
     out.writeInt(this.distributedSystemId);
@@ -64,6 +66,7 @@ public class RemoteLocatorJoinRequest implements DataSerializableFixedID {
     return distributedSystemId;
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.REMOTE_LOCATOR_JOIN_REQUEST;
   }

@@ -125,6 +125,7 @@ public class RemoveAllDAckDUnitTest extends JUnit4DistributedTestCase { // TODO:
     assertEquals(true, flag);
 
     vm1.invoke(new CacheSerializableRunnable("temp1") {
+      @Override
       public void run2() throws CacheException {
         assertEquals(2, beforeDestroyRemoveAllcounter);
       }
@@ -157,6 +158,7 @@ public class RemoveAllDAckDUnitTest extends JUnit4DistributedTestCase { // TODO:
   }
 
   static class BeforeDestroyCallback extends CacheWriterAdapter {
+    @Override
     public void beforeDestroy(EntryEvent event) {
       beforeDestroyRemoveAllcounter++;
       assertEquals(true, event.getOperation().isRemoveAll());

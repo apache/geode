@@ -29,6 +29,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CqSecurityPartitionedUnauthorizedUserDUnitTest
     extends CqSecurityUnauthorizedUserDUnitTest {
+  @Override
   public RegionShortcut getRegionType() {
     return RegionShortcut.PARTITION;
   }

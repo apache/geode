@@ -33,14 +33,17 @@ public class CompanySerializer extends DataSerializer {
 
   }
 
+  @Override
   public int getId() {
     return 42;
   }
 
+  @Override
   public Class[] getSupportedClasses() {
     return new Class[] {Company.class};
   }
 
+  @Override
   public boolean toData(Object o, DataOutput out) throws IOException {
     if (o instanceof Company) {
       Company company = (Company) o;
@@ -56,6 +59,7 @@ public class CompanySerializer extends DataSerializer {
     }
   }
 
+  @Override
   public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     String name = in.readUTF();

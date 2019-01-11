@@ -166,6 +166,7 @@ public class ClearGlobalDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static class CacheObserverImpl extends CacheObserverAdapter {
+    @Override
     public void afterRegionClear(RegionEvent event) {
       Thread th = new PutThread();
       th.start();
@@ -179,6 +180,7 @@ public class ClearGlobalDUnitTest extends JUnit4DistributedTestCase {
   }// end of CacheObserverImpl
 
   static class PutThread extends Thread {
+    @Override
     public void run() {
       try {
         region.put("ClearGlobal", "PutThread");

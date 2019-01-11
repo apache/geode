@@ -109,6 +109,7 @@ public class RVVExceptionT extends RVVException {
   }
 
 
+  @Override
   public void writeReceived(DataOutput out) throws IOException {
 
     int size = this.received == null ? 0 : this.received.size();
@@ -188,6 +189,7 @@ public class RVVExceptionT extends RVVException {
   }
 
   /** has the given version been recorded as having been received? */
+  @Override
   public boolean contains(long version) {
     if (version <= this.previousVersion) {
       return false;
@@ -196,14 +198,17 @@ public class RVVExceptionT extends RVVException {
   }
 
   /** return false if any revisions have been recorded in the range of this exception */
+  @Override
   public boolean isEmpty() {
     return (this.received == null || this.received.isEmpty());
   }
 
+  @Override
   public ReceivedVersionsReverseIterator receivedVersionsReverseIterator() {
     return new ReceivedVersionsReverseIteratorT();
   }
 
+  @Override
   public long getHighestReceivedVersion() {
     if (received == null || received.isEmpty()) {
       return previousVersion;
@@ -246,10 +251,12 @@ public class RVVExceptionT extends RVVException {
       }
     }
 
+    @Override
     boolean hasNext() {
       return !noIterator && this.treeSetIterator.hasNext();
     }
 
+    @Override
     long next() {
       if (!noIterator) {
         return this.treeSetIterator.next().longValue();
@@ -257,6 +264,7 @@ public class RVVExceptionT extends RVVException {
       throw new NoSuchElementException("no more elements");
     }
 
+    @Override
     void remove() {
       if (!noIterator) {
         this.treeSetIterator.remove();

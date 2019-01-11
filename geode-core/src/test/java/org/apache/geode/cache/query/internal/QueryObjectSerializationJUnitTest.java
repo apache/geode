@@ -132,28 +132,35 @@ public class QueryObjectSerializationJUnitTest implements Serializable {
   private static class SimpleObjectType implements ObjectType {
     public SimpleObjectType() {}
 
+    @Override
     public boolean isCollectionType() {
       return false;
     }
 
+    @Override
     public boolean isMapType() {
       return false;
     }
 
+    @Override
     public boolean isStructType() {
       return false;
     }
 
+    @Override
     public String getSimpleClassName() {
       return "java.lang.Object";
     }
 
+    @Override
     public Class resolveClass() {
       return Object.class;
     }
 
+    @Override
     public void toData(DataOutput out) {}
 
+    @Override
     public void fromData(DataInput in) {}
 
     public boolean equals(Object o) {

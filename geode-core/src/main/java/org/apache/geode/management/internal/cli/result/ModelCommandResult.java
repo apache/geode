@@ -70,6 +70,7 @@ public class ModelCommandResult implements CommandResult {
     return result.getStatus();
   }
 
+  @Override
   public void setStatus(Status status) {}
 
   @Override

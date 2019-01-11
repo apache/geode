@@ -121,6 +121,7 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
     return pid;
   }
 
+  @Override
   public void fromData(PdxReader in) {
     this.avg20DaysVol = in.readLong("avg20DaysVol");
     this.bondRating = in.readString("bondRating");
@@ -143,6 +144,7 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
     // this.secId));
   }
 
+  @Override
   public void toData(PdxWriter out) {
     out.writeLong("avg20DaysVol", this.avg20DaysVol);
     out.writeString("bondRating", this.bondRating);
@@ -166,6 +168,7 @@ public class PositionPdx implements Serializable, PdxSerializable, Comparable {
   }
 
 
+  @Override
   public int compareTo(Object o) {
     if (o == this || ((PositionPdx) o).secId.equals(this.secId)) {
       return 0;

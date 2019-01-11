@@ -84,6 +84,7 @@ public class Vertex implements Comparable<Vertex> {
     return true;
   }
 
+  @Override
   public int compareTo(Vertex o) {
     int difference = o.name == null ? (this.name == null ? 0 : -1) : (this.name == null ? 1 : 0);
     if (difference != 0) {

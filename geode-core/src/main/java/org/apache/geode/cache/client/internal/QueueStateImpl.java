@@ -58,6 +58,7 @@ public class QueueStateImpl implements QueueState {
     this.qManager = qm;
   }
 
+  @Override
   public void processMarker() {
     if (!this.processedMarker) {
       handleMarker();
@@ -69,6 +70,7 @@ public class QueueStateImpl implements QueueState {
     }
   }
 
+  @Override
   public boolean getProcessedMarker() {
     return this.processedMarker;
   }
@@ -109,6 +111,7 @@ public class QueueStateImpl implements QueueState {
     }
   }
 
+  @Override
   public void incrementInvalidatedStats() {
     this.invalidateCount.incrementAndGet();
 
@@ -122,14 +125,17 @@ public class QueueStateImpl implements QueueState {
    * test hook - access to this map should be synchronized on the map to avoid concurrent
    * modification exceptions
    */
+  @Override
   public Map getThreadIdToSequenceIdMap() {
     return this.threadIdToSequenceId;
   }
 
+  @Override
   public boolean verifyIfDuplicate(EventID eid) {
     return verifyIfDuplicate(eid, true);
   }
 
+  @Override
   public boolean verifyIfDuplicate(EventID eid, boolean addToMap) {
     ThreadIdentifier tid = new ThreadIdentifier(eid.getMembershipID(), eid.getThreadID());
     long seqId = eid.getSequenceID();
@@ -212,6 +218,7 @@ public class QueueStateImpl implements QueueState {
     return false;
   }
 
+  @Override
   public void start(ScheduledExecutorService timer, int interval) {
     timer.scheduleWithFixedDelay(new ThreadIdToSequenceIdExpiryTask(), interval, interval,
         TimeUnit.MILLISECONDS);

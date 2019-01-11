@@ -88,10 +88,12 @@ public class MultiIndexCreationJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -140,10 +142,12 @@ public class MultiIndexCreationJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -181,10 +185,12 @@ public class MultiIndexCreationJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertFalse(indexCalled);
       }
@@ -274,10 +280,12 @@ public class MultiIndexCreationJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }
@@ -344,10 +352,12 @@ public class MultiIndexCreationJUnitTest {
     QueryObserver old = QueryObserverHolder.setInstance(new QueryObserverAdapter() {
       private boolean indexCalled = false;
 
+      @Override
       public void afterIndexLookup(Collection results) {
         indexCalled = true;
       }
 
+      @Override
       public void endQuery() {
         assertTrue(indexCalled);
       }

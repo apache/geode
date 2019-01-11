@@ -164,6 +164,7 @@ public class MultiUserAuthenticationFunctionServiceDUnitTest {
   }
 
   public static class TestFunction implements Function, DataSerializable {
+    @Override
     @SuppressWarnings("unchecked")
     public void execute(FunctionContext context) {
       context.getResultSender().lastResult("TestFunction Executed!");

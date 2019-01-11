@@ -149,6 +149,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     this.count = count;
   }
 
+  @Override
   public int getType() {
     return LITERAL_select;
   }
@@ -387,6 +388,7 @@ public class CompiledSelect extends AbstractCompiledValue {
     return this.cachedElementTypeForOrderBy;
   }
 
+  @Override
   public SelectResults evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     context.newScope((Integer) context.cacheGet(scopeID));

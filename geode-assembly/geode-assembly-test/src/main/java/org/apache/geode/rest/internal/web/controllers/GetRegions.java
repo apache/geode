@@ -33,6 +33,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 
 public class GetRegions implements Function {
 
+  @Override
   public void execute(FunctionContext context) {
 
     ArrayList<String> vals = new ArrayList<String>();
@@ -53,6 +54,7 @@ public class GetRegions implements Function {
     context.getResultSender().lastResult(vals);
   }
 
+  @Override
   public String getId() {
     return "GetRegions";
   }

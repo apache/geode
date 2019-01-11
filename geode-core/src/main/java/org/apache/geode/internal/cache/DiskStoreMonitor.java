@@ -301,6 +301,7 @@ public class DiskStoreMonitor {
       this.dir = dir;
     }
 
+    @Override
     protected void handleStateChange(DiskState next, String pct, String critcalMessage) {
       Object[] args = new Object[] {dir.getAbsolutePath(), pct};
       switch (next) {
@@ -342,6 +343,7 @@ public class DiskStoreMonitor {
       this.dir = dir;
     }
 
+    @Override
     protected void handleStateChange(DiskState next, String pct, String criticalMessage) {
       if (_testAction != null) {
         logger.info(LogMarker.DISK_STORE_MONITOR_MARKER,

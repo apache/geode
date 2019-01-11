@@ -226,6 +226,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     int port = createServerRegion(vm0, name, true);
 
     vm0.invoke(new SerializableCallable("create old entry") {
+      @Override
       public Object call() throws Exception {
         LocalRegion r = (LocalRegion) basicGetCache().getRegion(name);
         r.put(key, "value");
@@ -239,6 +240,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     createClientRegion(vm1, name, port, true, ClientRegionShortcut.CACHING_PROXY, false);
 
     vm1.invoke(new SerializableCallable("fetch entry and validate") {
+      @Override
       public Object call() throws Exception {
         final Long[] expirationTimeMillis = new Long[1];
         int expirationSeconds = 1;
@@ -273,6 +275,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm0.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         disconnectFromDS();
       }
@@ -668,6 +671,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void registerInterest(VM vm) {
     vm.invoke(new SerializableRunnable("register interest in all keys") {
+      @Override
       public void run() {
         TestRegion.registerInterestRegex(".*");
       }
@@ -676,6 +680,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void unregisterInterest(VM vm) {
     vm.invoke(new SerializableRunnable("unregister interest in all keys") {
+      @Override
       public void run() {
         TestRegion.unregisterInterestRegex(".*");
       }
@@ -684,6 +689,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void registerInterest(VM vm, final List keys) {
     vm.invoke(new SerializableRunnable("register interest in key list") {
+      @Override
       public void run() {
         TestRegion.registerInterest(keys);
       }
@@ -692,6 +698,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void registerInterestOneKey(VM vm, final String key) {
     vm.invoke(new SerializableRunnable("register interest in " + key) {
+      @Override
       public void run() {
         TestRegion.registerInterest(key);
       }
@@ -700,6 +707,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void registerInterestRegex(VM vm, final String pattern) {
     vm.invoke(new SerializableRunnable("register interest in key list") {
+      @Override
       public void run() {
         TestRegion.registerInterestRegex(pattern);
       }
@@ -708,6 +716,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void ensureAllTombstonesPresent(VM vm) {
     vm.invoke(new SerializableCallable("check all are tombstones") {
+      @Override
       public Object call() {
         for (int i = 0; i < 10; i++) {
           assertTrue("expected a tombstone for Object" + i,
@@ -720,6 +729,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void ensureAllTombstonesPresent(VM vm, final List keys) {
     vm.invoke(new SerializableCallable("check tombstones in list") {
+      @Override
       public Object call() {
         for (Object key : keys) {
           assertTrue("expected to find a tombstone for " + key, TestRegion.containsTombstone(key));
@@ -731,6 +741,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void ensureAllInvalidsPresent(VM vm) {
     vm.invoke(new SerializableCallable("check all are tombstones") {
+      @Override
       public Object call() {
         for (int i = 0; i < 10; i++) {
           assertTrue("expected to find an entry for Object" + i,
@@ -745,6 +756,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void ensureAllInvalidsPresent(VM vm, final List keys) {
     vm.invoke(new SerializableCallable("check tombstones in list") {
+      @Override
       public Object call() {
         for (Object key : keys) {
           assertTrue("expected to find an entry for " + key, TestRegion.containsKey(key));
@@ -758,6 +770,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   /* do a getAll of all keys */
   private void getAll(VM vm) {
     vm.invoke(new SerializableRunnable("getAll for all keys") {
+      @Override
       public void run() {
         Set<String> keys = new HashSet();
         for (int i = 0; i < 10; i++) {
@@ -774,6 +787,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   /* this should remove all entries from the region, including tombstones */
   private void clearLocalCache(VM vm) {
     vm.invoke(new SerializableRunnable("clear local cache") {
+      @Override
       public void run() {
         TestRegion.localClear();
       }
@@ -834,6 +848,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void createEntries(VM vm) {
     vm.invoke(new SerializableCallable("create entries") {
+      @Override
       public Object call() {
         for (int i = 0; i < 10; i++) {
           TestRegion.create("Object" + i, Integer.valueOf(i));
@@ -846,6 +861,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void destroyEntries(VM vm) {
     vm.invoke(new SerializableCallable("destroy entries") {
+      @Override
       public Object call() {
         for (int i = 0; i < 10; i++) {
           TestRegion.destroy("Object" + i, Integer.valueOf(i));
@@ -861,6 +877,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void doPutAllInClient(VM vm) {
     vm.invoke(new SerializableRunnable("do putAll") {
+      @Override
       public void run() {
         Map map = new HashMap();
         for (int i = 1000; i < 1100; i++) {
@@ -882,6 +899,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void invalidateEntries(VM vm) {
     vm.invoke(new SerializableCallable("invalidate entries") {
+      @Override
       public Object call() {
         for (int i = 0; i < 10; i++) {
           TestRegion.invalidate("Object" + i, Integer.valueOf(i));
@@ -895,6 +913,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void forceGC(VM vm) {
     vm.invoke(new SerializableCallable("force GC") {
+      @Override
       public Object call() throws Exception {
         TestRegion.getCache().getTombstoneService().forceBatchExpirationForTests(10);
         return null;
@@ -904,6 +923,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void checkClientReceivedGC(VM vm) {
     vm.invoke(new SerializableCallable("check that GC happened") {
+      @Override
       public Object call() throws Exception {
         WaitCriterion wc = new WaitCriterion() {
 
@@ -930,6 +950,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new SerializableCallable(
         "check that client queues are properly cleared of old ClientTombstone messages") {
 
+      @Override
       public Object call() throws Exception {
         WaitCriterion wc = new WaitCriterion() {
           // boolean firstTime = true;
@@ -979,6 +1000,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
   private void checkClientDoesNotReceiveGC(VM vm) {
     vm.invoke(new SerializableCallable("check that GC did not happen") {
+      @Override
       public Object call() throws Exception {
         if (TestRegion.getTombstoneCount() == 0) {
           LogWriterUtils.getLogWriter().warning("region has no tombstones");
@@ -998,6 +1020,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   private int createServerRegion(VM vm, final String regionName, final boolean replicatedRegion,
       Scope regionScope) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         // TombstoneService.VERBOSE = true;
         AttributesFactory af = new AttributesFactory();
@@ -1033,6 +1056,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       final boolean ccEnabled, final ClientRegionShortcut clientRegionShortcut,
       final boolean registerInterest) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
@@ -1059,6 +1083,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   private void createDurableClientRegion(final VM vm, final String regionName, final int port1,
       final int port2, final boolean ccEnabled) {
     SerializableCallable createRegion = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port1);

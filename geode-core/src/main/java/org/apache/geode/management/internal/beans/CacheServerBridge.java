@@ -131,6 +131,7 @@ public class CacheServerBridge extends ServerBridge {
     this.memberMBeanBridge = memberMBeanBridge;
   }
 
+  @Override
   public void stopMonitor() {
     super.stopMonitor();
     monitor.stopListener();

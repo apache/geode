@@ -36,6 +36,7 @@ public interface Bucket extends CacheDistributionAdvisee, HasDiskRegion {
    * Returns the serial number which identifies the static order in which this bucket was created in
    * relation to other regions or other instances of this bucket during the life of this JVM.
    */
+  @Override
   int getSerialNumber();
 
   /**

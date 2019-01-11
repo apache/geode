@@ -47,6 +47,7 @@ class NameParserImpl implements NameParser {
    * @param name name to parse
    * @throws NamingException if naming error occurrs
    */
+  @Override
   public Name parse(String name) throws NamingException {
     return new CompoundName(name.replace('.', '/'), syntax);
   }

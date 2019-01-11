@@ -29,6 +29,7 @@ public class RegionReliabilityDistNoAckDUnitTest extends RegionReliabilityTestCa
     super();
   }
 
+  @Override
   protected Scope getRegionScope() {
     return Scope.DISTRIBUTED_NO_ACK;
   }

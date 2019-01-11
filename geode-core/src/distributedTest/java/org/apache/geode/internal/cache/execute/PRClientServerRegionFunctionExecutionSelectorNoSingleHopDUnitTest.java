@@ -392,6 +392,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
 
   public static void registerFunction() {
     FunctionService.registerFunction(new FunctionAdapter() {
+      @Override
       public void execute(FunctionContext context) {
         if (context.getArguments() instanceof String) {
           context.getResultSender().lastResult("Failure");
@@ -400,10 +401,12 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
         }
       }
 
+      @Override
       public String getId() {
         return "Function";
       }
 
+      @Override
       public boolean hasResult() {
         return true;
       }
@@ -424,6 +427,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
     }
     HashMap resultMap = (HashMap) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
         .execute(new FunctionAdapter() {
+          @Override
           public void execute(FunctionContext context) {
             if (context.getArguments() instanceof String) {
               context.getResultSender().lastResult("Success");
@@ -432,10 +436,12 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
             }
           }
 
+          @Override
           public String getId() {
             return "Function";
           }
 
+          @Override
           public boolean hasResult() {
             return true;
           }
@@ -465,6 +471,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
 
+      @Override
       public boolean done() {
         int sz = pool.getConnectedServerCount();
         LogWriterUtils.getLogWriter().info("Checking for the Live Servers : Expected  : "
@@ -476,6 +483,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
         return false;
       }
 
+      @Override
       public String description() {
         return excuse;
       }
@@ -860,6 +868,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
       List l = null;
       ResultCollector rc1 =
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+            @Override
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -868,10 +877,12 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
               }
             }
 
+            @Override
             public String getId() {
               return getClass().getName();
             }
 
+            @Override
             public boolean hasResult() {
               return true;
             }
@@ -910,6 +921,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
     try {
       rc1 =
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+            @Override
             public void execute(FunctionContext context) {
               if (((RegionFunctionContext) context).isPossibleDuplicate()) {
                 context.getResultSender().lastResult(new Integer(retryCount));
@@ -920,10 +932,12 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
               }
             }
 
+            @Override
             public String getId() {
               return getClass().getName();
             }
 
+            @Override
             public boolean hasResult() {
               return true;
             }
@@ -1059,6 +1073,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
               + "|Server could not send the reply" + "|Unexpected exception during"
               + "</ExpectedException>");
       dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+        @Override
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -1066,10 +1081,12 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
           context.getResultSender().lastResult("Failure");
         }
 
+        @Override
         public String getId() {
           return getClass().getName();
         }
 
+        @Override
         public boolean hasResult() {
           return true;
         }
@@ -1090,6 +1107,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
     try {
       ResultCollector rs =
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+            @Override
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -1098,10 +1116,12 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
               }
             }
 
+            @Override
             public String getId() {
               return getClass().getName();
             }
 
+            @Override
             public boolean hasResult() {
               return true;
             }
@@ -1110,6 +1130,7 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
 
       ResultCollector rs2 =
           dataSet.withFilter(testKeysSet).setArguments(testKey).execute(new FunctionAdapter() {
+            @Override
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -1118,10 +1139,12 @@ public class PRClientServerRegionFunctionExecutionSelectorNoSingleHopDUnitTest
               }
             }
 
+            @Override
             public String getId() {
               return getClass().getName();
             }
 
+            @Override
             public boolean hasResult() {
               return true;
             }

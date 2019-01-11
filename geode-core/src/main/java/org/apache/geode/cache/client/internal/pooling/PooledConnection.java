@@ -58,6 +58,7 @@ public class PooledConnection implements Connection {
     this.lastAccessed = this.birthDate;
   }
 
+  @Override
   public ServerLocation getServer() {
     return getEndpoint().getLocation();
   }
@@ -85,6 +86,7 @@ public class PooledConnection implements Connection {
    * When a pooled connection is destroyed, it's not destroyed right away, but when it is returned
    * to the pool.
    */
+  @Override
   public void destroy() {
     this.shouldDestroy.set(true);
   }
@@ -100,10 +102,12 @@ public class PooledConnection implements Connection {
     }
   }
 
+  @Override
   public void close(boolean keepAlive) throws Exception {
     internalClose(keepAlive);
   }
 
+  @Override
   public void emergencyClose() {
     Connection con = this.connection;
     if (con != null) {
@@ -134,6 +138,7 @@ public class PooledConnection implements Connection {
     return this.shouldDestroy.get();
   }
 
+  @Override
   public boolean isDestroyed() {
     return connection == null;
   }
@@ -283,30 +288,37 @@ public class PooledConnection implements Connection {
     }
   }
 
+  @Override
   public ByteBuffer getCommBuffer() throws SocketException {
     return getConnection().getCommBuffer();
   }
 
+  @Override
   public Socket getSocket() {
     return getConnection().getSocket();
   }
 
+  @Override
   public OutputStream getOutputStream() {
     return getConnection().getOutputStream();
   }
 
+  @Override
   public InputStream getInputStream() {
     return getConnection().getInputStream();
   }
 
+  @Override
   public ConnectionStats getStats() {
     return getEndpoint().getStats();
   }
 
+  @Override
   public Endpoint getEndpoint() {
     return this.endpoint;
   }
 
+  @Override
   public ServerQueueStatus getQueueStatus() {
     return getConnection().getQueueStatus();
   }
@@ -321,6 +333,7 @@ public class PooledConnection implements Connection {
     }
   }
 
+  @Override
   public Object execute(Op op) throws Exception {
     return getConnection().execute(op);
   }
@@ -329,14 +342,17 @@ public class PooledConnection implements Connection {
     ConnectionImpl.loadEmergencyClasses();
   }
 
+  @Override
   public short getWanSiteVersion() {
     return getConnection().getWanSiteVersion();
   }
 
+  @Override
   public int getDistributedSystemId() {
     return getConnection().getDistributedSystemId();
   }
 
+  @Override
   public void setWanSiteVersion(short wanSiteVersion) {
     getConnection().setWanSiteVersion(wanSiteVersion);
   }
@@ -345,10 +361,12 @@ public class PooledConnection implements Connection {
     this.connection = newConnection;
   }
 
+  @Override
   public void setConnectionID(long id) {
     this.connection.setConnectionID(id);
   }
 
+  @Override
   public long getConnectionID() {
     return this.connection.getConnectionID();
   }

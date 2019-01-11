@@ -141,6 +141,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         assertTrue(port != 0);
         SerializableRunnable createMeanSocket =
             new CacheSerializableRunnable("Connect to server with socket") {
+              @Override
               public void run2() throws CacheException {
                 getCache(); // create a cache so we have stats
                 System.out.println("connecting to cache server with socket");
@@ -153,6 +154,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
               }
             };
         SerializableRunnable closeMeanSocket = new CacheSerializableRunnable("close mean socket") {
+          @Override
           public void run2() throws CacheException {
             System.out.println("closing mean socket");
             try {
@@ -223,6 +225,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     final boolean[] isClient = new boolean[3];
 
     ClientMembershipListener listener = new ClientMembershipListener() {
+      @Override
       public void memberJoined(ClientMembershipEvent event) {
         fired[JOINED] = true;
         member[JOINED] = event.getMember();
@@ -230,6 +233,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         isClient[JOINED] = event.isClient();
       }
 
+      @Override
       public void memberLeft(ClientMembershipEvent event) {
         fired[LEFT] = true;
         member[LEFT] = event.getMember();
@@ -237,6 +241,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         isClient[LEFT] = event.isClient();
       }
 
+      @Override
       public void memberCrashed(ClientMembershipEvent event) {
         fired[CRASHED] = true;
         member[CRASHED] = event.getMember();
@@ -384,6 +389,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     getSystem();
 
     ClientMembershipListener listener = new ClientMembershipListener() {
+      @Override
       public void memberJoined(ClientMembershipEvent event) {
         fired[0] = true;
         member[0] = event.getMember();
@@ -391,8 +397,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         isClient[0] = event.isClient();
       }
 
+      @Override
       public void memberLeft(ClientMembershipEvent event) {}
 
+      @Override
       public void memberCrashed(ClientMembershipEvent event) {}
     };
     ClientMembership.registerClientMembershipListener(listener);
@@ -441,6 +449,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     for (int i = 0; i < NUM_LISTENERS; i++) {
       final int whichListener = i;
       listeners[i] = new ClientMembershipListener() {
+        @Override
         public void memberJoined(ClientMembershipEvent event) {
           assertFalse(fired[whichListener]);
           assertNull(member[whichListener]);
@@ -452,8 +461,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           isClient[whichListener] = event.isClient();
         }
 
+        @Override
         public void memberLeft(ClientMembershipEvent event) {}
 
+        @Override
         public void memberCrashed(ClientMembershipEvent event) {}
       };
     }
@@ -705,6 +716,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // create and register ClientMembershipListener in controller vm...
     ClientMembershipListener listener = new ClientMembershipListener() {
+      @Override
       public void memberJoined(ClientMembershipEvent event) {
         System.out.println("[testClientMembershipEventsInClient] memberJoined: " + event);
         fired[JOINED] = true;
@@ -713,10 +725,12 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         isClient[JOINED] = event.isClient();
       }
 
+      @Override
       public void memberLeft(ClientMembershipEvent event) {
         System.out.println("[testClientMembershipEventsInClient] memberLeft: " + event);
       }
 
+      @Override
       public void memberCrashed(ClientMembershipEvent event) {
         System.out.println("[testClientMembershipEventsInClient] memberCrashed: " + event);
         fired[CRASHED] = true;
@@ -906,6 +920,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // create and register ClientMembershipListener in controller vm...
     ClientMembershipListener listener = new ClientMembershipListener() {
+      @Override
       public void memberJoined(ClientMembershipEvent event) {
         System.out.println("[testClientMembershipEventsInServer] memberJoined: " + event);
         fired[JOINED] = true;
@@ -915,6 +930,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         assertFalse(fired[LEFT] || fired[CRASHED]);
       }
 
+      @Override
       public void memberLeft(ClientMembershipEvent event) {
         System.out.println("[testClientMembershipEventsInServer] memberLeft: " + event);
         fired[LEFT] = true;
@@ -924,6 +940,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         assertFalse(fired[JOINED] || fired[CRASHED]);
       }
 
+      @Override
       public void memberCrashed(ClientMembershipEvent event) {
         System.out.println("[testClientMembershipEventsInServer] memberCrashed: " + event);
         fired[CRASHED] = true;
@@ -994,6 +1011,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     final Host host = Host.getHost(0);
     SerializableCallable createConnectionPool = new SerializableCallable("Create connectionPool") {
+      @Override
       public Object call() {
         System.out.println("[testClientMembershipEventsInServer] create bridge client");
         Properties config = new Properties();
@@ -1039,6 +1057,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     pauseForClientToJoin();
 
     vm0.invoke(new SerializableRunnable("Stop bridge client") {
+      @Override
       public void run() {
         System.out.println("[testClientMembershipEventsInServer] Stop bridge client");
         getRootRegion().getSubregion(name).close();
@@ -1098,6 +1117,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     ServerConnection.setForceClientCrashEvent(true);
     try {
       vm0.invoke(new SerializableRunnable("Stop bridge client") {
+        @Override
         public void run() {
           System.out.println("[testClientMembershipEventsInServer] Stop bridge client");
           getRootRegion().getSubregion(name).close();
@@ -1157,6 +1177,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // create and register ClientMembershipListener in controller vm...
     ClientMembershipListener listener = new ClientMembershipListener() {
+      @Override
       public void memberJoined(ClientMembershipEvent event) {
         assertFalse(fired[JOINED]);
         assertNull(member[JOINED]);
@@ -1168,8 +1189,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         isClient[JOINED] = event.isClient();
       }
 
+      @Override
       public void memberLeft(ClientMembershipEvent event) {}
 
+      @Override
       public void memberCrashed(ClientMembershipEvent event) {}
     };
     ClientMembership.registerClientMembershipListener(listener);
@@ -1248,6 +1271,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     final Host host = Host.getHost(0);
     SerializableCallable createPool = new SerializableCallable("Create connection pool") {
+      @Override
       public Object call() {
         System.out.println("[testGetConnectedClients] create bridge client");
         properties = new Properties();
@@ -1402,6 +1426,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     return testGetConnectedServers_port;
   }
 
+  @Override
   public Properties getDistributedSystemProperties() {
     if (properties == null) {
       properties = new Properties();
@@ -1424,6 +1449,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       final int whichVM = i;
       final VM vm = Host.getHost(0).getVM(i);
       vm.invoke(new CacheSerializableRunnable("Create cache server") {
+        @Override
         public void run2() throws CacheException {
           // create BridgeServer in controller vm...
           System.out.println("[testGetNotifiedClients] Create BridgeServer");
@@ -1530,26 +1556,32 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       this.host = host;
     }
 
+    @Override
     public String getName() {
       return "";
     }
 
+    @Override
     public String getHost() {
       return this.host;
     }
 
+    @Override
     public Set getRoles() {
       return new HashSet();
     }
 
+    @Override
     public int getProcessId() {
       return 0;
     }
 
+    @Override
     public String getId() {
       return this.host;
     }
 
+    @Override
     public int compareTo(DistributedMember o) {
       if ((o == null) || !(o instanceof TestDistributedMember)) {
         throw new InternalGemFireException("Invalidly comparing TestDistributedMember to " + o);
@@ -1570,11 +1602,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       return getHost().hashCode();
     }
 
+    @Override
     public DurableClientAttributes getDurableClientAttributes() {
 
       return null;
     }
 
+    @Override
     public List<String> getGroups() {
       return Collections.emptyList();
     }

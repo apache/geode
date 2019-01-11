@@ -24,15 +24,18 @@ import org.apache.geode.internal.cache.xmlcache.Declarable2;
 public class MyGatewayEventFilter2 implements GatewayEventFilter, Declarable2 {
 
 
+  @Override
   public void close() {
 
   }
 
+  @Override
   public Properties getConfig() {
     // TODO Auto-generated method stub
     return null;
   }
 
+  @Override
   public void init(Properties props) {
     // TODO Auto-generated method stub
 
@@ -50,16 +53,19 @@ public class MyGatewayEventFilter2 implements GatewayEventFilter, Declarable2 {
 
   }
 
+  @Override
   public boolean beforeEnqueue(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
     return false;
   }
 
+  @Override
   public boolean beforeTransmit(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
     return false;
   }
 
+  @Override
   public void afterAcknowledgement(GatewayQueueEvent event) {
     // TODO Auto-generated method stub
 

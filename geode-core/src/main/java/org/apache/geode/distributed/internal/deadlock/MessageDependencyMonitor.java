@@ -66,6 +66,7 @@ public class MessageDependencyMonitor implements DependencyMonitor {
     }
   }
 
+  @Override
   public Set<Dependency<Thread, Serializable>> getBlockedThreads(Thread[] allThreads) {
 
     InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
@@ -86,6 +87,7 @@ public class MessageDependencyMonitor implements DependencyMonitor {
     return blockedThreads;
   }
 
+  @Override
   public Set<Dependency<Serializable, Thread>> getHeldResources(Thread[] allThreads) {
     Set<Dependency<Serializable, Thread>> heldResources =
         new HashSet<Dependency<Serializable, Thread>>();

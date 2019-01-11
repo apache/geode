@@ -32,6 +32,7 @@ public class TransportFilterSocketFactory implements ClientSocketFactory {
     return this;
   }
 
+  @Override
   public Socket createSocket(InetAddress address, int port) throws IOException {
     return new TransportFilterSocket(gatewayTransportFilters, address, port);
   }

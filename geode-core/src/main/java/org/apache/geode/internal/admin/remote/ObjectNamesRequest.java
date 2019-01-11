@@ -62,6 +62,7 @@ public class ObjectNamesRequest extends RegionAdminRequest implements Cancellabl
     return resp;
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
     if (resp != null) {
@@ -69,6 +70,7 @@ public class ObjectNamesRequest extends RegionAdminRequest implements Cancellabl
     }
   }
 
+  @Override
   public int getDSFID() {
     return OBJECT_NAMES_REQUEST;
   }

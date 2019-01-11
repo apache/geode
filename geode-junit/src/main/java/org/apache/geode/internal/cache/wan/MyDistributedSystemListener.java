@@ -34,6 +34,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
   /**
    * Please note that dynamic addition of the sender id to region is not yet available.
    */
+  @Override
   public void addedDistributedSystem(int remoteDsId) {
     addCount++;
     List<Locator> locatorsConfigured = Locator.getLocators();
@@ -43,6 +44,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
     System.out.println("Added : allSiteMetaData : " + allSiteMetaData);
   }
 
+  @Override
   public void removedDistributedSystem(int remoteDsId) {
     removeCount++;
     List<Locator> locatorsConfigured = Locator.getLocators();

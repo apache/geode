@@ -1164,6 +1164,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
+  @Override
   public void forceRoll() {
     getPersistentOplogs().forceRoll(null);
   }
@@ -1186,6 +1187,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
+  @Override
   public boolean forceCompaction() {
     return basicForceCompaction(null);
   }
@@ -1487,6 +1489,7 @@ public class DiskStoreImpl implements DiskStore {
     return this.cache;
   }
 
+  @Override
   public void flush() {
     forceFlush();
   }
@@ -1682,6 +1685,7 @@ public class DiskStoreImpl implements DiskStore {
       diskStore.getPersistentOplogs().flushChild();
     }
 
+    @Override
     public void run() {
       doAsyncFlush();
     }
@@ -2080,6 +2084,7 @@ public class DiskStoreImpl implements DiskStore {
     return getAutoCompact();
   }
 
+  @Override
   public int getCompactionThreshold() {
     return this.compactionThreshold;
   }
@@ -2662,6 +2667,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
+  @Override
   public void destroy() {
     Set<String> liveRegions = new TreeSet<String>();
     for (AbstractDiskRegion dr : getDiskRegions()) {
@@ -2860,6 +2866,7 @@ public class DiskStoreImpl implements DiskStore {
      * oplogIdToOplog object. This will ensure that an addition of an Oplog to the Map does not get
      * missed. Notifications need not be sent if the thread is already compaction
      */
+    @Override
     public void run() {
       if (!this.scheduled)
         return;
@@ -3337,18 +3344,22 @@ public class DiskStoreImpl implements DiskStore {
   private volatile float criticalPercent;
 
   // DiskStore interface methods
+  @Override
   public String getName() {
     return this.name;
   }
 
+  @Override
   public boolean getAutoCompact() {
     return this.autoCompact;
   }
 
+  @Override
   public boolean getAllowForceCompaction() {
     return this.allowForceCompaction;
   }
 
+  @Override
   public long getMaxOplogSize() {
     return this.maxOplogSizeInBytes / (1024 * 1024);
   }
@@ -3357,22 +3368,27 @@ public class DiskStoreImpl implements DiskStore {
     return this.maxOplogSizeInBytes;
   }
 
+  @Override
   public long getTimeInterval() {
     return this.timeInterval;
   }
 
+  @Override
   public int getQueueSize() {
     return this.queueSize;
   }
 
+  @Override
   public int getWriteBufferSize() {
     return this.writeBufferSize;
   }
 
+  @Override
   public File[] getDiskDirs() {
     return this.diskDirs;
   }
 
+  @Override
   public int[] getDiskDirSizes() {
     return this.diskDirSizes;
   }
@@ -4227,6 +4243,7 @@ public class DiskStoreImpl implements DiskStore {
     return getPersistentOplogs().getChild() != null;
   }
 
+  @Override
   public UUID getDiskStoreUUID() {
     return this.diskStoreID.toUUID();
   }
@@ -4269,6 +4286,7 @@ public class DiskStoreImpl implements DiskStore {
       this.recoveredStores = new HashMap<Long, DiskRecoveryStore>(recoveredStores);
     }
 
+    @Override
     public void run() {
       synchronized (asyncValueRecoveryLock) {
         DiskStoreObserver.startAsyncValueRecovery(DiskStoreImpl.this);
@@ -4363,6 +4381,7 @@ public class DiskStoreImpl implements DiskStore {
     // schedule another thread to do it
     incBackgroundTasks();
     Future<?> result = executeDiskStoreTask(new DiskStoreTask() {
+      @Override
       public void run() {
         try {
           markBackgroundTaskThread(); // for bug 42775
@@ -4373,6 +4392,7 @@ public class DiskStoreImpl implements DiskStore {
         }
       }
 
+      @Override
       public void taskCancelled() {
         decBackgroundTasks();
       }
@@ -4389,6 +4409,7 @@ public class DiskStoreImpl implements DiskStore {
     // schedule another thread to do it
     incBackgroundTasks();
     boolean isTaskAccepted = executeDiskStoreAsyncTask(new DiskStoreTask() {
+      @Override
       public void run() {
         try {
           markBackgroundTaskThread(); // for bug 42775
@@ -4399,6 +4420,7 @@ public class DiskStoreImpl implements DiskStore {
         }
       }
 
+      @Override
       public void taskCancelled() {
         decBackgroundTasks();
       }

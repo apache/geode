@@ -70,6 +70,7 @@ public class ObjectNamesResponse extends AdminResponse implements Cancellable {
     }
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
   }
@@ -79,6 +80,7 @@ public class ObjectNamesResponse extends AdminResponse implements Cancellable {
     return new HashSet(this.objectNames);
   }
 
+  @Override
   public int getDSFID() {
     return OBJECT_NAMES_RESPONSE;
   }

@@ -42,6 +42,7 @@ public class DefaultResultCollector implements ResultCollector {
    * Adds a single function execution result from a remote node to the ResultCollector
    *
    */
+  @Override
   public synchronized void addResult(DistributedMember distributedMember,
       Object resultOfSingleExecution) {
     this.resultList.add(resultOfSingleExecution);
@@ -55,6 +56,7 @@ public class DefaultResultCollector implements ResultCollector {
    * @return the Object computed result
    * @throws FunctionException if something goes wrong while retrieving the result
    */
+  @Override
   public Object getResult() throws FunctionException {
     return this.resultList; // this is full result
   }
@@ -64,6 +66,7 @@ public class DefaultResultCollector implements ResultCollector {
    * can retrieve results using {@link ResultCollector#getResult()}
    *
    */
+  @Override
   public void endResults() {}
 
   /**
@@ -77,6 +80,7 @@ public class DefaultResultCollector implements ResultCollector {
    * @return Object computed result
    * @throws FunctionException if something goes wrong while retrieving the result
    */
+  @Override
   public Object getResult(long timeout, TimeUnit unit) throws FunctionException {
     return this.resultList;
   }
@@ -86,6 +90,7 @@ public class DefaultResultCollector implements ResultCollector {
    * This is to clear the previous execution results from the result collector
    *
    */
+  @Override
   public void clearResults() {
     this.resultList.clear();
   }

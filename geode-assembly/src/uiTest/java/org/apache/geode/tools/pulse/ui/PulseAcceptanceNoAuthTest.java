@@ -75,6 +75,7 @@ public class PulseAcceptanceNoAuthTest extends PulseAcceptanceTestBase {
     cluster = pulseRule.getRepository().getCluster("admin", null);
   }
 
+  @Override
   public WebDriver getWebDriver() {
     return webDriverRule.getDriver();
   }

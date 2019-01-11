@@ -111,6 +111,7 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
   private CacheSerializableRunnable stopServer() {
 
     CacheSerializableRunnable stopserver = new CacheSerializableRunnable("stopServer") {
+      @Override
       public void run2() throws CacheException {
         server.stop();
       }
@@ -200,12 +201,14 @@ public class HAEventIdPropagationDUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(map);
     // changed to check for size 1 due to marker message
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         synchronized (map) {
           return map.size() == 1;
         }
       }
 
+      @Override
       public String description() {
         return null;
       }

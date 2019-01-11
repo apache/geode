@@ -1187,6 +1187,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     PartitionedRegion.BEFORE_CALCULATE_STARTING_BUCKET_FLAG = true;
     origObserver =
         PartitionedRegionObserverHolder.setInstance(new PartitionedRegionObserverAdapter() {
+          @Override
           public void beforeCalculatingStartingBucketId() {
             getBlackboard().signalGate("waiting");
             try {

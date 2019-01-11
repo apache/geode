@@ -35,14 +35,17 @@ public class StreamHandler extends Handler {
     this.setFormatter(formatter);
   }
 
+  @Override
   public void close() {
     this.pw.close();
   }
 
+  @Override
   public void flush() {
     this.pw.flush();
   }
 
+  @Override
   public boolean isLoggable(LogRecord record) {
     if (this.pw == null) {
       return (false);
@@ -51,6 +54,7 @@ public class StreamHandler extends Handler {
     }
   }
 
+  @Override
   public void publish(LogRecord record) {
     Formatter formatter = this.getFormatter();
     pw.print(formatter.format(record));

@@ -41,6 +41,7 @@ public class QuerySecurityDistinctQueryDistributedTest extends QuerySecurityBase
 
   private static final int NUM_ENTRIES = 1000;
 
+  @Override
   public RegionShortcut getRegionType() {
     return RegionShortcut.PARTITION;
   }

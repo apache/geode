@@ -24,11 +24,15 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
  */
 public class ConnectionListenerAdapter implements ConnectionListener {
 
+  @Override
   public void connectionClosed(boolean lastConnection, CommunicationMode communicationMode) {}
 
+  @Override
   public void connectionOpened(boolean firstConnection, CommunicationMode communicationMode) {}
 
+  @Override
   public void queueAdded(ClientProxyMembershipID id) {}
 
+  @Override
   public void queueRemoved() {}
 }

@@ -106,6 +106,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#get(java.lang.Object,
    * java.lang.Object)
    */
+  @Override
   public Object get(Object key, Object callbackArg, EntryEventImpl clientEvent) {
     recordTXOperation(ServerRegionOperation.GET, key, callbackArg);
     return GetOp.execute(this.pool, this.region, key, callbackArg,
@@ -114,6 +115,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
 
 
+  @Override
   public int size() {
     return SizeOp.execute(this.pool, this.regionName);
   }
@@ -135,6 +137,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     }
   }
 
+  @Override
   public Object put(Object key, Object value, byte[] deltaBytes, EntryEventImpl event, Operation op,
       boolean requireOldValue, Object expectedOldValue, Object callbackArg, boolean isCreate) {
     recordTXOperation(ServerRegionOperation.PUT, key, value, deltaBytes, event.getEventId(), op,
@@ -178,6 +181,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * java.lang.Object, org.apache.geode.cache.Operation, org.apache.geode.internal.cache.EventID,
    * java.lang.Object)
    */
+  @Override
   public Object destroy(Object key, Object expectedOldValue, Operation operation,
       EntryEventImpl event, Object callbackArg) {
     if (event.isBulkOpInProgress()) {
@@ -191,6 +195,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
 
+  @Override
   public void invalidate(EntryEventImpl event) {
     recordTXOperation(ServerRegionOperation.INVALIDATE, event.getKey(), event);
     InvalidateOp.execute(this.pool, this.region.getFullPath(), event);
@@ -250,6 +255,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * org.apache.geode.cache.client.internal.ServerRegionDataAccess#clear(org.apache.geode.internal.
    * cache.EventID, java.lang.Object)
    */
+  @Override
   public void clear(EventID eventId, Object callbackArg) {
     ClearOp.execute(this.pool, this.regionName, eventId, callbackArg);
   }
@@ -271,6 +277,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @see
    * org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
+  @Override
   public boolean containsKey(Object key) {
     recordTXOperation(ServerRegionOperation.CONTAINS_KEY, key);
     return ContainsKeyOp.execute(this.pool, this.regionName, key, MODE.KEY);
@@ -282,6 +289,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @see
    * org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
+  @Override
   public boolean containsValueForKey(Object key) {
     recordTXOperation(ServerRegionOperation.CONTAINS_VALUE_FOR_KEY, key);
     return ContainsKeyOp.execute(this.pool, this.regionName, key, MODE.VALUE_FOR_KEY);
@@ -293,6 +301,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * @see
    * org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
+  @Override
   public boolean containsValue(Object value) {
     recordTXOperation(ServerRegionOperation.CONTAINS_VALUE, null, value);
     return ContainsKeyOp.execute(this.pool, this.regionName, value, MODE.VALUE);
@@ -303,6 +312,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    *
    * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#keySet()
    */
+  @Override
   public Set keySet() {
     recordTXOperation(ServerRegionOperation.KEY_SET, null);
     return KeySetOp.execute(this.pool, this.regionName);
@@ -654,10 +664,12 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     super.detach();
   }
 
+  @Override
   public String getRegionName() {
     return this.regionName;
   }
 
+  @Override
   public Region getRegion() {
     return this.region;
   }
@@ -781,6 +793,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         hasResult, isHA, optimizeForWrite);
   }
 
+  @Override
   public Entry getEntry(Object key) {
     recordTXOperation(ServerRegionOperation.GET_ENTRY, key);
     return (Entry) GetEntryOp.execute(pool, region, key);

@@ -44,10 +44,12 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
     });
   }
 
+  @Override
   public void afterBucketRemoved(int bucketId, Iterable<?> keys) {
     afterSecondary(bucketId);
   }
 
+  @Override
   public void afterSecondary(int bucketId) {
     dm.getWaitingThreadPool().execute(() -> {
       try {

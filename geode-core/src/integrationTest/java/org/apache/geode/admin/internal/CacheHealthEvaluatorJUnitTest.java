@@ -66,11 +66,13 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setCacheLoader(new CacheLoader() {
+      @Override
       public Object load(LoaderHelper helper) throws CacheLoaderException {
 
         return "Loaded";
       }
 
+      @Override
       public void close() {}
     });
 
@@ -117,6 +119,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     assertEquals(0, status.size());
 
     region.getAttributesMutator().setCacheLoader(new CacheLoader() {
+      @Override
       public Object load(LoaderHelper helper) throws CacheLoaderException {
 
         try {
@@ -128,6 +131,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
         return "Loaded";
       }
 
+      @Override
       public void close() {}
 
     });
@@ -163,11 +167,13 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setCacheLoader(new CacheLoader() {
+      @Override
       public Object load(LoaderHelper helper) throws CacheLoaderException {
 
         return "Loaded";
       }
 
+      @Override
       public void close() {}
     });
 

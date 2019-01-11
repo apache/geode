@@ -85,6 +85,7 @@ public class RemoveClientFromDenylistMessage extends PooledDistributionMessage {
     DataSerializer.writeObject(proxyID, out);
   }
 
+  @Override
   public int getDSFID() {
     return REMOVE_CLIENT_FROM_DENYLIST_MESSAGE;
   }

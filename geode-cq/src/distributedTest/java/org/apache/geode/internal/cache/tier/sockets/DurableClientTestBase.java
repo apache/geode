@@ -274,6 +274,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
     registerInterest(client, regionName, false, InterestResultPolicy.NONE);
     server.invoke(new CacheSerializableRunnable("flush entries") {
+      @Override
       public void run2() throws CacheException {
         Region<String, String> region = CacheServerTestUtil.getCache().getRegion(regionName);
         assertNotNull(region);
@@ -292,6 +293,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     final CountDownLatch continueDrain = new CountDownLatch(1);
     volatile boolean clientWasRejected = false;
 
+    @Override
     public void doTestHook(String spot) {
       try {
         switch (spot) {
@@ -337,6 +339,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     final CountDownLatch unblockClient = new CountDownLatch(1);
     final CountDownLatch finish = new CountDownLatch(1);
 
+    @Override
     public void doTestHook(String spot) {
       if (spot.equals("PRE_DRAIN_IN_PROGRESS")) {
         try {
@@ -495,6 +498,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   void sendClientReady(VM vm) {
     // Send clientReady message
     vm.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getClientCache().readyForEvents();
       }
@@ -504,6 +508,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   protected void registerInterest(VM vm, final String regionName, final boolean durable,
       final InterestResultPolicy interestResultPolicy) {
     vm.invoke(new CacheSerializableRunnable("Register interest on region : " + regionName) {
+      @Override
       public void run2() throws CacheException {
 
         Region<Object, Object> region = CacheServerTestUtil.getCache().getRegion(regionName);
@@ -525,6 +530,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   void createCq(VM vm, final String cqName, final String cqQuery, final boolean durable) {
     vm.invoke(new CacheSerializableRunnable("Register cq " + cqName) {
+      @Override
       public void run2() throws CacheException {
 
         try {
@@ -540,6 +546,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   // Publishes strings
   void publishEntries(int startingValue, final int count) {
     this.publisherClientVM.invoke(new CacheSerializableRunnable("Publish entries") {
+      @Override
       public void run2() throws CacheException {
         Region<String, String> region = CacheServerTestUtil.getCache().getRegion(
             regionName);
@@ -559,6 +566,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   // Publishes portfolios
   void publishEntries(final String regionName, final int numEntries) {
     publisherClientVM.invoke(new CacheSerializableRunnable("publish " + numEntries + " entries") {
+      @Override
       public void run2() throws CacheException {
         // Get the region
         Region<Object, Object> region = CacheServerTestUtil.getCache().getRegion(regionName);
@@ -583,6 +591,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
       final int expectedNumber) {
     server.invoke(new CacheSerializableRunnable(
         "Check ha queued cq stats for durable client " + durableClientId + " cq: " + cqName) {
+      @Override
       public void run2() throws CacheException {
 
         final CacheClientNotifier ccnInstance = CacheClientNotifier.getInstance();
@@ -609,6 +618,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
       final int remaining) {
     server.invoke(new CacheSerializableRunnable(
         "Check ha queued size for durable client " + durableClientId) {
+      @Override
       public void run2() throws CacheException {
 
         final CacheClientNotifier ccnInstance = CacheClientNotifier.getInstance();
@@ -629,6 +639,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
       final int expectedNumber) {
     server.invoke(new CacheSerializableRunnable(
         "check number of durable cqs on server for durable client: " + durableClientId) {
+      @Override
       public void run2() throws CacheException {
         try {
           final CacheClientNotifier ccnInstance = CacheClientNotifier.getInstance();
@@ -716,6 +727,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   void checkPrimaryUpdater(VM vm) {
     vm.invoke(new CacheSerializableRunnable("Verify durable client") {
+      @Override
       public void run2() throws CacheException {
 
         await()

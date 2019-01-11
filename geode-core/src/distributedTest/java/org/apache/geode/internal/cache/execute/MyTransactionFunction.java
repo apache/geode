@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.execute.data.OrderId;
 
 public class MyTransactionFunction implements Function {
 
+  @Override
   public void execute(FunctionContext context) {
     RegionFunctionContext ctx = (RegionFunctionContext) context;
     verifyExecutionOnPrimary(ctx);
@@ -90,6 +91,7 @@ public class MyTransactionFunction implements Function {
     context.getResultSender().lastResult(null);
   }
 
+  @Override
   public String getId() {
     return "txFuntion";
   }
@@ -490,14 +492,17 @@ public class MyTransactionFunction implements Function {
 
   }
 
+  @Override
   public boolean hasResult() {
     return true;
   }
 
+  @Override
   public boolean optimizeForWrite() {
     return true;
   }
 
+  @Override
   public boolean isHA() {
     return false;
   }

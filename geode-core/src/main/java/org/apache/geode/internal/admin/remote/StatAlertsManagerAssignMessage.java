@@ -119,6 +119,7 @@ public class StatAlertsManagerAssignMessage extends PooledDistributionMessage {
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
+  @Override
   public int getDSFID() {
     return STAT_ALERTS_MGR_ASSIGN_MESSAGE;
   }

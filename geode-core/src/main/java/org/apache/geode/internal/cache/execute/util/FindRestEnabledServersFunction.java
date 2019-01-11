@@ -37,6 +37,7 @@ public class FindRestEnabledServersFunction implements InternalFunction {
   public static final String FIND_REST_ENABLED_SERVERS_FUNCTION_ID =
       FindRestEnabledServersFunction.class.getName();
 
+  @Override
   public void execute(FunctionContext context) {
     try {
       InternalCache cache = (InternalCache) context.getCache();
@@ -58,6 +59,7 @@ public class FindRestEnabledServersFunction implements InternalFunction {
     }
   }
 
+  @Override
   public String getId() {
     return FIND_REST_ENABLED_SERVERS_FUNCTION_ID;
   }

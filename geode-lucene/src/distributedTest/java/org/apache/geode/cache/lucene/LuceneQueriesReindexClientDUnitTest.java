@@ -62,9 +62,11 @@ public class LuceneQueriesReindexClientDUnitTest extends LuceneQueriesReindexDUn
     });
   }
 
+  @Override
   protected void initAccessor(SerializableRunnableIF createIndex, RegionTestableType regionTestType)
       throws Exception {}
 
+  @Override
   protected RegionTestableType[] getListOfRegionTestTypes() {
     return new RegionTestableType[] {RegionTestableType.PARTITION_WITH_CLIENT};
   }

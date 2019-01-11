@@ -22,6 +22,7 @@ public class CompiledAddition extends CompiledArithmetic implements OQLLexerToke
     super(left, right, op);
   }
 
+  @Override
   public int getType() {
     return ADDITION;
   }

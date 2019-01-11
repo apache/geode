@@ -44,6 +44,7 @@ public class LuceneIndexCreationOnFixedPRDUnitTest extends LuceneIndexCreationDU
     }
   }
 
+  @Override
   protected String getClassSimpleName() {
     return getClass().getSuperclass().getSimpleName();
   }

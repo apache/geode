@@ -139,26 +139,32 @@ public class GemFireHealthJmxImpl extends GemFireHealthImpl implements ManagedRe
     MBeanUtil.ensureMBeanIsRegistered((ManagedResource) this.dsHealthConfig);
   }
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.GEMFIRE_HEALTH;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public void cleanupResource() {
     close();
   }

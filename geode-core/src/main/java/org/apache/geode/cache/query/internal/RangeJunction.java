@@ -58,6 +58,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
   }
 
+  @Override
   void addUnevaluatedFilterOperands(List unevaluatedFilterOps) {
     throw new UnsupportedOperationException("This method should not have been invoked");
   }
@@ -96,16 +97,19 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     return this._operands[0].getPlanInfo(context);
   }
 
+  @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     return true;
   }
 
+  @Override
   public int getOperator() {
     return LITERAL_and;
   }
 
+  @Override
   public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, final int thisSize)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
@@ -462,6 +466,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     return rangeFilter;
   }
 
+  @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     Object r = _operands[0].evaluate(context); // UNDEFINED, null, or a
@@ -509,6 +514,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     Support.assertionFailed("Should not have come here");
   }
 
+  @Override
   public int getSizeEstimate(ExecutionContext context) {
     // TODO:Asif:Try to estimate better
     return RANGE_SIZE_ESTIMATE;
@@ -768,12 +774,14 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       Object evaluatedPath = this.indxInfo._path.evaluate(context);
       return evaluate(context, evaluatedPath);
     }
 
+    @Override
     public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
         ExecutionContext context, boolean completeExpnsNeeded)
         throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
@@ -800,10 +808,12 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
     }
 
+    @Override
     public int getType() {
       return NOTEQUALCONDITIONEVALUATOR;
     }
 
+    @Override
     public int getSizeEstimate(ExecutionContext context) {
       return RANGE_SIZE_ESTIMATE;
     }
@@ -813,10 +823,12 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       Support.assertionFailed("Should not have come here");
     }
 
+    @Override
     public int getOperator() {
       return LITERAL_and;
     }
 
+    @Override
     public boolean isBetterFilter(Filter comparedTo, ExecutionContext context, int thisSize)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException {
@@ -949,6 +961,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) throws TypeMismatchException,
         FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
       Object evaluatedPath = this.indxInfo._path.evaluate(context);
@@ -1098,6 +1111,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       throw new UnsupportedOperationException();
     }
 
+    @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       Object evaluatedPath = this.indxInfo._path.evaluate(context);

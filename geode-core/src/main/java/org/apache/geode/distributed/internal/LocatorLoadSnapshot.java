@@ -490,6 +490,7 @@ public class LocatorLoadSnapshot {
       Set excludedServers, int count) {
 
     TreeSet bestEntries = new TreeSet(new Comparator() {
+      @Override
       public int compare(Object o1, Object o2) {
         LoadHolder l1 = (LoadHolder) o1;
         LoadHolder l2 = (LoadHolder) o2;
@@ -632,6 +633,7 @@ public class LocatorLoadSnapshot {
       lh.addEstimate();
     }
 
+    @Override
     public void run() {
       if (removeIfPresentEstimate(this.key, this)) {
         decEstimate();

@@ -110,10 +110,12 @@ public class BlockingHARegionJUnitTest {
     final Thread thread1 = new DoPuts(hrq, 2);
     thread1.start();
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return hrq.region.size() == 2;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -124,10 +126,12 @@ public class BlockingHARegionJUnitTest {
     Thread thread2 = new DoTake(hrq, 1);
     thread2.start(); // start take thread
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return hrq.region.size() == 3;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -137,10 +141,12 @@ public class BlockingHARegionJUnitTest {
 
     // thread should have died since put should have proceeded
     ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return !thread1.isAlive();
       }
 
+      @Override
       public String description() {
         return "thread1 still alive";
       }
@@ -185,10 +191,12 @@ public class BlockingHARegionJUnitTest {
     thread5.start();
 
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return hrq.region.size() == 20000;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -270,10 +278,12 @@ public class BlockingHARegionJUnitTest {
     join(thread10, 30 * 1000);
 
     WaitCriterion ev = new WaitCriterion() {
+      @Override
       public boolean done() {
         return hrq.region.size() == 20000;
       }
 
+      @Override
       public String description() {
         return null;
       }
@@ -332,6 +342,7 @@ public class BlockingHARegionJUnitTest {
       final EventID ignore = new EventID(new byte[] {1}, 1, 1); //
       final EventID id2 = new EventID(new byte[] {1}, 1, 3); //
       Thread t1 = new Thread() {
+        @Override
         public void run() {
           try {
             hrq.put(new ConflatableObject("key1", "value1", id1, false, "region1"));

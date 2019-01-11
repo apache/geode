@@ -109,6 +109,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
   /**
    * Returns the name ("key") of the region entry amalgamated by this snapshot.
    */
+  @Override
   public Object getName() {
     return this.name;
   }
@@ -117,6 +118,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    * Since this snapshot does not represent a single region entry, this method returns
    * <code>null</code>.
    */
+  @Override
   public Object getValue() {
     return null;
   }
@@ -125,6 +127,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    * Since this snapshot does not represent a single region entry, this method returns
    * <code>null</code>.
    */
+  @Override
   public Object getUserAttribute() {
     return null;
   }
@@ -149,6 +152,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    * Returns the most recent <code>lastModifiedTime</code> of any instance of this snapshot's region
    * entry across the distributed system.
    */
+  @Override
   public long getLastModifiedTime() {
     return this.lastModifiedTime;
   }
@@ -157,6 +161,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
    * Returns the most recent <code>lastAccessTime</code> of any instance of this snapshot's region
    * entry across the distributed system.
    */
+  @Override
   public long getLastAccessTime() {
     return this.lastAccessTime;
   }
@@ -164,6 +169,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
   /**
    * Returns the cumulative number of hits across all instances of the snapshot's region entry.
    */
+  @Override
   public long getNumberOfHits() {
     return this.numHits;
   }
@@ -171,6 +177,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
   /**
    * Returns the cumulative number of misses across all instances of this snapshot's region entry.
    */
+  @Override
   public long getNumberOfMisses() {
     return this.numMisses;
   }
@@ -178,6 +185,7 @@ public class CompoundEntrySnapshot implements EntrySnapshot {
   /**
    * Returns the aggregate hit ratio across all instances of this snapshot's region entry.
    */
+  @Override
   public float getHitRatio() {
     return this.hitRatio;
   }

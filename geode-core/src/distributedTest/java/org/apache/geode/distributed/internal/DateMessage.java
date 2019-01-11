@@ -57,6 +57,7 @@ public class DateMessage extends SerialDistributionMessage {
   /**
    * Just prints out the date
    */
+  @Override
   public void process(ClusterDistributionManager dm) {
     // Make sure that message state is what we expect
     Assert.assertTrue(this.date != null);
@@ -64,21 +65,25 @@ public class DateMessage extends SerialDistributionMessage {
     System.out.println(format.format(this.date));
   }
 
+  @Override
   public void reset() {
     this.date = null;
   }
 
   ////////////////// Externalizable Methods //////////////////
 
+  @Override
   public int getDSFID() {
     return NO_FIXED_ID;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.date, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     super.fromData(in);

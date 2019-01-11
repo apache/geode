@@ -209,6 +209,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     // Verify it no longer exists on the server
     this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
+      @Override
       public void run2() throws CacheException {
         // Find the proxy
         checkNumberOfClientProxies(0);
@@ -318,6 +319,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     // Verify the durable client's queue contains the entries
     this.server1VM.invoke(new CacheSerializableRunnable("Verify durable client") {
+      @Override
       public void run2() throws CacheException {
         // Find the proxy
         CacheClientProxy proxy = getClientProxy();
@@ -371,6 +373,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getClientCache().readyForEvents();
       }
@@ -467,6 +470,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getClientCache().readyForEvents();
       }
@@ -510,6 +514,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     this.durableClientVM.invoke(new CacheSerializableRunnable("Get") {
+      @Override
       public void run2() throws CacheException {
 
         Region<Object, Object> region = CacheServerTestUtil.getCache().getRegion(regionName);
@@ -542,6 +547,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
   private void waitUntilQueueContainsRequiredNumberOfEvents(final VM vm,
       final int requiredEntryCount) {
     vm.invoke(new CacheSerializableRunnable("Verify durable client") {
+      @Override
       public void run2() throws CacheException {
 
         await().until(() -> {
@@ -584,6 +590,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     // Send clientReady message
     this.durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
       }
@@ -629,6 +636,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     }
 
     this.durableClientVM.invoke(new CacheSerializableRunnable("Get") {
+      @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = CacheServerTestUtil.getCache().getRegion(regionName);
         assertThat(region).isNotNull();

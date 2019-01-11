@@ -174,6 +174,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
     doPropagationTest(vm2, vm3, true, true);
     vm3.invoke(new SerializableRunnable("close cache") {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         cache.close();
@@ -191,6 +192,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
     final String name = getUniqueName();
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         RegionFactory rf = new RegionFactory();
@@ -212,6 +214,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
     final String name = getUniqueName();
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         RegionFactory rf = new RegionFactory();
@@ -238,6 +241,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
     final String name = getUniqueName();
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(name);
@@ -251,6 +255,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
     final String name = getUniqueName();
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(name);
@@ -263,6 +268,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
   private void checkAndClearListener(VM vm, final Serializable key, final boolean invalidated) {
     final String name = getUniqueName();
     vm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(name);
@@ -270,10 +276,12 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
         if (invalidated) {
           GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
+            @Override
             public String description() {
               return "Didn't receive invalidate after 30 seconds";
             }
 
+            @Override
             public boolean done() {
               return listener.remove(key);
             }
@@ -290,12 +298,14 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
   private void checkValue(VM vm, final Serializable key, final Object expected) {
     final String name = getUniqueName();
     vm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         final LocalRegion region = (LocalRegion) cache.getRegion(name);
 
         GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
+          @Override
           public boolean done() {
             Object value = null;
             try {
@@ -309,6 +319,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
             return expected == null ? value == null : expected.equals(value);
           }
 
+          @Override
           public String description() {
             return "Value did not become " + expected + " after 30s: " + region.getValueInVM(key);
           }
@@ -321,6 +332,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
   private void invalidateEntry(VM vm, final Serializable key) {
     final String name = getUniqueName();
     vm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(name);
@@ -332,6 +344,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
   private void putEntries(VM vm, final int start, final int end) {
     final String name = getUniqueName();
     vm.invoke(new SerializableRunnable() {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion(name);
@@ -347,6 +360,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
     final Host host = Host.getHost(0);
     vm.invoke(new SerializableRunnable() {
 
+      @Override
       public void run() {
         Cache cache = getCache();
 
@@ -368,6 +382,7 @@ public class ForceInvalidateEvictionDUnitTest extends JUnit4CacheTestCase {
   private int addCacheServer(VM vm) {
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     vm.invoke(new SerializableRunnable("add cache server") {
+      @Override
       public void run() {
         Cache cache = getCache();
         CacheServer server = cache.addCacheServer();

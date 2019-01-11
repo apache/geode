@@ -329,22 +329,27 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   /** The ModelMBean that is configured to manage this resource */
   private ModelMBean modelMBean;
 
+  @Override
   public String getMBeanName() {
     return this.mbeanName;
   }
 
+  @Override
   public ModelMBean getModelMBean() {
     return this.modelMBean;
   }
 
+  @Override
   public void setModelMBean(ModelMBean modelMBean) {
     this.modelMBean = modelMBean;
   }
 
+  @Override
   public ObjectName getObjectName() {
     return this.objectName;
   }
 
+  @Override
   public ManagedResourceType getManagedResourceType() {
     return ManagedResourceType.SYSTEM_MEMBER_CACHE;
   }
@@ -358,6 +363,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
    * But cleans up only StatisticResourceJmxImpl and SystemMemberCacheJmxImpl which are of type
    * ManagedResource.
    */
+  @Override
   public void cleanupResource() {
     synchronized (this.managedRegionResourcesMap) {
       Collection<SystemMemberRegionJmxImpl> values = managedRegionResourcesMap.values();

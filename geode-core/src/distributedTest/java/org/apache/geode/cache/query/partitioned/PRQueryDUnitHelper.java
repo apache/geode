@@ -651,6 +651,7 @@ public class PRQueryDUnitHelper implements Serializable {
   public CacheSerializableRunnable getCacheSerializableRunnableForPRPutsKeyValue(
       final String regionName, final Object[] portfolio, final int from, final int to) {
     SerializableRunnable prPuts = new CacheSerializableRunnable("PRPuts") {
+      @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
@@ -798,6 +799,7 @@ public class PRQueryDUnitHelper implements Serializable {
   public CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
+      @Override
       public void run2() throws CacheException {
 
         Cache cache = getCache();
@@ -923,6 +925,7 @@ public class PRQueryDUnitHelper implements Serializable {
   public CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryAndVerifyOrder(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
+      @Override
       public void run2() throws CacheException {
 
         Cache cache = getCache();
@@ -1037,6 +1040,7 @@ public class PRQueryDUnitHelper implements Serializable {
   public CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryWithLimit(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
+      @Override
       public void run2() throws CacheException {
 
         Cache cache = getCache();
@@ -1170,6 +1174,7 @@ public class PRQueryDUnitHelper implements Serializable {
   public CacheSerializableRunnable getCacheSerializableRunnableForPRCountStarQueries(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRCountStarQuery") {
+      @Override
       public void run2() throws CacheException {
 
         Cache cache = getCache();
@@ -1406,6 +1411,7 @@ public class PRQueryDUnitHelper implements Serializable {
       final String regionName, final int redundancy, final Class constraint) {
     SerializableRunnable createPrRegion;
     createPrRegion = new CacheSerializableRunnable(regionName) {
+      @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
         Region partitionedregion = null;
@@ -1680,6 +1686,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
     SerializableRunnable prIndexCreator =
         new CacheSerializableRunnable("ReplicatedRegionIndexCreator") {
+          @Override
           public void run2() {
             try {
               Cache cache = getCache();
@@ -2370,6 +2377,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
   public SerializableRunnable getCacheSerializableRunnableForCloseCache() {
     return new SerializableRunnable() {
+      @Override
       public void run() {
         JUnit4CacheTestCase.closeCache();
       }

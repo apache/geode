@@ -141,6 +141,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     buff.append("; isRebalance=").append(this.isRebalance);
   }
 
+  @Override
   public int getDSFID() {
     return PR_BECOME_PRIMARY_BUCKET_MESSAGE;
   }

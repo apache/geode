@@ -183,6 +183,7 @@ public class GemFireMemcachedServer {
     }
     final CountDownLatch latch = new CountDownLatch(1);
     acceptor = new Thread(new Runnable() {
+      @Override
       public void run() {
         for (;;) {
           Socket s = null;

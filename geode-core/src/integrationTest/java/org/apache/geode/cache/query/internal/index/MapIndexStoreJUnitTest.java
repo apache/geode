@@ -322,6 +322,7 @@ public class MapIndexStoreJUnitTest {
       return null;
     }
 
+    @Override
     public boolean isUpdateInProgress() {
       return false;
     }

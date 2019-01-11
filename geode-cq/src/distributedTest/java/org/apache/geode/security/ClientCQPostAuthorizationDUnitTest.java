@@ -71,6 +71,7 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
   protected final void preSetUpClientAuthorizationTestBase() throws Exception {
     getSystem();
     invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         getSystem();
       }

@@ -112,6 +112,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
 
       final DSClock clock = ((GemFireCacheImpl) cache).getSystem().getClock();
       WaitCriterion wc = new WaitCriterion() {
+        @Override
         public boolean done() {
           long clientTimeOffset = clock.getCacheTimeOffset();
           getLogWriter()
@@ -119,6 +120,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
           return clientTimeOffset >= TEST_OFFSET;
         }
 
+        @Override
         public String description() {
           return "Waiting for cacheTimeOffset to be non-zero.  PingOp should have set it to something";
         }
@@ -192,6 +194,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
 
       final DSClock clock = ((GemFireCacheImpl) cache).getSystem().getClock();
       WaitCriterion wc = new WaitCriterion() {
+        @Override
         public boolean done() {
           long clientTimeOffset = clock.getCacheTimeOffset();
           getLogWriter()
@@ -203,6 +206,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
           return abs(currentTimeMillis() - (cacheTime - clientTimeOffset)) < 5;
         }
 
+        @Override
         public String description() {
           return "Waiting for cacheTimeOffset to be negative and cacheTimeMillis to stabilize";
         }

@@ -89,6 +89,7 @@ public class QueueConnectionRequest extends ServerLocationRequest {
         + "}";
   }
 
+  @Override
   public int getDSFID() {
     return DataSerializableFixedID.QUEUE_CONNECTION_REQUEST;
   }

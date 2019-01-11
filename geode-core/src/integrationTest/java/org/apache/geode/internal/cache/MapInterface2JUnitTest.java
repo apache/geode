@@ -105,6 +105,7 @@ public class MapInterface2JUnitTest {
     AttributesMutator atm = rgn.getAttributesMutator();
     atm.addCacheListener(new CacheListenerAdapter() {
 
+      @Override
       public void afterRegionClear(RegionEvent event) {
         synchronized (MapInterface2JUnitTest.this) {
           event.getRegion().getCache().getLogger().info("afterRegionClear call back " + event);
@@ -150,6 +151,7 @@ public class MapInterface2JUnitTest {
     final boolean[] canCallbackProceed = new boolean[] {false};
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+      @Override
       public void afterRegionClear(RegionEvent event) {
         // Allow main thread to proceed just before sleeping
 
@@ -178,6 +180,7 @@ public class MapInterface2JUnitTest {
       }
     });
     Thread th = new Thread(new Runnable() {
+      @Override
       public void run() {
         region.clear();
       }
@@ -220,6 +223,7 @@ public class MapInterface2JUnitTest {
 
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
+      @Override
       public void afterRegionClear(RegionEvent event) {
         // Allwo main thread to proceed just before sleeping
 
@@ -237,6 +241,7 @@ public class MapInterface2JUnitTest {
       }
     });
     Thread th = new Thread(new Runnable() {
+      @Override
       public void run() {
         region.clear();
       }

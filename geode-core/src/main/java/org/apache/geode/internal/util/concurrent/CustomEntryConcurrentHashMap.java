@@ -332,6 +332,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#getKey()
      */
+    @Override
     public K getKey() {
       return this.key;
     }
@@ -339,6 +340,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#getMapValue()
      */
+    @Override
     public V getMapValue() {
       return this.value;
     }
@@ -346,6 +348,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#setMapValue(Object)
      */
+    @Override
     public void setMapValue(V newValue) {
       this.value = newValue;
     }
@@ -353,6 +356,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#getEntryHash()
      */
+    @Override
     public int getEntryHash() {
       return this.hash;
     }
@@ -360,6 +364,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#getNextEntry()
      */
+    @Override
     public HashEntry<K, V> getNextEntry() {
       return this.next;
     }
@@ -367,6 +372,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see CustomEntryConcurrentHashMap.HashEntry#setNextEntry
      */
+    @Override
     public void setNextEntry(final HashEntry<K, V> n) {
       this.next = n;
     }
@@ -1209,11 +1215,13 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
     private static final long serialVersionUID = 3765680607280951726L;
 
+    @Override
     public HashEntry<K, V> newEntry(final K key, final int hash, final HashEntry<K, V> next,
         final V value) {
       return new HashEntryImpl<K, V>(key, hash, next, value, null);
     }
 
+    @Override
     public int keyHashCode(final Object key, final boolean compareValues) {
       return keyHash(key, compareValues);
     }
@@ -1506,6 +1514,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *         mapping for the key
    * @throws NullPointerException if the specified key or value is null
    */
+  @Override
   public V putIfAbsent(final K key, final V value) {
     if (value == null) {
       throw new NullPointerException();
@@ -1595,6 +1604,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see MapCallback#newValue
      */
+    @Override
     public V newValue(K key, C context, P createParams) {
       return null;
     }
@@ -1602,11 +1612,13 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     /**
      * @see MapCallback#oldValueRead
      */
+    @Override
     public void oldValueRead(V value) {}
 
     /**
      * @see MapCallback#doRemoveValue
      */
+    @Override
     public boolean doRemoveValue(V value, C context, P removeParams) {
       return true;
     }
@@ -1740,6 +1752,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *
    * @throws NullPointerException if the specified key is null
    */
+  @Override
   public boolean remove(final Object key, final Object value) {
     if (value == null) {
       return false;
@@ -1754,6 +1767,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *
    * @throws NullPointerException if any of the arguments are null
    */
+  @Override
   public boolean replace(final K key, final V oldValue, final V newValue) {
     if (oldValue == null || newValue == null) {
       throw new NullPointerException();
@@ -1770,6 +1784,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
    *         mapping for the key
    * @throws NullPointerException if the specified key or value is null
    */
+  @Override
   public V replace(final K key, final V value) {
     if (value == null) {
       throw new NullPointerException();
@@ -1793,6 +1808,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
         Runnable runnable;
         if (OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()) {
           runnable = new Runnable() {
+            @Override
             public void run() {
               for (HashEntry<?, ?> he : clearedEntries) {
                 for (HashEntry<?, ?> p = he; p != null; p = p.getNextEntry()) {
@@ -1807,6 +1823,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
           };
         } else {
           runnable = new Runnable() {
+            @Override
             public void run() {
               for (HashEntry<?, ?> he : clearedEntries) {
                 for (HashEntry<?, ?> p = he; p != null; p = p.getNextEntry()) {
@@ -2065,10 +2082,12 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   class KeyIterator extends HashIterator implements Iterator<K>, Enumeration<K> {
 
+    @Override
     public K next() {
       return super.nextEntry().getKey();
     }
 
+    @Override
     public K nextElement() {
       return super.nextEntry().getKey();
     }
@@ -2076,10 +2095,12 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   class ValueIterator extends HashIterator implements Iterator<V>, Enumeration<V> {
 
+    @Override
     public V next() {
       return super.nextEntry().getMapValue();
     }
 
+    @Override
     public V nextElement() {
       return super.nextEntry().getMapValue();
     }
@@ -2125,6 +2146,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      *
      * @return the key corresponding to this entry
      */
+    @Override
     public K getKey() {
       return this.key;
     }
@@ -2134,6 +2156,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      *
      * @return the value corresponding to this entry
      */
+    @Override
     public V getValue() {
       return this.value;
     }
@@ -2144,6 +2167,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
      * @param value new value to be stored in this entry
      * @return the old value corresponding to the entry
      */
+    @Override
     public V setValue(final V value) {
       final V oldValue = this.value;
       this.value = value;
@@ -2263,6 +2287,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       this.reusableEntry = reusableEntry;
     }
 
+    @Override
     public Map.Entry<K, V> next() {
       final HashEntry<K, V> e = super.nextEntry();
       if (this.reusableEntry != null) {

@@ -280,6 +280,7 @@ public class IndexPrimaryKeyUsageJUnitTest {
     int IndexTypeFunctional = 0;
     int IndexTypePrimKey = 0;
 
+    @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
       indexesUsed.add(index.getName());
       if ((index.getType()).equals(IndexType.FUNCTIONAL)) {
@@ -289,6 +290,7 @@ public class IndexPrimaryKeyUsageJUnitTest {
       }
     }
 
+    @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
         isIndexesUsed = true;

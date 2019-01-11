@@ -81,6 +81,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
     }
   }
 
+  @Override
   public synchronized void cancel() {
     cancelled = true;
   }
@@ -98,6 +99,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
     return this.stats;
   }
 
+  @Override
   public int getDSFID() {
     return OBJECT_DETAILS_RESPONSE;
   }

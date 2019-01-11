@@ -59,6 +59,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
     VM vm = host.getVM(0);
     final String rName = getUniqueName();
     vm.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         createRegion(rName, false, 0);
         Region r = getCache().getRegion(rName);
@@ -104,6 +105,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
         this.originRemote = originRemote;
       }
 
+      @Override
       public Object call() throws Exception {
         createRegion(rName, false, 1);
         Region r = getCache().getRegion(rName);
@@ -121,6 +123,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
     vm3.invoke(new CreateRegion(true));
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getCache().getRegion(rName);
         for (int i = 0; i <= 113; i++) {
@@ -135,6 +138,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
       }
     });
     SerializableCallable validateCallbacks = new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getCache().getRegion(rName);
         InvalidatePRListener l = (InvalidatePRListener) r.getAttributes().getCacheListeners()[0];
@@ -151,6 +155,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
     vm3.invoke(validateCallbacks);
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getCache().getRegion(rName);
         InvalidatePRListener l = (InvalidatePRListener) r.getAttributes().getCacheListeners()[0];
@@ -171,6 +176,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
     vm3.invoke(validateCallbacks);
 
     vm1.invoke(new SerializableCallable() {
+      @Override
       public Object call() throws Exception {
         Region r = getCache().getRegion(rName);
         for (int i = 0; i <= 113; i++) {

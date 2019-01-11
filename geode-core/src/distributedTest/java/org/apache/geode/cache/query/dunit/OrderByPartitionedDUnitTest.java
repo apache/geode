@@ -239,6 +239,7 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
 
   private void createBuckets(VM vm) {
     vm.invoke(new SerializableRunnable("create accessor") {
+      @Override
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region");
@@ -251,6 +252,7 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
 
   private void createPR(VM vm, final String regionName, final Class valueConstraint) {
     vm.invoke(new SerializableRunnable("create data store") {
+      @Override
       public void run() {
         Cache cache = getCache();
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -274,6 +276,7 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
   private void createIndex(VM vm, final String indexName, final String indexedExpression,
       final String regionPath) {
     vm.invoke(new SerializableRunnable("create index") {
+      @Override
       public void run() {
         try {
           Cache cache = getCache();
@@ -301,6 +304,7 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     }
     final int finalIndxTypeCode = indxTypeCode;
     vm.invoke(new SerializableRunnable("create index") {
+      @Override
       public void run() {
         try {
           Cache cache = getCache();
@@ -358,6 +362,7 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
   private void closeCache(VM... vms) {
     for (VM vm : vms) {
       vm.invoke(new SerializableRunnable() {
+        @Override
         public void run() {
           getCache().close();
         }

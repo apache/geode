@@ -147,6 +147,7 @@ public class TestDiskRegion {
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
         (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
     factory.setCacheListener(new CacheListenerAdapter() {
+      @Override
       public void afterUpdate(EntryEvent event) {
         System.out.println("UPDATE: " + event.getKey() + " -> (" + event.getOldValue() + " -> "
             + event.getNewValue() + ")");

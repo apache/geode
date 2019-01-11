@@ -60,6 +60,7 @@ public class LocalViewMessage extends SerialDistributionMessage {
 
   // These "messages" are never DataSerialized
 
+  @Override
   public int getDSFID() {
     throw new UnsupportedOperationException();
   }

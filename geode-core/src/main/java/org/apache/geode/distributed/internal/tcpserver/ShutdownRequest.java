@@ -29,7 +29,9 @@ import org.apache.geode.DataSerializable;
 public class ShutdownRequest implements DataSerializable {
   private static final long serialVersionUID = 7920535743546544136L;
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
 
+  @Override
   public void toData(DataOutput out) throws IOException {}
 }
