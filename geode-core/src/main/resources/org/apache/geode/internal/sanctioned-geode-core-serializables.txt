@@ -636,7 +636,6 @@ org/apache/geode/pdx/PdxInitializationException,true,5098737377658808834
 org/apache/geode/pdx/PdxRegistryMismatchException,true,-2329989020829052537
 org/apache/geode/pdx/PdxSerializationException,true,-3843814927034345635
 org/apache/geode/pdx/internal/EnumInfo$PdxInstanceEnumInfo,true,7907582104525106416,ei:org/apache/geode/pdx/internal/EnumInfo,enumId:int
-org/apache/geode/pdx/internal/FieldNotFoundInPdxVersion,true,1292033563588485577
 org/apache/geode/pdx/internal/PdxInputStream,false
 org/apache/geode/pdx/internal/PdxReaderImpl,true,-6094553093860427759,blobType:org/apache/geode/pdx/internal/PdxType,dis:org/apache/geode/pdx/internal/PdxInputStream
 org/apache/geode/redis/internal/CoderException,true,4707944288714910949
