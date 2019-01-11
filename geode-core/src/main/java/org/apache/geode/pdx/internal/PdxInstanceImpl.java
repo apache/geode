@@ -35,7 +35,6 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
@@ -55,7 +54,7 @@ import org.apache.geode.pdx.WritablePdxInstance;
  * We do not use this normal java io serialization when serializing this class in GemFire because
  * Sendable takes precedence over Serializable.
  */
-public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstance, Sendable {
+public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstance {
 
   private static final long serialVersionUID = -1669268527103938431L;
 

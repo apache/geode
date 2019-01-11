@@ -14,7 +14,8 @@
  */
 package org.apache.geode.pdx.internal;
 
+import org.apache.geode.internal.Sendable;
 import org.apache.geode.pdx.PdxInstance;
 
-public interface InternalPdxInstance extends PdxInstance, ConvertableToBytes {
+public interface InternalPdxInstance extends PdxInstance, ConvertableToBytes, Sendable {
 }
