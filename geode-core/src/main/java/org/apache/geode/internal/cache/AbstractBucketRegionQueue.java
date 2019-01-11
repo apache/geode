@@ -27,7 +27,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -43,7 +42,6 @@ import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySen
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
-import org.apache.geode.internal.offheap.annotations.Released;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();
@@ -180,39 +178,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     return initializationLock;
   }
 
-  public void destroyKey(Object key) throws ForceReattemptException {
-    if (logger.isDebugEnabled()) {
-      logger.debug(" destroying primary key {}", key);
-    }
-    @Released
-    EntryEventImpl event = getPartitionedRegion().newDestroyEntryEvent(key, null);
-    event.setEventId(new EventID(cache.getInternalDistributedSystem()));
-    try {
-      event.setRegion(this);
-      basicDestroy(event, true, null);
-      checkReadiness();
-    } catch (EntryNotFoundException enf) {
-      if (getPartitionedRegion().isDestroyed()) {
-        getPartitionedRegion().checkReadiness();
-        if (isBucketDestroyed()) {
-          throw new ForceReattemptException("Bucket moved",
-              new RegionDestroyedException(
-                  "Region has been destroyed",
-                  getPartitionedRegion().getFullPath()));
-        }
-      }
-      throw enf;
-    } catch (RegionDestroyedException rde) {
-      getPartitionedRegion().checkReadiness();
-      if (isBucketDestroyed()) {
-        throw new ForceReattemptException("Bucket moved while destroying key " + key, rde);
-      }
-    } finally {
-      event.release();
-    }
-
-    this.notifyEntriesRemoved();
-  }
+  public abstract void destroyKey(Object key) throws ForceReattemptException;
 
   public void decQueueSize(int size) {
     this.gatewaySenderStats.decQueueSize(size);
@@ -342,18 +308,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
 
   }
-
-  @Override
-  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
-      Object expectedOldValue)
-      throws EntryNotFoundException, CacheWriterException, TimeoutException {
-    try {
-      super.basicDestroy(event, cacheWrite, expectedOldValue);
-    } finally {
-      GatewaySenderEventImpl.release(event.getRawOldValue());
-    }
-  }
-
 
   /**
    * Return all of the user PR buckets for this bucket region queue.

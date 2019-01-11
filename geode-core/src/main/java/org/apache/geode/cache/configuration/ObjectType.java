@@ -25,6 +25,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.geode.cache.Cache;
+
 /**
  * <p>
  * Java class for anonymous complex type.
@@ -45,6 +47,7 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;/complexType>
  * </pre>
  *
+ * ObjectType represents either a string or an object represented by the DeclarableType
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -130,5 +133,17 @@ public class ObjectType implements Serializable {
       return declarable.toString();
     }
     return "";
+  }
+
+  public Object newInstance(Cache cache) {
+    if (string != null) {
+      return string;
+    }
+
+    if (declarable != null) {
+      return declarable.newInstance(cache);
+    }
+
+    return null;
   }
 }

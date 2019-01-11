@@ -38,6 +38,8 @@ public enum ElementType {
       mapping.setTableName(attributes.getValue(JdbcConnectorServiceXmlParser.TABLE));
       mapping.setPdxName(attributes.getValue(JdbcConnectorServiceXmlParser.PDX_NAME));
       mapping.setIds(attributes.getValue(JdbcConnectorServiceXmlParser.IDS));
+      mapping.setCatalog(attributes.getValue(JdbcConnectorServiceXmlParser.CATALOG));
+      mapping.setSchema(attributes.getValue(JdbcConnectorServiceXmlParser.SCHEMA));
       stack.push(mapping);
     }
 

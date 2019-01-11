@@ -14,10 +14,12 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +58,8 @@ public class DescribeMappingFunctionTest {
   private static final String TEST_DATASOURCE = "testDataSource";
   private static final String TEST_SYNCHRONOUS = "false";
   private static final String TEST_ID = "testId";
+  private static final String TEST_CATALOG = "testCatalog";
+  private static final String TEST_SCHEMA = "testSchema";
 
   private DescribeMappingFunction function;
   private JdbcConnectorService service;
@@ -87,6 +91,8 @@ public class DescribeMappingFunctionTest {
     when(regionMapping.getTableName()).thenReturn(TEST_TABLE);
     when(regionMapping.getPdxName()).thenReturn(TEST_PDX);
     when(regionMapping.getIds()).thenReturn(TEST_ID);
+    when(regionMapping.getCatalog()).thenReturn(TEST_CATALOG);
+    when(regionMapping.getSchema()).thenReturn(TEST_SCHEMA);
   }
 
   @Test
@@ -119,6 +125,8 @@ public class DescribeMappingFunctionTest {
     expectedAttributes.put(DATA_SOURCE_NAME, TEST_DATASOURCE);
     expectedAttributes.put(SYNCHRONOUS_NAME, TEST_SYNCHRONOUS);
     expectedAttributes.put(ID_NAME, TEST_ID);
+    expectedAttributes.put(SCHEMA_NAME, TEST_SCHEMA);
+    expectedAttributes.put(CATALOG_NAME, TEST_CATALOG);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());

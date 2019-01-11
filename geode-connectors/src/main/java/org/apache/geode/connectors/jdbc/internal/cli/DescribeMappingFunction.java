@@ -14,10 +14,12 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 
@@ -53,6 +55,8 @@ public class DescribeMappingFunction extends CliFunction<String> {
     attributes.put(TABLE_NAME, mapping.getTableName());
     attributes.put(PDX_NAME, mapping.getPdxName());
     attributes.put(ID_NAME, mapping.getIds());
+    attributes.put(SCHEMA_NAME, mapping.getSchema());
+    attributes.put(CATALOG_NAME, mapping.getCatalog());
 
     try {
       attributes.put(SYNCHRONOUS_NAME,

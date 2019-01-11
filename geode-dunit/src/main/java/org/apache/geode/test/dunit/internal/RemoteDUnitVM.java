@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
 
-public class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
+class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
   private static final Logger logger = LogService.getLogger();
 
   RemoteDUnitVM() throws RemoteException {

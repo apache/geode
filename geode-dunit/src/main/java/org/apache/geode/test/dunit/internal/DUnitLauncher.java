@@ -94,6 +94,11 @@ public class DUnitLauncher {
   public static int NUM_VMS = 4;
 
   /**
+   * VM ID for the VM to use for the debugger.
+   */
+  static final int DEBUGGING_VM_NUM = -1;
+
+  /**
    * VM ID for the VM to use for the locator.
    */
   static final int LOCATOR_VM_NUM = -2;

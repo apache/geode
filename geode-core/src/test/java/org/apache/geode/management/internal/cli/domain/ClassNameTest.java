@@ -36,7 +36,9 @@ public class ClassNameTest {
 
   @Test
   public void empty() {
-    assertThat(new ClassName("", "{}")).isEqualTo(new ClassName(" ", "{\"k\":\"v\"}"))
+    assertThat(new ClassName("", "{}"))
+        .isEqualTo(new ClassName(null, "{}"))
+        .isEqualTo(new ClassName(" ", "{\"k\":\"v\"}"))
         .isEqualTo(ClassName.EMPTY);
   }
 

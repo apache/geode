@@ -73,6 +73,7 @@ version-bucket: ${VERSION_BUCKET}
 artifact-bucket: ${ARTIFACT_BUCKET}
 gradle-global-args: ${GRADLE_GLOBAL_ARGS}
 maven-snapshot-bucket: ${MAVEN_SNAPSHOT_BUCKET}
+semver-prerelease-token: ${SEMVER_PRERELEASE_TOKEN}
 YML
 
 

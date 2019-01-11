@@ -64,10 +64,6 @@ else
 fi
 
 
-if [ -v CALL_STACK_TIMEOUT ]; then
-  ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
-fi
-
 case $ARTIFACT_SLUG in
   windows*)
     JAVA_BUILD_PATH=C:/java${JAVA_BUILD_VERSION}
@@ -80,6 +76,12 @@ case $ARTIFACT_SLUG in
     SEP="&&"
     ;;
 esac
+
+
+if [ -v CALL_STACK_TIMEOUT ]; then
+  ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "export JAVA_HOME=${JAVA_TEST_PATH} && tmux new-session -d -s callstacks; tmux send-keys  ~/capture-call-stacks.sh\ ${PARALLEL_DUNIT}\ ${CALL_STACK_TIMEOUT} C-m"
+fi
+
 
 GRADLE_ARGS=" \
     -PcompileJVM=${JAVA_BUILD_PATH} \

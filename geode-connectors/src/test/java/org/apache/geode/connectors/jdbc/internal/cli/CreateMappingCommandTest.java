@@ -117,9 +117,11 @@ public class CreateMappingCommandTest {
     setupRequiredPreconditions();
     results.add(successFunctionResult);
     String ids = "ids";
+    String catalog = "catalog";
+    String schema = "schema";
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, ids);
+        tableName, pdxClass, false, ids, catalog, schema);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
@@ -131,6 +133,8 @@ public class CreateMappingCommandTest {
     assertThat(regionMapping.getTableName()).isEqualTo(tableName);
     assertThat(regionMapping.getPdxName()).isEqualTo(pdxClass);
     assertThat(regionMapping.getIds()).isEqualTo(ids);
+    assertThat(regionMapping.getCatalog()).isEqualTo(catalog);
+    assertThat(regionMapping.getSchema()).isEqualTo(schema);
     assertThat(synchronous).isFalse();
   }
 
@@ -140,7 +144,7 @@ public class CreateMappingCommandTest {
     results.add(successFunctionResult);
 
     ResultModel result = createRegionMappingCommand.createMapping("/" + regionName, dataSourceName,
-        tableName, pdxClass, false, null);
+        tableName, pdxClass, false, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
@@ -155,7 +159,7 @@ public class CreateMappingCommandTest {
     results.clear();
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null);
+        tableName, pdxClass, false, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
   }
@@ -166,7 +170,7 @@ public class CreateMappingCommandTest {
     doReturn(null).when(createRegionMappingCommand).getConfigurationPersistenceService();
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null);
+        tableName, pdxClass, false, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("Cluster Configuration must be enabled.");
@@ -183,7 +187,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null);
+        tableName, pdxClass, false, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString())
@@ -212,7 +216,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getCustomRegionElements()).thenReturn(customList);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null);
+        tableName, pdxClass, false, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("A JDBC mapping for " + regionName + " already exists.");
@@ -236,7 +240,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getRegionAttributes()).thenReturn(loaderAttribute);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null);
+        tableName, pdxClass, false, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("The existing region " + regionName
@@ -261,7 +265,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getRegionAttributes()).thenReturn(writerAttribute);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, true, null);
+        tableName, pdxClass, true, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("The existing region " + regionName
@@ -290,7 +294,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, true, null);
+        tableName, pdxClass, true, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
   }
@@ -318,7 +322,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null);
+        tableName, pdxClass, false, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString())

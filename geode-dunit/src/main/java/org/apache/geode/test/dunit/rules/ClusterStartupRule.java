@@ -15,8 +15,8 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
@@ -31,17 +31,17 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.JavaVersion;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
@@ -135,6 +135,10 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
 
   @Override
   protected void before() throws Throwable {
+    if (isJavaVersionAtLeast(JavaVersion.JAVA_11)) {
+      // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
+      IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
+    }
     DUnitLauncher.launchIfNeeded();
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
@@ -322,34 +326,11 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   /**
-   * this crashes the VM hosting the member/client. It removes the VM from the occupied VM list
-   * so that we can ignore it at cleanup.
+   * this crashes the VM hosting the member/client.
    */
   public void crashVM(int index) {
-    VMProvider member = occupiedVMs.remove(index);
-    member.invokeAsync(() -> {
-      if (InternalDistributedSystem.shutdownHook != null) {
-        Runtime.getRuntime().removeShutdownHook(InternalDistributedSystem.shutdownHook);
-      }
-      System.exit(1);
-    });
-
-    // wait till member is not reachable anymore.
-    await().until(() -> {
-      try {
-        member.invoke(() -> {
-        });
-      } catch (RMIException e) {
-        return true;
-      }
-      return false;
-    });
-
-    // delete the lingering files under this vm
-    Arrays.stream(member.getVM().getWorkingDirectory().listFiles())
-        .forEach(FileUtils::deleteQuietly);
-
-    member.getVM().bounce();
+    VMProvider member = occupiedVMs.get(index);
+    member.getVM().bounceForcibly();
   }
 
   public File getWorkingDirRoot() {

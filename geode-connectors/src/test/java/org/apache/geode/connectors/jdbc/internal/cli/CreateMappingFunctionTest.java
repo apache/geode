@@ -76,7 +76,7 @@ public class CreateMappingFunctionTest {
     distributedMember = mock(DistributedMember.class);
     service = mock(JdbcConnectorService.class);
 
-    regionMapping = new RegionMapping(REGION_NAME, null, null, null, null);
+    regionMapping = new RegionMapping(REGION_NAME, null, null, null, null, null, null);
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);

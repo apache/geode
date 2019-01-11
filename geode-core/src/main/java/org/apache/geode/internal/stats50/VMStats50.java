@@ -621,14 +621,49 @@ public class VMStats50 implements VMStatsContract {
       }
     }
 
-    refresh(this.heapMemStats, memBean.getHeapMemoryUsage());
-    refresh(this.nonHeapMemStats, memBean.getNonHeapMemoryUsage());
+    refresh(this.heapMemStats, getHeapMemoryUsage(memBean));
+    refresh(this.nonHeapMemStats, getNonHeapMemoryUsage(memBean));
     refreshGC();
     refreshMemoryPools();
     refreshThreads();
   }
 
+  /**
+   * Handle JDK-8207200 gracefully while fetching getHeapMemoryUsage from MemoryMXBean.
+   *
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8207200">JDK-8207200</a>
+   */
+  private MemoryUsage getHeapMemoryUsage(MemoryMXBean memBean) {
+    try {
+      return memBean.getHeapMemoryUsage();
+    } catch (IllegalArgumentException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("JDK-8207200 prevented stat sampling for HeapMemoryUsage");
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Handle JDK-8207200 gracefully while fetching getNonHeapMemoryUsage from MemoryMXBean.
+   *
+   * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8207200">JDK-8207200</a>
+   */
+  private MemoryUsage getNonHeapMemoryUsage(MemoryMXBean memBean) {
+    try {
+      return memBean.getNonHeapMemoryUsage();
+    } catch (IllegalArgumentException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("JDK-8207200 prevented stat sampling for NonHeapMemoryUsage");
+      }
+      return null;
+    }
+  }
+
   private void refresh(Statistics stats, MemoryUsage mu) {
+    if (mu == null) {
+      return;
+    }
     stats.setLong(mu_initMemoryId, mu.getInit());
     stats.setLong(mu_usedMemoryId, mu.getUsed());
     stats.setLong(mu_committedMemoryId, mu.getCommitted());

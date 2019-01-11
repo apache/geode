@@ -85,6 +85,6 @@ public class RegionMBeanAttributesTest {
     gfsh.executeAndAssertThat("alter region --name=/FOO --async-event-queue-id=").statusIsSuccess();
 
     eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();
-    assertThat(eventQueueIds).containsExactly("");
+    assertThat(eventQueueIds).isNotNull().isEmpty();
   }
 }

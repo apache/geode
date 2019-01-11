@@ -65,9 +65,15 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private static final String CREATE_MAPPING__SYNCHRONOUS_NAME = MappingConstants.SYNCHRONOUS_NAME;
   private static final String CREATE_MAPPING__SYNCHRONOUS_NAME__HELP =
       "By default, writes will be asynchronous. If true, writes will be synchronous.";
-  static final String CREATE_MAPPING__ID_NAME = MappingConstants.ID_NAME;
-  static final String CREATE_MAPPING__ID_NAME__HELP =
+  private static final String CREATE_MAPPING__ID_NAME = MappingConstants.ID_NAME;
+  private static final String CREATE_MAPPING__ID_NAME__HELP =
       "The table column names to use as the region key for this JDBC mapping. If more than one column name is given then they must be separated by commas.";
+  private static final String CREATE_MAPPING__CATALOG_NAME = MappingConstants.CATALOG_NAME;
+  private static final String CREATE_MAPPING__CATALOG_NAME__HELP =
+      "The catalog that contains the database table. By default, the catalog is the empty string causing the table to be referenced without a catalog prefix.";
+  private static final String CREATE_MAPPING__SCHEMA_NAME = MappingConstants.SCHEMA_NAME;
+  private static final String CREATE_MAPPING__SCHEMA_NAME__HELP =
+      "The schema that contains the database table. By default, the schema is the empty string causing the table to be referenced without a schema prefix.";
 
   public static String createAsyncEventQueueName(String regionPath) {
     if (regionPath.startsWith("/")) {
@@ -92,15 +98,19 @@ public class CreateMappingCommand extends SingleGfshCommand {
       @CliOption(key = CREATE_MAPPING__SYNCHRONOUS_NAME,
           help = CREATE_MAPPING__SYNCHRONOUS_NAME__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous,
-      @CliOption(key = CREATE_MAPPING__ID_NAME,
-          help = CREATE_MAPPING__ID_NAME__HELP) String id) {
+      @CliOption(key = CREATE_MAPPING__ID_NAME, help = CREATE_MAPPING__ID_NAME__HELP) String id,
+      @CliOption(key = CREATE_MAPPING__CATALOG_NAME,
+          help = CREATE_MAPPING__CATALOG_NAME__HELP) String catalog,
+      @CliOption(key = CREATE_MAPPING__SCHEMA_NAME,
+          help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema) {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 
     // input
     Set<DistributedMember> targetMembers = findMembersForRegion(regionName);
-    RegionMapping mapping = new RegionMapping(regionName, pdxName, table, dataSourceName, id);
+    RegionMapping mapping =
+        new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema);
 
     try {
       ConfigurationPersistenceService configurationPersistenceService =

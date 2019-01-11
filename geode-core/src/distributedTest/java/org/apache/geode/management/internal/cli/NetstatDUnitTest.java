@@ -15,7 +15,9 @@
 
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.JavaVersion;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -161,8 +164,13 @@ public class NetstatDUnitTest {
     assertThat(lines.get(4).trim().split("[,\\s]+")).containsExactly("server-1");
   }
 
+  // This test runs OK on JDK11 but takes a very long time on JDK8
   @Test
   public void testOutputWithLsofToFile() throws Exception {
+    // Skipping test on JDK8. Running lsof command takes an excessive amount of time on Java 8
+    assumeThat(isJavaVersionAtLeast(JavaVersion.JAVA_11))
+        .as("Skipping test due to excessive run time when running lsof on JDK 8").isTrue();
+
     File outputFile = new File(temp.newFolder(), "command.log.txt");
 
     CommandResult result =

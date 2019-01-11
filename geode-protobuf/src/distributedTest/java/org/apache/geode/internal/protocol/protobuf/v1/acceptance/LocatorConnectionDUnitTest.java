@@ -30,11 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.Statistics;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
@@ -43,34 +40,54 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /*
  * Test sending ProtoBuf messages to the locator
  */
 @Category(ClientServerTest.class)
-public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
+public class LocatorConnectionDUnitTest {
+
+  // Has to be distributed because how else would we query the members?
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(2);
 
   @Rule
   public final DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
 
-  @Before
-  public void setup() throws IOException {
-    Host.getLocator().invoke(() -> System.setProperty("geode.feature-protobuf-protocol", "true"));
+  private MemberVM locatorVM;
+  private int locatorPort;
+  private String hostName;
 
-    startCacheWithCacheServer();
+  @Before
+  public void setup() {
+    for (VM vm : VM.getAllVMs()) {
+      vm.invoke(() -> System.setProperty("geode.feature-protobuf-protocol", "true"));
+    }
+
+    Properties properties = new Properties();
+    properties.put(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
+    properties.put(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
+
+    clusterStartupRule.getVM(0)
+        .invoke(() -> System.setProperty("geode.feature-protobuf-protocol", "true"));
+    locatorVM = clusterStartupRule.startLocatorVM(0, properties, 0);
+    locatorPort = locatorVM.invoke(() -> ClusterStartupRule.getLocator().getPort());
+
+    clusterStartupRule.startServerVM(1, locatorPort);
+
+    hostName = Host.getHost(0).getHostName();
   }
 
   private Socket createSocket() throws IOException {
-    Host host = Host.getHost(0);
-    int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
-    Socket socket = new Socket(host.getHostName(), locatorPort);
+    Socket socket = new Socket(hostName, locatorPort);
     MessageUtil.sendHandshake(socket);
     MessageUtil.verifyHandshakeSuccess(socket);
     return socket;
@@ -151,10 +168,9 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     ignoredInvalidExecutionContext.remove();
   }
 
-  private Statistics getStatistics() {
-    InternalDistributedSystem distributedSystem =
-        (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
-
+  private static Statistics getStatistics() {
+    final DistributedSystem distributedSystem =
+        ClusterStartupRule.getLocator().getDistributedSystem();
     Statistics[] protobufServerStats = distributedSystem.findStatisticsByType(
         distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_CLIENT_STATISTICS));
     assertEquals(1, protobufServerStats.length);
@@ -162,42 +178,42 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private Long getBytesReceived() {
-    return Host.getLocator().invoke(() -> {
+    return locatorVM.invoke(() -> {
       Statistics statistics = getStatistics();
       return statistics.get("bytesReceived").longValue();
     });
   }
 
   private Long getBytesSent() {
-    return Host.getLocator().invoke(() -> {
+    return locatorVM.invoke(() -> {
       Statistics statistics = getStatistics();
       return statistics.get("bytesSent").longValue();
     });
   }
 
   private Long getMessagesReceived() {
-    return Host.getLocator().invoke(() -> {
+    return locatorVM.invoke(() -> {
       Statistics statistics = getStatistics();
       return statistics.get("messagesReceived").longValue();
     });
   }
 
   private Long getMessagesSent() {
-    return Host.getLocator().invoke(() -> {
+    return locatorVM.invoke(() -> {
       Statistics statistics = getStatistics();
       return statistics.get("messagesSent").longValue();
     });
   }
 
   private Integer getClientConnectionStarts() {
-    return Host.getLocator().invoke(() -> {
+    return locatorVM.invoke(() -> {
       Statistics statistics = getStatistics();
       return statistics.get("clientConnectionStarts").intValue();
     });
   }
 
   private Integer getClientConnectionTerminations() {
-    return Host.getLocator().invoke(() -> {
+    return locatorVM.invoke(() -> {
       Statistics statistics = getStatistics();
       return statistics.get("clientConnectionTerminations").intValue();
     });
@@ -215,7 +231,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
 
   private void validateStats(long messagesReceived, long messagesSent, long bytesReceived,
       long bytesSent, int clientConnectionStarts, int clientConnectionTerminations) {
-    Host.getLocator().invoke(() -> {
+    locatorVM.invoke(() -> {
       await().untilAsserted(() -> {
         Statistics statistics = getStatistics();
         assertEquals(0, statistics.get("currentClientConnections"));
@@ -229,23 +245,5 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(0L, statistics.get("authenticationFailures"));
       });
     });
-  }
-
-  @Override
-  public Properties getDistributedSystemProperties() {
-    Properties properties = super.getDistributedSystemProperties();
-    properties.put(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
-    properties.put(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
-    return properties;
-  }
-
-  private Integer startCacheWithCacheServer() throws IOException {
-    System.setProperty("geode.feature-protobuf-protocol", "true");
-
-    InternalCache cache = getCache();
-    CacheServer cacheServer = cache.addCacheServer();
-    cacheServer.setPort(0);
-    cacheServer.start();
-    return cacheServer.getPort();
   }
 }

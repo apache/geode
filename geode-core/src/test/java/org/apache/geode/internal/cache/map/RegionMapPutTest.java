@@ -683,8 +683,9 @@ public class RegionMapPutTest {
   }
 
   @Test
-  public void lruUpdateCallbackCalled_ifPutDoneWithoutAClear() throws Exception {
+  public void lruUpdateCallbackCalled_ifPutDoneWithoutAClear() {
     ifNew = true;
+    when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(true);
     when(event.getOperation()).thenReturn(Operation.CREATE);
 
     doPut();
@@ -693,9 +694,43 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void lruUpdateCallbackNotCalled_ifCallbacksNotDisabled() {
+    ifNew = true;
+    when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(false);
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+
+    doPut();
+
+    verify(focusedRegionMap, never()).lruUpdateCallback();
+  }
+
+  @Test
+  public void enableLruUpdateCallbackCalled_ifCallbacksDisabled() {
+    ifNew = true;
+    when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(true);
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+
+    doPut();
+
+    verify(focusedRegionMap, times(1)).enableLruUpdateCallback();
+  }
+
+  @Test
+  public void enableLruUpdateCallbackNotCalled_ifCallbacksNotDisabled() {
+    ifNew = true;
+    when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(false);
+    when(event.getOperation()).thenReturn(Operation.CREATE);
+
+    doPut();
+
+    verify(focusedRegionMap, never()).enableLruUpdateCallback();
+  }
+
+  @Test
   public void lruUpdateCallbackNotCalled_ifPutDoneWithAClear() throws Exception {
     ifNew = true;
     when(event.getOperation()).thenReturn(Operation.CREATE);
+    when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(true);
     doThrow(RegionClearedException.class).when(event).putNewEntry(any(), any());
 
     doPut();
@@ -778,6 +813,7 @@ public class RegionMapPutTest {
   public void putThrows_ifLruUpdateCallbackThrowsDiskAccessException() throws Exception {
     ifNew = true;
     when(event.getOperation()).thenReturn(Operation.CREATE);
+    when(focusedRegionMap.disableLruUpdateCallback()).thenReturn(true);
     doThrow(DiskAccessException.class).when(focusedRegionMap).lruUpdateCallback();
 
     assertThatThrownBy(() -> doPut()).isInstanceOf(DiskAccessException.class);

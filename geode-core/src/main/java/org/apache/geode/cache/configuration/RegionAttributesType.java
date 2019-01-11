@@ -20,7 +20,12 @@ package org.apache.geode.cache.configuration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -28,7 +33,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.ExpirationAction;
 
 
 /**
@@ -929,6 +937,18 @@ public class RegionAttributesType implements Serializable {
   }
 
   /**
+   * turn the comma separated ids into a set of id
+   */
+  public Set<String> getGatewaySenderIdsAsSet() {
+    if (gatewaySenderIds == null) {
+      return null;
+    }
+    return Arrays.stream(gatewaySenderIds.split(","))
+        .filter(StringUtils::isNotBlank)
+        .collect(Collectors.toSet());
+  }
+
+  /**
    * Sets the value of the gatewaySenderIds property.
    *
    * allowed object is
@@ -948,6 +968,18 @@ public class RegionAttributesType implements Serializable {
    */
   public String getAsyncEventQueueIds() {
     return asyncEventQueueIds;
+  }
+
+  /**
+   * turn the comma separated id into a set of ids
+   */
+  public Set<String> getAsyncEventQueueIdsAsSet() {
+    if (asyncEventQueueIds == null) {
+      return null;
+    }
+    return Arrays.stream(asyncEventQueueIds.split(","))
+        .filter(StringUtils::isNotBlank)
+        .collect(Collectors.toSet());
   }
 
   /**
@@ -1441,7 +1473,7 @@ public class RegionAttributesType implements Serializable {
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"asynchronousWrites", "synchronousWrites"})
-  public static class DiskWriteAttributes {
+  public static class DiskWriteAttributes implements Serializable {
 
     @XmlElement(name = "asynchronous-writes", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.DiskWriteAttributes.AsynchronousWrites asynchronousWrites;
@@ -1648,6 +1680,36 @@ public class RegionAttributesType implements Serializable {
         required = true)
     protected ExpirationAttributesDetail expirationAttributes = new ExpirationAttributesDetail();
 
+    public ExpirationAttributesType() {}
+
+    public ExpirationAttributesType(Integer timeout, ExpirationAction action, String expiry,
+        Properties iniProps) {
+      expirationAttributes.setTimeout(Objects.toString(timeout, null));
+      if (action != null) {
+        expirationAttributes.setAction(action.toXmlString());
+      }
+      if (expiry != null) {
+        expirationAttributes.setCustomExpiry(new DeclarableType(expiry, iniProps));
+      }
+    }
+
+    /**
+     * @return true if timeout or action is specified
+     */
+    public boolean hasTimoutOrAction() {
+      return (getTimeout() != null || getAction() != null);
+    }
+
+    /**
+     * @return true if custom expiry class is specified
+     */
+    public boolean hasCustomExpiry() {
+      return getCustomExpiry() != null;
+    }
+
+    /**
+     * @return the custom expiry declarable
+     */
     public DeclarableType getCustomExpiry() {
       return expirationAttributes.getCustomExpiry();
     }

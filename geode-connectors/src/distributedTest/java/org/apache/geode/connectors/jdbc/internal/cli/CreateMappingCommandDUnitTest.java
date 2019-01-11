@@ -15,10 +15,12 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
+import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -191,6 +193,8 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(TABLE_NAME, "myTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(ID_NAME, "myId");
+    csb.addOption(CATALOG_NAME, "myCatalog");
+    csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -200,7 +204,8 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       assertThat(mapping.getIds()).isEqualTo("myId");
-
+      assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(mapping.getSchema()).isEqualTo("mySchema");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
     });
@@ -211,7 +216,8 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
       assertThat(regionMapping.getIds()).isEqualTo("myId");
-
+      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
       validateRegionAlteredInClusterConfig(regionName, false);
       validateAsyncEventQueueCreatedInClusterConfig(regionName, false);
     });
@@ -228,6 +234,8 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "true");
     csb.addOption(ID_NAME, "myId");
+    csb.addOption(CATALOG_NAME, "myCatalog");
+    csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -237,6 +245,8 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       assertThat(mapping.getIds()).isEqualTo("myId");
+      assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(mapping.getSchema()).isEqualTo("mySchema");
       validateRegionAlteredOnServer(regionName, true);
     });
 
@@ -246,6 +256,8 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
       assertThat(regionMapping.getIds()).isEqualTo("myId");
+      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
       validateRegionAlteredInClusterConfig(regionName, true);
     });
   }
@@ -357,7 +369,7 @@ public class CreateMappingCommandDUnitTest {
     // NOTE: --table is optional so it should not be in the output but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
-            "You should specify option (--table, --pdx-name, --synchronous, --id) for this command");
+            "You should specify option (--table, --pdx-name, --synchronous, --id, --catalog, --schema) for this command");
   }
 
   @Test

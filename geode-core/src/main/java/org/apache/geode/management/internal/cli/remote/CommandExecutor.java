@@ -133,7 +133,7 @@ public class CommandExecutor {
     // if command result is ok, we will need to see if we need to update cluster configuration
     InfoResultModel infoResultModel = resultModel.addInfo(ResultModel.INFO_SECTION);
     InternalConfigurationPersistenceService ccService =
-        (InternalConfigurationPersistenceService) gfshCommand.getConfigurationPersistenceService();
+        gfshCommand.getConfigurationPersistenceService();
     if (ccService == null) {
       infoResultModel.addLine(SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
       return resultModel;
@@ -179,7 +179,7 @@ public class CommandExecutor {
             }
           }
         } catch (Exception e) {
-          String message = "failed to update cluster config for " + group;
+          String message = "Failed to update cluster config for " + group;
           logger.error(message, e);
           // for now, if one cc update failed, we will set this flag. Will change this when we can
           // add lines to the result returned by the command

@@ -16,10 +16,12 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
+import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -125,12 +127,15 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
         .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+
     csb.addOption(REGION_NAME, regionName);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "testTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
+    csb.addOption(CATALOG_NAME, "myCatalog");
+    csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -148,6 +153,8 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
+    commandResultAssert.containsKeyValuePair(CATALOG_NAME, "myCatalog");
+    commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
   }
 
   @Test
@@ -197,7 +204,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     InternalCache cache = ClusterStartupRule.getCache();
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     service.createRegionMapping(new RegionMapping(TEST_REGION, "myPdxClass",
-        "testTable", "connection", "myId"));
+        "testTable", "connection", "myId", "myCatalog", "mySchema"));
     assertThat(service.getMappingForRegion(TEST_REGION)).isNotNull();
   }
 }

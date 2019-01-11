@@ -16,27 +16,46 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class TableMetaData implements TableMetaDataView {
 
-  private final String tableName;
+  private final String quotedTablePath;
   private final List<String> keyColumnNames;
-  private final HashMap<String, Integer> columnNameToTypeMap;
+  private final Map<String, Integer> columnNameToTypeMap;
   private final String identifierQuoteString;
 
-  public TableMetaData(String tableName, List<String> keyColumnNames, String quoteString) {
-    this.tableName = tableName;
+  public TableMetaData(String catalogName, String schemaName, String tableName,
+      List<String> keyColumnNames, String quoteString, Map<String, Integer> dataTypes) {
+    if (quoteString == null) {
+      quoteString = "";
+    }
+    this.quotedTablePath = createQuotedTablePath(catalogName, schemaName, tableName, quoteString);
     this.keyColumnNames = keyColumnNames;
-    this.columnNameToTypeMap = new HashMap<>();
+    this.columnNameToTypeMap = dataTypes;
     this.identifierQuoteString = quoteString;
   }
 
+  private static String createQuotedTablePath(String catalogName, String schemaName,
+      String tableName, String quote) {
+    StringBuilder builder = new StringBuilder();
+    appendPrefix(builder, catalogName, quote);
+    appendPrefix(builder, schemaName, quote);
+    builder.append(quote).append(tableName).append(quote);
+    return builder.toString();
+  }
+
+  private static void appendPrefix(StringBuilder builder, String prefix, String quote) {
+    if (prefix != null && !prefix.isEmpty()) {
+      builder.append(quote).append(prefix).append(quote).append('.');
+    }
+  }
+
   @Override
-  public String getTableName() {
-    return tableName;
+  public String getQuotedTablePath() {
+    return quotedTablePath;
   }
 
   @Override
@@ -56,10 +75,6 @@ public class TableMetaData implements TableMetaDataView {
   @Override
   public Set<String> getColumnNames() {
     return columnNameToTypeMap.keySet();
-  }
-
-  public void addDataType(String columnName, int dataType) {
-    this.columnNameToTypeMap.put(columnName, dataType);
   }
 
   @Override

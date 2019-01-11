@@ -48,14 +48,12 @@ wrapper {
   distributionType = "all"
 }
 
-// Load all properties in dependency-version.properties as project properties, so all projects can read them
-Properties dependencyVersions = new Properties()
-dependencyVersions.load(new FileInputStream("${project.projectDir}/gradle/dependency-versions.properties"))
-dependencyVersions.keys().each{ k -> project.ext[k] = dependencyVersions[k]}
-
 allprojects {
-  version = versionNumber + releaseQualifier + releaseType
-  ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+  ext.isReleaseVersion = true
+  if(version.contains("SNAPSHOT")) {
+    ext.isReleaseVersion = false
+    version = (version as String).replaceFirst(/SNAPSHOT.*/, 'SNAPSHOT')
+  }
 
   repositories {
     mavenLocal()
@@ -69,6 +67,11 @@ allprojects {
   }
 }
 
+apply from: "${scriptDir}/geode-dependency-management.gradle"
+// We will apply project versions here at the root project until they can be removed
+// Those subprojects that are properly managed by Spring will apply this plugin explicitly.
+versionManagement.applySpringDependencyManagement = false
+
 // utilities.gradle MUST be read before publish.gradle for reasons
 apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
@@ -76,7 +79,6 @@ apply from: "${scriptDir}/ide.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"
 apply from: "${scriptDir}/test.gradle"
 apply from: "${scriptDir}/test-by-category.gradle"
-apply from: "${scriptDir}/publish.gradle"
 apply from: "${scriptDir}/code-analysis.gradle"
 apply from: "${scriptDir}/sonar.gradle"
 apply from: "${scriptDir}/rat.gradle"
@@ -84,7 +86,6 @@ apply from: "${scriptDir}/docker.gradle"
 apply from: "${scriptDir}/spotless.gradle"
 apply from: "${scriptDir}/lint.gradle"
 apply from: "${scriptDir}/resolve-dependencies.gradle"
-apply from: "${scriptDir}/geode-dependency-management.gradle"
 
 subprojects {
   apply plugin: 'com.github.ben-manes.versions'
@@ -151,4 +152,41 @@ task generate() {
   // This task is a no-op, with other tasks (such as geode-protobuf-messages:generateProto)
   // injecting themselves as a task dependency into this task.  E.g., via
   // `afterEvaluate.rootProject.generate.dependsOn(generateProto)`
+}
+
+// Prompt the user for a publication passsword to sign archives or upload artifacts, if requested
+if (project.hasProperty('askpass')) {
+  gradle.taskGraph.whenReady { taskGraph ->
+    if(taskGraph.allTasks.any {it instanceof Sign}) {
+      if(!project.hasProperty('signing.keyId') || !project.hasProperty('signing.secretKeyRingFile')) {
+        println "You must configure your signing.keyId and signing.secretKeyRingFile"
+        println "in ~/.gradle/gradle.properties in order to sign jars\n"
+        println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
+        throw new GradleException("Signing key/keyring is missing")
+      }
+
+      if(!project.hasProperty('signing.password')) {
+        def password = PasswordDialog.askPassword("Please enter your password to unlock your gpg keyring for signing artifacts")
+
+        subprojects { ext."signing.password" = password }
+      }
+    }
+
+    if(taskGraph.allTasks.any {it instanceof PublishToMavenRepository}) {
+      if(!project.hasProperty('mavenUsername')) {
+        println "You must configure your mavenUsername in ~/.gradle/gradle.properties in order to publish\n"
+        println "See https://cwiki.apache.org/confluence/display/GEODE/Release+Steps"
+        throw new GradleException("mavenUsername is missing")
+      }
+      if(!project.hasProperty('mavenPassword')) {
+        def getPassword = PasswordDialog.askPassword("Please enter your apache password to publish to Apache Maven")
+
+        taskGraph.allTasks.each {
+          if(it instanceof PublishToMavenRepository) {
+            (it as PublishToMavenRepository).repository.credentials.password = getPassword
+          }
+        }
+      }
+    }
+  }
 }

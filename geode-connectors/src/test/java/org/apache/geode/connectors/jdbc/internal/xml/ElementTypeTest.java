@@ -16,9 +16,11 @@ package org.apache.geode.connectors.jdbc.internal.xml;
 
 
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CATALOG;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.DATA_SOURCE;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.IDS;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_NAME;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.SCHEMA;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.TABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -75,6 +77,8 @@ public class ElementTypeTest {
     when(attributes.getValue(TABLE)).thenReturn("table");
     when(attributes.getValue(PDX_NAME)).thenReturn("pdxClass");
     when(attributes.getValue(IDS)).thenReturn("ids");
+    when(attributes.getValue(CATALOG)).thenReturn("catalog");
+    when(attributes.getValue(SCHEMA)).thenReturn("schema");
     when(regionCreation.getFullPath()).thenReturn("/region");
     stack.push(regionCreation);
 
@@ -86,6 +90,8 @@ public class ElementTypeTest {
     assertThat(regionMapping.getTableName()).isEqualTo("table");
     assertThat(regionMapping.getPdxName()).isEqualTo("pdxClass");
     assertThat(regionMapping.getIds()).isEqualTo("ids");
+    assertThat(regionMapping.getCatalog()).isEqualTo("catalog");
+    assertThat(regionMapping.getSchema()).isEqualTo("schema");
   }
 
   @Test

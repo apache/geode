@@ -12,22 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit.cache.examples;
+package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.dunit.cache.CacheTestCase;
-
-
-@SuppressWarnings("serial")
-public class CacheTestCaseExampleTest extends CacheTestCase {
+public class RegionConfigTest {
 
   @Test
-  public void getCacheCreatesCache() throws Exception {
-    InternalCache cache = getCache();
-    assertThat(cache.isClosed()).isFalse();
+  public void regionNameShouldNotHaveSlash() {
+    RegionConfig config = new RegionConfig();
+    config.setName("/regionA");
+    assertThat(config.getName()).isEqualTo("regionA");
   }
 }

@@ -91,7 +91,6 @@ public class ExpirationAttributes implements DataSerializable {
     }
   }
 
-
   /**
    * Returns the number of seconds before a region or value expires.
    *

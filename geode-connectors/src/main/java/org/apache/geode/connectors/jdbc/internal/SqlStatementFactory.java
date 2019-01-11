@@ -24,14 +24,14 @@ class SqlStatementFactory {
     this.quote = identifierQuoteString;
   }
 
-  String createSelectQueryString(String tableName, EntryColumnData entryColumnData) {
+  String createSelectQueryString(String quotedTablePath, EntryColumnData entryColumnData) {
     return addKeyColumnsToQuery(entryColumnData,
-        new StringBuilder("SELECT * FROM " + quoteIdentifier(tableName)));
+        new StringBuilder("SELECT * FROM ").append(quotedTablePath));
   }
 
-  String createDestroySqlString(String tableName, EntryColumnData entryColumnData) {
+  String createDestroySqlString(String quotedTablePath, EntryColumnData entryColumnData) {
     return addKeyColumnsToQuery(entryColumnData,
-        new StringBuilder("DELETE FROM " + quoteIdentifier(tableName)));
+        new StringBuilder("DELETE FROM ").append(quotedTablePath));
   }
 
   private String addKeyColumnsToQuery(EntryColumnData entryColumnData, StringBuilder queryBuilder) {
@@ -40,7 +40,7 @@ class SqlStatementFactory {
     while (iterator.hasNext()) {
       ColumnData keyColumn = iterator.next();
       boolean onLastColumn = !iterator.hasNext();
-      queryBuilder.append(quoteIdentifier(keyColumn.getColumnName())).append(" = ?");
+      queryBuilder.append(quote).append(keyColumn.getColumnName()).append(quote).append(" = ?");
       if (!onLastColumn) {
         queryBuilder.append(" AND ");
       }
@@ -48,24 +48,26 @@ class SqlStatementFactory {
     return queryBuilder.toString();
   }
 
-  String createUpdateSqlString(String tableName, EntryColumnData entryColumnData) {
-    StringBuilder query =
-        new StringBuilder("UPDATE ").append(quoteIdentifier(tableName)).append(" SET ");
+  String createUpdateSqlString(String quotedTablePath, EntryColumnData entryColumnData) {
+    StringBuilder query = new StringBuilder("UPDATE ")
+        .append(quotedTablePath)
+        .append(" SET ");
     int idx = 0;
     for (ColumnData column : entryColumnData.getEntryValueColumnData()) {
       idx++;
       if (idx > 1) {
         query.append(", ");
       }
-      query.append(quoteIdentifier(column.getColumnName()));
+      query.append(quote).append(column.getColumnName()).append(quote);
       query.append(" = ?");
     }
     return addKeyColumnsToQuery(entryColumnData, query);
   }
 
-  String createInsertSqlString(String tableName, EntryColumnData entryColumnData) {
-    StringBuilder columnNames =
-        new StringBuilder("INSERT INTO ").append(quoteIdentifier(tableName)).append(" (");
+  String createInsertSqlString(String quotedTablePath, EntryColumnData entryColumnData) {
+    StringBuilder columnNames = new StringBuilder("INSERT INTO ")
+        .append(quotedTablePath)
+        .append(" (");
     StringBuilder columnValues = new StringBuilder(" VALUES (");
     addColumnDataToSqlString(entryColumnData, columnNames, columnValues);
     columnNames.append(')');
@@ -86,12 +88,8 @@ class SqlStatementFactory {
       } else {
         firstTime[0] = false;
       }
-      columnNames.append(quoteIdentifier(column.getColumnName()));
+      columnNames.append(quote).append(column.getColumnName()).append(quote);
       columnValues.append('?');
     });
-  }
-
-  private String quoteIdentifier(String identifier) {
-    return quote + identifier + quote;
   }
 }

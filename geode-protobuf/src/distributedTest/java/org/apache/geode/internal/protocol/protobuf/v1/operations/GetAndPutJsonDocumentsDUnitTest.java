@@ -17,17 +17,19 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import com.google.protobuf.ByteString;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
@@ -41,10 +43,10 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 /**
  * This integration test uses a Cache to hold PdxInstances in serialized form.
@@ -59,7 +61,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  * This addresses JIRA tickets GEODE-4116 and GEODE-4168.
  */
 @Category({ClientServerTest.class})
-public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
+public class GetAndPutJsonDocumentsDUnitTest {
 
   /** this JSON document is used by the "put" the tests */
   private static final String jsonDocument =
@@ -77,42 +79,50 @@ public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
 
   private static ProtobufSerializationService serializationService;
 
-  private VM storingVM;
+  private MemberVM storingVM;
+
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(1);
+
+  @Rule
+  public ServerStarterRule serverStarterRule = new ServerStarterRule();
+  private InternalCache cache;
+  private Region<String, Object> testRegion;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     serializationService = new ProtobufSerializationService();
+
+    final MemberVM locatorVM = clusterStartupRule.startLocatorVM(0);
+    final int locatorPort = locatorVM.invoke(() -> ClusterStartupRule.getLocator().getPort());
+
+    serverStarterRule.startServer(new Properties(), locatorPort);
+    cache = serverStarterRule.getCache();
 
     // create a distributed region in two VMs so that we can store an object
     // in "storingVM" and so ensure that it is in serialized form in the other
     // VM
-    getCache().<String, Object>createRegionFactory(RegionShortcut.REPLICATE).create("TestRegion");
+    testRegion =
+        cache.<String, Object>createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
 
-    storingVM = Host.getHost(0).getVM(0);
+    storingVM = clusterStartupRule.startServerVM(1, locatorPort);
+
     storingVM.invoke("create region", () -> {
-      getCache().<String, Object>createRegionFactory(RegionShortcut.REPLICATE).create("TestRegion");
+      ClusterStartupRule.getCache().<String, Object>createRegionFactory(RegionShortcut.REPLICATE)
+          .create(regionName);
     });
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    serializationService = null;
-    Cache cache = basicGetCache();
-    if (cache != null) {
-      cache.close();
-    }
   }
 
   @Test
   public void testThatGetReturnsJSONDocumentForPdxInstance() throws Exception {
-    storeTestDocument();
+    storingVM.invoke(GetAndPutJsonDocumentsDUnitTest::storeTestDocument);
 
     RegionAPI.GetRequest getRequest = generateGetRequest(key);
     GetRequestOperationHandler operationHandler = new GetRequestOperationHandler();
-    getCache().setReadSerializedForCurrentThread(true);
+    cache.setReadSerializedForCurrentThread(true);
     try {
       Result result = operationHandler.process(serializationService, getRequest,
-          TestExecutionContext.getNoAuthCacheExecutionContext(getCache()));
+          TestExecutionContext.getNoAuthCacheExecutionContext(cache));
 
       Assert.assertTrue(result instanceof Success);
       RegionAPI.GetResponse response = (RegionAPI.GetResponse) result.getMessage();
@@ -121,20 +131,20 @@ public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
       String actualValue = response.getResult().getJsonObjectResult();
       assertEquals(jsonDocument, actualValue);
     } finally {
-      getCache().setReadSerializedForCurrentThread(false);
+      cache.setReadSerializedForCurrentThread(false);
     }
   }
 
   @Test
   public void testThatGetAllReturnsJSONDocumentForPdxInstance() throws Exception {
-    storeTestDocument();
+    storingVM.invoke(GetAndPutJsonDocumentsDUnitTest::storeTestDocument);
 
-    getCache().setReadSerializedForCurrentThread(true);
+    cache.setReadSerializedForCurrentThread(true);
     try {
       RegionAPI.GetAllRequest getRequest = generateGetAllRequest(key);
       GetAllRequestOperationHandler operationHandler = new GetAllRequestOperationHandler();
       Result result = operationHandler.process(serializationService, getRequest,
-          TestExecutionContext.getNoAuthCacheExecutionContext(getCache()));
+          TestExecutionContext.getNoAuthCacheExecutionContext(cache));
 
       Assert.assertTrue(result instanceof Success);
       RegionAPI.GetAllResponse response = (RegionAPI.GetAllResponse) result.getMessage();
@@ -144,7 +154,7 @@ public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
       String actualValue = entryValue.getJsonObjectResult();
       assertEquals(jsonDocument, actualValue);
     } finally {
-      getCache().setReadSerializedForCurrentThread(false);
+      cache.setReadSerializedForCurrentThread(false);
     }
   }
 
@@ -153,10 +163,10 @@ public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
     RegionAPI.PutRequest putRequest = generatePutRequest(key, jsonDocument);
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
     Result result = operationHandler.process(serializationService, putRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(getCache()));
+        TestExecutionContext.getNoAuthCacheExecutionContext(cache));
 
     Assert.assertTrue(result instanceof Success);
-    PdxInstance pdxInstance = (PdxInstance) getCache().getRegion(regionName).get(key);
+    PdxInstance pdxInstance = (PdxInstance) testRegion.get(key);
     assertEquals("__GEMFIRE_JSON", pdxInstance.getClassName());
   }
 
@@ -165,21 +175,21 @@ public class GetAndPutJsonDocumentsDUnitTest extends JUnit4CacheTestCase {
     RegionAPI.PutAllRequest putRequest = generatePutAllRequest(key, jsonDocument);
     PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
     Result result = operationHandler.process(serializationService, putRequest,
-        TestExecutionContext.getNoAuthCacheExecutionContext(getCache()));
+        TestExecutionContext.getNoAuthCacheExecutionContext(cache));
 
     Assert.assertTrue(result instanceof Success);
-    PdxInstance pdxInstance = (PdxInstance) getCache().getRegion(regionName).get(key);
+    PdxInstance pdxInstance = (PdxInstance) testRegion.get(key);
     assertEquals("__GEMFIRE_JSON", pdxInstance.getClassName());
   }
 
 
   ///////////////////////////////// methods for encoding messages //////////////////////////////
 
-
-  private void storeTestDocument() {
-    storingVM.invoke("store test document", () -> {
-      getCache().getRegion(regionName).put(key, pdxDocument);
-    });
+  // separate static method to avoid serializing the test class.
+  // We only have to put on a different VM because we don't properly handle PdxSerializable (but not
+  // actually serialized as a PdxInstance) objects.
+  private static void storeTestDocument() {
+    ClusterStartupRule.getCache().getRegion(regionName).put(key, pdxDocument);
   }
 
   private RegionAPI.GetRequest generateGetRequest(String key) throws EncodingException {

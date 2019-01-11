@@ -14,10 +14,12 @@
  */
 package org.apache.geode.connectors.jdbc.org.apache.geode.connectors.util;
 
+import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.mockito.ArgumentMatchers.any;
@@ -76,7 +78,6 @@ public class DescribeMappingCommandTest {
   public void whenMemberExists() {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
-
     Map<String, String> attributes = new HashMap<>();
     attributes.put(REGION_NAME, "region");
     attributes.put(PDX_NAME, "class1");
@@ -84,8 +85,11 @@ public class DescribeMappingCommandTest {
     attributes.put(DATA_SOURCE_NAME, "name1");
     attributes.put(SYNCHRONOUS_NAME, "true");
     attributes.put(ID_NAME, "myId");
+    attributes.put(SCHEMA_NAME, "mySchema");
+    attributes.put(CATALOG_NAME, "myCatalog");
 
     DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
+
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
@@ -97,7 +101,9 @@ public class DescribeMappingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOutput(REGION_NAME, "region")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
-        .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId").containsOutput("true");
+        .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
+        .containsOutput("true");
   }
 
   @Test

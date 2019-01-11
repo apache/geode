@@ -17,16 +17,20 @@ package org.apache.geode.test.dunit;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringWriter;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.test.dunit.internal.BounceResult;
+import org.apache.geode.test.dunit.internal.ChildVMLauncher;
 import org.apache.geode.test.dunit.internal.MethodInvokerResult;
+import org.apache.geode.test.dunit.internal.ProcessHolder;
 import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.internal.StandAloneDUnitEnv;
 import org.apache.geode.test.version.VersionManager;
@@ -36,6 +40,8 @@ import org.apache.geode.test.version.VersionManager;
  */
 @SuppressWarnings("serial,unused")
 public class VM implements Serializable {
+
+  private static final Logger logger = LogService.getLogger();
 
   public static final int CONTROLLER_VM = -1;
 
@@ -55,6 +61,10 @@ public class VM implements Serializable {
 
   /** The state of this VM */
   private volatile boolean available;
+
+  private transient volatile ProcessHolder processHolder;
+
+  private transient ChildVMLauncher childVMLauncher;
 
   /**
    * Returns the {@code VM} identity. For {@link StandAloneDUnitEnv} the number returned is a
@@ -146,15 +156,19 @@ public class VM implements Serializable {
   /**
    * Creates a new {@code VM} that runs on a given host with a given process id.
    */
-  public VM(final Host host, final int id, final RemoteDUnitVMIF client) {
-    this(host, VersionManager.CURRENT_VERSION, id, client);
+  public VM(final Host host, final int id, final RemoteDUnitVMIF client,
+      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
+    this(host, VersionManager.CURRENT_VERSION, id, client, processHolder, childVMLauncher);
   }
 
-  public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client) {
+  public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client,
+      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
     this.host = host;
     this.id = id;
     this.version = version;
     this.client = client;
+    this.processHolder = processHolder;
+    this.childVMLauncher = childVMLauncher;
     available = true;
   }
 
@@ -202,7 +216,8 @@ public class VM implements Serializable {
    */
   @Deprecated
   public <V> V invoke(final Class<?> targetClass, final String methodName) {
-    return invoke(targetClass, methodName, new Object[0]);
+    checkAvailability(targetClass.getName(), methodName);
+    return executeMethodOnClass(targetClass, methodName, new Object[0]);
   }
 
   /**
@@ -234,20 +249,8 @@ public class VM implements Serializable {
    */
   @Deprecated
   public <V> V invoke(final Class<?> targetClass, final String methodName, final Object[] args) {
-    if (!available) {
-      throw new RMIException(this, targetClass.getName(), methodName,
-          new IllegalStateException("VM not available: " + this));
-    }
-
-    MethodInvokerResult result = execute(targetClass, methodName, args);
-
-    if (!result.exceptionOccurred()) {
-      return (V) result.getResult();
-
-    } else {
-      throw new RMIException(this, targetClass.getName(), methodName, result.getException(),
-          result.getStackTrace());
-    }
+    checkAvailability(targetClass.getName(), methodName);
+    return executeMethodOnClass(targetClass, methodName, args);
   }
 
   /**
@@ -345,7 +348,8 @@ public class VM implements Serializable {
    * @see SerializableRunnable
    */
   public void invoke(final String name, final SerializableRunnableIF runnable) {
-    invoke(new NamedRunnable(name, runnable), "run");
+    checkAvailability(NamedRunnable.class.getName(), "run");
+    executeMethodOnObject(new NamedRunnable(name, runnable), "run", new Object[0]);
   }
 
   /**
@@ -357,7 +361,8 @@ public class VM implements Serializable {
    * @see SerializableRunnable
    */
   public void invoke(final SerializableRunnableIF runnable) {
-    invoke(runnable, "run");
+    checkAvailability(runnable.getClass().getName(), "run");
+    executeMethodOnObject(runnable, "run", new Object[0]);
   }
 
   /**
@@ -369,7 +374,8 @@ public class VM implements Serializable {
    * @see SerializableCallable
    */
   public <V> V invoke(final String name, final SerializableCallableIF<V> callable) {
-    return invoke(new NamedCallable<>(name, callable), "call");
+    checkAvailability(NamedCallable.class.getName(), "call");
+    return executeMethodOnObject(new NamedCallable<>(name, callable), "call", new Object[0]);
   }
 
   /**
@@ -380,7 +386,8 @@ public class VM implements Serializable {
    * @see SerializableCallable
    */
   public <V> V invoke(final SerializableCallableIF<V> callable) {
-    return invoke(callable, "call");
+    checkAvailability(callable.getClass().getName(), "call");
+    return executeMethodOnObject(callable, "call", new Object[0]);
   }
 
   /**
@@ -398,7 +405,8 @@ public class VM implements Serializable {
    */
   @Deprecated
   public <V> V invoke(final Object targetObject, final String methodName) {
-    return invoke(targetObject, methodName, new Object[0]);
+    checkAvailability(targetObject.getClass().getName(), methodName);
+    return executeMethodOnObject(targetObject, methodName, new Object[0]);
   }
 
   /**
@@ -417,20 +425,8 @@ public class VM implements Serializable {
    */
   @Deprecated
   public <V> V invoke(final Object targetObject, final String methodName, final Object[] args) {
-    if (!available) {
-      throw new RMIException(this, targetObject.getClass().getName(), methodName,
-          new IllegalStateException("VM not available: " + this));
-    }
-
-    MethodInvokerResult result = execute(targetObject, methodName, args);
-
-    if (!result.exceptionOccurred()) {
-      return (V) result.getResult();
-
-    } else {
-      throw new RMIException(this, targetObject.getClass().getName(), methodName,
-          result.getException(), result.getStackTrace());
-    }
+    checkAvailability(targetObject.getClass().getName(), methodName);
+    return executeMethodOnObject(targetObject, methodName, args);
   }
 
   /**
@@ -481,28 +477,40 @@ public class VM implements Serializable {
   }
 
   private synchronized void bounce(final String targetVersion, boolean force) {
-    if (!available) {
-      throw new RMIException(this, getClass().getName(), "bounceVM",
-          new IllegalStateException("VM not available: " + this));
-    }
+    checkAvailability(getClass().getName(), "bounceVM");
 
+    logger.info("Bouncing {} old pid is {}", id, getPid());
     available = false;
-
     try {
-      BounceResult result = DUnitEnv.get().bounce(targetVersion, id, force);
-      id = result.getNewId();
-      client = result.getNewClient();
+      if (force) {
+        processHolder.killForcibly();
+      } else {
+        SerializableRunnableIF runnable = () -> new Thread(() -> {
+          try {
+            // sleep before exit so that the rmi call is returned
+            Thread.sleep(100);
+            System.exit(0);
+          } catch (InterruptedException e) {
+            logger.error("VM bounce thread interrupted before exiting.", e);
+          }
+        }).start();
+        executeMethodOnObject(runnable, "run", new Object[0]);
+      }
+      processHolder.waitFor();
+      processHolder = childVMLauncher.launchVM(targetVersion, id, true);
       version = targetVersion;
+      client = childVMLauncher.getStub(id);
       available = true;
+      logger.info("Bounced {} new pid is {}", id, getPid());
+    } catch (InterruptedException | IOException | NotBoundException e) {
+      throw new Error("Unable to restart VM " + id, e);
+    }
+  }
 
-    } catch (UnsupportedOperationException e) {
-      available = true;
-      throw e;
-
-    } catch (RemoteException e) {
-      StringWriter sw = new StringWriter();
-      e.printStackTrace(new PrintWriter(sw, true));
-      throw new RMIException(this, getClass().getName(), "bounceVM", e, sw.toString());
+  private void checkAvailability(String className, String methodName) {
+    if (!available) {
+      throw new RMIException(this, className, methodName,
+          new IllegalStateException("VM not available: " + this));
     }
   }
 
@@ -516,26 +524,32 @@ public class VM implements Serializable {
         + (VersionManager.isCurrentVersion(version) ? "" : (" with version " + version));
   }
 
-  private MethodInvokerResult execute(final Class<?> targetClass, final String methodName,
+  private <V> V executeMethodOnObject(final Object targetObject, final String methodName,
       final Object[] args) {
     try {
-      return client.executeMethodOnClass(targetClass.getName(), methodName, args);
-    } catch (RemoteException exception) {
-      throw new RMIException(this, targetClass.getName(), methodName, exception);
-    }
-  }
-
-  private MethodInvokerResult execute(final Object targetObject, final String methodName,
-      final Object[] args) {
-    try {
-      if (args == null) {
-        return client.executeMethodOnObject(targetObject, methodName);
-      } else {
-        return client.executeMethodOnObject(targetObject, methodName, args);
+      MethodInvokerResult result = client.executeMethodOnObject(targetObject, methodName, args);
+      if (result.exceptionOccurred()) {
+        throw new RMIException(this, targetObject.getClass().getName(), methodName,
+            result.getException(), result.getStackTrace());
       }
+      return (V) result.getResult();
     } catch (RemoteException exception) {
       throw new RMIException(this, targetObject.getClass().getName(), methodName, exception);
     }
   }
 
+  private <V> V executeMethodOnClass(final Class<?> targetClass, final String methodName,
+      final Object[] args) {
+    try {
+      MethodInvokerResult result =
+          client.executeMethodOnClass(targetClass.getName(), methodName, args);
+      if (result.exceptionOccurred()) {
+        throw new RMIException(this, targetClass.getName(), methodName, result.getException(),
+            result.getStackTrace());
+      }
+      return (V) result.getResult();
+    } catch (RemoteException exception) {
+      throw new RMIException(this, targetClass.getName(), methodName, exception);
+    }
+  }
 }

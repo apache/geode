@@ -33,6 +33,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.Conflatable;
@@ -42,6 +43,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
+import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.offheap.Releasable;
@@ -61,12 +63,15 @@ import org.apache.geode.internal.size.Sizeable;
  *
  */
 public class GatewaySenderEventImpl
-    implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable {
+    implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable,
+    VersionedDataSerializable {
   private static final long serialVersionUID = -5690172020872255422L;
 
   protected static final Object TOKEN_NULL = new Object();
 
-  protected static final short VERSION = 0x11;
+  // It should use current version. But it was hard-coded to be 0x11, i.e. GEODE_120_ORDINAL,
+  // by mistake since 120 to pre-190
+  protected static final short VERSION = Version.GEODE_190.ordinal();
 
   protected EnumListenerEvent operation;
 
@@ -85,7 +90,7 @@ public class GatewaySenderEventImpl
   /**
    * The number of parts for the <code>Message</code>
    *
-   * @see org.apache.geode.internal.cache.tier.sockets.Message
+   * @see Message
    */
   protected int numberOfParts;
 
@@ -169,6 +174,10 @@ public class GatewaySenderEventImpl
   protected Long shadowKey = Long.valueOf(-1L);
 
   protected boolean isInitialized;
+
+  private transient boolean isConcurrencyConflict = false;
+
+  private short version;
 
   /**
    * Is this thread in the process of serializing this event?
@@ -309,6 +318,7 @@ public class GatewaySenderEventImpl
     if (initialize) {
       initialize();
     }
+    this.isConcurrencyConflict = event.isConcurrencyConflict();
   }
 
   /**
@@ -670,7 +680,13 @@ public class GatewaySenderEventImpl
     return GATEWAY_SENDER_EVENT_IMPL;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GEODE_1_9_0_0(out);
+    DataSerializer.writeBoolean(this.isConcurrencyConflict, out);
+  }
+
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out) throws IOException {
     // Make sure we are initialized before we serialize.
     initialize();
     out.writeShort(VERSION);
@@ -694,11 +710,16 @@ public class GatewaySenderEventImpl
     DataSerializer.writeObject(this.key, out);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    short version = in.readShort();
-    if (version != VERSION) {
-      // warning?`
+    fromDataPre_GEODE_1_9_0_0(in);
+    if (version >= Version.GEODE_190.ordinal()) {
+      this.isConcurrencyConflict = DataSerializer.readBoolean(in);
     }
+  }
+
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in) throws IOException, ClassNotFoundException {
+    version = in.readShort();
     this.isInitialized = true;
     this.action = in.readInt();
     this.numberOfParts = in.readInt();
@@ -741,7 +762,8 @@ public class GatewaySenderEventImpl
         .append(";creationTime=").append(this.creationTime).append(";shadowKey=")
         .append(this.shadowKey).append(";timeStamp=").append(this.versionTimeStamp)
         .append(";acked=").append(this.isAcked).append(";dispatched=").append(this.isDispatched)
-        .append(";bucketId=").append(this.bucketId).append("]");
+        .append(";bucketId=").append(this.bucketId).append(";isConcurrencyConflict=")
+        .append(this.isConcurrencyConflict).append("]");
     return buffer.toString();
   }
 
@@ -1123,6 +1145,10 @@ public class GatewaySenderEventImpl
     return bucketId;
   }
 
+  public boolean isConcurrencyConflict() {
+    return isConcurrencyConflict;
+  }
+
   /**
    * @param tailKey the tailKey to set
    */
@@ -1139,7 +1165,7 @@ public class GatewaySenderEventImpl
 
   @Override
   public Version[] getSerializationVersions() {
-    return null;
+    return new Version[] {Version.GEODE_190};
   }
 
   public int getSerializedValueSize() {
