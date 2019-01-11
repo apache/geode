@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
@@ -68,7 +68,7 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter
 
   public LoginHandlerInterceptor() {}
 
-  @TestingOnly
+  @VisibleForTesting
   LoginHandlerInterceptor(SecurityService securityService) {
     this.securityService = securityService;
   }

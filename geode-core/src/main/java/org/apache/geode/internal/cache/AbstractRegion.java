@@ -34,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.CacheListener;
@@ -375,7 +375,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     }
   }
 
-  @TestingOnly
+  @VisibleForTesting
   AbstractRegion() {
     this.cache = null;
     this.serialNumber = 0;

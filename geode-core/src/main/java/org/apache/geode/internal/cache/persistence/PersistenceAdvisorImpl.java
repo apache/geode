@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
@@ -93,7 +93,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         diskRegionStats, persistentMemberManager, new PersistentStateQueryMessageSenderFactory());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   PersistenceAdvisorImpl(CacheDistributionAdvisor cacheDistributionAdvisor,
       DistributedLockService distributedLockService, PersistentMemberView persistentMemberView,
       String regionPath, DiskRegionStats diskRegionStats,

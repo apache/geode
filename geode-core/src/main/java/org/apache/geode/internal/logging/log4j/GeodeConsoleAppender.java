@@ -39,7 +39,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
 import org.apache.logging.log4j.core.util.NullOutputStream;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * Wraps {@link ConsoleAppender} with additions defined in {@link PausableAppender} and
@@ -245,7 +245,7 @@ public class GeodeConsoleAppender extends AbstractOutputStreamAppender<OutputStr
         + " {paused=" + paused + ", debug=" + debug + ", delegate=" + delegate + "}";
   }
 
-  @TestingOnly
+  @VisibleForTesting
   ConsoleAppender getDelegate() {
     return delegate;
   }

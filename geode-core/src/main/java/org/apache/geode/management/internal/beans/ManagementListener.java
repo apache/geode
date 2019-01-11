@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.beans;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -55,7 +55,7 @@ public class ManagementListener implements ResourceEventsListener {
     this(system, new ManagementAdapter(), new ReentrantReadWriteLock());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   ManagementListener(InternalDistributedSystem system, ManagementAdapter adapter,
       ReadWriteLock readWriteLock) {
     this.system = system;

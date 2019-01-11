@@ -34,7 +34,7 @@ import org.apache.logging.log4j.core.filter.AbstractFilterable;
 import org.apache.logging.log4j.core.lookup.StrLookup;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogLevelUpdateOccurs;
 import org.apache.geode.internal.logging.LogLevelUpdateScope;
@@ -71,7 +71,7 @@ public class Log4jAgent implements ProviderAgent {
     return ((Logger) logger).get();
   }
 
-  @TestingOnly
+  @VisibleForTesting
   static String getConfigurationInfoString() {
     return getConfiguration().getConfigurationSource().toString();
   }

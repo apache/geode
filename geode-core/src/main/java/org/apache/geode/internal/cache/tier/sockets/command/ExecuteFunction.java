@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -68,7 +68,7 @@ public class ExecuteFunction extends BaseCommand {
         new DefaultFunctionContextImplFactory());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   ExecuteFunction(InternalFunctionExecutionService internalFunctionExecutionService,
       ServerToClientFunctionResultSenderFactory serverToClientFunctionResultSenderFactory,
       FunctionContextImplFactory functionContextImplFactory) {

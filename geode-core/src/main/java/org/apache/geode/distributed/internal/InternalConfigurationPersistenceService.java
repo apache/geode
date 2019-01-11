@@ -64,7 +64,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.DataPolicy;
@@ -139,7 +139,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   private DistributedLockService sharedConfigLockingService;
   private JAXBService jaxbService;
 
-  @TestingOnly
+  @VisibleForTesting
   InternalConfigurationPersistenceService(Class<?>... xsdClasses) {
     configDirPath = null;
     configDiskDirPath = null;
@@ -148,7 +148,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     jaxbService.validateWithLocalCacheXSD();
   }
 
-  @TestingOnly
+  @VisibleForTesting
   InternalConfigurationPersistenceService() {
     configDirPath = null;
     configDiskDirPath = null;
