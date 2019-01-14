@@ -1298,6 +1298,20 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
+  public void stablePdxInstanceWithMultipleEqualFieldsInDifferentOrderAreEqual() {
+    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+    factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory.writeString("fieldTwo", "valueTwo");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance2 = factory.create();
+
+    assertThat(instance).isEqualTo(instance2);
+  }
+
+  @Test
   public void normalPdxInstanceAddedToRegionWithPdxReadSerializedFalseAndABadClassThrowsClassNotFoundWhenRegionGet() {
     // make sure the cache has pdx-read-serialized set to false
     this.cache.close();
