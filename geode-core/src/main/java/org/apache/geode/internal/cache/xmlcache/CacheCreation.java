@@ -1859,6 +1859,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public PdxInstanceFactory createStablePdxInstanceFactory(String className) {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
   public PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal) {
     throw new UnsupportedOperationException("Should not be invoked");
   }

@@ -15,6 +15,8 @@
 package org.apache.geode.pdx;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1225,6 +1227,89 @@ public class PdxInstanceFactoryJUnitTest {
     byte[] bytes = hdos.toByteArray();
     // System.out.println("Serialized bytes = " + Arrays.toString(bytes));
     return DataSerializer.readObject(new DataInputStream(new ByteArrayInputStream(bytes)));
+  }
+
+  @Test
+  public void stablePdxInstanceGetObjectReturnsThePdxInstance() {
+    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    PdxInstance instance = factory.create();
+
+    Object object = instance.getObject();
+
+    assertThat(object).isSameAs(instance);
+  }
+
+  @Test
+  public void normalPdxInstanceGetObjectThrowsClassNotFoundGivenABadClass() {
+    PdxInstanceFactory factory = cache.createPdxInstanceFactory("badClass");
+    PdxInstance instance = factory.create();
+
+    assertThatThrownBy(() -> instance.getObject()).isInstanceOf(PdxSerializationException.class)
+        .hasCauseInstanceOf(ClassNotFoundException.class);
+  }
+
+  @Test
+  public void stablePdxInstanceAddedToRegionWithPdxReadSerializedFalseReturnsEqualPdxInstanceWhenRegionGet() {
+    // make sure the cache has pdx-read-serialized set to false
+    this.cache.close();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+        .setPdxReadSerialized(false).create();
+    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance = factory.create();
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("myRegion");
+    region.put("key", instance);
+
+    Object getValue = region.get("key");
+
+    assertThat(getValue).isEqualTo(instance);
+  }
+
+  @Test
+  public void stablePdxInstanceCanBeUsedAsRegionKey() {
+    // make sure the cache has pdx-read-serialized set to false
+    this.cache.close();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+        .setPdxReadSerialized(false).create();
+    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance putKey = factory.create();
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("myRegion");
+    region.put(putKey, "value");
+    factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance getKey = factory.create();
+
+    Object getValue = region.get(getKey);
+
+    assertThat(getValue).isEqualTo("value");
+  }
+
+  @Test
+  public void stablePdxInstanceWithDifferentTypeNameAreNotEqual() {
+    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance = factory.create();
+    factory = cache.createStablePdxInstanceFactory("myPdxInstanceType2");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance2 = factory.create();
+
+    assertThat(instance).isNotEqualTo(instance2);
+  }
+
+  @Test
+  public void normalPdxInstanceAddedToRegionWithPdxReadSerializedFalseAndABadClassThrowsClassNotFoundWhenRegionGet() {
+    // make sure the cache has pdx-read-serialized set to false
+    this.cache.close();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+        .setPdxReadSerialized(false).create();
+    PdxInstanceFactory factory = cache.createPdxInstanceFactory("badClass");
+    PdxInstance instance = factory.create();
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("myRegion");
+    region.put("key", instance);
+
+    assertThatThrownBy(() -> region.get("key")).isInstanceOf(PdxSerializationException.class)
+        .hasCauseInstanceOf(ClassNotFoundException.class);
   }
 
 }

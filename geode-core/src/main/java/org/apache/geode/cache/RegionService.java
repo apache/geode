@@ -81,6 +81,22 @@ public interface RegionService extends AutoCloseable {
   PdxInstanceFactory createPdxInstanceFactory(String className);
 
   /**
+   * Returns a factory that can create a "stable" {@link PdxInstance}.
+   * A "stable" PdxInstance is one that will always deserialize to itself
+   * instead of to a domain class.
+   *
+   * @param className since stable PDX instances do not have a domain class, this string
+   *        does not need to be the name of an actual class. It will be returned when
+   *        PdxInstance.getClassName is called.
+   *        This "class name" will be used to identify the type of the PDX instance. Two PDX
+   *        instances are only equals
+   *        if they have the same "class name".
+   * @return the factory
+   * @since Geode 1.9
+   */
+  PdxInstanceFactory createStablePdxInstanceFactory(String className);
+
+  /**
    * Creates and returns a PdxInstance that represents an enum value.
    *
    * @param className the name of the enum class
