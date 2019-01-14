@@ -107,11 +107,15 @@ publishing {
   repositories {
     maven {
       // Use specified mavenRepository if provided, else use release or snapshot defaults.
-      url = project.findProperty("mavenRepository") ||
+      url = project.findProperty("mavenRepository") ?:
           project.isReleaseVersion ? project.mavenReleaseUrl : project.mavenSnapshotUrl
-      credentials {
-        username project.findProperty("mavenUsername")
-        password project.findProperty("mavenPassword")
+      if (url.toString().startsWith("http") || url.toString().startsWith("sftp")) {
+        // Username / password credentials are only supported for http, https, and sftp repos.
+        // See the Gradle documentation on Repository Types for more information.
+        credentials {
+          username project.findProperty("mavenUsername")
+          password project.findProperty("mavenPassword")
+        }
       }
     }
   }

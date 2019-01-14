@@ -44,6 +44,7 @@ resources:
     - ci/pipelines/geode-build/*
     - ci/pipelines/shared/*
     - ci/pipelines/render.py
+    - ci/pipelines/meta/meta.properties
 - name: geode-images-pipeline
   type: git
   source:
@@ -81,6 +82,7 @@ resources:
     - ci/pipelines/examples/*
     - ci/pipelines/shared/*
     - ci/pipelines/render.py
+    - ci/pipelines/meta/meta.properties
 - name: geode-pr-pipeline
   type: git
   source:
@@ -90,6 +92,7 @@ resources:
     - ci/pipelines/pull-request/*
     - ci/pipelines/shared/*
     - ci/pipelines/render.py
+    - ci/pipelines/meta/meta.properties
 {% endif %}
 - name: geode-metrics-pipeline
   type: git
