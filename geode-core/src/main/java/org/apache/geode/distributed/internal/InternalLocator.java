@@ -1041,8 +1041,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
             new InternalConfigurationPersistenceService(newCache);
         startSharedConfigurationService();
       }
-      clusterManagementService = new LocatorClusterManagementService(locator.myCache,
-          locator.configurationPersistenceService);
+      this.clusterManagementService = new LocatorClusterManagementService(this.myCache,
+          this.configurationPersistenceService);
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();
