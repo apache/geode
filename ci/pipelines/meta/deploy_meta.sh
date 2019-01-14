@@ -109,6 +109,7 @@ pushd ${SCRIPTDIR} 2>&1 > /dev/null
     --var pipeline-prefix=${PIPELINE_PREFIX} \
     --var gradle-global-args="${GRADLE_GLOBAL_ARGS}" \
     --var maven-snapshot-bucket="${MAVEN_SNAPSHOT_BUCKET}" \
+    --var semver-prerelease-token="${SEMVER_PRERELEASE_TOKEN}" \
     --var concourse-team=main \
     --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
 
