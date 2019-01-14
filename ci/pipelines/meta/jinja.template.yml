@@ -181,6 +181,7 @@ jobs:
         PUBLIC_PIPELINES: ((public-pipelines))
         GRADLE_GLOBAL_ARGS: ((gradle-global-args))
         MAVEN_SNAPSHOT_BUCKET: ((maven-snapshot-bucket))
+        SEMVER_PRERELEASE_TOKEN: ((semver-prerelease-token))
       run:
         path: geode-pipeline/ci/pipelines/geode-build/deploy_pipeline.sh
   - put: concourse
@@ -227,6 +228,7 @@ jobs:
         SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
+        SEMVER_PRERELEASE_TOKEN: ((semver-prerelease-token))
       run:
         path: geode-examples-pipeline/ci/pipelines/examples/deploy_pipeline.sh
   - put: concourse
