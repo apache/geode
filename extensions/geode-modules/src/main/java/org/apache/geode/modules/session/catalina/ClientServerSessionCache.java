@@ -14,12 +14,14 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
@@ -194,7 +196,22 @@ public class ClientServerSessionCache extends AbstractSessionCache {
       if (getSessionManager().getLogger().isDebugEnabled()) {
         getSessionManager().getLogger().debug("Retrieved session region: " + this.sessionRegion);
       }
+
+      // Check that we have our expiration listener attached
+      if (!regionHasExpirationListenerAttached(sessionRegion)) {
+        sessionRegion.getAttributesMutator().addCacheListener(new SessionExpirationCacheListener());
+      }
+
+      // This is true for PROXY regions
+      if (sessionRegion.getAttributes().getDataPolicy() == DataPolicy.EMPTY) {
+        sessionRegion.registerInterest("ALL_KEYS", InterestResultPolicy.KEYS);
+      }
     }
+  }
+
+  private boolean regionHasExpirationListenerAttached(Region<?, ?> region) {
+    return Arrays.stream(region.getAttributes().getCacheListeners())
+        .anyMatch(x -> x instanceof SessionExpirationCacheListener);
   }
 
   private void createSessionRegionOnServers() {

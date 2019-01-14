@@ -102,7 +102,7 @@ configurations {
   }
   gfshDependencies
 
-  //Configurations used to download and cache web application servers for session module testing
+  // Configurations used to download and cache web application servers for session module testing
   webServerTomcat6
   webServerTomcat7
   webServerTomcat8
@@ -119,6 +119,9 @@ def webServersDir = "$buildDir/generated-resources/webservers"
 
 sourceSets {
   distributedTest {
+    resources {
+      srcDirs webServersDir
+    }
     output.dir(webServersDir, builtBy: 'downloadWebServers')
   }
 }

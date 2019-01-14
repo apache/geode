@@ -49,7 +49,11 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   public void startServer() throws Exception {
     serverName1 = startAServer(1);
     serverName2 = startAServer(2);
+
+    afterStartServers();
   }
+
+  public void afterStartServers() throws Exception {}
 
   private String startAServer(int serverNumber) {
     // List of all the jars for tomcat to put on the server classpath
