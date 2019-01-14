@@ -39,7 +39,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
@@ -1217,7 +1217,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  @TestingOnly
+  @VisibleForTesting
   /** remove the given TXStates for test */
   public void removeTransactions(Set<TXId> txIds, boolean distribute) {
     synchronized (this.hostedTXStates) {

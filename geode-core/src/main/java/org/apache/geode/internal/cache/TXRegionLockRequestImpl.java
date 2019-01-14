@@ -23,7 +23,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
@@ -62,7 +62,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   /**
    * Used by unit tests
    */
-  @TestingOnly
+  @VisibleForTesting
   public TXRegionLockRequestImpl(String regionPath, Set<Object> entryKeys) {
     this.cache = null;
     this.regionPath = regionPath;

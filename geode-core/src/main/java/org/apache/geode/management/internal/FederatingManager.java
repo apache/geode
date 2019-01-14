@@ -31,7 +31,7 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
@@ -92,7 +92,7 @@ public class FederatingManager extends Manager {
     messenger = new MemberMessenger(jmxAdapter, system);
   }
 
-  @TestingOnly
+  @VisibleForTesting
   void setProxyFactory(MBeanProxyFactory newProxyFactory) {
     proxyFactory = newProxyFactory;
   }
@@ -542,12 +542,12 @@ public class FederatingManager extends Manager {
     return messenger;
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public void setMessenger(MemberMessenger messenger) {
     this.messenger = messenger;
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public synchronized Exception getAndResetLatestException() {
     return latestException.getAndSet(null);
   }

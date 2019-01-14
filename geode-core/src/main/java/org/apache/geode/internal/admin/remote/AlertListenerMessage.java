@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.AlertLevel;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -156,22 +156,22 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
     return "Alert \"" + message + "\" level " + AlertLevel.forSeverity(alertLevel);
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public static void addListener(Listener listener) {
     listenerRef.compareAndSet(null, listener);
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public static void removeListener(Listener listener) {
     listenerRef.compareAndSet(listener, null);
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public static Listener getListener() {
     return listenerRef.get();
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public interface Listener {
 
     void received(AlertListenerMessage message);

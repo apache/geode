@@ -16,7 +16,7 @@ package org.apache.geode.internal.alerting;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * Provides publication of {@code AlertingProvider} that may be initiated by a third party logging
@@ -36,7 +36,7 @@ public class AlertingProviderRegistry {
     return INSTANCE;
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public static AlertingProvider getNullAlertingProvider() {
     return NULL_ALERTING_PROVIDER;
   }

@@ -34,7 +34,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -189,7 +189,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     this(ownerId, owner, 0);
   }
 
-  @TestingOnly
+  @VisibleForTesting
   RegionVersionVector(T ownerId, LocalRegion owner, long version) {
     this.myId = ownerId;
     this.isLiveVector = true;

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.alerting;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * The {@code DistributedSystem} connection uses {@code AlertingSession} to control the lifecycle
@@ -42,7 +42,7 @@ public class AlertingSession {
     return create(AlertingSessionListeners.get());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   static AlertingSession create(final AlertingSessionListeners alertingSessionListeners) {
     return new AlertingSession(alertingSessionListeners);
   }
@@ -70,7 +70,7 @@ public class AlertingSession {
     // nothing?
   }
 
-  @TestingOnly
+  @VisibleForTesting
   AlertingSessionListeners getAlertingSessionListeners() {
     return alertingSessionListeners;
   }

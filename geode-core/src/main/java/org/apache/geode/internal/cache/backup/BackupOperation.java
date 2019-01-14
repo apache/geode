@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -50,7 +50,7 @@ public class BackupOperation {
         new DefaultMissingPersistentMembersProvider());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   BackupOperation(FlushToDiskFactory flushToDiskFactory, PrepareBackupFactory prepareBackupFactory,
       AbortBackupFactory abortBackupFactory, FinishBackupFactory finishBackupFactory,
       DistributionManager dm, InternalCache cache, BackupLockService backupLockService,

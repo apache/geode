@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.management.cli.CliMetaData;
 
 /**
@@ -38,7 +38,7 @@ public class CommandRequest {
   private final boolean downloadFile;
 
 
-  @TestingOnly
+  @VisibleForTesting
   public CommandRequest(final Map<String, String> env) {
     this.env = env;
     this.fileList = null;

@@ -18,7 +18,7 @@ import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.logging.LogLevelUpdateOccurs.ONLY_WHEN_USING_DEFAULT_CONFIG;
 import static org.apache.geode.internal.logging.LogLevelUpdateScope.GEODE_LOGGERS;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 
 /**
@@ -29,7 +29,7 @@ public class Configuration implements LogConfigListener {
   /**
    * The default {@link LogWriterLevel} is {@link LogWriterLevel#CONFIG}.
    */
-  @TestingOnly
+  @VisibleForTesting
   public static final int DEFAULT_LOGWRITER_LEVEL = LogWriterLevel.CONFIG.intLevel();
 
   /**
@@ -84,19 +84,19 @@ public class Configuration implements LogConfigListener {
         .findProviderAgent());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public static Configuration create(final ProviderAgent providerAgent) {
     return create(getLogLevelUpdateOccurs(), getLogLevelUpdateScope(), providerAgent);
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public static Configuration create(final LogLevelUpdateOccurs logLevelUpdateOccurs,
       final LogLevelUpdateScope logLevelUpdateScope) {
     return create(logLevelUpdateOccurs, logLevelUpdateScope,
         new ProviderAgentLoader().findProviderAgent());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public static Configuration create(final LogLevelUpdateOccurs logLevelUpdateOccurs,
       final LogLevelUpdateScope logLevelUpdateScope, final ProviderAgent providerAgent) {
     return new Configuration(logLevelUpdateOccurs, logLevelUpdateScope, providerAgent);
@@ -183,7 +183,7 @@ public class Configuration implements LogConfigListener {
     }
   }
 
-  @TestingOnly
+  @VisibleForTesting
   synchronized LogConfigSupplier getLogConfigSupplier() {
     return logConfigSupplier;
   }
