@@ -14,13 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CATALOG_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__ID_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__SCHEMA_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 
 import java.util.Set;
 
@@ -29,7 +23,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
@@ -44,12 +38,13 @@ import org.apache.geode.security.ResourcePermission;
 @Experimental
 public class DescribeMappingCommand extends GfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
-  static final String DESCRIBE_MAPPING__HELP = EXPERIMENTAL + "Describe the specified JDBC mapping";
-  static final String DESCRIBE_MAPPING__REGION_NAME = "region";
-  static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
+  private static final String DESCRIBE_MAPPING__HELP =
+      EXPERIMENTAL + "Describe the specified JDBC mapping";
+  private static final String DESCRIBE_MAPPING__REGION_NAME = REGION_NAME;
+  private static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the JDBC mapping to be described.";
 
-  static final String RESULT_SECTION_NAME = "MappingDescription";
+  private static final String RESULT_SECTION_NAME = "MappingDescription";
 
   @CliCommand(value = DESCRIBE_MAPPING, help = DESCRIBE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
@@ -61,7 +56,7 @@ public class DescribeMappingCommand extends GfshCommand {
       regionName = regionName.substring(1);
     }
 
-    RegionMapping mapping = null;
+    DescribeMappingResult describeMappingResult = null;
 
     Set<DistributedMember> members = findMembers(null, null);
     if (members.size() > 0) {
@@ -69,32 +64,27 @@ public class DescribeMappingCommand extends GfshCommand {
       CliFunctionResult result = executeFunctionAndGetFunctionResult(
           new DescribeMappingFunction(), regionName, targetMember);
       if (result != null) {
-        mapping = (RegionMapping) result.getResultObject();
+        describeMappingResult = (DescribeMappingResult) result.getResultObject();
       }
     } else {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    if (mapping == null) {
+    if (describeMappingResult == null) {
       throw new EntityNotFoundException(
           EXPERIMENTAL + "\n" + "JDBC mapping for region '" + regionName + "' not found");
     }
 
     ResultModel resultModel = new ResultModel();
-    fillResultData(mapping, resultModel);
+    fillResultData(describeMappingResult, resultModel);
     resultModel.setHeader(EXPERIMENTAL);
     return resultModel;
   }
 
-  private void fillResultData(RegionMapping mapping, ResultModel resultModel) {
+  private void fillResultData(DescribeMappingResult describeMappingResult,
+      ResultModel resultModel) {
     DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME);
-    sectionModel.addData(CREATE_MAPPING__REGION_NAME, mapping.getRegionName());
-    sectionModel.addData(CREATE_MAPPING__DATA_SOURCE_NAME, mapping.getDataSourceName());
-    sectionModel.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
-    sectionModel.addData(CREATE_MAPPING__PDX_NAME, mapping.getPdxName());
-    sectionModel.addData(CREATE_MAPPING__ID_NAME, mapping.getIds());
-    sectionModel.addData(CREATE_MAPPING__CATALOG_NAME, mapping.getCatalog());
-    sectionModel.addData(CREATE_MAPPING__SCHEMA_NAME, mapping.getSchema());
+    describeMappingResult.getAttributeMap().forEach(sectionModel::addData);
   }
 
   @CliAvailabilityIndicator({DESCRIBE_MAPPING})

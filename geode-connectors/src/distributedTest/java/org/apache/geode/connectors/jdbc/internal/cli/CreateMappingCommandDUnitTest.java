@@ -15,14 +15,14 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CATALOG_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__DATA_SOURCE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__ID_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__SCHEMA_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__SYNCHRONOUS_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -58,7 +58,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @RunWith(JUnitParamsRunner.class)
 public class CreateMappingCommandDUnitTest {
 
-  private static final String REGION_NAME = "testRegion";
+  private static final String TEST_REGION = "testRegion";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -79,6 +79,12 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.connectAndVerify(locator);
 
+  }
+
+  public void cleanUp() throws Exception {
+    startupRule.stop(0);
+    startupRule.stop(1);
+    gfsh.disconnect();
   }
 
   private void setupReplicate(String regionName) {
@@ -178,17 +184,17 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingUpdatesServiceAndClusterConfig(String regionName) {
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__ID_NAME, "myId");
-    csb.addOption(CREATE_MAPPING__CATALOG_NAME, "myCatalog");
-    csb.addOption(CREATE_MAPPING__SCHEMA_NAME, "mySchema");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(CATALOG_NAME, "myCatalog");
+    csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -218,15 +224,18 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createSynchronousMappingUpdatesServiceAndClusterConfig(String regionName) {
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__SYNCHRONOUS_NAME, "true");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(SYNCHRONOUS_NAME, "true");
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(CATALOG_NAME, "myCatalog");
+    csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -235,6 +244,9 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(mapping.getIds()).isEqualTo("myId");
+      assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(mapping.getSchema()).isEqualTo("mySchema");
       validateRegionAlteredOnServer(regionName, true);
     });
 
@@ -243,19 +255,22 @@ public class CreateMappingCommandDUnitTest {
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
       assertThat(regionMapping.getTableName()).isEqualTo("myTable");
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(regionMapping.getIds()).isEqualTo("myId");
+      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
       validateRegionAlteredInClusterConfig(regionName, true);
     });
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithPartitionUpdatesServiceAndClusterConfig(String regionName) {
     setupPartition(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -279,13 +294,13 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithNoTable(String regionName) {
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -309,21 +324,21 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createExistingRegionMappingFails(String regionName) {
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(TABLE_NAME, "myTable");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "bogusConnection");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "bogusPdxClass");
-    csb.addOption(CREATE_MAPPING__TABLE_NAME, "bogusTable");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "bogusConnection");
+    csb.addOption(PDX_NAME, "bogusPdxClass");
+    csb.addOption(TABLE_NAME, "bogusTable");
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
             "A JDBC mapping for " + convertRegionPathToName(regionName) + " already exists");
@@ -344,12 +359,12 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithoutPdxNameFails(String regionName) {
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
 
     // NOTE: --table is optional so it should not be in the output but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
@@ -358,26 +373,26 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithNonExistentRegionFails(String regionName) {
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, "bogusRegion");
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
+    csb.addOption(REGION_NAME, "bogusRegion");
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput("A region named bogusRegion must already exist");
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithRegionThatHasALoaderFails(String regionName) {
     setupReplicate(regionName, true);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput("The existing region " + convertRegionPathToName(regionName)
@@ -385,14 +400,14 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  @Parameters({REGION_NAME, "/" + REGION_NAME})
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithExistingQueueFails(String regionName) {
     setupReplicate(regionName);
     setupAsyncEventQueue(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
-    csb.addOption(CREATE_MAPPING__REGION_NAME, regionName);
-    csb.addOption(CREATE_MAPPING__DATA_SOURCE_NAME, "connection");
-    csb.addOption(CREATE_MAPPING__PDX_NAME, "myPdxClass");
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput("An async-event-queue named "

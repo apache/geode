@@ -12,8 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal.cli;
+package org.apache.geode.connectors.jdbc.org.apache.geode.connectors.util;
 
+import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -24,6 +32,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -31,7 +41,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand;
+import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -67,23 +78,32 @@ public class DescribeMappingCommandTest {
   public void whenMemberExists() {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
+    Map<String, String> attributes = new HashMap<>();
+    attributes.put(REGION_NAME, "region");
+    attributes.put(PDX_NAME, "class1");
+    attributes.put(TABLE_NAME, "table1");
+    attributes.put(DATA_SOURCE_NAME, "name1");
+    attributes.put(SYNCHRONOUS_NAME, "true");
+    attributes.put(ID_NAME, "myId");
+    attributes.put(SCHEMA_NAME, "mySchema");
+    attributes.put(CATALOG_NAME, "myCatalog");
 
-    RegionMapping mapping =
-        new RegionMapping("region", "class1", "table1", "name1", "myId", "myCatalog", "mySchema");
+    DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
+
 
     ResultCollector rc = mock(ResultCollector.class);
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
     when(rc.getResult()).thenReturn(
-        Collections.singletonList(new CliFunctionResult("server-1", mapping, "success")));
+        Collections.singletonList(new CliFunctionResult("server-1", mappingResult, "success")));
+
+
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOutput("region", "region")
-        .containsOutput("data-source", "name1")
-        .containsOutput("table", "table1")
-        .containsOutput("pdx-name", "class1")
-        .containsOutput("id", "myId")
-        .containsOutput("catalog", "myCatalog")
-        .containsOutput("schema", "mySchema");
+        .containsOutput(REGION_NAME, "region")
+        .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
+        .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
+        .containsOutput("true");
   }
 
   @Test
@@ -94,7 +114,7 @@ public class DescribeMappingCommandTest {
     doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
     when(rc.getResult()).thenReturn(
         Collections.singletonList(
-            new CliFunctionResult("server-1", mock(RegionMapping.class), "success")));
+            new CliFunctionResult("server-1", mock(DescribeMappingResult.class), "success")));
 
     command.describeMapping("/regionName");
 

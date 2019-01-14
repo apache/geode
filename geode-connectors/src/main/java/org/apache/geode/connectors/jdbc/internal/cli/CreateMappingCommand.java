@@ -34,6 +34,7 @@ import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -47,30 +48,31 @@ import org.apache.geode.security.ResourcePermission;
 @Experimental
 public class CreateMappingCommand extends SingleGfshCommand {
   static final String CREATE_MAPPING = "create jdbc-mapping";
-  static final String CREATE_MAPPING__HELP =
+  private static final String CREATE_MAPPING__HELP =
       EXPERIMENTAL + "Create a JDBC mapping for a region for use with a JDBC database.";
-  static final String CREATE_MAPPING__REGION_NAME = "region";
-  static final String CREATE_MAPPING__REGION_NAME__HELP =
+  private static final String CREATE_MAPPING__REGION_NAME = MappingConstants.REGION_NAME;
+  private static final String CREATE_MAPPING__REGION_NAME__HELP =
       "Name of the region the JDBC mapping is being created for.";
-  static final String CREATE_MAPPING__PDX_NAME = "pdx-name";
-  static final String CREATE_MAPPING__PDX_NAME__HELP =
+  private static final String CREATE_MAPPING__PDX_NAME = MappingConstants.PDX_NAME;
+  private static final String CREATE_MAPPING__PDX_NAME__HELP =
       "Name of pdx class for which values will be written to the database.";
-  static final String CREATE_MAPPING__TABLE_NAME = "table";
-  static final String CREATE_MAPPING__TABLE_NAME__HELP =
+  private static final String CREATE_MAPPING__TABLE_NAME = MappingConstants.TABLE_NAME;
+  private static final String CREATE_MAPPING__TABLE_NAME__HELP =
       "Name of database table for values to be written to.";
-  static final String CREATE_MAPPING__DATA_SOURCE_NAME = "data-source";
-  static final String CREATE_MAPPING__DATA_SOURCE_NAME__HELP = "Name of JDBC data source to use.";
-  static final String CREATE_MAPPING__SYNCHRONOUS_NAME = "synchronous";
-  static final String CREATE_MAPPING__SYNCHRONOUS_NAME__HELP =
+  private static final String CREATE_MAPPING__DATA_SOURCE_NAME = MappingConstants.DATA_SOURCE_NAME;
+  private static final String CREATE_MAPPING__DATA_SOURCE_NAME__HELP =
+      "Name of JDBC data source to use.";
+  private static final String CREATE_MAPPING__SYNCHRONOUS_NAME = MappingConstants.SYNCHRONOUS_NAME;
+  private static final String CREATE_MAPPING__SYNCHRONOUS_NAME__HELP =
       "By default, writes will be asynchronous. If true, writes will be synchronous.";
-  static final String CREATE_MAPPING__ID_NAME = "id";
-  static final String CREATE_MAPPING__ID_NAME__HELP =
+  private static final String CREATE_MAPPING__ID_NAME = MappingConstants.ID_NAME;
+  private static final String CREATE_MAPPING__ID_NAME__HELP =
       "The table column names to use as the region key for this JDBC mapping. If more than one column name is given then they must be separated by commas.";
-  static final String CREATE_MAPPING__CATALOG_NAME = "catalog";
-  static final String CREATE_MAPPING__CATALOG_NAME__HELP =
+  private static final String CREATE_MAPPING__CATALOG_NAME = MappingConstants.CATALOG_NAME;
+  private static final String CREATE_MAPPING__CATALOG_NAME__HELP =
       "The catalog that contains the database table. By default, the catalog is the empty string causing the table to be referenced without a catalog prefix.";
-  static final String CREATE_MAPPING__SCHEMA_NAME = "schema";
-  static final String CREATE_MAPPING__SCHEMA_NAME__HELP =
+  private static final String CREATE_MAPPING__SCHEMA_NAME = MappingConstants.SCHEMA_NAME;
+  private static final String CREATE_MAPPING__SCHEMA_NAME__HELP =
       "The schema that contains the database table. By default, the schema is the empty string causing the table to be referenced without a schema prefix.";
 
   public static String createAsyncEventQueueName(String regionPath) {
