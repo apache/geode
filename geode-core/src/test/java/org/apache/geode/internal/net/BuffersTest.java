@@ -41,7 +41,8 @@ public class BuffersTest {
 
   private void createAndVerifyNewBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
     ByteBuffer newBuffer =
-        Buffers.expandBuffer(Buffers.BufferType.UNTRACKED, buffer, 500, mock(DMStats.class));
+        Buffers.expandWriteBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer, 500,
+            mock(DMStats.class));
     assertEquals(buffer.position(), newBuffer.position());
     assertEquals(500, newBuffer.capacity());
     newBuffer.flip();

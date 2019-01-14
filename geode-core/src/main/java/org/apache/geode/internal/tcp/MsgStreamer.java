@@ -320,6 +320,7 @@ public class MsgStreamer extends OutputStream
         con.sendPreserialized(this.buffer,
             lastFlushForMessage && this.msg.containsRegionContentChange(), conflationMsg);
       } catch (IOException ex) {
+        // logger.info("BRUCE: message transmission threw an exception", ex);
         it.remove();
         if (this.ce == null)
           this.ce = new ConnectExceptions();

@@ -18,10 +18,12 @@ import static javax.net.ssl.SSLEngineResult.HandshakeStatus.FINISHED;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_TASK;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
 import static javax.net.ssl.SSLEngineResult.Status.BUFFER_OVERFLOW;
-import static javax.net.ssl.SSLEngineResult.Status.BUFFER_UNDERFLOW;
 import static javax.net.ssl.SSLEngineResult.Status.OK;
+import static org.apache.geode.internal.net.Buffers.BufferType.TRACKED_RECEIVER;
+import static org.apache.geode.internal.net.Buffers.BufferType.TRACKED_SENDER;
 import static org.apache.geode.internal.net.Buffers.releaseBuffer;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -53,7 +55,7 @@ public class NioSslEngine implements NioFilter {
 
   private final DMStats stats;
 
-  private boolean closed;
+  private volatile boolean closed;
 
   SSLEngine engine;
 
@@ -152,7 +154,7 @@ public class NioSslEngine implements NioFilter {
 
           if (engineResult.getStatus() == BUFFER_OVERFLOW) {
             peerAppData =
-                expandBuffer(Buffers.BufferType.UNTRACKED, peerAppData, peerAppData.capacity() * 2,
+                expandWriteBuffer(TRACKED_RECEIVER, peerAppData, peerAppData.capacity() * 2,
                     stats);
           }
           break;
@@ -169,7 +171,7 @@ public class NioSslEngine implements NioFilter {
           switch (engineResult.getStatus()) {
             case BUFFER_OVERFLOW:
               myNetData =
-                  expandBuffer(Buffers.BufferType.TRACKED_SENDER, myNetData,
+                  expandWriteBuffer(TRACKED_SENDER, myNetData,
                       myNetData.capacity() * 2, stats);
               break;
             case OK:
@@ -182,7 +184,7 @@ public class NioSslEngine implements NioFilter {
             case CLOSED:
               break;
             default:
-              logger.info("handshake terminated with illegal state(1) due to {}", status);
+              logger.info("handshake terminated with illegal state due to {}", status);
               throw new IllegalStateException(
                   "Unknown SSLEngineResult status: " + engineResult.getStatus());
           }
@@ -193,7 +195,7 @@ public class NioSslEngine implements NioFilter {
           status = engine.getHandshakeStatus();
           break;
         default:
-          logger.info("handshake terminated with illegal state(2) due to {}", status);
+          logger.info("handshake terminated with illegal state due to {}", status);
           throw new IllegalStateException("Unknown SSL Handshake state: " + status);
       }
       Thread.sleep(10);
@@ -214,9 +216,9 @@ public class NioSslEngine implements NioFilter {
     return true;
   }
 
-  ByteBuffer expandBuffer(Buffers.BufferType type, ByteBuffer existing,
+  ByteBuffer expandWriteBuffer(Buffers.BufferType type, ByteBuffer existing,
       int desiredCapacity, DMStats stats) {
-    return Buffers.expandBuffer(type, existing, desiredCapacity, stats);
+    return Buffers.expandWriteBufferIfNeeded(type, existing, desiredCapacity, stats);
   }
 
   void checkClosed() {
@@ -246,7 +248,7 @@ public class NioSslEngine implements NioFilter {
 
       if (remaining < (appData.remaining() * 2)) {
         int newCapacity = expandedCapacity(appData, myNetData);
-        myNetData = expandBuffer(Buffers.BufferType.TRACKED_SENDER, myNetData, newCapacity, stats);
+        myNetData = expandWriteBuffer(TRACKED_SENDER, myNetData, newCapacity, stats);
       }
 
       SSLEngineResult wrapResult = engine.wrap(appData, myNetData);
@@ -273,25 +275,87 @@ public class NioSslEngine implements NioFilter {
     // message. TcpConduit, for instance, uses message chunking to
     // transmit large payloads and we may have read a partial chunk
     // during the previous unwrap
-    while (wrappedBuffer.hasRemaining()) {
-      int remaining = peerAppData.capacity() - peerAppData.position();
-      if (remaining < wrappedBuffer.remaining() * 2) {
-        int newCapacity = expandedCapacity(peerAppData, wrappedBuffer);
-        peerAppData = expandBuffer(Buffers.BufferType.UNTRACKED, peerAppData, newCapacity, stats);
-      }
-      SSLEngineResult unwrapResult = engine.unwrap(wrappedBuffer, peerAppData);
-      if (unwrapResult.getStatus() == BUFFER_UNDERFLOW) {
-        // partial data - need to read more. When this happens the SSLEngine will not have
-        // changed the buffer position
-        wrappedBuffer.compact();
-        return peerAppData;
-      }
 
-      if (unwrapResult.getStatus() != OK) {
-        throw new SSLException("Error decrypting data: " + unwrapResult);
+    // it's better to be pro-active about avoiding buffer overflows
+    expandPeerAppData(wrappedBuffer);
+    peerAppData.limit(peerAppData.capacity());
+    // logger.info("BRUCE: ssl unwrap data position={} and capacity={} wrapped buffer position={}
+    // and limit={}",
+    // peerAppData.position(), peerAppData.capacity(), wrappedBuffer.position(),
+    // wrappedBuffer.limit());
+    while (wrappedBuffer.hasRemaining()) {
+      SSLEngineResult unwrapResult = engine.unwrap(wrappedBuffer, peerAppData);
+      switch (unwrapResult.getStatus()) {
+        case BUFFER_OVERFLOW:
+          expandPeerAppData(wrappedBuffer);
+          break;
+        case BUFFER_UNDERFLOW:
+          // partial data - need to read more. When this happens the SSLEngine will not have
+          // changed the buffer position
+          // logger.info("BRUCE: ssl unwrap needs more bytes from the network");
+          wrappedBuffer.compact();
+          return peerAppData;
+        case OK:
+          break;
+        default:
+          throw new SSLException("Error decrypting data: " + unwrapResult);
       }
     }
     wrappedBuffer.clear();
+    return peerAppData;
+  }
+
+  void expandPeerAppData(ByteBuffer wrappedBuffer) {
+    if (peerAppData.capacity() - peerAppData.position() < 2 * wrappedBuffer.remaining()) {
+      // logger.info("BRUCE: ssl unwrap is expanding the capacity of data buffer {} current capacity
+      // {} position {} limit {}.",
+      // Integer.toHexString(System.identityHashCode(peerAppData)), peerAppData.capacity(),
+      // peerAppData.position(), peerAppData.limit());
+      peerAppData =
+          Buffers.expandWriteBufferIfNeeded(TRACKED_RECEIVER, peerAppData,
+              expandedCapacity(wrappedBuffer, peerAppData), stats);
+      // logger.info("BRUCE: ssl unwrap new capacity of data buffer {} is {} position {} limit {}.",
+      // Integer.toHexString(System.identityHashCode(peerAppData)), peerAppData.capacity(),
+      // peerAppData.position(), peerAppData.limit());
+    }
+  }
+
+  @Override
+  public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
+      Buffers.BufferType bufferType, DMStats stats) {
+    return wrappedBuffer;
+  }
+
+  @Override
+  public ByteBuffer readAtLeast(SocketChannel channel, int bytes,
+      ByteBuffer wrappedBuffer, DMStats stats) throws IOException {
+
+    if (peerAppData.capacity() > bytes) {
+      // we already have a buffer that's big enough
+      if (peerAppData.capacity() - peerAppData.position() < bytes) {
+        peerAppData.compact();
+        peerAppData.flip();
+      }
+    } else {
+      peerAppData =
+          Buffers.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, bytes, this.stats);
+    }
+
+    while (peerAppData.remaining() < bytes) {
+      wrappedBuffer.limit(wrappedBuffer.capacity());
+      int amountRead = channel.read(wrappedBuffer);
+      if (amountRead < 0) {
+        throw new EOFException();
+      }
+      if (amountRead > 0) {
+        wrappedBuffer.flip();
+        // prep the decoded buffer for writing
+        peerAppData.compact();
+        peerAppData = unwrap(wrappedBuffer);
+        // done writing to the decoded buffer - prep it for reading again
+        peerAppData.flip();
+      }
+    }
     return peerAppData;
   }
 
@@ -300,11 +364,16 @@ public class NioSslEngine implements NioFilter {
     return peerAppData;
   }
 
-  @Override
-  public ByteBuffer ensureUnwrappedCapacity(int amount, ByteBuffer wrappedBuffer,
-      Buffers.BufferType bufferType,
-      DMStats stats) {
-    peerAppData = Buffers.expandBuffer(bufferType, peerAppData, amount, this.stats);
+  /**
+   * ensures that the unwrapped buffer associated with the given wrapped buffer has
+   * sufficient capacity for the given amount of bytes. This may compact the
+   * buffer or it may return a new buffer.
+   */
+  public ByteBuffer ensureUnwrappedCapacity(int amount) {
+    // for TTLS the app-data buffers do not need to be tracked direct-buffers since we
+    // do not use them for I/O operations
+    peerAppData =
+        Buffers.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, amount, this.stats);
     return peerAppData;
   }
 
@@ -342,8 +411,8 @@ public class NioSslEngine implements NioFilter {
     } catch (IOException e) {
       throw new GemFireIOException("exception closing SSL session", e);
     } finally {
-      releaseBuffer(Buffers.BufferType.TRACKED_SENDER, myNetData, stats);
-      releaseBuffer(Buffers.BufferType.UNTRACKED, peerAppData, stats);
+      releaseBuffer(TRACKED_SENDER, myNetData, stats);
+      releaseBuffer(TRACKED_RECEIVER, peerAppData, stats);
       this.closed = true;
     }
   }

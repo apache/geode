@@ -98,7 +98,6 @@ import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 
@@ -336,17 +335,6 @@ public class SocketCreator {
    */
   private void initialize() {
     try {
-      // set p2p values...
-      if (SecurableCommunicationChannel.CLUSTER
-          .equals(sslConfig.getSecuredCommunicationChannel())) {
-        if (this.sslConfig.isEnabled()) {
-          System.setProperty("p2p.useSSL", "true");
-          System.setProperty("p2p.nodirectBuffers", "true");
-        } else {
-          System.setProperty("p2p.useSSL", "false");
-        }
-      }
-
       try {
         if (this.sslConfig.isEnabled() && sslContext == null) {
           sslContext = createAndConfigureSSLContext();

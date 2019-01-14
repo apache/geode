@@ -40,6 +40,25 @@ public interface NioFilter {
   ByteBuffer unwrap(ByteBuffer wrappedBuffer) throws IOException;
 
   /**
+   * ensure that the wrapped buffer has enough room to read the given amount of data.
+   * This must be invoked before readAtLeast. A new buffer may be returned by this method.
+   */
+  ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
+      Buffers.BufferType bufferType, DMStats stats);
+
+  /**
+   * read at least the indicated amount of bytes from the given
+   * socket. The buffer position will be ready for reading
+   * the data when this method returns. Note: you must invoke ensureWrappedCapacity
+   * with the given amount prior to each invocation of this method.
+   * <br>
+   * wrappedBuffer = filter.ensureWrappedCapacity(amount, wrappedBuffer, etc.);<br>
+   * unwrappedBuffer = filter.readAtLeast(channel, amount, wrappedBuffer, etc.)
+   */
+  ByteBuffer readAtLeast(SocketChannel channel, int amount, ByteBuffer wrappedBuffer,
+      DMStats stats) throws IOException;
+
+  /**
    * You must invoke this when done reading from the unwrapped buffer
    */
   default void doneReading(ByteBuffer unwrappedBuffer) {
@@ -64,13 +83,5 @@ public interface NioFilter {
    */
   ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer);
 
-  /**
-   * ensures that the unwrapped buffer associated with the given wrapped buffer has
-   * sufficient capacity for the given amount of bytes. This may compact the
-   * buffer or it may return a new buffer.
-   */
-  ByteBuffer ensureUnwrappedCapacity(int amount, ByteBuffer wrappedBuffer,
-      Buffers.BufferType bufferType,
-      DMStats stats);
 
 }

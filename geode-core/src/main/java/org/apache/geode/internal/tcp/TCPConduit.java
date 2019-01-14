@@ -100,7 +100,7 @@ public class TCPConduit implements Runnable {
   /**
    * use javax.net.ssl.SSLServerSocketFactory?
    */
-  static boolean useSSL;
+  boolean useSSL;
 
   /**
    * The socket producer used by the cluster
@@ -123,7 +123,6 @@ public class TCPConduit implements Runnable {
   }
 
   public static void init() {
-    useSSL = Boolean.getBoolean("p2p.useSSL");
     // only use direct buffers if we are using nio
     LISTENER_CLOSE_TIMEOUT = Integer.getInteger("p2p.listenerCloseTimeout", 60000);
     // note: bug 37730 concerned this defaulting to 50
@@ -253,6 +252,7 @@ public class TCPConduit implements Runnable {
 
     this.socketCreator =
         SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
+    this.useSSL = socketCreator.useSSL();
 
     InetAddress addr = address;
     if (addr == null) {
@@ -966,6 +966,10 @@ public class TCPConduit implements Runnable {
    */
   public DMStats getStats() {
     return stats;
+  }
+
+  public boolean useSSL() {
+    return useSSL;
   }
 
   protected class Stopper extends CancelCriterion {

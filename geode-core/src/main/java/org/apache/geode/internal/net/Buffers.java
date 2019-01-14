@@ -115,10 +115,33 @@ public class Buffers {
     releaseBuffer(bb, stats, false);
   }
 
-  static ByteBuffer expandBuffer(Buffers.BufferType type, ByteBuffer existing,
+  /**
+   * expand a buffer that's currently being read from
+   */
+  static ByteBuffer expandReadBufferIfNeeded(BufferType type, ByteBuffer existing,
       int desiredCapacity, DMStats stats) {
     if (existing.capacity() >= desiredCapacity) {
-      existing.compact();
+      if (existing.position() > 0) {
+        existing.compact();
+        existing.flip();
+      }
+      return existing;
+    }
+    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity, stats);
+    newBuffer.clear();
+    existing.flip();
+    newBuffer.put(existing);
+    newBuffer.flip();
+    releaseBuffer(type, existing, stats);
+    return newBuffer;
+  }
+
+  /**
+   * expand a buffer that's currently being written to
+   */
+  static ByteBuffer expandWriteBufferIfNeeded(BufferType type, ByteBuffer existing,
+      int desiredCapacity, DMStats stats) {
+    if (existing.capacity() >= desiredCapacity) {
       return existing;
     }
     ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity, stats);
@@ -129,7 +152,7 @@ public class Buffers {
     return newBuffer;
   }
 
-  private static ByteBuffer acquireBuffer(Buffers.BufferType type, int capacity, DMStats stats) {
+  static ByteBuffer acquireBuffer(Buffers.BufferType type, int capacity, DMStats stats) {
     switch (type) {
       case UNTRACKED:
         return ByteBuffer.allocate(capacity);

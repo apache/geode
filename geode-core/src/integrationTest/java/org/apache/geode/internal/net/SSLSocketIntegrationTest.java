@@ -216,6 +216,7 @@ public class SSLSocketIntegrationTest {
     // transmit expected string from Client to Server
     writeMessageToNIOSSLServer(clientChannel, engine);
     writeMessageToNIOSSLServer(clientChannel, engine);
+    writeMessageToNIOSSLServer(clientChannel, engine);
     // this is the real assertion of this test
     await().until(() -> {
       return !serverThread.isAlive();
@@ -261,6 +262,7 @@ public class SSLSocketIntegrationTest {
 
         readMessageFromNIOSSLClient(socket, buffer, engine);
         readMessageFromNIOSSLClient(socket, buffer, engine);
+        readMessageFromNIOSSLClient(socket, buffer, engine);
       } catch (Throwable throwable) {
         throwable.printStackTrace(System.out);
         serverException = throwable;
@@ -282,14 +284,25 @@ public class SSLSocketIntegrationTest {
 
   private void readMessageFromNIOSSLClient(Socket socket, ByteBuffer buffer, NioSslEngine engine)
       throws IOException {
-    int bytesRead = socket.getChannel().read(buffer);
-    buffer.flip();
-    System.out.println("server bytes read is " + bytesRead + ": buffer position is "
-        + buffer.position() + " and limit is " + buffer.limit());
-    ByteBuffer unwrapped = engine.unwrap(buffer);
-    unwrapped.flip();
-    System.out.println("server unwrapped buffer position is " + unwrapped.position()
-        + " and limit is " + unwrapped.limit());
+
+    ByteBuffer unwrapped = engine.getUnwrappedBuffer(buffer);
+    // if we already have unencrypted data skip unwrapping
+    if (unwrapped.position() == 0) {
+      int bytesRead;
+      // if we already have encrypted data skip reading from the socket
+      if (buffer.position() == 0) {
+        bytesRead = socket.getChannel().read(buffer);
+        buffer.flip();
+      } else {
+        bytesRead = buffer.remaining();
+      }
+      System.out.println("server bytes read is " + bytesRead + ": buffer position is "
+          + buffer.position() + " and limit is " + buffer.limit());
+      unwrapped = engine.unwrap(buffer);
+      unwrapped.flip();
+      System.out.println("server unwrapped buffer position is " + unwrapped.position()
+          + " and limit is " + unwrapped.limit());
+    }
     ByteBufferInputStream bbis = new ByteBufferInputStream(unwrapped);
     DataInputStream dis = new DataInputStream(bbis);
     String welcome = dis.readUTF();

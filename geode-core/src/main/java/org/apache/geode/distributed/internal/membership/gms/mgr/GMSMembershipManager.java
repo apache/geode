@@ -649,19 +649,12 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         this.isJoining = true; // added for bug #44373
 
         // connect
-        long start = System.currentTimeMillis();
-
         boolean ok = services.getJoinLeave().join();
 
         if (!ok) {
           throw new GemFireConfigException("Unable to join the distributed system.  "
               + "Operation either timed out, was stopped or Locator does not exist.");
         }
-
-        long delta = System.currentTimeMillis() - start;
-
-        logger.info(LogMarker.DISTRIBUTION_MARKER, "Joined the distributed system (took  {}  ms)",
-            delta);
 
         NetView initialView = services.getJoinLeave().getView();
         latestView = new NetView(initialView, initialView.getViewId());

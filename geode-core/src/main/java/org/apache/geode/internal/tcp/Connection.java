@@ -76,8 +76,8 @@ import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.Buffers;
-import org.apache.geode.internal.net.NioEngine;
 import org.apache.geode.internal.net.NioFilter;
+import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.MsgReader.Header;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
@@ -422,16 +422,7 @@ public class Connection implements Runnable {
     setSocketBufferSize(sock, false, requestedSize);
   }
 
-  int getReceiveBufferSize() {
-    return recvBufferSize;
-  }
-
   private void setSocketBufferSize(Socket sock, boolean send, int requestedSize) {
-    setSocketBufferSize(sock, send, requestedSize, false);
-  }
-
-  private void setSocketBufferSize(Socket sock, boolean send, int requestedSize,
-      boolean alreadySetInSocket) {
     if (requestedSize > 0) {
       try {
         int currentSize = send ? sock.getSendBufferSize() : sock.getReceiveBufferSize();
@@ -441,12 +432,10 @@ public class Connection implements Runnable {
           }
           return;
         }
-        if (!alreadySetInSocket) {
-          if (send) {
-            sock.setSendBufferSize(requestedSize);
-          } else {
-            sock.setReceiveBufferSize(requestedSize);
-          }
+        if (send) {
+          sock.setSendBufferSize(requestedSize);
+        } else {
+          sock.setReceiveBufferSize(requestedSize);
         }
       } catch (SocketException ignore) {
       }
@@ -1614,6 +1603,8 @@ public class Connection implements Runnable {
     StringBuilder sb = new StringBuilder(64);
     if (this.isReceiver) {
       sb.append("P2P message reader@");
+    } else if (this.handshakeRead) {
+      sb.append("P2P message sender@");
     } else {
       sb.append("P2P handshake reader@");
     }
@@ -1725,13 +1716,15 @@ public class Connection implements Runnable {
             this.readerShuttingDown = true;
             try {
               requestClose("SocketChannel.read returned EOF");
-              requestClose(
-                  "SocketChannel.read returned EOF");
             } catch (Exception e) {
               // ignore - shutting down
             }
             return;
           }
+
+          // logger.info("BRUCE: run() read {} bytes net buffer {} position {} limit {} capacity
+          // {}", amountRead, Integer.toHexString(System.identityHashCode(inputBuffer)),
+          // inputBuffer.position(), inputBuffer.limit(), inputBuffer.capacity());
 
           processInputBuffer();
 
@@ -1818,7 +1811,7 @@ public class Connection implements Runnable {
   }
 
   private void createIoFilter(SocketChannel channel, boolean clientSocket) throws IOException {
-    if (TCPConduit.useSSL && channel != null) {
+    if (getConduit().useSSL() && channel != null) {
       InetSocketAddress address = (InetSocketAddress) channel.getRemoteAddress();
       SSLEngine engine =
           getConduit().getSocketCreator().createSSLEngine(address.getHostName(), address.getPort());
@@ -1828,19 +1821,25 @@ public class Connection implements Runnable {
         engine.setNeedClientAuth(true);
       }
 
+      int packetBufferSize = engine.getSession().getPacketBufferSize();
       if (inputBuffer == null
-          || (inputBuffer.capacity() < engine.getSession().getPacketBufferSize())) {
+          || (inputBuffer.capacity() < packetBufferSize)) {
         // TLS has a minimum input buffer size constraint
         if (inputBuffer != null) {
           Buffers.releaseReceiveBuffer(inputBuffer, getConduit().getStats());
         }
-        inputBuffer = Buffers.acquireReceiveBuffer(engine.getSession().getPacketBufferSize(),
-            getConduit().getStats());
+        inputBuffer = Buffers.acquireReceiveBuffer(packetBufferSize, getConduit().getStats());
+      }
+      if (channel.socket().getReceiveBufferSize() < packetBufferSize) {
+        channel.socket().setReceiveBufferSize(packetBufferSize);
+      }
+      if (channel.socket().getSendBufferSize() < packetBufferSize) {
+        channel.socket().setSendBufferSize(packetBufferSize);
       }
       ioFilter = getConduit().getSocketCreator().handshakeSSLSocketChannel(channel, engine,
           getConduit().idleConnectionTimeout, clientSocket, inputBuffer, getConduit().getStats());
     } else {
-      ioFilter = new NioEngine();
+      ioFilter = new NioPlainEngine();
     }
   }
 
@@ -2750,18 +2749,18 @@ public class Connection implements Runnable {
           // fall through
         }
         ByteBuffer wrappedBuffer = ioFilter.wrap(buffer);
-
-        do {
+        while (wrappedBuffer.remaining() > 0) {
           int amtWritten = 0;
           long start = stats.startSocketWrite(true);
           try {
             // this.writerThread = Thread.currentThread();
             amtWritten = channel.write(wrappedBuffer);
+            // logger.info("BRUCE: wrote {} bytes to {}", amtWritten, this.remoteAddr);
           } finally {
             stats.endSocketWrite(true, start, amtWritten, 0);
             // this.writerThread = null;
           }
-        } while (wrappedBuffer.remaining() > 0);
+        }
 
       } // synchronized
     } else {
@@ -2834,14 +2833,17 @@ public class Connection implements Runnable {
       ReplyMessage msg;
       int len;
       if (header.getMessageType() == NORMAL_MSG_TYPE) {
+        // logger.info("BRUCE: reading direct ack message");
         msg = (ReplyMessage) msgReader.readMessage(header);
         len = header.getMessageLength();
       } else {
         MsgDestreamer destreamer = obtainMsgDestreamer(header.getMessageId(), version);
         while (header.getMessageType() == CHUNKED_MSG_TYPE) {
+          // logger.info("BRUCE: reading direct ack chunk");
           msgReader.readChunk(header, destreamer);
           header = msgReader.readHeader();
         }
+        // logger.info("BRUCE: reading last direct ack chunk");
         msgReader.readChunk(header, destreamer);
         msg = (ReplyMessage) destreamer.getMessage();
         releaseMsgDestreamer(header.getMessageId(), destreamer);
@@ -2902,9 +2904,6 @@ public class Connection implements Runnable {
             getRemoteAddress());
         this.ackTimedOut = false;
       }
-      if (msgReader != null) {
-        msgReader.close();
-      }
     }
     synchronized (stateLock) {
       this.connectionState = STATE_RECEIVED_ACK;
@@ -2925,7 +2924,6 @@ public class Connection implements Runnable {
 
     while (!done && connected) {
       this.owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-      // long startTime = DistributionStats.getStatTime();
       int remaining = peerDataBuffer.remaining();
       if (lengthSet || remaining >= MSG_HEADER_BYTES) {
         if (!lengthSet) {
@@ -2969,7 +2967,7 @@ public class Connection implements Runnable {
           peerDataBuffer.position(startPos + messageLength);
         } else {
           done = true;
-          if (TCPConduit.useSSL) {
+          if (getConduit().useSSL()) {
             ioFilter.doneReading(peerDataBuffer);
           } else {
             compactOrResizeBuffer(messageLength);
@@ -3121,6 +3119,7 @@ public class Connection implements Runnable {
 
   private void readMessage(ByteBuffer peerDataBuffer) {
     if (messageType == NORMAL_MSG_TYPE) {
+      // logger.info("BRUCE: reading normal message");
       this.owner.getConduit().getStats().incMessagesBeingReceived(true, messageLength);
       ByteBufferInputStream bbis =
           remoteVersion == null ? new ByteBufferInputStream(peerDataBuffer)
@@ -3186,6 +3185,8 @@ public class Connection implements Runnable {
             throw (CancelException) t;
           }
         }
+        // logger.info("BRUCE: buffer position {} limit {}", peerDataBuffer.position(),
+        // peerDataBuffer.limit());
         logger.fatal("Error deserializing message", t);
       } finally {
         ReplyProcessor21.clearMessageRPId();
@@ -3195,11 +3196,13 @@ public class Connection implements Runnable {
       this.owner.getConduit().getStats().incMessagesBeingReceived(md.size() == 0,
           messageLength);
       try {
+        // logger.info("BRUCE: adding message chunk of length {}", messageLength);
         md.addChunk(peerDataBuffer, messageLength);
       } catch (IOException ex) {
       }
     } else /* (nioMessageType == END_CHUNKED_MSG_TYPE) */ {
       // logger.info("END_CHUNK msgId="+nioMsgId);
+      // logger.info("BRUCE: reading last message chunk");
       MsgDestreamer md = obtainMsgDestreamer(messageId, remoteVersion);
       this.owner.getConduit().getStats().incMessagesBeingReceived(md.size() == 0,
           messageLength);
