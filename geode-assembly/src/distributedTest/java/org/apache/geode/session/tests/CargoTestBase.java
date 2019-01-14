@@ -87,7 +87,11 @@ public abstract class CargoTestBase {
     install.setDefaultLocatorPort(locatorVM.getPort());
 
     manager.addContainers(2, install);
+
+    customizeContainers();
   }
+
+  public void customizeContainers() throws Exception {}
 
   /**
    * Stops all containers that were previously started and cleans up their configurations
@@ -187,8 +191,7 @@ public abstract class CargoTestBase {
    * Test that invalidating a session in one container invalidates the session in all containers.
    */
   @Test
-  public void invalidationShouldRemoveValueAccessForAllContainers()
-      throws IOException, URISyntaxException {
+  public void invalidationShouldRemoveValueAccessForAllContainers() throws Exception {
     manager.startAllInactiveContainers();
 
     String key = "value_testInvalidate";
@@ -335,7 +338,7 @@ public abstract class CargoTestBase {
    * data.
    */
   @Test
-  public void newContainersShouldShareDataAccess() throws IOException, URISyntaxException {
+  public void newContainersShouldShareDataAccess() throws Exception {
     manager.startAllInactiveContainers();
 
     String key = "value_testSessionAdd";
@@ -349,6 +352,8 @@ public abstract class CargoTestBase {
     int numContainers = manager.numContainers();
     // Add and start new container
     manager.addContainer(install);
+    customizeContainers();
+
     manager.startAllInactiveContainers();
     // Check that a container was added
     assertEquals(numContainers + 1, manager.numContainers());
