@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -133,7 +133,7 @@ public class GMSLocator implements Locator, NetLocator {
     return false;
   }
 
-  @TestingOnly
+  @VisibleForTesting
   public File setViewFile(File file) {
     this.viewFile = file.getAbsoluteFile();
     return this.viewFile;

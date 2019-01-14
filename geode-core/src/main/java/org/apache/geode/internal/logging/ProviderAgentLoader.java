@@ -22,7 +22,7 @@ import java.util.ServiceLoader;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.status.StatusLogger;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.ClassPathLoader;
 
 /**
@@ -54,7 +54,7 @@ public class ProviderAgentLoader {
     this(new DefaultProvider());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   ProviderAgentLoader(final AvailabilityChecker availabilityChecker) {
     this.availabilityChecker = availabilityChecker;
   }

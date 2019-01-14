@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.status.StatusLogger;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.statistics.StatisticsConfig;
@@ -95,7 +95,7 @@ public class ManagerLogWriterFactory {
     return logWriter;
   }
 
-  @TestingOnly
+  @VisibleForTesting
   File getLogFile(final LogConfig config) {
     if (security) {
       return config.getSecurityLogFile();
@@ -104,7 +104,7 @@ public class ManagerLogWriterFactory {
     }
   }
 
-  @TestingOnly
+  @VisibleForTesting
   int getLogLevel(final LogConfig config) {
     if (security) {
       return config.getSecurityLogLevel();

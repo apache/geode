@@ -19,9 +19,17 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
+/**
+ * Annotates a program element that exists, or is more widely visible than otherwise necessary, only
+ * for use in test code.
+ *
+ * <p>
+ * Introduced while mobbing with Michael Feathers. Name and javadoc borrowed from Guava and AssertJ
+ * (both are Apache License 2.0).
+ */
 @Documented
 @Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
-public @interface TestingOnly {
+public @interface VisibleForTesting {
 
   /** Optional description */
   String value() default "";

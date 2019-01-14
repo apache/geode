@@ -23,7 +23,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.TestingOnly;
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * Configures the logging {@code Configuration} and provides lifecycle to Geode logging.
@@ -44,7 +44,7 @@ public class LoggingSession implements SessionContext {
     return create(Configuration.create(), LoggingSessionListeners.get());
   }
 
-  @TestingOnly
+  @VisibleForTesting
   static LoggingSession create(final Configuration configuration,
       final LoggingSessionListeners loggingSessionListeners) {
     return new LoggingSession(configuration, loggingSessionListeners);
@@ -111,7 +111,7 @@ public class LoggingSession implements SessionContext {
     return configuration.getLogConfigSupplier();
   }
 
-  @TestingOnly
+  @VisibleForTesting
   LoggingSessionListeners getLoggingSessionListeners() {
     return loggingSessionListeners;
   }
