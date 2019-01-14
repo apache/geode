@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -80,6 +81,20 @@ public abstract class AbstractAdminRestController {
   public ResponseEntity<String> notFound(final InstanceNotFoundException e) {
     logger.info(e);
     return new ResponseEntity<>(getPrintableStackTrace(e), HttpStatus.NOT_FOUND);
+  }
+
+  /**
+   * Handles an AccessDenied Exception thrown by a REST API web service endpoint, HTTP request
+   * handler method.
+   * <p/>
+   *
+   * @param cause the Exception causing the error.
+   * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
+   */
+  @ExceptionHandler(AccessDeniedException.class)
+  public ResponseEntity<String> handleException(final AccessDeniedException cause) {
+    logger.info(cause);
+    return new ResponseEntity<>(cause.getMessage(), HttpStatus.FORBIDDEN);
   }
 
   /**

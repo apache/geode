@@ -257,7 +257,8 @@ public class ManagementAgent {
       }
 
       try {
-        if (agentUtil.isAnyWarFileAvailable(gemfireWar, gemfireManagementWar, pulseWar, gemfireAPIWar)) {
+        if (agentUtil.isAnyWarFileAvailable(gemfireWar, gemfireManagementWar, pulseWar,
+            gemfireAPIWar)) {
 
           final String bindAddress = this.config.getHttpServiceBindAddress();
           final int port = this.config.getHttpServicePort();

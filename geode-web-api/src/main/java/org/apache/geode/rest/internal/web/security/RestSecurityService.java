@@ -14,30 +14,22 @@
  */
 package org.apache.geode.rest.internal.web.security;
 
-import org.springframework.stereotype.Component;
+import javax.servlet.ServletContext;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.ServletContextAware;
+
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 @Component("securityService")
-public class RestSecurityService {
+public class RestSecurityService implements ServletContextAware {
 
-  private final SecurityService securityService;
-
-  public RestSecurityService() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      this.securityService = cache.getSecurityService();
-    } else {
-      this.securityService = SecurityServiceFactory.create();
-    }
-  }
+  private SecurityService securityService;
 
   public boolean authorize(String resource, String operation) {
     return authorize(resource, operation, null, null);
@@ -83,4 +75,9 @@ public class RestSecurityService {
     return securityService.postProcess(regionPath, key, value, valueIsSerialized);
   }
 
+  @Override
+  public void setServletContext(ServletContext servletContext) {
+    securityService = (SecurityService) servletContext
+        .getAttribute(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+  }
 }

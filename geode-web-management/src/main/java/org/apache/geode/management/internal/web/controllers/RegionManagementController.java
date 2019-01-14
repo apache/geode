@@ -19,22 +19,21 @@ import static org.apache.geode.management.internal.web.controllers.AbstractManag
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.security.ResourcePermission;
 
 @Controller("regionManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class RegionManagementController extends AbstractManagementController {
 
+  @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = "/regions")
   public ResponseEntity<String> createRegion(@RequestBody RegionConfig regionConfig) {
-    securityService.authorize(ResourcePermission.Resource.DATA,
-        ResourcePermission.Operation.MANAGE);
     return new ResponseEntity(regionConfig.getName(), HttpStatus.CREATED);
   }
 

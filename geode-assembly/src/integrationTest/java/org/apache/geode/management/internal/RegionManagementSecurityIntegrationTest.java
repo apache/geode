@@ -41,7 +41,8 @@ public class RegionManagementSecurityIntegrationTest {
 
   @BeforeClass
   public static void setUpClass() {
-    restClient = new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+    restClient =
+        new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
   }
 
   private RegionConfig regionConfig;
@@ -60,7 +61,7 @@ public class RegionManagementSecurityIntegrationTest {
   public void sanityCheck_not_authorized() throws Exception {
     restClient.doPostAndAssert("/regions", json, "test", "test")
         .hasStatusCode(403)
-        .hasResponseBody().isEqualTo("test not authorized for DATA:MANAGE");
+        .hasResponseBody().isEqualTo("Access is denied");
   }
 
   @Test

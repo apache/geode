@@ -38,7 +38,8 @@ public class RegionManagementIntegrationTest {
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    restClient = new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+    restClient =
+        new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
   }
 
   @Test
