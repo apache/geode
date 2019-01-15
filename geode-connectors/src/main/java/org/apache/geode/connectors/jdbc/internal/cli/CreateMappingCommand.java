@@ -74,6 +74,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private static final String CREATE_MAPPING__SCHEMA_NAME = MappingConstants.SCHEMA_NAME;
   private static final String CREATE_MAPPING__SCHEMA_NAME__HELP =
       "The schema that contains the database table. By default, the schema is the empty string causing the table to be referenced without a schema prefix.";
+  private static final String CREATE_MAPPING__GROUP_NAME = "groups";
+  private static final String CREATE_MAPPING__GROUP_NAME__HELP =
+          "The names of the server groups on which this mapping should be created.";
 
   public static String createAsyncEventQueueName(String regionPath) {
     if (regionPath.startsWith("/")) {
@@ -102,20 +105,22 @@ public class CreateMappingCommand extends SingleGfshCommand {
       @CliOption(key = CREATE_MAPPING__CATALOG_NAME,
           help = CREATE_MAPPING__CATALOG_NAME__HELP) String catalog,
       @CliOption(key = CREATE_MAPPING__SCHEMA_NAME,
-          help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema) {
+          help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
+      @CliOption(key = CREATE_MAPPING__GROUP_NAME,
+          help = CREATE_MAPPING__GROUP_NAME__HELP) String groups){
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 
     // input
-    Set<DistributedMember> targetMembers = findMembersForRegion(regionName);
+    Set<DistributedMember> targetMembers = findMembersForRegion(regionName, groups);
     RegionMapping mapping =
-        new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema);
+        new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema, groups);
 
     try {
       ConfigurationPersistenceService configurationPersistenceService =
           checkForClusterConfiguration();
-      CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(null);
+      CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(groups);
       RegionConfig regionConfig = checkForRegion(regionName, cacheConfig);
       checkForExistingMapping(regionName, regionConfig);
       checkForCacheLoader(regionName, regionConfig);

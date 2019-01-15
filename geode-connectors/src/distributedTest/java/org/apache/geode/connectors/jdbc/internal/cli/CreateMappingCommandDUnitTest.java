@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
@@ -59,6 +60,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class CreateMappingCommandDUnitTest {
 
   private static final String TEST_REGION = "testRegion";
+  private static final String TEST_GROUP = "testGroup";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -70,12 +72,14 @@ public class CreateMappingCommandDUnitTest {
   public SerializableTestName testName = new SerializableTestName();
 
   private MemberVM locator;
-  private MemberVM server;
+  private MemberVM server1;
+  private MemberVM server2;
 
   @Before
   public void before() throws Exception {
     locator = startupRule.startLocatorVM(0);
-    server = startupRule.startServerVM(1, locator.getPort());
+    server1 = startupRule.startServerVM(1, locator.getPort());
+    server2 = startupRule.startServerVM(2, TEST_GROUP, locator.getPort());
 
     gfsh.connectAndVerify(locator);
 
@@ -84,6 +88,7 @@ public class CreateMappingCommandDUnitTest {
   public void cleanUp() throws Exception {
     startupRule.stop(0);
     startupRule.stop(1);
+    startupRule.stop(2);
     gfsh.disconnect();
   }
 
@@ -95,6 +100,11 @@ public class CreateMappingCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE"
         + (addLoader ? " --cache-loader=" + JdbcLoader.class.getName() : ""))
         .statusIsSuccess();
+  }
+
+  private void setupGroupReplicate(String regionName) {
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE --groups=" + TEST_GROUP)
+            .statusIsSuccess();
   }
 
   private void setupPartition(String regionName) {
@@ -185,8 +195,49 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
-  public void createMappingUpdatesServiceAndClusterConfig(String regionName) {
+  public void createMappingUpdatesServiceAndClusterConfigForServerGroup(String regionName) {
     setupReplicate(regionName);
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(CATALOG_NAME, "myCatalog");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(GROUP_NAME, TEST_GROUP);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(mapping.getIds()).isEqualTo("myId");
+      assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(mapping.getSchema()).isEqualTo("mySchema");
+      validateRegionAlteredOnServer(regionName, false);
+      validateAsyncEventQueueCreatedOnServer(regionName, false);
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName);
+      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
+      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(regionMapping.getIds()).isEqualTo("myId");
+      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
+      validateRegionAlteredInClusterConfig(regionName, false);
+      validateAsyncEventQueueCreatedInClusterConfig(regionName, false);
+    });
+  }
+
+  @Test
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
+  public void createMappingUpdatesServiceAndClusterConfig(String regionName) {
+    setupGroupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
     csb.addOption(DATA_SOURCE_NAME, "connection");
@@ -198,7 +249,7 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
@@ -239,7 +290,7 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
@@ -274,7 +325,7 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
@@ -304,7 +355,7 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isNull();
@@ -343,7 +394,7 @@ public class CreateMappingCommandDUnitTest {
         .containsOutput(
             "A JDBC mapping for " + convertRegionPathToName(regionName) + " already exists");
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");

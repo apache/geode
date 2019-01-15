@@ -111,7 +111,11 @@ public class CliUtil {
    * @return a Set of DistributedMember for members that have the specified <code>region</code>.
    */
   public static Set<DistributedMember> getRegionAssociatedMembers(String region,
-      final InternalCache cache, boolean returnAll) {
+                                                                  final InternalCache cache, boolean returnAll) {
+    return getRegionAssociatedMembers(region, cache, returnAll, null);
+  }
+  public static Set<DistributedMember> getRegionAssociatedMembers(String region,
+      final InternalCache cache, boolean returnAll, String serverGroup) {
     if (region == null || region.isEmpty()) {
       return Collections.emptySet();
     }
@@ -136,9 +140,11 @@ public class CliUtil {
       for (String regionAssociatedMemberName : regionAssociatedMemberNames) {
         String name = MBeanJMXAdapter.getMemberNameOrId(member);
         if (name.equals(regionAssociatedMemberName)) {
-          matchedMembers.add(member);
-          if (!returnAll) {
-            return matchedMembers;
+          if (member.getGroups().contains(serverGroup)) {
+            matchedMembers.add(member);
+            if (!returnAll) {
+              return matchedMembers;
+            }
           }
         }
       }

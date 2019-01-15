@@ -77,6 +77,8 @@ public class RegionMapping implements CacheElement {
   protected String catalog;
   @XmlAttribute(name = "schema")
   protected String schema;
+  @XmlAttribute(name = "groups")
+  protected String groups;
 
   @XmlTransient
   protected String regionName;
@@ -86,7 +88,7 @@ public class RegionMapping implements CacheElement {
   public RegionMapping() {}
 
   public RegionMapping(String regionName, String pdxName, String tableName,
-      String dataSourceName, String ids, String catalog, String schema) {
+      String dataSourceName, String ids, String catalog, String schema, String groups) {
     this.regionName = regionName;
     this.pdxName = pdxName;
     this.tableName = tableName;
@@ -94,6 +96,7 @@ public class RegionMapping implements CacheElement {
     this.ids = ids;
     this.catalog = catalog;
     this.schema = schema;
+    this.groups = groups;
   }
 
   public void setDataSourceName(String dataSourceName) {
@@ -124,6 +127,10 @@ public class RegionMapping implements CacheElement {
     this.schema = schema;
   }
 
+  public void setGroups(String groups) {
+    this.schema = groups;
+  }
+
   public String getDataSourceName() {
     return dataSourceName;
   }
@@ -146,6 +153,10 @@ public class RegionMapping implements CacheElement {
 
   public String getSchema() {
     return schema;
+  }
+
+  public String getGroups() {
+    return groups;
   }
 
   public String getTableName() {
@@ -251,7 +262,8 @@ public class RegionMapping implements CacheElement {
         && isEqual(dataSourceName, that.dataSourceName)
         && isEqual(ids, that.ids)
         && isEqual(catalog, that.catalog)
-        && isEqual(schema, that.schema);
+        && isEqual(schema, that.schema)
+            && isEqual(groups, that.groups);
   }
 
   private static boolean isEqual(String s1, String s2) {
@@ -267,6 +279,7 @@ public class RegionMapping implements CacheElement {
     result = 31 * result + (ids != null ? ids.hashCode() : 0);
     result = 31 * result + (catalog != null ? catalog.hashCode() : 0);
     result = 31 * result + (schema != null ? schema.hashCode() : 0);
+    result = 31 * result + (groups != null ? groups.hashCode() : 0);
     return result;
   }
 
@@ -280,6 +293,7 @@ public class RegionMapping implements CacheElement {
         + ", ids='" + ids + '\''
         + ", catalog='" + catalog + '\''
         + ", schema='" + schema + '\''
+            + ", groups='" + groups + '\''
         + '}';
   }
 
