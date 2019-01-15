@@ -245,7 +245,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
           !colocatedRegionBean.getRegionType().equals("PERSISTENT_PARTITION")) {
         return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_IS_NOT_PARTITIONEDREGION,
-            new String[] {prColocatedWith}));
+            (Object) prColocatedWith));
       }
     }
 
