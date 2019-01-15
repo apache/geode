@@ -5206,11 +5206,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public PdxInstanceFactory createStablePdxInstanceFactory(String className) {
-    return PdxInstanceFactoryImpl.newCreator(className, false, this);
-  }
-
-  @Override
   public PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass) {
     return PdxInstanceFactoryImpl.newCreator(className, expectDomainClass, this);
   }

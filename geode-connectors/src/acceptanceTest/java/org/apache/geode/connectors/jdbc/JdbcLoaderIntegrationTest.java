@@ -135,8 +135,9 @@ public abstract class JdbcLoaderIntegrationTest {
         createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, null, null);
     createPdxType();
 
-    PdxInstance key = cache.createStablePdxInstanceFactory("MyPdxKeyType").writeString("id", "1")
-        .writeString("name", "Emp1").create();
+    PdxInstance key =
+        cache.createPdxInstanceFactory("MyPdxKeyType").neverDeserialize().writeString("id", "1")
+            .writeString("name", "Emp1").create();
     Employee value = region.get(key);
 
     assertThat(value.getId()).isEqualTo("1");
@@ -165,8 +166,9 @@ public abstract class JdbcLoaderIntegrationTest {
             schema);
     createPdxType();
 
-    PdxInstance key = cache.createStablePdxInstanceFactory("MyPdxKeyType").writeString("id", "1")
-        .writeString("name", "Emp1").create();
+    PdxInstance key =
+        cache.createPdxInstanceFactory("MyPdxKeyType").neverDeserialize().writeString("id", "1")
+            .writeString("name", "Emp1").create();
     Employee value = region.get(key);
 
     assertThat(value.getId()).isEqualTo("1");

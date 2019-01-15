@@ -64,8 +64,9 @@ public interface PdxInstance extends java.io.Serializable {
 
   /**
    * Deserializes and returns the domain object that this instance represents.
+   * If this instance is one that never deserializes then getObject returns "this".
    *
-   * @return the deserialized domain object.
+   * @return the deserialized domain object or "this" if this instance never deserializes
    * @throws PdxSerializationException if the instance could not be deserialized
    */
   Object getObject();
@@ -213,14 +214,15 @@ public interface PdxInstance extends java.io.Serializable {
 
 
   /**
-   * Returns true if this instance is "stable".
-   * Stable pdx instances are ones that will never be deserialized to a domain class.
-   * Stable instances can be created using {@link RegionService#createStablePdxInstanceFactory}.
+   * Returns false if this instance will never be deserialized to a domain class.
+   * Instances that never deserialize can be created using
+   * {@link PdxInstanceFactory#neverDeserialize}.
    *
-   * @return true if this instance is "stable".
+   * @return false if this instance will never be deserialized to a domain class.
+   *
    * @since Geode 1.9
    */
-  default boolean isStable() {
+  default boolean isDeserializable() {
     return false;
   }
 

@@ -657,7 +657,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
   }
 
   @Override
-  public boolean isStable() {
-    return getPdxType().getNoDomainClass();
+  public boolean isDeserializable() {
+    return !getPdxType().getNoDomainClass();
   }
 }

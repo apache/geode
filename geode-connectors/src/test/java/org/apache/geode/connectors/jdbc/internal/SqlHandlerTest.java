@@ -375,7 +375,7 @@ public class SqlHandlerTest {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance compositeKey = mock(PdxInstance.class);
-    when(compositeKey.isStable()).thenReturn(true);
+    when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
@@ -408,7 +408,7 @@ public class SqlHandlerTest {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance compositeKey = mock(PdxInstance.class);
-    when(compositeKey.isStable()).thenReturn(true);
+    when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
@@ -441,7 +441,7 @@ public class SqlHandlerTest {
     Object destroyKeyFieldValueOne = "fieldValueOne";
     Object destroyKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance destroyKey = mock(PdxInstance.class);
-    when(destroyKey.isStable()).thenReturn(true);
+    when(destroyKey.isDeserializable()).thenReturn(false);
     when(destroyKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(destroyKey.getField("fieldOne")).thenReturn(destroyKeyFieldValueOne);
     when(destroyKey.getField("fieldTwo")).thenReturn(destroyKeyFieldValueTwo);
@@ -590,7 +590,7 @@ public class SqlHandlerTest {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance compositeKey = mock(PdxInstance.class);
-    when(compositeKey.isStable()).thenReturn(true);
+    when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
@@ -614,7 +614,7 @@ public class SqlHandlerTest {
   @Test
   public void getEntryColumnDataGivenWrongNumberOfCompositeKeyFieldsFails() throws Exception {
     PdxInstance compositeKey = mock(PdxInstance.class);
-    when(compositeKey.isStable()).thenReturn(true);
+    when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne"));
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
@@ -632,7 +632,7 @@ public class SqlHandlerTest {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance compositeKey = mock(PdxInstance.class);
-    when(compositeKey.isStable()).thenReturn(true);
+    when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwoWrong"));
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwoWrong")).thenReturn(compositeKeyFieldValueTwo);
@@ -689,7 +689,7 @@ public class SqlHandlerTest {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance compositeKey = mock(PdxInstance.class);
-    when(compositeKey.isStable()).thenReturn(true);
+    when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
@@ -720,7 +720,7 @@ public class SqlHandlerTest {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance compositeKey = mock(PdxInstance.class);
-    when(compositeKey.isStable()).thenReturn(true);
+    when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
@@ -774,11 +774,11 @@ public class SqlHandlerTest {
       throws Exception {
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     PdxInstance nonCompositeKey = mock(PdxInstance.class);
-    when(nonCompositeKey.isStable()).thenReturn(false);
+    when(nonCompositeKey.isDeserializable()).thenReturn(true);
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
         "The key \"" + nonCompositeKey
-            + "\" must be a stable PdxInstance created by Cache.createStablePdxInstanceFactory.");
+            + "\" must be a PdxInstance created with PdxInstanceFactory.neverDeserialize");
 
     handler.getEntryColumnData(tableMetaDataView, regionMapping, nonCompositeKey, value,
         Operation.DESTROY);

@@ -183,10 +183,10 @@ public abstract class JdbcWriterIntegrationTest {
   public void canInsertIntoTableWithCompositeKey() throws Exception {
     createTable();
     setupRegion("id,age");
-    PdxInstance compositeKey1 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+    PdxInstance compositeKey1 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
         .writeField("id", (String) pdx1.getField("id"), String.class)
         .writeField("age", (Integer) pdx1.getField("age"), int.class).create();
-    PdxInstance compositeKey2 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+    PdxInstance compositeKey2 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
         .writeField("id", (String) pdx2.getField("id"), String.class)
         .writeField("age", (Integer) pdx2.getField("age"), int.class).create();
 
@@ -289,10 +289,10 @@ public abstract class JdbcWriterIntegrationTest {
   public void canDestroyFromTableWithCompositeKey() throws Exception {
     createTable();
     setupRegion("id,age");
-    PdxInstance compositeKey1 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+    PdxInstance compositeKey1 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
         .writeField("id", (String) pdx1.getField("id"), String.class)
         .writeField("age", (Integer) pdx1.getField("age"), int.class).create();
-    PdxInstance compositeKey2 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+    PdxInstance compositeKey2 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
         .writeField("id", (String) pdx2.getField("id"), String.class)
         .writeField("age", (Integer) pdx2.getField("age"), int.class).create();
     employees.put(compositeKey1, pdx1);
@@ -340,7 +340,7 @@ public abstract class JdbcWriterIntegrationTest {
     PdxInstance myPdx = cache.createPdxInstanceFactory(Employee.class.getName())
         .writeString("id", "1").writeString("name", "Emp1")
         .writeInt("age", 55).create();
-    PdxInstance compositeKey1 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+    PdxInstance compositeKey1 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
         .writeField("id", (String) myPdx.getField("id"), String.class)
         .writeField("age", (Integer) myPdx.getField("age"), int.class).create();
     employees.put(compositeKey1, myPdx);

@@ -33,12 +33,13 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   private final PdxWriterImpl writer;
+  private final PdxType pdxType;
 
   private boolean created = false;
 
   private PdxInstanceFactoryImpl(String name, boolean expectDomainClass, TypeRegistry pdxRegistry) {
     PdxOutputStream pdxOutputStream = new PdxOutputStream();
-    PdxType pdxType = new PdxType(name, expectDomainClass);
+    this.pdxType = new PdxType(name, expectDomainClass);
     this.writer = new PdxWriterImpl(pdxType, pdxRegistry, pdxOutputStream);
   }
 
@@ -273,6 +274,12 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
     TypeRegistry tr = internalCache.getPdxRegistry();
     EnumInfo ei = new EnumInfo(className, enumName, enumOrdinal);
     return ei.getPdxInstance(tr.defineEnum(ei));
+  }
+
+  @Override
+  public PdxInstanceFactory neverDeserialize() {
+    this.pdxType.setNoDomainClass(true);
+    return this;
   }
 
 }

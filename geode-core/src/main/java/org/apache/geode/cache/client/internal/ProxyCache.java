@@ -220,11 +220,6 @@ public class ProxyCache implements RegionService {
     return PdxInstanceFactoryImpl.newCreator(className, true, cache);
   }
 
-  @Override
-  public PdxInstanceFactory createStablePdxInstanceFactory(String className) {
-    return PdxInstanceFactoryImpl.newCreator(className, false, cache);
-  }
-
   public PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass) {
     return PdxInstanceFactoryImpl.newCreator(className, expectDomainClass, cache);
   }

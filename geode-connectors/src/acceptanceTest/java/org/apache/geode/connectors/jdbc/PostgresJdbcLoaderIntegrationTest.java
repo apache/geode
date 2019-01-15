@@ -80,8 +80,9 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
             SCHEMA_NAME);
     createPdxType();
 
-    PdxInstance key = cache.createStablePdxInstanceFactory("MyPdxKeyType").writeString("id", "1")
-        .writeString("name", "Emp1").create();
+    PdxInstance key =
+        cache.createPdxInstanceFactory("MyPdxKeyType").neverDeserialize().writeString("id", "1")
+            .writeString("name", "Emp1").create();
     Employee value = region.get(key);
 
     assertThat(value.getId()).isEqualTo("1");

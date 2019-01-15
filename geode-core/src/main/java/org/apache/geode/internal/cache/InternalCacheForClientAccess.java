@@ -586,11 +586,6 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public PdxInstanceFactory createStablePdxInstanceFactory(String className) {
-    return delegate.createStablePdxInstanceFactory(className);
-  }
-
-  @Override
   public PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal) {
     return delegate.createPdxEnum(className, enumName, enumOrdinal);
   }

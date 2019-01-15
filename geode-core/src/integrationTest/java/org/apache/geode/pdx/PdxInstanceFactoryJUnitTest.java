@@ -1230,8 +1230,9 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
-  public void stablePdxInstanceGetObjectReturnsThePdxInstance() {
-    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+  public void undeserializablePdxInstanceGetObjectReturnsThePdxInstance() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
     PdxInstance instance = factory.create();
 
     Object object = instance.getObject();
@@ -1249,12 +1250,13 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
-  public void stablePdxInstanceAddedToRegionWithPdxReadSerializedFalseReturnsEqualPdxInstanceWhenRegionGet() {
+  public void undeserializablePdxInstanceAddedToRegionWithPdxReadSerializedFalseReturnsEqualPdxInstanceWhenRegionGet() {
     // make sure the cache has pdx-read-serialized set to false
     this.cache.close();
     this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
         .setPdxReadSerialized(false).create();
-    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
     factory.writeString("fieldOne", "valueOne");
     PdxInstance instance = factory.create();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("myRegion");
@@ -1266,17 +1268,18 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
-  public void stablePdxInstanceCanBeUsedAsRegionKey() {
+  public void undeserializablePdxInstanceCanBeUsedAsRegionKey() {
     // make sure the cache has pdx-read-serialized set to false
     this.cache.close();
     this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
         .setPdxReadSerialized(false).create();
-    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
     factory.writeString("fieldOne", "valueOne");
     PdxInstance putKey = factory.create();
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("myRegion");
     region.put(putKey, "value");
-    factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory = cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
     factory.writeString("fieldOne", "valueOne");
     PdxInstance getKey = factory.create();
 
@@ -1286,11 +1289,12 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
-  public void stablePdxInstanceWithDifferentTypeNameAreNotEqual() {
-    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+  public void undeserializablePdxInstanceWithDifferentTypeNameAreNotEqual() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
     factory.writeString("fieldOne", "valueOne");
     PdxInstance instance = factory.create();
-    factory = cache.createStablePdxInstanceFactory("myPdxInstanceType2");
+    factory = cache.createPdxInstanceFactory("myPdxInstanceType2").neverDeserialize();
     factory.writeString("fieldOne", "valueOne");
     PdxInstance instance2 = factory.create();
 
@@ -1298,12 +1302,13 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
-  public void stablePdxInstanceWithMultipleEqualFieldsInDifferentOrderAreEqual() {
-    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+  public void undeserializablePdxInstanceWithMultipleEqualFieldsInDifferentOrderAreEqual() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
     factory.writeString("fieldOne", "valueOne");
     factory.writeString("fieldTwo", "valueTwo");
     PdxInstance instance = factory.create();
-    factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory = cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
     factory.writeString("fieldTwo", "valueTwo");
     factory.writeString("fieldOne", "valueOne");
     PdxInstance instance2 = factory.create();
@@ -1327,22 +1332,23 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
-  public void stablePdxInstanceReturnsTrueFromIsStable() {
-    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+  public void undeserializablePdxInstanceReturnsFalseFromIsDeserializable() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
     factory.writeString("fieldOne", "valueOne");
     factory.writeString("fieldTwo", "valueTwo");
     PdxInstance instance = factory.create();
 
-    assertThat(instance.isStable()).isTrue();
+    assertThat(instance.isDeserializable()).isFalse();
   }
 
   @Test
-  public void normalPdxInstanceReturnsFalseFromIsStable() {
+  public void normalPdxInstanceReturnsTrueFromIsDeserializable() {
     PdxInstanceFactory factory = cache.createPdxInstanceFactory("className");
     factory.writeString("fieldOne", "valueOne");
     factory.writeString("fieldTwo", "valueTwo");
     PdxInstance instance = factory.create();
 
-    assertThat(instance.isStable()).isFalse();
+    assertThat(instance.isDeserializable()).isTrue();
   }
 }

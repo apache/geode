@@ -263,10 +263,10 @@ public class SqlHandler {
                 + "\" must be a PdxInstance because multiple columns are configured as ids.");
       }
       PdxInstance compositeKey = (PdxInstance) key;
-      if (!compositeKey.isStable()) {
+      if (compositeKey.isDeserializable()) {
         throw new JdbcConnectorException(
             "The key \"" + key
-                + "\" must be a stable PdxInstance created by Cache.createStablePdxInstanceFactory.");
+                + "\" must be a PdxInstance created with PdxInstanceFactory.neverDeserialize");
       }
       List<String> fieldNames = compositeKey.getFieldNames();
       if (fieldNames.size() != keyColumnNames.size()) {

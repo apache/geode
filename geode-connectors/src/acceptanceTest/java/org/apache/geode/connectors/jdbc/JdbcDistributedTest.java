@@ -455,9 +455,10 @@ public abstract class JdbcDistributedTest implements Serializable {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
-      PdxInstance key = ClusterStartupRule.getCache().createStablePdxInstanceFactory("IdAgeKeyType")
-          .writeField("id", (String) pdxEmployee1.getField("id"), String.class)
-          .writeField("age", (Integer) pdxEmployee1.getField("age"), int.class).create();
+      PdxInstance key =
+          ClusterStartupRule.getCache().createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
+              .writeField("id", (String) pdxEmployee1.getField("id"), String.class)
+              .writeField("age", (Integer) pdxEmployee1.getField("age"), int.class).create();
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       region.put(key, pdxEmployee1);
       region.invalidate(key);
