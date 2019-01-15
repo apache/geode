@@ -42,5 +42,4 @@ public interface InternalPdxInstance extends PdxInstance, ConvertableToBytes, Se
   default Object getRawField(String fieldName) {
     return getField(fieldName);
   }
-
 }

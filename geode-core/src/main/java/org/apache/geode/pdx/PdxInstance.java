@@ -211,4 +211,17 @@ public interface PdxInstance extends java.io.Serializable {
    */
   WritablePdxInstance createWriter();
 
+
+  /**
+   * Returns true if this instance is "stable".
+   * Stable pdx instances are ones that will never be deserialized to a domain class.
+   * Stable instances can be created using {@link RegionService#createStablePdxInstanceFactory}.
+   *
+   * @return true if this instance is "stable".
+   * @since Geode 1.9
+   */
+  default boolean isStable() {
+    return false;
+  }
+
 }

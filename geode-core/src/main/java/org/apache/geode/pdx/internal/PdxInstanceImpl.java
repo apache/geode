@@ -655,4 +655,9 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
   public Object getRawField(String fieldName) {
     return getUnmodifiableReader(fieldName).readRawField(fieldName);
   }
+
+  @Override
+  public boolean isStable() {
+    return getPdxType().getNoDomainClass();
+  }
 }

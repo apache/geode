@@ -1326,4 +1326,23 @@ public class PdxInstanceFactoryJUnitTest {
         .hasCauseInstanceOf(ClassNotFoundException.class);
   }
 
+  @Test
+  public void stablePdxInstanceReturnsTrueFromIsStable() {
+    PdxInstanceFactory factory = cache.createStablePdxInstanceFactory("myPdxInstanceType");
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+
+    assertThat(instance.isStable()).isTrue();
+  }
+
+  @Test
+  public void normalPdxInstanceReturnsFalseFromIsStable() {
+    PdxInstanceFactory factory = cache.createPdxInstanceFactory("className");
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+
+    assertThat(instance.isStable()).isFalse();
+  }
 }

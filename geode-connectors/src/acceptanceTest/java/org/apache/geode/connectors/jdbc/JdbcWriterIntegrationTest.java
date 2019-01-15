@@ -24,7 +24,6 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +47,7 @@ public abstract class JdbcWriterIntegrationTest {
   protected static final String REGION_TABLE_NAME = "employees";
 
   protected InternalCache cache;
-  protected Region<String, PdxInstance> employees;
+  protected Region<Object, PdxInstance> employees;
   protected Connection connection;
   protected Statement statement;
   protected JdbcWriter jdbcWriter;
@@ -184,16 +183,15 @@ public abstract class JdbcWriterIntegrationTest {
   public void canInsertIntoTableWithCompositeKey() throws Exception {
     createTable();
     setupRegion("id,age");
-    JSONObject compositeKey1 = new JSONObject();
-    compositeKey1.put("id", pdx1.getField("id"));
-    compositeKey1.put("age", pdx1.getField("age"));
-    String actualKey = compositeKey1.toString();
-    JSONObject compositeKey2 = new JSONObject();
-    compositeKey2.put("id", pdx2.getField("id"));
-    compositeKey2.put("age", pdx2.getField("age"));
+    PdxInstance compositeKey1 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+        .writeField("id", (String) pdx1.getField("id"), String.class)
+        .writeField("age", (Integer) pdx1.getField("age"), int.class).create();
+    PdxInstance compositeKey2 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+        .writeField("id", (String) pdx2.getField("id"), String.class)
+        .writeField("age", (Integer) pdx2.getField("age"), int.class).create();
 
-    employees.put(actualKey, pdx1);
-    employees.put(compositeKey2.toString(), pdx2);
+    employees.put(compositeKey1, pdx1);
+    employees.put(compositeKey2, pdx2);
 
     ResultSet resultSet =
         statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
@@ -291,16 +289,16 @@ public abstract class JdbcWriterIntegrationTest {
   public void canDestroyFromTableWithCompositeKey() throws Exception {
     createTable();
     setupRegion("id,age");
-    JSONObject compositeKey1 = new JSONObject();
-    compositeKey1.put("id", pdx1.getField("id"));
-    compositeKey1.put("age", pdx1.getField("age"));
-    JSONObject compositeKey2 = new JSONObject();
-    compositeKey2.put("id", pdx2.getField("id"));
-    compositeKey2.put("age", pdx2.getField("age"));
-    employees.put(compositeKey1.toString(), pdx1);
-    employees.put(compositeKey2.toString(), pdx2);
+    PdxInstance compositeKey1 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+        .writeField("id", (String) pdx1.getField("id"), String.class)
+        .writeField("age", (Integer) pdx1.getField("age"), int.class).create();
+    PdxInstance compositeKey2 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+        .writeField("id", (String) pdx2.getField("id"), String.class)
+        .writeField("age", (Integer) pdx2.getField("age"), int.class).create();
+    employees.put(compositeKey1, pdx1);
+    employees.put(compositeKey2, pdx2);
 
-    employees.destroy(compositeKey1.toString());
+    employees.destroy(compositeKey1);
 
     ResultSet resultSet =
         statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
@@ -342,15 +340,15 @@ public abstract class JdbcWriterIntegrationTest {
     PdxInstance myPdx = cache.createPdxInstanceFactory(Employee.class.getName())
         .writeString("id", "1").writeString("name", "Emp1")
         .writeInt("age", 55).create();
-    JSONObject compositeKey1 = new JSONObject();
-    compositeKey1.put("id", myPdx.getField("id"));
-    compositeKey1.put("age", myPdx.getField("age"));
-    employees.put(compositeKey1.toString(), myPdx);
+    PdxInstance compositeKey1 = cache.createStablePdxInstanceFactory("IdAgeKeyType")
+        .writeField("id", (String) myPdx.getField("id"), String.class)
+        .writeField("age", (Integer) myPdx.getField("age"), int.class).create();
+    employees.put(compositeKey1, myPdx);
     WritablePdxInstance updatedPdx = myPdx.createWriter();
     updatedPdx.setField("name", "updated");
     Employee updatedEmployee = (Employee) updatedPdx.getObject();
 
-    employees.put(compositeKey1.toString(), updatedPdx);
+    employees.put(compositeKey1, updatedPdx);
 
     ResultSet resultSet =
         statement.executeQuery("select * from " + REGION_TABLE_NAME + " order by id asc");
@@ -390,12 +388,12 @@ public abstract class JdbcWriterIntegrationTest {
     assertThat(resultSet.next()).isFalse();
   }
 
-  protected Region<String, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName,
+  protected Region<Object, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName,
       String ids, String catalog, String schema)
       throws RegionMappingExistsException {
     jdbcWriter = new JdbcWriter(createSqlHandler(ids, catalog, schema), cache);
 
-    RegionFactory<String, PdxInstance> regionFactory =
+    RegionFactory<Object, PdxInstance> regionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
     regionFactory.setCacheWriter(jdbcWriter);
     return regionFactory.create(regionName);
