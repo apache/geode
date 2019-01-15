@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e
+set -e -o pipefail
 
 BASE_DIR=$(pwd)
 
