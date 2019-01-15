@@ -956,6 +956,7 @@ lib/spring-web-4.3.20.RELEASE.jar
 tools/ClientProtocol/geode-protobuf-messages-definitions-0.0.0.zip
 tools/Extensions/geode-web-0.0.0.war
 tools/Extensions/geode-web-api-0.0.0.war
+tools/Extensions/geode-web-management-0.0.0.war
 tools/Modules/Apache_Geode_Modules-0.0.0-AppServer.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-Tomcat.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer.zip
