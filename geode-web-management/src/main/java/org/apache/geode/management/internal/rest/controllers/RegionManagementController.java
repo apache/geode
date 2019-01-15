@@ -13,9 +13,9 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.web.controllers;
+package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.internal.web.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
+import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.internal.api.ClusterManagementResult;
 
 @Controller("regionManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -33,8 +34,11 @@ public class RegionManagementController extends AbstractManagementController {
 
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = "/regions")
-  public ResponseEntity<String> createRegion(@RequestBody RegionConfig regionConfig) {
-    return new ResponseEntity(regionConfig.getName(), HttpStatus.CREATED);
+  public ResponseEntity<ClusterManagementResult> createRegion(
+      @RequestBody RegionConfig regionConfig) {
+    ClusterManagementResult result =
+        clusterManagementService.createCacheElement(regionConfig);
+    return new ResponseEntity<>(result,
+        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
   }
-
 }

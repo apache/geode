@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.web.security;
+package org.apache.geode.management.internal.rest.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +29,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@ComponentScan("org.apache.geode.management.internal.web")
+// this package name needs to be different than the admin rest controller's package name
+// otherwise this component scan will pick up the admin rest controllers as well.
+@ComponentScan("org.apache.geode.management.internal.rest")
 public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   @Autowired

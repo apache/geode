@@ -137,10 +137,12 @@ public class RestAgent {
         this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
             SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
 
-        this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar,
-            securityService, null);
-        this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar,
-            securityService, null);
+        Object[] securityServiceAttr =
+            new Object[] {JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM, securityService};
+
+        JettyHelper
+            .addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar, securityServiceAttr);
+        JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar, securityServiceAttr);
 
         if (logger.isDebugEnabled()) {
           logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",
@@ -148,7 +150,7 @@ public class RestAgent {
               httpServiceBindAddress);
         }
 
-        this.httpServer = JettyHelper.startJetty(this.httpServer);
+        JettyHelper.startJetty(this.httpServer);
         logger.info("HTTP service started successfully...!!");
       }
     } catch (Exception e) {
