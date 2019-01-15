@@ -1102,6 +1102,10 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
+  protected ClientUserAuths getClientUserAuths() {
+    return this.clientUserAuths;
+  }
+
   private void setSecurityPart() {
     try {
       this.connectionId = randomConnectionIdGen.nextLong();
