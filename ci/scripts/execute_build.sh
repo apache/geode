@@ -28,6 +28,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+source ${SCRIPTDIR}/shared_utilities.sh
 
 if [[ -z "${GRADLE_TASK}" ]]; then
   echo "GRADLE_TASK must be set. exiting..."
@@ -40,38 +41,18 @@ BUILD_DATE=$(date +%s)
 # Precheckin does not get a geode-build-version
 if [ -e "${ROOT_DIR}/geode-build-version" ] ; then
   GEODE_BUILD_VERSION_FILE=${ROOT_DIR}/geode-build-version/number
-  GEODE_RESULTS_VERSION_FILE=${ROOT_DIR}/results/number
   GEODE_BUILD_DIR=/tmp/geode-build
-  GEODE_PULL_REQUEST_ID_FILE=${ROOT_DIR}/geode/.git/id
+  GEODE_PULL_REQUEST_ID_FILE=${ROOT_DIR}/geode/.git/resource/version.json
 
   if [ -e "${GEODE_PULL_REQUEST_ID_FILE}" ]; then
-    GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
+    GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE} | jq --raw-output '.["pr"]')
     FULL_PRODUCT_VERSION="geode-pr-${GEODE_PULL_REQUEST_ID}"
-    echo -n "${FULL_PRODUCT_VERSION}" > ${GEODE_RESULTS_VERSION_FILE}
   else
-    # semver resource, e.g., "1.9.0-SNAPSHOT.325"
     CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
-    # Prune all after '-', yielding e.g., "1.9.0"
-    GEODE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
-    # Prune all before '-', yielding e.g., "SNAPSHOT.325"
-    CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
-    # Prune all before '.', yielding e.g., "SNAPSHOT"
-    QUALIFIER_SLUG=${CONCOURSE_BUILD_SLUG%%.*}
-    # Prune all before '.', yielding e.g., "325"
-    BUILD_ID=$(printf "%04d" ${CONCOURSE_VERSION##*.})
-
-    # Rebuild version, zero-padded
-    FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${QUALIFIER_SLUG}.${BUILD_ID}
-
     echo "Concourse VERSION is ${CONCOURSE_VERSION}"
-    echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}"
-    echo "Full product VERSION is ${FULL_PRODUCT_VERSION}"
-    echo "Build ID is ${BUILD_ID}"
-
-    # The version passed in by concourse has an incremented buildId.
-    # We pass it back out to persist that count.
-    # The buildId must not be zero-padded to be compatible with the Concourse resource.
-    echo -n "${CONCOURSE_VERSION}" > ${GEODE_RESULTS_VERSION_FILE}
+    # Rebuild version, zero-padded
+    FULL_PRODUCT_VERSION=$(get-full-version ${CONCOURSE_VERSION})
+    BUILD_ID=$(get-geode-build-id-padded ${CONCOURSE_VERSION} 2> /dev/null)
   fi
 fi
 

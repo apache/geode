@@ -30,31 +30,48 @@ find-here-test-reports() {
   echo ""
 }
 
+## Parsing functions for the Concourse Semver resource.
+## These functions expect one input in the form of the resource file, e.g., "1.9.0-SNAPSHOT.325"
+get-geode-version() {
+  local CONCOURSE_VERSION=$1
+  # Prune all after '-', yielding e.g., "1.9.0"
+  local GEODE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
+  (>&2 echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}")
+  echo ${GEODE_PRODUCT_VERSION}
+}
 
+get-geode-version-qualifier-slug() {
+  local CONCOURSE_VERSION=$1
+  # Prune all before '-', yielding e.g., "SNAPSHOT.325"
+  local CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
+  # Prune all before '.', yielding e.g., "SNAPSHOT"
+  local QUALIFIER_SLUG=${CONCOURSE_BUILD_SLUG%%.*}
+  echo ${QUALIFIER_SLUG}
+}
 
-function sendFailureJobEmail {
-  echo "Sending job failure email"
+get-geode-build-id() {
+  local CONCOURSE_VERSION=$1
+  # Prune all before the last '.', yielding e.g., "325"
+  local BUILD_ID=${CONCOURSE_VERSION##*.}
+  echo ${BUILD_ID}
+}
 
-  cat <<EOF >${EMAIL_SUBJECT}
-Build for version ${FULL_PRODUCT_VERSION} of Apache Geode failed.
-EOF
+get-geode-build-id-padded() {
+  local CONCOURSE_VERSION=$1
+  local BUILD_ID=$(get-geode-build-id ${CONCOURSE_VERSION})
+  # Prune all before the last '.', yielding e.g., "325", then zero-pad, e.g., "0325"
+  local PADDED_BUILD_ID=$(printf "%04d" ${BUILD_ID})
+  (>&2 echo "Build ID is ${PADDED_BUILD_ID}")
+  echo ${PADDED_BUILD_ID}
+}
 
-  cat <<EOF >${EMAIL_BODY}
-=================================================================================================
-
-The build job for Apache Geode version ${FULL_PRODUCT_VERSION} has failed.
-
-
-Build artifacts are available at:
-http://${BUILD_ARTIFACTS_DESTINATION}
-
-Test results are available at:
-http://${TEST_RESULTS_DESTINATION}
-
-
-Job: \${ATC_EXTERNAL_URL}/teams/\${BUILD_TEAM_NAME}/pipelines/\${BUILD_PIPELINE_NAME}/jobs/\${BUILD_JOB_NAME}/builds/\${BUILD_NAME}
-
-=================================================================================================
-EOF
-
+get-full-version() {
+  # Extract each component so that the BuildId can be zero-padded, then reassembled.
+  local CONCOURSE_VERSION=$1
+  local GEODE_PRODUCT_VERSION=$(get-geode-version ${CONCOURSE_VERSION})
+  local QUALIFIER_SLUG=$(get-geode-version-qualifier-slug ${CONCOURSE_VERSION})
+  local PADDED_BUILD_ID=$(get-geode-build-id-padded ${CONCOURSE_VERSION})
+  local FULL_PRODUCT_VERSION="${GEODE_PRODUCT_VERSION}-${QUALIFIER_SLUG}.${PADDED_BUILD_ID}"
+  (>&2 echo "Full product VERSION is ${FULL_PRODUCT_VERSION}")
+  echo ${FULL_PRODUCT_VERSION}
 }

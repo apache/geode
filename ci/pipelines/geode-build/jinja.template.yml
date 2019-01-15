@@ -267,7 +267,7 @@ jobs:
         timeout: 5m
       - put: geode-build-version
         params:
-          file: results/number
+          file: geode-build-version/number
       ensure:
         do:
         - aggregate:
