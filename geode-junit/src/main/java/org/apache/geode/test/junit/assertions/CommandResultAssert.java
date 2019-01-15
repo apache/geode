@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -34,7 +35,6 @@ import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
-import org.junit.Assert;
 
 public class CommandResultAssert
     extends AbstractAssert<CommandResultAssert, CommandResultExecution> {
@@ -89,15 +89,18 @@ public class CommandResultAssert
     return this;
   }
 
-  public CommandResultAssert containsOrderedOutput(String dataSectionName, String... expectedOutputs) {
-    LinkedHashMap<String, String> outputMap = ((LinkedHashMap)actual.getCommandResult().getMapFromSection(dataSectionName));
+  public CommandResultAssert containsOrderedOutput(String dataSectionName,
+      String... expectedOutputs) {
+    LinkedHashMap<String, String> outputMap =
+        ((LinkedHashMap) actual.getCommandResult().getMapFromSection(dataSectionName));
     String outputString = outputMap.toString();
     int outputIndex = 0;
 
-    for(int i = 0; i < expectedOutputs.length; i++) {
+    for (int i = 0; i < expectedOutputs.length; i++) {
       outputIndex = outputString.indexOf(expectedOutputs[i]);
-      if(outputIndex == -1) {
-        Assert.fail("Expected output " + expectedOutputs[i] + " was not found, or isn't in the specified order.");
+      if (outputIndex == -1) {
+        Assert.fail("Expected output " + expectedOutputs[i]
+            + " was not found, or isn't in the specified order.");
       }
       outputString = outputString.substring(outputIndex);
     }

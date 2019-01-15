@@ -31,11 +31,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -88,8 +85,8 @@ public class DescribeMappingCommandTest {
     attributes.put(DATA_SOURCE_NAME, "name1");
     attributes.put(SYNCHRONOUS_NAME, "true");
     attributes.put(ID_NAME, "myId");
-    attributes.put(SCHEMA_NAME, "mySchema");
     attributes.put(CATALOG_NAME, "myCatalog");
+    attributes.put(SCHEMA_NAME, "mySchema");
 
     DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
 
@@ -102,12 +99,13 @@ public class DescribeMappingCommandTest {
 
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-            .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME, REGION_NAME, PDX_NAME, TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, SCHEMA_NAME, CATALOG_NAME);
-//        .containsOutput(REGION_NAME, "region")
-//        .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
-//        .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
-//        .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
-//        .containsOutput("true");
+        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME, REGION_NAME, PDX_NAME,
+            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
+        .containsOutput(REGION_NAME, "region")
+        .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
+        .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
+        .containsOutput("true");
   }
 
   @Test

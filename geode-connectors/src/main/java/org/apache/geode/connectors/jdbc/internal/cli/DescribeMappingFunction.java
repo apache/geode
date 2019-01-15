@@ -24,6 +24,7 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRO
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.geode.cache.execute.FunctionContext;
@@ -49,7 +50,7 @@ public class DescribeMappingFunction extends CliFunction<String> {
       return null;
     }
 
-    Map<String, String> attributes = new HashMap<>();
+    Map<String, String> attributes = new LinkedHashMap<>();
     attributes.put(REGION_NAME, mapping.getRegionName());
     attributes.put(TABLE_NAME, mapping.getTableName());
     attributes.put(DATA_SOURCE_NAME, mapping.getDataSourceName());
@@ -64,11 +65,11 @@ public class DescribeMappingFunction extends CliFunction<String> {
       attributes.put(SYNCHRONOUS_NAME, "Not found.");
     }
 
-    if(mapping.getSchema() != null) {
-      attributes.put(SCHEMA_NAME, mapping.getSchema());
-    }
-    if(mapping.getCatalog() != null){
+    if (mapping.getCatalog() != null) {
       attributes.put(CATALOG_NAME, mapping.getCatalog());
+    }
+    if (mapping.getSchema() != null) {
+      attributes.put(SCHEMA_NAME, mapping.getSchema());
     }
 
     return new DescribeMappingResult(attributes);
