@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.geode.DataSerializable;
@@ -27,7 +28,7 @@ public class DescribeMappingResult implements DataSerializable {
   private final Map<String, String> attributeMap;
 
   public DescribeMappingResult() {
-    this.attributeMap = new HashMap<>();
+    this.attributeMap = new LinkedHashMap<>();
   }
 
   public DescribeMappingResult(Map<String, String> attributeMap) {

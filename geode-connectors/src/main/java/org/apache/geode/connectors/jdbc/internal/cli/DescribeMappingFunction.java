@@ -51,12 +51,10 @@ public class DescribeMappingFunction extends CliFunction<String> {
 
     Map<String, String> attributes = new HashMap<>();
     attributes.put(REGION_NAME, mapping.getRegionName());
-    attributes.put(DATA_SOURCE_NAME, mapping.getDataSourceName());
     attributes.put(TABLE_NAME, mapping.getTableName());
-    attributes.put(PDX_NAME, mapping.getPdxName());
+    attributes.put(DATA_SOURCE_NAME, mapping.getDataSourceName());
     attributes.put(ID_NAME, mapping.getIds());
-    attributes.put(SCHEMA_NAME, mapping.getSchema());
-    attributes.put(CATALOG_NAME, mapping.getCatalog());
+    attributes.put(PDX_NAME, mapping.getPdxName());
 
     try {
       attributes.put(SYNCHRONOUS_NAME,
@@ -64,6 +62,13 @@ public class DescribeMappingFunction extends CliFunction<String> {
               .toString(service.isMappingSynchronous(mapping.getRegionName(), context.getCache())));
     } catch (RegionMappingNotFoundException e) {
       attributes.put(SYNCHRONOUS_NAME, "Not found.");
+    }
+
+    if(mapping.getSchema() != null) {
+      attributes.put(SCHEMA_NAME, mapping.getSchema());
+    }
+    if(mapping.getCatalog() != null){
+      attributes.put(CATALOG_NAME, mapping.getCatalog());
     }
 
     return new DescribeMappingResult(attributes);

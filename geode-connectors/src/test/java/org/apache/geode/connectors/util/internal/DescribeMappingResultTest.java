@@ -36,8 +36,8 @@ public class DescribeMappingResultTest {
   public void testSeriazilabeToAndFromByteArray() throws IOException {
     Map<String, String> attributesMap = new HashMap<>();
     attributesMap.put(REGION_NAME, "myRegion");
-    attributesMap.put(PDX_NAME, "myPdx");
     attributesMap.put(TABLE_NAME, "myTable");
+    attributesMap.put(PDX_NAME, "myPdx");
     attributesMap.put(DATA_SOURCE_NAME, "myDatasource");
     attributesMap.put(SYNCHRONOUS_NAME, "false");
     attributesMap.put(ID_NAME, "myId");
