@@ -1722,10 +1722,6 @@ public class Connection implements Runnable {
             return;
           }
 
-          // logger.info("BRUCE: run() read {} bytes net buffer {} position {} limit {} capacity
-          // {}", amountRead, Integer.toHexString(System.identityHashCode(inputBuffer)),
-          // inputBuffer.position(), inputBuffer.limit(), inputBuffer.capacity());
-
           processInputBuffer();
 
           if (!this.isReceiver && (this.handshakeRead || this.handshakeCancelled)) {
@@ -2753,12 +2749,9 @@ public class Connection implements Runnable {
           int amtWritten = 0;
           long start = stats.startSocketWrite(true);
           try {
-            // this.writerThread = Thread.currentThread();
             amtWritten = channel.write(wrappedBuffer);
-            // logger.info("BRUCE: wrote {} bytes to {}", amtWritten, this.remoteAddr);
           } finally {
             stats.endSocketWrite(true, start, amtWritten, 0);
-            // this.writerThread = null;
           }
         }
 
@@ -2833,17 +2826,14 @@ public class Connection implements Runnable {
       ReplyMessage msg;
       int len;
       if (header.getMessageType() == NORMAL_MSG_TYPE) {
-        // logger.info("BRUCE: reading direct ack message");
         msg = (ReplyMessage) msgReader.readMessage(header);
         len = header.getMessageLength();
       } else {
         MsgDestreamer destreamer = obtainMsgDestreamer(header.getMessageId(), version);
         while (header.getMessageType() == CHUNKED_MSG_TYPE) {
-          // logger.info("BRUCE: reading direct ack chunk");
           msgReader.readChunk(header, destreamer);
           header = msgReader.readHeader();
         }
-        // logger.info("BRUCE: reading last direct ack chunk");
         msgReader.readChunk(header, destreamer);
         msg = (ReplyMessage) destreamer.getMessage();
         releaseMsgDestreamer(header.getMessageId(), destreamer);
@@ -3119,7 +3109,6 @@ public class Connection implements Runnable {
 
   private void readMessage(ByteBuffer peerDataBuffer) {
     if (messageType == NORMAL_MSG_TYPE) {
-      // logger.info("BRUCE: reading normal message");
       this.owner.getConduit().getStats().incMessagesBeingReceived(true, messageLength);
       ByteBufferInputStream bbis =
           remoteVersion == null ? new ByteBufferInputStream(peerDataBuffer)
@@ -3185,8 +3174,6 @@ public class Connection implements Runnable {
             throw (CancelException) t;
           }
         }
-        // logger.info("BRUCE: buffer position {} limit {}", peerDataBuffer.position(),
-        // peerDataBuffer.limit());
         logger.fatal("Error deserializing message", t);
       } finally {
         ReplyProcessor21.clearMessageRPId();
@@ -3196,13 +3183,10 @@ public class Connection implements Runnable {
       this.owner.getConduit().getStats().incMessagesBeingReceived(md.size() == 0,
           messageLength);
       try {
-        // logger.info("BRUCE: adding message chunk of length {}", messageLength);
         md.addChunk(peerDataBuffer, messageLength);
       } catch (IOException ex) {
       }
     } else /* (nioMessageType == END_CHUNKED_MSG_TYPE) */ {
-      // logger.info("END_CHUNK msgId="+nioMsgId);
-      // logger.info("BRUCE: reading last message chunk");
       MsgDestreamer md = obtainMsgDestreamer(messageId, remoteVersion);
       this.owner.getConduit().getStats().incMessagesBeingReceived(md.size() == 0,
           messageLength);

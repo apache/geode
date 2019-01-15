@@ -34,18 +34,40 @@ public class BuffersTest {
       byte b = (byte) (i & 0xff);
       buffer.put(b);
     }
-    createAndVerifyNewBuffer(buffer, false);
+    createAndVerifyNewWriteBuffer(buffer, false);
 
-    createAndVerifyNewBuffer(buffer, true);
+    createAndVerifyNewWriteBuffer(buffer, true);
+
+    // buffer.limit(buffer.capacity());
+    // buffer.position(0);
+
+    createAndVerifyNewReadBuffer(buffer, false);
+
+    createAndVerifyNewReadBuffer(buffer, true);
+
+
   }
 
-  private void createAndVerifyNewBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
+  private void createAndVerifyNewWriteBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
     ByteBuffer newBuffer =
         Buffers.expandWriteBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer, 500,
             mock(DMStats.class));
     assertEquals(buffer.position(), newBuffer.position());
     assertEquals(500, newBuffer.capacity());
     newBuffer.flip();
+    for (int i = 0; i < 256; i++) {
+      byte expected = (byte) (i & 0xff);
+      byte actual = (byte) (newBuffer.get() & 0xff);
+      assertEquals(expected, actual);
+    }
+  }
+
+  private void createAndVerifyNewReadBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
+    ByteBuffer newBuffer =
+        Buffers.expandReadBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer, 500,
+            mock(DMStats.class));
+    assertEquals(0, newBuffer.position());
+    assertEquals(500, newBuffer.capacity());
     for (int i = 0; i < 256; i++) {
       byte expected = (byte) (i & 0xff);
       byte actual = (byte) (newBuffer.get() & 0xff);

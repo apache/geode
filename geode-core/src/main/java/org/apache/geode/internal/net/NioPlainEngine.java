@@ -54,10 +54,6 @@ public class NioPlainEngine implements NioFilter {
       Buffers.BufferType bufferType, DMStats stats) {
     ByteBuffer buffer = wrappedBuffer;
 
-    // logger.info("BRUCE: plain ensureWrappedCapacity({}) buffer {} position {} limit {} capacity
-    // {}", amount, Integer.toHexString(System.identityHashCode(buffer)), buffer.position(),
-    // buffer.limit(), buffer.capacity());
-
     if (buffer.capacity() > amount) {
       // we already have a buffer that's big enough
       if (buffer.capacity() - lastProcessedPosition < amount) {
@@ -85,11 +81,6 @@ public class NioPlainEngine implements NioFilter {
       DMStats stats) throws IOException {
     ByteBuffer buffer = wrappedBuffer;
 
-    // logger.info("BRUCE: plain readAtLeast({}) buffer {} position {} limit {} capacity {}", bytes,
-    // Integer.toHexString(System.identityHashCode(buffer)), buffer.position(), buffer.limit(),
-    // buffer.capacity());
-    // logger.info("BRUCE: lastProcessedPosition {} lastReadPosition {}", lastProcessedPosition,
-    // lastReadPosition);
     while (lastReadPosition - lastProcessedPosition < bytes) {
       buffer.limit(buffer.capacity());
       buffer.position(lastReadPosition);
@@ -98,16 +89,10 @@ public class NioPlainEngine implements NioFilter {
         throw new EOFException();
       }
       lastReadPosition = buffer.position();
-      // logger.info("BRUCE: read {} bytes. buffer position is now {}", amountRead,
-      // buffer.position());
     }
     buffer.limit(lastProcessedPosition + bytes);
     buffer.position(lastProcessedPosition);
     lastProcessedPosition = buffer.limit();
-    // logger.info("BRUCE: new lastProcessedPosition {} lastReadPosition {}", lastProcessedPosition,
-    // lastReadPosition);
-    // logger.info("BRUCE: plain readAtLeast done position {} limit {}", buffer.position(),
-    // buffer.limit());
     return buffer;
   }
 

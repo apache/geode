@@ -279,10 +279,6 @@ public class NioSslEngine implements NioFilter {
     // it's better to be pro-active about avoiding buffer overflows
     expandPeerAppData(wrappedBuffer);
     peerAppData.limit(peerAppData.capacity());
-    // logger.info("BRUCE: ssl unwrap data position={} and capacity={} wrapped buffer position={}
-    // and limit={}",
-    // peerAppData.position(), peerAppData.capacity(), wrappedBuffer.position(),
-    // wrappedBuffer.limit());
     while (wrappedBuffer.hasRemaining()) {
       SSLEngineResult unwrapResult = engine.unwrap(wrappedBuffer, peerAppData);
       switch (unwrapResult.getStatus()) {
@@ -292,7 +288,6 @@ public class NioSslEngine implements NioFilter {
         case BUFFER_UNDERFLOW:
           // partial data - need to read more. When this happens the SSLEngine will not have
           // changed the buffer position
-          // logger.info("BRUCE: ssl unwrap needs more bytes from the network");
           wrappedBuffer.compact();
           return peerAppData;
         case OK:
@@ -307,16 +302,9 @@ public class NioSslEngine implements NioFilter {
 
   void expandPeerAppData(ByteBuffer wrappedBuffer) {
     if (peerAppData.capacity() - peerAppData.position() < 2 * wrappedBuffer.remaining()) {
-      // logger.info("BRUCE: ssl unwrap is expanding the capacity of data buffer {} current capacity
-      // {} position {} limit {}.",
-      // Integer.toHexString(System.identityHashCode(peerAppData)), peerAppData.capacity(),
-      // peerAppData.position(), peerAppData.limit());
       peerAppData =
           Buffers.expandWriteBufferIfNeeded(TRACKED_RECEIVER, peerAppData,
               expandedCapacity(wrappedBuffer, peerAppData), stats);
-      // logger.info("BRUCE: ssl unwrap new capacity of data buffer {} is {} position {} limit {}.",
-      // Integer.toHexString(System.identityHashCode(peerAppData)), peerAppData.capacity(),
-      // peerAppData.position(), peerAppData.limit());
     }
   }
 
