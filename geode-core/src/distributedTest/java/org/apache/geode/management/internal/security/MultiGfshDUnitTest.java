@@ -56,7 +56,6 @@ public class MultiGfshDUnitTest {
 
   @Test
   public void testMultiUser() throws Exception {
-
     IgnoredException.addIgnoredException("java.util.zip.ZipException: zip file is empty");
     IgnoredException
         .addIgnoredException("java.lang.IllegalStateException: WAN service is not available.");
@@ -65,9 +64,9 @@ public class MultiGfshDUnitTest {
     // set up vm_1 as a gfsh vm, data-reader will login and log out constantly in this vm until the
     // test is done.
     VM vm1 = lsRule.getVM(1);
-    AsyncInvocation vm1Invoke = vm1.invokeAsync("run as data-reader", () -> {
+    vm1.invokeAsync("run as data-reader", () -> {
       while (true) {
-        GfshCommandRule gfsh = new GfshCommandRule();
+        GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
         gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "dataRead", "dataRead");
 
         await();
@@ -104,6 +103,7 @@ public class MultiGfshDUnitTest {
             ResultBuilder.ERRORCODE_UNAUTHORIZED,
             ((ErrorResultData) result.getResultData()).getErrorCode());
       }
+
       gfsh.close();
       LogService.getLogger().info("vm 2 done!");
     });
@@ -111,7 +111,7 @@ public class MultiGfshDUnitTest {
 
     VM vm3 = lsRule.getVM(3);
     IgnoredException
-        .addIgnoredException("java.lang.IllegalArgumentException: Region doesnt exist: {0}", vm3);
+        .addIgnoredException("java.lang.IllegalArgumentException: Region does not exist: {0}", vm3);
     IgnoredException.addIgnoredException("java.lang.ClassNotFoundException: myApp.myListener", vm3);
 
     // set up vm_3 as another gfsh vm, and then connect as "super-user" and try to execute the

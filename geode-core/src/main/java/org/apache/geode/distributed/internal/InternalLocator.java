@@ -80,6 +80,8 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
+import org.apache.geode.management.internal.api.ClusterManagementService;
+import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
@@ -184,6 +186,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private volatile boolean isSharedConfigurationStarted = false;
 
   private volatile Thread restartThread;
+  private LocatorClusterManagementService clusterManagementService;
 
   private final LoggingSession loggingSession;
 
@@ -660,6 +663,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     startJmxManagerLocationService(internalCache);
 
     startSharedConfigurationService();
+    clusterManagementService = new LocatorClusterManagementService(locator.myCache,
+        locator.configurationPersistenceService);
   }
 
   /**
@@ -1036,6 +1041,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
             new InternalConfigurationPersistenceService(newCache);
         startSharedConfigurationService();
       }
+      this.clusterManagementService = new LocatorClusterManagementService(this.myCache,
+          this.configurationPersistenceService);
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();
@@ -1045,6 +1052,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       endStartLocator(this.myDs);
       logger.info("Locator restart completed");
     }
+  }
+
+  public ClusterManagementService getClusterManagementService() {
+    return clusterManagementService;
   }
 
   @Override

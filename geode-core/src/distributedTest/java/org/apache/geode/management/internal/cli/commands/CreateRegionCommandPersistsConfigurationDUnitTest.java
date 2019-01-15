@@ -117,7 +117,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
   }
 
   @Test
-  public void createRegionPersistsEmptyConfig() {
+  public void createRegionPersistsDefaultConfig() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();

@@ -49,7 +49,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.NoResult;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;

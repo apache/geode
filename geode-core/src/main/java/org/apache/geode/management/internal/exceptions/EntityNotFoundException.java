@@ -13,23 +13,34 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.exceptions;
+package org.apache.geode.management.internal.exceptions;
 
 import org.apache.geode.GemFireException;
 
-public class EntityExistsException extends GemFireException {
+public class EntityNotFoundException extends GemFireException {
 
-  public EntityExistsException() {}
+  private boolean statusOK;
 
-  public EntityExistsException(String message) {
+  public EntityNotFoundException() {}
+
+  public EntityNotFoundException(String message) {
     super(message);
   }
 
-  public EntityExistsException(Throwable cause) {
+  public EntityNotFoundException(String message, boolean statusOK) {
+    super(message);
+    this.statusOK = statusOK;
+  }
+
+  public EntityNotFoundException(Throwable cause) {
     super(cause);
   }
 
-  public EntityExistsException(String message, Throwable cause) {
+  public EntityNotFoundException(String message, Throwable cause) {
     super(message, cause);
+  }
+
+  public boolean isStatusOK() {
+    return statusOK;
   }
 }

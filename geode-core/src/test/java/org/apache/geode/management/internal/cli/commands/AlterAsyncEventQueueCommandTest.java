@@ -64,6 +64,9 @@ public class AlterAsyncEventQueueCommandTest {
     config.getAsyncEventQueues().add(aeq1);
     doReturn(config).when(service).getCacheConfig("group1");
     doReturn(new CacheConfig()).when(service).getCacheConfig("group2");
+    doReturn(config).when(service).getCacheConfig("group1", true);
+    doReturn(new CacheConfig()).when(service).getCacheConfig("group2", true);
+
     doReturn(true).when(service).lockSharedConfiguration();
     doNothing().when(service).unlockSharedConfiguration();
     doReturn(null).when(service).getConfiguration(any());

@@ -315,12 +315,21 @@ public class RegionConfig implements CacheElement {
    * {@link String }
    *
    */
-  public void setName(String value) {
-    if (value != null && value.startsWith("/")) {
-      this.name = value.substring(1);
-    } else {
-      this.name = value;
+  public void setName(String value) throws IllegalArgumentException {
+    if (value == null) {
+      throw new IllegalArgumentException("Region name cannot be null");
     }
+
+    boolean regionPrefixedWithSlash = value.startsWith("/");
+    String[] regionSplit = value.split("/");
+
+    boolean hasSubRegions =
+        regionPrefixedWithSlash ? regionSplit.length > 2 : regionSplit.length > 1;
+    if (hasSubRegions) {
+      throw new IllegalArgumentException("Sub-regions are unsupported");
+    }
+
+    this.name = regionPrefixedWithSlash ? regionSplit[1] : value;
   }
 
   /**

@@ -39,7 +39,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
 /**
  * The DescribeDiskStoreFunction class is an implementation of a GemFire Function used to collect

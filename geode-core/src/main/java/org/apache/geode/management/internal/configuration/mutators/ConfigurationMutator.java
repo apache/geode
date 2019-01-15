@@ -15,34 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.geode.distributed;
-
-import java.util.function.UnaryOperator;
+package org.apache.geode.management.internal.configuration.mutators;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 
+/**
+ * Defines the behavior to mutate a configuration change into a pre-existing cache config from a
+ * locator
+ * {@link org.apache.geode.distributed.ConfigurationPersistenceService}. Created with an object of
+ * type {@link CacheElement}, which represents the configuration change.
+ */
 @Experimental
-public interface ConfigurationPersistenceService {
-  String CLUSTER_CONFIG = "cluster";
+public interface ConfigurationMutator<T extends CacheElement> {
+  void add(T config, CacheConfig existing);
 
-  /**
-   * retrieves the configuration object of a member group
-   *
-   * @param group the member group name, if null, then "cluster" is assumed
-   * @return the configuration object
-   */
-  CacheConfig getCacheConfig(String group);
+  boolean exists(T config, CacheConfig existing);
 
-  CacheConfig getCacheConfig(String group, boolean createNew);
+  void update(T config, CacheConfig existing);
 
-  /**
-   * update the cluster configuration of a member group
-   *
-   * @param group the member group name, if null, then "cluster" is assumed
-   * @param mutator the change you want to apply to the configuration. mutator returns null
-   *        indicating that no update
-   *        is done to the CacheConfig, or it returns the updated CacheConfig
-   */
-  void updateCacheConfig(String group, UnaryOperator<CacheConfig> mutator);
+  void delete(T config, CacheConfig existing);
 }

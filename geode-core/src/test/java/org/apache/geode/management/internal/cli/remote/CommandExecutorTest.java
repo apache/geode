@@ -43,9 +43,9 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class CommandExecutorTest {

@@ -497,6 +497,7 @@ org/apache/geode/management/internal/JmxManagerLocator$StartJmxManagerFunction,t
 org/apache/geode/management/internal/ManagementAgent$GemFireRMIServerSocketFactory,true,-811909050641332716,bindAddr:java/net/InetAddress
 org/apache/geode/management/internal/ManagementFunction,true,1,mbeanServer:javax/management/MBeanServer,notificationHub:org/apache/geode/management/internal/NotificationHub
 org/apache/geode/management/internal/NotificationKey,false,currentTime:long,objectName:javax/management/ObjectName
+org/apache/geode/management/internal/api/APIResult$Result,false
 org/apache/geode/management/internal/beans/FileUploader$RemoteFile,false,filename:java/lang/String,outputStream:com/healthmarketscience/rmiio/RemoteOutputStream
 org/apache/geode/management/internal/beans/QueryDataFunction,true,1
 org/apache/geode/management/internal/beans/QueryDataFunction$LocalQueryFunction,true,1,id:java/lang/String,optimizeForWrite:boolean,regionName:java/lang/String,showMembers:boolean,this$0:org/apache/geode/management/internal/beans/QueryDataFunction
@@ -530,8 +531,6 @@ org/apache/geode/management/internal/cli/domain/RegionDescription,true,646144927
 org/apache/geode/management/internal/cli/domain/RegionDescriptionPerMember,true,1,hostingMember:java/lang/String,isAccessor:boolean,name:java/lang/String,regionAttributesInfo:org/apache/geode/management/internal/cli/domain/RegionAttributesInfo,size:int
 org/apache/geode/management/internal/cli/domain/RegionInformation,true,1,dataPolicy:org/apache/geode/cache/DataPolicy,isRoot:boolean,name:java/lang/String,parentRegion:java/lang/String,path:java/lang/String,scope:org/apache/geode/cache/Scope,subRegionInformationSet:java/util/Set
 org/apache/geode/management/internal/cli/domain/StackTracesPerMember,true,1,memberNameOrId:java/lang/String,stackTraces:byte[]
-org/apache/geode/management/internal/cli/exceptions/EntityExistsException,false
-org/apache/geode/management/internal/cli/exceptions/EntityNotFoundException,false,statusOK:boolean
 org/apache/geode/management/internal/cli/functions/AlterRuntimeConfigFunction,true,1
 org/apache/geode/management/internal/cli/functions/AsyncEventQueueFunctionArgs,true,-6524494645663740872,asyncEventQueueId:java/lang/String,batchSize:int,batchTimeInterval:int,diskStoreName:java/lang/String,diskSynchronous:boolean,dispatcherThreads:int,enableBatchConflation:boolean,forwardExpirationDestroy:boolean,gatewayEventFilters:java/lang/String[],gatewaySubstitutionFilter:java/lang/String,isParallel:boolean,listenerClassName:java/lang/String,listenerProperties:java/util/Properties,maxQueueMemory:int,orderPolicy:java/lang/String,persistent:boolean
 org/apache/geode/management/internal/cli/functions/ChangeLogLevelFunction,true,1
@@ -600,6 +599,8 @@ org/apache/geode/management/internal/cli/functions/ShutDownFunction,true,1
 org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
+org/apache/geode/management/internal/cli/functions/UpdateCacheFunction,false
+org/apache/geode/management/internal/cli/functions/UpdateCacheFunction$CacheElementOperation,false
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
 org/apache/geode/management/internal/cli/json/GfJsonException,true,36449998984143318
 org/apache/geode/management/internal/cli/result/CommandResultException,true,1,result:org/apache/geode/management/cli/Result
@@ -621,6 +622,9 @@ org/apache/geode/management/internal/configuration/functions/DownloadJarFunction
 org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,false
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
+org/apache/geode/management/internal/exceptions/EntityExistsException,false
+org/apache/geode/management/internal/exceptions/EntityNotFoundException,false,statusOK:boolean
+org/apache/geode/management/internal/exceptions/NoMembersException,false
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/memcached/GemFireMemcachedServer$Protocol,false

@@ -12,18 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.codeAnalysis;
 
-import org.junit.experimental.categories.Category;
+package org.apache.geode.management.internal.api;
 
-import org.apache.geode.test.junit.categories.SerializationTest;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheElement;
 
-@Category({SerializationTest.class})
-public class AnalyzeSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+/**
+ * Defines the behavior for a management service object, which is responsible for applying and
+ * persisting
+ * cache configuaration changes on locators and/or servers.
+ */
+@Experimental
+public interface ClusterManagementService {
+  APIResult createCacheElement(CacheElement config);
 
-  @Override
-  protected String getModuleName() {
-    return "geode-core";
-  }
+  APIResult deleteCacheElement(CacheElement config);
 
+  APIResult updateCacheElement(CacheElement config);
 }

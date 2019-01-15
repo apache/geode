@@ -34,10 +34,10 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
@@ -86,7 +86,6 @@ public abstract class GfshCommand implements CommandMarker {
     InternalLocator locator = InternalLocator.getLocator();
     return locator == null ? null : (T) locator.getConfigurationPersistenceService();
   }
-
 
   public void setCache(Cache cache) {
     this.cache = (InternalCache) cache;
