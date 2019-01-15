@@ -770,7 +770,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void getEntryColumnDataWhenMultipleIdColumnsGivenNonStablePdxInstanceFails()
+  public void getEntryColumnDataWhenMultipleIdColumnsGivenDeserializablePdxInstanceFails()
       throws Exception {
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     PdxInstance nonCompositeKey = mock(PdxInstance.class);
