@@ -11,10 +11,9 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
-package org.apache.geode.rest.internal.web.security;
+package org.apache.geode.management.internal.web.security;
 
 import java.util.Properties;
 
@@ -39,6 +38,7 @@ import org.apache.geode.security.GemFireSecurityException;
 public class GeodeAuthenticationProvider implements AuthenticationProvider, ServletContextAware {
 
   private SecurityService securityService;
+
 
   public SecurityService getSecurityService() {
     return this.securityService;

@@ -52,20 +52,23 @@ import org.apache.http.impl.client.HttpClients;
 public class GeodeDevRestClient {
   public static final String CONTEXT = "/geode/v1";
 
+  private String context;
   private String bindAddress;
   private int restPort;
   private boolean useSsl;
   private HttpHost host;
 
-  public GeodeDevRestClient(int restPort) {
-    this("localhost", restPort, false);
-  }
 
   public GeodeDevRestClient(String bindAddress, int restPort) {
-    this(bindAddress, restPort, false);
+    this(CONTEXT, bindAddress, restPort, false);
   }
 
   public GeodeDevRestClient(String bindAddress, int restPort, boolean useSsl) {
+    this(CONTEXT, bindAddress, restPort, useSsl);
+  }
+
+  public GeodeDevRestClient(String context, String bindAddress, int restPort, boolean useSsl) {
+    this.context = context;
     this.bindAddress = bindAddress;
     this.restPort = restPort;
     this.useSsl = useSsl;
@@ -73,31 +76,31 @@ public class GeodeDevRestClient {
   }
 
   public HttpResponse doHEAD(String query, String username, String password) {
-    HttpHead httpHead = new HttpHead(CONTEXT + query);
+    HttpHead httpHead = new HttpHead(context + query);
     return doRequest(httpHead, username, password);
   }
 
   public HttpResponse doPost(String query, String username, String password, String body) {
-    HttpPost httpPost = new HttpPost(CONTEXT + query);
+    HttpPost httpPost = new HttpPost(context + query);
     httpPost.addHeader("content-type", "application/json");
     httpPost.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPost, username, password);
   }
 
   public HttpResponse doPut(String query, String username, String password, String body) {
-    HttpPut httpPut = new HttpPut(CONTEXT + query);
+    HttpPut httpPut = new HttpPut(context + query);
     httpPut.addHeader("content-type", "application/json");
     httpPut.setEntity(new StringEntity(body, StandardCharsets.UTF_8));
     return doRequest(httpPut, username, password);
   }
 
   public HttpResponse doGet(String uri, String username, String password) {
-    HttpGet getRequest = new HttpGet(CONTEXT + uri);
+    HttpGet getRequest = new HttpGet(context + uri);
     return doRequest(getRequest, username, password);
   }
 
   public HttpResponse doDelete(String uri, String username, String password) {
-    HttpDelete httpDelete = new HttpDelete(CONTEXT + uri);
+    HttpDelete httpDelete = new HttpDelete(context + uri);
     return doRequest(httpDelete, username, password);
   }
 
@@ -116,6 +119,11 @@ public class GeodeDevRestClient {
 
   public HttpResponseAssert doPostAndAssert(String uri, String body) {
     return new HttpResponseAssert("Post " + uri, doPost(uri, null, null, body));
+  }
+
+  public HttpResponseAssert doPostAndAssert(String uri, String body, String username,
+      String password) {
+    return new HttpResponseAssert("Post " + uri, doPost(uri, username, password, body));
   }
 
   public HttpResponseAssert doDeleteAndAssert(String uri) {

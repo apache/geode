@@ -130,7 +130,7 @@ public class RestAgent {
       if (isRunningInTomcat()) {
         logger.warn(
             "Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /geode-web-api WAR file in your application server.");
-      } else if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
+      } else if (agentUtil.isAnyWarFileAvailable(gemfireAPIWar)) {
 
         final int port = this.config.getHttpServicePort();
 

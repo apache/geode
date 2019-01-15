@@ -49,12 +49,15 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.GenericXmlWebContextLoader;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.context.web.WebMergedContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
@@ -67,11 +70,13 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF/geode-servlet.xml"})
+@ContextConfiguration(locations = {"classpath*:WEB-INF/geode-servlet.xml"},
+    loader = TestContextLoader.class)
 @WebAppConfiguration
 public class RestAccessControllerTest {
 
@@ -135,8 +140,7 @@ public class RestAccessControllerTest {
 
   @Before
   public void setup() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-        .build();
+    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
     rule.getCache().getRegion("customers").clear();
     rule.getCache().getRegion("orders").clear();
@@ -922,6 +926,17 @@ public class RestAccessControllerTest {
     public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
       // nothing
     }
+  }
+}
+
+
+class TestContextLoader extends GenericXmlWebContextLoader {
+  @Override
+  protected void loadBeanDefinitions(GenericWebApplicationContext context,
+      WebMergedContextConfiguration webMergedConfig) {
+    super.loadBeanDefinitions(context, webMergedConfig);
+    context.getServletContext().setAttribute(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        RestAccessControllerTest.rule.getCache().getSecurityService());
   }
 
 }

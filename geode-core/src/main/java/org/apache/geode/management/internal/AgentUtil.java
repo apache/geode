@@ -130,13 +130,9 @@ public class AgentUtil {
         .findFirst().orElse(null);
   }
 
-  boolean isWebApplicationAvailable(final String warFileLocation) {
-    return StringUtils.isNotBlank(warFileLocation);
-  }
-
-  boolean isWebApplicationAvailable(final String... warFileLocations) {
+  boolean isAnyWarFileAvailable(final String... warFileLocations) {
     for (String warFileLocation : warFileLocations) {
-      if (isWebApplicationAvailable(warFileLocation)) {
+      if (StringUtils.isNotBlank(warFileLocation)) {
         return true;
       }
     }
