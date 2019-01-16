@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -135,7 +134,8 @@ public class DescribeMappingFunctionTest {
     DescribeMappingResult result = (DescribeMappingResult) argument.getValue().getResultObject();
     assertThat(result.getAttributeMap()).isEqualTo(expectedAttributes);
 
-    assertThat(new ArrayList<String> (result.getAttributeMap().keySet())).isEqualTo(new ArrayList<String> (expectedAttributes.keySet()));
+    assertThat(new ArrayList<String>(result.getAttributeMap().keySet()))
+        .isEqualTo(new ArrayList<String>(expectedAttributes.keySet()));
   }
 
   @Test

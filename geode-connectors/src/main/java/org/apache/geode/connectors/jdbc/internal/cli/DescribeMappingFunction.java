@@ -23,7 +23,6 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
