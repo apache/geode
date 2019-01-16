@@ -49,7 +49,7 @@ public class ValueComparisonHelper {
     }
   }
 
-  private static boolean basicEquals(Object v1, Object v2) {
+  static boolean basicEquals(Object v1, Object v2) {
     if (v2 != null) {
       if (v2.getClass().isArray()) {
         // fix for 52093
@@ -213,7 +213,7 @@ public class ValueComparisonHelper {
       byte[] ba2;
       if (obj instanceof CachedDeserializable) {
         CachedDeserializable cdObj = (CachedDeserializable) obj;
-        if (!cdObj.isSerialized()) {
+        if (cdObj.isSerialized()) {
           return false;
         }
         ba2 = (byte[]) cdObj.getDeserializedForReading();
