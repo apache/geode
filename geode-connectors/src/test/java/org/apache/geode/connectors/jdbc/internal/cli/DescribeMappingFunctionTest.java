@@ -31,7 +31,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -118,20 +119,23 @@ public class DescribeMappingFunctionTest {
 
     function.execute(context);
 
-    Map<String, String> expectedAttributes = new HashMap<>();
+    Map<String, String> expectedAttributes = new LinkedHashMap<>();
     expectedAttributes.put(REGION_NAME, TEST_REGION);
-    expectedAttributes.put(PDX_NAME, TEST_PDX);
     expectedAttributes.put(TABLE_NAME, TEST_TABLE);
     expectedAttributes.put(DATA_SOURCE_NAME, TEST_DATASOURCE);
-    expectedAttributes.put(SYNCHRONOUS_NAME, TEST_SYNCHRONOUS);
     expectedAttributes.put(ID_NAME, TEST_ID);
-    expectedAttributes.put(SCHEMA_NAME, TEST_SCHEMA);
+    expectedAttributes.put(PDX_NAME, TEST_PDX);
+    expectedAttributes.put(SYNCHRONOUS_NAME, TEST_SYNCHRONOUS);
     expectedAttributes.put(CATALOG_NAME, TEST_CATALOG);
+    expectedAttributes.put(SCHEMA_NAME, TEST_SCHEMA);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
     DescribeMappingResult result = (DescribeMappingResult) argument.getValue().getResultObject();
     assertThat(result.getAttributeMap()).isEqualTo(expectedAttributes);
+
+    assertThat(new ArrayList<String>(result.getAttributeMap().keySet()))
+        .isEqualTo(new ArrayList<String>(expectedAttributes.keySet()));
   }
 
   @Test

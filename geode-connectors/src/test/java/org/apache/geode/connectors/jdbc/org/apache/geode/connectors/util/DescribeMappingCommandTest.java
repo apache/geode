@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -78,15 +78,15 @@ public class DescribeMappingCommandTest {
   public void whenMemberExists() {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
         null);
-    Map<String, String> attributes = new HashMap<>();
+    Map<String, String> attributes = new LinkedHashMap<>();
     attributes.put(REGION_NAME, "region");
     attributes.put(PDX_NAME, "class1");
     attributes.put(TABLE_NAME, "table1");
     attributes.put(DATA_SOURCE_NAME, "name1");
     attributes.put(SYNCHRONOUS_NAME, "true");
     attributes.put(ID_NAME, "myId");
-    attributes.put(SCHEMA_NAME, "mySchema");
     attributes.put(CATALOG_NAME, "myCatalog");
+    attributes.put(SCHEMA_NAME, "mySchema");
 
     DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
 
@@ -99,6 +99,8 @@ public class DescribeMappingCommandTest {
 
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME, REGION_NAME, PDX_NAME,
+            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
         .containsOutput(REGION_NAME, "region")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")

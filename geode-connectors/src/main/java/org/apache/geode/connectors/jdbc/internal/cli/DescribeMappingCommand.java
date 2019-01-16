@@ -44,7 +44,7 @@ public class DescribeMappingCommand extends GfshCommand {
   private static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the JDBC mapping to be described.";
 
-  private static final String RESULT_SECTION_NAME = "MappingDescription";
+  public static final String RESULT_SECTION_NAME = "MappingDescription";
 
   @CliCommand(value = DESCRIBE_MAPPING, help = DESCRIBE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
