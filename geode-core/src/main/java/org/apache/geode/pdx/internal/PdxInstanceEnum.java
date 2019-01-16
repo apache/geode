@@ -24,9 +24,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
-import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
 
@@ -35,7 +33,7 @@ import org.apache.geode.pdx.WritablePdxInstance;
  *
  * @since GemFire 6.6.2
  */
-public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
+public class PdxInstanceEnum implements InternalPdxInstance, ComparableEnum {
   private static final long serialVersionUID = -7417287878052772302L;
   private final String className;
   private final String enumName;

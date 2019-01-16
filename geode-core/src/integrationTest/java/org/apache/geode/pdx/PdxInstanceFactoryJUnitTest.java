@@ -15,6 +15,8 @@
 package org.apache.geode.pdx;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -1231,4 +1233,126 @@ public class PdxInstanceFactoryJUnitTest {
     return DataSerializer.readObject(new DataInputStream(new ByteArrayInputStream(bytes)));
   }
 
+  @Test
+  public void undeserializablePdxInstanceGetObjectReturnsThePdxInstance() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    PdxInstance instance = factory.create();
+
+    Object object = instance.getObject();
+
+    assertThat(object).isSameAs(instance);
+  }
+
+  @Test
+  public void normalPdxInstanceGetObjectThrowsClassNotFoundGivenABadClass() {
+    PdxInstanceFactory factory = cache.createPdxInstanceFactory("badClass");
+    PdxInstance instance = factory.create();
+
+    assertThatThrownBy(() -> instance.getObject()).isInstanceOf(PdxSerializationException.class)
+        .hasCauseInstanceOf(ClassNotFoundException.class);
+  }
+
+  @Test
+  public void undeserializablePdxInstanceAddedToRegionWithPdxReadSerializedFalseReturnsEqualPdxInstanceWhenRegionGet() {
+    // make sure the cache has pdx-read-serialized set to false
+    this.cache.close();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+        .setPdxReadSerialized(false).create();
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance = factory.create();
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("myRegion");
+    region.put("key", instance);
+
+    Object getValue = region.get("key");
+
+    assertThat(getValue).isEqualTo(instance);
+  }
+
+  @Test
+  public void undeserializablePdxInstanceCanBeUsedAsRegionKey() {
+    // make sure the cache has pdx-read-serialized set to false
+    this.cache.close();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+        .setPdxReadSerialized(false).create();
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance putKey = factory.create();
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("myRegion");
+    region.put(putKey, "value");
+    factory = cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance getKey = factory.create();
+
+    Object getValue = region.get(getKey);
+
+    assertThat(getValue).isEqualTo("value");
+  }
+
+  @Test
+  public void undeserializablePdxInstanceWithDifferentTypeNameAreNotEqual() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance = factory.create();
+    factory = cache.createPdxInstanceFactory("myPdxInstanceType2").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance2 = factory.create();
+
+    assertThat(instance).isNotEqualTo(instance2);
+  }
+
+  @Test
+  public void undeserializablePdxInstanceWithMultipleEqualFieldsInDifferentOrderAreEqual() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+    factory = cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldTwo", "valueTwo");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance2 = factory.create();
+
+    assertThat(instance).isEqualTo(instance2);
+  }
+
+  @Test
+  public void normalPdxInstanceAddedToRegionWithPdxReadSerializedFalseAndABadClassThrowsClassNotFoundWhenRegionGet() {
+    // make sure the cache has pdx-read-serialized set to false
+    this.cache.close();
+    this.cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+        .setPdxReadSerialized(false).create();
+    PdxInstanceFactory factory = cache.createPdxInstanceFactory("badClass");
+    PdxInstance instance = factory.create();
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create("myRegion");
+    region.put("key", instance);
+
+    assertThatThrownBy(() -> region.get("key")).isInstanceOf(PdxSerializationException.class)
+        .hasCauseInstanceOf(ClassNotFoundException.class);
+  }
+
+  @Test
+  public void undeserializablePdxInstanceReturnsFalseFromIsDeserializable() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+
+    assertThat(instance.isDeserializable()).isFalse();
+  }
+
+  @Test
+  public void normalPdxInstanceReturnsTrueFromIsDeserializable() {
+    PdxInstanceFactory factory = cache.createPdxInstanceFactory("className");
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+
+    assertThat(instance.isDeserializable()).isTrue();
+  }
 }

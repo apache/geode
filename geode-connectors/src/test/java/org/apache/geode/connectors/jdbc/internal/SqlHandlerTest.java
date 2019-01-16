@@ -38,7 +38,6 @@ import java.util.Date;
 import javax.sql.DataSource;
 
 import junitparams.JUnitParamsRunner;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,6 +51,7 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
 
@@ -374,14 +374,16 @@ public class SqlHandlerTest {
     when(statement.executeUpdate()).thenReturn(1);
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
-    JSONObject compositeKey = new JSONObject();
-    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
-    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    PdxInstance compositeKey = mock(PdxInstance.class);
+    when(compositeKey.isDeserializable()).thenReturn(false);
+    when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
+    when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
     when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
 
-    handler.write(region, Operation.CREATE, compositeKey.toString(), value);
+    handler.write(region, Operation.CREATE, compositeKey, value);
 
     verify(statement).setObject(1, compositeKeyFieldValueOne);
     verify(statement).setObject(2, compositeKeyFieldValueTwo);
@@ -405,14 +407,16 @@ public class SqlHandlerTest {
     when(statement.executeUpdate()).thenReturn(1);
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
-    JSONObject compositeKey = new JSONObject();
-    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
-    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    PdxInstance compositeKey = mock(PdxInstance.class);
+    when(compositeKey.isDeserializable()).thenReturn(false);
+    when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
+    when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
     when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
 
-    handler.write(region, Operation.UPDATE, compositeKey.toString(), value);
+    handler.write(region, Operation.UPDATE, compositeKey, value);
 
     verify(statement).setObject(1, compositeKeyFieldValueOne);
     verify(statement).setObject(2, compositeKeyFieldValueTwo);
@@ -436,14 +440,16 @@ public class SqlHandlerTest {
     when(statement.executeUpdate()).thenReturn(1);
     Object destroyKeyFieldValueOne = "fieldValueOne";
     Object destroyKeyFieldValueTwo = "fieldValueTwo";
-    JSONObject destroyKey = new JSONObject();
-    destroyKey.put("fieldOne", destroyKeyFieldValueOne);
-    destroyKey.put("fieldTwo", destroyKeyFieldValueTwo);
+    PdxInstance destroyKey = mock(PdxInstance.class);
+    when(destroyKey.isDeserializable()).thenReturn(false);
+    when(destroyKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(destroyKey.getField("fieldOne")).thenReturn(destroyKeyFieldValueOne);
+    when(destroyKey.getField("fieldTwo")).thenReturn(destroyKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
     when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
 
-    handler.write(region, Operation.DESTROY, destroyKey.toString(), value);
+    handler.write(region, Operation.DESTROY, destroyKey, value);
 
     verify(statement).setObject(1, destroyKeyFieldValueOne);
     verify(statement).setObject(2, destroyKeyFieldValueTwo);
@@ -583,15 +589,17 @@ public class SqlHandlerTest {
   public void returnsCorrectColumnForGetGivenCompositeKey() throws Exception {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
-    JSONObject compositeKey = new JSONObject();
-    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
-    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    PdxInstance compositeKey = mock(PdxInstance.class);
+    when(compositeKey.isDeserializable()).thenReturn(false);
+    when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
+    when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
     when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
 
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
             Operation.GET);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
@@ -605,17 +613,17 @@ public class SqlHandlerTest {
 
   @Test
   public void getEntryColumnDataGivenWrongNumberOfCompositeKeyFieldsFails() throws Exception {
-    Object compositeKeyFieldValueOne = "fieldValueOne";
-    JSONObject compositeKey = new JSONObject();
-    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
+    PdxInstance compositeKey = mock(PdxInstance.class);
+    when(compositeKey.isDeserializable()).thenReturn(false);
+    when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne"));
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
     when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
-        "The key \"" + compositeKey.toString() + "\" should have 2 fields but has 1 fields.");
+        "The key \"" + compositeKey + "\" should have 2 fields but has 1 fields.");
 
-    handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+    handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
         Operation.GET);
   }
 
@@ -623,17 +631,19 @@ public class SqlHandlerTest {
   public void getEntryColumnDataGivenWrongFieldNameInCompositeKeyFails() throws Exception {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
-    JSONObject compositeKey = new JSONObject();
-    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
-    compositeKey.put("fieldTwoWrong", compositeKeyFieldValueTwo);
+    PdxInstance compositeKey = mock(PdxInstance.class);
+    when(compositeKey.isDeserializable()).thenReturn(false);
+    when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwoWrong"));
+    when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
+    when(compositeKey.getField("fieldTwoWrong")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
     when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
     thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage("The key \"" + compositeKey.toString()
+    thrown.expectMessage("The key \"" + compositeKey
         + "\" has the field \"fieldTwoWrong\" which does not match any of the key columns: [fieldOne, fieldTwo]");
 
-    handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+    handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
         Operation.GET);
   }
 
@@ -678,9 +688,11 @@ public class SqlHandlerTest {
   private void testGetEntryColumnDataForCreateOrUpdateWithCompositeKey(Operation operation) {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
-    JSONObject compositeKey = new JSONObject();
-    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
-    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    PdxInstance compositeKey = mock(PdxInstance.class);
+    when(compositeKey.isDeserializable()).thenReturn(false);
+    when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
+    when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
     when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
@@ -689,7 +701,7 @@ public class SqlHandlerTest {
     when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo", nonKeyColumn));
 
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
             operation);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
@@ -707,15 +719,17 @@ public class SqlHandlerTest {
   public void returnsCorrectColumnForDestroyWithCompositeKey() throws Exception {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
-    JSONObject compositeKey = new JSONObject();
-    compositeKey.put("fieldOne", compositeKeyFieldValueOne);
-    compositeKey.put("fieldTwo", compositeKeyFieldValueTwo);
+    PdxInstance compositeKey = mock(PdxInstance.class);
+    when(compositeKey.isDeserializable()).thenReturn(false);
+    when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
+    when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
     when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
 
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey.toString(), value,
+        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
             Operation.DESTROY);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
@@ -744,26 +758,29 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void getEntryColumnDataWhenMultipleIdColumnsGivenNonStringFails() throws Exception {
+  public void getEntryColumnDataWhenMultipleIdColumnsGivenNonPdxInstanceFails() throws Exception {
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     Object nonCompositeKey = Integer.valueOf(123);
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
-        "The key \"123\" of class \"java.lang.Integer\" must be a java.lang.String because multiple columns are configured as ids.");
+        "The key \"123\" of class \"java.lang.Integer\" must be a PdxInstance because multiple columns are configured as ids.");
 
     handler.getEntryColumnData(tableMetaDataView, regionMapping, nonCompositeKey, value,
         Operation.DESTROY);
   }
 
   @Test
-  public void getEntryColumnDataWhenMultipleIdColumnsGivenNonJsonStringFails() throws Exception {
+  public void getEntryColumnDataWhenMultipleIdColumnsGivenDeserializablePdxInstanceFails()
+      throws Exception {
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    String nonJsonKey = "myKey";
+    PdxInstance nonCompositeKey = mock(PdxInstance.class);
+    when(nonCompositeKey.isDeserializable()).thenReturn(true);
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
-        "The key \"myKey\" must be a valid JSON string because multiple columns are configured as ids. Details: Value myKey of type java.lang.String cannot be converted to JSONObject");
+        "The key \"" + nonCompositeKey
+            + "\" must be a PdxInstance created with PdxInstanceFactory.neverDeserialize");
 
-    handler.getEntryColumnData(tableMetaDataView, regionMapping, nonJsonKey, value,
+    handler.getEntryColumnData(tableMetaDataView, regionMapping, nonCompositeKey, value,
         Operation.DESTROY);
   }
 

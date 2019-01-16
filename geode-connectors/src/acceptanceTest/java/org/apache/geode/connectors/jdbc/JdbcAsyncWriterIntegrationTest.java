@@ -24,7 +24,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.awaitility.core.ThrowingRunnable;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +45,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   private static final String REGION_TABLE_NAME = "employees";
 
   private InternalCache cache;
-  private Region<String, PdxInstance> employees;
+  private Region<Object, PdxInstance> employees;
   private Connection connection;
   private Statement statement;
   private JdbcAsyncWriter jdbcWriter;
@@ -173,17 +172,17 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   @Test
   public void canDestroyFromTableWithCompositeKey() throws Exception {
     setupRegion("id,age");
-    JSONObject compositeKey1 = new JSONObject();
-    compositeKey1.put("id", pdxEmployee1.getField("id"));
-    compositeKey1.put("age", pdxEmployee1.getField("age"));
-    JSONObject compositeKey2 = new JSONObject();
-    compositeKey2.put("id", pdxEmployee2.getField("id"));
-    compositeKey2.put("age", pdxEmployee2.getField("age"));
-    employees.put(compositeKey1.toString(), pdxEmployee1);
-    employees.put(compositeKey2.toString(), pdxEmployee2);
+    PdxInstance compositeKey1 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
+        .writeField("id", (String) pdxEmployee1.getField("id"), String.class)
+        .writeField("age", (Integer) pdxEmployee1.getField("age"), int.class).create();
+    PdxInstance compositeKey2 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
+        .writeField("id", (String) pdxEmployee2.getField("id"), String.class)
+        .writeField("age", (Integer) pdxEmployee2.getField("age"), int.class).create();
+    employees.put(compositeKey1, pdxEmployee1);
+    employees.put(compositeKey2, pdxEmployee2);
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
 
-    employees.destroy(compositeKey1.toString());
+    employees.destroy(compositeKey1);
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(3));
 
     ResultSet resultSet =
@@ -209,16 +208,15 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   @Test
   public void canInsertIntoTableWithCompositeKey() throws Exception {
     setupRegion("id,age");
-    JSONObject compositeKey1 = new JSONObject();
-    compositeKey1.put("id", pdxEmployee1.getField("id"));
-    compositeKey1.put("age", pdxEmployee1.getField("age"));
-    String actualKey = compositeKey1.toString();
-    JSONObject compositeKey2 = new JSONObject();
-    compositeKey2.put("id", pdxEmployee2.getField("id"));
-    compositeKey2.put("age", pdxEmployee2.getField("age"));
+    PdxInstance compositeKey1 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
+        .writeField("id", (String) pdxEmployee1.getField("id"), String.class)
+        .writeField("age", (Integer) pdxEmployee1.getField("age"), int.class).create();
+    PdxInstance compositeKey2 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
+        .writeField("id", (String) pdxEmployee2.getField("id"), String.class)
+        .writeField("age", (Integer) pdxEmployee2.getField("age"), int.class).create();
 
-    employees.put(actualKey, pdxEmployee1);
-    employees.put(compositeKey2.toString(), pdxEmployee2);
+    employees.put(compositeKey1, pdxEmployee1);
+    employees.put(compositeKey2, pdxEmployee2);
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
 
     ResultSet resultSet =
@@ -251,16 +249,16 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     PdxInstance myPdx = cache.createPdxInstanceFactory(Employee.class.getName())
         .writeString("id", "1").writeString("name", "Emp1")
         .writeInt("age", 55).create();
-    JSONObject compositeKey1 = new JSONObject();
-    compositeKey1.put("id", myPdx.getField("id"));
-    compositeKey1.put("age", myPdx.getField("age"));
-    employees.put(compositeKey1.toString(), myPdx);
+    PdxInstance compositeKey1 = cache.createPdxInstanceFactory("IdAgeKeyType").neverDeserialize()
+        .writeField("id", (String) myPdx.getField("id"), String.class)
+        .writeField("age", (Integer) myPdx.getField("age"), int.class).create();
+    employees.put(compositeKey1, myPdx);
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));
     WritablePdxInstance updatedPdx = myPdx.createWriter();
     updatedPdx.setField("name", "updated");
     Employee updatedEmployee = (Employee) updatedPdx.getObject();
 
-    employees.put(compositeKey1.toString(), updatedPdx);
+    employees.put(compositeKey1, updatedPdx);
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
 
     ResultSet resultSet =
@@ -317,13 +315,13 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     assertThat(resultSet.getObject("age")).isEqualTo(employee.getAge());
   }
 
-  private Region<String, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName, String ids)
+  private Region<Object, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName, String ids)
       throws RegionMappingExistsException {
     jdbcWriter = new JdbcAsyncWriter(createSqlHandler(ids), cache);
     cache.createAsyncEventQueueFactory().setBatchSize(1).setBatchTimeInterval(1)
         .create("jdbcAsyncQueue", jdbcWriter);
 
-    RegionFactory<String, PdxInstance> regionFactory = cache.createRegionFactory(REPLICATE);
+    RegionFactory<Object, PdxInstance> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.addAsyncEventQueueId("jdbcAsyncQueue");
     return regionFactory.create(regionName);
   }

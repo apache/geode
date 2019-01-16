@@ -35,7 +35,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -282,13 +282,9 @@ public class CompiledOperation extends AbstractCompiledValue {
       // cache
       CompiledOperation.cache.putIfAbsent(key, methodDispatch);
     }
-    if (receiver instanceof PdxInstance) {
+    if (receiver instanceof InternalPdxInstance) {
       try {
-        if (receiver instanceof PdxInstanceImpl) {
-          receiver = ((PdxInstanceImpl) receiver).getCachedObject();
-        } else {
-          receiver = ((PdxInstance) receiver).getObject();
-        }
+        receiver = ((InternalPdxInstance) receiver).getCachedObject();
       } catch (PdxSerializationException ex) {
         throw new QueryInvocationTargetException(ex);
       }

@@ -24,7 +24,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -136,10 +135,10 @@ public abstract class JdbcLoaderIntegrationTest {
         createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, null, null);
     createPdxType();
 
-    JSONObject key = new JSONObject();
-    key.put("id", "1");
-    key.put("name", "Emp1");
-    Employee value = region.get(key.toString());
+    PdxInstance key =
+        cache.createPdxInstanceFactory("MyPdxKeyType").neverDeserialize().writeString("id", "1")
+            .writeString("name", "Emp1").create();
+    Employee value = region.get(key);
 
     assertThat(value.getId()).isEqualTo("1");
     assertThat(value.getName()).isEqualTo("Emp1");
@@ -167,10 +166,10 @@ public abstract class JdbcLoaderIntegrationTest {
             schema);
     createPdxType();
 
-    JSONObject key = new JSONObject();
-    key.put("id", "1");
-    key.put("name", "Emp1");
-    Employee value = region.get(key.toString());
+    PdxInstance key =
+        cache.createPdxInstanceFactory("MyPdxKeyType").neverDeserialize().writeString("id", "1")
+            .writeString("name", "Emp1").create();
+    Employee value = region.get(key);
 
     assertThat(value.getId()).isEqualTo("1");
     assertThat(value.getName()).isEqualTo("Emp1");

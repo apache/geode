@@ -35,7 +35,6 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
@@ -55,7 +54,7 @@ import org.apache.geode.pdx.WritablePdxInstance;
  * We do not use this normal java io serialization when serializing this class in GemFire because
  * Sendable takes precedence over Serializable.
  */
-public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstance, Sendable {
+public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstance {
 
   private static final long serialVersionUID = -1669268527103938431L;
 
@@ -186,7 +185,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     }
   }
 
-  // this is for internal use of the query engine.
+  @Override
   public Object getCachedObject() {
     Object result = this.cachedObjectForm;
     if (result == null) {
@@ -652,20 +651,13 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     return false;
   }
 
+  @Override
   public Object getRawField(String fieldName) {
     return getUnmodifiableReader(fieldName).readRawField(fieldName);
   }
 
-  public Object getDefaultValueIfFieldExistsInAnyPdxVersions(String fieldName, String className)
-      throws FieldNotFoundInPdxVersion {
-    PdxType pdxType =
-        GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.")
-            .getPdxRegistry().getPdxTypeForField(fieldName, className);
-    if (pdxType == null) {
-      throw new FieldNotFoundInPdxVersion(
-          "PdxType with field " + fieldName + " is not found for class " + className);
-    }
-    return pdxType.getPdxField(fieldName).getFieldType().getDefaultValue();
+  @Override
+  public boolean isDeserializable() {
+    return !getPdxType().getNoDomainClass();
   }
-
 }

@@ -22,12 +22,8 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import javax.sql.DataSource;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Experimental;
@@ -261,20 +257,18 @@ public class SqlHandler {
           new ColumnData(keyColumnName, key, tableMetaData.getColumnDataType(keyColumnName));
       result.add(columnData);
     } else {
-      if (!(key instanceof String)) {
+      if (!(key instanceof PdxInstance)) {
         throw new JdbcConnectorException(
             "The key \"" + key + "\" of class \"" + key.getClass().getName()
-                + "\" must be a java.lang.String because multiple columns are configured as ids.");
+                + "\" must be a PdxInstance because multiple columns are configured as ids.");
       }
-      JSONObject compositeKey = null;
-      try {
-        compositeKey = new JSONObject((String) key);
-      } catch (JSONException ex) {
-        throw new JdbcConnectorException("The key \"" + key
-            + "\" must be a valid JSON string because multiple columns are configured as ids. Details: "
-            + ex.getMessage());
+      PdxInstance compositeKey = (PdxInstance) key;
+      if (compositeKey.isDeserializable()) {
+        throw new JdbcConnectorException(
+            "The key \"" + key
+                + "\" must be a PdxInstance created with PdxInstanceFactory.neverDeserialize");
       }
-      Set<String> fieldNames = compositeKey.keySet();
+      List<String> fieldNames = compositeKey.getFieldNames();
       if (fieldNames.size() != keyColumnNames.size()) {
         throw new JdbcConnectorException("The key \"" + key + "\" should have "
             + keyColumnNames.size() + " fields but has " + fieldNames.size() + " fields.");
@@ -285,7 +279,7 @@ public class SqlHandler {
           throw new JdbcConnectorException("The key \"" + key + "\" has the field \"" + fieldName
               + "\" which does not match any of the key columns: " + keyColumnNames);
         }
-        ColumnData columnData = new ColumnData(columnName, compositeKey.get(fieldName),
+        ColumnData columnData = new ColumnData(columnName, compositeKey.getField(fieldName),
             tableMetaData.getColumnDataType(columnName));
         result.add(columnData);
       }

@@ -27,7 +27,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
@@ -194,7 +193,7 @@ public class EnumInfo implements DataSerializableFixedID {
   }
 
   public static class PdxInstanceEnumInfo
-      implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
+      implements InternalPdxInstance, ComparableEnum {
     private static final long serialVersionUID = 7907582104525106416L;
     private final int enumId;
     private final EnumInfo ei;

@@ -21,11 +21,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.json.JSONObject;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.PostgresConnectionRule;
 
@@ -80,10 +80,10 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
             SCHEMA_NAME);
     createPdxType();
 
-    JSONObject key = new JSONObject();
-    key.put("id", "1");
-    key.put("name", "Emp1");
-    Employee value = region.get(key.toString());
+    PdxInstance key =
+        cache.createPdxInstanceFactory("MyPdxKeyType").neverDeserialize().writeString("id", "1")
+            .writeString("name", "Emp1").create();
+    Employee value = region.get(key);
 
     assertThat(value.getId()).isEqualTo("1");
     assertThat(value.getName()).isEqualTo("Emp1");

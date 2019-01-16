@@ -34,10 +34,10 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
-import org.apache.geode.pdx.internal.FieldNotFoundInPdxVersion;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.InternalPdxInstance;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Utility for managing an attribute
@@ -49,12 +49,15 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
 public class AttributeDescriptor {
   private final String _name;
   private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
+  private final TypeRegistry _pdxRegistry;
   /** cache for remembering the correct Member for a class and attribute */
   private static final ConcurrentMap<List, Member> _localCache = new ConcurrentHashMap();
 
 
 
-  public AttributeDescriptor(MethodInvocationAuthorizer methodInvocationAuthorizer, String name) {
+  public AttributeDescriptor(TypeRegistry pdxRegistry,
+      MethodInvocationAuthorizer methodInvocationAuthorizer, String name) {
+    _pdxRegistry = pdxRegistry;
     _methodInvocationAuthorizer = methodInvocationAuthorizer;
     _name = name;
   }
@@ -75,8 +78,8 @@ public class AttributeDescriptor {
     if (target == null || target == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
     }
-    if (target instanceof PdxInstance) {
-      return readPdx((PdxInstance) target);
+    if (target instanceof InternalPdxInstance) {
+      return readPdx((InternalPdxInstance) target);
     }
     // for non pdx objects
     return readReflection(target);
@@ -202,70 +205,58 @@ public class AttributeDescriptor {
    *
    * @return the value of the field from PdxInstance
    */
-  private Object readPdx(PdxInstance target)
+  private Object readPdx(InternalPdxInstance pdxInstance)
       throws NameNotFoundException, QueryInvocationTargetException {
-    if (target instanceof PdxInstanceImpl) {
-      PdxInstanceImpl pdxInstance = (PdxInstanceImpl) target;
-      // if the field is present in the pdxinstance
-      if (pdxInstance.hasField(_name)) {
-        // return PdxString if field is a String otherwise invoke readField
-        return pdxInstance.getRawField(_name);
-      } else {
-        // field not found in the pdx instance, look for the field in any of the
-        // PdxTypes (versions of the pdxinstance) in the type registry
-        String className = pdxInstance.getClassName();
-
-        // don't look further for field or method or reflect on GemFire JSON data
-        if (className.equals(JSONFormatter.JSON_CLASSNAME)) {
-          return QueryService.UNDEFINED;
-        }
-
-
-        // check if the field was not found previously
-        if (!isFieldAlreadySearchedAndNotFound(className, _name)) {
-          try {
-            return pdxInstance.getDefaultValueIfFieldExistsInAnyPdxVersions(_name, className);
-          } catch (FieldNotFoundInPdxVersion e1) {
-            // remember the field that is not present in any version to avoid
-            // trips to the registry next time
-            updateClassToFieldsMap(className, _name);
-          }
-        }
-        // if the field is not present in any of the versions try to
-        // invoke implicit method call
-        if (!this.isMethodAlreadySearchedAndNotFound(className, _name)) {
-          try {
-            return readFieldFromDeserializedObject(pdxInstance, target);
-          } catch (NameNotFoundException ex) {
-            updateClassToMethodsMap(pdxInstance.getClassName(), _name);
-            throw ex;
-          }
-        } else
-          return QueryService.UNDEFINED;
-      }
+    // if the field is present in the pdxinstance
+    if (pdxInstance.hasField(_name)) {
+      // return PdxString if field is a String otherwise invoke readField
+      return pdxInstance.getRawField(_name);
     } else {
-      // target could be another implementation of PdxInstance like
-      // PdxInstanceEnum, in this case getRawField and getCachedOjects methods are
-      // not available
-      if (((PdxInstance) target).hasField(_name)) {
-        return ((PdxInstance) target).getField(_name);
+      // field not found in the pdx instance, look for the field in any of the
+      // PdxTypes (versions of the pdxinstance) in the type registry
+      String className = pdxInstance.getClassName();
+
+      // don't look further for field or method or reflect on GemFire JSON data
+      if (className.equals(JSONFormatter.JSON_CLASSNAME)) {
+        return QueryService.UNDEFINED;
       }
-      throw new NameNotFoundException(
-          String.format("Field ' %s ' in class ' %s ' is not accessible to the query processor",
-              new Object[] {_name, target.getClass().getName()}));
+
+      // check if the field was not found previously
+      if (!isFieldAlreadySearchedAndNotFound(className, _name)) {
+        PdxType pdxType = _pdxRegistry.getPdxTypeForField(_name, className);
+        if (pdxType == null) {
+          // remember the field that is not present in any version to avoid
+          // trips to the registry next time
+          updateClassToFieldsMap(className, _name);
+        } else {
+          return pdxType.getPdxField(_name).getFieldType().getDefaultValue();
+        }
+      }
+      // if the field is not present in any of the versions try to
+      // invoke implicit method call
+      if (!this.isMethodAlreadySearchedAndNotFound(className, _name)) {
+        try {
+          return readFieldFromDeserializedObject(pdxInstance);
+        } catch (NameNotFoundException ex) {
+          updateClassToMethodsMap(pdxInstance.getClassName(), _name);
+          throw ex;
+        }
+      } else
+        return QueryService.UNDEFINED;
     }
   }
 
-  private Object readFieldFromDeserializedObject(PdxInstanceImpl pdxInstance, Object target)
+  private Object readFieldFromDeserializedObject(InternalPdxInstance pdxInstance)
       throws NameNotFoundException, QueryInvocationTargetException {
+    Object obj = null;
     try {
-      Object obj = pdxInstance.getCachedObject();
-      return readReflection(obj);
+      obj = pdxInstance.getCachedObject();
     } catch (PdxSerializationException e) {
       throw new NameNotFoundException( // the domain object is not available
-          String.format("Field ' %s ' in class ' %s ' is not accessible to the query processor",
-              new Object[] {_name, target.getClass().getName()}));
+          String.format("Field '%s' is not accessible to the query processor because: %s",
+              new Object[] {_name, e.getMessage()}));
     }
+    return readReflection(obj);
   }
 
   private void updateClassToFieldsMap(String className, String field) {

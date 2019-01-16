@@ -64,8 +64,9 @@ public interface PdxInstance extends java.io.Serializable {
 
   /**
    * Deserializes and returns the domain object that this instance represents.
+   * If this instance is one that never deserializes then getObject returns "this".
    *
-   * @return the deserialized domain object.
+   * @return the deserialized domain object or "this" if this instance never deserializes
    * @throws PdxSerializationException if the instance could not be deserialized
    */
   Object getObject();
@@ -210,5 +211,19 @@ public interface PdxInstance extends java.io.Serializable {
    * @throws IllegalStateException if the PdxInstance is an enum.
    */
   WritablePdxInstance createWriter();
+
+
+  /**
+   * Returns false if this instance will never be deserialized to a domain class.
+   * Instances that never deserialize can be created using
+   * {@link PdxInstanceFactory#neverDeserialize}.
+   *
+   * @return false if this instance will never be deserialized to a domain class.
+   *
+   * @since Geode 1.9
+   */
+  default boolean isDeserializable() {
+    return false;
+  }
 
 }

@@ -231,6 +231,10 @@ public class PdxType implements DataSerializable {
     return this.noDomainClass;
   }
 
+  public void setNoDomainClass(boolean noDomainClass) {
+    this.noDomainClass = noDomainClass;
+  }
+
   public int getTypeId() {
     return this.typeId;
   }

@@ -552,4 +552,13 @@ public interface PdxInstanceFactory {
    * @throws PdxFieldDoesNotExistException if the named field has not already been written.
    */
   PdxInstanceFactory markIdentityField(String fieldName);
+
+  /**
+   * The instance created by this factory will be one that is never
+   * deserialized to a domain class. It will always be a PdxInstance.
+   *
+   * @return this PdxInstanceFactory
+   * @since Geode 1.9
+   */
+  PdxInstanceFactory neverDeserialize();
 }
