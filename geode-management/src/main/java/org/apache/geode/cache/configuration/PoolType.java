@@ -102,9 +102,9 @@ import org.apache.geode.annotations.Experimental;
 public class PoolType {
 
   @XmlElement(name = "locator", namespace = "http://geode.apache.org/schema/cache")
-  protected List<PoolType.Locator> locators;
+  protected List<Locator> locators;
   @XmlElement(name = "server", namespace = "http://geode.apache.org/schema/cache")
-  protected List<PoolType.Server> servers;
+  protected List<Server> servers;
   @XmlAttribute(name = "subscription-timeout-multiplier")
   protected String subscriptionTimeoutMultiplier;
   @XmlAttribute(name = "socket-connect-timeout")
@@ -171,9 +171,9 @@ public class PoolType {
    *
    *
    */
-  public List<PoolType.Locator> getLocators() {
+  public List<Locator> getLocators() {
     if (locators == null) {
-      locators = new ArrayList<PoolType.Locator>();
+      locators = new ArrayList<Locator>();
     }
     return this.locators;
   }
@@ -201,9 +201,9 @@ public class PoolType {
    *
    *
    */
-  public List<PoolType.Server> getServers() {
+  public List<Server> getServers() {
     if (servers == null) {
-      servers = new ArrayList<PoolType.Server>();
+      servers = new ArrayList<Server>();
     }
     return this.servers;
   }

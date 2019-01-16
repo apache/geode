@@ -86,9 +86,9 @@ import org.apache.geode.annotations.Experimental;
 public class SerializationRegistrationType {
 
   @XmlElement(name = "serializer", namespace = "http://geode.apache.org/schema/cache")
-  protected List<SerializationRegistrationType.Serializer> serializers;
+  protected List<Serializer> serializers;
   @XmlElement(name = "instantiator", namespace = "http://geode.apache.org/schema/cache")
-  protected List<SerializationRegistrationType.Instantiator> instantiators;
+  protected List<Instantiator> instantiators;
 
   /**
    * Gets the value of the serializer property.
@@ -113,9 +113,9 @@ public class SerializationRegistrationType {
    *
    *
    */
-  public List<SerializationRegistrationType.Serializer> getSerializers() {
+  public List<Serializer> getSerializers() {
     if (serializers == null) {
-      serializers = new ArrayList<SerializationRegistrationType.Serializer>();
+      serializers = new ArrayList<Serializer>();
     }
     return this.serializers;
   }
@@ -143,9 +143,9 @@ public class SerializationRegistrationType {
    *
    *
    */
-  public List<SerializationRegistrationType.Instantiator> getInstantiators() {
+  public List<Instantiator> getInstantiators() {
     if (instantiators == null) {
-      instantiators = new ArrayList<SerializationRegistrationType.Instantiator>();
+      instantiators = new ArrayList<Instantiator>();
     }
     return this.instantiators;
   }

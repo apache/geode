@@ -36,9 +36,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.w3c.dom.Element;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Region;
 import org.apache.geode.internal.config.VersionAdapter;
-
 
 /**
  * <p>
@@ -278,18 +276,18 @@ public class CacheConfig {
   @XmlElement(name = "dynamic-region-factory", namespace = "http://geode.apache.org/schema/cache")
   protected DynamicRegionFactoryType dynamicRegionFactory;
   @XmlElement(name = "gateway-hub", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.GatewayHub> gatewayHubs;
+  protected List<GatewayHub> gatewayHubs;
   @XmlElement(name = "gateway-sender", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.GatewaySender> gatewaySenders;
+  protected List<GatewaySender> gatewaySenders;
   @XmlElement(name = "gateway-receiver", namespace = "http://geode.apache.org/schema/cache")
   protected CacheConfig.GatewayReceiver gatewayReceiver;
   @XmlElement(name = "gateway-conflict-resolver",
       namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType gatewayConflictResolver;
   @XmlElement(name = "async-event-queue", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.AsyncEventQueue> asyncEventQueues;
+  protected List<AsyncEventQueue> asyncEventQueues;
   @XmlElement(name = "cache-server", namespace = "http://geode.apache.org/schema/cache")
-  protected List<CacheConfig.CacheServer> cacheServers;
+  protected List<CacheServer> cacheServers;
   @XmlElement(name = "pool", namespace = "http://geode.apache.org/schema/cache")
   protected List<PoolType> pools;
   @XmlElement(name = "disk-store", namespace = "http://geode.apache.org/schema/cache")
@@ -330,6 +328,8 @@ public class CacheConfig {
   @XmlAttribute(name = "version", required = true)
   @XmlJavaTypeAdapter(VersionAdapter.class)
   protected String version;
+
+  public static final String SEPARATOR = "/";
 
   public CacheConfig() {}
 
@@ -405,9 +405,9 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.GatewayHub> getGatewayHubs() {
+  public List<GatewayHub> getGatewayHubs() {
     if (gatewayHubs == null) {
-      gatewayHubs = new ArrayList<CacheConfig.GatewayHub>();
+      gatewayHubs = new ArrayList<GatewayHub>();
     }
     return this.gatewayHubs;
   }
@@ -435,7 +435,7 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.GatewaySender> getGatewaySenders() {
+  public List<GatewaySender> getGatewaySenders() {
     if (gatewaySenders == null) {
       gatewaySenders = new ArrayList<>();
     }
@@ -509,9 +509,9 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.AsyncEventQueue> getAsyncEventQueues() {
+  public List<AsyncEventQueue> getAsyncEventQueues() {
     if (asyncEventQueues == null) {
-      asyncEventQueues = new ArrayList<CacheConfig.AsyncEventQueue>();
+      asyncEventQueues = new ArrayList<AsyncEventQueue>();
     }
     return this.asyncEventQueues;
   }
@@ -539,9 +539,9 @@ public class CacheConfig {
    *
    *
    */
-  public List<CacheConfig.CacheServer> getCacheServers() {
+  public List<CacheServer> getCacheServers() {
     if (cacheServers == null) {
-      cacheServers = new ArrayList<CacheConfig.CacheServer>();
+      cacheServers = new ArrayList<CacheServer>();
     }
     return this.cacheServers;
   }
@@ -1027,7 +1027,7 @@ public class CacheConfig {
   }
 
   public RegionConfig findRegionConfiguration(String regionPath) {
-    if (regionPath.startsWith(Region.SEPARATOR)) {
+    if (regionPath.startsWith(SEPARATOR)) {
       regionPath = regionPath.substring(1);
     }
     return findElement(getRegions(), regionPath);
@@ -1638,7 +1638,7 @@ public class CacheConfig {
   public static class GatewayHub {
 
     @XmlElement(name = "gateway", namespace = "http://geode.apache.org/schema/cache")
-    protected List<CacheConfig.GatewayHub.Gateway> gateways;
+    protected List<Gateway> gateways;
     @XmlAttribute(name = "id", required = true)
     protected String id;
     @XmlAttribute(name = "bind-address")
@@ -1679,9 +1679,9 @@ public class CacheConfig {
      *
      *
      */
-    public List<CacheConfig.GatewayHub.Gateway> getGateway() {
+    public List<Gateway> getGateway() {
       if (gateways == null) {
-        gateways = new ArrayList<CacheConfig.GatewayHub.Gateway>();
+        gateways = new ArrayList<Gateway>();
       }
       return this.gateways;
     }
@@ -1936,7 +1936,7 @@ public class CacheConfig {
     public static class Gateway {
 
       @XmlElement(name = "gateway-endpoint", namespace = "http://geode.apache.org/schema/cache")
-      protected List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> gatewayEndpoints;
+      protected List<GatewayEndpoint> gatewayEndpoints;
       @XmlElement(name = "gateway-listener", namespace = "http://geode.apache.org/schema/cache")
       protected List<DeclarableType> gatewayListeners;
       @XmlElement(name = "gateway-queue", namespace = "http://geode.apache.org/schema/cache")
@@ -1977,9 +1977,9 @@ public class CacheConfig {
        *
        *
        */
-      public List<CacheConfig.GatewayHub.Gateway.GatewayEndpoint> getGatewayEndpoints() {
+      public List<GatewayEndpoint> getGatewayEndpoints() {
         if (gatewayEndpoints == null) {
-          gatewayEndpoints = new ArrayList<CacheConfig.GatewayHub.Gateway.GatewayEndpoint>();
+          gatewayEndpoints = new ArrayList<GatewayEndpoint>();
         }
         return this.gatewayEndpoints;
       }

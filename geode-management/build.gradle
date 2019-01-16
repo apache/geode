@@ -17,8 +17,19 @@
 
 apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
+//versionManagement.applySpringDependencyManagement = false
 
 dependencies {
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
+  compile('org.apache.commons:commons-lang3')
+  compile('com.fasterxml.jackson.core:jackson-databind')
+  compile('com.fasterxml.jackson.core:jackson-core')
+  compile('com.fasterxml.jackson.core:jackson-annotations')
+
+  compileOnly(project(':geode-common')) {
+    exclude module: 'junit'
+  }
+
+  testCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
 }

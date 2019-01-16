@@ -144,6 +144,7 @@ dependencies {
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-web-management')
+  archives project(':geode-management')
   archives project(':geode-wan')
   archives project(':geode-cq')
   archives project(':geode-rebalancer')

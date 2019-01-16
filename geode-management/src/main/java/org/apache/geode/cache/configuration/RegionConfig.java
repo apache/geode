@@ -153,9 +153,9 @@ public class RegionConfig implements CacheElement {
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig.Index> indexes;
+  protected List<Index> indexes;
   @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig.Entry> entries;
+  protected List<Entry> entries;
   @XmlAnyElement(lax = true)
   protected List<CacheElement> regionElements;
   @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
@@ -203,7 +203,7 @@ public class RegionConfig implements CacheElement {
    *
    *
    */
-  public List<RegionConfig.Index> getIndexes() {
+  public List<Index> getIndexes() {
     if (indexes == null) {
       indexes = new ArrayList<>();
     }
@@ -233,9 +233,9 @@ public class RegionConfig implements CacheElement {
    *
    *
    */
-  public List<RegionConfig.Entry> getEntries() {
+  public List<Entry> getEntries() {
     if (entries == null) {
-      entries = new ArrayList<RegionConfig.Entry>();
+      entries = new ArrayList<Entry>();
     }
     return this.entries;
   }

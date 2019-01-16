@@ -75,6 +75,11 @@ public class ParameterType extends ObjectType {
     setString(value);
   }
 
+  public ParameterType(String name, DeclarableType declarableType) {
+    this.name = name;
+    this.declarable = declarableType;
+  }
+
   /**
    * Gets the value of the name property.
    *

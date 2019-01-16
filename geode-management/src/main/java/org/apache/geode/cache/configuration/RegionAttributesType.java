@@ -2234,7 +2234,7 @@ public class RegionAttributesType implements Serializable {
   public static class MembershipAttributes implements Serializable {
 
     @XmlElement(name = "required-role", namespace = "http://geode.apache.org/schema/cache")
-    protected List<RegionAttributesType.MembershipAttributes.RequiredRole> requiredRoles;
+    protected List<RequiredRole> requiredRoles;
     @XmlAttribute(name = "loss-action")
     protected String lossAction;
     @XmlAttribute(name = "resumption-action")
@@ -2263,9 +2263,9 @@ public class RegionAttributesType implements Serializable {
      *
      *
      */
-    public List<RegionAttributesType.MembershipAttributes.RequiredRole> getRequiredRoles() {
+    public List<RequiredRole> getRequiredRoles() {
       if (requiredRoles == null) {
-        requiredRoles = new ArrayList<RegionAttributesType.MembershipAttributes.RequiredRole>();
+        requiredRoles = new ArrayList<RequiredRole>();
       }
       return this.requiredRoles;
     }
@@ -2442,7 +2442,7 @@ public class RegionAttributesType implements Serializable {
     protected List<DeclarableType> partitionListeners;
     @XmlElement(name = "fixed-partition-attributes",
         namespace = "http://geode.apache.org/schema/cache")
-    protected List<RegionAttributesType.PartitionAttributes.FixedPartitionAttributes> fixedPartitionAttributes;
+    protected List<FixedPartitionAttributes> fixedPartitionAttributes;
     @XmlAttribute(name = "local-max-memory")
     protected String localMaxMemory;
     @XmlAttribute(name = "recovery-delay")
@@ -2533,10 +2533,10 @@ public class RegionAttributesType implements Serializable {
      *
      *
      */
-    public List<RegionAttributesType.PartitionAttributes.FixedPartitionAttributes> getFixedPartitionAttributes() {
+    public List<FixedPartitionAttributes> getFixedPartitionAttributes() {
       if (fixedPartitionAttributes == null) {
         fixedPartitionAttributes =
-            new ArrayList<RegionAttributesType.PartitionAttributes.FixedPartitionAttributes>();
+            new ArrayList<FixedPartitionAttributes>();
       }
       return this.fixedPartitionAttributes;
     }
