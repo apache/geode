@@ -110,7 +110,7 @@ public class RegionHelper {
     try {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw, true);
-      CacheXmlGenerator.generate(cache, pw);
+      CacheXmlGenerator.generate(cache, pw, true, false);
       pw.close();
       return sw.toString();
     } catch (Exception ex) {
