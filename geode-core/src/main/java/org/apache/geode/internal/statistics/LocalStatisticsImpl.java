@@ -68,9 +68,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
    *        increments a statistic, then a <code>false</code> value may yield better performance.
    * @param osStatFlags Non-zero if stats require system calls to collect them; for internal use
    *        only
-   * @param statisticsManager The distributed system that determines whether or not these statistics
-   *        are stored
-   *        (and collected) in GemFire shared memory or in the local VM
+   * @param statisticsManager The statistics manager that is creating this instance
    */
   public LocalStatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
       boolean atomicIncrements, int osStatFlags, StatisticsManager statisticsManager) {

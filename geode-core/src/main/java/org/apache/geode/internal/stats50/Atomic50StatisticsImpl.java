@@ -47,8 +47,8 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   private final AtomicIntegerArray longDirty;
   private final Object[] longReadPrepLock;
 
-  /** The StatisticsFactory that created this instance */
-  private final StatisticsManager dSystem;
+  /** The statistics manager that created this instance */
+  private final StatisticsManager statisticsManager;
 
   /////////////////////// Constructors ///////////////////////
 
@@ -59,13 +59,12 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
    * @param textId Text that identifies this statistic when it is monitored
    * @param numericId A number that displayed when this statistic is monitored
    * @param uniqueId A number that uniquely identifies this instance
-   * @param system The distributed system that determines whether or not these statistics are stored
-   *        (and collected) in GemFire shared memory or in the local VM
+   * @param statisticsManager The statistics manager that is creating this instance
    */
   public Atomic50StatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
-      StatisticsManager system) {
+      StatisticsManager statisticsManager) {
     super(type, textId, numericId, uniqueId, 0);
-    this.dSystem = system;
+    this.statisticsManager = statisticsManager;
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
     if (realType.getDoubleStatCount() > 0) {
@@ -112,8 +111,8 @@ public class Atomic50StatisticsImpl extends StatisticsImpl {
   @Override
   public void close() {
     super.close();
-    if (this.dSystem != null) {
-      dSystem.destroyStatistics(this);
+    if (this.statisticsManager != null) {
+      statisticsManager.destroyStatistics(this);
     }
   }
 

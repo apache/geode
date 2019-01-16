@@ -27,6 +27,7 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.size.ObjectGraphSizer.ObjectFilter;
+import org.apache.geode.internal.statistics.StatisticsManager;
 
 /**
  * An implementation of {@link ObjectSizer} that calculates an accurate, in memory size of for each
@@ -51,9 +52,13 @@ public class ReflectionObjectSizer implements ObjectSizer, Serializable {
     public boolean accept(Object parent, Object object) {
       // Protect the user from a couple of pitfalls. If their object
       // has a link to a region or cache, we don't want to size the whole thing.
-      if (object instanceof Region || object instanceof Cache
-          || object instanceof PlaceHolderDiskRegion || object instanceof InternalDistributedSystem
-          || object instanceof ClassLoader || object instanceof Logger) {
+      if (object instanceof Region
+          || object instanceof Cache
+          || object instanceof PlaceHolderDiskRegion
+          || object instanceof InternalDistributedSystem
+          || object instanceof ClassLoader
+          || object instanceof Logger
+          || object instanceof StatisticsManager) {
         return false;
       }
 
