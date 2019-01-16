@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -68,27 +67,12 @@ if [ -z ${MAINTENANCE_VERSION+x} ]; then
 fi
 
 if [ -e "${GEODE_PULL_REQUEST_ID_FILE}" ]; then
-  GEODE_PULL_REQUEST_ID=$(cat ${GEODE_PULL_REQUEST_ID_FILE})
   FULL_PRODUCT_VERSION="geode-pr-${GEODE_PULL_REQUEST_ID}"
 else
-  # semver resource, e.g., "1.9.0-SNAPSHOT.325"
   CONCOURSE_VERSION=$(cat ${GEODE_BUILD_VERSION_FILE})
-  # Prune all after '-', yielding e.g., "1.9.0"
-  GEODE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
-  # Prune all before '-', yielding e.g., "SNAPSHOT.325"
-  CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
-  # Prune all before '.', yielding e.g., "SNAPSHOT"
-  QUALIFIER_SLUG=${CONCOURSE_BUILD_SLUG%%.*}
-  # Prune all before '.', yielding e.g., "325"
-  BUILD_ID=$(printf "%04d" ${CONCOURSE_VERSION##*.})
-
-  # Rebuild version, zero-padded
-  FULL_PRODUCT_VERSION=${GEODE_PRODUCT_VERSION}-${QUALIFIER_SLUG}.${BUILD_ID}
-
   echo "Concourse VERSION is ${CONCOURSE_VERSION}"
-  echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}"
-  echo "Full product VERSION is ${FULL_PRODUCT_VERSION}"
-  echo "Build ID is ${BUILD_ID}"
+  # Rebuild version, zero-padded
+  FULL_PRODUCT_VERSION=$(get-full-version ${CONCOURSE_VERSION})
 fi
 
 
