@@ -64,7 +64,6 @@ public class TXFarSideCMTracker {
   private final Map txInProgress;
   private final Object txHistory[];
   private int lastHistoryItem;
-  // private final DM dm;
 
   /**
    * Constructor for TXFarSideCMTracker
@@ -73,9 +72,6 @@ public class TXFarSideCMTracker {
    *        Far Siders did not receive the second message.
    */
   public TXFarSideCMTracker(int historySize) {
-    // InternalDistributedSystem sys = (InternalDistributedSystem)
-    // CacheFactory.getAnyInstance().getDistributedSystem();
-    // this.dm = sys.getDistributionManager();
     this.txInProgress = new HashMap();
     this.txHistory = new Object[historySize];
     this.lastHistoryItem = 0;

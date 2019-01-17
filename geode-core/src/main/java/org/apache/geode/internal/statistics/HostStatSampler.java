@@ -141,14 +141,6 @@ public abstract class HostStatSampler
   }
 
   /**
-   * Returns a unique id for the sampler's system.
-   */
-  @Override
-  public long getSystemId() {
-    return getStatisticsManager().getId();
-  }
-
-  /**
    * Returns the time this sampler's system was started.
    */
   @Override
@@ -456,10 +448,6 @@ public abstract class HostStatSampler
     // do nothing by default
   }
 
-  protected long getSpecialStatsId() {
-    return getStatisticsManager().getId();
-  }
-
   protected boolean fileSizeLimitInKB() {
     return this.fileSizeLimitInKB;
   }
@@ -481,7 +469,7 @@ public abstract class HostStatSampler
    */
   private synchronized void initSpecialStats() {
     // add a vm resource
-    long id = getSpecialStatsId();
+    long id = getSystemId();
     this.vmStats = VMStatsContractFactory.create(getStatisticsManager(), id);
     initProcessStats(id);
   }

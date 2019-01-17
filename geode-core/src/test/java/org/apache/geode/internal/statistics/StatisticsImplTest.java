@@ -56,7 +56,7 @@ public class StatisticsImplTest {
     when(type.getDoubleStatCount()).thenReturn(5);
     when(type.getLongStatCount()).thenReturn(5);
 
-    String textId = "";
+    String textId = null;
     long numbericId = 0;
     long uniqueId = 0;
     int osStatFlags = 0;

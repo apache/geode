@@ -1841,7 +1841,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        Statistics si = getTenuredPoolStatistics(internalSystem);
+        Statistics si = getTenuredPoolStatistics(internalSystem.getStatisticsManager());
         if (si != null) {
           sampler.addLocalStatListener(l, si, "currentUsedMemory");
           return true;

@@ -190,45 +190,6 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
   }
 
-  // /*
-  // * Test method for
-  // * 'org.apache.geode.internal.cache.SimpleDiskRegion.basicInitializeOwner()'
-  // */
-  // @Test
-  // public void testBasicInitializeOwner()
-  // {
-  // deleteFiles();
-  // region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps);
-  // DiskRegion dr = ((LocalRegion)region).getDiskRegion();
-  // put100Int();
-  // assertIndexDetailsEquals(new Integer(1), region.get(new Integer(1)));
-  // Oplog oplog = dr.getChild();
-  // int id = oplog.getOplogId();
-  // StatisticsFactory factory = dr.getOwner().getCache().getDistributedSystem();
-  // Oplog newOplog = new Oplog(id + 1, dr.getDiskStore(), new DirectoryHolder(factory,
-  // dirs[0], 1000000, 0));
-  // dr.setChild(newOplog);
-  // region.clear();
-  // newOplog = dr.getChild();
-  // assertIndexDetailsEquals(null, region.get(new Integer(1)));
-  // try {
-  // dr.addToOplogSet(id, new File(oplog.getOplogFileForTest()
-  // .getPath()), dr.getNextDir());
-  // }
-  // catch (Exception e) {
-  // logWriter
-  // .error(
-  // "Exception in synching data present in the buffers of RandomAccessFile of Oplog, to the disk",
-  // e);
-  // fail("Test failed because synching of data present in buffer of RandomAccesFile ");
-  // }
-  // oplog.close();
-  // dr.setIsRecovering(true);
-  // dr.basicInitializeOwner();
-  // assertIndexDetailsEquals(new Integer(1), region.get(new Integer(1)));
-  // closeDown();
-  // }
-
   /*
    * Test method for 'org.apache.geode.internal.cache.SimpleDiskRegion.getChild()'
    */

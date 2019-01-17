@@ -995,7 +995,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       while (this.selector.isOpen() && !Thread.currentThread().isInterrupted()) {
         {
           SystemFailure.checkFailure();
-          // this.cache.getDistributedSystem().getCancelCriterion().checkCancelInProgress(null);
           if (this.cache.isClosed()) { // bug 38834
             break; // TODO should just ask cache's CancelCriterion
           }

@@ -111,7 +111,6 @@ public class ValueMonitorIntegrationTest {
     StatisticsManager mockStatisticsManager =
         mock(StatisticsManager.class, testName.getMethodName() + "$StatisticsManager");
     when(mockStatisticsManager.getName()).thenReturn("mockStatisticsManager");
-    when(mockStatisticsManager.getId()).thenReturn(1L);
     when(mockStatisticsManager.getStartTime()).thenReturn(startTime);
     when(mockStatisticsManager.getStatListModCount()).thenReturn(0);
     when(mockStatisticsManager.getStatsList()).thenReturn(new ArrayList<>());
@@ -247,7 +246,6 @@ public class ValueMonitorIntegrationTest {
     // validate notification only contains stats added to monitor
     st1_1.incInt("int_counter_2", 100);
     st1_2.incInt("int_counter_2", 200);
-    assertThat(sampleCollector.currentHandlersForTesting().size()).isEqualTo(2);
     timeStamp += NanoTimer.millisToNanos(1000);
     sampleCollector.sample(timeStamp);
     await()

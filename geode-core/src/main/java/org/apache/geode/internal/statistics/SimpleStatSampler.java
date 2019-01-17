@@ -61,7 +61,7 @@ public class SimpleStatSampler extends HostStatSampler {
   }
 
   public SimpleStatSampler(CancelCriterion stopper, StatisticsManager sm, NanoTimer timer) {
-    super(stopper, new StatSamplerStats(sm, sm.getId()), timer);
+    super(stopper, new StatSamplerStats(sm, 0), timer);
     this.sm = sm;
     logger.info(LogMarker.STATISTICS_MARKER, "stats.sample-rate={}", getSampleRate());
   }
@@ -92,6 +92,11 @@ public class SimpleStatSampler extends HostStatSampler {
     } else {
       return this.archiveDiskSpaceLimit;
     }
+  }
+
+  @Override
+  public long getSystemId() {
+    return 0;
   }
 
   @Override

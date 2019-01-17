@@ -14,24 +14,6 @@
  */
 package org.apache.geode.internal.statistics;
 
-/**
- * Implement this interface to receive call back when a stat value has changed. The listener has to
- * be registered with statSampler. This can be done in the following manner:
- *
- * <pre>
- * InternalDistributedSystem internalSystem = (InternalDistributedSystem) cache
- *     .getStatisticsManagerDistributedSystem();
- * final GemFireStatSampler sampler = internalSystem.getStatSampler();
- * sampler.addLocalStatListener(l, stats, statName);
- * </pre>
- *
- *
- */
-public interface LocalStatListener {
-  /**
-   * Invoked when the value of a statistic has changed
-   *
-   * @param value The new value of the statistic
-   */
-  void statValueChanged(double value);
+public interface StatisticsManagerFactory {
+  StatisticsManager create(String name, long startTime, boolean statsDisabled);
 }
