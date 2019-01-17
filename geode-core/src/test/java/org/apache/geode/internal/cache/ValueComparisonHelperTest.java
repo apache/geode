@@ -30,24 +30,24 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.pdx.PdxInstance;
 
 public class ValueComparisonHelperTest {
-  private final String STRING = "ABCD";
-  private final byte[] BYTE_ARRAY = {65, 66, 67, 68};
-  private final String STRING2 = "EFGH";
-  private final int[] INT_ARRAY = {65, 66, 67, 68};
-  private final int[] INT_ARRAY2 = new int[] {65, 66, 67, 68};
-  private final int[] INT_ARRAY3 = new int[] {65, 66, 67, 69};
-  private final boolean[] BOOLEAN_ARRAY = {true, false, false, true};
-  private final boolean[] BOOLEAN_ARRAY2 = new boolean[] {true, false, false, true};
-  private final boolean[] BOOLEAN_ARRAY3 = new boolean[] {true, false, true, true};
-  private final short[] SHORT_ARRAY = {65, 66, 67, 68};
-  private final short[] SHORT_ARRAY2 = new short[] {65, 66, 67, 68};
-  private final short[] SHORT_ARRAY3 = new short[] {65, 66, 67, 69};
-  private final float[] FLOAT_ARRAY = {65.1f, 66.0f, 67.3f, 68.9f};
-  private final float[] FLOAT_ARRAY2 = new float[] {65.1f, 66.0f, 67.3f, 68.9f};
-  private final float[] FLOAT_ARRAY3 = {65.1f, 66.0f, 67.3f, 69.9f};
-  private final String[] STRING_ARRAY = {"ABCD", "EFGH"};
-  private final String[] STRING_ARRAY2 = {STRING, STRING2};
-  private final String[] STRING_ARRAY3 = {STRING, STRING2, ""};
+  private static final String STRING = "ABCD";
+  private static final byte[] BYTE_ARRAY = {65, 66, 67, 68};
+  private static final String STRING2 = "EFGH";
+  private static final int[] INT_ARRAY = {65, 66, 67, 68};
+  private static final int[] INT_ARRAY2 = new int[] {65, 66, 67, 68};
+  private static final int[] INT_ARRAY3 = new int[] {65, 66, 67, 69};
+  private static final boolean[] BOOLEAN_ARRAY = {true, false, false, true};
+  private static final boolean[] BOOLEAN_ARRAY2 = new boolean[] {true, false, false, true};
+  private static final boolean[] BOOLEAN_ARRAY3 = new boolean[] {true, false, true, true};
+  private static final short[] SHORT_ARRAY = {65, 66, 67, 68};
+  private static final short[] SHORT_ARRAY2 = new short[] {65, 66, 67, 68};
+  private static final short[] SHORT_ARRAY3 = new short[] {65, 66, 67, 69};
+  private static final float[] FLOAT_ARRAY = {65.1f, 66.0f, 67.3f, 68.9f};
+  private static final float[] FLOAT_ARRAY2 = new float[] {65.1f, 66.0f, 67.3f, 68.9f};
+  private static final float[] FLOAT_ARRAY3 = {65.1f, 66.0f, 67.3f, 69.9f};
+  private static final String[] STRING_ARRAY = {"ABCD", "EFGH"};
+  private static final String[] STRING_ARRAY2 = {STRING, STRING2};
+  private static final String[] STRING_ARRAY3 = {STRING, STRING2, ""};
 
   @Test
   public void basicEqualsCanCompareTwoNullObjects() {
