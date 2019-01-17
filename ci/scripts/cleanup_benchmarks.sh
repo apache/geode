@@ -62,7 +62,7 @@ pushd ${RESULTS_BASE_DIR}
     gsutil cp ${BENCHMARKS_ARCHIVE_FILE} gs://${BENCHMARKS_ARTIFACTS_DESTINATION}/${BENCHMARKS_ARCHIVE_FILENAME}
     printf "\n"
     printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
-    printf "\033[92mThis benchmark run is the result of comparing ${GEODE_SHA} with baseline ${BASELINE_BRANCH}\033[0m\n"
+    printf "\033[92mThis benchmark run is the result of comparing ${GEODE_SHA} with baseline ${BASELINE_BRANCH:-${BASELINE_VERSION}}\033[0m\n"
     printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- Commit Message =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"
     echo "${GEODE_SHA_COMMIT_MESSAGE}"
     printf "\033[92m=-=-=-=-=-=-=-=-=-=-=-=-=-=-= Benchmark Results URI =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\033[0m\n"

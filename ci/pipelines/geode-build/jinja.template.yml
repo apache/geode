@@ -344,6 +344,7 @@ jobs:
         AWS_REGION: us-west-2
         ARTIFACT_BUCKET: ((artifact-bucket))
         BASELINE_BRANCH: {{benchmarks.baseline_branch}}
+        BASELINE_VERSION: {{benchmarks.baseline_version}}
       run:
         path: geode-ci/ci/scripts/run_benchmarks.sh
       inputs:
@@ -365,6 +366,7 @@ jobs:
             AWS_REGION: us-west-2
             ARTIFACT_BUCKET: ((artifact-bucket))
             BASELINE_BRANCH: {{benchmarks.baseline_branch}}
+            BASELINE_VERSION: {{benchmarks.baseline_version}}
           run:
             path: geode-ci/ci/scripts/cleanup_benchmarks.sh
           inputs:

@@ -42,6 +42,13 @@ popd
 
 pushd geode-benchmarks/infrastructure/scripts/aws/
 ./launch_cluster.sh ${CLUSTER_TAG} ${CLUSTER_COUNT}
-./run_against_baseline.sh ${CLUSTER_TAG} ${GEODE_SHA} ${BASELINE_BRANCH} ${BENCHMARKS_BRANCH} ${RESULTS_DIR}
+
+if [ -z "${BASELINE_VERSION}" ]; then
+  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -B ${BASELINE_BRANCH} -m ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR}
+else
+  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -V ${BASELINE_VERSION} -m ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR}
+fi
+
+
 
 popd
