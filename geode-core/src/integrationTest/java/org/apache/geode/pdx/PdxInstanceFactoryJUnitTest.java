@@ -1355,4 +1355,12 @@ public class PdxInstanceFactoryJUnitTest {
 
     assertThat(instance.isDeserializable()).isTrue();
   }
+
+  @Test
+  public void jsonPdxInstanceIsDeserializableReturnsTrue() {
+    PdxInstance jsonPdxInstance =
+        cache.createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false).create();
+
+    assertThat(jsonPdxInstance.isDeserializable()).isTrue();
+  }
 }

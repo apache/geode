@@ -214,7 +214,7 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
       // In case of Developer Rest APIs, All PdxInstances converted from Json will have a className
       // =__GEMFIRE_JSON.
       // Following code added to convert Json/PdxInstance into the Java object.
-      if (this.getClassName().equals("__GEMFIRE_JSON")) {
+      if (this.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
 
         // introspect the JSON, does the @type meta-data exist.
         String className = extractTypeMetaData();
@@ -658,6 +658,9 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
 
   @Override
   public boolean isDeserializable() {
+    if (this.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
+      return true;
+    }
     return !getPdxType().getNoDomainClass();
   }
 }
