@@ -658,11 +658,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   private void startCache(DistributedSystem ds) {
-    GemFireCacheImpl internalCache = GemFireCacheImpl.getInstance();
+    InternalCache internalCache = GemFireCacheImpl.getInstance();
     if (internalCache == null) {
       logger.info("Creating cache for locator.");
-      internalCache = (GemFireCacheImpl) new CacheFactory(ds.getProperties()).create();
-      this.myCache = internalCache;
+      this.myCache = (InternalCache) new CacheFactory(ds.getProperties()).create();
+      internalCache = this.myCache;
     } else {
       logger.info("Using existing cache for locator.");
       ((InternalDistributedSystem) ds).handleResourceEvent(ResourceEvent.LOCATOR_START, this);
@@ -676,11 +676,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     startConfigurationPersistenceService();
 
     if (myCache == null) {
+      logger.info("Peter: mycache is null");
       return;
     }
 
     clusterManagementService =
-        new LocatorClusterManagementService(myCache.getDistributionManager(),
+        new LocatorClusterManagementService(locator.myCache.getDistributionManager(),
             locator.configurationPersistenceService);
 
     // start management rest service
@@ -1092,9 +1093,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         this.productUseLog.reopen();
       }
       this.productUseLog.monitorUse(newSystem);
-
-      startClusterManagementService();
-
+      if (isSharedConfigurationEnabled()) {
+        this.configurationPersistenceService =
+            new InternalConfigurationPersistenceService(newCache);
+        startConfigurationPersistenceService();
+      }
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();

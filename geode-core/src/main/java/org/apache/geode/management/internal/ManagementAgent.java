@@ -190,7 +190,7 @@ public class ManagementAgent {
   public WebAppContext addWebApplication(String webAppContext, String warFilePath,
       Object[]... attributeNameValuePairs) {
     if (httpServer == null) {
-      logger.error(
+      logger.info(
           String.format("unable to add %s webapp. Http service is not started on this member.",
               webAppContext));
       return null;
@@ -230,7 +230,7 @@ public class ManagementAgent {
 
       if (pulseWar == null) {
         final String message =
-            "Unable to find Pulse web application WAR file; Pulse for GEode will not be accessible";
+            "Unable to find Pulse web application WAR file; Pulse for Geode will not be accessible";
         setStatusMessage(managerBean, message);
         if (logger.isDebugEnabled()) {
           logger.debug(message);
