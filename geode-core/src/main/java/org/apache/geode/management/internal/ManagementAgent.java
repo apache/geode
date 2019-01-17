@@ -191,7 +191,8 @@ public class ManagementAgent {
       Object[]... attributeNameValuePairs) {
     if (httpServer == null) {
       logger.error(
-          String.format("unable to add %s webapp. Http service is not started on this member."));
+          String.format("unable to add %s webapp. Http service is not started on this member.",
+              webAppContext));
       return null;
     }
 
