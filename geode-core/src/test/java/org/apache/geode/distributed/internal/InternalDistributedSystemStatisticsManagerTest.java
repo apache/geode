@@ -27,6 +27,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,10 +36,11 @@ import org.mockito.Mock;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.internal.metrics.MemberMetricsSession;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsManagerFactory;
 
-public class InternalDistributedSystemTest {
+public class InternalDistributedSystemStatisticsManagerTest {
   private static final String STATISTIC_NAME = "statistic-name";
   private static final String STATISTIC_DESCRIPTION = "statistic-description";
   private static final String STATISTIC_UNITS = "statistic-units";
@@ -52,6 +54,12 @@ public class InternalDistributedSystemTest {
   @Mock
   public StatisticsManager statisticsManager;
 
+  @Mock
+  public MemberMetricsSession metricsSession;
+
+  @Mock
+  public DistributionManager distributionManager;
+
   private InternalDistributedSystem internalDistributedSystem;
 
   @Before
@@ -60,7 +68,9 @@ public class InternalDistributedSystemTest {
     when(statisticsManagerFactory.create(any(), anyLong(), anyBoolean()))
         .thenReturn(statisticsManager);
     internalDistributedSystem =
-        InternalDistributedSystem.newInstanceForTesting(statisticsManagerFactory);
+        InternalDistributedSystem
+            .newInstanceForTesting(distributionManager, new Properties(),
+                statisticsManagerFactory, metricsSession);
   }
 
   @Test
@@ -72,10 +82,14 @@ public class InternalDistributedSystemTest {
         .create(eq(defaultMemberName), anyLong(), eq(defaultStatsDisabled)))
             .thenReturn(statisticsManagerCreatedByFactory);
 
-    InternalDistributedSystem result =
-        InternalDistributedSystem.newInstanceForTesting(statisticsManagerFactory);
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem
+            .newInstanceForTesting(distributionManager, new Properties(), statisticsManagerFactory,
+                metricsSession);
 
-    assertThat(result.getStatisticsManager())
+    StatisticsManager result = internalDistributedSystem.getStatisticsManager();
+
+    assertThat(result)
         .isSameAs(statisticsManagerCreatedByFactory);
   }
 

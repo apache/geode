@@ -43,6 +43,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -100,6 +101,8 @@ import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.NullLoggingSession;
+import org.apache.geode.internal.metrics.MemberMetricsSession;
+import org.apache.geode.internal.metrics.MetricsSession;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -170,6 +173,7 @@ public class InternalDistributedSystem extends DistributedSystem
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   private final StatisticsManager statisticsManager;
+  private final MemberMetricsSession metricsSession;
 
   /**
    * The distribution manager that is used to communicate with the distributed system.
@@ -442,21 +446,43 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * creates a non-functional instance for testing
+   * Creates a non-functional instance for testing.
    *
-   * @param nonDefault - non-default distributed system properties
+   * @param distributionManager the distribution manager for the test instance
+   * @param properties properties to configure the test instance
    */
-  public static InternalDistributedSystem newInstanceForTesting(DistributionManager dm,
-      Properties nonDefault) {
-    InternalDistributedSystem sys = new InternalDistributedSystem(nonDefault);
-    sys.config = new RuntimeDistributionConfigImpl(sys);
-    sys.dm = dm;
-    sys.isConnected = true;
-    return sys;
+  public static InternalDistributedSystem newInstanceForTesting(
+      DistributionManager distributionManager, Properties properties) {
+    DistributionConfig config = new DistributionConfigImpl(properties);
+    MemberMetricsSession metricsSession = new MemberMetricsSession(config);
+    StatisticsManagerFactory statisticsManagerFactory = defaultStatisticsManagerFactory();
+
+    return newInstanceForTesting(
+        distributionManager, properties, statisticsManagerFactory, metricsSession);
   }
 
-  public static InternalDistributedSystem newInstanceForTesting(StatisticsManagerFactory factory) {
-    return new InternalDistributedSystem(new Properties(), factory);
+  /**
+   * Creates a non-functional instance for testing.
+   *
+   * @param distributionManager the distribution manager for the test instance
+   * @param properties properties to configure the test instance
+   * @param statisticsManagerFactory the statistics manager factory for the test instance
+   * @param memberMetricsSession the member metrics for the test instance
+   */
+  static InternalDistributedSystem newInstanceForTesting(DistributionManager distributionManager,
+      Properties properties, StatisticsManagerFactory statisticsManagerFactory,
+      MemberMetricsSession memberMetricsSession) {
+    ConnectionConfigImpl connectionConfig = new ConnectionConfigImpl(properties);
+
+    InternalDistributedSystem internalDistributedSystem =
+        new InternalDistributedSystem(connectionConfig, statisticsManagerFactory,
+            memberMetricsSession);
+
+    internalDistributedSystem.config = new RuntimeDistributionConfigImpl(internalDistributedSystem);
+    internalDistributedSystem.dm = distributionManager;
+    internalDistributedSystem.isConnected = true;
+
+    return internalDistributedSystem;
   }
 
   public static boolean removeSystem(InternalDistributedSystem oldSystem) {
@@ -563,21 +589,44 @@ public class InternalDistributedSystem extends DistributedSystem
     reconnectAttemptCounter = 0;
   }
 
-  private InternalDistributedSystem(Properties properties) {
-    this(properties, defaultStatisticsManagerFactory());
+  /**
+   * Creates a new {@code InternalDistributedSystem} with the given configuration properties.
+   * Does all of the magic of finding the "default" values of properties.
+   * <p>
+   * See {@link #connect} for a list of exceptions that may be thrown.
+   *
+   * @param configurationProperties properties to configure the connection
+   */
+  private InternalDistributedSystem(Properties configurationProperties) {
+    this(new ConnectionConfigImpl(configurationProperties));
   }
 
   /**
-   * Creates a new <code>InternalDistributedSystem</code> with the given configuration properties.
-   * Does all of the magic of finding the "default" values of properties. See
-   * {@link DistributedSystem#connect} for a list of exceptions that may be thrown.
+   * Creates a new {@code InternalDistributedSystem} with the given configuration.
+   * <p>
+   * See {@link #connect} for a list of exceptions that may be thrown.
    *
-   * @param nonDefault The non-default configuration properties specified by the caller
-   *
-   * @see DistributedSystem#connect
+   * @param config the configuration for the connection
    */
-  private InternalDistributedSystem(Properties nonDefault,
-      StatisticsManagerFactory statisticsManagerFactory) {
+  private InternalDistributedSystem(ConnectionConfig config) {
+    this(config, defaultStatisticsManagerFactory(),
+        new MemberMetricsSession(config.distributionConfig()));
+    isReconnectingDS = config.isReconnecting();
+    quorumChecker = config.quorumChecker();
+  }
+
+  /**
+   * Creates a new {@code InternalDistributedSystem} with the given configuration.
+   * <p>
+   * See {@link #connect} for a list of exceptions that may be thrown.
+   *
+   * @param config the configuration for the connection
+   * @param statisticsManagerFactory creates the statistics manager for this member
+   * @param metricsSession maintains metrics for this member
+   */
+  private InternalDistributedSystem(ConnectionConfig config,
+      StatisticsManagerFactory statisticsManagerFactory, MemberMetricsSession metricsSession) {
+    this.metricsSession = metricsSession;
     alertingSession = AlertingSession.create();
     alertingService = new AlertingService();
     loggingSession = LoggingSession.create();
@@ -587,24 +636,7 @@ public class InternalDistributedSystem extends DistributedSystem
     // "precious" thread
     DSFIDFactory.registerTypes();
 
-    Object o = nonDefault.remove(DistributionConfig.DS_RECONNECTING_NAME);
-    if (o instanceof Boolean) {
-      this.isReconnectingDS = (Boolean) o;
-    } else {
-      this.isReconnectingDS = false;
-    }
-
-    o = nonDefault.remove(DistributionConfig.DS_QUORUM_CHECKER_NAME);
-    if (o instanceof QuorumChecker) {
-      this.quorumChecker = (QuorumChecker) o;
-    }
-
-    o = nonDefault.remove(DistributionConfig.DS_CONFIG_NAME);
-    if (o instanceof DistributionConfigImpl) {
-      this.originalConfig = (DistributionConfigImpl) o;
-    } else {
-      this.originalConfig = new DistributionConfigImpl(nonDefault);
-    }
+    originalConfig = config.distributionConfig();
 
     ((DistributionConfigImpl) this.originalConfig).checkForDisallowedDefaults(); // throws
                                                                                  // IllegalStateEx
@@ -1001,6 +1033,14 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public StatisticsManager getStatisticsManager() {
     return statisticsManager;
+  }
+
+  public MetricsSession getMetricsSession() {
+    return metricsSession;
+  }
+
+  public MeterRegistry getMeterRegistry() {
+    return metricsSession.meterRegistry();
   }
 
   @Override
@@ -2977,5 +3017,4 @@ public class InternalDistributedSystem extends DistributedSystem
       }
     };
   }
-
 }
