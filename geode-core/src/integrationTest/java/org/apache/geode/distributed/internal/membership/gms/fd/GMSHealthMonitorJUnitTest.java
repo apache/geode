@@ -150,7 +150,7 @@ public class GMSHealthMonitorJUnitTest {
     when(stopper.isCancelInProgress()).thenReturn(false);
 
     if (mockMembers == null) {
-      mockMembers = new ArrayList<>();
+      mockMembers = new ArrayList<InternalDistributedMember>();
       for (int i = 0; i < 7; i++) {
         InternalDistributedMember mbr = new InternalDistributedMember("localhost", 8888 + i);
 
@@ -614,39 +614,6 @@ public class GMSHealthMonitorJUnitTest {
     verify(joinLeave).remove(isA(InternalDistributedMember.class), isA(String.class));
     assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
   }
-
-  /**
-   * a failed availablility check should initiate suspect processing
-   */
-  @Test
-  public void testFailedCheckIfAvailableDoesNotRemoveMember() {
-    NetView v = installAView();
-
-    setFailureDetectionPorts(v);
-
-    InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
-    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", false);
-    assertFalse(available);
-    verify(joinLeave, never()).remove(isA(InternalDistributedMember.class), isA(String.class));
-    assertFalse(gmsHealthMonitor.isSuspectMember(memberToCheck));
-  }
-
-
-  /**
-   * Same test as above but with request to initiate removal
-   */
-  @Test
-  public void testFailedCheckIfAvailableRemovesMember() {
-    NetView v = installAView();
-
-    setFailureDetectionPorts(v);
-
-    InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
-    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
-    assertFalse(available);
-    verify(joinLeave).remove(isA(InternalDistributedMember.class), isA(String.class));
-  }
-
 
 
   @Test

@@ -512,23 +512,35 @@ public class NetView implements DataSerializableFixedID {
     InternalDistributedMember lead = getLeadMember();
 
     StringBuilder sb = new StringBuilder(200);
-    sb.append("View[").append(creator).append('|').append(viewId).append("]\nmembers: [");
+    sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
+    boolean first = true;
     for (InternalDistributedMember mbr : this.members) {
-      sb.append("\n").append(mbr);
+      if (!first)
+        sb.append(", ");
+      sb.append(mbr);
       if (mbr == lead) {
         sb.append("{lead}");
       }
+      first = false;
     }
     if (!this.shutdownMembers.isEmpty()) {
-      sb.append("]\nshutdown: [");
+      sb.append("]  shutdown: [");
+      first = true;
       for (InternalDistributedMember mbr : this.shutdownMembers) {
-        sb.append("\n").append(mbr);
+        if (!first)
+          sb.append(", ");
+        sb.append(mbr);
+        first = false;
       }
     }
     if (!this.crashedMembers.isEmpty()) {
-      sb.append("]\ncrashed: [");
+      sb.append("]  crashed: [");
+      first = true;
       for (InternalDistributedMember mbr : this.crashedMembers) {
-        sb.append("\n").append(mbr);
+        if (!first)
+          sb.append(", ");
+        sb.append(mbr);
+        first = false;
       }
     }
     // sb.append("] fd ports: [");
@@ -627,15 +639,5 @@ public class NetView implements DataSerializableFixedID {
   @Override
   public int getDSFID() {
     return NETVIEW;
-  }
-
-
-  /**
-   * This will alter the NetView to throw exceptions if an attempt is made to
-   * add or remove members from the view. Do this to avoid concurrent
-   * modification exceptions.
-   */
-  public void makeImmutable() {
-    this.members = Collections.unmodifiableList(members);
   }
 }
