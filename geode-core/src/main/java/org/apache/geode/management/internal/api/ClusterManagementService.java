@@ -31,9 +31,9 @@ public interface ClusterManagementService {
    * @param config this holds the configuration attributes of the element you are trying to create
    *        on the cluster
    */
-  ClusterManagementResult createCacheElement(CacheElement config);
+  ClusterManagementResult create(CacheElement config);
 
-  ClusterManagementResult deleteCacheElement(CacheElement config);
+  ClusterManagementResult delete(CacheElement config);
 
-  ClusterManagementResult updateCacheElement(CacheElement config);
+  ClusterManagementResult update(CacheElement config);
 }

@@ -52,7 +52,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult createCacheElement(CacheElement config) {
+  public ClusterManagementResult create(CacheElement config) {
     ClusterManagementResult result = new ClusterManagementResult();
     String group = "cluster";
     ConfigurationMutator configurationMutator =
@@ -104,12 +104,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult deleteCacheElement(CacheElement config) {
+  public ClusterManagementResult delete(CacheElement config) {
     throw new NotImplementedException();
   }
 
   @Override
-  public ClusterManagementResult updateCacheElement(CacheElement config) {
+  public ClusterManagementResult update(CacheElement config) {
     throw new NotImplementedException();
   }
 
