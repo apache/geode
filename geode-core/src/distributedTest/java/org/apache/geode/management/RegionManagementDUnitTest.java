@@ -804,7 +804,8 @@ public class RegionManagementDUnitTest implements Serializable {
     Cache cache = getCache();
 
     String memberId =
-        MBeanJMXAdapter.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+        MBeanJMXAdapter
+            .getMemberNameOrUniqueId(cache.getDistributedSystem().getDistributedMember());
     ObjectName objectName = ObjectName.getInstance("GemFire:type=Member,member=" + memberId);
 
     // List<Notification> notifications = new ArrayList<>();

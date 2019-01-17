@@ -134,7 +134,7 @@ public class CliUtil {
 
     for (DistributedMember member : allClusterMembers) {
       for (String regionAssociatedMemberName : regionAssociatedMemberNames) {
-        String name = MBeanJMXAdapter.getMemberNameOrId(member);
+        String name = MBeanJMXAdapter.getMemberNameOrUniqueId(member);
         if (name.equals(regionAssociatedMemberName)) {
           matchedMembers.add(member);
           if (!returnAll) {
