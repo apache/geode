@@ -43,6 +43,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -101,6 +102,8 @@ import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.NullLoggingSession;
+import org.apache.geode.internal.metrics.CompositeMetricsCollector;
+import org.apache.geode.internal.metrics.MetricsCollector;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -174,6 +177,7 @@ public class InternalDistributedSystem extends DistributedSystem
   };
 
   private final StatisticsManager statisticsManager;
+  private final MetricsCollector metricsCollector;
 
   /**
    * The distribution manager that is used to communicate with the distributed system.
@@ -383,15 +387,31 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public static InternalDistributedSystem newInstanceForTesting(DistributionManager dm,
       Properties nonDefault) {
-    InternalDistributedSystem sys = new InternalDistributedSystem(nonDefault);
-    sys.config = new RuntimeDistributionConfigImpl(sys);
-    sys.dm = dm;
-    sys.isConnected = true;
-    return sys;
+    return newInstanceForTesting(dm, nonDefault, defaultStatisticsManagerFactory(),
+        new CompositeMetricsCollector());
   }
 
-  public static InternalDistributedSystem newInstanceForTesting(StatisticsManagerFactory factory) {
-    return new InternalDistributedSystem(new Properties(), factory);
+  static InternalDistributedSystem newInstanceForTesting(
+      DistributionManager dm, Properties properties,
+      StatisticsManagerFactory statisticsManagerFactory, MetricsCollector meterManager) {
+    InternalDistributedSystem internalDistributedSystem =
+        new InternalDistributedSystem(properties, statisticsManagerFactory, meterManager);
+    internalDistributedSystem.config = new RuntimeDistributionConfigImpl(internalDistributedSystem);
+    internalDistributedSystem.dm = dm;
+    internalDistributedSystem.isConnected = true;
+    internalDistributedSystem.configureMeterRegistry();
+    return internalDistributedSystem;
+  }
+
+  private void configureMeterRegistry() {
+    MeterRegistry primaryRegistry = metricsCollector.primaryRegistry();
+    primaryRegistry.config().commonTags("cluster-id",
+        String.valueOf(originalConfig.getDistributedSystemId()));
+    String name = getName();
+    if (name.isEmpty()) {
+      name = getMemberId();
+    }
+    primaryRegistry.config().commonTags("member-name", name);
   }
 
   public static boolean removeSystem(InternalDistributedSystem oldSystem) {
@@ -507,7 +527,7 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   private InternalDistributedSystem(Properties properties) {
-    this(properties, defaultStatisticsManagerFactory());
+    this(properties, defaultStatisticsManagerFactory(), new CompositeMetricsCollector());
   }
 
   /**
@@ -520,7 +540,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * @see DistributedSystem#connect
    */
   private InternalDistributedSystem(Properties nonDefault,
-      StatisticsManagerFactory statisticsManagerFactory) {
+      StatisticsManagerFactory statisticsManagerFactory, MetricsCollector metricsCollector) {
+    this.metricsCollector = metricsCollector;
     alertingSession = AlertingSession.create();
     alertingService = new AlertingService();
     loggingSession = LoggingSession.create();
@@ -809,6 +830,7 @@ public class InternalDistributedSystem extends DistributedSystem
         throw new GemFireIOException("Problem finishing a locator service start", e);
       }
 
+      configureMeterRegistry();
       startSampler();
 
       alertingSession.createSession(new AlertMessaging(this));
@@ -947,6 +969,10 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public StatisticsManager getStatisticsManager() {
     return statisticsManager;
+  }
+
+  public MetricsCollector getMetricsCollector() {
+    return metricsCollector;
   }
 
   @Override

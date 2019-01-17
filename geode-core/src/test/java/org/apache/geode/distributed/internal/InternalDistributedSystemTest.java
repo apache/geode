@@ -27,7 +27,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Properties;
 
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -35,6 +40,9 @@ import org.mockito.Mock;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.metrics.MetricsCollector;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsManagerFactory;
 
@@ -52,6 +60,12 @@ public class InternalDistributedSystemTest {
   @Mock
   public StatisticsManager statisticsManager;
 
+  @Mock
+  public MetricsCollector meterManager;
+
+  @Mock
+  public DistributionManager distributionManager;
+
   private InternalDistributedSystem internalDistributedSystem;
 
   @Before
@@ -59,8 +73,99 @@ public class InternalDistributedSystemTest {
     initMocks(this);
     when(statisticsManagerFactory.create(any(), anyLong(), anyBoolean()))
         .thenReturn(statisticsManager);
+    when(meterManager.primaryRegistry())
+        .thenReturn(new SimpleMeterRegistry());
     internalDistributedSystem =
-        InternalDistributedSystem.newInstanceForTesting(statisticsManagerFactory);
+        InternalDistributedSystem
+            .newInstanceForTesting(distributionManager, new Properties(),
+                statisticsManagerFactory, meterManager);
+  }
+
+  @Test
+  public void remembersItsMeterManager() {
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem
+            .newInstanceForTesting(distributionManager, new Properties(),
+                statisticsManagerFactory, meterManager);
+
+    assertThat(internalDistributedSystem.getMetricsCollector())
+        .isSameAs(meterManager);
+  }
+
+  @Test
+  public void addsClusterIdTagToPrimaryMeterRegistry() {
+    MeterRegistry primaryRegistry =
+        internalDistributedSystem.getMetricsCollector().primaryRegistry();
+
+    Meter meter = primaryRegistry.counter("foo");
+
+    assertThat(meter.getId().getTags())
+        .contains(Tag.of("cluster-id",
+            String.valueOf(internalDistributedSystem.getConfig().getDistributedSystemId())));
+  }
+
+  @Test
+  public void addsMemberNameTag_withNameFromConfiguration_ifPropertiesContainsConfiguration() {
+    Properties properties = new Properties();
+    DistributionConfig distributionConfig = DistributionConfigImpl.createDefaultInstance();
+    String theName = "the-name";
+    distributionConfig.setName(theName);
+    properties.put(DistributionConfig.DS_CONFIG_NAME, distributionConfig);
+    when(meterManager.primaryRegistry())
+        .thenReturn(new SimpleMeterRegistry());
+
+    InternalDistributedSystem
+        .newInstanceForTesting(distributionManager, properties, statisticsManagerFactory,
+            meterManager);
+
+    Meter meter = meterManager.primaryRegistry().counter("the-meter");
+
+    assertThat(meter.getId().getTags())
+        .contains(Tag.of("member-name", theName));
+  }
+
+  @Test
+  public void addsMemberNameTag_withNameFromProperties_ifPropertiesContainsNoConfiguration() {
+    Properties properties = new Properties();
+    String theName = "the-name-from-properties";
+    properties.setProperty(ConfigurationProperties.NAME, theName);
+    properties.remove(DistributionConfig.DS_CONFIG_NAME);
+    when(meterManager.primaryRegistry())
+        .thenReturn(new SimpleMeterRegistry());
+
+    InternalDistributedSystem
+        .newInstanceForTesting(distributionManager, properties, statisticsManagerFactory,
+            meterManager);
+
+    Meter meter = meterManager.primaryRegistry().counter("the-meter");
+
+    assertThat(meter.getId().getTags())
+        .contains(Tag.of("member-name", theName));
+  }
+
+  @Test
+  public void addsMemberNameTag_withMemberId_ifMemberNameIsEmpty() {
+    Properties properties = new Properties();
+    String theName = "the-member-id";
+    properties.remove(DistributionConfig.DS_CONFIG_NAME);
+    properties.remove(ConfigurationProperties.NAME);
+    when(meterManager.primaryRegistry())
+        .thenReturn(new SimpleMeterRegistry());
+
+    InternalDistributedMember distributedMember = mock(InternalDistributedMember.class);
+    when(distributionManager.getId())
+        .thenReturn(distributedMember);
+    when(distributedMember.toString())
+        .thenReturn(theName);
+
+    InternalDistributedSystem
+        .newInstanceForTesting(distributionManager, properties, statisticsManagerFactory,
+            meterManager);
+
+    Meter meter = meterManager.primaryRegistry().counter("the-meter");
+
+    assertThat(meter.getId().getTags())
+        .contains(Tag.of("member-name", theName));
   }
 
   @Test
@@ -72,10 +177,14 @@ public class InternalDistributedSystemTest {
         .create(eq(defaultMemberName), anyLong(), eq(defaultStatsDisabled)))
             .thenReturn(statisticsManagerCreatedByFactory);
 
-    InternalDistributedSystem result =
-        InternalDistributedSystem.newInstanceForTesting(statisticsManagerFactory);
+    InternalDistributedSystem internalDistributedSystem =
+        InternalDistributedSystem
+            .newInstanceForTesting(distributionManager, new Properties(), statisticsManagerFactory,
+                meterManager);
 
-    assertThat(result.getStatisticsManager())
+    StatisticsManager result = internalDistributedSystem.getStatisticsManager();
+
+    assertThat(result)
         .isSameAs(statisticsManagerCreatedByFactory);
   }
 
