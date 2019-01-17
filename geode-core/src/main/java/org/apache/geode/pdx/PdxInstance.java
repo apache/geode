@@ -133,8 +133,10 @@ public interface PdxInstance extends java.io.Serializable {
    * <li>The domain class name must be equal for both PdxInstances
    * <li>Each identity field must be equal.
    * </ol>
-   * If one of the instances does not have a field that the other one does then equals will assume
-   * it has the field with a default value. If a PdxInstance has marked identity fields using
+   * If the domain class is not the empty string then
+   * if one of the instances does not have a field that the other one does
+   * then equals will assume it has the field with a default value.
+   * If a PdxInstance has marked identity fields using
    * {@link PdxWriter#markIdentityField(String) markIdentityField} then only the marked identity
    * fields are its identity fields. Otherwise all its fields are identity fields.
    * <P>

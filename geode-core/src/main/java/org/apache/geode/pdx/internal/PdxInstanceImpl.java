@@ -342,6 +342,9 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
     SortedSet<PdxField> myFields = ur1.getPdxType().getSortedIdentityFields();
     SortedSet<PdxField> otherFields = ur2.getPdxType().getSortedIdentityFields();
     if (!myFields.equals(otherFields)) {
+      if (ur1.getPdxType().getClassName().isEmpty()) {
+        return false;
+      }
       // It is not ok to modify myFields and otherFields in place so make copies
       myFields = new TreeSet<PdxField>(myFields);
       otherFields = new TreeSet<PdxField>(otherFields);
