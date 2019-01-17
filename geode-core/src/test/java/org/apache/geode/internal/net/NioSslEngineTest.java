@@ -66,7 +66,6 @@ public class NioSslEngineTest {
 
   private SSLEngine mockEngine;
   private DMStats mockStats;
-  private SSLSession mockSession;
   private NioSslEngine nioSslEngine;
   private NioSslEngine spyNioSslEngine;
 
@@ -74,7 +73,7 @@ public class NioSslEngineTest {
   public void setUp() throws Exception {
     mockEngine = mock(SSLEngine.class);
 
-    mockSession = mock(SSLSession.class);
+    SSLSession mockSession = mock(SSLSession.class);
     when(mockEngine.getSession()).thenReturn(mockSession);
     when(mockSession.getPacketBufferSize()).thenReturn(netBufferSize);
     when(mockSession.getApplicationBufferSize()).thenReturn(appBufferSize);

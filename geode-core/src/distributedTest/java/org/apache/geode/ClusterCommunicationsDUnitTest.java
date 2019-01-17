@@ -184,7 +184,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
           VM.getVM(2).invoke(() -> cache.getDistributedSystem().getDistributedMember());
       VM.getVM(1).invoke("receive a large direct-reply message", () -> {
         SerialAckedMessageWithBigReply messageWithBigReply = new SerialAckedMessageWithBigReply();
-        await().atMost(30, TimeUnit.SECONDS).until(() -> {
+        await().atMost(3, TimeUnit.MINUTES).until(() -> {
           messageWithBigReply.send(Collections.<DistributedMember>singleton(vm2ID));
           return true;
         });

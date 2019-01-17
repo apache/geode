@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.Buffers;
@@ -75,6 +76,7 @@ public class MsgReader {
   DistributionMessage readMessage(Header header)
       throws IOException, ClassNotFoundException {
     ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
+    Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
     this.getStats().incMessagesBeingReceived(true, header.messageLength);
     long startSer = this.getStats().startMsgDeserialization();
     try {

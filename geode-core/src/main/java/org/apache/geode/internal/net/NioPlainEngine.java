@@ -32,8 +32,8 @@ import org.apache.geode.internal.logging.LogService;
 public class NioPlainEngine implements NioFilter {
   private static final Logger logger = LogService.getLogger();
 
-  private int lastReadPosition;
-  private int lastProcessedPosition;
+  int lastReadPosition;
+  int lastProcessedPosition;
 
 
   public NioPlainEngine() {}

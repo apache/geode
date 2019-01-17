@@ -38,8 +38,6 @@ public class BuffersTest {
 
     createAndVerifyNewWriteBuffer(buffer, true);
 
-    // buffer.limit(buffer.capacity());
-    // buffer.position(0);
 
     createAndVerifyNewReadBuffer(buffer, false);
 

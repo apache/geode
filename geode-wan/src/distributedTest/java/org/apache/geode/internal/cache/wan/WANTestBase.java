@@ -2816,7 +2816,6 @@ public class WANTestBase extends DistributedTestCase {
     });
     for (int i = 0; i < regionSize; i++) {
       final int temp = i;
-      logger.info("For Key : Key_" + i + " : Values : " + r.get("Key_" + i));
       await()
           .untilAsserted(() -> assertEquals(
               "keySet = " + r.keySet() + " values() = " + r.values() + "Region Size = " + r.size(),
