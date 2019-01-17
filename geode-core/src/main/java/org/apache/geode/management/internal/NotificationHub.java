@@ -67,7 +67,8 @@ public class NotificationHub {
     logger = InternalDistributedSystem.getLogger();
     this.listenerObjectMap = new HashMap<ObjectName, NotificationHubListener>();
     memberSource = MBeanJMXAdapter
-        .getMemberNameOrId(InternalDistributedSystem.getConnectedInstance().getDistributedMember());
+        .getMemberNameOrUniqueId(
+            InternalDistributedSystem.getConnectedInstance().getDistributedMember());
 
 
   }
