@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -186,7 +187,7 @@ public class TableMetaDataManager {
         int dataType = columnData.getInt("DATA_TYPE");
         int nullableCode = columnData.getInt("NULLABLE");
         boolean nullable = nullableCode != DatabaseMetaData.columnNoNulls;
-        result.put(columnName, new ColumnMetaData(dataType, nullable));
+        result.put(columnName, new ColumnMetaData(JDBCType.valueOf(dataType), nullable));
       }
     }
     return result;

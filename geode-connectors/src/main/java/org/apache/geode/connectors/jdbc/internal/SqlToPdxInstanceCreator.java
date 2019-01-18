@@ -15,10 +15,10 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import java.sql.Blob;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
@@ -110,25 +110,7 @@ class SqlToPdxInstanceCreator {
         factory.writeBoolean(fieldName, resultSet.getBoolean(columnIndex));
         break;
       case DATE: {
-        int columnType = this.tableMetaData.getColumnDataType(columnName);
-        java.util.Date sqlDate;
-        switch (columnType) {
-          case Types.DATE:
-            sqlDate = resultSet.getDate(columnIndex);
-            break;
-          case Types.TIME:
-          case Types.TIME_WITH_TIMEZONE:
-            sqlDate = resultSet.getTime(columnIndex);
-            break;
-          default:
-            sqlDate = resultSet.getTimestamp(columnIndex);
-            break;
-        }
-        java.util.Date pdxDate = null;
-        if (sqlDate != null) {
-          pdxDate = new java.util.Date(sqlDate.getTime());
-        }
-        factory.writeDate(fieldName, pdxDate);
+        factory.writeDate(fieldName, getPdxDate(columnName, columnIndex));
         break;
       }
       case BYTE_ARRAY:
@@ -205,8 +187,30 @@ class SqlToPdxInstanceCreator {
     }
   }
 
+  private java.util.Date getPdxDate(String columnName, int columnIndex) throws SQLException {
+    java.util.Date sqlDate;
+    JDBCType columnType = this.tableMetaData.getColumnDataType(columnName);
+    switch (columnType) {
+      case DATE:
+        sqlDate = resultSet.getDate(columnIndex);
+        break;
+      case TIME:
+      case TIME_WITH_TIMEZONE:
+        sqlDate = resultSet.getTime(columnIndex);
+        break;
+      default:
+        sqlDate = resultSet.getTimestamp(columnIndex);
+        break;
+    }
+    java.util.Date pdxDate = null;
+    if (sqlDate != null) {
+      pdxDate = new java.util.Date(sqlDate.getTime());
+    }
+    return pdxDate;
+  }
+
   private boolean isBlobColumn(String columnName) throws SQLException {
-    return this.tableMetaData.getColumnDataType(columnName) == Types.BLOB;
+    return this.tableMetaData.getColumnDataType(columnName) == JDBCType.BLOB;
   }
 
   /**

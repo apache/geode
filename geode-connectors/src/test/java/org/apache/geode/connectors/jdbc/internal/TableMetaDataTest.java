@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.sql.JDBCType;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +62,8 @@ public class TableMetaDataTest {
   @Test
   public void verifyColumnNames() {
     Map<String, ColumnMetaData> map = new HashMap<>();
-    map.put("k1", new ColumnMetaData(1, false));
-    map.put("k2", new ColumnMetaData(2, false));
+    map.put("k1", new ColumnMetaData(JDBCType.valueOf(1), false));
+    map.put("k2", new ColumnMetaData(JDBCType.valueOf(2), false));
     dataTypes = map;
 
     createTableMetaData();
@@ -73,22 +74,22 @@ public class TableMetaDataTest {
   @Test
   public void verifyColumnDataType() {
     Map<String, ColumnMetaData> map = new HashMap<>();
-    map.put("k1", new ColumnMetaData(1, false));
-    map.put("k2", new ColumnMetaData(2, false));
+    map.put("k1", new ColumnMetaData(JDBCType.valueOf(1), false));
+    map.put("k2", new ColumnMetaData(JDBCType.valueOf(2), false));
     dataTypes = map;
 
     createTableMetaData();
 
-    assertThat(tableMetaData.getColumnDataType("k1")).isEqualTo(1);
-    assertThat(tableMetaData.getColumnDataType("k2")).isEqualTo(2);
-    assertThat(tableMetaData.getColumnDataType("k3")).isEqualTo(0);
+    assertThat(tableMetaData.getColumnDataType("k1")).isEqualTo(JDBCType.valueOf(1));
+    assertThat(tableMetaData.getColumnDataType("k2")).isEqualTo(JDBCType.valueOf(2));
+    assertThat(tableMetaData.getColumnDataType("k3")).isEqualTo(JDBCType.NULL);
   }
 
   @Test
   public void verifyIsColumnNullable() {
     Map<String, ColumnMetaData> map = new HashMap<>();
-    map.put("k1", new ColumnMetaData(1, false));
-    map.put("k2", new ColumnMetaData(2, true));
+    map.put("k1", new ColumnMetaData(JDBCType.valueOf(1), false));
+    map.put("k2", new ColumnMetaData(JDBCType.valueOf(2), true));
     dataTypes = map;
 
     createTableMetaData();

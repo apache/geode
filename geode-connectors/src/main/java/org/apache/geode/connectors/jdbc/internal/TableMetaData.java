@@ -16,6 +16,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.sql.JDBCType;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,10 +66,10 @@ public class TableMetaData implements TableMetaDataView {
   }
 
   @Override
-  public int getColumnDataType(String columnName) {
+  public JDBCType getColumnDataType(String columnName) {
     ColumnMetaData columnMetaData = this.columnMetaDataMap.get(columnName);
     if (columnMetaData == null) {
-      return 0;
+      return JDBCType.NULL;
     }
     return columnMetaData.getType();
   }
@@ -93,15 +94,15 @@ public class TableMetaData implements TableMetaDataView {
   }
 
   public static class ColumnMetaData {
-    private final int type;
+    private final JDBCType type;
     private final boolean nullable;
 
-    public ColumnMetaData(int type, boolean nullable) {
+    public ColumnMetaData(JDBCType type, boolean nullable) {
       this.type = type;
       this.nullable = nullable;
     }
 
-    public int getType() {
+    public JDBCType getType() {
       return this.type;
     }
 

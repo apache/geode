@@ -25,11 +25,11 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.sql.Blob;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -193,6 +193,7 @@ public class SqlToPdxInstanceCreatorTest {
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
         .thenReturn(PDX_FIELD_NAME_1);
+    when(tableMetaDataView.getColumnDataType(any())).thenReturn(JDBCType.NULL);
 
     createPdxInstance();
 
@@ -214,6 +215,7 @@ public class SqlToPdxInstanceCreatorTest {
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
     when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1), any()))
         .thenReturn(PDX_FIELD_NAME_1);
+    when(tableMetaDataView.getColumnDataType(any())).thenReturn(JDBCType.NULL);
 
     createPdxInstance();
 
@@ -248,7 +250,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.DATE);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.DATE);
     java.sql.Date sqlDate = java.sql.Date.valueOf("1979-09-11");
     Date expectedValue = new Date(sqlDate.getTime());
     when(resultSet.getDate(1)).thenReturn(sqlDate);
@@ -270,7 +272,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.BLOB);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.BLOB);
     byte[] expectedValue = new byte[] {1, 2, 3};
     Blob blob = mock(Blob.class);
     when(blob.length()).thenReturn((long) expectedValue.length);
@@ -294,7 +296,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.BLOB);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.BLOB);
     byte[] expectedValue = null;
     Blob blob = null;
     when(resultSet.getBlob(1)).thenReturn(blob);
@@ -316,7 +318,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.BLOB);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.BLOB);
     Blob blob = mock(Blob.class);
     when(blob.length()).thenReturn((long) Integer.MAX_VALUE + 1);
     when(resultSet.getBlob(1)).thenReturn(blob);
@@ -337,7 +339,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.BLOB);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.BLOB);
     byte[] expectedValue = new byte[] {1, 2, 3};
     Blob blob = mock(Blob.class);
     when(blob.length()).thenReturn((long) expectedValue.length);
@@ -361,7 +363,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.TIME);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.TIME);
     java.sql.Time sqlTime = java.sql.Time.valueOf("22:33:44");
     Date expectedValue = new Date(sqlTime.getTime());
     when(resultSet.getTime(1)).thenReturn(sqlTime);
@@ -383,7 +385,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(Types.TIMESTAMP);
+    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.TIMESTAMP);
     java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf("1979-09-11 22:33:44.567");
     Date expectedValue = new Date(sqlTimestamp.getTime());
     when(resultSet.getTimestamp(1)).thenReturn(sqlTimestamp);

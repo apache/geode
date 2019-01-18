@@ -18,7 +18,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -137,15 +136,15 @@ public class SqlHandler {
     } else if (value instanceof Date) {
       Date jdkDate = (Date) value;
       switch (columnData.getDataType()) {
-        case Types.DATE:
+        case DATE:
           value = new java.sql.Date(jdkDate.getTime());
           break;
-        case Types.TIME:
-        case Types.TIME_WITH_TIMEZONE:
+        case TIME:
+        case TIME_WITH_TIMEZONE:
           value = new java.sql.Time(jdkDate.getTime());
           break;
-        case Types.TIMESTAMP:
-        case Types.TIMESTAMP_WITH_TIMEZONE:
+        case TIMESTAMP:
+        case TIMESTAMP_WITH_TIMEZONE:
           value = new java.sql.Timestamp(jdkDate.getTime());
           break;
         default:
@@ -154,7 +153,7 @@ public class SqlHandler {
       }
     }
     if (value == null) {
-      statement.setNull(index, columnData.getDataType());
+      statement.setNull(index, columnData.getDataType().getVendorTypeNumber());
     } else {
       statement.setObject(index, value);
     }

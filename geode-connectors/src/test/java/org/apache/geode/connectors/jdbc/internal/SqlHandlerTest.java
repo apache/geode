@@ -28,10 +28,10 @@ import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -192,6 +192,7 @@ public class SqlHandlerTest {
   public void writeWithDateField() throws Exception {
     String fieldName = "fieldName";
     Object fieldValue = new Date();
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.NULL);
     when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
@@ -210,7 +211,7 @@ public class SqlHandlerTest {
     String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Date(fieldValue.getTime());
-    int dataType = Types.DATE;
+    JDBCType dataType = JDBCType.DATE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
     when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
@@ -230,7 +231,7 @@ public class SqlHandlerTest {
     String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Time(fieldValue.getTime());
-    int dataType = Types.TIME;
+    JDBCType dataType = JDBCType.TIME;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
     when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
@@ -250,7 +251,7 @@ public class SqlHandlerTest {
     String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Time(fieldValue.getTime());
-    int dataType = Types.TIME_WITH_TIMEZONE;
+    JDBCType dataType = JDBCType.TIME_WITH_TIMEZONE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
     when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
@@ -270,7 +271,7 @@ public class SqlHandlerTest {
     String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Timestamp(fieldValue.getTime());
-    int dataType = Types.TIMESTAMP;
+    JDBCType dataType = JDBCType.TIMESTAMP;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
     when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
@@ -290,7 +291,7 @@ public class SqlHandlerTest {
     String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Timestamp(fieldValue.getTime());
-    int dataType = Types.TIMESTAMP_WITH_TIMEZONE;
+    JDBCType dataType = JDBCType.TIMESTAMP_WITH_TIMEZONE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
     when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
@@ -326,7 +327,7 @@ public class SqlHandlerTest {
   public void writeWithNullField() throws Exception {
     String fieldName = "fieldName";
     Object fieldValue = null;
-    int dataType = 0;
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.NULL);
     when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
@@ -335,7 +336,7 @@ public class SqlHandlerTest {
     Object createKey = "createKey";
     handler.write(region, Operation.CREATE, createKey, value);
 
-    verify(statement).setNull(1, dataType);
+    verify(statement).setNull(1, JDBCType.NULL.getVendorTypeNumber());
     verify(statement).setObject(2, createKey);
     verify(statement).close();
   }
@@ -344,7 +345,7 @@ public class SqlHandlerTest {
   public void writeWithNullFieldWithDataTypeFromMetaData() throws Exception {
     String fieldName = "fieldName";
     Object fieldValue = null;
-    int dataType = 79;
+    JDBCType dataType = JDBCType.VARCHAR;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
     when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
@@ -354,7 +355,7 @@ public class SqlHandlerTest {
     Object createKey = "createKey";
     handler.write(region, Operation.CREATE, createKey, value);
 
-    verify(statement).setNull(1, dataType);
+    verify(statement).setNull(1, dataType.getVendorTypeNumber());
     verify(statement).setObject(2, createKey);
     verify(statement).close();
   }
