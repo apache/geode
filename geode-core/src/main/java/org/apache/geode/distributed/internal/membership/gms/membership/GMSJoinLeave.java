@@ -1397,7 +1397,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
 
       logger.info("received new view: {}\nold view is: {}", newView, currentView);
-      newView.makeImmutable();
 
       if (currentView == null && !this.isJoined) {
         boolean found = false;
