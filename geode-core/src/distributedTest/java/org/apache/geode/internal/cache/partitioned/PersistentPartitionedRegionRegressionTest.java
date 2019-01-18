@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.partitioned;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_JMX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -26,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
@@ -587,8 +589,15 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     regionFactory.create(partitionedRegionName);
   }
 
+  /**
+   * Prevent GEODE-6232 by disabling JMX which is not needed in this test.
+   */
   private InternalCache getCache() {
-    return cacheRule.getOrCreateCache();
+    Properties config = new Properties();
+    config.setProperty(DISABLE_JMX, "true");
+    InternalCache cache = cacheRule.getOrCreateCache(config);
+    assertThat(cache.getInternalDistributedSystem().getResourceListeners()).isEmpty();
+    return cache;
   }
 
   private static class TestCustomExpiration<K, V> implements CustomExpiry<K, V> {
