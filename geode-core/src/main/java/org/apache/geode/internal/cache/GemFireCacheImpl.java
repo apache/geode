@@ -875,11 +875,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         // We only support management on members of a distributed system
         // Should do this: if (!getSystem().isLoner()) {
         // but it causes quickstart.CqClientTest to hang
-        this.resourceEventsListener = new ManagementListener(this.system);
-        this.system.addResourceListener(this.resourceEventsListener);
-        if (this.system.isLoner()) {
-          this.system.getInternalLogWriter()
-              .info("Running in local mode since no locators were specified.");
+        boolean disableJmx = system.getConfig().getDisableJmx();
+        if (disableJmx) {
+          logger.info("Running with JMX disabled.");
+        } else {
+          this.resourceEventsListener = new ManagementListener(this.system);
+          this.system.addResourceListener(this.resourceEventsListener);
+          if (this.system.isLoner()) {
+            this.system.getInternalLogWriter()
+                .info("Running in local mode since no locators were specified.");
+          }
         }
       } else {
         logger.info("Running in client mode");

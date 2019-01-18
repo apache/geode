@@ -38,6 +38,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCK
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.DEPLOY_WORKING_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_JMX;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_TRANSACTIONS;
@@ -925,6 +926,10 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
     m.put(DISABLE_TCP, String.format(
         "Determines whether TCP/IP communications will be disabled, forcing use of datagrams between members of the distributed system. Defaults to %s",
+        Boolean.FALSE));
+
+    m.put(DISABLE_JMX, String.format(
+        "Determines whether JMX will be disabled which prevents Geode from creating MBeans. Defaults to %s",
         Boolean.FALSE));
 
     m.put(ENABLE_TIME_STATISTICS,
