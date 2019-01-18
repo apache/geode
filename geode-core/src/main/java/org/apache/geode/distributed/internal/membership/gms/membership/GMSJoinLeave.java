@@ -1152,7 +1152,14 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
-          logger.debug("EOFException IOException ", problem);
+          logger.debug("Exception thrown when contacting a locator", problem);
+          if (state.locatorsContacted == 0 && System.currentTimeMillis() < giveUpTime) {
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              throw new SystemConnectException("Interrupted while trying to contact locators");
+            }
+          }
         }
       }
     } while (!anyResponses && System.currentTimeMillis() < giveUpTime);
