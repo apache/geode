@@ -266,7 +266,7 @@ public class AvailablePortHelperIntegrationTest {
   @Parameters({"true", "false"})
   public void initializeUniquePortRange_willReturnSamePortsForSameRange(
       final boolean useMembershipPortRange) {
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 100; ++i) {
       initializeUniquePortRange(i);
       int[] testPorts = getRandomAvailableTCPPorts(3, useMembershipPortRange);
       initializeUniquePortRange(i);
@@ -280,7 +280,7 @@ public class AvailablePortHelperIntegrationTest {
       final boolean useMembershipPortRange) {
     Set<Integer> ports = new HashSet<>();
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 100; ++i) {
       initializeUniquePortRange(i);
       int[] testPorts = getRandomAvailableTCPPorts(5, useMembershipPortRange);
       for (int testPort : testPorts) {
