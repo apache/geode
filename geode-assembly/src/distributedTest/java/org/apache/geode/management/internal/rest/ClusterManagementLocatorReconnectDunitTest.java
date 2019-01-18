@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.internal.api.ClusterManagementResult;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -82,7 +83,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
 
     // make sure region is created
     server.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion("customers");
+      Region region = ClusterStartupRule.getCache().getRegion(regionName);
       assertThat(region).isNotNull();
     });
 
@@ -91,7 +92,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
       CacheConfig cacheConfig =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService()
               .getCacheConfig("cluster");
-      assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("customers");
+      assertThat(CacheElement.exists(cacheConfig.getRegions(), regionName)).isTrue();
     });
 
   }
