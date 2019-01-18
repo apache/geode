@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_E
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_JMX;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
@@ -79,6 +80,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   private String serverBindAddress = DEFAULT_BIND_ADDRESS;
   private String remoteCommand = DEFAULT_REMOTE_COMMAND;
   private boolean disableTcp = DEFAULT_DISABLE_TCP;
+  private boolean disableJmx = DEFAULT_DISABLE_JMX;
   private boolean enableNetworkPartitionDetection = DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
   private boolean disableAutoReconnect = DEFAULT_DISABLE_AUTO_RECONNECT;
   private int memberTimeout = DEFAULT_MEMBER_TIMEOUT;
@@ -631,6 +633,18 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   public void setDisableTcp(boolean flag) {
     checkReadOnly();
     disableTcp = flag;
+    configChanged();
+  }
+
+  @Override
+  public boolean getDisableJmx() {
+    return disableJmx;
+  }
+
+  @Override
+  public void setDisableJmx(boolean flag) {
+    checkReadOnly();
+    disableJmx = flag;
     configChanged();
   }
 
@@ -1197,6 +1211,9 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     buf.append(lf);
     buf.append("  " + DISABLE_TCP + "=");
     buf.append(String.valueOf(this.disableTcp));
+    buf.append(lf);
+    buf.append("  " + DISABLE_JMX + "=");
+    buf.append(disableJmx);
     buf.append(lf);
     buf.append("  " + DISABLE_AUTO_RECONNECT + "=");
     buf.append(String.valueOf(this.disableAutoReconnect));
