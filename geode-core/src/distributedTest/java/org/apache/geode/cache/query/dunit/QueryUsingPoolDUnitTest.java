@@ -105,6 +105,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     disconnectAllFromDS();
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("Socket input is shutdown");
+    IgnoredException.addIgnoredException("Connection refused");
   }
 
   @Override

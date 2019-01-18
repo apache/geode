@@ -512,35 +512,23 @@ public class NetView implements DataSerializableFixedID {
     InternalDistributedMember lead = getLeadMember();
 
     StringBuilder sb = new StringBuilder(200);
-    sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
-    boolean first = true;
+    sb.append("View[").append(creator).append('|').append(viewId).append("]\nmembers: [");
     for (InternalDistributedMember mbr : this.members) {
-      if (!first)
-        sb.append(", ");
-      sb.append(mbr);
+      sb.append("\n").append(mbr);
       if (mbr == lead) {
         sb.append("{lead}");
       }
-      first = false;
     }
     if (!this.shutdownMembers.isEmpty()) {
-      sb.append("]  shutdown: [");
-      first = true;
+      sb.append("]\nshutdown: [");
       for (InternalDistributedMember mbr : this.shutdownMembers) {
-        if (!first)
-          sb.append(", ");
-        sb.append(mbr);
-        first = false;
+        sb.append("\n").append(mbr);
       }
     }
     if (!this.crashedMembers.isEmpty()) {
-      sb.append("]  crashed: [");
-      first = true;
+      sb.append("]\ncrashed: [");
       for (InternalDistributedMember mbr : this.crashedMembers) {
-        if (!first)
-          sb.append(", ");
-        sb.append(mbr);
-        first = false;
+        sb.append("\n").append(mbr);
       }
     }
     // sb.append("] fd ports: [");
@@ -640,4 +628,5 @@ public class NetView implements DataSerializableFixedID {
   public int getDSFID() {
     return NETVIEW;
   }
+
 }

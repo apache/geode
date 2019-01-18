@@ -923,7 +923,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         getViewCreator().markViewCreatorForShutdown();
         this.isCoordinator = false;
       }
-      installView(view);
+      installView(new NetView(view, view.getViewId()));
     }
 
     if (recips.isEmpty()) {
