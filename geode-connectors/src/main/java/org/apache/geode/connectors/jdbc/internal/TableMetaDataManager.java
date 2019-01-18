@@ -72,10 +72,10 @@ public class TableMetaDataManager {
       List<String> keys = getPrimaryKeyColumnNamesFromMetaData(metaData, realCatalogName,
           realSchemaName, realTableName, regionMapping.getIds());
       String quoteString = metaData.getIdentifierQuoteString();
-      Map<String, ColumnMetaData> dataTypes =
-          getDataTypesFromMetaData(metaData, realCatalogName, realSchemaName, realTableName);
+      Map<String, ColumnMetaData> columnMetaDataMap =
+          createColumnMetaDataMap(metaData, realCatalogName, realSchemaName, realTableName);
       return new TableMetaData(realCatalogName, realSchemaName, realTableName, keys, quoteString,
-          dataTypes);
+          columnMetaDataMap);
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
     }
@@ -175,7 +175,7 @@ public class TableMetaDataManager {
     return keys;
   }
 
-  private Map<String, ColumnMetaData> getDataTypesFromMetaData(DatabaseMetaData metaData,
+  private Map<String, ColumnMetaData> createColumnMetaDataMap(DatabaseMetaData metaData,
       String catalogFilter,
       String schemaFilter, String tableName) throws SQLException {
     Map<String, ColumnMetaData> result = new HashMap<>();
