@@ -208,6 +208,8 @@ public class GMSJoinLeaveJUnitTest {
     assertThatThrownBy(() -> gmsJoinLeave.findCoordinator())
         .isInstanceOf(SystemConnectException.class)
         .hasMessageContaining("Interrupted while trying to contact locators");
+    verify(tcpClientWrapper, times(1)).sendCoordinatorFindRequest(any(InetSocketAddress.class),
+        any(FindCoordinatorRequest.class), any(Integer.class));
   }
 
   @Test
