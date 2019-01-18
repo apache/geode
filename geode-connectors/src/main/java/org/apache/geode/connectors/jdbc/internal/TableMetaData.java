@@ -24,17 +24,18 @@ public class TableMetaData implements TableMetaDataView {
 
   private final String quotedTablePath;
   private final List<String> keyColumnNames;
-  private final Map<String, Integer> columnNameToTypeMap;
+  private final Map<String, ColumnMetaData> columnMetaDataMap;
   private final String identifierQuoteString;
 
   public TableMetaData(String catalogName, String schemaName, String tableName,
-      List<String> keyColumnNames, String quoteString, Map<String, Integer> dataTypes) {
+      List<String> keyColumnNames, String quoteString,
+      Map<String, ColumnMetaData> columnMetaDataMap) {
     if (quoteString == null) {
       quoteString = "";
     }
     this.quotedTablePath = createQuotedTablePath(catalogName, schemaName, tableName, quoteString);
     this.keyColumnNames = keyColumnNames;
-    this.columnNameToTypeMap = dataTypes;
+    this.columnMetaDataMap = columnMetaDataMap;
     this.identifierQuoteString = quoteString;
   }
 
@@ -65,20 +66,47 @@ public class TableMetaData implements TableMetaDataView {
 
   @Override
   public int getColumnDataType(String columnName) {
-    Integer dataType = this.columnNameToTypeMap.get(columnName);
-    if (dataType == null) {
+    ColumnMetaData columnMetaData = this.columnMetaDataMap.get(columnName);
+    if (columnMetaData == null) {
       return 0;
     }
-    return dataType;
+    return columnMetaData.getType();
+  }
+
+  @Override
+  public boolean isColumnNullable(String columnName) {
+    ColumnMetaData columnMetaData = this.columnMetaDataMap.get(columnName);
+    if (columnMetaData == null) {
+      return true;
+    }
+    return columnMetaData.isNullable();
   }
 
   @Override
   public Set<String> getColumnNames() {
-    return columnNameToTypeMap.keySet();
+    return columnMetaDataMap.keySet();
   }
 
   @Override
   public String getIdentifierQuoteString() {
     return this.identifierQuoteString;
+  }
+
+  public static class ColumnMetaData {
+    private final int type;
+    private final boolean nullable;
+
+    public ColumnMetaData(int type, boolean nullable) {
+      this.type = type;
+      this.nullable = nullable;
+    }
+
+    public int getType() {
+      return this.type;
+    }
+
+    public boolean isNullable() {
+      return this.nullable;
+    }
   }
 }

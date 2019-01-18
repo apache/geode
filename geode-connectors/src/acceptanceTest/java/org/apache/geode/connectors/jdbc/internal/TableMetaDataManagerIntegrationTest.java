@@ -196,6 +196,26 @@ public abstract class TableMetaDataManagerIntegrationTest {
   }
 
   @Test
+  public void validateIsColumnNullableForName() throws SQLException {
+    createTable();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
+
+    boolean nullable = metaData.isColumnNullable("name");
+
+    assertThat(nullable).isTrue();
+  }
+
+  @Test
+  public void validateIsColumnNullableForId() throws SQLException {
+    createTable();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
+
+    boolean nullable = metaData.isColumnNullable("id");
+
+    assertThat(nullable).isFalse();
+  }
+
+  @Test
   public void validateColumnDataTypeForId() throws SQLException {
     createTable();
     TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);

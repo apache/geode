@@ -32,6 +32,8 @@ public interface TableMetaDataView {
 
   int getColumnDataType(String columnName);
 
+  boolean isColumnNullable(String columnName);
+
   Set<String> getColumnNames();
 
   String getIdentifierQuoteString();

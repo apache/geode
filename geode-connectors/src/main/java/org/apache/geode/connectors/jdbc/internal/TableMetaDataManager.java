@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.TableMetaData.ColumnMetaData;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 
 /**
@@ -71,7 +72,7 @@ public class TableMetaDataManager {
       List<String> keys = getPrimaryKeyColumnNamesFromMetaData(metaData, realCatalogName,
           realSchemaName, realTableName, regionMapping.getIds());
       String quoteString = metaData.getIdentifierQuoteString();
-      Map<String, Integer> dataTypes =
+      Map<String, ColumnMetaData> dataTypes =
           getDataTypesFromMetaData(metaData, realCatalogName, realSchemaName, realTableName);
       return new TableMetaData(realCatalogName, realSchemaName, realTableName, keys, quoteString,
           dataTypes);
@@ -174,16 +175,18 @@ public class TableMetaDataManager {
     return keys;
   }
 
-  private Map<String, Integer> getDataTypesFromMetaData(DatabaseMetaData metaData,
+  private Map<String, ColumnMetaData> getDataTypesFromMetaData(DatabaseMetaData metaData,
       String catalogFilter,
       String schemaFilter, String tableName) throws SQLException {
-    Map<String, Integer> result = new HashMap<>();
+    Map<String, ColumnMetaData> result = new HashMap<>();
     try (ResultSet columnData =
         metaData.getColumns(catalogFilter, schemaFilter, tableName, "%")) {
       while (columnData.next()) {
         String columnName = columnData.getString("COLUMN_NAME");
         int dataType = columnData.getInt("DATA_TYPE");
-        result.put(columnName, dataType);
+        int nullableCode = columnData.getInt("NULLABLE");
+        boolean nullable = nullableCode != DatabaseMetaData.columnNoNulls;
+        result.put(columnName, new ColumnMetaData(dataType, nullable));
       }
     }
     return result;
