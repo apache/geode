@@ -202,10 +202,12 @@ public class SSLSocketIntegrationTest {
         SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
     this.serverThread = startServerNIO(serverSocket, 15000);
 
-    await().until(() -> serverThread.isAlive());
+    await().atMost(5, TimeUnit.MINUTES).until(() -> serverThread.isAlive());
 
     SocketChannel clientChannel = SocketChannel.open();
-    clientChannel.connect(new InetSocketAddress(localHost, serverPort));
+    await().atMost(5, TimeUnit.MINUTES).until(
+        () -> clientChannel.connect(new InetSocketAddress(localHost, serverPort)));
+
     clientSocket = clientChannel.socket();
     NioSslEngine engine =
         clusterSocketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
@@ -337,7 +339,7 @@ public class SSLSocketIntegrationTest {
     this.serverThread = startServerNIO(this.serverSocket, 1000);
 
     Socket socket = new Socket();
-    await().atMost(10, TimeUnit.SECONDS).until(() -> {
+    await().atMost(5, TimeUnit.MINUTES).until(() -> {
       try {
         socket.connect(new InetSocketAddress(localHost, serverPort));
       } catch (ConnectException e) {
