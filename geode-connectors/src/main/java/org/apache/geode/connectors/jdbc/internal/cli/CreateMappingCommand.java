@@ -125,6 +125,18 @@ public class CreateMappingCommand extends SingleGfshCommand {
       return ResultModel.createError(ex.getMessage());
     }
 
+    // Do the following on one and only one targetMember:
+    // 1. connect to the database (using dataSourceName)
+    // 2. read the table meta data
+    // 3. generates a pdx type using PdxInstanceFactory with null field values
+    // 4. return the field mapping info
+    // The field mapping info will be passed to CreateMappingFunction
+    // The field mapping will have the following:
+    // 1. pdx field name
+    // 2. pdx field type
+    // 3. sql column name
+    // 4. sql column type
+
     // action
     Object[] arguments = new Object[] {mapping, synchronous};
     List<CliFunctionResult> results =
