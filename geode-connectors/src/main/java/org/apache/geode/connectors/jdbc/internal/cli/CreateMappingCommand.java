@@ -134,8 +134,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
     // The field mapping will have the following:
     // 1. pdx field name
     // 2. pdx field type (an instance of org.apache.geode.pdx.FieldType)
-    // 3. sql column name
-    // 4. sql column type (an instance of java.sql.JDBCType)
+    // 3. jdbc column name
+    // 4. jdbc column type (an instance of java.sql.JDBCType)
 
     // action
     Object[] arguments = new Object[] {mapping, synchronous};

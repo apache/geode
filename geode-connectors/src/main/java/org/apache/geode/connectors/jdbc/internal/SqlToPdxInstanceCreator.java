@@ -55,7 +55,7 @@ class SqlToPdxInstanceCreator {
     final int columnCount = metaData.getColumnCount();
     for (int i = 1; i <= columnCount; i++) {
       String columnName = metaData.getColumnName(i);
-      String fieldName = regionMapping.getFieldNameForColumn(columnName, typeRegistry);
+      String fieldName = regionMapping.getFieldNameForColumn(columnName);
       FieldType fieldType = getFieldType(typeRegistry, fieldName);
       writeField(columnName, i, fieldName, fieldType);
     }

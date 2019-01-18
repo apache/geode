@@ -175,7 +175,7 @@ public class SqlHandlerTest {
   public void writeWithCharField() throws Exception {
     String fieldName = "fieldName";
     Object fieldValue = 'S';
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -193,7 +193,7 @@ public class SqlHandlerTest {
     String fieldName = "fieldName";
     Object fieldValue = new Date();
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.NULL);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -213,7 +213,7 @@ public class SqlHandlerTest {
     Object expectedValueWritten = new java.sql.Date(fieldValue.getTime());
     JDBCType dataType = JDBCType.DATE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -233,7 +233,7 @@ public class SqlHandlerTest {
     Object expectedValueWritten = new java.sql.Time(fieldValue.getTime());
     JDBCType dataType = JDBCType.TIME;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -253,7 +253,7 @@ public class SqlHandlerTest {
     Object expectedValueWritten = new java.sql.Time(fieldValue.getTime());
     JDBCType dataType = JDBCType.TIME_WITH_TIMEZONE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -273,7 +273,7 @@ public class SqlHandlerTest {
     Object expectedValueWritten = new java.sql.Timestamp(fieldValue.getTime());
     JDBCType dataType = JDBCType.TIMESTAMP;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -293,7 +293,7 @@ public class SqlHandlerTest {
     Object expectedValueWritten = new java.sql.Timestamp(fieldValue.getTime());
     JDBCType dataType = JDBCType.TIMESTAMP_WITH_TIMEZONE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -310,7 +310,7 @@ public class SqlHandlerTest {
   public void writeWithNonCharField() throws Exception {
     String fieldName = "fieldName";
     int fieldValue = 100;
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -328,7 +328,7 @@ public class SqlHandlerTest {
     String fieldName = "fieldName";
     Object fieldValue = null;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.NULL);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -347,7 +347,7 @@ public class SqlHandlerTest {
     Object fieldValue = null;
     JDBCType dataType = JDBCType.VARCHAR;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
+    when(regionMapping.getColumnNameForField(eq(fieldName))).thenReturn(fieldName);
     when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
@@ -381,8 +381,8 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    when(regionMapping.getColumnNameForField("fieldOne")).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo")).thenReturn("fieldTwo");
 
     handler.write(region, Operation.CREATE, compositeKey, value);
 
@@ -414,8 +414,8 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    when(regionMapping.getColumnNameForField("fieldOne")).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo")).thenReturn("fieldTwo");
 
     handler.write(region, Operation.UPDATE, compositeKey, value);
 
@@ -447,8 +447,8 @@ public class SqlHandlerTest {
     when(destroyKey.getField("fieldOne")).thenReturn(destroyKeyFieldValueOne);
     when(destroyKey.getField("fieldTwo")).thenReturn(destroyKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    when(regionMapping.getColumnNameForField("fieldOne")).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo")).thenReturn("fieldTwo");
 
     handler.write(region, Operation.DESTROY, destroyKey, value);
 
@@ -596,8 +596,8 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    when(regionMapping.getColumnNameForField("fieldOne")).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo")).thenReturn("fieldTwo");
 
     EntryColumnData entryColumnData =
         handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
@@ -618,8 +618,8 @@ public class SqlHandlerTest {
     when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne"));
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    when(regionMapping.getColumnNameForField("fieldOne")).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo")).thenReturn("fieldTwo");
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
         "The key \"" + compositeKey + "\" should have 2 fields but has 1 fields.");
@@ -638,8 +638,8 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwoWrong")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    when(regionMapping.getColumnNameForField("fieldOne")).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo")).thenReturn("fieldTwo");
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("The key \"" + compositeKey
         + "\" has the field \"fieldTwoWrong\" which does not match any of the key columns: [fieldOne, fieldTwo]");
@@ -660,8 +660,8 @@ public class SqlHandlerTest {
 
   private void testGetEntryColumnDataForCreateOrUpdate(Operation operation) {
     String nonKeyColumn = "otherColumn";
-    when(regionMapping.getColumnNameForField(eq(KEY_COLUMN), any())).thenReturn(KEY_COLUMN);
-    when(regionMapping.getColumnNameForField(eq(nonKeyColumn), any())).thenReturn(nonKeyColumn);
+    when(regionMapping.getColumnNameForField(eq(KEY_COLUMN))).thenReturn(KEY_COLUMN);
+    when(regionMapping.getColumnNameForField(eq(nonKeyColumn))).thenReturn(nonKeyColumn);
     when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
 
     EntryColumnData entryColumnData =
@@ -695,10 +695,10 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    when(regionMapping.getColumnNameForField("fieldOne")).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo")).thenReturn("fieldTwo");
     String nonKeyColumn = "otherColumn";
-    when(regionMapping.getColumnNameForField(eq(nonKeyColumn), any())).thenReturn(nonKeyColumn);
+    when(regionMapping.getColumnNameForField(eq(nonKeyColumn))).thenReturn(nonKeyColumn);
     when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo", nonKeyColumn));
 
     EntryColumnData entryColumnData =
@@ -726,8 +726,8 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    when(regionMapping.getColumnNameForField("fieldOne")).thenReturn("fieldOne");
+    when(regionMapping.getColumnNameForField("fieldTwo")).thenReturn("fieldTwo");
 
     EntryColumnData entryColumnData =
         handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,

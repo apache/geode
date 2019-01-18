@@ -273,7 +273,7 @@ public class SqlHandler {
             + keyColumnNames.size() + " fields but has " + fieldNames.size() + " fields.");
       }
       for (String fieldName : fieldNames) {
-        String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
+        String columnName = regionMapping.getColumnNameForField(fieldName);
         if (!keyColumnNames.contains(columnName)) {
           throw new JdbcConnectorException("The key \"" + key + "\" has the field \"" + fieldName
               + "\" which does not match any of the key columns: " + keyColumnNames);
@@ -290,7 +290,7 @@ public class SqlHandler {
       RegionMapping regionMapping, PdxInstance value) {
     List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
-      String columnName = regionMapping.getColumnNameForField(fieldName, tableMetaData);
+      String columnName = regionMapping.getColumnNameForField(fieldName);
       if (tableMetaData.getKeyColumnNames().contains(columnName)) {
         continue;
       }

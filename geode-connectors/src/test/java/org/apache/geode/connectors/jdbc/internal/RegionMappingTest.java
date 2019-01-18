@@ -15,12 +15,6 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,10 +22,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.pdx.internal.PdxField;
-import org.apache.geode.pdx.internal.PdxType;
-import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class RegionMappingTest {
 
@@ -60,8 +52,6 @@ public class RegionMappingTest {
     assertThat(mapping.getIds()).isNull();
     assertThat(mapping.getCatalog()).isNull();
     assertThat(mapping.getSchema()).isNull();
-    assertThat(mapping.getColumnNameForField("fieldName", mock(TableMetaDataView.class)))
-        .isEqualTo("fieldName");
   }
 
   @Test
@@ -117,133 +107,43 @@ public class RegionMappingTest {
   }
 
   @Test
-  public void returnsColumnNameIfFieldNotMapped() {
+  public void getColumnNameForFieldThrowsIfFieldNotMapped() {
     mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-
-    String columnName = mapping.getColumnNameForField(fieldName1, mock(TableMetaDataView.class));
-
-    assertThat(columnName).isEqualTo(fieldName1);
-  }
-
-  @Test
-  public void returnsColumnNameFromTableMetaDataIfFieldNotMappedAndMetaDataMatchesWithCaseDiffering() {
-    String metaDataColumnName = fieldName1.toUpperCase();
-    mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getColumnNames()).thenReturn(Collections.singleton(metaDataColumnName));
-
-    assertThat(mapping.getColumnNameForField(fieldName1, tableMetaDataView))
-        .isEqualTo(metaDataColumnName);
-  }
-
-  @Test
-  public void returnsColumnNameFromTableMetaDataIfFieldNotMappedAndMetaDataMatchesExactly() {
-    String metaDataColumnName = fieldName1;
-    mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getColumnNames()).thenReturn(Collections.singleton(metaDataColumnName));
-
-    assertThat(mapping.getColumnNameForField(fieldName1, tableMetaDataView))
-        .isEqualTo(metaDataColumnName);
-  }
-
-  @Test
-  public void returnsColumnNameIfFieldNotMappedAndNotInMetaData() {
-    mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getColumnNames()).thenReturn(Collections.singleton("does not match"));
-
-    assertThat(mapping.getColumnNameForField(fieldName1, tableMetaDataView)).isEqualTo(fieldName1);
-  }
-
-  @Test
-  public void getColumnNameForFieldThrowsIfTwoColumnsMatchField() {
-    mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-
-    TableMetaDataView tableMetaDataView = mock(TableMetaDataView.class);
-    HashSet<String> columnNames =
-        new HashSet<>(Arrays.asList(fieldName1.toUpperCase(), fieldName1.toLowerCase()));
-    when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
-
     expectedException.expect(JdbcConnectorException.class);
     expectedException
-        .expectMessage("The SQL table has at least two columns that match the PDX field: myField1");
-    mapping.getColumnNameForField(fieldName1, tableMetaDataView);
+        .expectMessage("A field mapping for the pdx field \"" + fieldName1 + "\" does not exist.");
 
+    mapping.getColumnNameForField(fieldName1);
   }
 
   @Test
-  public void throwsIfColumnNotMappedAndPdxClassNameDoesNotExist() {
+  public void getFieldNameForColumnThrowsIfColumnNotMapped() {
     mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-    TypeRegistry typeRegistry = mock(TypeRegistry.class);
-    when(typeRegistry.getPdxTypesForClassName("pdxClassName")).thenReturn(Collections.emptySet());
     expectedException.expect(JdbcConnectorException.class);
-    expectedException.expectMessage("The class pdxClassName has not been pdx serialized.");
+    expectedException
+        .expectMessage("A field mapping for the column \"columnName\" does not exist.");
 
-    mapping.getFieldNameForColumn("columnName", typeRegistry);
+    mapping.getFieldNameForColumn("columnName");
   }
 
   @Test
-  public void throwsIfColumnNotMappedAndPdxClassNameDoesExistButHasNoMatchingFields() {
+  public void getFieldNameForColumnReturnsFieldNameIfMapped() {
     String pdxClassName = "pdxClassName";
     String columnName = "columnName";
     mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    TypeRegistry typeRegistry = mock(TypeRegistry.class);
-    HashSet<PdxType> pdxTypes = new HashSet<>(Arrays.asList(mock(PdxType.class)));
-    when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
-    expectedException.expect(JdbcConnectorException.class);
-    expectedException.expectMessage("The class " + pdxClassName
-        + " does not have a field that matches the column " + columnName);
+    mapping.addFieldMapping(new FieldMapping(pdxClassName, null, columnName, null));
 
-    mapping.getFieldNameForColumn(columnName, typeRegistry);
+    assertThat(mapping.getFieldNameForColumn(columnName)).isEqualTo(pdxClassName);
   }
 
   @Test
-  public void throwsIfColumnNotMappedAndPdxClassNameDoesExistButHasMoreThanOneMatchingFields() {
+  public void getColumnNameForFieldReturnsColumnNameIfMapped() {
     String pdxClassName = "pdxClassName";
     String columnName = "columnName";
     mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    TypeRegistry typeRegistry = mock(TypeRegistry.class);
-    PdxType pdxType = mock(PdxType.class);
-    when(pdxType.getFieldNames())
-        .thenReturn(Arrays.asList(columnName.toLowerCase(), columnName.toUpperCase()));
-    HashSet<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
-    when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
-    expectedException.expect(JdbcConnectorException.class);
-    expectedException.expectMessage(
-        "Could not determine what pdx field to use for the column name " + columnName);
+    mapping.addFieldMapping(new FieldMapping(pdxClassName, null, columnName, null));
 
-    mapping.getFieldNameForColumn(columnName, typeRegistry);
-  }
-
-  @Test
-  public void returnsIfColumnNotMappedAndPdxClassNameDoesExistAndHasOneFieldThatInexactlyMatches() {
-    String pdxClassName = "pdxClassName";
-    String columnName = "columnName";
-    mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    TypeRegistry typeRegistry = mock(TypeRegistry.class);
-    PdxType pdxType = mock(PdxType.class);
-    when(pdxType.getFieldNames())
-        .thenReturn(Arrays.asList("someOtherField", columnName.toUpperCase()));
-    HashSet<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
-    when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
-
-    assertThat(mapping.getFieldNameForColumn(columnName, typeRegistry))
-        .isEqualTo(columnName.toUpperCase());
-  }
-
-  @Test
-  public void returnsIfColumnNotMappedAndPdxClassNameDoesExistAndHasOneFieldThatExactlyMatches() {
-    String pdxClassName = "pdxClassName";
-    String columnName = "columnName";
-    mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    TypeRegistry typeRegistry = mock(TypeRegistry.class);
-    PdxType pdxType = mock(PdxType.class);
-    when(pdxType.getPdxField(columnName)).thenReturn(mock(PdxField.class));
-    HashSet<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
-    when(typeRegistry.getPdxTypesForClassName(pdxClassName)).thenReturn(pdxTypes);
-
-    assertThat(mapping.getFieldNameForColumn(columnName, typeRegistry)).isEqualTo(columnName);
+    assertThat(mapping.getColumnNameForField(pdxClassName)).isEqualTo(columnName);
   }
 
   @Test
@@ -254,7 +154,6 @@ public class RegionMappingTest {
         new RegionMapping("regionName", "pdxClassName", null, "dataSourceName", null, null, null);
     assertThat(rm1).isEqualTo(rm2);
   }
-
 
   @Test
   public void verifyTwoInstancesThatAreEqualHaveSameHashCode() {
@@ -271,11 +170,12 @@ public class RegionMappingTest {
   public void verifyToStringGivenAllAttributes() {
     RegionMapping rm = new RegionMapping("regionName", "pdxClassName", "tableName",
         "dataSourceName", "ids", "catalog", "schema");
+    rm.addFieldMapping(new FieldMapping("pdxName", "pdxType", "jdbcName", "jdbcType"));
 
     String result = rm.toString();
 
     assertThat(result).isEqualTo(
-        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='tableName', dataSourceName='dataSourceName', ids='ids', catalog='catalog', schema='schema'}");
+        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='tableName', dataSourceName='dataSourceName', ids='ids', catalog='catalog', schema='schema', fieldMapping='[FieldMapping [pdxName=pdxName, pdxType=pdxType, jdbcName=jdbcName, jdbcType=jdbcType]]'}");
   }
 
   @Test
@@ -286,7 +186,7 @@ public class RegionMappingTest {
     String result = rm.toString();
 
     assertThat(result).isEqualTo(
-        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='null', dataSourceName='dataSourceName', ids='null', catalog='null', schema='null'}");
+        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='null', dataSourceName='dataSourceName', ids='null', catalog='null', schema='null', fieldMapping='[]'}");
   }
 
   @Test
@@ -377,6 +277,19 @@ public class RegionMappingTest {
         new RegionMapping(null, "pdxClassName", null, null, null, null, "schema1");
     RegionMapping rm2 =
         new RegionMapping(null, "pdxClassName", null, null, null, null, "schema2");
+    boolean result = rm1.equals(rm2);
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void verifyMappingWithDifferentFieldMappingsAreNotEqual() {
+    RegionMapping rm1 =
+        new RegionMapping(null, "pdxClassName", null, null, null, null, null);
+    rm1.addFieldMapping(new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myJdbcType"));
+    RegionMapping rm2 =
+        new RegionMapping(null, "pdxClassName", null, null, null, null, null);
+    rm2.addFieldMapping(
+        new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myOtherJdbcType"));
     boolean result = rm1.equals(rm2);
     assertThat(result).isFalse();
   }
