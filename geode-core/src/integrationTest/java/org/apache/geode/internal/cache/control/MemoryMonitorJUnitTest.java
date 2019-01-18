@@ -488,7 +488,7 @@ public class MemoryMonitorJUnitTest {
     }
     listener.resetThresholdCalls();
 
-    // test EVICTION to CRITICAL back to EVICTION
+    // test CRITICAL back to NORMAL
     hmm.updateStateAndSendEvent(95); // CRITICAL
     assertEquals(1, listener.getEvictionThresholdCalls());
     assertEquals(1, listener.getCriticalThresholdCalls());
@@ -497,7 +497,7 @@ public class MemoryMonitorJUnitTest {
     assertEquals(1, listener.getAllCalls());
     assertEquals(95, listener.getCurrentHeapPercentage());
     assertEquals(5, listener.getBytesFromThreshold());
-    hmm.updateStateAndSendEvent(75); // EVICTION
+    hmm.updateStateAndSendEvent(75); // NORMAL
     assertEquals(1, listener.getNormalCalls());
     assertEquals(1, listener.getEvictionThresholdCalls());
     assertEquals(1, listener.getCriticalThresholdCalls());

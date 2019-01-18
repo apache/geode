@@ -2509,7 +2509,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        int defaultTolerance = 1;
         HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         InternalResourceManager irm = cache.getInternalResourceManager();
@@ -2517,19 +2516,26 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         hmm.setTestMaxMemoryBytes(100);
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(1);
         irm.setCriticalHeapPercentage(95);
-        for (int i = 0; i < defaultTolerance; i++) {
+        int previousMemoryStateChangeTolerance = hmm.getMemoryStateChangeTolerance();
+        try {
+          int memoryStateChangeTolerance = 3;
+          hmm.setMemoryStateChangeTolerance(memoryStateChangeTolerance);
+          for (int i = 0; i < memoryStateChangeTolerance; i++) {
+            hmm.updateStateAndSendEvent(96);
+            assertFalse(hmm.getState().isCritical());
+          }
+          getCache().getLogger().fine(addExpectedExString);
           hmm.updateStateAndSendEvent(96);
+          assertTrue(hmm.getState().isCritical());
+          getCache().getLogger().fine(removeExpectedExString);
+          getCache().getLogger().fine(addExpectedBelow);
+          hmm.updateStateAndSendEvent(92);
+          getCache().getLogger().fine(removeExpectedBelow);
           assertFalse(hmm.getState().isCritical());
+          HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
+        } finally {
+          hmm.setMemoryStateChangeTolerance(previousMemoryStateChangeTolerance);
         }
-        getCache().getLogger().fine(addExpectedExString);
-        hmm.updateStateAndSendEvent(96);
-        assertTrue(hmm.getState().isCritical());
-        getCache().getLogger().fine(removeExpectedExString);
-        getCache().getLogger().fine(addExpectedBelow);
-        hmm.updateStateAndSendEvent(92);
-        getCache().getLogger().fine(removeExpectedBelow);
-        assertFalse(hmm.getState().isCritical());
-        HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
         return null;
       }
     });
@@ -2543,24 +2549,28 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
-        String vendor = System.getProperty("java.vendor");
-        boolean isSun = (vendor.contains("Sun") || vendor.contains("Oracle"));
-        int defaultTolerance = isSun ? 1 : 5;
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         InternalResourceManager irm = cache.getInternalResourceManager();
         HeapMemoryMonitor hmm = irm.getHeapMonitor();
         hmm.setTestMaxMemoryBytes(100);
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(1);
         irm.setEvictionHeapPercentage(50);
-        for (int i = 0; i < defaultTolerance; i++) {
+        int previousMemoryStateChangeTolerance = hmm.getMemoryStateChangeTolerance();
+        try {
+          int memoryStateChangeTolerance = 3;
+          hmm.setMemoryStateChangeTolerance(memoryStateChangeTolerance);
+          for (int i = 0; i < memoryStateChangeTolerance; i++) {
+            hmm.updateStateAndSendEvent(55);
+            assertFalse(hmm.getState().isEviction());
+          }
           hmm.updateStateAndSendEvent(55);
+          assertTrue(hmm.getState().isEviction());
+          hmm.updateStateAndSendEvent(45);
           assertFalse(hmm.getState().isEviction());
+          HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
+        } finally {
+          hmm.setMemoryStateChangeTolerance(previousMemoryStateChangeTolerance);
         }
-        hmm.updateStateAndSendEvent(55);
-        assertTrue(hmm.getState().isEviction());
-        hmm.updateStateAndSendEvent(45);
-        assertFalse(hmm.getState().isEviction());
-        HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
         return null;
       }
     });
