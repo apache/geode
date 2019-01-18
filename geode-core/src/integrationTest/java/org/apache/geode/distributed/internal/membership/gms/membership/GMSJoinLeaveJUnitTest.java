@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -208,6 +209,7 @@ public class GMSJoinLeaveJUnitTest {
     assertThatThrownBy(() -> gmsJoinLeave.findCoordinator())
         .isInstanceOf(SystemConnectException.class)
         .hasMessageContaining("Interrupted while trying to contact locators");
+    assertThat(Thread.currentThread().interrupted()).isTrue();
     verify(tcpClientWrapper, times(1)).sendCoordinatorFindRequest(any(InetSocketAddress.class),
         any(FindCoordinatorRequest.class), any(Integer.class));
   }
