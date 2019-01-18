@@ -1157,6 +1157,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             try {
               Thread.sleep(1000);
             } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              services.getCancelCriterion().checkCancelInProgress(e);
               throw new SystemConnectException("Interrupted while trying to contact locators");
             }
           }
