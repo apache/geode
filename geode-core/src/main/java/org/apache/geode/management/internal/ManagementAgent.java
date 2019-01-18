@@ -246,7 +246,7 @@ public class ManagementAgent {
       final String gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
       if (gemfireAPIWar == null) {
         final String message =
-            "Unable to find GEode Developer REST API WAR file; the Developer REST Interface for Geode will not be accessible.";
+            "Unable to find Geode Developer REST API WAR file; the Developer REST Interface for Geode will not be accessible.";
         setStatusMessage(managerBean, message);
         if (logger.isDebugEnabled()) {
           logger.debug(message);

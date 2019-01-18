@@ -676,7 +676,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     startConfigurationPersistenceService();
 
     if (myCache == null) {
-      logger.info("Peter: mycache is null");
       return;
     }
 
