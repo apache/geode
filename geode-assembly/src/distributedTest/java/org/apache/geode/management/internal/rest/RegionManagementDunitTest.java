@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal;
+package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

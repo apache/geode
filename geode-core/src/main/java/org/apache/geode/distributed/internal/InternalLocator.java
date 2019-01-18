@@ -866,6 +866,15 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       }
     }
 
+    // stop the managementwebapp
+    if (managementWebapp != null) {
+      try {
+        managementWebapp.stop();
+      } catch (Exception e) {
+        logger.error("unable to stop the management webapp.", e);
+      }
+    }
+
     removeLocator(this);
 
     handleShutdown();
@@ -894,15 +903,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
     if (this.myDs != null) {
       this.myDs.setDependentLocator(null);
-    }
-
-    // stop the managementwebapp first before closing the cache
-    if (managementWebapp != null) {
-      try {
-        managementWebapp.stop();
-      } catch (Exception e) {
-        logger.error("unable to stop the management webapp.", e);
-      }
     }
 
     if (this.myCache != null && !this.stoppedForReconnect && !this.forcedDisconnect) {
@@ -1095,7 +1095,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       if (isSharedConfigurationEnabled()) {
         this.configurationPersistenceService =
             new InternalConfigurationPersistenceService(newCache);
-        startConfigurationPersistenceService();
+        startClusterManagementService();
       }
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");

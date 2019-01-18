@@ -19,11 +19,11 @@ package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -38,20 +38,6 @@ public class ClusterConfigLocatorRestartDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  public static class TestDisconnectListener
-      implements InternalDistributedSystem.DisconnectListener {
-    static int disconnectCount;
-
-    public TestDisconnectListener() {
-      disconnectCount = 0;
-    }
-
-    @Override
-    public void onDisconnect(InternalDistributedSystem sys) {
-      disconnectCount += 1;
-    }
-  }
-
   @Test
   public void serverRestartsAfterLocatorReconnects() throws Exception {
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
@@ -61,12 +47,13 @@ public class ClusterConfigLocatorRestartDUnitTest {
     rule.startServerVM(1, locator0.getPort());
     MemberVM server2 = rule.startServerVM(2, locator0.getPort());
 
-    addDisconnectListener(locator0);
-
     server2.forceDisconnect();
     locator0.forceDisconnect();
 
-    waitForLocatorToReconnect(locator0);
+    // wait till locator is disconnected and reconnected
+    await().pollInterval(1, TimeUnit.SECONDS).until(() -> locator0.invoke("waitTillRestarted",
+        () -> ClusterStartupRule.getLocator().isReconnected()));
+
 
     rule.startServerVM(3, locator0.getPort());
 
@@ -102,25 +89,5 @@ public class ClusterConfigLocatorRestartDUnitTest {
     await()
         .untilAsserted(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
             .tableHasColumnOnlyWithValues("Name", "locator-1", "server-2", "server-3", "server-4"));
-  }
-
-  private void addDisconnectListener(MemberVM member) {
-    member.invoke(() -> {
-      InternalDistributedSystem ds =
-          (InternalDistributedSystem) InternalLocator.getLocator().getDistributedSystem();
-      ds.addDisconnectListener(new TestDisconnectListener());
-    });
-  }
-
-  private void waitForLocatorToReconnect(MemberVM locator) {
-    // Ensure that disconnect/reconnect sequence starts otherwise in the next await we might end up
-    // with the initial locator instead of a newly created one.
-    await()
-        .until(() -> locator.invoke(() -> TestDisconnectListener.disconnectCount > 0));
-
-    await().until(() -> locator.invoke(() -> {
-      InternalLocator intLocator = InternalLocator.getLocator();
-      return intLocator != null && intLocator.isSharedConfigurationRunning();
-    }));
   }
 }

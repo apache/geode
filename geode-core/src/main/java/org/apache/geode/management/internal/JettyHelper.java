@@ -186,7 +186,6 @@ public class JettyHelper {
     tmpPath.mkdirs();
     webapp.setTempDirectory(tmpPath);
     ((HandlerCollection) jetty.getHandler()).addHandler(webapp);
-
     // if we are adding this webapp after the jetty server has already started, we will need to
     // manually start the webapp.
     if (jetty.isStarted()) {
