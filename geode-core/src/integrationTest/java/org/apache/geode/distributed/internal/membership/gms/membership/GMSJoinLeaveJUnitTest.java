@@ -15,6 +15,8 @@
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -49,6 +51,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.internal.verification.Times;
 import org.mockito.verification.Timeout;
 
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -186,6 +189,29 @@ public class GMSJoinLeaveJUnitTest {
       return isCoordinator;
     }
 
+  }
+
+  @Test
+  public void testFindCoordinatorPausesWhenLocatorWaitTimeIsSet() throws Exception {
+    initMocks(false);
+    when(mockConfig.getLocatorWaitTime()).thenReturn(15000);
+
+    TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
+    gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
+
+    when(tcpClientWrapper.sendCoordinatorFindRequest(isA(InetSocketAddress.class),
+        isA(FindCoordinatorRequest.class), isA(Integer.class)))
+            .thenThrow(new IOException("Connection refused"));
+
+    // interrupt this thread so that findCoordinator() won't keep looping
+    // and will throw an exception when going to pause
+    Thread.currentThread().interrupt();
+    assertThatThrownBy(() -> gmsJoinLeave.findCoordinator())
+        .isInstanceOf(SystemConnectException.class)
+        .hasMessageContaining("Interrupted while trying to contact locators");
+    assertThat(Thread.currentThread().interrupted()).isTrue();
+    verify(tcpClientWrapper, times(1)).sendCoordinatorFindRequest(any(InetSocketAddress.class),
+        any(FindCoordinatorRequest.class), any(Integer.class));
   }
 
   @Test

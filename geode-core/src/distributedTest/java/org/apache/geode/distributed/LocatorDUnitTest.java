@@ -1678,7 +1678,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     final Properties properties =
         getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(LOG_LEVEL, "finest");
     addDSProps(properties);
     if (stateFile.exists()) {
       assertThat(stateFile.delete()).isTrue();
