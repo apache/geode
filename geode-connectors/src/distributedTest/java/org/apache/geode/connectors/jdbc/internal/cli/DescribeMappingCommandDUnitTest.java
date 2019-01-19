@@ -74,6 +74,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     return regionPath;
   }
 
+  // TODO: need to add test for server group
   @After
   public void cleanUp() throws Exception {
     startupRule.stop(0);
@@ -204,7 +205,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     InternalCache cache = ClusterStartupRule.getCache();
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     service.createRegionMapping(new RegionMapping(TEST_REGION, "myPdxClass",
-        "testTable", "connection", "myId", "myCatalog", "mySchema"));
+        "testTable", "connection", "myId", "myCatalog", "mySchema", null));
     assertThat(service.getMappingForRegion(TEST_REGION)).isNotNull();
   }
 }

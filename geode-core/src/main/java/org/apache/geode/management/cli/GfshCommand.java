@@ -185,6 +185,10 @@ public abstract class GfshCommand implements CommandMarker {
     return CliUtil.getRegionAssociatedMembers(regionPath, cache, true);
   }
 
+  public Set<DistributedMember> findMembersForRegion(String regionPath, String serverGroup) {
+    return CliUtil.getRegionAssociatedMembers(regionPath, cache, true, serverGroup);
+  }
+
   public Set<DistributedMember> findAnyMembersForRegion(String regionPath) {
     return CliUtil.getRegionAssociatedMembers(regionPath, cache, false);
   }

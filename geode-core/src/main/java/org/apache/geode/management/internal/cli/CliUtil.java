@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -111,7 +112,15 @@ public class CliUtil {
    * @return a Set of DistributedMember for members that have the specified <code>region</code>.
    */
   public static Set<DistributedMember> getRegionAssociatedMembers(String region,
-      final InternalCache cache, boolean returnAll) {
+      final InternalCache cache,
+      boolean returnAll) {
+    return getRegionAssociatedMembers(region, cache, returnAll, null);
+  }
+
+  public static Set<DistributedMember> getRegionAssociatedMembers(String region,
+      final InternalCache cache,
+      boolean returnAll,
+      String serverGroup) {
     if (region == null || region.isEmpty()) {
       return Collections.emptySet();
     }
@@ -133,13 +142,12 @@ public class CliUtil {
     allClusterMembers.add(cache.getDistributedSystem().getDistributedMember());
 
     for (DistributedMember member : allClusterMembers) {
-      for (String regionAssociatedMemberName : regionAssociatedMemberNames) {
-        String name = MBeanJMXAdapter.getMemberNameOrUniqueId(member);
-        if (name.equals(regionAssociatedMemberName)) {
-          matchedMembers.add(member);
-          if (!returnAll) {
-            return matchedMembers;
-          }
+      List<String> regionAssociatedMemberNamesSet = Arrays.asList(regionAssociatedMemberNames);
+      String name = MBeanJMXAdapter.getMemberNameOrUniqueId(member);
+      if (regionAssociatedMemberNamesSet.contains(name)) {
+        matchedMembers.add(member);
+        if (!returnAll) {
+          return matchedMembers;
         }
       }
     }
@@ -152,7 +160,8 @@ public class CliUtil {
    * @param returnAll if true, returns all matching members, otherwise, returns only one.
    */
   public static Set<DistributedMember> getQueryRegionsAssociatedMembers(Set<String> regions,
-      final InternalCache cache, boolean returnAll) {
+      final InternalCache cache,
+      boolean returnAll) {
     Set<DistributedMember> results = regions.stream()
         .map(region -> getRegionAssociatedMembers(region, cache, true)).reduce((s1, s2) -> {
           s1.retainAll(s2);
@@ -246,7 +255,8 @@ public class CliUtil {
    * groups or members.
    */
   public static Set<DistributedMember> findMembersIncludingLocators(String[] groups,
-      String[] members, InternalCache cache) {
+      String[] members,
+      InternalCache cache) {
     Set<DistributedMember> allMembers = getAllMembers(cache);
     return findMembers(allMembers, groups, members);
   }
@@ -553,8 +563,9 @@ public class CliUtil {
     } catch (IOException | InterruptedException e) {
       Gfsh.printlnErr(e.getMessage());
     } finally {
-      if (file != null)
+      if (file != null) {
         file.delete();
+      }
     }
   }
 

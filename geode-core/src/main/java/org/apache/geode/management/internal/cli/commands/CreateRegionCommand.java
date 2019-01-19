@@ -92,7 +92,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String templateRegion,
-      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+      @CliOption(key = {CliStrings.GROUPS, CliStrings.GROUP},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = {CliStrings.IFNOTEXISTS, CliStrings.CREATE_REGION__SKIPIFEXISTS},
