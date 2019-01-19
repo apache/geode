@@ -34,6 +34,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.fake.Fakes;
 
 public class HeapMemoryMonitorTest {
 
@@ -54,7 +55,7 @@ public class HeapMemoryMonitorTest {
 
   @Before
   public void setup() {
-    InternalCache internalCache = mock(InternalCache.class);
+    InternalCache internalCache = Fakes.cache();
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
     function = mock(Function.class);
     member = mock(InternalDistributedMember.class);

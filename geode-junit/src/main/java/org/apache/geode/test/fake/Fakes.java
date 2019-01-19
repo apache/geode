@@ -30,6 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -75,6 +76,7 @@ public class Fakes {
     LogWriter logger = mock(LogWriter.class);
     Statistics stats = mock(Statistics.class);
     TXManagerImpl txManager = mock(TXManagerImpl.class);
+    QueryMonitor queryMonitor = mock(QueryMonitor.class);
 
     InternalDistributedMember member;
     member = new InternalDistributedMember("localhost", 5555);
@@ -93,6 +95,8 @@ public class Fakes {
     when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
     when(cache.getPdxRegistry()).thenReturn(pdxRegistryMock);
     when(cache.getTxManager()).thenReturn(txManager);
+    when(cache.getLogger()).thenReturn(logger);
+    when(cache.getQueryMonitor()).thenReturn(queryMonitor);
 
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);
