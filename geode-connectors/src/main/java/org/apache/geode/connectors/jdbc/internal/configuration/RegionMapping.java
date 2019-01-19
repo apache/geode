@@ -170,6 +170,10 @@ public class RegionMapping implements CacheElement {
     return tableName;
   }
 
+  public List<FieldMapping> getFieldMappings() {
+    return this.fieldMappings;
+  }
+
   public void addFieldMapping(FieldMapping value) {
     this.fieldMappings.add(value);
     this.pdxToFieldMappings.put(value.getPdxName(), value);

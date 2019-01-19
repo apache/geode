@@ -31,28 +31,40 @@ import org.apache.geode.pdx.internal.DataSize;
  * @since GemFire 6.6.2
  */
 public enum FieldType {
-  BOOLEAN(true, DataSize.BOOLEAN_SIZE, "boolean", new byte[] {0}, false),
-  BYTE(true, DataSize.BYTE_SIZE, "byte", new byte[] {0}, 0),
-  CHAR(true, DataSize.CHAR_SIZE, "char", new byte[] {0, 0}, (char) 0),
-  SHORT(true, DataSize.SHORT_SIZE, "short", new byte[] {0, 0}, 0),
-  INT(true, DataSize.INTEGER_SIZE, "int", new byte[] {0, 0, 0, 0}, 0),
-  LONG(true, DataSize.LONG_SIZE, "long", new byte[] {0, 0, 0, 0, 0, 0, 0, 0}, 0),
-  FLOAT(true, DataSize.FLOAT_SIZE, "float", new byte[] {0, 0, 0, 0}, 0),
-  DOUBLE(true, DataSize.DOUBLE_SIZE, "double", new byte[] {0, 0, 0, 0, 0, 0, 0, 0}, 0),
-  DATE(true, DataSize.DATE_SIZE, "Date", new byte[] {-1, -1, -1, -1, -1, -1, -1, -1}, null),
-  STRING(false, -1, "String", new byte[] {DSCODE.NULL_STRING.toByte()}, null),
-  OBJECT(false, -1, "Object", new byte[] {DSCODE.NULL.toByte()}, null),
-  BOOLEAN_ARRAY(false, -1, "boolean[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  CHAR_ARRAY(false, -1, "char[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  BYTE_ARRAY(false, -1, "byte[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  SHORT_ARRAY(false, -1, "short[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  INT_ARRAY(false, -1, "int[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  LONG_ARRAY(false, -1, "long[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  FLOAT_ARRAY(false, -1, "float[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  DOUBLE_ARRAY(false, -1, "double[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  STRING_ARRAY(false, -1, "String[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  OBJECT_ARRAY(false, -1, "Object[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  ARRAY_OF_BYTE_ARRAYS(false, -1, "byte[][]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null);
+  BOOLEAN(true, DataSize.BOOLEAN_SIZE, "boolean", new byte[] {0}, false, boolean.class),
+  BYTE(true, DataSize.BYTE_SIZE, "byte", new byte[] {0}, 0, byte.class),
+  CHAR(true, DataSize.CHAR_SIZE, "char", new byte[] {0, 0}, (char) 0, char.class),
+  SHORT(true, DataSize.SHORT_SIZE, "short", new byte[] {0, 0}, 0, short.class),
+  INT(true, DataSize.INTEGER_SIZE, "int", new byte[] {0, 0, 0, 0}, 0, int.class),
+  LONG(true, DataSize.LONG_SIZE, "long", new byte[] {0, 0, 0, 0, 0, 0, 0, 0}, 0, long.class),
+  FLOAT(true, DataSize.FLOAT_SIZE, "float", new byte[] {0, 0, 0, 0}, 0, float.class),
+  DOUBLE(true, DataSize.DOUBLE_SIZE, "double", new byte[] {0, 0, 0, 0, 0, 0, 0, 0}, 0,
+      double.class),
+  DATE(true, DataSize.DATE_SIZE, "Date", new byte[] {-1, -1, -1, -1, -1, -1, -1, -1}, null,
+      Date.class),
+  STRING(false, -1, "String", new byte[] {DSCODE.NULL_STRING.toByte()}, null, String.class),
+  OBJECT(false, -1, "Object", new byte[] {DSCODE.NULL.toByte()}, null, Object.class),
+  BOOLEAN_ARRAY(false, -1, "boolean[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      boolean[].class),
+  CHAR_ARRAY(false, -1, "char[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      char[].class),
+  BYTE_ARRAY(false, -1, "byte[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      byte[].class),
+  SHORT_ARRAY(false, -1, "short[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      short[].class),
+  INT_ARRAY(false, -1, "int[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null, int[].class),
+  LONG_ARRAY(false, -1, "long[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      long[].class),
+  FLOAT_ARRAY(false, -1, "float[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      float[].class),
+  DOUBLE_ARRAY(false, -1, "double[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      double[].class),
+  STRING_ARRAY(false, -1, "String[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      String[].class),
+  OBJECT_ARRAY(false, -1, "Object[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      Object[].class),
+  ARRAY_OF_BYTE_ARRAYS(false, -1, "byte[][]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null,
+      byte[][].class);
 
   private final boolean isFixedWidth;
   /**
@@ -62,14 +74,16 @@ public enum FieldType {
   private final String name;
   private final ByteBuffer defaultSerializedValue;
   private final Object defaultValue;
+  private final Class<?> fieldClass;
 
   private FieldType(boolean isFixedWidth, int width, String name, byte[] defaultBytes,
-      Object defaultValue) {
+      Object defaultValue, Class<?> fieldClass) {
     this.isFixedWidth = isFixedWidth;
     this.width = width;
     this.name = name;
     this.defaultSerializedValue = ByteBuffer.wrap(defaultBytes).asReadOnlyBuffer();
     this.defaultValue = defaultValue;
+    this.fieldClass = fieldClass;
   }
 
   /**
@@ -97,6 +111,14 @@ public enum FieldType {
    */
   public ByteBuffer getDefaultBytes() {
     return this.defaultSerializedValue;
+  }
+
+  /**
+   * @return the Class that corresponds to this FieldType.
+   * @since Geode 1.9
+   */
+  public Class<?> getFieldClass() {
+    return this.fieldClass;
   }
 
   /**

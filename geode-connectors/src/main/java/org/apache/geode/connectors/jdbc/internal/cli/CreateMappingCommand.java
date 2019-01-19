@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -125,17 +127,19 @@ public class CreateMappingCommand extends SingleGfshCommand {
       return ResultModel.createError(ex.getMessage());
     }
 
-    // Do the following on one and only one targetMember:
-    // 1. connect to the database (using dataSourceName)
-    // 2. read the table meta data
-    // 3. generates a pdx type using PdxInstanceFactory with null field values
-    // 4. return the field mapping info
-    // The field mapping info will be passed to CreateMappingFunction
-    // The field mapping will have the following:
-    // 1. pdx field name
-    // 2. pdx field type (an instance of org.apache.geode.pdx.FieldType)
-    // 3. jdbc column name
-    // 4. jdbc column type (an instance of java.sql.JDBCType)
+    CliFunctionResult preconditionCheckResult =
+        executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(), mapping,
+            targetMembers.iterator().next());
+    if (preconditionCheckResult.isSuccessful()) {
+      ArrayList<FieldMapping> fieldMappings =
+          (ArrayList<FieldMapping>) preconditionCheckResult.getResultObject();
+      for (FieldMapping fieldMapping : fieldMappings) {
+        mapping.addFieldMapping(fieldMapping);
+      }
+    } else {
+      String message = preconditionCheckResult.getStatusMessage();
+      return ResultModel.createError(message);
+    }
 
     // action
     Object[] arguments = new Object[] {mapping, synchronous};
