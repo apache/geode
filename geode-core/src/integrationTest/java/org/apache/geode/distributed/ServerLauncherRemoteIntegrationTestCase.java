@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.internal.cache.AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,7 +37,6 @@ import org.junit.Before;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link ServerLauncher} as an application main in a
@@ -99,7 +99,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   }
 
   protected void assertStopOf(final Process process) {
-    GeodeAwaitility.await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   protected void assertThatPidIsAlive(final int pid) {
@@ -197,10 +197,25 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   @Override
   protected ServerLauncher awaitStart(final ServerLauncher launcher) {
-    GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
+    await().untilAsserted(() -> {
+      try {
+        assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE);
+      } catch (Exception e) {
+        throw new AssertionError(statusFailedWithException(e), e);
+      }
+    });
     assertThat(process.isAlive()).isTrue();
     return launcher;
+  }
+
+  private String statusFailedWithException(Exception e) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Status failed with exception: ");
+    sb.append("process.isAlive()=").append(process.isAlive());
+    sb.append(", processErrReader").append(processErrReader);
+    sb.append(", processOutReader").append(processOutReader);
+    sb.append(", message").append(e.getMessage());
+    return sb.toString();
   }
 
   private InputListener createBindExceptionListener(final String name,

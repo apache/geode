@@ -17,6 +17,7 @@ package org.apache.geode.distributed;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.internal.DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,7 +37,6 @@ import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link LocatorLauncher} as an application main in a
@@ -88,7 +88,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   }
 
   protected void assertStopOf(final Process process) {
-    GeodeAwaitility.await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
+    await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   /**
@@ -195,10 +195,25 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
 
   @Override
   protected LocatorLauncher awaitStart(final LocatorLauncher launcher) {
-    GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE));
+    await().untilAsserted(() -> {
+      try {
+        assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE);
+      } catch (Exception e) {
+        throw new AssertionError(statusFailedWithException(e), e);
+      }
+    });
     assertThat(process.isAlive()).isTrue();
     return launcher;
+  }
+
+  protected String statusFailedWithException(Exception e) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Status failed with exception: ");
+    sb.append("process.isAlive()=").append(process.isAlive());
+    sb.append(", processErrReader").append(processErrReader);
+    sb.append(", processOutReader").append(processOutReader);
+    sb.append(", message").append(e.getMessage());
+    return sb.toString();
   }
 
   private InputListener createBindExceptionListener(final String name,
