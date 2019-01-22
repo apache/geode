@@ -17,13 +17,26 @@
 
 package org.apache.geode.management.internal.configuration.realizers;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.util.RegionPath;
+import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 
 public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig> {
   public RegionConfigRealizer() {}
@@ -31,36 +44,168 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
   @Override
   public void create(RegionConfig regionConfig, Cache cache) {
     String regionPath = regionConfig.getName();
-    if (regionConfig.getRegionAttributes() == null) {
-      regionConfig.setRegionAttributes(new RegionAttributesType());
-    }
-
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
-    switch (regionConfig.getRefid()) {
-      case "PARTITION":
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        RegionAttributesType.PartitionAttributes partitionAttributes =
-            new RegionAttributesType.PartitionAttributes();
-        partitionAttributes.setRedundantCopies("1");
-        regionAttributes.setPartitionAttributes(partitionAttributes);
-        break;
-      case "REPLICATE":
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
-        break;
-      default:
-        break;
+    RegionFactory factory = cache.createRegionFactory();
+
+    factory.setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().name()));
+
+    if (regionAttributes.getScope() != null) {
+      factory.setScope(Scope.fromString(regionAttributes.getScope().name()));
     }
 
-    RegionFactory factory = cache.createRegionFactory();
+    if (regionAttributes.getCacheLoader() != null) {
+      ((RegionFactory<Object, Object>) factory)
+          .setCacheLoader(DeclarableTypeInstantiator.newInstance(regionAttributes.getCacheLoader(),
+              cache));
+    }
+
+    if (regionAttributes.getCacheWriter() != null) {
+      ((RegionFactory<Object, Object>) factory)
+          .setCacheWriter(DeclarableTypeInstantiator.newInstance(regionAttributes.getCacheWriter(),
+              cache));
+    }
+
+    if (regionAttributes.getCacheListeners() != null) {
+      List<DeclarableType> configListeners = regionAttributes.getCacheListeners();
+      CacheListener[] listeners = new CacheListener[configListeners.size()];
+      for (int i = 0; i < configListeners.size(); i++) {
+        listeners[i] = DeclarableTypeInstantiator.newInstance(configListeners.get(i), cache);
+      }
+      ((RegionFactory<Object, Object>) factory).initCacheListeners(listeners);
+    }
+
+    final String keyConstraint = regionAttributes.getKeyConstraint();
+    final String valueConstraint = regionAttributes.getValueConstraint();
+    if (keyConstraint != null && !keyConstraint.isEmpty()) {
+      Class<Object> keyConstraintClass =
+          CliUtil.forName(keyConstraint, CliStrings.CREATE_REGION__KEYCONSTRAINT);
+      ((RegionFactory<Object, Object>) factory).setKeyConstraint(keyConstraintClass);
+    }
+
+    if (valueConstraint != null && !valueConstraint.isEmpty()) {
+      Class<Object> valueConstraintClass =
+          CliUtil.forName(valueConstraint, CliStrings.CREATE_REGION__VALUECONSTRAINT);
+      ((RegionFactory<Object, Object>) factory).setValueConstraint(valueConstraintClass);
+    }
+
+    if (regionAttributes.getCompressor() != null) {
+      ((RegionFactory<Object, Object>) factory)
+          .setCompressor(DeclarableTypeInstantiator.newInstance(regionAttributes.getCompressor()));
+    }
+
     if (regionAttributes.getPartitionAttributes() != null) {
       factory.setPartitionAttributes(
-          PartitionAttributesImpl.fromConfig(regionAttributes.getPartitionAttributes()));
+          PartitionAttributesImpl.fromConfig(regionAttributes.getPartitionAttributes(), cache));
     }
 
-    factory
-        .setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().value().toUpperCase()
-            .replace("-", "_")));
-    factory.create(regionPath);
+    if (regionAttributes.getEntryIdleTime() != null) {
+      RegionAttributesType.ExpirationAttributesType eitl = regionAttributes.getEntryIdleTime();
+      ((RegionFactory<Object, Object>) factory).setEntryIdleTimeout(
+          new ExpirationAttributes(Integer.valueOf(eitl.getTimeout()),
+              ExpirationAction.fromXmlString(eitl.getAction())));
+
+
+      if (eitl.getCustomExpiry() != null) {
+        ((RegionFactory<Object, Object>) factory).setCustomEntryIdleTimeout(
+            DeclarableTypeInstantiator.newInstance(eitl.getCustomExpiry(),
+                cache));
+      }
+    }
+
+    if (regionAttributes.getEntryTimeToLive() != null) {
+      RegionAttributesType.ExpirationAttributesType ettl = regionAttributes.getEntryTimeToLive();
+      ((RegionFactory<Object, Object>) factory).setEntryTimeToLive(
+          new ExpirationAttributes(Integer.valueOf(ettl.getTimeout()),
+              ExpirationAction.fromXmlString(ettl.getAction())));
+
+      if (ettl.getCustomExpiry() != null) {
+        ((RegionFactory<Object, Object>) factory)
+            .setCustomEntryTimeToLive(DeclarableTypeInstantiator.newInstance(ettl.getCustomExpiry(),
+                cache));
+      }
+    }
+
+    if (regionAttributes.getRegionIdleTime() != null) {
+      RegionAttributesType.ExpirationAttributesType ritl = regionAttributes.getRegionIdleTime();
+      ((RegionFactory<Object, Object>) factory).setRegionIdleTimeout(
+          new ExpirationAttributes(Integer.valueOf(ritl.getTimeout()),
+              ExpirationAction.fromXmlString(ritl.getAction())));
+    }
+
+    if (regionAttributes.getRegionTimeToLive() != null) {
+      RegionAttributesType.ExpirationAttributesType rttl = regionAttributes.getRegionTimeToLive();
+      ((RegionFactory<Object, Object>) factory).setRegionTimeToLive(
+          new ExpirationAttributes(Integer.valueOf(rttl.getTimeout()),
+              ExpirationAction.fromXmlString(rttl.getAction())));
+    }
+
+    if (regionAttributes.getEvictionAttributes() != null) {
+      try {
+        factory.setEvictionAttributes(
+            EvictionAttributesImpl.fromConfig(regionAttributes.getEvictionAttributes()));
+      } catch (Exception e) {
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE);
+      }
+    }
+
+    if (regionAttributes.getDiskStoreName() != null) {
+      factory.setDiskStoreName(regionAttributes.getDiskStoreName());
+    }
+
+    if (regionAttributes.isDiskSynchronous() != null) {
+      factory.setDiskSynchronous(regionAttributes.isDiskSynchronous());
+    }
+
+    if (regionAttributes.isOffHeap() != null) {
+      factory.setOffHeap(regionAttributes.isOffHeap());
+    }
+
+    if (regionAttributes.isStatisticsEnabled() != null) {
+      factory.setStatisticsEnabled(regionAttributes.isStatisticsEnabled());
+    }
+
+    if (regionAttributes.isEnableAsyncConflation() != null) {
+      factory.setEnableAsyncConflation(regionAttributes.isEnableAsyncConflation());
+    }
+
+    if (regionAttributes.isEnableSubscriptionConflation() != null) {
+      factory.setEnableSubscriptionConflation(regionAttributes.isEnableSubscriptionConflation());
+    }
+
+    if (regionAttributes.getGatewaySenderIds() != null) {
+      Arrays.stream(regionAttributes.getGatewaySenderIds().split(","))
+          .forEach(gsi -> factory.addGatewaySenderId(gsi));
+    }
+
+    if (regionAttributes.getAsyncEventQueueIds() != null) {
+      Arrays.stream(regionAttributes.getAsyncEventQueueIds().split(","))
+          .forEach(gsi -> factory.addAsyncEventQueueId(gsi));
+    }
+
+    factory.setConcurrencyChecksEnabled(regionAttributes.isConcurrencyChecksEnabled());
+
+    if (regionAttributes.getConcurrencyLevel() != null) {
+      factory.setConcurrencyLevel(Integer.valueOf(regionAttributes.getConcurrencyLevel()));
+    }
+
+    if (regionAttributes.isCloningEnabled() != null) {
+      factory.setCloningEnabled(regionAttributes.isCloningEnabled());
+    }
+
+    if (regionAttributes.isMulticastEnabled() != null) {
+      factory.setMulticastEnabled(regionAttributes.isMulticastEnabled());
+    }
+
+    RegionPath regionPathData = new RegionPath(regionPath);
+    String regionName = regionPathData.getName();
+    String parentRegionPath = regionPathData.getParent();
+    if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
+      Region<?, ?> parentRegion = cache.getRegion(parentRegionPath);
+      factory.createSubregion(parentRegion, regionName);
+    } else {
+      factory.create(regionName);
+    }
   }
 
   @Override
@@ -73,4 +218,6 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
   @Override
   public void delete(RegionConfig config, Cache cache) {}
+
+
 }

@@ -77,5 +77,8 @@ public class RegionManagementDunitTest {
               .getCacheConfig("cluster");
       assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("customers");
     });
+
+    // verify that additional server can be started with the cluster configuration
+    cluster.startServerVM(2, locator.getPort());
   }
 }

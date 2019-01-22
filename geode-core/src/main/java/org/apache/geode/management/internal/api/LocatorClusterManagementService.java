@@ -18,14 +18,17 @@
 package org.apache.geode.management.internal.api;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -36,7 +39,8 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationMutator;
-import org.apache.geode.management.internal.configuration.mutators.ConfigurationMutatorFactory;
+import org.apache.geode.management.internal.configuration.mutators.RegionConfigMutator;
+import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.exceptions.NoMembersException;
 
@@ -44,19 +48,40 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private static Logger logger = LogService.getLogger();
   private DistributionManager distributionManager;
   private ConfigurationPersistenceService persistenceService;
+  private HashMap<Class, ConfigurationMutator> mutators;
+  private HashMap<Class, ConfigurationValidator> validators;
 
   public LocatorClusterManagementService(DistributionManager distributionManager,
       ConfigurationPersistenceService persistenceService) {
+    this(distributionManager, persistenceService, new HashMap(), new HashMap());
+    // initialize the list of mutators
+    mutators.put(RegionConfig.class, new RegionConfigMutator());
+
+    // initialize the list of validators
+  }
+
+  @VisibleForTesting
+  public LocatorClusterManagementService(DistributionManager distributionManager,
+      ConfigurationPersistenceService persistenceService, HashMap mutators, HashMap validators) {
     this.distributionManager = distributionManager;
     this.persistenceService = persistenceService;
+    this.mutators = mutators;
+    this.validators = validators;
   }
 
   @Override
-  public ClusterManagementResult create(CacheElement config) {
+  public ClusterManagementResult create(CacheElement config, String group) {
+    if (group == null) {
+      group = "cluster";
+    }
+
     ClusterManagementResult result = new ClusterManagementResult();
-    String group = "cluster";
-    ConfigurationMutator configurationMutator =
-        (new ConfigurationMutatorFactory()).generate(config);
+    ConfigurationMutator configurationMutator = mutators.get(config.getClass());
+
+    ConfigurationValidator validator = validators.get(config.getClass());
+    if (validator != null) {
+      validator.validate(config);
+    }
     final boolean configurationPersistenceEnabled = persistenceService != null;
 
     // exit early if config element already exists in cache config
@@ -84,13 +109,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // persist configuration in cache config
     if (configurationPersistenceEnabled) {
-      persistenceService.updateCacheConfig(group, cacheConfigForGroup -> {
+      String finalGroup = group;
+      persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
         try {
           configurationMutator.add(config, cacheConfigForGroup);
           result.setClusterConfigPersisted(true,
-              "successfully persisted config for " + group);
+              "successfully persisted config for " + finalGroup);
         } catch (Exception e) {
-          String message = "failed to update cluster config for " + group;
+          String message = "failed to update cluster config for " + finalGroup;
           logger.error(message, e);
           result.setClusterConfigPersisted(false, message);
           return null;
@@ -104,12 +130,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult delete(CacheElement config) {
+  public ClusterManagementResult delete(CacheElement config, String group) {
     throw new NotImplementedException();
   }
 
   @Override
-  public ClusterManagementResult update(CacheElement config) {
+  public ClusterManagementResult update(CacheElement config, String group) {
     throw new NotImplementedException();
   }
 

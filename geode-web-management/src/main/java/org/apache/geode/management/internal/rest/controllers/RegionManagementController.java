@@ -37,7 +37,7 @@ public class RegionManagementController extends AbstractManagementController {
   public ResponseEntity<ClusterManagementResult> createRegion(
       @RequestBody RegionConfig regionConfig) {
     ClusterManagementResult result =
-        clusterManagementService.create(regionConfig);
+        clusterManagementService.create(regionConfig, "cluster");
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
   }

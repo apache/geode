@@ -66,6 +66,7 @@ import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 
 /**
  * This class contains utility methods used by classes used to build the Command Line Interface
@@ -468,6 +469,10 @@ public class CliUtil {
     return loadedClass;
   }
 
+  /**
+   * @deprecated use {@link DeclarableTypeInstantiator}
+   */
+  @Deprecated
   public static <K> K newInstance(Class<K> klass, String neededFor) {
     K instance;
     try {
