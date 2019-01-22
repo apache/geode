@@ -22,7 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.management.JMXNotificationType.REGION_CREATED;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberMBeanName;
-import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberNameOrId;
+import static org.apache.geode.management.internal.MBeanJMXAdapter.getMemberNameOrUniqueId;
 import static org.apache.geode.management.internal.ManagementConstants.REGION_CREATED_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
@@ -175,7 +175,7 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
     for (VM memberVM : toArray(memberVM1, memberVM2, memberVM3)) {
       memberVM.invoke(() -> {
         Notification notification =
-            new Notification(REGION_CREATED, getMemberNameOrId(distributedMember),
+            new Notification(REGION_CREATED, getMemberNameOrUniqueId(distributedMember),
                 SequenceNumber.next(), System.currentTimeMillis(), REGION_CREATED_PREFIX + "/test");
         NotificationBroadcasterSupport notifier = (MemberMBean) managementService.getMemberMXBean();
         notifier.sendNotification(notification);

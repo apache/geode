@@ -330,8 +330,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(100);
-    String uuid = SHOW_UUIDS ? (";uuid=" + getUUID().toStringLong())
-        : ((this.uuidLSBs == 0 && this.uuidMSBs == 0) ? "; no uuid" : "; uuid set");
+    String uuid = formatUUID();
 
     sb.append("GMSMember[addr=").append(inetAddr).append(";port=").append(udpPort)
         .append(";processId=").append(processId).append(";name=").append(name).append(uuid)
@@ -339,6 +338,15 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return sb.toString();
   }
 
+  @Override
+  public String getUniqueId() {
+    StringBuilder sb = new StringBuilder(100);
+    sb.append("GMSMember[addr=").append(inetAddr);
+    sb.append(";processId=").append(processId);
+    sb.append(";name=").append(name);
+    sb.append(formatUUID()).append("]");
+    return sb.toString();
+  }
 
   public int getUdpPort() {
     return udpPort;
@@ -565,5 +573,10 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     } catch (EOFException e) {
       // some IDs do not have UUID or membership weight information
     }
+  }
+
+  private String formatUUID() {
+    return SHOW_UUIDS ? ";uuid=" + getUUID().toStringLong()
+        : uuidLSBs == 0 && uuidMSBs == 0 ? "; no uuid" : "; uuid set";
   }
 }

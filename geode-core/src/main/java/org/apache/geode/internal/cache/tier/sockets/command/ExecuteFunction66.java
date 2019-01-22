@@ -164,7 +164,7 @@ public class ExecuteFunction66 extends BaseCommand {
         functionObject = internalFunctionExecutionService.getFunction((String) function);
         if (functionObject == null) {
           String message = String
-              .format("Function named %s is not registered to FunctionService for %s", function);
+              .format("Function named %s is not registered to FunctionService", function);
           logger.warn("{}: {}", serverConnection.getName(), message);
           sendError(hasResult, clientMessage, message, serverConnection);
           return;

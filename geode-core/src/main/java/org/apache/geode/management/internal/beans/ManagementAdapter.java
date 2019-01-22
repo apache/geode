@@ -149,7 +149,7 @@ public class ManagementAdapter {
           InternalDistributedSystem.getConnectedInstance().getDistributedMember());
 
       memberSource = MBeanJMXAdapter
-          .getMemberNameOrId(internalCache.getDistributedSystem().getDistributedMember());
+          .getMemberNameOrUniqueId(internalCache.getDistributedSystem().getDistributedMember());
 
       // Type casting to MemberMXBean to expose only those methods described in
       // the interface;

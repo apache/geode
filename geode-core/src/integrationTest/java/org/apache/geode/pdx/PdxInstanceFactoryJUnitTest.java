@@ -1349,6 +1349,13 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
+  public void createPdxInstanceFactoryWithNullClassNameThrowsException() {
+    assertThatThrownBy(() -> cache.createPdxInstanceFactory(null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Class name can not be null when creating a PdxInstanceFactory");
+  }
+
+  @Test
   public void normalPdxInstanceAddedToRegionWithPdxReadSerializedFalseAndABadClassThrowsClassNotFoundWhenRegionGet() {
     // make sure the cache has pdx-read-serialized set to false
     this.cache.close();
@@ -1382,5 +1389,13 @@ public class PdxInstanceFactoryJUnitTest {
     PdxInstance instance = factory.create();
 
     assertThat(instance.isDeserializable()).isTrue();
+  }
+
+  @Test
+  public void jsonPdxInstanceIsDeserializableReturnsTrue() {
+    PdxInstance jsonPdxInstance =
+        cache.createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false).create();
+
+    assertThat(jsonPdxInstance.isDeserializable()).isTrue();
   }
 }

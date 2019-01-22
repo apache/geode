@@ -79,6 +79,7 @@ public interface RegionService extends AutoCloseable {
    *        PdxInstance
    *        and {@link PdxInstanceFactory#neverDeserialize()} should be called on the factory.
    * @return the factory
+   * @throws IllegalArgumentException if className is <code>null</code>.
    * @since GemFire 6.6.2
    */
   PdxInstanceFactory createPdxInstanceFactory(String className);

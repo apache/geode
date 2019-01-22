@@ -1585,23 +1585,29 @@ public class DistributedSystemBridge {
 
   public void memberDeparted(InternalDistributedMember id, boolean crashed) {
     Notification notification = new Notification(JMXNotificationType.CACHE_MEMBER_DEPARTED,
-        MBeanJMXAdapter.getMemberNameOrId(id), SequenceNumber.next(), System.currentTimeMillis(),
-        ManagementConstants.CACHE_MEMBER_DEPARTED_PREFIX + MBeanJMXAdapter.getMemberNameOrId(id)
+        MBeanJMXAdapter.getMemberNameOrUniqueId(id), SequenceNumber.next(),
+        System.currentTimeMillis(),
+        ManagementConstants.CACHE_MEMBER_DEPARTED_PREFIX
+            + MBeanJMXAdapter.getMemberNameOrUniqueId(id)
             + " has crashed = " + crashed);
     systemLevelNotifEmitter.sendNotification(notification);
   }
 
   public void memberJoined(InternalDistributedMember id) {
     Notification notification = new Notification(JMXNotificationType.CACHE_MEMBER_JOINED,
-        MBeanJMXAdapter.getMemberNameOrId(id), SequenceNumber.next(), System.currentTimeMillis(),
-        ManagementConstants.CACHE_MEMBER_JOINED_PREFIX + MBeanJMXAdapter.getMemberNameOrId(id));
+        MBeanJMXAdapter.getMemberNameOrUniqueId(id), SequenceNumber.next(),
+        System.currentTimeMillis(),
+        ManagementConstants.CACHE_MEMBER_JOINED_PREFIX
+            + MBeanJMXAdapter.getMemberNameOrUniqueId(id));
     systemLevelNotifEmitter.sendNotification(notification);
   }
 
   public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected) {
     Notification notification = new Notification(JMXNotificationType.CACHE_MEMBER_SUSPECT,
-        MBeanJMXAdapter.getMemberNameOrId(id), SequenceNumber.next(), System.currentTimeMillis(),
-        ManagementConstants.CACHE_MEMBER_SUSPECT_PREFIX + MBeanJMXAdapter.getMemberNameOrId(id)
+        MBeanJMXAdapter.getMemberNameOrUniqueId(id), SequenceNumber.next(),
+        System.currentTimeMillis(),
+        ManagementConstants.CACHE_MEMBER_SUSPECT_PREFIX
+            + MBeanJMXAdapter.getMemberNameOrUniqueId(id)
             + " By : " + whoSuspected.getName());
     systemLevelNotifEmitter.sendNotification(notification);
   }

@@ -137,6 +137,7 @@ tests:
   GRADLE_TASK_OPTIONS: "-PtestCategory=org.apache.geode.test.junit.categories.GfshTest"
   execute_test_timeout: 6h
   PARALLEL_DUNIT: "false"
+  PARALLEL_GRADLE: "false"
 - name: "WindowsIntegration"
   CPUS: "16"
   RAM: "64"

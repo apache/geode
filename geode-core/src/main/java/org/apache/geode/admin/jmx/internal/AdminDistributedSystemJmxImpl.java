@@ -1118,6 +1118,11 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   }
 
   @Override
+  public boolean getDisableJmx() {
+    return getConfig().getDisableJmx();
+  }
+
+  @Override
   public void setEnableNetworkPartitionDetection(boolean newValue) {
     getConfig().setEnableNetworkPartitionDetection(newValue);
   }
@@ -1325,6 +1330,11 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
   @Override
   public void setDisableTcp(boolean flag) {
     this.getConfig().setDisableTcp(flag);
+  }
+
+  @Override
+  public void setDisableJmx(boolean flag) {
+    getConfig().setDisableJmx(flag);
   }
 
   @Override

@@ -64,7 +64,8 @@ for (( h=0; h<${COUNT}; h++)); do
 
         for (( i=0; i<${#containers[@]}; i++ )); do
             echo "Container: ${containers[i]}" | tee -a ${logfile};
-            mapfile -t processes < <(docker exec ${containers[i]} jps | cut -d ' ' -f 1)
+            [ -x $JAVA_HOME/bin/jps ] && JPS=$JAVA_HOME/bin/jps || JPS=jps
+            mapfile -t processes < <(docker exec ${containers[i]} ${JPS} | cut -d ' ' -f 1)
             echo "Got past processes."
             for ((j=0; j<${#processes[@]}; j++ )); do
                   echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}

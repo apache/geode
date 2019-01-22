@@ -184,7 +184,7 @@ public class ShowMetricsCommand extends GfshCommand {
 
     if (memberMxBean == null) {
       String errorMessage = CliStrings.format(CliStrings.SHOW_METRICS__ERROR, "Member MBean for "
-          + MBeanJMXAdapter.getMemberNameOrId(distributedMember) + " not found");
+          + MBeanJMXAdapter.getMemberNameOrUniqueId(distributedMember) + " not found");
       return ResultModel.createError(errorMessage);
     }
 
@@ -195,7 +195,7 @@ public class ShowMetricsCommand extends GfshCommand {
       if (csMxBean == null) {
         return ResultModel.createError(
             CliStrings.format(CliStrings.SHOW_METRICS__CACHE__SERVER__NOT__FOUND,
-                cacheServerPort, MBeanJMXAdapter.getMemberNameOrId(distributedMember)));
+                cacheServerPort, MBeanJMXAdapter.getMemberNameOrUniqueId(distributedMember)));
       }
     }
 
@@ -279,14 +279,14 @@ public class ShowMetricsCommand extends GfshCommand {
     if (regionMxBean == null) {
       String errorMessage = CliStrings.format(CliStrings.SHOW_METRICS__ERROR,
           "Region MBean for " + regionName + " on member "
-              + MBeanJMXAdapter.getMemberNameOrId(distributedMember) + " not found");
+              + MBeanJMXAdapter.getMemberNameOrUniqueId(distributedMember) + " not found");
       return ResultModel.createError(errorMessage);
     }
 
     ResultModel result = new ResultModel();
     TabularResultModel metricsTable = result.addTable("metrics");
     metricsTable.setHeader("Metrics for region:" + regionName + " On Member "
-        + MBeanJMXAdapter.getMemberNameOrId(distributedMember));
+        + MBeanJMXAdapter.getMemberNameOrUniqueId(distributedMember));
 
     Set<Category> categoriesToDisplay = ArrayUtils.isNotEmpty(categoriesArr)
         ? getCategorySet(categoriesArr) : new HashSet<>(REGION_METRIC_CATEGORIES);

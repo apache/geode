@@ -276,6 +276,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   protected boolean disableTcp = DEFAULT_DISABLE_TCP;
 
   /**
+   * whether JMX should be disabled
+   */
+  protected boolean disableJmx = DEFAULT_DISABLE_JMX;
+
+  /**
    * whether time statistics should be enabled for the distributed system
    */
   protected boolean enableTimeStatistics = DEFAULT_ENABLE_TIME_STATISTICS;
@@ -711,6 +716,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     udpRecvBufferSize = other.getUdpRecvBufferSize();
     udpFragmentSize = other.getUdpFragmentSize();
     disableTcp = other.getDisableTcp();
+    disableJmx = other.getDisableJmx();
     enableTimeStatistics = other.getEnableTimeStatistics();
     memberTimeout = other.getMemberTimeout();
     membershipPortRange = other.getMembershipPortRange();
@@ -2284,6 +2290,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
+  public boolean getDisableJmx() {
+    return disableJmx;
+  }
+
+  @Override
+  public void setDisableJmx(boolean newValue) {
+    disableJmx = newValue;
+  }
+
+  @Override
   public boolean getEnableTimeStatistics() {
     return enableTimeStatistics;
   }
@@ -3121,6 +3137,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(udpSendBufferSize, that.udpSendBufferSize)
         .append(udpRecvBufferSize, that.udpRecvBufferSize)
         .append(udpFragmentSize, that.udpFragmentSize).append(disableTcp, that.disableTcp)
+        .append(disableJmx, that.disableJmx)
         .append(enableTimeStatistics, that.enableTimeStatistics)
         .append(memberTimeout, that.memberTimeout)
         .append(maxWaitTimeForReconnect, that.maxWaitTimeForReconnect)
@@ -3269,7 +3286,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(clusterSSLKeyStorePassword).append(clusterSSLTrustStore)
         .append(clusterSSLTrustStorePassword).append(clusterSSLAlias).append(mcastSendBufferSize)
         .append(mcastRecvBufferSize).append(mcastFlowControl).append(udpSendBufferSize)
-        .append(udpRecvBufferSize).append(udpFragmentSize).append(disableTcp)
+        .append(udpRecvBufferSize).append(udpFragmentSize).append(disableTcp).append(disableJmx)
         .append(enableTimeStatistics).append(memberTimeout).append(membershipPortRange)
         .append(maxWaitTimeForReconnect).append(maxNumReconnectTries)
         .append(asyncDistributionTimeout).append(asyncQueueTimeout).append(asyncMaxQueueSize)

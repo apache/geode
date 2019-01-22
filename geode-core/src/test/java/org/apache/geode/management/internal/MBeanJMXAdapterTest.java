@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -34,7 +35,13 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
 
+/**
+ * Unique tests for {@link MBeanJMXAdapter}.
+ */
 public class MBeanJMXAdapterTest {
+
+  private static final String UNIQUE_ID = "unique-id";
+
   private ObjectName objectName;
   private MBeanServer mockMBeanServer;
   private DistributedMember distMember;
@@ -44,6 +51,7 @@ public class MBeanJMXAdapterTest {
     mockMBeanServer = mock(MBeanServer.class);
     objectName = new ObjectName("d:type=Foo,name=Bar");
     distMember = mock(DistributedMember.class);
+    when(distMember.getUniqueId()).thenReturn(UNIQUE_ID);
   }
 
   @Test
@@ -85,5 +93,24 @@ public class MBeanJMXAdapterTest {
     // InstanceNotFoundException should just log a debug message as it is essentially a no-op
     // during registration
     verify(mBeanJMXAdapter, times(1)).logRegistrationWarning(any(ObjectName.class), eq(true));
+  }
+
+  @Test
+  public void getMemberNameOrUniqueIdReturnsNameIfProvided() {
+    String memberName = "member-name";
+    when(distMember.getName()).thenReturn(memberName);
+
+    String result = MBeanJMXAdapter.getMemberNameOrUniqueId(distMember);
+
+    assertThat(result).isEqualTo(memberName);
+  }
+
+  @Test
+  public void getMemberNameOrUniqueIdReturnsUniqueIdIfNameIsNotProvided() {
+    when(distMember.getName()).thenReturn("");
+
+    String result = MBeanJMXAdapter.getMemberNameOrUniqueId(distMember);
+
+    assertThat(result).isEqualTo(UNIQUE_ID);
   }
 }

@@ -38,6 +38,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCK
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
 import static org.apache.geode.distributed.ConfigurationProperties.DEPLOY_WORKING_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_JMX;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_TRANSACTIONS;
@@ -1627,6 +1628,29 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value of the {@link ConfigurationProperties#DISABLE_TCP} property
    */
   boolean DEFAULT_DISABLE_TCP = false;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#DISABLE_JMX} property
+   */
+  @ConfigAttributeGetter(name = DISABLE_JMX)
+  boolean getDisableJmx();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#DISABLE_JMX} property.
+   */
+  @ConfigAttributeSetter(name = DISABLE_JMX)
+  void setDisableJmx(boolean newValue);
+
+  /**
+   * The name of the {@link ConfigurationProperties#DISABLE_JMX} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String DISABLE_JMX_NAME = DISABLE_JMX;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#DISABLE_JMX} property
+   */
+  boolean DEFAULT_DISABLE_JMX = false;
 
   /**
    * Turns on timing statistics for the distributed system
