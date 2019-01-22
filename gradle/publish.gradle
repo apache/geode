@@ -29,6 +29,23 @@ task javadocJar(type: Jar) {
   classifier = 'javadoc'
 }
 
+def apacheLicense = '''
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  '''
+
 publishing {
   publications {
     maven(MavenPublication) {
@@ -80,26 +97,13 @@ publishing {
           }
         }
 
-        withXml {
-          def elem = asElement()
-          def hdr = elem.ownerDocument().createComment(
-              '''
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
-  ''')
-          elem.insertBefore(hdr, elem.firstChild)
+        afterEvaluate {
+          withXml {
+            def providerAsElement = asElement()
+            providerAsElement.insertBefore(
+                providerAsElement.ownerDocument().createComment(apacheLicense),
+                providerAsElement.firstChild)
+          }
         }
       }
     }
@@ -129,52 +133,101 @@ signing {
 task install(dependsOn: publishToMavenLocal) {}
 
 task('checkPom') {
+  // The XmlParser used below has a strange tendency to return lists of fields rather than the field
+  // you actually want. Be careful with that, future developer.
+  group 'verification'
   dependsOn('generatePomFileForMavenPublication')
-  description 'Checks the generated POM against an expected POM for dependency changes.'
+  description 'Checks the generated POM against an expected POM for dependency changes.' +
+      '  Ignores versions of Apache Geode dependencies.'
+  def expectedPomFile = sourceSets.test.resources.getSourceDirectories().first().toPath().resolve("expected-pom.xml")
+  def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+  def thisOutput = project.buildDir.toPath().resolve('reports').resolve('checkPom.out')
+  inputs.files { [expectedPomFile, actualPomFile] }
+  outputs.files { thisOutput }
+  // These are the checks we want to do, as lambda functions
+
+  def anyVersionDefinitionNotInDependencyManagement = { pom ->
+    pom.dependencies.dependency.any { it.version == null }
+  }
+
+  def dependenciesBlocksMatch = { actual, expected ->
+    def actualTreeSet = actual.dependencies.dependency.collect {it.toString()}.toSet()
+    def expectedTreeSet = expected.dependencies.dependency.collect {it.toString()}.toSet()
+    actualTreeSet.equals(expectedTreeSet)
+  }
+
+  def groupMismatches = { pom ->
+    def groupId = pom["groupId"]
+    groupId*.value().flatten().any {
+      it != project.group
+    }
+  }
+
+  def artifactMismatches = { pom ->
+    // This work-around for 'artifactName' or 'project.name' is for geode-assembly, which re-names its output
+    def artifactId = pom["artifactId"]
+      artifactId*.value().flatten().any {
+        it != (project.findProperty('artifactName') ?: project.name)
+    }
+  }
 
   doLast {
     if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
-      def expectedPomFile = sourceSets.test.resources.getSourceDirectories().first().toURI().resolve("expected-pom.xml")
       if (null == expectedPomFile) {
         throw new RuntimeException("expected-pom.xml not found.")
       }
       def expectedPom = new XmlParser().parse(expectedPomFile.toString())
-      def expectedDependencies = new TreeSet()
-      expectedPom.dependencies.dependency.each() {
-        def dep = it as String
-        if (dep.contains("org.apache.geode")) {
+      expectedPom.dependencyManagement.dependencies.dependency.each { dep ->
+        if (dep.toString().contains("org.apache.geode")) {
           // since the project version is the source of truth, use that for comparison instead of
           // whatever is stored in the expected pom file
-          dep = dep.replaceFirst("(.*\\[)(\\d+.\\d+.\\d+(-SNAPSHOT)?)(\\].*)", '$1' + version + '$4')
+          dep.get("version")*.setValue([version])
         }
-        expectedDependencies.add(dep)
       }
 
-      def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+      // Sanity checks against the expected pom.
+      def pathologicalArtifactId = artifactMismatches(expectedPom)
+      def pathologicalGroupId = groupMismatches(expectedPom)
+
+      if (pathologicalArtifactId || pathologicalGroupId) {
+        def errorSummary = ""
+        errorSummary += pathologicalArtifactId ? "Expected POM header pathologically incorrect. Fix artifactId to match subproject name.\n" : ""
+        errorSummary += pathologicalGroupId ? "Expected POM header pathologically incorrect. Fix groupId to be 'org.apache.geode'.\n" : ""
+        throw new GradleException(errorSummary)
+      }
+
       def actualPom = new XmlParser().parse(actualPomFile)
-      def actualDependencies = new TreeSet()
-      actualPom.dependencies.dependency.each() {
-        actualDependencies.add(it as String)
-      }
 
-      if (actualDependencies != expectedDependencies) {
-        def newDependencies = new TreeSet(actualDependencies)
-        newDependencies.removeAll(expectedDependencies)
-        def removedDependencies = new TreeSet(expectedDependencies)
-        removedDependencies.removeAll(actualDependencies)
+      def badArtifactId = artifactMismatches(actualPom)
+      def badGroupId = groupMismatches(actualPom)
+      def improperlyVersionedDeps = anyVersionDefinitionNotInDependencyManagement(actualPom)
+      def depsMismatch = !dependenciesBlocksMatch(expectedPom, actualPom)
+      def versionMismatch = !dependenciesBlocksMatch(expectedPom.dependencyManagement, actualPom.dependencyManagement)
 
-        def message =
-            "The ".concat(project.name).concat(" pom-default.xml has changed. Verify dependencies.")
-                .concat("\nWhen changes have been approved, copy :\n")
-                .concat(" cp ").concat(actualPomFile as String)
-                .concat(" ").concat(expectedPomFile as String)
-                .concat("\nRemoved Dependencies\n--------------\n")
-                .concat(String.join("\n", removedDependencies.each { dep -> dep.toString() }))
-                .concat("\n\nNew Dependencies\n--------------\n")
-                .concat(String.join("\n", newDependencies.each { dep -> dep.toString() }))
-                .concat("\n\n")
+      if (badArtifactId || badGroupId || improperlyVersionedDeps || depsMismatch || versionMismatch) {
+        def errorSummary = ""
+        errorSummary += badArtifactId ? "POM header information incorrect. Fix artifactId.\n" : ""
+        errorSummary += badGroupId ? "POM header information incorrect. Fix groupId.\n" : ""
+        errorSummary += improperlyVersionedDeps ? "Version definition should be in the <dependencyManagement> block only.\n" : ""
+        errorSummary += depsMismatch ? "<dependencies> blocks do not match.\n" : ""
+        errorSummary += versionMismatch ? "<dependencyManagement> blocks do not match.\n" : ""
 
+        def message = """
+The POM produced by the ${project.name}'s publication task has changed from expectation.
+This is typically the result of changing or new dependencies, or dependency versions.
+The actual publication candidate POM can be found here: ${actualPomFile}
+The associated expected POM can be found here: ${expectedPomFile}
 
+${errorSummary}
+Please review the differences between the files indicated above.
+This task is meant to be comprehensive -- there should be no change in the POM for which you are not responsible.
+A possible exception is the listed Geode project dependencies, which are modified to reflect the current build's version.
+
+Once the differences in the above files are reviewed and confirmed to be intentional,
+  please update the expected POM file to reflect your changes.
+Alternatively, run './gradlew ${project.name}:updateExpectedPom' to replace the expected POM with the generated POM.
+"""
+        thisOutput.write(message)
         throw new RuntimeException(message)
       }
     }
