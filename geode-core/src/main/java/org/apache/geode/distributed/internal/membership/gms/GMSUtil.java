@@ -18,7 +18,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.geode.GemFireConfigException;
@@ -58,6 +60,7 @@ public class GMSUtil {
    */
   public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
     List<HostAddress> result = new ArrayList<>(2);
+    Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;
     int port;
     boolean checkLoopback = (bindAddress != null);
@@ -94,7 +97,10 @@ public class GMSUtil {
           }
         }
         HostAddress la = new HostAddress(isa, host);
-        result.add(la);
+        if (!inetAddresses.contains(isa)) {
+          inetAddresses.add(isa);
+          result.add(la);
+        }
       } catch (NumberFormatException e) {
         // this shouldn't happen because the config has already been parsed and
         // validated

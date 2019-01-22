@@ -323,7 +323,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       for (int tries = 0; !this.isJoined && !this.isStopping; tries++) {
         logger.debug("searching for the membership coordinator");
         boolean found = findCoordinator();
-        logger.info("state after looking for membership coordinator is {}", state);
+        logger.info("Discovery state after looking for membership coordinator is {}",
+            state);
         if (found) {
           logger.info("found possible coordinator {}", state.possibleCoordinator);
           if (localAddress.getNetMember().preferredForCoordinator()
@@ -1791,6 +1792,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     DistributionConfig dconfig = services.getConfig().getDistributionConfig();
     String bindAddr = dconfig.getBindAddress();
     locators = GMSUtil.parseLocators(dconfig.getLocators(), bindAddr);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Parsed locators are {}", locators);
+    }
   }
 
   @Override
