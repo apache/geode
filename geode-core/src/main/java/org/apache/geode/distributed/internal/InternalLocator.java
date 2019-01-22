@@ -36,6 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.webapp.WebAppContext;
 
@@ -703,10 +705,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       return;
     }
 
-    Object[] securityServiceAttr = new Object[] {JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-        myCache.getSecurityService()};
-    Object[] cmServiceAttr = new Object[] {JettyHelper.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-        clusterManagementService};
+    Pair<String, Object> securityServiceAttr =
+        new ImmutablePair<>(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+            myCache.getSecurityService());
+    Pair<String, Object> cmServiceAttr =
+        new ImmutablePair<>(JettyHelper.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+            clusterManagementService);
     managementWebapp =
         managementAgent
             .addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,

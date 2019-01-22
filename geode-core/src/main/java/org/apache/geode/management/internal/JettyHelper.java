@@ -20,6 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
@@ -169,7 +170,7 @@ public class JettyHelper {
 
   public static WebAppContext addWebApplication(final Server jetty, final String webAppContext,
       final String warFilePath,
-      Object[]... attributeNameValuePairs) {
+      Pair<String, Object>... attributeNameValuePairs) {
     WebAppContext webapp = new WebAppContext();
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath);
@@ -179,7 +180,7 @@ public class JettyHelper {
 
     if (attributeNameValuePairs != null) {
       Arrays.stream(attributeNameValuePairs)
-          .forEach(p -> webapp.setAttribute(p[0].toString(), p[1]));
+          .forEach(p -> webapp.setAttribute(p.getKey(), p.getValue()));
     }
 
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));

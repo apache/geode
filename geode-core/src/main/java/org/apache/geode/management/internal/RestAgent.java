@@ -17,6 +17,8 @@ package org.apache.geode.management.internal;
 import java.net.UnknownHostException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -137,8 +139,9 @@ public class RestAgent {
         this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
             SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
 
-        Object[] securityServiceAttr =
-            new Object[] {JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM, securityService};
+        Pair<String, Object> securityServiceAttr =
+            new ImmutablePair<>(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+                securityService);
 
         JettyHelper
             .addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar, securityServiceAttr);

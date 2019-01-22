@@ -44,6 +44,8 @@ import javax.management.remote.rmi.RMIServerImpl;
 
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -188,7 +190,7 @@ public class ManagementAgent {
   }
 
   public WebAppContext addWebApplication(String webAppContext, String warFilePath,
-      Object[]... attributeNameValuePairs) {
+      Pair<String, Object>... attributeNameValuePairs) {
     if (httpServer == null) {
       logger.info(
           String.format("unable to add %s webapp. Http service is not started on this member.",
@@ -264,10 +266,12 @@ public class ManagementAgent {
           this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory
               .getSSLConfigForComponent(config, SecurableCommunicationChannel.WEB));
 
-          Object[] securityServiceAttr =
-              new Object[] {JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM, securityService};
-          Object[] sslConfigAttr =
-              new Object[] {JettyHelper.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM, createSslProps()};
+          Pair<String, Object> securityServiceAttr =
+              new ImmutablePair<>(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+                  securityService);
+          Pair<String, Object> sslConfigAttr =
+              new ImmutablePair<>(JettyHelper.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
+                  createSslProps());
 
           // if jmx manager is running, admin rest should be available, either on locator or server
           if (agentUtil.isAnyWarFileAvailable(gemfireWar)) {
