@@ -195,26 +195,6 @@ public class RegionMapping implements CacheElement {
     }
     throw new JdbcConnectorException(
         "A field mapping for the pdx field \"" + fieldName + "\" does not exist.");
-    // TODO use this code when we create the field mapping
-    // Set<String> columnNames = tableMetaDataView.getColumnNames();
-    // if (columnNames.contains(fieldName)) {
-    // return fieldName;
-    // }
-    //
-    // List<String> ignoreCaseMatch = columnNames.stream().filter(c ->
-    // c.equalsIgnoreCase(fieldName))
-    // .collect(Collectors.toList());
-    // if (ignoreCaseMatch.size() > 1) {
-    // throw new JdbcConnectorException(
-    // "The SQL table has at least two columns that match the PDX field: " + fieldName);
-    // }
-    //
-    // if (ignoreCaseMatch.size() == 1) {
-    // return ignoreCaseMatch.get(0);
-    // }
-    //
-    // // there is no match either in the configured mapping or the table columns
-    // return fieldName;
   }
 
   public String getFieldNameForColumn(String columnName) {
@@ -224,66 +204,7 @@ public class RegionMapping implements CacheElement {
     }
     throw new JdbcConnectorException(
         "A field mapping for the column \"" + columnName + "\" does not exist.");
-    // TODO use the following code when we create the mapping
-    // Set<PdxType> pdxTypes = getPdxTypesForClassName(typeRegistry);
-    // String fieldName = findExactMatch(columnName, pdxTypes);
-    // if (fieldName == null) {
-    // fieldName = findCaseInsensitiveMatch(columnName, pdxTypes);
-    // }
-    // return fieldName;
   }
-
-  // private Set<PdxType> getPdxTypesForClassName(TypeRegistry typeRegistry) {
-  // Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxName());
-  // if (pdxTypes.isEmpty()) {
-  // throw new JdbcConnectorException(
-  // "The class " + getPdxName() + " has not been pdx serialized.");
-  // }
-  // return pdxTypes;
-  // }
-
-  // /**
-  // * Given a column name and a set of pdx types, find the field name in those types that match,
-  // * ignoring case, the column name.
-  // *
-  // * @return the matching field name or null if no match
-  // * @throws JdbcConnectorException if no fields match
-  // * @throws JdbcConnectorException if more than one field matches
-  // */
-  // private String findCaseInsensitiveMatch(String columnName, Set<PdxType> pdxTypes) {
-  // HashSet<String> matchingFieldNames = new HashSet<>();
-  // for (PdxType pdxType : pdxTypes) {
-  // for (String existingFieldName : pdxType.getFieldNames()) {
-  // if (existingFieldName.equalsIgnoreCase(columnName)) {
-  // matchingFieldNames.add(existingFieldName);
-  // }
-  // }
-  // }
-  // if (matchingFieldNames.isEmpty()) {
-  // throw new JdbcConnectorException("The class " + getPdxName()
-  // + " does not have a field that matches the column " + columnName);
-  // } else if (matchingFieldNames.size() > 1) {
-  // throw new JdbcConnectorException(
-  // "Could not determine what pdx field to use for the column name " + columnName
-  // + " because the pdx fields " + matchingFieldNames + " all match it.");
-  // }
-  // return matchingFieldNames.iterator().next();
-  // }
-  //
-  // /**
-  // * Given a column name, search the given pdxTypes for a field whose name exactly matches the
-  // * column name.
-  // *
-  // * @return the matching field name or null if no match
-  // */
-  // private String findExactMatch(String columnName, Set<PdxType> pdxTypes) {
-  // for (PdxType pdxType : pdxTypes) {
-  // if (pdxType.getPdxField(columnName) != null) {
-  // return columnName;
-  // }
-  // }
-  // return null;
-  // }
 
   @Override
   public boolean equals(Object o) {
