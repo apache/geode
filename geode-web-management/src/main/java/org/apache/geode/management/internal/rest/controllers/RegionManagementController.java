@@ -41,4 +41,9 @@ public class RegionManagementController extends AbstractManagementController {
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
+  @RequestMapping(method = RequestMethod.GET, value = "/ping")
+  public ResponseEntity<String> ping() {
+    return new ResponseEntity<>("pong", HttpStatus.OK);
+  }
 }

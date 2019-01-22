@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
-import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.junit.After;
 import org.junit.Before;
@@ -26,17 +25,17 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
- * The JettyHelperJUnitTest class is a test suite of test cases testing the contract and
+ * The HttpServiceJunitTest class is a test suite of test cases testing the contract and
  * functionality of the JettyHelper class. Does not start Jetty.
  *
- * @see org.apache.geode.management.internal.JettyHelper
  * @see org.junit.Test
  */
-public class JettyHelperJUnitTest {
+public class HttpServiceJunitTest {
   private DistributionConfig distributionConfig;
 
   @Before
@@ -52,19 +51,21 @@ public class JettyHelperJUnitTest {
 
   @Test
   public void testSetPortNoBindAddress() {
-    final Server jetty = JettyHelper.initJetty(null, 8090, SSLConfigurationFactory
+    final HttpService jetty = new HttpService(null, 8090, SSLConfigurationFactory
         .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
     assertThat(jetty).isNotNull();
-    assertThat(jetty.getConnectors()[0]).isNotNull();
-    assertThat(((ServerConnector) jetty.getConnectors()[0]).getPort()).isEqualTo(8090);
+    assertThat(jetty.getHttpServer().getConnectors()[0]).isNotNull();
+    assertThat(((ServerConnector) jetty.getHttpServer().getConnectors()[0]).getPort())
+        .isEqualTo(8090);
   }
 
   @Test
   public void testSetPortWithBindAddress() {
-    final Server jetty = JettyHelper.initJetty("10.123.50.1", 10480, SSLConfigurationFactory
+    final HttpService jetty = new HttpService("10.123.50.1", 10480, SSLConfigurationFactory
         .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
     assertThat(jetty).isNotNull();
-    assertThat(jetty.getConnectors()[0]).isNotNull();
-    assertThat(((ServerConnector) jetty.getConnectors()[0]).getPort()).isEqualTo(10480);
+    assertThat(jetty.getHttpServer().getConnectors()[0]).isNotNull();
+    assertThat(((ServerConnector) jetty.getHttpServer().getConnectors()[0]).getPort())
+        .isEqualTo(10480);
   }
 }

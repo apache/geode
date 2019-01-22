@@ -64,4 +64,9 @@ public class RegionManagementIntegrationTest {
     assertThat(result.getPersistenceStatus().getMessage())
         .isEqualTo("no members found to create cache element");
   }
+
+  @Test
+  public void ping() throws Exception {
+    restClient.doGetAndAssert("/ping").hasStatusCode(200).hasResponseBody().isEqualTo("pong");
+  }
 }

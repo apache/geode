@@ -20,8 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
@@ -30,14 +28,12 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.ManagementService;
 
 /**
  * Agent implementation that controls the HTTP server end points used for REST clients to connect
@@ -64,18 +60,11 @@ public class RestAgent {
     return this.running;
   }
 
-  private boolean isManagementRestServiceRunning(InternalCache cache) {
-    final SystemManagementService managementService =
-        (SystemManagementService) ManagementService.getManagementService(cache);
-    return (managementService.getManagementAgent() != null
-        && managementService.getManagementAgent().isHttpServiceRunning());
-  }
 
   public synchronized void start(InternalCache cache) {
-    if (!this.running && this.config.getHttpServicePort() != 0
-        && !isManagementRestServiceRunning(cache)) {
+    if (!this.running && this.config.getHttpServicePort() != 0) {
       try {
-        startHttpService();
+        startHttpService(cache);
         this.running = true;
         cache.setRESTServiceRunning(true);
 
@@ -89,21 +78,6 @@ public class RestAgent {
     }
   }
 
-  public synchronized void stop() {
-    if (this.running) {
-      stopHttpService();
-      if (logger.isDebugEnabled()) {
-        logger.debug("Gemfire Rest Http service stopped");
-      }
-      this.running = false;
-    } else {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Attempt to stop Gemfire Rest Http service which is not running");
-      }
-    }
-  }
-
-  private Server httpServer;
   private final String GEMFIRE_VERSION = GemFireVersion.getGemFireVersion();
   private AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
 
@@ -113,7 +87,7 @@ public class RestAgent {
   }
 
   // Start HTTP service in embedded mode
-  public void startHttpService() {
+  public void startHttpService(InternalCache cache) {
     // TODO: add a check that will make sure that we start HTTP service on
     // non-manager data node
     String httpServiceBindAddress = getBindAddressForHttpService(this.config);
@@ -134,32 +108,16 @@ public class RestAgent {
             "Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /geode-web-api WAR file in your application server.");
       } else if (agentUtil.isAnyWarFileAvailable(gemfireAPIWar)) {
 
-        final int port = this.config.getHttpServicePort();
-
-        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
-            SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
-
         Pair<String, Object> securityServiceAttr =
-            new ImmutablePair<>(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+            new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
                 securityService);
 
-        JettyHelper
-            .addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar, securityServiceAttr);
-        JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar, securityServiceAttr);
-
-        if (logger.isDebugEnabled()) {
-          logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",
-              ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(),
-              httpServiceBindAddress);
-        }
-
-        JettyHelper.startJetty(this.httpServer);
-        logger.info("HTTP service started successfully...!!");
+        HttpService httpService = cache.getHttpService();
+        httpService
+            .addWebApplication("/gemfire-api", gemfireAPIWar, securityServiceAttr);
+        httpService.addWebApplication("/geode", gemfireAPIWar, securityServiceAttr);
       }
     } catch (Exception e) {
-      stopHttpService();// Jetty needs to be stopped even if it has failed to
-                        // start. Some of the threads are left behind even if
-                        // server.start() fails due to an exception
       throw new RuntimeException("HTTP service failed to start due to " + e.getMessage());
     }
   }
@@ -185,28 +143,6 @@ public class RestAgent {
       logger.error("LocalHost could not be found.", e);
     }
     return bindAddress;
-  }
-
-  private void stopHttpService() {
-    if (this.httpServer != null) {
-      logger.info("Stopping the HTTP service...");
-      try {
-        this.httpServer.stop();
-      } catch (Exception e) {
-        logger.warn("Failed to stop the HTTP service because: {}", e.getMessage(), e);
-      } finally {
-        try {
-          this.httpServer.destroy();
-        } catch (Exception ignore) {
-          logger.error("Failed to properly release resources held by the HTTP service: {}",
-              ignore.getMessage(), ignore);
-        } finally {
-          this.httpServer = null;
-          System.clearProperty("catalina.base");
-          System.clearProperty("catalina.home");
-        }
-      }
-    }
   }
 
   /**

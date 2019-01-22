@@ -429,7 +429,7 @@ public class SystemManagementService extends BaseManagementService {
           system.handleResourceEvent(ResourceEvent.MANAGER_START, null);
           federatingManager.startManager();
           if (this.agent != null) {
-            this.agent.startAgent(getInternalCache());
+            this.agent.startAgent();
           }
           getInternalCache().getJmxManagerAdvisor().broadcastChange();
           started = true;
@@ -479,7 +479,7 @@ public class SystemManagementService extends BaseManagementService {
         federatingManager.stopManager();
         system.handleResourceEvent(ResourceEvent.MANAGER_STOP, null);
         getInternalCache().getJmxManagerAdvisor().broadcastChange();
-        if (this.agent != null && (this.agent.isRunning() || this.agent.isHttpServiceRunning())) {
+        if (this.agent != null && this.agent.isRunning()) {
           this.agent.stopAgent();
         }
       }

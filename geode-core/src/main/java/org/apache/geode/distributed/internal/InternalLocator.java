@@ -67,6 +67,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
@@ -83,11 +84,8 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.management.internal.AgentUtil;
-import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
-import org.apache.geode.management.internal.ManagementAgent;
-import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.api.ClusterManagementService;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -261,7 +259,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    * startPeerLocation on the locator object.
    *
    * @param port the tcp/ip port to listen on
-   * @param loggingSession the LoggingSession to use, may be a NullLoggingSession which does nothing
+   * @param loggingSession the LoggingSession to use, may be a NullLoggingSession which does
+   *        nothing
    * @param logFile the file that log messages should be written to
    * @param logger a log writer that should be used (logFile parameter is ignored)
    * @param securityLogger the logger to be used for security related log messages
@@ -271,8 +270,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public static InternalLocator createLocator(int port, LoggingSession loggingSession, File logFile,
       InternalLogWriter logger,
-      InternalLogWriter securityLogger, InetAddress bindAddress, String hostnameForClients,
-      Properties distributedSystemProperties, boolean startDistributedSystem) {
+      InternalLogWriter securityLogger,
+      InetAddress bindAddress, String hostnameForClients,
+      Properties distributedSystemProperties,
+      boolean startDistributedSystem) {
     synchronized (locatorLock) {
       if (hasLocator()) {
         throw new IllegalStateException(
@@ -312,8 +313,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    * @param hostnameForClients the name to give to clients for connecting to this locator
    */
   public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logger,
-      InternalLogWriter securityLogger, InetAddress bindAddress, boolean startDistributedSystem,
-      Properties dsProperties, String hostnameForClients) throws IOException {
+      InternalLogWriter securityLogger,
+      InetAddress bindAddress,
+      boolean startDistributedSystem,
+      Properties dsProperties, String hostnameForClients)
+      throws IOException {
     System.setProperty(FORCE_LOCATOR_DM_TYPE, "true");
     InternalLocator newLocator = null;
 
@@ -415,7 +419,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   private InternalLocator(int port, LoggingSession loggingSession, File logFile,
       InternalLogWriter logWriter, InternalLogWriter securityLogWriter,
-      InetAddress bindAddress, String hostnameForClients, Properties distributedSystemProperties,
+      InetAddress bindAddress, String hostnameForClients,
+      Properties distributedSystemProperties,
       DistributionConfigImpl cfg, boolean startDistributedSystem) {
 
     // TODO: the following three assignments are already done in superclass
@@ -572,8 +577,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   @Deprecated
   public static InternalLocator startLocator(int locatorPort, File logFile,
-      InternalLogWriter logger, InternalLogWriter logger1, InetAddress addr,
-      Properties dsProperties, boolean peerLocator, boolean serverLocator, String s, boolean b1)
+      InternalLogWriter logger, InternalLogWriter logger1,
+      InetAddress addr,
+      Properties dsProperties, boolean peerLocator,
+      boolean serverLocator, String s, boolean b1)
       throws IOException {
     return startLocator(locatorPort, logFile, logger, logger1, addr, true, dsProperties, s);
   }
@@ -601,7 +608,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       }
       sb.append('[').append(getPort()).append(']');
       String thisLocator = sb.toString();
-
 
       if (this.peerLocator) {
         // append this locator to the locators list from the config properties
@@ -695,26 +701,20 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       return;
     }
 
-    ManagementAgent managementAgent =
-        ((SystemManagementService) SystemManagementService.getExistingManagementService(myCache))
-            .getManagementAgent();
-
-    if (managementAgent == null) {
-      logger.info(
-          "management service needs to be started for ClusterManagementService to be running.");
-      return;
-    }
-
     Pair<String, Object> securityServiceAttr =
-        new ImmutablePair<>(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
             myCache.getSecurityService());
     Pair<String, Object> cmServiceAttr =
-        new ImmutablePair<>(JettyHelper.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+        new ImmutablePair<>(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
             clusterManagementService);
-    managementWebapp =
-        managementAgent
-            .addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,
-                cmServiceAttr);
+
+    try {
+      myCache.getHttpService()
+          .addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,
+              cmServiceAttr);
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+    }
   }
 
   /**
@@ -722,7 +722,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    * and distributed system are started.
    *
    * @param distributedSystem The distributed system to use for the statistics.
-   *
    * @since GemFire 5.7
    */
   void endStartLocator(InternalDistributedSystem distributedSystem) {
@@ -749,7 +748,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    *
    * @param distributedSystem The distributed system which the server location services should use.
    *        If null, the method will try to find an already connected distributed system.
-   *
    * @since GemFire 5.7
    */
   void startServerLocation(InternalDistributedSystem distributedSystem) throws IOException {
