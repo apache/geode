@@ -47,6 +47,7 @@ public interface PdxInstance extends java.io.Serializable {
 
   /**
    * Return the full name of the class that this pdx instance represents.
+   * An empty string will be returned if no class is associated with this instance.
    *
    * @return the name of the class that this pdx instance represents.
    * @since GemFire 6.6.2
@@ -218,7 +219,8 @@ public interface PdxInstance extends java.io.Serializable {
   /**
    * Returns false if this instance will never be deserialized to a domain class.
    * Instances that never deserialize can be created using
-   * {@link PdxInstanceFactory#neverDeserialize}.
+   * {@link PdxInstanceFactory#neverDeserialize} or by creating a factory with
+   * an empty string as the class name.
    *
    * @return false if this instance will never be deserialized to a domain class.
    *

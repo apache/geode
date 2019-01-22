@@ -42,6 +42,9 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
       throw new IllegalArgumentException(
           "Class name can not be null when creating a PdxInstanceFactory");
     }
+    if (name.isEmpty()) {
+      expectDomainClass = false;
+    }
     PdxOutputStream pdxOutputStream = new PdxOutputStream();
     this.pdxType = new PdxType(name, expectDomainClass);
     this.writer = new PdxWriterImpl(pdxType, pdxRegistry, pdxOutputStream);

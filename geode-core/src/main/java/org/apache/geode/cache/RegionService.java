@@ -76,8 +76,8 @@ public interface RegionService extends AutoCloseable {
    * @param className the fully qualified class name that the PdxInstance will become when it is
    *        fully deserialized unless {@link PdxInstanceFactory#neverDeserialize()} is called.
    *        If className is the empty string then no class versioning will be done for that
-   *        PdxInstance
-   *        and {@link PdxInstanceFactory#neverDeserialize()} should be called on the factory.
+   *        PdxInstance and {@link PdxInstanceFactory#neverDeserialize()} will be automatically
+   *        called on the returned factory.
    * @return the factory
    * @throws IllegalArgumentException if className is <code>null</code>.
    * @since GemFire 6.6.2
