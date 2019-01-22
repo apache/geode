@@ -1356,6 +1356,21 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
+  public void pdxInstanceWithNoCallsAndMultipleEqualFieldsInDifferentOrderAreEqual() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("");
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+    factory = cache.createPdxInstanceFactory("");
+    factory.writeString("fieldTwo", "valueTwo");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance2 = factory.create();
+
+    assertThat(instance).isEqualTo(instance2);
+  }
+
+  @Test
   public void normalPdxInstanceAddedToRegionWithPdxReadSerializedFalseAndABadClassThrowsClassNotFoundWhenRegionGet() {
     // make sure the cache has pdx-read-serialized set to false
     this.cache.close();
@@ -1374,6 +1389,17 @@ public class PdxInstanceFactoryJUnitTest {
   public void undeserializablePdxInstanceReturnsFalseFromIsDeserializable() {
     PdxInstanceFactory factory =
         cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+
+    assertThat(instance.isDeserializable()).isFalse();
+  }
+
+  @Test
+  public void pdxInstanceWithNoClassReturnsFalseFromIsDeserializable() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("");
     factory.writeString("fieldOne", "valueOne");
     factory.writeString("fieldTwo", "valueTwo");
     PdxInstance instance = factory.create();
