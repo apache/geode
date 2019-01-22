@@ -311,7 +311,8 @@ public class HeapMemoryMonitorTest {
 
     // It will take 4 consecutive events above the critical threshold to cause a state transition
     // given our memoryStateChangeTolerance of 3 in this test.
-    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance, MemoryThresholds.MemoryState.NORMAL);
+    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance,
+        MemoryThresholds.MemoryState.NORMAL);
     sendEventAndAssertState(criticalUsedBytes, 1, MemoryThresholds.MemoryState.EVICTION_CRITICAL);
   }
 
@@ -323,7 +324,8 @@ public class HeapMemoryMonitorTest {
     // The first three events are above the CRITICAL threshold and will count towards the
     // memoryStateChangeTolerance of 3, but the last event is only above the eviction
     // threshold so we expect the state transition to be from NORMAL to EVICTION.
-    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance, MemoryThresholds.MemoryState.NORMAL);
+    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance,
+        MemoryThresholds.MemoryState.NORMAL);
     sendEventAndAssertState(evictionUsedBytes, 1, MemoryThresholds.MemoryState.EVICTION);
   }
 
@@ -335,7 +337,8 @@ public class HeapMemoryMonitorTest {
     // The first three events are above the EVICTION threshold and will count towards the
     // memoryStateChangeTolerance of 3, but the last event is only above the eviction
     // threshold so we expect the state transition to be from NORMAL to EVICTION_CRITICAL.
-    sendEventAndAssertState(evictionUsedBytes, testMemoryEventTolerance, MemoryThresholds.MemoryState.NORMAL);
+    sendEventAndAssertState(evictionUsedBytes, testMemoryEventTolerance,
+        MemoryThresholds.MemoryState.NORMAL);
     sendEventAndAssertState(criticalUsedBytes, 1, MemoryThresholds.MemoryState.EVICTION_CRITICAL);
   }
 
@@ -346,7 +349,8 @@ public class HeapMemoryMonitorTest {
     // of 3 is exceeded.
     setupHeapMonitorThresholds(false, true);
 
-    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance, MemoryThresholds.MemoryState.EVICTION_DISABLED);
+    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance,
+        MemoryThresholds.MemoryState.EVICTION_DISABLED);
     sendEventAndAssertState(criticalUsedBytes, 1,
         MemoryThresholds.MemoryState.EVICTION_DISABLED_CRITICAL);
   }
@@ -360,7 +364,8 @@ public class HeapMemoryMonitorTest {
 
     // It should take 4 above critical events for the state transition to take effect, because
     // our memory state change tolerance is set to 3 for this test
-    sendEventAndAssertState(evictionUsedBytes, testMemoryEventTolerance, MemoryThresholds.MemoryState.CRITICAL_DISABLED);
+    sendEventAndAssertState(evictionUsedBytes, testMemoryEventTolerance,
+        MemoryThresholds.MemoryState.CRITICAL_DISABLED);
     sendEventAndAssertState(evictionUsedBytes, 1,
         MemoryThresholds.MemoryState.EVICTION_CRITICAL_DISABLED);
   }
@@ -369,7 +374,8 @@ public class HeapMemoryMonitorTest {
   public void updateStateAndSendEvent_TogglingBetweenEvictionAndCritical_StatesTransition() {
     setupHeapMonitorThresholds(true, true);
 
-    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance, MemoryThresholds.MemoryState.NORMAL);
+    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance,
+        MemoryThresholds.MemoryState.NORMAL);
     // Once in the EVICTION state, the transition between EVICTION and CRITICAL should not
     // depend on the threshold counter
     sendEventAndAssertState(evictionUsedBytes, 1, MemoryThresholds.MemoryState.EVICTION);
@@ -382,12 +388,14 @@ public class HeapMemoryMonitorTest {
   public void updateStateAndSendEvent_NormalToCriticalToNormalToCritical_ThresholdReset() {
     setupHeapMonitorThresholds(true, true);
 
-    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance, MemoryThresholds.MemoryState.NORMAL);
+    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance,
+        MemoryThresholds.MemoryState.NORMAL);
     sendEventAndAssertState(criticalUsedBytes, 1, MemoryThresholds.MemoryState.EVICTION_CRITICAL);
     sendEventAndAssertState(normalUsedBytes, 1, MemoryThresholds.MemoryState.NORMAL);
     // Threshold counter should have been reset, so we need thre more events in the CRITICAL range
     // to trigger a state transition
-    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance, MemoryThresholds.MemoryState.NORMAL);
+    sendEventAndAssertState(criticalUsedBytes, testMemoryEventTolerance,
+        MemoryThresholds.MemoryState.NORMAL);
     sendEventAndAssertState(criticalUsedBytes, 1, MemoryThresholds.MemoryState.EVICTION_CRITICAL);
   }
 
@@ -428,8 +436,7 @@ public class HeapMemoryMonitorTest {
       // Alternate between normal bytes and critical bytes using modular arithmetic
       if (i % 2 == 0) {
         sendEventAndAssertState(normalUsedBytes, 1, expectedState);
-      }
-      else {
+      } else {
         sendEventAndAssertState(criticalUsedBytes, 1, expectedState);
       }
     }
