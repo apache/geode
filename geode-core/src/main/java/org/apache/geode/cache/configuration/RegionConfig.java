@@ -147,19 +147,15 @@ import org.apache.geode.annotations.Experimental;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
+    propOrder = {"regionAttributes", "indexes", "regionElements"})
 @Experimental
 public class RegionConfig implements CacheElement {
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionConfig.Index> indexes;
-  @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig.Entry> entries;
   @XmlAnyElement(lax = true)
   protected List<CacheElement> regionElements;
-  @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
-  protected List<RegionConfig> regions;
   @XmlAttribute(name = "name", required = true)
   protected String name;
   @XmlAttribute(name = "refid")
@@ -211,36 +207,6 @@ public class RegionConfig implements CacheElement {
   }
 
   /**
-   * Gets the value of the entry property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the entry property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getEntries().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link RegionConfig.Entry }
-   *
-   *
-   */
-  public List<RegionConfig.Entry> getEntries() {
-    if (entries == null) {
-      entries = new ArrayList<RegionConfig.Entry>();
-    }
-    return this.entries;
-  }
-
-  /**
    * Gets the value of the any property.
    *
    * <p>
@@ -265,36 +231,6 @@ public class RegionConfig implements CacheElement {
       regionElements = new ArrayList<>();
     }
     return this.regionElements;
-  }
-
-  /**
-   * Gets the value of the region property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the region property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getRegions().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link RegionConfig }
-   *
-   *
-   */
-  public List<RegionConfig> getRegions() {
-    if (regions == null) {
-      regions = new ArrayList<RegionConfig>();
-    }
-    return this.regions;
   }
 
   /**
@@ -358,119 +294,6 @@ public class RegionConfig implements CacheElement {
   public String getId() {
     return getName();
   }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="key">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;choice>
-   *                   &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
-   *                   &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
-   *                 &lt;/choice>
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="value">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;choice>
-   *                   &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
-   *                   &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
-   *                 &lt;/choice>
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"key", "value"})
-  public static class Entry implements Serializable {
-
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
-    protected ObjectType key;
-    @XmlElement(namespace = "http://geode.apache.org/schema/cache", required = true)
-    protected ObjectType value;
-
-    public Entry() {};
-
-    public Entry(String key, String value) {
-      this.key = new ObjectType(key);
-      this.value = new ObjectType(value);
-    }
-
-    public Entry(ObjectType key, ObjectType value) {
-      this.key = key;
-      this.value = value;
-    }
-
-    /**
-     * Gets the value of the key property.
-     *
-     * possible object is
-     * {@link ObjectType }
-     *
-     */
-    public ObjectType getKey() {
-      return key;
-    }
-
-    /**
-     * Sets the value of the key property.
-     *
-     * allowed object is
-     * {@link ObjectType }
-     *
-     */
-    public void setKey(ObjectType value) {
-      this.key = value;
-    }
-
-    /**
-     * Gets the value of the value property.
-     *
-     * possible object is
-     * {@link ObjectType }
-     *
-     */
-    public ObjectType getValue() {
-      return value;
-    }
-
-    /**
-     * Sets the value of the value property.
-     *
-     * allowed object is
-     * {@link ObjectType }
-     *
-     */
-    public void setValue(ObjectType value) {
-      this.value = value;
-    }
-
-  }
-
 
   /**
    * <p>

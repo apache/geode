@@ -84,24 +84,6 @@ public class CacheConfigTest {
     assertThat(index.getType()).isEqualTo("range");
   }
 
-
-  @Test
-  public void regionEntry() {
-    String xml = cacheXml + regionXml + "<entry>" + "<key><string>key1</string></key>"
-        + "<value><declarable>" + declarableWithStringXml + "</declarable></value>" + "</entry>"
-        + "<entry>" + "<key><string>key2</string></key>" + "<value><declarable>"
-        + declarableWithParamXml + "</declarable></value>" + "</entry>" + "</region></cache>";
-
-    cacheConfig = service.unMarshall(xml);
-    RegionConfig.Entry entry = cacheConfig.getRegions().get(0).getEntries().get(0);
-    assertThat(entry.getKey().toString()).isEqualTo("key1");
-    assertThat(entry.getValue().getDeclarable()).isEqualTo(declarableWithString);
-
-    entry = cacheConfig.getRegions().get(0).getEntries().get(1);
-    assertThat(entry.getKey().toString()).isEqualTo("key2");
-    assertThat(entry.getValue().getDeclarable()).isEqualTo(declarableWithParam);
-  }
-
   @Test
   public void cacheTransactionManager() {
     String xml = cacheXml + "<cache-transaction-manager>" + "<transaction-listener>"
