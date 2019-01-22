@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.web.security;
+package org.apache.geode.management.internal.rest.security;
 
 import java.util.Properties;
 

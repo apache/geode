@@ -19,34 +19,53 @@ package org.apache.geode.management.internal.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Before;
 import org.junit.Test;
 
-public class APIResultTest {
+public class ClusterManagementResultTest {
+  private ClusterManagementResult result;
+
+  @Before
+  public void setup() {
+    result = new ClusterManagementResult();
+  }
+
+  @Test
+  public void failsWhenNotAppliedOnAllMembers() {
+    result.addMemberStatus("member-1", true, "msg-1");
+    result.addMemberStatus("member-2", false, "msg-2");
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessful()).isFalse();
+  }
+
   @Test
   public void successfulOnlyWhenResultIsSuccessfulOnAllMembers() {
-    APIResult result = new APIResult();
-    result.addMemberStatus("member-1", APIResult.Result.SUCCESS, "msg-1");
-    result.addMemberStatus("member-2", APIResult.Result.FAILURE, "msg-2");
-    assertThat(result.isSuccessfulOnDistributedMembers()).isFalse();
-    assertThat(result.isSuccessful()).isFalse();
-
-    result = new APIResult();
-    result.addMemberStatus("member-1", APIResult.Result.SUCCESS, "msg-1");
-    result.addMemberStatus("member-2", APIResult.Result.SUCCESS, "msg-2");
-    assertThat(result.isSuccessfulOnDistributedMembers()).isTrue();
+    result.addMemberStatus("member-1", true, "msg-1");
+    result.addMemberStatus("member-2", true, "msg-2");
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
   }
 
   @Test
-  public void successfulOnlyWhenClusterConfigIsPersisted() {
-    APIResult result = new APIResult();
-    result.setClusterConfigPersisted(APIResult.Result.FAILURE, "msg-1");
+  public void emptyMemberStatus() {
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
     assertThat(result.isSuccessfullyPersisted()).isFalse();
     assertThat(result.isSuccessful()).isFalse();
+  }
 
-    result = new APIResult();
-    result.setClusterConfigPersisted(APIResult.Result.SUCCESS, "msg-1");
+
+  @Test
+  public void failsWhenNotPersisted() {
+    result.setClusterConfigPersisted(false, "msg-1");
+    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isSuccessful()).isFalse();
+  }
+
+  @Test
+  public void failsWhenNoMembersExists() {
+    result.setClusterConfigPersisted(true, "msg-1");
     assertThat(result.isSuccessfullyPersisted()).isTrue();
-    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessful()).isFalse();
   }
 }

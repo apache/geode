@@ -13,55 +13,69 @@
  * the License.
  */
 
-package org.apache.geode.management.internal;
+package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
-import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
-public class RegionManagementIntegrationTest {
+public class RegionManagementDunitTest {
 
-  @ClassRule
-  public static LocatorStarterRule locator =
-      new LocatorStarterRule().withHttpService().withAutoStart();
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  @ClassRule
-  public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
+  private MemberVM locator, server;
 
-  public static GeodeDevRestClient restClient;
+  private GeodeDevRestClient restClient;
 
-  @BeforeClass
-  public static void setUpClass() throws Exception {
+  @Before
+  public void before() throws Exception {
+    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
+    server = cluster.startServerVM(1, locator.getPort());
     restClient =
         new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
   }
 
   @Test
-  public void sanityCheck() throws Exception {
+  public void createRegion() throws Exception {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setRefid("REPLICATE");
-
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 
     ClusterManagementResult result =
-        restClient.doPostAndAssert("/regions", json, null, null)
-            .hasStatusCode(500)
+        restClient.doPostAndAssert("/regions", json, "test", "test")
+            .hasStatusCode(201)
             .getClusterManagementResult();
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
-    assertThat(result.getPersistenceStatus().getMessage())
-        .isEqualTo("no members found to create cache element");
+
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
+    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+
+    // make sure region is created
+    server.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("customers");
+      assertThat(region).isNotNull();
+    });
+
+    // make sure region is persisted
+    locator.invoke(() -> {
+      CacheConfig cacheConfig =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+              .getCacheConfig("cluster");
+      assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("customers");
+    });
   }
 }

@@ -36,7 +36,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheFactory;
@@ -61,6 +64,7 @@ import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -78,8 +82,12 @@ import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.statistics.StatisticsConfig;
+import org.apache.geode.management.internal.AgentUtil;
+import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
+import org.apache.geode.management.internal.ManagementAgent;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.api.ClusterManagementService;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -191,6 +199,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private final LoggingSession loggingSession;
 
   private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
+  private WebAppContext managementWebapp;
 
   public boolean isSharedConfigurationEnabled() {
     return this.config.getEnableClusterConfiguration();
@@ -662,9 +671,50 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
     startJmxManagerLocationService(internalCache);
 
-    startSharedConfigurationService();
-    clusterManagementService = new LocatorClusterManagementService(locator.myCache,
-        locator.configurationPersistenceService);
+    startClusterManagementService();
+  }
+
+  private void startClusterManagementService() {
+    startConfigurationPersistenceService();
+
+    if (myCache == null) {
+      return;
+    }
+
+    clusterManagementService =
+        new LocatorClusterManagementService(locator.myCache.getDistributionManager(),
+            locator.configurationPersistenceService);
+
+    // start management rest service
+    AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
+    // Find the V2 Management rest WAR file
+    final String gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
+    if (gemfireManagementWar == null) {
+      logger.info(
+          "Unable to find GemFire V2 Management REST API WAR file; the Management REST Interface for Geode will not be accessible.");
+      return;
+    }
+
+    ManagementAgent managementAgent =
+        ((SystemManagementService) SystemManagementService.getExistingManagementService(myCache))
+            .getManagementAgent();
+
+    if (managementAgent == null) {
+      logger.info(
+          "management service needs to be started for ClusterManagementService to be running.");
+      return;
+    }
+
+    Pair<String, Object> securityServiceAttr =
+        new ImmutablePair<>(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+            myCache.getSecurityService());
+    Pair<String, Object> cmServiceAttr =
+        new ImmutablePair<>(JettyHelper.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+            clusterManagementService);
+    managementWebapp =
+        managementAgent
+            .addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,
+                cmServiceAttr);
   }
 
   /**
@@ -820,6 +870,15 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       }
     }
 
+    // stop the managementwebapp
+    if (managementWebapp != null) {
+      try {
+        managementWebapp.stop();
+      } catch (Exception e) {
+        logger.error("unable to stop the management webapp.", e);
+      }
+    }
+
     removeLocator(this);
 
     handleShutdown();
@@ -849,6 +908,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (this.myDs != null) {
       this.myDs.setDependentLocator(null);
     }
+
     if (this.myCache != null && !this.stoppedForReconnect && !this.forcedDisconnect) {
       logger.info("Closing locator's cache");
       try {
@@ -1039,10 +1099,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       if (isSharedConfigurationEnabled()) {
         this.configurationPersistenceService =
             new InternalConfigurationPersistenceService(newCache);
-        startSharedConfigurationService();
+        startClusterManagementService();
       }
-      this.clusterManagementService = new LocatorClusterManagementService(this.myCache,
-          this.configurationPersistenceService);
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();
@@ -1338,7 +1396,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
   }
 
-  private void startSharedConfigurationService() {
+  private void startConfigurationPersistenceService() {
     installSharedConfigHandler();
 
     if (!config.getEnableClusterConfiguration()) {

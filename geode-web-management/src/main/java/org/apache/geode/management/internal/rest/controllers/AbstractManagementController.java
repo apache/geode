@@ -12,13 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.web.controllers;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+package org.apache.geode.management.internal.rest.controllers;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MalformedObjectNameException;
+import javax.servlet.ServletContext;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
@@ -28,59 +27,64 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.context.ServletContextAware;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.JettyHelper;
+import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
-/**
- * The AbstractCommandsController class is the abstract base class encapsulating common
- * functionality across all Management Controller classes that expose REST API web service endpoints
- * (URLs/URIs) for GemFire shell (Gfsh) commands.
- *
- * @see MemberMXBean
- * @see Gfsh
- * @see ResponseEntity
- * @see org.springframework.stereotype.Controller
- * @see ExceptionHandler
- * @see InitBinder
- * @see org.springframework.web.bind.annotation.ResponseBody
- * @since GemFire 8.0
- */
-@SuppressWarnings("unused")
-public abstract class AbstractAdminRestController {
-  protected static final String REST_API_VERSION = "/v1";
+public class AbstractManagementController implements ServletContextAware {
+
+  protected static final String MANAGEMENT_API_VERSION = "/v2";
+  protected SecurityService securityService;
+  protected LocatorClusterManagementService clusterManagementService;
+
+  @Override
+  public void setServletContext(ServletContext servletContext) {
+    securityService = (SecurityService) servletContext
+        .getAttribute(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+    clusterManagementService = (LocatorClusterManagementService) servletContext
+        .getAttribute(JettyHelper.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM);
+  }
+
   private static final Logger logger = LogService.getLogger();
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> internalError(final Exception e) {
-    final String stackTrace = getPrintableStackTrace(e);
-    logger.fatal(stackTrace);
-    return new ResponseEntity<>(stackTrace, HttpStatus.INTERNAL_SERVER_ERROR);
+  public ResponseEntity<ClusterManagementResult> internalError(final Exception e) {
+    logger.error(e.getMessage(), e);
+    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+        HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @ExceptionHandler(AuthenticationFailedException.class)
-  public ResponseEntity<String> unauthorized(AuthenticationFailedException e) {
-    return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+  public ResponseEntity<ClusterManagementResult> unauthorized(AuthenticationFailedException e) {
+    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+        HttpStatus.UNAUTHORIZED);
   }
 
   @ExceptionHandler({NotAuthorizedException.class, SecurityException.class})
-  public ResponseEntity<String> forbidden(Exception e) {
-    return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
+  public ResponseEntity<ClusterManagementResult> forbidden(Exception e) {
+    logger.info(e.getMessage());
+    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+        HttpStatus.FORBIDDEN);
   }
 
   @ExceptionHandler(MalformedObjectNameException.class)
-  public ResponseEntity<String> badRequest(final MalformedObjectNameException e) {
-    logger.info(e);
-    return new ResponseEntity<>(getPrintableStackTrace(e), HttpStatus.BAD_REQUEST);
+  public ResponseEntity<ClusterManagementResult> badRequest(final MalformedObjectNameException e) {
+    logger.info(e.getMessage(), e);
+    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+        HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(InstanceNotFoundException.class)
-  public ResponseEntity<String> notFound(final InstanceNotFoundException e) {
-    logger.info(e);
-    return new ResponseEntity<>(getPrintableStackTrace(e), HttpStatus.NOT_FOUND);
+  public ResponseEntity<ClusterManagementResult> notFound(final InstanceNotFoundException e) {
+    logger.info(e.getMessage(), e);
+    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+        HttpStatus.NOT_FOUND);
   }
 
   /**
@@ -92,23 +96,11 @@ public abstract class AbstractAdminRestController {
    * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
    */
   @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<String> handleException(final AccessDeniedException cause) {
-    logger.info(cause);
-    return new ResponseEntity<>(cause.getMessage(), HttpStatus.FORBIDDEN);
-  }
-
-  /**
-   * Writes the stack trace of the Throwable to a String.
-   *
-   * @param t a Throwable object who's stack trace will be written to a String.
-   * @return a String containing the stack trace of the Throwable.
-   * @see StringWriter
-   * @see Throwable#printStackTrace(PrintWriter)
-   */
-  private static String getPrintableStackTrace(final Throwable t) {
-    final StringWriter stackTraceWriter = new StringWriter();
-    t.printStackTrace(new PrintWriter(stackTraceWriter));
-    return stackTraceWriter.toString();
+  public ResponseEntity<ClusterManagementResult> handleException(
+      final AccessDeniedException cause) {
+    logger.info(cause.getMessage(), cause);
+    return new ResponseEntity<>(new ClusterManagementResult(false, cause.getMessage()),
+        HttpStatus.FORBIDDEN);
   }
 
   /**

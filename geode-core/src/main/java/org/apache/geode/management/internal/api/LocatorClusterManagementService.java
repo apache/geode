@@ -30,7 +30,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -42,19 +42,18 @@ import org.apache.geode.management.internal.exceptions.NoMembersException;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static Logger logger = LogService.getLogger();
-  private InternalCache cache;
+  private DistributionManager distributionManager;
   private ConfigurationPersistenceService persistenceService;
 
-  public LocatorClusterManagementService(InternalCache cache,
+  public LocatorClusterManagementService(DistributionManager distributionManager,
       ConfigurationPersistenceService persistenceService) {
-    this.cache = cache;
+    this.distributionManager = distributionManager;
     this.persistenceService = persistenceService;
-
   }
 
   @Override
-  public APIResult createCacheElement(CacheElement config) {
-    APIResult result = new APIResult();
+  public ClusterManagementResult create(CacheElement config) {
+    ClusterManagementResult result = new ClusterManagementResult();
     String group = "cluster";
     ConfigurationMutator configurationMutator =
         (new ConfigurationMutatorFactory()).generate(config);
@@ -80,7 +79,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
         targetedMembers);
     functionResults
         .forEach(functionResult -> result.addMemberStatus(functionResult.getMemberIdOrName(),
-            functionResult.isSuccessful() ? APIResult.Result.SUCCESS : APIResult.Result.FAILURE,
+            functionResult.isSuccessful(),
             functionResult.getStatusMessage()));
 
     // persist configuration in cache config
@@ -88,12 +87,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
       persistenceService.updateCacheConfig(group, cacheConfigForGroup -> {
         try {
           configurationMutator.add(config, cacheConfigForGroup);
-          result.setClusterConfigPersisted(APIResult.Result.SUCCESS,
+          result.setClusterConfigPersisted(true,
               "successfully persisted config for " + group);
         } catch (Exception e) {
           String message = "failed to update cluster config for " + group;
           logger.error(message, e);
-          result.setClusterConfigPersisted(APIResult.Result.FAILURE, message);
+          result.setClusterConfigPersisted(false, message);
           return null;
         }
 
@@ -105,17 +104,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public APIResult deleteCacheElement(CacheElement config) {
+  public ClusterManagementResult delete(CacheElement config) {
     throw new NotImplementedException();
   }
 
   @Override
-  public APIResult updateCacheElement(CacheElement config) {
+  public ClusterManagementResult update(CacheElement config) {
     throw new NotImplementedException();
   }
 
   private Set<DistributedMember> findMembers(String[] groups, String[] members) {
-    return CliUtil.findMembers(groups, members, cache);
+    return CliUtil.findMembers(groups, members, distributionManager);
   }
 
   private List<CliFunctionResult> executeAndGetFunctionResult(Function function, Object args,

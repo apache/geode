@@ -44,18 +44,19 @@ import javax.management.remote.rmi.RMIServerImpl;
 
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -98,6 +99,7 @@ public class ManagementAgent {
   private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
   private final SecurityService securityService;
+  private final InternalCache cache;
   private boolean isHttpServiceRunning = false;
   private RMIClientSocketFactory rmiClientSocketFactory;
   private RMIServerSocketFactory rmiServerSocketFactory;
@@ -114,9 +116,10 @@ public class ManagementAgent {
   private static final String PULSE_USESSL_MANAGER = "pulse.useSSL.manager";
   private static final String PULSE_USESSL_LOCATOR = "pulse.useSSL.locator";
 
-  public ManagementAgent(DistributionConfig config, SecurityService securityService) {
+  public ManagementAgent(DistributionConfig config, InternalCache cache) {
     this.config = config;
-    this.securityService = securityService;
+    this.cache = cache;
+    this.securityService = cache.getSecurityService();
   }
 
   public synchronized boolean isRunning() {
@@ -141,14 +144,6 @@ public class ManagementAgent {
         && cache.getInternalDistributedSystem().getDistributedMember()
             .getVmKind() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
         && !cache.isClient());
-  }
-
-  public static InternalCacheForClientAccess getCache() {
-    InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
-    if (cache != null) {
-      return cache.getCacheForProcessingClientRequests();
-    }
-    return null;
   }
 
   public synchronized void startAgent(InternalCache cache) {
@@ -194,13 +189,26 @@ public class ManagementAgent {
     this.running = false;
   }
 
+  public WebAppContext addWebApplication(String webAppContext, String warFilePath,
+      Pair<String, Object>... attributeNameValuePairs) {
+    if (httpServer == null) {
+      logger.info(
+          String.format("unable to add %s webapp. Http service is not started on this member.",
+              webAppContext));
+      return null;
+    }
+
+    return JettyHelper
+        .addWebApplication(httpServer, webAppContext, warFilePath, attributeNameValuePairs);
+  }
+
   private Server httpServer;
   private final String GEMFIRE_VERSION = GemFireVersion.getGemFireVersion();
   private final AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
 
   private void startHttpService(boolean isServer) {
     final SystemManagementService managementService = (SystemManagementService) ManagementService
-        .getManagementService(getCache());
+        .getManagementService(cache);
 
     final ManagerMXBean managerBean = managementService.getManagerMXBean();
 
@@ -215,16 +223,7 @@ public class ManagementAgent {
       if (gemfireWar == null) {
         if (logger.isDebugEnabled()) {
           logger.debug(
-              "Unable to find GemFire V1 Management REST API WAR file; the Management REST Interface for GemFire will not be accessible.");
-        }
-      }
-
-      // Find the V2 Management rest WAR file
-      final String gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
-      if (gemfireManagementWar == null) {
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "Unable to find GemFire V2 Management REST API WAR file; the Management REST Interface for GemFire will not be accessible.");
+              "Unable to find Geode V1 Management REST API WAR file; the Management REST Interface for Geode will not be accessible.");
         }
       }
 
@@ -233,7 +232,7 @@ public class ManagementAgent {
 
       if (pulseWar == null) {
         final String message =
-            "Unable to find Pulse web application WAR file; Pulse for GemFire will not be accessible";
+            "Unable to find Pulse web application WAR file; Pulse for Geode will not be accessible";
         setStatusMessage(managerBean, message);
         if (logger.isDebugEnabled()) {
           logger.debug(message);
@@ -249,7 +248,7 @@ public class ManagementAgent {
       final String gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
       if (gemfireAPIWar == null) {
         final String message =
-            "Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.";
+            "Unable to find Geode Developer REST API WAR file; the Developer REST Interface for Geode will not be accessible.";
         setStatusMessage(managerBean, message);
         if (logger.isDebugEnabled()) {
           logger.debug(message);
@@ -257,8 +256,7 @@ public class ManagementAgent {
       }
 
       try {
-        if (agentUtil.isAnyWarFileAvailable(gemfireWar, gemfireManagementWar, pulseWar,
-            gemfireAPIWar)) {
+        if (agentUtil.isAnyWarFileAvailable(gemfireWar, pulseWar, gemfireAPIWar)) {
 
           final String bindAddress = this.config.getHttpServiceBindAddress();
           final int port = this.config.getHttpServicePort();
@@ -268,29 +266,30 @@ public class ManagementAgent {
           this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory
               .getSSLConfigForComponent(config, SecurableCommunicationChannel.WEB));
 
+          Pair<String, Object> securityServiceAttr =
+              new ImmutablePair<>(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+                  securityService);
+          Pair<String, Object> sslConfigAttr =
+              new ImmutablePair<>(JettyHelper.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
+                  createSslProps());
+
+          // if jmx manager is running, admin rest should be available, either on locator or server
           if (agentUtil.isAnyWarFileAvailable(gemfireWar)) {
-            this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire", gemfireWar,
-                securityService, null);
-            this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode-mgmt",
-                gemfireWar, securityService, null);
+            addWebApplication("/gemfire", gemfireWar, securityServiceAttr);
+            addWebApplication("/geode-mgmt", gemfireWar, securityServiceAttr);
           }
 
-          if (agentUtil.isAnyWarFileAvailable(gemfireManagementWar)) {
-            this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode-management",
-                gemfireManagementWar, securityService, null);
-          }
-
+          // if jmx manager is running, pulse should be available, either on locator or server
+          // we need to pass in the sllConfig to pulse because it needs it to make jmx connection
           if (agentUtil.isAnyWarFileAvailable(pulseWar)) {
-            this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/pulse", pulseWar,
-                securityService, createSslProps());
+            addWebApplication("/pulse", pulseWar, securityServiceAttr, sslConfigAttr);
           }
 
+          // the dev rest api is only available on servers
           if (isServer && this.config.getStartDevRestApi()) {
             if (agentUtil.isAnyWarFileAvailable(gemfireAPIWar)) {
-              this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/geode",
-                  gemfireAPIWar, securityService, null);
-              this.httpServer = JettyHelper.addWebApplication(this.httpServer, "/gemfire-api",
-                  gemfireAPIWar, securityService, null);
+              addWebApplication("/geode", gemfireAPIWar, securityServiceAttr);
+              addWebApplication("/gemfire-api", gemfireAPIWar, securityServiceAttr);
               isRestWebAppAdded = true;
             }
           } else {
@@ -329,9 +328,7 @@ public class ManagementAgent {
 
           // set cache property for developer REST service running
           if (isRestWebAppAdded) {
-            InternalCache cache = getCache();
             cache.setRESTServiceRunning(true);
-
             // create region to hold query information (queryId, queryString).
             // Added for the developer REST APIs
             RestAgent.createParameterizedQueryRegion();
@@ -419,7 +416,7 @@ public class ManagementAgent {
         try {
           this.httpServer.destroy();
         } catch (Exception ignore) {
-          logger.error("Failed to properly release resources held by the HTTP service: {}",
+          logger.info("Failed to properly release resources held by the HTTP service: {}",
               ignore.getMessage(), ignore);
         } finally {
           this.httpServer = null;

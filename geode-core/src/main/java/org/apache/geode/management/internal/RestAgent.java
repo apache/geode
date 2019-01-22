@@ -17,6 +17,8 @@ package org.apache.geode.management.internal;
 import java.net.UnknownHostException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -137,10 +139,13 @@ public class RestAgent {
         this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
             SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
 
-        this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar,
-            securityService, null);
-        this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar,
-            securityService, null);
+        Pair<String, Object> securityServiceAttr =
+            new ImmutablePair<>(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+                securityService);
+
+        JettyHelper
+            .addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar, securityServiceAttr);
+        JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar, securityServiceAttr);
 
         if (logger.isDebugEnabled()) {
           logger.debug("Starting HTTP embedded server on port ({}) at bind-address ({})...",
@@ -148,7 +153,7 @@ public class RestAgent {
               httpServiceBindAddress);
         }
 
-        this.httpServer = JettyHelper.startJetty(this.httpServer);
+        JettyHelper.startJetty(this.httpServer);
         logger.info("HTTP service started successfully...!!");
       }
     } catch (Exception e) {

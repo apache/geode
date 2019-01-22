@@ -12,25 +12,44 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.internal.api;
 
-package org.apache.geode.management.internal.web.controllers;
+public class Status {
+  enum Result {
+    SUCCESS, FAILURE, NOT_APPLICABLE
+  }
 
-import javax.servlet.ServletContext;
+  Result status;
+  String message;
 
-import org.springframework.web.context.ServletContextAware;
+  // needed for json deserialization
+  public Status() {}
 
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.internal.JettyHelper;
+  ;
 
-public class AbstractManagementController extends AbstractAdminRestController implements
-    ServletContextAware {
+  public Status(Result status, String message) {
+    this.status = status;
+    this.message = message;
+  }
 
-  protected static final String MANAGEMENT_API_VERSION = "/v2";
-  protected SecurityService securityService;
+  public Status(boolean success, String message) {
+    this.status = success ? Result.SUCCESS : Result.FAILURE;
+    this.message = message;
+  }
 
-  @Override
-  public void setServletContext(ServletContext servletContext) {
-    securityService = (SecurityService) servletContext
-        .getAttribute(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+  public Result getStatus() {
+    return status;
+  }
+
+  public void setStatus(Result status) {
+    this.status = status;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
   }
 }

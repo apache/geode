@@ -48,6 +48,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
@@ -258,6 +259,18 @@ public class CliUtil {
   public static Set<DistributedMember> findMembers(String[] groups, String[] members,
       InternalCache cache) {
     Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
+
+    return findMembers(allNormalMembers, groups, members);
+  }
+
+  /**
+   * Finds all Servers which belong to the given arrays of groups or members. Does not include
+   * locators.
+   */
+  public static Set<DistributedMember> findMembers(String[] groups, String[] members,
+      DistributionManager distributionManager) {
+    Set<DistributedMember> allNormalMembers = new HashSet<DistributedMember>(
+        distributionManager.getNormalDistributionManagerIds());
 
     return findMembers(allNormalMembers, groups, members);
   }

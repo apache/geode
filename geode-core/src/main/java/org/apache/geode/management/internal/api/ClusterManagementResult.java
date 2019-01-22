@@ -17,47 +17,51 @@ package org.apache.geode.management.internal.api;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class APIResult {
-  enum Result {
-    SUCCESS, FAILURE, NOT_APPLICABLE
-  }
 
-  class Status {
-    Result result;
-    String message;
-
-    public Status(Result result, String message) {
-      this.result = result;
-      this.message = message;
-    }
-  }
-
+public class ClusterManagementResult {
   private Map<String, Status> memberStatuses = new HashMap<>();
-  private Status clusterConfigStatus = new Status(Result.NOT_APPLICABLE, null);
 
-  public void addMemberStatus(String member, Result result, String message) {
+  private Status persistenceStatus = new Status(Status.Result.NOT_APPLICABLE, null);
+
+  public ClusterManagementResult() {}
+
+  public ClusterManagementResult(boolean success, String message) {
+    this.persistenceStatus = new Status(success, message);
+  }
+
+  public void addMemberStatus(String member, Status.Result result, String message) {
     this.memberStatuses.put(member, new Status(result, message));
   }
 
-  public void setClusterConfigPersisted(Result result, String message) {
-    this.clusterConfigStatus = new Status(result, message);
+  public void addMemberStatus(String member, boolean success, String message) {
+    this.memberStatuses.put(member, new Status(success, message));
+  }
+
+  public void setClusterConfigPersisted(boolean success, String message) {
+    this.persistenceStatus = new Status(success, message);
   }
 
   public Map<String, Status> getMemberStatuses() {
     return memberStatuses;
   }
 
-  public Status getClusterConfigStatus() {
-    return clusterConfigStatus;
+  public Status getPersistenceStatus() {
+    return persistenceStatus;
   }
 
-  public boolean isSuccessfulOnDistributedMembers() {
-    return memberStatuses.values().stream().allMatch(x -> x.result == Result.SUCCESS);
+  @JsonIgnore
+  public boolean isSuccessfullyAppliedOnMembers() {
+    if (memberStatuses.isEmpty()) {
+      return false;
+    }
+    return memberStatuses.values().stream().allMatch(x -> x.status == Status.Result.SUCCESS);
   }
 
+  @JsonIgnore
   public boolean isSuccessfullyPersisted() {
-    return clusterConfigStatus.result == Result.SUCCESS;
+    return persistenceStatus.status == Status.Result.SUCCESS;
   }
 
   /**
@@ -66,8 +70,10 @@ public class APIResult {
    * or configuration persistence is applicable and successful
    * - false otherwise
    */
+  @JsonIgnore
   public boolean isSuccessful() {
-    return (clusterConfigStatus.result == Result.NOT_APPLICABLE || isSuccessfullyPersisted())
-        && isSuccessfulOnDistributedMembers();
+    return (persistenceStatus.status == Status.Result.NOT_APPLICABLE || isSuccessfullyPersisted())
+        && isSuccessfullyAppliedOnMembers();
   }
+
 }

@@ -36,7 +36,8 @@
       <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.ResourceHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
-      <bean class="org.apache.geode.management.internal.web.converter.CustomMappingJackson2HttpMessageConverter" p:objectMapper-ref="objectMapper"/>
+      <bean class="org.apache.geode.management.internal.rest.converter.CustomMappingJackson2HttpMessageConverter"
+            p:objectMapper-ref="objectMapper"/>
     </mvc:message-converters>
   </mvc:annotation-driven>
 
@@ -74,5 +75,5 @@
     </property>
   </bean>
 
-  <bean class="org.apache.geode.management.internal.web.security.RestSecurityConfiguration" />
+  <bean class="org.apache.geode.management.internal.rest.security.RestSecurityConfiguration"/>
 </beans>

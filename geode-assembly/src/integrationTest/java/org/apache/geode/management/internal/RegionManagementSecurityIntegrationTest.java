@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -23,6 +25,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.internal.api.ClusterManagementResult;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -59,9 +62,12 @@ public class RegionManagementSecurityIntegrationTest {
 
   @Test
   public void sanityCheck_not_authorized() throws Exception {
-    restClient.doPostAndAssert("/regions", json, "test", "test")
-        .hasStatusCode(403)
-        .hasResponseBody().isEqualTo("Access is denied");
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, "test", "test")
+            .hasStatusCode(403)
+            .getClusterManagementResult();
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getPersistenceStatus().getMessage()).isEqualTo("Access is denied");
   }
 
   @Test
@@ -78,9 +84,12 @@ public class RegionManagementSecurityIntegrationTest {
 
   @Test
   public void sanityCheck_success() throws Exception {
-    restClient.doPostAndAssert("/regions", json, "dataManage", "dataManage")
-        .hasStatusCode(201)
-        .hasResponseBody().isEqualTo("customers");
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, "dataManage", "dataManage")
+            .hasStatusCode(500)
+            .getClusterManagementResult();
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("no members found to create cache element");
   }
-
 }
