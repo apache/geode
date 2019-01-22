@@ -36,6 +36,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
@@ -428,16 +430,20 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
     String classpath = System.getProperty("java.class.path");
     System.out.println("java classpath is " + classpath);
 
-    String[] entries = classpath.split(File.pathSeparator);
+    List<File> entries =
+        Arrays.stream(classpath.split(File.pathSeparator)).map(x -> new File(x)).collect(
+            Collectors.toList());
     String gradleBuildDirName =
         Paths.get(getModuleName(), "build", "classes", "java", "main").toString();
+    System.out.println("gradleBuildDirName is " + classpath);
     String ideaBuildDirName = Paths.get(getModuleName(), "out", "production", "classes").toString();
     String buildDir = null;
 
-    for (String entry : entries) {
+    for (File entry : entries) {
       System.out.println("examining '" + entry + "'");
-      if (entry.endsWith(gradleBuildDirName) || entry.endsWith(ideaBuildDirName)) {
-        buildDir = entry;
+      if (entry.toString().endsWith(gradleBuildDirName)
+          || entry.toString().endsWith(ideaBuildDirName)) {
+        buildDir = entry.toString();
         break;
       }
     }
