@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
@@ -80,6 +81,7 @@ public class ClientUserAuths {
     return uniqueIdVsUserAuth.get(userId);
   }
 
+  @VisibleForTesting
   protected Collection<Subject> getSubjects() {
     return Collections.unmodifiableCollection(this.uniqueIdVsSubject.values());
   }

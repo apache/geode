@@ -45,6 +45,7 @@ import org.apache.shiro.util.ThreadState;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ClientSession;
@@ -1948,6 +1949,7 @@ public class CacheClientProxy implements ClientSession {
     return this.clientVersion;
   }
 
+  @VisibleForTesting
   protected Subject getSubject() {
     return this.subject;
   }

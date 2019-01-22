@@ -14,14 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.shiro.subject.Subject;
 import org.junit.BeforeClass;
@@ -59,20 +57,12 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
   private static List<ClientUserAuths> authorizations;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
-    Properties locatorProps = new Properties();
-    locatorProps.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getCanonicalName());
-    locator = cluster.startLocatorVM(0, locatorProps);
-
-    Properties serverProps = new Properties();
-    serverProps.setProperty("security-username", "cluster");
-    serverProps.setProperty("security-password", "cluster");
-    server = cluster.startServerVM(1, serverProps, locator.getPort());
-
-    server.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
-    });
+  public static void beforeClass() {
+    locator = cluster.startLocatorVM(0, l -> l.withSecurityManager(SimpleSecurityManager.class));
+    int locatorPort = locator.getPort();
+    server = cluster.startServerVM(1, s -> s.withCredential("cluster", "cluster")
+        .withConnectionToLocator(locatorPort).withRegion(RegionShortcut.PARTITION,
+            "ClientServerConnectDisconnectDistributedTest_region"));
   }
 
   @Test
@@ -86,7 +76,8 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     // Do some puts
     client.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
-      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
+      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY)
+          .create("ClientServerConnectDisconnectDistributedTest_region");
       for (int i = 0; i < 10; i++) {
         Object key = String.valueOf(i);
         region.put(key, key);

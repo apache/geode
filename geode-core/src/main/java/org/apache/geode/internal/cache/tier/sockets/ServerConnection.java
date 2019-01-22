@@ -45,6 +45,7 @@ import org.apache.shiro.util.ThreadState;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;
@@ -1102,6 +1103,7 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
+  @VisibleForTesting
   protected ClientUserAuths getClientUserAuths() {
     return this.clientUserAuths;
   }
