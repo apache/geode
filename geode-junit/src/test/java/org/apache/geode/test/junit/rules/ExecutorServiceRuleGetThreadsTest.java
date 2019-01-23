@@ -89,7 +89,6 @@ public class ExecutorServiceRuleGetThreadsTest {
     executorServiceRule.submit(() -> terminateLatch.await(TIMEOUT_MILLIS, MILLISECONDS));
 
     long[] threadIds = executorServiceRule.getThreadIds();
-
     assertThat(threadIds).hasSize(2);
 
     Set<Thread> threads = executorServiceRule.getThreads();

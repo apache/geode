@@ -42,13 +42,13 @@ public class ExecutorServiceRuleTest {
   private static volatile ExecutorService executorService;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     hangLatch = new CountDownLatch(1);
     terminateLatch = new CountDownLatch(1);
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     while (hangLatch != null && hangLatch.getCount() > 0) {
       hangLatch.countDown();;
     }
@@ -133,7 +133,7 @@ public class ExecutorServiceRuleTest {
   public static class HasExecutorService extends HasExecutorServiceRule {
 
     @Test
-    public void doTest() throws Exception {
+    public void doTest() {
       // nothing
     }
   }
@@ -141,7 +141,7 @@ public class ExecutorServiceRuleTest {
   public static class Hangs extends HasExecutorServiceRule {
 
     @Test
-    public void doTest() throws Exception {
+    public void doTest() {
       executorServiceRule.runAsync(() -> {
         try {
           hangLatch.await();
