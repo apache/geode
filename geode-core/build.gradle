@@ -226,7 +226,7 @@ dependencies {
   runtimeOnly('org.apache.logging.log4j:log4j-jul') {
     ext.optional = true
   }
-  compile('org.eclipse.jetty:jetty-webapp:' + project.'jetty.version') {
+  compile('org.eclipse.jetty:jetty-webapp') {
     ext.optional = true
   }
   compileOnly('org.springframework:spring-webmvc') {

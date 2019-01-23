@@ -27,11 +27,13 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 // disable artifact generation for this project
 jar.enabled = false
 
+project.ext {artifactName = 'apache-geode'}
+
 publishing {
   publications {
     maven(MavenPublication) {
       afterEvaluate {
-        artifactId = 'apache-geode'
+        artifactId = artifactName
 
         artifacts = []
 
