@@ -19,26 +19,47 @@ import static java.util.stream.Collectors.toSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
-import io.github.classgraph.utils.WhiteBlackList;
 
 /**
  * Utility class to scan class-path & load classes.
  *
  * @since GemFire 7.0
  */
-public class ClasspathScanLoadHelper {
+public class ClasspathScanLoadHelper implements AutoCloseable {
 
   private final ScanResult scanResult;
 
   public ClasspathScanLoadHelper(Collection<String> packagesToScan) {
     scanResult = new ClassGraph().whitelistPackages(packagesToScan.toArray(new String[] {}))
         .enableClassInfo()
-        .enableAnnotationInfo().scan();
+        .enableAnnotationInfo().scan(optimalNumScanThreads());
+  }
+
+  /**
+   * @return a safe number of classgraph scan threads
+   */
+  private static int optimalNumScanThreads() {
+    // assumptions
+    final int largestJarMB = 200; // all-in-one jars can take significant memory to scan
+    final int largeNumberOfJars = 300; // some frameworks bring along many dependencies
+    final int maxFileDescriptorUsage = 1500; // this is conservative, max is commonly 8K
+
+    // guard against using too many file descriptors
+    final int maxThreadsByFds = maxFileDescriptorUsage / largeNumberOfJars;
+
+    // guard against running out of memory
+    final long heapMB = Runtime.getRuntime().maxMemory() / (1024 * 1024);
+    final int maxThreadsByMem = 1 + ((int) heapMB / largestJarMB);
+
+    // limit multi-threading to available CPUs (plus 25% for I/O wait)
+    final int maxThreadsByCpus = Runtime.getRuntime().availableProcessors() * 5 / 4;
+
+    // use max number of threads that satisfies all constraints above
+    return Math.min(maxThreadsByFds, Math.min(maxThreadsByMem, maxThreadsByCpus));
   }
 
   public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
@@ -63,13 +84,24 @@ public class ClasspathScanLoadHelper {
     return classInfoList.loadClasses().stream().collect(toSet());
   }
 
-  private boolean classMatchesPackage(String className, String packageSpec) {
+  /**
+   * replaces shell-style glob characters with their regexp equivalents
+   */
+  private static String globToRegex(final String glob) {
+    return "^" + glob.replace(".", "\\.").replace("*", ".*") + "$";
+  }
+
+  private static boolean classMatchesPackage(String className, String packageSpec) {
     if (!packageSpec.contains("*")) {
       return className.startsWith(packageSpec);
     }
 
-    Pattern globPattern = WhiteBlackList.globToPattern(packageSpec);
-    return globPattern.matcher(className).matches();
+    return className.matches(globToRegex(packageSpec));
   }
 
+  @Override
+  public void close() {
+    if (scanResult != null)
+      scanResult.close();
+  }
 }
