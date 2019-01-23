@@ -213,7 +213,7 @@ task('checkPom') {
       def pathologicalGroupId = groupMismatches(expectedPom)
       def pathologicalVersionedDeps = anyVersionDefinitionNotInDependencyManagement(expectedPom)
 
-      if (pathologicalArtifactId || pathologicalGroupId) {
+      if (pathologicalArtifactId || pathologicalGroupId || pathologicalVersionedDeps) {
         def errorSummary = ""
         errorSummary += pathologicalArtifactId ? "Expected POM header pathologically incorrect. Fix artifactId to match subproject name.\n" : ""
         errorSummary += pathologicalGroupId ? "Expected POM header pathologically incorrect. Fix groupId to be 'org.apache.geode'.\n" : ""
