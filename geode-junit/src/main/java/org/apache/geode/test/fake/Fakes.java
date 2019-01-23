@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -67,6 +68,8 @@ public class Fakes {
     GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     DistributionConfig config = mock(DistributionConfig.class);
+    when(config.getSecurableCommunicationChannels())
+        .thenReturn(new SecurableCommunicationChannel[] {SecurableCommunicationChannel.ALL});
     ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
     PdxInstanceFactory pdxInstanceFactory = mock(PdxInstanceFactory.class);
     TypeRegistry pdxRegistryMock = mock(TypeRegistry.class);
