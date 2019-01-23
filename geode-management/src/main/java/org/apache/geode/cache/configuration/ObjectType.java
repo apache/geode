@@ -25,8 +25,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.geode.cache.Cache;
-
 /**
  * <p>
  * Java class for anonymous complex type.
@@ -48,7 +46,6 @@ import org.apache.geode.cache.Cache;
  * </pre>
  *
  * ObjectType represents either a string or an object represented by the DeclarableType
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"string", "declarable"})
@@ -70,7 +67,6 @@ public class ObjectType implements Serializable {
 
   /**
    * Gets the value of the string property.
-   *
    */
   public String getString() {
     return string;
@@ -78,7 +74,6 @@ public class ObjectType implements Serializable {
 
   /**
    * Sets the value of the string property.
-   *
    */
   public void setString(String string) {
     this.string = string;
@@ -87,9 +82,7 @@ public class ObjectType implements Serializable {
   /**
    * Gets the value of the declarable property.
    *
-   * possible object is
-   * {@link DeclarableType }
-   *
+   * possible object is {@link DeclarableType }
    */
   public DeclarableType getDeclarable() {
     return declarable;
@@ -98,9 +91,7 @@ public class ObjectType implements Serializable {
   /**
    * Sets the value of the declarable property.
    *
-   * allowed object is
-   * {@link DeclarableType }
-   *
+   * allowed object is {@link DeclarableType }
    */
   public void setDeclarable(DeclarableType value) {
     this.declarable = value;
@@ -135,15 +126,4 @@ public class ObjectType implements Serializable {
     return "";
   }
 
-  public Object newInstance(Cache cache) {
-    if (string != null) {
-      return string;
-    }
-
-    if (declarable != null) {
-      return declarable.newInstance(cache);
-    }
-
-    return null;
-  }
 }

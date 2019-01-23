@@ -25,8 +25,6 @@ public class Status {
   // needed for json deserialization
   public Status() {}
 
-  ;
-
   public Status(Result status, String message) {
     this.status = status;
     this.message = message;

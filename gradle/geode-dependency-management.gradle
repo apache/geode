@@ -58,6 +58,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
           entry('geode-json')
           entry('geode-junit')
           entry('geode-lucene')
+          entry('geode-management')
           entry('geode-old-client-support')
           entry('geode-old-versions')
           entry('geode-protobuf')

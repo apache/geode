@@ -109,7 +109,7 @@ import org.apache.geode.annotations.Experimental;
 public class JndiBindingsType {
 
   @XmlElement(name = "jndi-binding", namespace = "http://geode.apache.org/schema/cache")
-  protected List<JndiBindingsType.JndiBinding> jndiBindings;
+  protected List<JndiBinding> jndiBindings;
 
   /**
    * Gets the value of the jndiBindings property.
@@ -134,9 +134,9 @@ public class JndiBindingsType {
    *
    *
    */
-  public List<JndiBindingsType.JndiBinding> getJndiBindings() {
+  public List<JndiBinding> getJndiBindings() {
     if (jndiBindings == null) {
-      jndiBindings = new ArrayList<JndiBindingsType.JndiBinding>();
+      jndiBindings = new ArrayList<JndiBinding>();
     }
     return this.jndiBindings;
   }
@@ -205,7 +205,7 @@ public class JndiBindingsType {
   public static class JndiBinding implements CacheElement {
 
     @XmlElement(name = "config-property", namespace = "http://geode.apache.org/schema/cache")
-    protected List<JndiBindingsType.JndiBinding.ConfigProperty> configProperties;
+    protected List<ConfigProperty> configProperties;
     @XmlAttribute(name = "blocking-timeout-seconds")
     protected String blockingTimeoutSeconds;
     @XmlAttribute(name = "conn-pooled-datasource-class")
@@ -260,9 +260,9 @@ public class JndiBindingsType {
      *
      *
      */
-    public List<JndiBindingsType.JndiBinding.ConfigProperty> getConfigProperties() {
+    public List<ConfigProperty> getConfigProperties() {
       if (configProperties == null) {
-        configProperties = new ArrayList<JndiBindingsType.JndiBinding.ConfigProperty>();
+        configProperties = new ArrayList<ConfigProperty>();
       }
       return this.configProperties;
     }
