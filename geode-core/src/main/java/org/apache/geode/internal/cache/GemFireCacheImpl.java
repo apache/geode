@@ -604,7 +604,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
 
-  private final HttpService httpService;
+  private HttpService httpService;
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
@@ -992,10 +992,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
       backupService = new BackupService(this);
-
-      httpService = new HttpService(systemConfig.getHttpServiceBindAddress(),
-          systemConfig.getHttpServicePort(), SSLConfigurationFactory
-              .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB));
+      if (!this.isClient) {
+        httpService = new HttpService(systemConfig.getHttpServiceBindAddress(),
+            systemConfig.getHttpServicePort(), SSLConfigurationFactory
+                .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB));
+      }
     } // synchronized
   }
 
@@ -2227,7 +2228,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           stopRedisServer();
 
-          httpService.stop();
+          if (httpService != null) {
+            httpService.stop();
+          }
 
           // no need to track PR instances since we won't create any more
           // cacheServers or gatewayHubs
