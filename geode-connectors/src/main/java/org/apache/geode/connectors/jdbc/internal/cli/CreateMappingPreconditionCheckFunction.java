@@ -16,7 +16,9 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.sql.Connection;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -57,107 +59,196 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
           new TableMetaDataManager().getTableMetaDataView(connection, regionMapping);
       PdxInstanceFactory pdxInstanceFactory =
           context.getCache().createPdxInstanceFactory(regionMapping.getPdxName());
+      Object[] output = new Object[2];
       ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
+      output[1] = fieldMappings;
       for (String jdbcName : tableMetaData.getColumnNames()) {
         boolean isNullable = tableMetaData.isColumnNullable(jdbcName);
         JDBCType jdbcType = tableMetaData.getColumnDataType(jdbcName);
         String pdxName = jdbcName;
+        // TODO: look for existing pdx types to picked pdxName
+        // It seems very unlikely that when a mapping is being
+        // created that a pdx type will already exist. So I'm not
+        // sure trying to look for an existing type is worth the effort.
+        // But that does mean that the pdx field name will always be the
+        // same as the column name. If we added a gfsh command that allowed
+        // you to create a pdx type (pretty easy to implement using PdxInstanceFactory)
+        // then it would be much more likely that a pdx type could exist
+        // when the mapping is created. In that case we should then do
+        // some extra work here to look at existing types.
         FieldType pdxType = computeFieldType(isNullable, jdbcType);
         pdxInstanceFactory.writeField(pdxName, null, pdxType.getFieldClass());
         fieldMappings.add(new FieldMapping(pdxName, pdxType.name(), jdbcName, jdbcType.getName()));
       }
       PdxInstance pdxInstance = pdxInstanceFactory.create();
-      // TODO look for existing PdxType in the registry whose names differ in case
-      // TODO use this code when we create the field mapping
-      // Set<String> columnNames = tableMetaDataView.getColumnNames();
-      // if (columnNames.contains(fieldName)) {
-      // return fieldName;
-      // }
-      //
-      // List<String> ignoreCaseMatch = columnNames.stream().filter(c ->
-      // c.equalsIgnoreCase(fieldName))
-      // .collect(Collectors.toList());
-      // if (ignoreCaseMatch.size() > 1) {
-      // throw new JdbcConnectorException(
-      // "The SQL table has at least two columns that match the PDX field: " + fieldName);
-      // }
-      //
-      // if (ignoreCaseMatch.size() == 1) {
-      // return ignoreCaseMatch.get(0);
-      // }
-      //
-      // // there is no match either in the configured mapping or the table columns
-      // return fieldName;
-
-      // TODO use the following code when we create the mapping
-      // Set<PdxType> pdxTypes = getPdxTypesForClassName(typeRegistry);
-      // String fieldName = findExactMatch(columnName, pdxTypes);
-      // if (fieldName == null) {
-      // fieldName = findCaseInsensitiveMatch(columnName, pdxTypes);
-      // }
-      // return fieldName;
-
-      // private Set<PdxType> getPdxTypesForClassName(TypeRegistry typeRegistry) {
-      // Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxName());
-      // if (pdxTypes.isEmpty()) {
-      // throw new JdbcConnectorException(
-      // "The class " + getPdxName() + " has not been pdx serialized.");
-      // }
-      // return pdxTypes;
-      // }
-
-      // /**
-      // * Given a column name and a set of pdx types, find the field name in those types that
-      // match,
-      // * ignoring case, the column name.
-      // *
-      // * @return the matching field name or null if no match
-      // * @throws JdbcConnectorException if no fields match
-      // * @throws JdbcConnectorException if more than one field matches
-      // */
-      // private String findCaseInsensitiveMatch(String columnName, Set<PdxType> pdxTypes) {
-      // HashSet<String> matchingFieldNames = new HashSet<>();
-      // for (PdxType pdxType : pdxTypes) {
-      // for (String existingFieldName : pdxType.getFieldNames()) {
-      // if (existingFieldName.equalsIgnoreCase(columnName)) {
-      // matchingFieldNames.add(existingFieldName);
-      // }
-      // }
-      // }
-      // if (matchingFieldNames.isEmpty()) {
-      // throw new JdbcConnectorException("The class " + getPdxName()
-      // + " does not have a field that matches the column " + columnName);
-      // } else if (matchingFieldNames.size() > 1) {
-      // throw new JdbcConnectorException(
-      // "Could not determine what pdx field to use for the column name " + columnName
-      // + " because the pdx fields " + matchingFieldNames + " all match it.");
-      // }
-      // return matchingFieldNames.iterator().next();
-      // }
-      //
-      // /**
-      // * Given a column name, search the given pdxTypes for a field whose name exactly matches the
-      // * column name.
-      // *
-      // * @return the matching field name or null if no match
-      // */
-      // private String findExactMatch(String columnName, Set<PdxType> pdxTypes) {
-      // for (PdxType pdxType : pdxTypes) {
-      // if (pdxType.getPdxField(columnName) != null) {
-      // return columnName;
-      // }
-      // }
-      // return null;
-      // }
+      if (regionMapping.getIds() == null || regionMapping.getIds().isEmpty()) {
+        List<String> keyColummnNames = tableMetaData.getKeyColumnNames();
+        output[0] = String.join(",", keyColummnNames);
+      }
 
       String member = context.getMemberName();
-      return new CliFunctionResult(member, fieldMappings);
+      return new CliFunctionResult(member, output);
+    } catch (SQLException e) {
+      throw JdbcConnectorException.createException(e);
     }
   }
 
   private FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {
-    // TODO Auto-generated method stub
-    return null;
+    switch (jdbcType) {
+      case BIT: // 1 bit
+        return computeType(isNullable, FieldType.BOOLEAN);
+      case TINYINT: // unsigned 8 bits
+        return computeType(isNullable, FieldType.SHORT);
+      case SMALLINT: // signed 16 bits
+        return computeType(isNullable, FieldType.SHORT);
+      case INTEGER: // signed 32 bits
+        return computeType(isNullable, FieldType.INT);
+      case BIGINT: // signed 64 bits
+        return computeType(isNullable, FieldType.LONG);
+      case FLOAT:
+        return computeType(isNullable, FieldType.DOUBLE);
+      case REAL:
+        return computeType(isNullable, FieldType.FLOAT);
+      case DOUBLE:
+        return computeType(isNullable, FieldType.DOUBLE);
+      case NUMERIC:
+        return FieldType.OBJECT;
+      case DECIMAL:
+        return FieldType.OBJECT;
+      case CHAR:
+        return FieldType.STRING;
+      case VARCHAR:
+        return FieldType.STRING;
+      case LONGVARCHAR:
+        return FieldType.STRING;
+      case DATE:
+        return computeDate(isNullable);
+      case TIME:
+        return computeDate(isNullable);
+      case TIMESTAMP:
+        return computeDate(isNullable);
+      case BINARY:
+        return FieldType.BYTE_ARRAY;
+      case VARBINARY:
+        return FieldType.BYTE_ARRAY;
+      case LONGVARBINARY:
+        return FieldType.BYTE_ARRAY;
+      case NULL:
+        throw new IllegalStateException("unexpected NULL jdbc column type");
+      case OTHER:
+        return FieldType.OBJECT;
+      case JAVA_OBJECT:
+        return FieldType.OBJECT;
+      case DISTINCT:
+        return FieldType.OBJECT;
+      case STRUCT:
+        return FieldType.OBJECT;
+      case ARRAY:
+        return FieldType.OBJECT;
+      case BLOB:
+        return FieldType.BYTE_ARRAY;
+      case CLOB:
+        return FieldType.OBJECT;
+      case REF:
+        return FieldType.OBJECT;
+      case DATALINK:
+        return FieldType.OBJECT;
+      case BOOLEAN:
+        return computeType(isNullable, FieldType.BOOLEAN);
+      case ROWID:
+        return FieldType.OBJECT;
+      case NCHAR:
+        return FieldType.STRING;
+      case NVARCHAR:
+        return FieldType.STRING;
+      case LONGNVARCHAR:
+        return FieldType.STRING;
+      case NCLOB:
+        return FieldType.OBJECT;
+      case SQLXML:
+        return FieldType.OBJECT;
+      case REF_CURSOR:
+        return FieldType.OBJECT;
+      case TIME_WITH_TIMEZONE:
+        return computeDate(isNullable);
+      case TIMESTAMP_WITH_TIMEZONE:
+        return computeDate(isNullable);
+      default:
+        return FieldType.OBJECT;
+    }
   }
+
+  private FieldType computeType(boolean isNullable, FieldType nonNullType) {
+    if (isNullable) {
+      return FieldType.OBJECT;
+    }
+    return nonNullType;
+
+  }
+
+  private FieldType computeDate(boolean isNullable) {
+    return computeType(isNullable, FieldType.DATE);
+  }
+
+  // Set<PdxType> pdxTypes = getPdxTypesForClassName(typeRegistry);
+  // String fieldName = findExactMatch(columnName, pdxTypes);
+  // if (fieldName == null) {
+  // fieldName = findCaseInsensitiveMatch(columnName, pdxTypes);
+  // }
+  // return fieldName;
+
+  // private Set<PdxType> getPdxTypesForClassName(TypeRegistry typeRegistry) {
+  // Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxName());
+  // if (pdxTypes.isEmpty()) {
+  // throw new JdbcConnectorException(
+  // "The class " + getPdxName() + " has not been pdx serialized.");
+  // }
+  // return pdxTypes;
+  // }
+
+  // /**
+  // * Given a column name and a set of pdx types, find the field name in those types that
+  // match,
+  // * ignoring case, the column name.
+  // *
+  // * @return the matching field name or null if no match
+  // * @throws JdbcConnectorException if no fields match
+  // * @throws JdbcConnectorException if more than one field matches
+  // */
+  // private String findCaseInsensitiveMatch(String columnName, Set<PdxType> pdxTypes) {
+  // HashSet<String> matchingFieldNames = new HashSet<>();
+  // for (PdxType pdxType : pdxTypes) {
+  // for (String existingFieldName : pdxType.getFieldNames()) {
+  // if (existingFieldName.equalsIgnoreCase(columnName)) {
+  // matchingFieldNames.add(existingFieldName);
+  // }
+  // }
+  // }
+  // if (matchingFieldNames.isEmpty()) {
+  // throw new JdbcConnectorException("The class " + getPdxName()
+  // + " does not have a field that matches the column " + columnName);
+  // } else if (matchingFieldNames.size() > 1) {
+  // throw new JdbcConnectorException(
+  // "Could not determine what pdx field to use for the column name " + columnName
+  // + " because the pdx fields " + matchingFieldNames + " all match it.");
+  // }
+  // return matchingFieldNames.iterator().next();
+  // }
+  //
+  // /**
+  // * Given a column name, search the given pdxTypes for a field whose name exactly matches the
+  // * column name.
+  // *
+  // * @return the matching field name or null if no match
+  // */
+  // private String findExactMatch(String columnName, Set<PdxType> pdxTypes) {
+  // for (PdxType pdxType : pdxTypes) {
+  // if (pdxType.getPdxField(columnName) != null) {
+  // return columnName;
+  // }
+  // }
+  // return null;
+  // }
+
 
 }

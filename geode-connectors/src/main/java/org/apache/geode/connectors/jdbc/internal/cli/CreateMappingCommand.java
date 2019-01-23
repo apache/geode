@@ -131,8 +131,12 @@ public class CreateMappingCommand extends SingleGfshCommand {
         executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(), mapping,
             targetMembers.iterator().next());
     if (preconditionCheckResult.isSuccessful()) {
-      ArrayList<FieldMapping> fieldMappings =
-          (ArrayList<FieldMapping>) preconditionCheckResult.getResultObject();
+      Object[] preconditionOutput = (Object[]) preconditionCheckResult.getResultObject();
+      String computedIds = (String) preconditionOutput[0];
+      if (computedIds != null) {
+        mapping.setIds(computedIds);
+      }
+      ArrayList<FieldMapping> fieldMappings = (ArrayList<FieldMapping>) preconditionOutput[1];
       for (FieldMapping fieldMapping : fieldMappings) {
         mapping.addFieldMapping(fieldMapping);
       }

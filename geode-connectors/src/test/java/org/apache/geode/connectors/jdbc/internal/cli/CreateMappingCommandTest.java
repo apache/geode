@@ -62,6 +62,7 @@ public class CreateMappingCommandTest {
   private Set<InternalDistributedMember> members;
   private CliFunctionResult preconditionCheckResults;
   private ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
+  private Object[] preconditionOutput = new Object[] {null, fieldMappings};
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
   private RegionMapping mapping;
@@ -86,7 +87,7 @@ public class CreateMappingCommandTest {
     when(successFunctionResult.isSuccessful()).thenReturn(true);
     preconditionCheckResults = mock(CliFunctionResult.class);
     when(preconditionCheckResults.isSuccessful()).thenReturn(true);
-    when(preconditionCheckResults.getResultObject()).thenReturn(fieldMappings);
+    when(preconditionCheckResults.getResultObject()).thenReturn(preconditionOutput);
     doReturn(preconditionCheckResults).when(createRegionMappingCommand)
         .executeFunctionAndGetFunctionResult(any(), any(), any());
     doReturn(results).when(createRegionMappingCommand).executeAndGetFunctionResult(any(), any(),
@@ -163,6 +164,25 @@ public class CreateMappingCommandTest {
     Object[] results = (Object[]) result.getConfigObject();
     RegionMapping regionMapping = (RegionMapping) results[0];
     assertThat(regionMapping.getFieldMappings()).isEqualTo(this.fieldMappings);
+  }
+
+  @Test
+  public void createsMappingReturnsRegionMappingWithComputedIds() {
+    setupRequiredPreconditions();
+    results.add(successFunctionResult);
+    String ids = "does not matter";
+    String catalog = "catalog";
+    String schema = "schema";
+    String computedIds = "id1,id2";
+    preconditionOutput[0] = computedIds;
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass, false, ids, catalog, schema);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    Object[] results = (Object[]) result.getConfigObject();
+    RegionMapping regionMapping = (RegionMapping) results[0];
+    assertThat(regionMapping.getIds()).isEqualTo(computedIds);
   }
 
   @Test
