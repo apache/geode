@@ -447,8 +447,6 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    * Compare the number of bytes used to the thresholds. If necessary, change the state and send an
    * event for the state change.
    *
-   * Public for testing.
-   *
    * @param bytesUsed Number of bytes of heap memory currently used.
    * @param eventOrigin Indicates where the event originated e.g. notification vs polling
    */
