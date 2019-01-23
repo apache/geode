@@ -27,7 +27,6 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   static final String IDS = "ids";
   static final String CATALOG = "catalog";
   static final String SCHEMA = "schema";
-  static final String GROUPS = "groups";
 
   @Override
   public String getNamespaceUri() {

@@ -115,8 +115,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(groups, null);
     RegionMapping mapping =
-        new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema,
-            groups != null ? String.join(",", groups) : null);
+        new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema);
 
     try {
       ConfigurationPersistenceService configurationPersistenceService =

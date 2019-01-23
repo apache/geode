@@ -40,7 +40,6 @@ public enum ElementType {
       mapping.setIds(attributes.getValue(JdbcConnectorServiceXmlParser.IDS));
       mapping.setCatalog(attributes.getValue(JdbcConnectorServiceXmlParser.CATALOG));
       mapping.setSchema(attributes.getValue(JdbcConnectorServiceXmlParser.SCHEMA));
-      mapping.setGroups(attributes.getValue(JdbcConnectorServiceXmlParser.GROUPS));
       stack.push(mapping);
     }
 

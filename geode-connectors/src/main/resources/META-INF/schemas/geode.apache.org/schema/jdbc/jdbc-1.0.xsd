@@ -46,7 +46,6 @@ XML schema for JDBC Connector Service in Geode.
                 <xsd:attribute type="xsd:string" name="ids" use="optional"/>
                 <xsd:attribute type="xsd:string" name="catalog" use="optional"/>
                 <xsd:attribute type="xsd:string" name="schema" use="optional"/>
-                <xsd:attribute type="xsd:string" name="groups" use="optional"/>
             </xsd:complexType>
         </xsd:element>
 </xsd:schema>
