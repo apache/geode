@@ -20,35 +20,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.shiro.subject.Subject;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.FilterProfile;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({SecurityTest.class})
 public class ClientServerConnectDisconnectDistributedTest implements Serializable {
 
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule();
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private static MemberVM locator;
-  private static MemberVM server;
-  private static ClientVM client;
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
 
   private static List<Subject> serverConnectionSubjects;
 
@@ -56,28 +56,26 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
 
   private static List<ClientUserAuths> authorizations;
 
-  @BeforeClass
-  public static void beforeClass() {
-    locator = cluster.startLocatorVM(0, l -> l.withSecurityManager(SimpleSecurityManager.class));
-    int locatorPort = locator.getPort();
-    server = cluster.startServerVM(1, s -> s.withCredential("cluster", "cluster")
-        .withConnectionToLocator(locatorPort).withRegion(RegionShortcut.PARTITION,
-            "ClientServerConnectDisconnectDistributedTest_region"));
-  }
-
   @Test
-  public void testClientConnectDisconnect() throws Exception {
-    // Connect client
+  public void testSubjectsLoggedOutOnClientConnectDisconnect() throws Exception {
+    // Start Locator
+    MemberVM locator =
+        cluster.startLocatorVM(0, l -> l.withSecurityManager(SimpleSecurityManager.class));
+
+    // Start server
     int locatorPort = locator.getPort();
-    client = cluster.startClientVM(3, c -> c.withCredential("data", "data")
+    String regionName = testName.getMethodName() + "_region";
+    MemberVM server = cluster.startServerVM(1, s -> s.withCredential("cluster", "cluster")
+        .withConnectionToLocator(locatorPort).withRegion(RegionShortcut.PARTITION, regionName));
+
+    // Connect client
+    ClientVM client = cluster.startClientVM(3, c -> c.withCredential("data", "data")
         .withPoolSubscription(true)
         .withLocatorConnection(locatorPort));
 
     // Do some puts
     client.invoke(() -> {
-      ClientCache cache = ClusterStartupRule.getClientCache();
-      Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY)
-          .create("ClientServerConnectDisconnectDistributedTest_region");
+      Region region = ClusterStartupRule.clientCacheRule.createProxyRegion(regionName);
       for (int i = 0; i < 10; i++) {
         Object key = String.valueOf(i);
         region.put(key, key);
@@ -94,6 +92,38 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
 
     // Verify client sessions are logged out on the server
     server.invoke(() -> verifySubjectsAreLoggedOut());
+  }
+
+  @Test
+  public void testFilterProfileCleanupOnClientConnectDisconnect() throws Exception {
+    // Start Locator
+    MemberVM locator = cluster.startLocatorVM(0);
+
+    // Start server
+    int locatorPort = locator.getPort();
+    String regionName = testName.getMethodName() + "_region";
+    MemberVM server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
+        .withRegion(RegionShortcut.PARTITION, regionName));
+
+    // Connect client
+    ClientVM client = cluster.startClientVM(3,
+        c -> c.withPoolSubscription(true).withLocatorConnection(locatorPort));
+
+    // Create client region and register interest
+    client.invoke(() -> {
+      ClusterStartupRule.clientCacheRule.createProxyRegion(regionName).registerInterestForAllKeys();
+    });
+
+    // Verify proxy id is registered in filter profile
+    server.invoke(() -> verifyRealAndWireProxyIdsInFilterProfile(regionName, 1));
+
+    // Close client
+    client.invoke(() -> {
+      ClusterStartupRule.getClientCache().close();
+    });
+
+    // Verify proxy id is unregistered from filter profile
+    server.invoke(() -> verifyRealAndWireProxyIdsInFilterProfile(regionName, 0));
   }
 
   private void verifySubjectsAreLoggedIn() {
@@ -174,5 +204,20 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     assertThat(proxySubject.getPrincipal()).isNull();
     assertThat(proxySubject.getPrincipals()).isNull();
     assertThat(proxySubject.isAuthenticated()).isFalse();
+  }
+
+  private void verifyRealAndWireProxyIdsInFilterProfile(String regionName, int expectedNumIds) {
+    // Get filter profile
+    Cache cache = ClusterStartupRule.getCache();
+    LocalRegion region = (LocalRegion) cache.getRegion(regionName);
+    FilterProfile fp = region.getFilterProfile();
+
+    // Assert expectedNumIds real proxy id
+    Set realProxyIds = fp.getRealClientIds();
+    assertThat(realProxyIds.size()).isEqualTo(expectedNumIds);
+
+    // Assert expectedNumIds wire proxy id
+    Set wireProxyIds = fp.getWireClientIds();
+    assertThat(wireProxyIds.size()).isEqualTo(expectedNumIds);
   }
 }

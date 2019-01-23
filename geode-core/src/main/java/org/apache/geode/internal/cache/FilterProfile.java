@@ -37,6 +37,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
@@ -942,6 +943,9 @@ public class FilterProfile implements DataSerializableFixedID {
         this.closeCq(cq);
       }
     }
+
+    // Remove the client from the clientMap
+    this.clientMap.removeIDMapping(client);
   }
 
   /**
@@ -1705,6 +1709,28 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   /**
+   * Return the set of real client proxy ids
+   *
+   * @return the set of real client proxy ids
+   */
+  @VisibleForTesting
+  public Set getRealClientIds() {
+    return clientMap == null ? Collections.emptySet()
+        : Collections.unmodifiableSet(clientMap.realIDs.keySet());
+  }
+
+  /**
+   * Return the set of wire client proxy ids
+   *
+   * @return the set of wire client proxy ids
+   */
+  @VisibleForTesting
+  public Set getWireClientIds() {
+    return clientMap == null ? Collections.emptySet()
+        : Collections.unmodifiableSet(clientMap.wireIDs.keySet());
+  }
+
+  /**
    * ensure that the given query contains a filter routing ID
    */
   private void ensureCqID(ServerCQ cq) {
@@ -2074,6 +2100,15 @@ public class FilterProfile implements DataSerializableFixedID {
       }
     }
 
+    /**
+     * remove the mapping for the given proxy ID
+     */
+    void removeIDMapping(Object clientId) {
+      Long mappedId = this.realIDs.remove(clientId);
+      if (mappedId != null) {
+        this.wireIDs.remove(mappedId);
+      }
+    }
   }
 
   /**
