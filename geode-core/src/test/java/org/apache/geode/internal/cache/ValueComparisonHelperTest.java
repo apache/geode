@@ -509,6 +509,10 @@ public class ValueComparisonHelperTest {
         ValueComparisonHelper.checkEquals(cachedDeserializable, null, false,
             mock(InternalCache.class)))
                 .isFalse();
+    assertThat(
+        ValueComparisonHelper.checkEquals(cachedDeserializable, null, true,
+            mock(InternalCache.class)))
+                .isFalse();
   }
 
   @Test
@@ -519,6 +523,10 @@ public class ValueComparisonHelperTest {
 
     assertThat(
         ValueComparisonHelper.checkEquals(cachedDeserializable, Token.NOT_AVAILABLE, false,
+            mock(InternalCache.class)))
+                .isFalse();
+    assertThat(
+        ValueComparisonHelper.checkEquals(cachedDeserializable, Token.NOT_AVAILABLE, true,
             mock(InternalCache.class)))
                 .isFalse();
   }
@@ -535,6 +543,14 @@ public class ValueComparisonHelperTest {
                 .isFalse();
     assertThat(
         ValueComparisonHelper.checkEquals(cachedDeserializable, Token.LOCAL_INVALID, false,
+            mock(InternalCache.class)))
+                .isFalse();
+    assertThat(
+        ValueComparisonHelper.checkEquals(cachedDeserializable, Token.INVALID, true,
+            mock(InternalCache.class)))
+                .isFalse();
+    assertThat(
+        ValueComparisonHelper.checkEquals(cachedDeserializable, Token.LOCAL_INVALID, true,
             mock(InternalCache.class)))
                 .isFalse();
   }
