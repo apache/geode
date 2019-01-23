@@ -49,6 +49,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
@@ -112,15 +113,7 @@ public class CliUtil {
    * @return a Set of DistributedMember for members that have the specified <code>region</code>.
    */
   public static Set<DistributedMember> getRegionAssociatedMembers(String region,
-      final InternalCache cache,
-      boolean returnAll) {
-    return getRegionAssociatedMembers(region, cache, returnAll, null);
-  }
-
-  public static Set<DistributedMember> getRegionAssociatedMembers(String region,
-      final InternalCache cache,
-      boolean returnAll,
-      String serverGroup) {
+      final InternalCache cache, boolean returnAll) {
     if (region == null || region.isEmpty()) {
       return Collections.emptySet();
     }
@@ -142,9 +135,9 @@ public class CliUtil {
     allClusterMembers.add(cache.getDistributedSystem().getDistributedMember());
 
     for (DistributedMember member : allClusterMembers) {
-      List<String> regionAssociatedMemberNamesSet = Arrays.asList(regionAssociatedMemberNames);
+      List<String> regionAssociatedMemberNamesList = Arrays.asList(regionAssociatedMemberNames);
       String name = MBeanJMXAdapter.getMemberNameOrUniqueId(member);
-      if (regionAssociatedMemberNamesSet.contains(name)) {
+      if (regionAssociatedMemberNamesList.contains(name)) {
         matchedMembers.add(member);
         if (!returnAll) {
           return matchedMembers;
@@ -160,8 +153,7 @@ public class CliUtil {
    * @param returnAll if true, returns all matching members, otherwise, returns only one.
    */
   public static Set<DistributedMember> getQueryRegionsAssociatedMembers(Set<String> regions,
-      final InternalCache cache,
-      boolean returnAll) {
+      final InternalCache cache, boolean returnAll) {
     Set<DistributedMember> results = regions.stream()
         .map(region -> getRegionAssociatedMembers(region, cache, true)).reduce((s1, s2) -> {
           s1.retainAll(s2);
@@ -255,8 +247,7 @@ public class CliUtil {
    * groups or members.
    */
   public static Set<DistributedMember> findMembersIncludingLocators(String[] groups,
-      String[] members,
-      InternalCache cache) {
+      String[] members, InternalCache cache) {
     Set<DistributedMember> allMembers = getAllMembers(cache);
     return findMembers(allMembers, groups, members);
   }
@@ -268,6 +259,18 @@ public class CliUtil {
   public static Set<DistributedMember> findMembers(String[] groups, String[] members,
       InternalCache cache) {
     Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
+
+    return findMembers(allNormalMembers, groups, members);
+  }
+
+  /**
+   * Finds all Servers which belong to the given arrays of groups or members. Does not include
+   * locators.
+   */
+  public static Set<DistributedMember> findMembers(String[] groups, String[] members,
+      DistributionManager distributionManager) {
+    Set<DistributedMember> allNormalMembers = new HashSet<DistributedMember>(
+        distributionManager.getNormalDistributionManagerIds());
 
     return findMembers(allNormalMembers, groups, members);
   }
@@ -563,9 +566,8 @@ public class CliUtil {
     } catch (IOException | InterruptedException e) {
       Gfsh.printlnErr(e.getMessage());
     } finally {
-      if (file != null) {
+      if (file != null)
         file.delete();
-      }
     }
   }
 

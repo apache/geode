@@ -112,9 +112,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
-    // group1,group2 => [group1, group2]
-    // input
-    // Set<DistributedMember> targetMembers = findMembersForRegion(regionName, groups);
+
     Set<DistributedMember> targetMembers = findMembers(groups, null);
     RegionMapping mapping =
         new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema,

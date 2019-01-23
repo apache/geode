@@ -145,12 +145,11 @@ public class CommandExecutor {
     }
 
     List<String> groupsToUpdate;
-    String groupsInput = parseResult.getParamValueAsString("group");
-
+    String groupInput = parseResult.getParamValueAsString("group");
     TabularResultModel table = null;
 
-    if (!StringUtils.isBlank(groupsInput)) {
-      groupsToUpdate = Arrays.asList(groupsInput.split(","));
+    if (!StringUtils.isBlank(groupInput)) {
+      groupsToUpdate = Arrays.asList(groupInput.split(","));
     } else if (gfshCommand instanceof UpdateAllConfigurationGroupsMarker) {
       groupsToUpdate = ccService.getGroups().stream().collect(Collectors.toList());
       table = resultModel.addTable(GROUP_STATUS_SECTION);
