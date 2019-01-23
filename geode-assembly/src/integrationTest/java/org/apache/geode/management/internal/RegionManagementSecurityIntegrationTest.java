@@ -25,7 +25,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;

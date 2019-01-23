@@ -35,7 +35,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**

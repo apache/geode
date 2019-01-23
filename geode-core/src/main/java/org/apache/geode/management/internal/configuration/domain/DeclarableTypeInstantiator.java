@@ -22,7 +22,7 @@ import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ObjectType;
 import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.domain.ClassName;
 
 public abstract class DeclarableTypeInstantiator {
 

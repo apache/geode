@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
+import org.apache.geode.management.domain.ClassName;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 
 

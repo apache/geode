@@ -27,7 +27,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**

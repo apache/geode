@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.domain.ClassName;
 
 
 public class ClassNameConverterTest {

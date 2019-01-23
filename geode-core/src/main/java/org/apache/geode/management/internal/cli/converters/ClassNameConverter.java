@@ -21,7 +21,7 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.domain.ClassName;
 
 /**
  * Used by Gfsh command options that converts a string to a ClassName Object

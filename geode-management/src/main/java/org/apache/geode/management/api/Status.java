@@ -12,35 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.api;
+package org.apache.geode.management.api;
 
 public class Status {
-  enum Result {
+  public enum Result {
     SUCCESS, FAILURE, NOT_APPLICABLE
   }
 
-  Result status;
+  Result result;
   String message;
 
   // needed for json deserialization
   public Status() {}
 
-  public Status(Result status, String message) {
-    this.status = status;
+  public Status(Result result, String message) {
+    this.result = result;
     this.message = message;
   }
 
   public Status(boolean success, String message) {
-    this.status = success ? Result.SUCCESS : Result.FAILURE;
+    this.result = success ? Result.SUCCESS : Result.FAILURE;
     this.message = message;
   }
 
-  public Result getStatus() {
-    return status;
+  public Result getResult() {
+    return result;
   }
 
-  public void setStatus(Result status) {
-    this.status = status;
+  public void setResult(Result result) {
+    this.result = result;
   }
 
   public String getMessage() {

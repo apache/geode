@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.domain;
+package org.apache.geode.management.domain;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -25,11 +25,14 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * This is mostly used for Gfsh command options that need to specify a className for instantiation.
  *
  * See ClassNameConverter.
  */
+@Experimental
 public class ClassName<T> implements Serializable {
   private static final long serialVersionUID = 1L;
 

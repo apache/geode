@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;

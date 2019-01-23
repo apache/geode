@@ -31,6 +31,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RegionsTest;
@@ -38,7 +40,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({RegionsTest.class})
-public class RegionAPIDUnitTest {
+public class ClusterManagementCreateRegionDUnitTest {
   private MemberVM locator, server;
 
   @Rule
@@ -65,8 +67,8 @@ public class RegionAPIDUnitTest {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setRefid(RegionShortcut.PARTITION.toString());
-      ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
-          .create(config);
+      ClusterManagementService svc = ClusterManagementServiceProvider.getService();
+      ClusterManagementResult result = svc.createCacheElement(config);
       assertThat(result.isSuccessful()).isTrue();
     });
 
@@ -98,8 +100,8 @@ public class RegionAPIDUnitTest {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setRefid(RegionShortcut.REPLICATE.toString());
-      ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
-          .create(config);
+      ClusterManagementService svc = ClusterManagementServiceProvider.getService();
+      ClusterManagementResult result = svc.createCacheElement(config);
       assertThat(result.isSuccessful()).isTrue();
     });
 
@@ -123,8 +125,8 @@ public class RegionAPIDUnitTest {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setRefid(RegionShortcut.PARTITION.toString());
-      ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
-          .create(config);
+      ClusterManagementService svc = ClusterManagementServiceProvider.getService();
+      ClusterManagementResult result = svc.createCacheElement(config);
       assertThat(result.isSuccessful()).isTrue();
     });
 

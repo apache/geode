@@ -15,57 +15,38 @@
  * limitations under the License.
  */
 
-package org.apache.geode.management.internal.api;
+package org.apache.geode.management.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
 import org.junit.Test;
 
 public class ClusterManagementResultTest {
-  private ClusterManagementResult result;
-
-  @Before
-  public void setup() {
-    result = new ClusterManagementResult();
-  }
-
-  @Test
-  public void failsWhenNotAppliedOnAllMembers() {
-    result.addMemberStatus("member-1", true, "msg-1");
-    result.addMemberStatus("member-2", false, "msg-2");
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
-    assertThat(result.isSuccessful()).isFalse();
-  }
-
   @Test
   public void successfulOnlyWhenResultIsSuccessfulOnAllMembers() {
-    result.addMemberStatus("member-1", true, "msg-1");
-    result.addMemberStatus("member-2", true, "msg-2");
+    ClusterManagementResult result = new ClusterManagementResult();
+    result.addMemberStatus("member-1", Status.Result.SUCCESS, "msg-1");
+    result.addMemberStatus("member-2", Status.Result.FAILURE, "msg-2");
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessful()).isFalse();
+
+    result = new ClusterManagementResult();
+    result.addMemberStatus("member-1", Status.Result.SUCCESS, "msg-1");
+    result.addMemberStatus("member-2", Status.Result.SUCCESS, "msg-2");
     assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
   }
 
   @Test
-  public void emptyMemberStatus() {
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+  public void successfulOnlyWhenClusterConfigIsPersisted() {
+    ClusterManagementResult result = new ClusterManagementResult();
+    result.setClusterConfigPersisted(Status.Result.FAILURE, "msg-1");
     assertThat(result.isSuccessfullyPersisted()).isFalse();
     assertThat(result.isSuccessful()).isFalse();
-  }
 
-
-  @Test
-  public void failsWhenNotPersisted() {
-    result.setClusterConfigPersisted(false, "msg-1");
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
-    assertThat(result.isSuccessful()).isFalse();
-  }
-
-  @Test
-  public void failsWhenNoMembersExists() {
-    result.setClusterConfigPersisted(true, "msg-1");
+    result = new ClusterManagementResult();
+    result.setClusterConfigPersisted(Status.Result.SUCCESS, "msg-1");
     assertThat(result.isSuccessfullyPersisted()).isTrue();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
-    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.isSuccessful()).isTrue();
   }
 }

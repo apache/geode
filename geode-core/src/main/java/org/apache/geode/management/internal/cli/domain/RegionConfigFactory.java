@@ -32,6 +32,7 @@ import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.domain.ClassName;
 
 public class RegionConfigFactory {
   public RegionConfig generate(

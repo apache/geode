@@ -32,6 +32,9 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
@@ -52,7 +55,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult create(CacheElement config) {
+  public ClusterManagementResult createCacheElement(CacheElement config) {
     ClusterManagementResult result = new ClusterManagementResult();
     String group = "cluster";
     ConfigurationMutator configurationMutator =
@@ -79,7 +82,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
         targetedMembers);
     functionResults
         .forEach(functionResult -> result.addMemberStatus(functionResult.getMemberIdOrName(),
-            functionResult.isSuccessful(),
+            functionResult.isSuccessful() ? Status.Result.SUCCESS : Status.Result.FAILURE,
             functionResult.getStatusMessage()));
 
     // persist configuration in cache config
@@ -87,12 +90,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
       persistenceService.updateCacheConfig(group, cacheConfigForGroup -> {
         try {
           configurationMutator.add(config, cacheConfigForGroup);
-          result.setClusterConfigPersisted(true,
+          result.setClusterConfigPersisted(Status.Result.SUCCESS,
               "successfully persisted config for " + group);
         } catch (Exception e) {
           String message = "failed to update cluster config for " + group;
           logger.error(message, e);
-          result.setClusterConfigPersisted(false, message);
+          result.setClusterConfigPersisted(Status.Result.FAILURE, message);
           return null;
         }
 
@@ -104,12 +107,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult delete(CacheElement config) {
+  public ClusterManagementResult deleteCacheElement(CacheElement config) {
     throw new NotImplementedException();
   }
 
   @Override
-  public ClusterManagementResult update(CacheElement config) {
+  public ClusterManagementResult updateCacheElement(CacheElement config) {
     throw new NotImplementedException();
   }
 

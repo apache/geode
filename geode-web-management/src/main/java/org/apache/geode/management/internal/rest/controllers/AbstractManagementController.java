@@ -31,9 +31,9 @@ import org.springframework.web.context.ServletContextAware;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.JettyHelper;
-import org.apache.geode.management.internal.api.ClusterManagementResult;
-import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -41,13 +41,13 @@ public class AbstractManagementController implements ServletContextAware {
 
   protected static final String MANAGEMENT_API_VERSION = "/v2";
   protected SecurityService securityService;
-  protected LocatorClusterManagementService clusterManagementService;
+  protected ClusterManagementService clusterManagementService;
 
   @Override
   public void setServletContext(ServletContext servletContext) {
     securityService = (SecurityService) servletContext
         .getAttribute(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
-    clusterManagementService = (LocatorClusterManagementService) servletContext
+    clusterManagementService = (ClusterManagementService) servletContext
         .getAttribute(JettyHelper.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM);
   }
 
