@@ -208,7 +208,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         ((GemFireCacheImpl) getCache()).getInternalResourceManager().getHeapMonitor();
     hmm.setTestMaxMemoryBytes(100);
 
-    hmm.updateStateAndSendEvent(90);
+    hmm.updateStateAndSendEvent(90, "test");
   }
 
   protected void cleanUpAfterFakeNotification() {

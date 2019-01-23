@@ -423,7 +423,7 @@ public class HeapMemoryMonitorTest {
   private void sendEventAndAssertState(int bytesUsed, int numEvents,
       MemoryThresholds.MemoryState expectedState) {
     for (int i = 0; i < numEvents; ++i) {
-      heapMonitor.updateStateAndSendEvent(bytesUsed);
+      heapMonitor.updateStateAndSendEvent(bytesUsed, "test");
       assertThat(heapMonitor.getState()).isEqualByComparingTo(expectedState);
     }
   }

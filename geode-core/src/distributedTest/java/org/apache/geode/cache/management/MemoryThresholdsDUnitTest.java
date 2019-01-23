@@ -471,7 +471,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       public Object call() throws Exception {
         InternalCache gfCache = getCache();
         getCache().getLogger().fine(addExpectedExString);
-        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(950);
+        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(950, "test");
         getCache().getLogger().fine(removeExpectedExString);
         return null;
       }
@@ -491,7 +491,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       public Object call() throws Exception {
         InternalCache gfCache = getCache();
         getCache().getLogger().fine(addExpectedBelow);
-        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(850);
+        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(850, "test");
         getCache().getLogger().fine(removeExpectedBelow);
         return null;
       }
@@ -508,7 +508,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         InternalCache gfCache = getCache();
-        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(840);
+        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(840, "test");
         return null;
       }
     });
@@ -524,7 +524,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         InternalCache gfCache = getCache();
-        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(750);
+        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(750, "test");
         return null;
       }
     });
@@ -541,7 +541,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         InternalCache gfCache = getCache();
-        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(950);
+        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(950, "test");
         return null;
       }
     });
@@ -557,7 +557,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         InternalCache gfCache = getCache();
-        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(750);
+        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(750, "test");
         return null;
       }
     });
@@ -574,7 +574,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         InternalCache gfCache = getCache();
-        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(850);
+        gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(850, "test");
         return null;
       }
     });
@@ -1499,7 +1499,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       public Object call() throws Exception {
         getCache().getLogger().fine(addExpectedExString);
         ((GemFireCacheImpl) getCache()).getInternalResourceManager().getHeapMonitor()
-            .updateStateAndSendEvent(950);
+            .updateStateAndSendEvent(950, "test");
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(950);
         getCache().getLogger().fine(removeExpectedExString);
         return null;
@@ -1514,7 +1514,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         getCache().getLogger().fine(addExpectedBelow);
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(850);
         ((GemFireCacheImpl) getCache()).getInternalResourceManager().getHeapMonitor()
-            .updateStateAndSendEvent(850);
+            .updateStateAndSendEvent(850, "test");
         getCache().getLogger().fine(removeExpectedBelow);
         return null;
       }
@@ -1527,7 +1527,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       public Object call() throws Exception {
         getCache().getLogger().fine(addExpectedBelow);
         ((GemFireCacheImpl) getCache()).getInternalResourceManager().getHeapMonitor()
-            .updateStateAndSendEvent(750);
+            .updateStateAndSendEvent(750, "test");
         getCache().getLogger().fine(removeExpectedBelow);
         return null;
       }
@@ -1746,7 +1746,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     public Object call() throws Exception {
       InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
       // Reset CRITICAL_UP by informing all that heap usage is now 1 byte (0 would disable).
-      irm.getHeapMonitor().updateStateAndSendEvent(1);
+      irm.getHeapMonitor().updateStateAndSendEvent(1, "test");
       Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);
       Iterator<ResourceListener> it = listeners.iterator();
       while (it.hasNext()) {
@@ -1943,7 +1943,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                    // 10%
         assertTrue(fakeHeapUsage > 0);
         assertTrue(fakeHeapUsage <= fakeHeapMaxSize);
-        hmm.updateStateAndSendEvent(fakeHeapUsage);
+        hmm.updateStateAndSendEvent(fakeHeapUsage, "test");
         getCache().getLogger().fine(removeExpectedExString);
 
         assertTrue(hmm.getState().isCritical());
@@ -1961,7 +1961,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                    // by 30%
         assertTrue(fakeHeapMaxSize > 0);
         getCache().getLogger().fine(addExpectedBelow);
-        hmm.updateStateAndSendEvent(fakeHeapUsage);
+        hmm.updateStateAndSendEvent(fakeHeapUsage, "test");
         getCache().getLogger().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         {
@@ -2110,7 +2110,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                                // 10%
             assertTrue(newfakeHeapUsage > 0);
             assertTrue(newfakeHeapUsage <= fakeHeapMaxSize);
-            hmm.updateStateAndSendEvent(newfakeHeapUsage);
+            hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
             assertTrue(hmm.getState().isCritical());
             {
               Integer k = new Integer(2);
@@ -2122,7 +2122,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                           // by 30%
             assertTrue(fakeHeapMaxSize > 0);
             getCache().getLogger().fine(addExpectedBelow);
-            hmm.updateStateAndSendEvent(newfakeHeapUsage);
+            hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
             getCache().getLogger().fine(removeExpectedBelow);
             assertFalse(hmm.getState().isCritical());
             {
@@ -2175,7 +2175,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                            // by 10%
         assertTrue(newfakeHeapUsage > 0);
         assertTrue(newfakeHeapUsage <= fakeHeapMaxSize);
-        hmm.updateStateAndSendEvent(newfakeHeapUsage);
+        hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
         assertTrue(hmm.getState().isCritical());
         {
           Integer k = new Integer(5);
@@ -2189,7 +2189,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                       // 30%
         assertTrue(fakeHeapMaxSize > 0);
         getCache().getLogger().fine(addExpectedBelow);
-        hmm.updateStateAndSendEvent(newfakeHeapUsage);
+        hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
         getCache().getLogger().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         {
@@ -2314,7 +2314,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             assertTrue(newfakeHeapUsage <= fakeHeapMaxSize);
             HeapMemoryMonitor hmm =
                 ((InternalResourceManager) getCache().getResourceManager()).getHeapMonitor();
-            hmm.updateStateAndSendEvent(newfakeHeapUsage);
+            hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
             assertTrue(hmm.getState().isCritical());
             final Integer k = new Integer(2); // reload with same key again and again
             final Integer expectedInvocations3 = new Integer(expectedInvocations.getAndIncrement());
@@ -2361,7 +2361,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                               // 30%
             assertTrue(fakeHeapMaxSize > 0);
             getCache().getLogger().fine(addExpectedBelow);
-            hmm.updateStateAndSendEvent(newfakeHeapUsage);
+            hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
             getCache().getLogger().fine(removeExpectedBelow);
             assertFalse(hmm.getState().isCritical());
             Integer k = new Integer(3); // same key as previously used, this time is should stick
@@ -2396,7 +2396,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                            // by 10%
         assertTrue(newfakeHeapUsage > 0);
         assertTrue(newfakeHeapUsage <= fakeHeapMaxSize);
-        hmm.updateStateAndSendEvent(newfakeHeapUsage);
+        hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
         getCache().getLogger().fine(removeExpectedExString);
         assertTrue(hmm.getState().isCritical());
         k = new Integer(5);
@@ -2411,7 +2411,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                       // 30%
         assertTrue(fakeHeapMaxSize > 0);
         getCache().getLogger().fine(addExpectedBelow);
-        hmm.updateStateAndSendEvent(newfakeHeapUsage);
+        hmm.updateStateAndSendEvent(newfakeHeapUsage, "test");
         getCache().getLogger().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         return expectedInvocations10;
@@ -2541,10 +2541,10 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
           for (int i = 0; i < memoryStateChangeTolerance; i++) {
             if (isCritical) {
-              hmm.updateStateAndSendEvent(criticalBytesUsed);
+              hmm.updateStateAndSendEvent(criticalBytesUsed, "test");
               assertFalse(hmm.getState().isCritical());
             } else {
-              hmm.updateStateAndSendEvent(evictionBytesUsed);
+              hmm.updateStateAndSendEvent(evictionBytesUsed, "test");
               assertFalse(hmm.getState().isEviction());
             }
           }
@@ -2552,19 +2552,19 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             // Adding expected strings so we do not fail the
             // test prematurely
             getCache().getLogger().fine(addExpectedExString);
-            hmm.updateStateAndSendEvent(criticalBytesUsed);
+            hmm.updateStateAndSendEvent(criticalBytesUsed, "test");
             assertTrue(hmm.getState().isCritical());
             getCache().getLogger().fine(removeExpectedExString);
             getCache().getLogger().fine(addExpectedBelow);
             final int belowCriticalBytes = 92;
-            hmm.updateStateAndSendEvent(belowCriticalBytes);
+            hmm.updateStateAndSendEvent(belowCriticalBytes, "test");
             getCache().getLogger().fine(removeExpectedBelow);
             assertFalse(hmm.getState().isCritical());
           } else {
-            hmm.updateStateAndSendEvent(evictionBytesUsed);
+            hmm.updateStateAndSendEvent(evictionBytesUsed, "test");
             assertTrue(hmm.getState().isEviction());
             final int belowEvictionBytes = 45;
-            hmm.updateStateAndSendEvent(belowEvictionBytes);
+            hmm.updateStateAndSendEvent(belowEvictionBytes, "test");
             assertFalse(hmm.getState().isEviction());
 
           }

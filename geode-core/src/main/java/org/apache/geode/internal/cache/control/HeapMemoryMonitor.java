@@ -439,7 +439,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    */
   public void updateStateAndSendEvent() {
     updateStateAndSendEvent(
-        testBytesUsedForThresholdSet != -1 ? testBytesUsedForThresholdSet : getBytesUsed());
+        testBytesUsedForThresholdSet != -1 ? testBytesUsedForThresholdSet : getBytesUsed(),
+        "notification");
   }
 
   /**
@@ -449,8 +450,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    * Public for testing.
    *
    * @param bytesUsed Number of bytes of heap memory currently used.
+   * @param eventOrigin Indicates where the event originated e.g. notification vs polling
    */
-  public void updateStateAndSendEvent(long bytesUsed) {
+  public void updateStateAndSendEvent(long bytesUsed, String eventOrigin) {
     this.stats.changeTenuredHeapUsed(bytesUsed);
     synchronized (this) {
       MemoryState oldState = this.mostRecentEvent.getState();
@@ -464,7 +466,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
             this.cache.getMyId(), bytesUsed, true, this.thresholds);
 
         this.upcomingEvent.set(event);
-        processLocalEvent(event);
+        processLocalEvent(event, eventOrigin);
         updateStatsFromEvent(event);
 
         // The state didn't change. However, if the state isn't normal and the
@@ -474,7 +476,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         MemoryEvent event = new MemoryEvent(ResourceType.HEAP_MEMORY, oldState, newState,
             this.cache.getMyId(), bytesUsed, true, this.thresholds);
         this.upcomingEvent.set(event);
-        processLocalEvent(event);
+        processLocalEvent(event, eventOrigin);
       }
     }
   }
@@ -586,8 +588,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    * Package private for testing.
    *
    * @param event Event to process.
+   * @param eventOrigin Indicates where the event originated e.g. notification vs polling
    */
-  synchronized void processLocalEvent(MemoryEvent event) {
+  synchronized void processLocalEvent(MemoryEvent event, String eventOrigin) {
     assert event.isLocal();
 
     if (logger.isDebugEnabled()) {
@@ -596,16 +599,16 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()) {
       this.cache.getLogger().error(
-          String.format("Member: %s above %s critical threshold",
-              new Object[] {event.getMember(), "heap"}));
+          String.format("Member: %s above %s critical threshold. Event generated via %s.",
+              event.getMember(), "heap", eventOrigin));
       if (!this.cache.isQueryMonitorDisabledForLowMemory()) {
         this.cache.getQueryMonitor().setLowMemory(true, event.getBytesUsed());
       }
 
     } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()) {
       this.cache.getLogger().error(
-          String.format("Member: %s below %s critical threshold",
-              new Object[] {event.getMember(), "heap"}));
+          String.format("Member: %s below %s critical threshold. Event generated via %s.",
+              event.getMember(), "heap", eventOrigin));
       if (!this.cache.isQueryMonitorDisabledForLowMemory()) {
         this.cache.getQueryMonitor().setLowMemory(false, event.getBytesUsed());
       }
@@ -613,10 +616,10 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
     if (event.getState().isEviction() && !event.getPreviousState().isEviction()) {
       this.cache.getLogger().info(String.format("Member: %s above %s eviction threshold",
-          new Object[] {event.getMember(), "heap"}));
+          event.getMember(), "heap"));
     } else if (!event.getState().isEviction() && event.getPreviousState().isEviction()) {
       this.cache.getLogger().info(String.format("Member: %s below %s eviction threshold",
-          new Object[] {event.getMember(), "heap"}));
+          event.getMember(), "heap"));
     }
 
     if (logger.isDebugEnabled()) {
@@ -759,7 +762,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
           @Override
           public void run() {
             if (!testDisableMemoryUpdates) {
-              updateStateAndSendEvent(usedBytes);
+              updateStateAndSendEvent(usedBytes, "polling");
             }
           }
         });
@@ -794,7 +797,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         return;
       }
       try {
-        updateStateAndSendEvent(getBytesUsed());
+        updateStateAndSendEvent(getBytesUsed(), "polling");
       } catch (Exception e) {
         HeapMemoryMonitor.logger.debug("Poller Thread caught exception:", e);
       }

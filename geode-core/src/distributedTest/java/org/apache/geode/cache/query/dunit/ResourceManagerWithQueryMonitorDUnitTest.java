@@ -119,7 +119,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     public Object call() throws Exception {
       InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
       // Reset CRITICAL_UP by informing all that heap usage is now 1 byte (0 would disable).
-      irm.getHeapMonitor().updateStateAndSendEvent(NORMAL_HEAP_USED);
+      irm.getHeapMonitor().updateStateAndSendEvent(NORMAL_HEAP_USED, "test");
       Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);
       Iterator<ResourceListener> it = listeners.iterator();
       while (it.hasNext()) {
@@ -1043,7 +1043,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       public void run2() {
         InternalResourceManager resourceManager =
             (InternalResourceManager) getCache().getResourceManager();
-        resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED);
+        resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED, "test");
       }
     });
   }
@@ -1054,7 +1054,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       public void run2() {
         InternalResourceManager resourceManager =
             (InternalResourceManager) getCache().getResourceManager();
-        resourceManager.getHeapMonitor().updateStateAndSendEvent(NORMAL_HEAP_USED);
+        resourceManager.getHeapMonitor().updateStateAndSendEvent(NORMAL_HEAP_USED, "test");
       }
     });
   }
@@ -1336,7 +1336,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
           if (count++ == numObjectsBeforeCancel) {
             InternalResourceManager resourceManager =
                 (InternalResourceManager) getCache().getResourceManager();
-            resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED);
+            resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED, "test");
             triggeredOOME = true;
           }
           break;
@@ -1356,7 +1356,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
           if (triggeredOOME == false) {
             InternalResourceManager resourceManager =
                 (InternalResourceManager) getCache().getResourceManager();
-            resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED);
+            resourceManager.getHeapMonitor().updateStateAndSendEvent(CRITICAL_HEAP_USED, "test");
             triggeredOOME = true;
             try {
               Thread.sleep(1000);
