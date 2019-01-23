@@ -97,16 +97,20 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
   }
 
   private void verifySubjectsAreLoggedIn() {
-    Cache cache = ClusterStartupRule.getCache();
-    List<CacheServer> cacheServers = cache.getCacheServers();
-    CacheServer cacheServer = cacheServers.get(0);
-    AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+    AcceptorImpl acceptor = getAcceptor();
 
     // Verify ServerConnection subjects are logged in
     verifyServerConnectionSubjectsAreLoggedIn(acceptor);
 
     // Verify CacheClientProxy subject is logged out
     verifyCacheClientProxySubjectIsLoggedIn(acceptor);
+  }
+
+  private AcceptorImpl getAcceptor() {
+    Cache cache = ClusterStartupRule.getCache();
+    List<CacheServer> cacheServers = cache.getCacheServers();
+    CacheServer cacheServer = cacheServers.get(0);
+    return ((CacheServerImpl) cacheServer).getAcceptor();
   }
 
   private void verifyServerConnectionSubjectsAreLoggedIn(AcceptorImpl acceptor) {
@@ -126,7 +130,7 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
   }
 
   private void verifyCacheClientProxySubjectIsLoggedIn(AcceptorImpl acceptor) {
-    // Ensure the CacheClientProxy is created since its asynchronous
+    // Wait for the CacheClientProxy to be created since its asynchronous
     await().until(() -> acceptor.getCacheClientNotifier().getClientProxies().size() == 1);
     CacheClientProxy proxy = acceptor.getCacheClientNotifier().getClientProxies().iterator().next();
 
@@ -139,14 +143,19 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
   }
 
   private void verifySubjectsAreLoggedOut() {
+    AcceptorImpl acceptor = getAcceptor();
+
     // Verify ServerConnection subjects are logged out
-    verifyServerConnectionSubjectsAreLoggedOut();
+    verifyServerConnectionSubjectsAreLoggedOut(acceptor);
 
     // Verify the CacheClientProxy subject is logged out
-    verifyCacheClientProxyIsLoggedOut();
+    verifyCacheClientProxyIsLoggedOut(acceptor);
   }
 
-  private void verifyServerConnectionSubjectsAreLoggedOut() {
+  private void verifyServerConnectionSubjectsAreLoggedOut(AcceptorImpl acceptor) {
+    // Wait for all ServerConnections to be closed since handleTermination is in the finally block
+    await().until(() -> acceptor.getAllServerConnections().isEmpty());
+
     for (Subject subject : serverConnectionSubjects) {
       assertThat(subject.getPrincipal()).isNull();
       assertThat(subject.getPrincipals()).isNull();
@@ -158,7 +167,10 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     }
   }
 
-  private void verifyCacheClientProxyIsLoggedOut() {
+  private void verifyCacheClientProxyIsLoggedOut(AcceptorImpl acceptor) {
+    // Wait for the CacheClientProxy to be closed since handleTermination is in the finally block
+    await().until(() -> acceptor.getCacheClientNotifier().getClientProxies().isEmpty());
+
     assertThat(proxySubject.getPrincipal()).isNull();
     assertThat(proxySubject.getPrincipals()).isNull();
     assertThat(proxySubject.isAuthenticated()).isFalse();
