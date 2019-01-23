@@ -14,7 +14,11 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static java.lang.System.lineSeparator;
+
+import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.ref.WeakReference;
@@ -93,6 +97,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   protected final boolean awaitTerminationBeforeShutdown;
   protected final boolean useShutdown;
   protected final boolean useShutdownNow;
+
+  protected final CallStackFormatter callStackFormatter = new CallStackFormatter();
 
   protected transient volatile DedicatedThreadFactory threadFactory;
   protected transient volatile ExecutorService executor;
@@ -276,24 +282,20 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * {@code ExecutorService}'s {@code ThreadGroup} excluding subgroups.
    */
   public String dumpThreads() {
-    StringBuilder dump = new StringBuilder();
+    StringBuilder dumpWriter = new StringBuilder();
+
     ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-    ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(getThreadIds(), 100);
+    ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(getThreadIds(), true, true);
+
     for (ThreadInfo threadInfo : threadInfos) {
-      dump.append('"');
-      dump.append(threadInfo.getThreadName());
-      dump.append("\" ");
-      final Thread.State state = threadInfo.getThreadState();
-      dump.append("\n   java.lang.Thread.State: ");
-      dump.append(state);
-      final StackTraceElement[] stackTraceElements = threadInfo.getStackTrace();
-      for (final StackTraceElement stackTraceElement : stackTraceElements) {
-        dump.append("\n        at ");
-        dump.append(stackTraceElement);
+      if (threadInfo == null) {
+        // sometimes ThreadMXBean.getThreadInfo returns array with one or more null elements
+        continue;
       }
-      dump.append("\n\n");
+      callStackFormatter.formatThreadInfo(threadInfo, dumpWriter);
     }
-    return dump.toString();
+
+    return dumpWriter.toString();
   }
 
   /**
@@ -301,16 +303,18 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * a {@code Set<WeakReference<Thread>>} to track the {@code Thread}s in the factory's
    * {@code ThreadGroup} excluding subgroups.
    */
-  static class DedicatedThreadFactory implements ThreadFactory {
-    private static final AtomicInteger poolNumber = new AtomicInteger(1);
+  protected static class DedicatedThreadFactory implements ThreadFactory {
+
+    private static final AtomicInteger POOL_NUMBER = new AtomicInteger(1);
+
     private final ThreadGroup group;
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final String namePrefix;
     private final Set<WeakReference<Thread>> directThreads = new HashSet<>();
 
-    DedicatedThreadFactory() {
+    protected DedicatedThreadFactory() {
       group = new ThreadGroup(ExecutorServiceRule.class.getSimpleName() + "-ThreadGroup");
-      namePrefix = "pool-" + poolNumber.getAndIncrement() + "-thread-";
+      namePrefix = "pool-" + POOL_NUMBER.getAndIncrement() + "-thread-";
     }
 
     @Override
@@ -326,7 +330,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
       return t;
     }
 
-    Set<Thread> getThreads() {
+    protected Set<Thread> getThreads() {
       Set<Thread> value = new HashSet<>();
       for (WeakReference<Thread> reference : directThreads) {
         Thread thread = reference.get();
@@ -335,6 +339,135 @@ public class ExecutorServiceRule extends SerializableExternalResource {
         }
       }
       return value;
+    }
+  }
+
+  /**
+   * Copied from {@code OSProcess} and altered.
+   */
+  protected static class CallStackFormatter {
+
+    private static final String TAB = "\t";
+    private static final String DOUBLE_QUOTE = "\"";
+    private static final String SINGLE_QUOTE = "\'";
+    private static final String THREE_SPACES = "   ";
+    private static final int MAX_CALL_STACK_FRAMES = 75;
+
+    private final boolean formatHashCodeWidthTo16;
+
+    protected CallStackFormatter() {
+      formatHashCodeWidthTo16 = false;
+    }
+
+    protected void formatThreadInfo(ThreadInfo threadInfo, StringBuilder dumpBuilder) {
+      dumpBuilder.append(DOUBLE_QUOTE).append(threadInfo.getThreadName()).append(DOUBLE_QUOTE);
+      dumpBuilder.append(" tid=0x").append(Long.toHexString(threadInfo.getThreadId()));
+
+      if (threadInfo.isSuspended()) {
+        dumpBuilder.append(" (suspended)");
+      }
+      if (threadInfo.isInNative()) {
+        dumpBuilder.append(" (in native)");
+      }
+      if (threadInfo.getLockOwnerName() != null) {
+        dumpBuilder.append(" owned by ");
+        dumpBuilder.append(DOUBLE_QUOTE).append(threadInfo.getLockOwnerName()).append(DOUBLE_QUOTE);
+        dumpBuilder.append(" tid=0x").append(Long.toHexString(threadInfo.getLockOwnerId()));
+      }
+
+      LockInfo[] lockedSynchronizers = threadInfo.getLockedSynchronizers();
+      if (lockedSynchronizers.length > 0) {
+        for (LockInfo lockedSynchronizer : lockedSynchronizers) {
+          dumpBuilder.append(lineSeparator());
+          dumpBuilder.append(THREE_SPACES);
+          dumpBuilder.append("- locked synchronizer ");
+          dumpBuilder.append("<");
+          dumpBuilder.append(formattedHexString(lockedSynchronizer.getIdentityHashCode()));
+          dumpBuilder.append(">");
+          dumpBuilder.append(" (a ").append(lockedSynchronizer.getClassName()).append(")");
+        }
+      }
+
+      Thread.State threadState = threadInfo.getThreadState();
+
+      dumpBuilder.append(lineSeparator());
+      dumpBuilder.append(THREE_SPACES);
+      dumpBuilder.append("java.lang.Thread.State: ").append(threadState);
+      dumpBuilder.append(lineSeparator());
+
+      int i = 0;
+      StackTraceElement[] stackTrace = threadInfo.getStackTrace();
+
+      LockInfo lockInfo = threadInfo.getLockInfo();
+      MonitorInfo[] lockedMonitors = threadInfo.getLockedMonitors();
+
+      for (; i < stackTrace.length && i < MAX_CALL_STACK_FRAMES; i++) {
+        StackTraceElement stackTraceElement = stackTrace[i];
+
+        dumpBuilder.append(TAB).append("at ").append(stackTraceElement);
+        dumpBuilder.append(lineSeparator());
+
+        if (i == 0 && lockInfo != null) {
+          switch (threadState) {
+            case BLOCKED:
+              dumpBuilder.append(TAB);
+              dumpBuilder.append("- waiting to lock ");
+              dumpBuilder.append("<");
+              dumpBuilder.append(formattedHexString(lockInfo.getIdentityHashCode()));
+              dumpBuilder.append(">");
+              dumpBuilder.append(" (a ").append(lockInfo.getClassName()).append(")");
+              dumpBuilder.append(lineSeparator());
+              break;
+            case WAITING:
+              dumpBuilder.append(TAB);
+              dumpBuilder.append("- parking to wait for ");
+              dumpBuilder.append("<");
+              dumpBuilder.append(formattedHexString(lockInfo.getIdentityHashCode()));
+              dumpBuilder.append(">");
+              dumpBuilder.append(" (a ").append(lockInfo.getClassName()).append(")");
+              dumpBuilder.append(lineSeparator());
+              break;
+            case TIMED_WAITING:
+              dumpBuilder.append(TAB);
+              dumpBuilder.append("- parking to timed-wait for ");
+              dumpBuilder.append("<");
+              dumpBuilder.append(formattedHexString(lockInfo.getIdentityHashCode()));
+              dumpBuilder.append(">");
+              dumpBuilder.append(" (a ").append(lockInfo.getClassName()).append(")");
+              dumpBuilder.append(lineSeparator());
+              break;
+            default:
+          }
+        }
+
+        for (MonitorInfo lockedMonitor : lockedMonitors) {
+          if (lockedMonitor.getLockedStackDepth() == i) {
+            dumpBuilder.append(TAB);
+            dumpBuilder.append("- locked ");
+            dumpBuilder.append("<");
+            dumpBuilder.append(formattedHexString(lockedMonitor.getIdentityHashCode()));
+            dumpBuilder.append(">");
+            dumpBuilder.append(" (a ").append(lockedMonitor.getClassName()).append(")");
+            dumpBuilder.append(lineSeparator());
+          }
+        }
+      }
+
+      if (i < stackTrace.length) {
+        dumpBuilder.append(TAB);
+        dumpBuilder.append("...");
+        dumpBuilder.append(lineSeparator());
+      }
+
+      dumpBuilder.append(lineSeparator());
+    }
+
+    private String formattedHexString(int value) {
+      if (formatHashCodeWidthTo16) {
+        return String.format("0x%1$016x", value);
+      } else {
+        return String.format("0x%1$x", value);
+      }
     }
   }
 

@@ -32,6 +32,10 @@ import org.mockito.InOrder;
 
 import org.apache.geode.test.junit.runners.TestRunner;
 
+/**
+ * Integration tests for {@link ExecutorServiceRule}. These are tests that pause a little than we'd
+ * like for a unit test.
+ */
 public class ExecutorServiceRuleIntegrationTest {
 
   private static volatile CountDownLatch hangLatch;
@@ -69,8 +73,7 @@ public class ExecutorServiceRuleIntegrationTest {
     assertThat(result.wasSuccessful()).isTrue();
 
     assertThat(isTestHung()).isTrue();
-    await()
-        .untilAsserted(() -> assertThat(executorService.isTerminated()).isTrue());
+    await().untilAsserted(() -> assertThat(executorService.isTerminated()).isTrue());
     invocations.afterRule();
 
     InOrder invocationOrder = inOrder(invocations);
@@ -117,6 +120,7 @@ public class ExecutorServiceRuleIntegrationTest {
     }
 
     interface Invocations {
+
       void afterHangLatch();
 
       void afterTerminateLatch();
