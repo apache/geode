@@ -67,7 +67,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
           entry('geode-wan')
           entry('geode-web')
           entry('geode-web-api')
-          entry('geode-management-rest-api')
+          entry('geode-management')
         }
 
         // informal, inter-group dependencySet

@@ -32,13 +32,9 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Declarable;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 
 /**
- *
  * A "declarable" element specifies a Declarable object to be placed in a Region entry.
  *
  *
@@ -60,8 +56,6 @@ import org.apache.geode.management.internal.cli.domain.ClassName;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "declarable-type", namespace = "http://geode.apache.org/schema/cache",
@@ -102,10 +96,9 @@ public class DeclarableType extends ClassNameType implements Serializable {
    * Gets the value of the parameter property.
    *
    * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the parameter property.
+   * This accessor method returns a reference to the live list, not a snapshot. Therefore any
+   * modification you make to the returned list will be present inside the JAXB object. This is why
+   * there is not a <CODE>set</CODE> method for the parameter property.
    *
    * <p>
    * For example, to add a new item, do as follows:
@@ -116,10 +109,7 @@ public class DeclarableType extends ClassNameType implements Serializable {
    *
    *
    * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link ParameterType }
-   *
-   *
+   * Objects of the following type(s) are allowed in the list {@link ParameterType }
    */
   public List<ParameterType> getParameters() {
     if (parameters == null) {
@@ -155,21 +145,4 @@ public class DeclarableType extends ClassNameType implements Serializable {
         + parameters.stream().map(Objects::toString).collect(Collectors.joining(",")) + "}";
   }
 
-  public <T> T newInstance(Cache cache) {
-    try {
-      Class<T> loadedClass = (Class<T>) ClassPathLoader.getLatest().forName(className);
-      T object = loadedClass.newInstance();
-      if (object instanceof Declarable) {
-        Declarable declarable = (Declarable) object;
-        Properties initProperties = new Properties();
-        for (ParameterType parameter : parameters) {
-          initProperties.put(parameter.getName(), parameter.newInstance(cache));
-        }
-        declarable.initialize(cache, initProperties);
-      }
-      return object;
-    } catch (Exception e) {
-      throw new RuntimeException("Error instantiating class: <" + className + ">", e);
-    }
-  }
 }
