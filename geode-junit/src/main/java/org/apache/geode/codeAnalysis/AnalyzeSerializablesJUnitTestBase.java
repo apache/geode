@@ -435,7 +435,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
             Collectors.toList());
     String gradleBuildDirName =
         Paths.get(getModuleName(), "build", "classes", "java", "main").toString();
-    System.out.println("gradleBuildDirName is " + classpath);
+    System.out.println("gradleBuildDirName is " + gradleBuildDirName);
     String ideaBuildDirName = Paths.get(getModuleName(), "out", "production", "classes").toString();
     String buildDir = null;
 
