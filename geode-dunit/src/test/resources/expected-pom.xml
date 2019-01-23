@@ -38,13 +38,11 @@
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-core</artifactId>
-      <version>1.9.0-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-junit</artifactId>
-      <version>1.9.0-SNAPSHOT</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
@@ -56,7 +54,6 @@
     <dependency>
       <groupId>org.apache.geode</groupId>
       <artifactId>geode-json</artifactId>
-      <version>1.9.0-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -241,6 +238,11 @@
         <version>4.3.20.RELEASE</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-web-management</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>com.carrotsearch.randomizedtesting</groupId>
         <artifactId>randomizedtesting-runner</artifactId>
         <version>2.5.0</version>
@@ -404,11 +406,6 @@
         <groupId>io.springfox</groupId>
         <artifactId>springfox-swagger2</artifactId>
         <version>2.9.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-management-rest-api</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.github.davidmoten</groupId>
