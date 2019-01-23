@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
@@ -70,7 +71,9 @@ public class DescribeMappingFunction extends CliFunction<String> {
     if (mapping.getSchema() != null) {
       attributes.put(SCHEMA_NAME, mapping.getSchema());
     }
-
+    if (mapping.getGroups() != null) {
+      attributes.put(GROUP_NAME, mapping.getGroups());
+    }
     return new DescribeMappingResult(attributes);
   }
 }

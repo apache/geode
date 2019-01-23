@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.configuration;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -79,7 +78,7 @@ public class RegionMapping implements CacheElement {
   @XmlAttribute(name = "schema")
   protected String schema;
   @XmlAttribute(name = "groups")
-  protected String[] groups;
+  protected String groups;
 
   @XmlTransient
   protected String regionName;
@@ -89,7 +88,7 @@ public class RegionMapping implements CacheElement {
   public RegionMapping() {}
 
   public RegionMapping(String regionName, String pdxName, String tableName,
-      String dataSourceName, String ids, String catalog, String schema, String[] groups) {
+      String dataSourceName, String ids, String catalog, String schema, String groups) {
     this.regionName = regionName;
     this.pdxName = pdxName;
     this.tableName = tableName;
@@ -129,7 +128,7 @@ public class RegionMapping implements CacheElement {
   }
 
   public void setGroups(String groups) {
-    this.schema = groups;
+    this.groups = groups;
   }
 
   public String getDataSourceName() {
@@ -156,7 +155,7 @@ public class RegionMapping implements CacheElement {
     return schema;
   }
 
-  public String[] getGroups() {
+  public String getGroups() {
     return groups;
   }
 
@@ -264,7 +263,7 @@ public class RegionMapping implements CacheElement {
         && isEqual(ids, that.ids)
         && isEqual(catalog, that.catalog)
         && isEqual(schema, that.schema)
-        && isEqual(Arrays.toString(groups), Arrays.toString((that.groups)));
+        && isEqual(groups, that.groups);
   }
 
   private static boolean isEqual(String s1, String s2) {

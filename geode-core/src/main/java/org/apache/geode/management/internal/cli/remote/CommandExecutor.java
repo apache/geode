@@ -145,7 +145,8 @@ public class CommandExecutor {
     }
 
     List<String> groupsToUpdate;
-    String groupsInput = parseResult.getParamValueAsString("groups");
+    String groupsInput = parseResult.getParamValueAsString("group");
+
     TabularResultModel table = null;
 
     if (!StringUtils.isBlank(groupsInput)) {

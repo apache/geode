@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.org.apache.geode.connectors.util;
 
 import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
@@ -87,6 +88,7 @@ public class DescribeMappingCommandTest {
     attributes.put(ID_NAME, "myId");
     attributes.put(CATALOG_NAME, "myCatalog");
     attributes.put(SCHEMA_NAME, "mySchema");
+    attributes.put(GROUP_NAME, "myGroup");
 
     DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
 
@@ -105,7 +107,7 @@ public class DescribeMappingCommandTest {
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
-        .containsOutput("true");
+        .containsOutput("true").containsOutput(GROUP_NAME, "myGroup");
   }
 
   @Test

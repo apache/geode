@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
@@ -61,6 +62,7 @@ public class DescribeMappingFunctionTest {
   private static final String TEST_ID = "testId";
   private static final String TEST_CATALOG = "testCatalog";
   private static final String TEST_SCHEMA = "testSchema";
+  private static final String TEST_GROUP = "testGroup";
 
   private DescribeMappingFunction function;
   private JdbcConnectorService service;
@@ -94,6 +96,7 @@ public class DescribeMappingFunctionTest {
     when(regionMapping.getIds()).thenReturn(TEST_ID);
     when(regionMapping.getCatalog()).thenReturn(TEST_CATALOG);
     when(regionMapping.getSchema()).thenReturn(TEST_SCHEMA);
+    when(regionMapping.getGroups()).thenReturn(TEST_GROUP);
   }
 
   @Test
@@ -128,6 +131,7 @@ public class DescribeMappingFunctionTest {
     expectedAttributes.put(SYNCHRONOUS_NAME, TEST_SYNCHRONOUS);
     expectedAttributes.put(CATALOG_NAME, TEST_CATALOG);
     expectedAttributes.put(SCHEMA_NAME, TEST_SCHEMA);
+    expectedAttributes.put(GROUP_NAME, TEST_GROUP);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());

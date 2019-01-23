@@ -37,6 +37,7 @@ import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -105,7 +106,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__CATALOG_NAME__HELP) String catalog,
       @CliOption(key = CREATE_MAPPING__SCHEMA_NAME,
           help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
-      @CliOption(key = {CliStrings.GROUPS, CliStrings.GROUP},
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
           help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups) {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
@@ -115,7 +117,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
     // Set<DistributedMember> targetMembers = findMembersForRegion(regionName, groups);
     Set<DistributedMember> targetMembers = findMembers(groups, null);
     RegionMapping mapping =
-        new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema, groups);
+        new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema,
+            groups != null ? String.join(",", groups) : null);
 
     try {
       ConfigurationPersistenceService configurationPersistenceService =
