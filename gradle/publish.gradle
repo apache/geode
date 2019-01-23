@@ -97,6 +97,16 @@ publishing {
           }
         }
 
+        withXml {
+          // Geode dependency versions, as with all versions, are locked by the
+          // Spring dependency-management plugin.  We remove version specification as injected by
+          // project dependencies, e.g., compile project(':geode-core')
+          asNode().dependencies.dependency.each { dep ->
+            if (dep.toString().contains("org.apache.geode")) {
+              dep.remove(dep["version"])
+            }
+          }
+        }
         afterEvaluate {
           withXml {
             def providerAsElement = asElement()
@@ -144,10 +154,29 @@ task('checkPom') {
   def thisOutput = project.buildDir.toPath().resolve('reports').resolve('checkPom.out')
   inputs.files { [expectedPomFile, actualPomFile] }
   outputs.files { thisOutput }
-  // These are the checks we want to do, as lambda functions
+
+  // We impose the following rules on our produced poms:
+  // * Versions are to be specified in the <dependencyManagement> block, not the <dependency> block
+  // * org.apache.geode versions will be ignored, in favor of this build's version
+  // * <dependency> blocks in produced POMs are as expected (ordering ignored)
+  // * <dependencyManagement> blocks in produced POMs are as expected (ordering ignored)
+  // * Published groupId = "org.apache.geode"
+  // * Published artifactId = project.artifactName if it exists, else project.name
 
   def anyVersionDefinitionNotInDependencyManagement = { pom ->
-    pom.dependencies.dependency.any { it.version == null }
+    pom.dependencies.dependency.any {
+      it.get("version")*.value() != []
+    }
+  }
+
+  def ignoreGeodeVersionInExpectedPom = { pom ->
+    pom.dependencyManagement.dependencies.dependency.each { dep ->
+      if (dep.toString().contains("org.apache.geode")) {
+        // since the project version is the source of truth, use that for comparison instead of
+        // whatever is stored in the expected pom file
+        dep.get("version")*.setValue([version])
+      }
+    }
   }
 
   def dependenciesBlocksMatch = { actual, expected ->
@@ -166,8 +195,8 @@ task('checkPom') {
   def artifactMismatches = { pom ->
     // This work-around for 'artifactName' or 'project.name' is for geode-assembly, which re-names its output
     def artifactId = pom["artifactId"]
-      artifactId*.value().flatten().any {
-        it != (project.findProperty('artifactName') ?: project.name)
+    artifactId*.value().flatten().any {
+      it != (project.findProperty('artifactName') ?: project.name)
     }
   }
 
@@ -177,22 +206,18 @@ task('checkPom') {
         throw new RuntimeException("expected-pom.xml not found.")
       }
       def expectedPom = new XmlParser().parse(expectedPomFile.toString())
-      expectedPom.dependencyManagement.dependencies.dependency.each { dep ->
-        if (dep.toString().contains("org.apache.geode")) {
-          // since the project version is the source of truth, use that for comparison instead of
-          // whatever is stored in the expected pom file
-          dep.get("version")*.setValue([version])
-        }
-      }
+      ignoreGeodeVersionInExpectedPom(expectedPom)
 
       // Sanity checks against the expected pom.
       def pathologicalArtifactId = artifactMismatches(expectedPom)
       def pathologicalGroupId = groupMismatches(expectedPom)
+      def pathologicalVersionedDeps = anyVersionDefinitionNotInDependencyManagement(expectedPom)
 
       if (pathologicalArtifactId || pathologicalGroupId) {
         def errorSummary = ""
         errorSummary += pathologicalArtifactId ? "Expected POM header pathologically incorrect. Fix artifactId to match subproject name.\n" : ""
         errorSummary += pathologicalGroupId ? "Expected POM header pathologically incorrect. Fix groupId to be 'org.apache.geode'.\n" : ""
+        errorSummary += pathologicalVersionedDeps ? "Expected POM should not declare dependency versions outside the Spring dependency-management constraints." : ""
         throw new GradleException(errorSummary)
       }
 

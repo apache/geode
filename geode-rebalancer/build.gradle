@@ -22,7 +22,6 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 dependencies {
   compile(project(':geode-common'))
   compile(project(':geode-core'))
-  testCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
