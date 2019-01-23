@@ -126,8 +126,9 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private void setupGroupPartition(String regionName, String groupNames) {
-    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=PARTITION --groups=" + groupNames)
-            .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + " --type=PARTITION --groups=" + groupNames)
+        .statusIsSuccess();
   }
 
   private void setupAsyncEventQueue(String regionName) {
@@ -219,7 +220,8 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   @Parameters({GROUP1_REGION, "/" + GROUP1_REGION})
-  public void createMappingReplicatedUpdatesServiceAndClusterConfigForServerGroup(String regionName) {
+  public void createMappingReplicatedUpdatesServiceAndClusterConfigForServerGroup(
+      String regionName) {
     setupGroupReplicate(regionName, TEST_GROUP1);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -283,7 +285,8 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   @Parameters({GROUP2_REGION, "/" + GROUP2_REGION})
-  public void createMappingParitionedUpdatesServiceAndClusterConfigForServerGroup(String regionName) {
+  public void createMappingParitionedUpdatesServiceAndClusterConfigForServerGroup(
+      String regionName) {
     setupGroupPartition(regionName, TEST_GROUP2);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
