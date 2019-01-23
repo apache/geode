@@ -25,15 +25,20 @@
 - get: geode-ci
 - aggregate:
   - get: geode
+    trigger: true
     passed:
-    - Build
     {%- if test.name.startswith("Windows") %}
     {{- all_gating_jobs() | indent(4) -}}
+    {% else %}
+    - Build
     {%- endif %}
   - get: geode-build-version
     passed:
+    {%- if test.name.startswith("Windows") %}
+    {{- all_gating_jobs() | indent(4) -}}
+    {% else %}
     - Build
-    trigger: true
+    {%- endif %}
 {% endmacro %}
 
 {%- macro deep_merge(a, b): %}
@@ -216,25 +221,29 @@ jobs:
           - name: instance-data
         timeout: 15m
         attempts: 10
-  - task: rsync_code_up
-    {{- alpine_tools_config()|indent(4) }}
-      run:
-        path: geode-ci/ci/scripts/rsync_code_up.sh
-      inputs:
-      - name: geode-ci
-      - name: geode
-      - name: instance-data
-    timeout: 5m
-    on_failure:
-      do:
-      - task: delete_instance
-        {{- alpine_tools_config()|indent(8) }}
-          run:
-            path: geode-ci/ci/scripts/delete_instance.sh
-          inputs:
-          - name: geode-ci
-          - name: instance-data
-        timeout: 1h
+  - aggregate:
+    - put: geode-build-version
+      params:
+        file: geode-build-version/number
+    - task: rsync_code_up
+      {{- alpine_tools_config()|indent(4) }}
+        run:
+          path: geode-ci/ci/scripts/rsync_code_up.sh
+        inputs:
+        - name: geode-ci
+        - name: geode
+        - name: instance-data
+      timeout: 5m
+      on_failure:
+        do:
+        - task: delete_instance
+          {{- alpine_tools_config()|indent(8) }}
+            run:
+              path: geode-ci/ci/scripts/delete_instance.sh
+            inputs:
+            - name: geode-ci
+            - name: instance-data
+          timeout: 1h
   - task: build
     {{- alpine_tools_config()|indent(4) }}
       params:
@@ -265,9 +274,6 @@ jobs:
           outputs:
           - name: geode-results
         timeout: 5m
-      - put: geode-build-version
-        params:
-          file: geode-build-version/number
       ensure:
         do:
         - aggregate:
@@ -332,8 +338,8 @@ jobs:
       trigger: true
     - get: geode-benchmarks
     - get: geode-build-version
-      params:
-        pre: build
+      passed:
+      {{ all_gating_jobs() | indent(6) }}
     - put: concourse-metadata-resource
   - task: run_benchmarks
     {{- alpine_tools_config()|indent(4) }}
@@ -386,8 +392,8 @@ jobs:
       {{ all_gating_jobs() | indent(6) }}
       trigger: true
     - get: geode-build-version
-      params:
-        pre: ((semver-prerelease-token))
+      passed:
+      {{ all_gating_jobs() | indent(6) }}
     - do:
       - put: concourse-metadata-resource
       - task: create_instance
