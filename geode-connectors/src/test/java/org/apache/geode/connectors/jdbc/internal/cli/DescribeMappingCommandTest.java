@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.org.apache.geode.connectors.util;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
@@ -41,7 +41,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand;
 import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
