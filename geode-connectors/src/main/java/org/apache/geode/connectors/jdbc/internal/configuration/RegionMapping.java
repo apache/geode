@@ -71,7 +71,7 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
  */
 @Experimental
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {"fieldMapping"})
+@XmlType(name = "", propOrder = {"fieldMappings"})
 @XmlRootElement(name = "mapping", namespace = "http://geode.apache.org/schema/jdbc")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/jdbc",
     schemaLocation = "http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd")
