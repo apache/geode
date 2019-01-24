@@ -514,21 +514,16 @@ public class CacheClientNotifier {
       CacheClientProxy staleClientProxy = this.getClientProxy(proxyId);
       boolean toCreateNewProxy = true;
       if (staleClientProxy != null) {
-        if (staleClientProxy.isConnected() && staleClientProxy.getSocket().isConnected()) {
+        // Ping the proxy to double check if it's still connected
+        // If the proxy is still alive, that means there're 2 cache servers, should
+        // reject the incoming request to create a new proxy from the same client.
+        // If the client was reconnecting, the ping should fail because socket
+        // was closed, then it should create a new proxy instead.
+        ClientMessage message = new ClientPingMessageImpl();
+        staleClientProxy.sendMessageDirectly(message);
+        if (staleClientProxy.isAlive()) {
           successful = false;
           toCreateNewProxy = false;
-        } else {
-          // A proxy exists for this non-durable client. It must be closed.
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "CacheClientNotifier: A proxy exists for this non-durable client. It must be closed.");
-          }
-          if (staleClientProxy.startRemoval()) {
-            staleClientProxy.waitRemoval();
-          } else {
-            staleClientProxy.close(false, false); // do not check for queue, just close it
-            removeClientProxy(staleClientProxy); // remove old proxy from proxy set
-          }
         }
       } // non-null stale proxy
 
