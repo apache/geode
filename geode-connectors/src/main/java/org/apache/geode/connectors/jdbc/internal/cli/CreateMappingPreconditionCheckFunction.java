@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.io.ObjectInputStream;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -40,8 +41,8 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 @Experimental
 public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMapping> {
 
-  private final transient DataSourceFactory dataSourceFactory;
-  private final transient TableMetaDataManager tableMetaDataManager;
+  private transient DataSourceFactory dataSourceFactory;
+  private transient TableMetaDataManager tableMetaDataManager;
 
   CreateMappingPreconditionCheckFunction(DataSourceFactory factory, TableMetaDataManager manager) {
     this.dataSourceFactory = factory;
@@ -50,6 +51,12 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
 
   CreateMappingPreconditionCheckFunction() {
     this(dataSourceName -> JNDIInvoker.getDataSource(dataSourceName), new TableMetaDataManager());
+  }
+
+  // used by java during deserialization
+  private void readObject(ObjectInputStream stream) {
+    this.dataSourceFactory = dataSourceName -> JNDIInvoker.getDataSource(dataSourceName);
+    this.tableMetaDataManager = new TableMetaDataManager();
   }
 
   @Override
