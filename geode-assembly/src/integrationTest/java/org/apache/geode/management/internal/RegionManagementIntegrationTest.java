@@ -49,7 +49,7 @@ public class RegionManagementIntegrationTest {
   public void sanityCheck() throws Exception {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setRefid("REPLICATE");
+    regionConfig.setType("REPLICATE");
 
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);

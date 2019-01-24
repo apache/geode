@@ -55,7 +55,7 @@ public class RegionManagementSecurityIntegrationTest {
   public void before() throws JsonProcessingException {
     regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setRefid("REPLICATE");
+    regionConfig.setType("REPLICATE");
     ObjectMapper mapper = new ObjectMapper();
     json = mapper.writeValueAsString(regionConfig);
   }

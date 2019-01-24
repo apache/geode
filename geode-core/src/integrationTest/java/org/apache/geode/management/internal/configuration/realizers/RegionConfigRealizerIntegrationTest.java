@@ -43,7 +43,7 @@ public class RegionConfigRealizerIntegrationTest {
   @Test
   public void sanityCheck() throws Exception {
     config.setName("test");
-    config.setRefid("REPLICATE");
+    config.setType("REPLICATE");
 
     realizer.create(config, server.getCache());
 

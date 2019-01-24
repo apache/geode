@@ -12,22 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.configuration.validators;
 
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 
-public interface ConfigurationValidator<T extends CacheElement> {
+public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
+  public static String DEFAULT_REGION_TYPE = "PARTITION";
 
-  /**
-   * This is used to validate the configuration object passed in by the user
-   *
-   * This will be called after the ClusterManagementService received the configuration object from
-   * the api call and before passing it to the realizers and mutators.
-   *
-   *
-   * @param config the user defined configuration object. It is mutable. you can modify the
-   *        values in the configuration object. e.g. add default values
-   *
-   */
-  public void validate(T config) throws IllegalArgumentException;
+  @Override
+  public void validate(RegionConfig config)
+      throws IllegalArgumentException {
+    if (config.getName() == null) {
+      throw new IllegalArgumentException("Name of the region has to be specified.");
+    }
+    if (config.getType() == null) {
+      config.setType(DEFAULT_REGION_TYPE);
+    }
+  }
 }
