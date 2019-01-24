@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
@@ -39,8 +40,16 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 @Experimental
 public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMapping> {
 
+  private final transient DataSourceFactory dataSourceFactory;
+  private final transient TableMetaDataManager tableMetaDataManager;
+
+  CreateMappingPreconditionCheckFunction(DataSourceFactory factory, TableMetaDataManager manager) {
+    this.dataSourceFactory = factory;
+    this.tableMetaDataManager = manager;
+  }
+
   CreateMappingPreconditionCheckFunction() {
-    super();
+    this(dataSourceName -> JNDIInvoker.getDataSource(dataSourceName), new TableMetaDataManager());
   }
 
   @Override
@@ -48,7 +57,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
       throws Exception {
     RegionMapping regionMapping = context.getArguments();
     String dataSourceName = regionMapping.getDataSourceName();
-    DataSource dataSource = JNDIInvoker.getDataSource(dataSourceName);
+    DataSource dataSource = dataSourceFactory.getDataSource(dataSourceName);
     if (dataSource == null) {
       throw new JdbcConnectorException("JDBC data-source named \"" + dataSourceName
           + "\" not found. Create it with gfsh 'create data-source --pooled --name="
@@ -56,7 +65,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
     try (Connection connection = dataSource.getConnection()) {
       TableMetaDataView tableMetaData =
-          new TableMetaDataManager().getTableMetaDataView(connection, regionMapping);
+          tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
       PdxInstanceFactory pdxInstanceFactory =
           context.getCache().createPdxInstanceFactory(regionMapping.getPdxName());
       Object[] output = new Object[2];
@@ -93,7 +102,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
   }
 
-  private FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {
+  static FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {
     switch (jdbcType) {
       case BIT: // 1 bit
         return computeType(isNullable, FieldType.BOOLEAN);
@@ -111,10 +120,6 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
         return computeType(isNullable, FieldType.FLOAT);
       case DOUBLE:
         return computeType(isNullable, FieldType.DOUBLE);
-      case NUMERIC:
-        return FieldType.OBJECT;
-      case DECIMAL:
-        return FieldType.OBJECT;
       case CHAR:
         return FieldType.STRING;
       case VARCHAR:
@@ -135,40 +140,16 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
         return FieldType.BYTE_ARRAY;
       case NULL:
         throw new IllegalStateException("unexpected NULL jdbc column type");
-      case OTHER:
-        return FieldType.OBJECT;
-      case JAVA_OBJECT:
-        return FieldType.OBJECT;
-      case DISTINCT:
-        return FieldType.OBJECT;
-      case STRUCT:
-        return FieldType.OBJECT;
-      case ARRAY:
-        return FieldType.OBJECT;
       case BLOB:
         return FieldType.BYTE_ARRAY;
-      case CLOB:
-        return FieldType.OBJECT;
-      case REF:
-        return FieldType.OBJECT;
-      case DATALINK:
-        return FieldType.OBJECT;
       case BOOLEAN:
         return computeType(isNullable, FieldType.BOOLEAN);
-      case ROWID:
-        return FieldType.OBJECT;
       case NCHAR:
         return FieldType.STRING;
       case NVARCHAR:
         return FieldType.STRING;
       case LONGNVARCHAR:
         return FieldType.STRING;
-      case NCLOB:
-        return FieldType.OBJECT;
-      case SQLXML:
-        return FieldType.OBJECT;
-      case REF_CURSOR:
-        return FieldType.OBJECT;
       case TIME_WITH_TIMEZONE:
         return computeDate(isNullable);
       case TIMESTAMP_WITH_TIMEZONE:
@@ -178,7 +159,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
   }
 
-  private FieldType computeType(boolean isNullable, FieldType nonNullType) {
+  private static FieldType computeType(boolean isNullable, FieldType nonNullType) {
     if (isNullable) {
       return FieldType.OBJECT;
     }
@@ -186,7 +167,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
 
   }
 
-  private FieldType computeDate(boolean isNullable) {
+  private static FieldType computeDate(boolean isNullable) {
     return computeType(isNullable, FieldType.DATE);
   }
 
