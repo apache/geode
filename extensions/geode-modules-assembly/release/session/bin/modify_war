@@ -271,6 +271,10 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${GEODE}/lib/log4j-jul-@LOG4J_VERSION@.jar \
     ${GEODE}/lib/fastutil-@FASTUTIL_VERSION@.jar \
     ${GEODE}/lib/javax.transaction-api-@TX_VERSION@.jar \
+    ${GEODE}/lib/jetty-http-@JETTY_VERSION@.jar \
+    ${GEODE}/lib/jetty-io-@JETTY_VERSION@.jar \
+    ${GEODE}/lib/jetty-server-@JETTY_VERSION@.jar \
+    ${GEODE}/lib/jetty-util-@JETTY_VERSION@.jar \
     ${GEODE}/lib/jgroups-@JGROUPS_VERSION@.jar \
     ${GEODE}/lib/commons-io-@COMMONS_IO_VERSION@.jar \
     ${GEODE}/lib/commons-lang3-@COMMONS_LANG_VERSION@.jar \
