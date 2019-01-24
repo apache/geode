@@ -1135,7 +1135,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                   + "so I will not become membership coordinator on this attempt to join");
               state.hasContactedAJoinedLocator = true;
             }
-            if (response.getCoordinator() != null) {
+            InternalDistributedMember responseCoordinator = response.getCoordinator();
+            if (responseCoordinator != null) {
               anyResponses = true;
               NetView v = response.getView();
               int viewId = v == null ? -1 : v.getViewId();
@@ -1145,10 +1146,16 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                 state.registrants.clear();
               }
               if (viewId > -1) {
-                coordinatorsWithView.add(response.getCoordinator());
+                coordinatorsWithView.add(responseCoordinator);
               }
-
-              possibleCoordinators.add(response.getCoordinator());
+              // if this node is restarting it should never create its own cluster because
+              // the QuorumChecker would have contacted a quorum of live nodes and one of
+              // them should already be the coordinator, or should become the coordinator soon
+              boolean isMyOldAddress =
+                  services.getConfig().isReconnecting() && localAddress.equals(responseCoordinator);
+              if (!isMyOldAddress) {
+                possibleCoordinators.add(response.getCoordinator());
+              }
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
@@ -1286,7 +1293,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     for (FindCoordinatorResponse resp : result) {
       logger.info("findCoordinatorFromView processing {}", resp);
       InternalDistributedMember mbr = resp.getCoordinator();
-      if (!state.alreadyTried.contains(mbr)) {
+      if (!localAddress.equals(mbr) && !state.alreadyTried.contains(mbr)) {
         boolean mbrIsNoob = (mbr.getVmViewId() < 0);
         if (mbrIsNoob) {
           // member has not yet joined
