@@ -205,6 +205,8 @@ public class CacheConnectionJUnitTest {
     ClientProtocol.Message getMessage =
         MessageUtil.makeGetRequestMessage(serializationService, TEST_KEY, TEST_REGION);
     protobufProtocolSerializer.serialize(getMessage, outputStream);
+    // Make sure we're done processing the message server side.
+    socket.getInputStream().read();
 
     // make sure socket is still open
     assertFalse(socket.isClosed());
