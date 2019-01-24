@@ -1304,7 +1304,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private void startRestAgentServer(GemFireCacheImpl cache) {
-    if (this.system.getConfig().getStartDevRestApi() && isNotJmxManager() && isServerNode()) {
+    if (this.system.getConfig().getStartDevRestApi() && isServerNode()) {
       this.restAgent = new RestAgent(this.system.getConfig(), this.securityService);
       this.restAgent.start(cache);
     } else {

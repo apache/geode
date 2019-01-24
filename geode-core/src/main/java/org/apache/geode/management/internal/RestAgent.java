@@ -88,12 +88,6 @@ public class RestAgent {
 
   // Start HTTP service in embedded mode
   public void startHttpService(InternalCache cache) {
-    // TODO: add a check that will make sure that we start HTTP service on
-    // non-manager data node
-    String httpServiceBindAddress = getBindAddressForHttpService(this.config);
-    logger.info("Attempting to start HTTP service on port ({}) at bind-address ({})...",
-        this.config.getHttpServicePort(), httpServiceBindAddress);
-
     // Find the developer REST WAR file
     final String gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
     if (gemfireAPIWar == null) {

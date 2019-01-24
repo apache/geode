@@ -188,11 +188,12 @@ public class HttpService {
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));
     tmpPath.mkdirs();
     webapp.setTempDirectory(tmpPath);
+    logger.info("Adding webapp " + webAppContext);
     ((HandlerCollection) httpServer.getHandler()).addHandler(webapp);
 
     // if the server is not started yet start the server, otherwise, start the webapp alone
     if (!httpServer.isStarted()) {
-      logger.debug("Attempting to start HTTP service on port ({}) at bind-address ({})...",
+      logger.info("Attempting to start HTTP service on port ({}) at bind-address ({})...",
           this.port, this.bindAddress);
       httpServer.start();
     } else {
