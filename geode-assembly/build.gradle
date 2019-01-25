@@ -16,7 +16,7 @@
  */
 
 
-import java.nio.file.Paths 
+import java.nio.file.Paths
 
 evaluationDependsOn(":geode-core")
 
@@ -164,7 +164,7 @@ dependencies {
     exclude module: 'geode-core'
   }
   testRuntime(project(':geode-old-versions'))
-  
+
 
   acceptanceTestRuntime(project(':geode-old-versions'))
 
@@ -237,7 +237,7 @@ dependencies {
   webServerTomcat8('org.apache.tomcat:tomcat:' + project.'tomcat8.version' + '@zip')
   webServerTomcat9('org.apache.tomcat:tomcat:' + project.'tomcat9.version' + '@zip')
   webServerJetty('org.eclipse.jetty:jetty-distribution:' + project.'jetty.version' + '@zip')
-  
+
   gfshDependencies ('org.springframework:spring-web') {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
@@ -266,7 +266,7 @@ task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
   }
 }
 
-// This closure sets the gemfire classpath.  If we add another jar to the classpath it must
+// This closure sets the geode classpath.  If we add another jar to the classpath it must
 // be included in the filter logic below.
 def cp = {
   // first add all the dependent project jars
@@ -305,33 +305,51 @@ def cp = {
   return jars.plus(depJars).unique().join(' ')
 }
 
-// Note: this dependency doesn't work if you change a library version from
-// a dependent project.  Please fix me.
-task depsJar (type: Jar, dependsOn: ':geode-core:classes') {
+task configureDepsJar(dependsOn: configurations.archives.dependencies) {
+  def output = project.buildDir.toPath().resolve('reports').resolve('deps_jar_cp.txt')
+  outputs.file {
+    output
+  }
+  doLast {
+    output.write(cp())
+  }
+}
+
+task configureGfshDepsJar(dependsOn: configurations.gfshDependencies.dependencies) {
+  inputs.files configureDepsJar
+  inputs.files project(':geode-core').webJar
+
+  def output = project.buildDir.toPath().resolve('reports').resolve('gfsh_deps_jar_cp.txt')
+  outputs.file {
+    output
+  }
+  doLast {
+    def classpath = configureDepsJar.outputs.files.singleFile.text + ' ' +
+        project(':geode-core').webJar.archiveName + ' ' +
+        configurations.gfshDependencies.collect { it.getName() }.flatten().join(' ')
+    output.write(classpath)
+  }
+}
+
+// Configure the manifest contents in a separate always-running task to ensure correctness of
+// these dependency jars
+task depsJar (type: Jar) {
+  inputs.files configureDepsJar
   description 'Assembles the jar archive that defines the gemfire classpath.'
   archiveName 'geode-dependencies.jar'
-  doFirst {
-    manifest {
-      attributes("Class-Path": cp())
-    }
+  manifest {
+    attributes("Class-Path": configureDepsJar.outputs.files.singleFile.text)
   }
 }
 
-// Note: this dependency doesn't work if you change a library version from
-// a dependent project.  Please fix me.
-task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
+task gfshDepsJar (type: Jar) {
+  inputs.files configureGfshDepsJar
   description 'Assembles the jar archive that defines the gfsh classpath.'
   archiveName 'gfsh-dependencies.jar'
-  doFirst {
-    manifest {
-      attributes("Class-Path": cp() +
-        ' ' + project(':geode-core').webJar.archiveName +
-        ' ' + configurations.gfshDependencies.collect{ it.getName() }.flatten().join(' ')
-      )
-    }
+  manifest {
+    attributes("Class-Path": configureGfshDepsJar.outputs.files.singleFile.text)
   }
 }
-
 
 def docsDir = file("$buildDir/javadocs")
 task docs(type: Javadoc) {
