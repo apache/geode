@@ -108,9 +108,9 @@ public class TXCommitMessage extends PooledDistributionMessage
    * List of operations to do when processing this tx. Valid on farside only.
    */
   protected transient ArrayList farSideEntryOps;
-  private transient byte[] farsideBaseMembershipId; // only available on farside
-  private transient long farsideBaseThreadId; // only available on farside
-  private transient long farsideBaseSequenceId; // only available on farside
+  private byte[] farsideBaseMembershipId; // only available on farside
+  private long farsideBaseThreadId; // only available on farside
+  private long farsideBaseSequenceId; // only available on farside
 
   /**
    * (Nearside) true of any regions in this TX have required roles
@@ -118,11 +118,11 @@ public class TXCommitMessage extends PooledDistributionMessage
   private transient boolean hasReliableRegions = false;
 
   /**
-   * Set of all caching exceptions produced hile processing this tx
+   * Set of all caching exceptions produced while processing this tx
    */
   private transient Set processingExceptions = Collections.emptySet();
 
-  private transient ClientProxyMembershipID bridgeContext = null;
+  private ClientProxyMembershipID bridgeContext = null;
 
   /**
    * Version of the client that this TXCommitMessage is being sent to. Used for backwards
@@ -687,7 +687,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       if (isAckRequired()) {
         ack();
       }
-      if (!dm.getExistingCache().isClient()) {
+      if (!dm.getExistingCache().isClient() && bridgeContext != null) {
         getTracker().saveTXForClientFailover(txIdent, this);
       }
       if (logger.isDebugEnabled()) {
