@@ -155,21 +155,13 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     // create Cache of given VM and start HTTP service with REST APIs service
-    startBridgeServer(hostName, serverPort, groups, locators, regions, probe);
-
-    return "http://" + hostName + ":" + serverPort + this.urlContext + "/v1";
-  }
-
-  private int startBridgeServer(String hostName, int restServicerPort, final String[] groups,
-      final String locators, final String[] regions, final ServerLoadProbe probe)
-      throws IOException {
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, String.valueOf(0));
     props.setProperty(LOCATORS, locators);
     props.setProperty(START_DEV_REST_API, "true");
     props.setProperty(HTTP_SERVICE_BIND_ADDRESS, hostName);
-    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(restServicerPort));
+    props.setProperty(HTTP_SERVICE_PORT, String.valueOf(serverPort));
 
     DistributedSystem ds = getSystem(props);
     InternalCache cache = (InternalCache) CacheFactory.create(ds);
@@ -190,7 +182,9 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     server.start();
 
     remoteObjects.put(CACHE_KEY, cache);
-    return server.getPort();
+    server.getPort();
+
+    return "http://" + hostName + ":" + serverPort + this.urlContext + "/v1";
   }
 
   private void doPutsInClientCache() {

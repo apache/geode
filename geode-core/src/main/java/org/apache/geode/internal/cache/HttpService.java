@@ -12,12 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal;
+package org.apache.geode.internal.cache;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,24 +39,20 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.SSLUtil;
 
-/**
- * @since GemFire 8.1
- */
-@SuppressWarnings("unused")
-public class JettyHelper {
+public class HttpService {
 
   private static final Logger logger = LogService.getLogger();
-
+  private Server httpServer;
+  private String bindAddress = "0.0.0.0";
+  private int port;
+  private SSLConfig sslConfig;
   private static final String FILE_PATH_SEPARATOR = System.getProperty("file.separator");
   private static final String USER_DIR = System.getProperty("user.dir");
   private static final String USER_NAME = System.getProperty("user.name");
 
   private static final String HTTPS = "https";
-
-  private static String bindAddress = "0.0.0.0";
-
-  private static int port = 0;
 
   public static final String SECURITY_SERVICE_SERVLET_CONTEXT_PARAM =
       "org.apache.geode.securityService";
@@ -64,13 +61,19 @@ public class JettyHelper {
   public static final String CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM =
       "org.apache.geode.sslConfig";
 
-  public static Server initJetty(final String bindAddress, final int port, SSLConfig sslConfig) {
+  private List<WebAppContext> webApps = new ArrayList<>();
 
-    final Server jettyServer = new Server();
+  public HttpService(String bindAddress, int port, SSLConfig sslConfig) {
+    if (port == 0) {
+      return;
+    }
+    this.sslConfig = sslConfig;
+
+    this.httpServer = new Server();
 
     // Add a handler collection here, so that each new context adds itself
     // to this collection.
-    jettyServer.setHandler(new HandlerCollection(true));
+    httpServer.setHandler(new HandlerCollection(true));
     ServerConnector connector = null;
 
     HttpConfiguration httpConfig = new HttpConfiguration();
@@ -98,7 +101,6 @@ public class JettyHelper {
       } else {
         logger.warn("SSL Protocol could not be determined. SSL settings might not work correctly");
       }
-
 
       if (StringUtils.isBlank(sslConfig.getKeystore())) {
         throw new GemFireConfigException(
@@ -134,43 +136,43 @@ public class JettyHelper {
 
       // Somehow With HTTP_2.0 Jetty throwing NPE. Need to investigate further whether all GemFire
       // web application(Pulse, REST) can do with HTTP_1.1
-      connector = new ServerConnector(jettyServer,
+      connector = new ServerConnector(httpServer,
           new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
           new HttpConnectionFactory(httpConfig));
 
-
       connector.setPort(port);
     } else {
-      connector = new ServerConnector(jettyServer, new HttpConnectionFactory(httpConfig));
+      connector = new ServerConnector(httpServer, new HttpConnectionFactory(httpConfig));
 
       connector.setPort(port);
     }
 
-    jettyServer.setConnectors(new Connector[] {connector});
+    httpServer.setConnectors(new Connector[] {connector});
 
     if (StringUtils.isNotBlank(bindAddress)) {
       connector.setHost(bindAddress);
     }
 
-
     if (bindAddress != null && !bindAddress.isEmpty()) {
-      JettyHelper.bindAddress = bindAddress;
+      this.bindAddress = bindAddress;
+    }
+    this.port = port;
+  }
+
+  public Server getHttpServer() {
+    return httpServer;
+  }
+
+  public synchronized void addWebApplication(String webAppContext, String warFilePath,
+      Pair<String, Object>... attributeNameValuePairs)
+      throws Exception {
+    if (httpServer == null) {
+      logger.info(
+          String.format("unable to add %s webapp. Http service is not started on this member.",
+              webAppContext));
+      return;
     }
 
-    JettyHelper.port = port;
-
-    return jettyServer;
-  }
-
-
-  public static Server startJetty(final Server jetty) throws Exception {
-    jetty.start();
-    return jetty;
-  }
-
-  public static WebAppContext addWebApplication(final Server jetty, final String webAppContext,
-      final String warFilePath,
-      Pair<String, Object>... attributeNameValuePairs) {
     WebAppContext webapp = new WebAppContext();
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath);
@@ -186,20 +188,21 @@ public class JettyHelper {
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));
     tmpPath.mkdirs();
     webapp.setTempDirectory(tmpPath);
-    ((HandlerCollection) jetty.getHandler()).addHandler(webapp);
-    // if we are adding this webapp after the jetty server has already started, we will need to
-    // manually start the webapp.
-    if (jetty.isStarted()) {
-      try {
-        webapp.start();
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-      }
+    logger.info("Adding webapp " + webAppContext);
+    ((HandlerCollection) httpServer.getHandler()).addHandler(webapp);
+
+    // if the server is not started yet start the server, otherwise, start the webapp alone
+    if (!httpServer.isStarted()) {
+      logger.info("Attempting to start HTTP service on port ({}) at bind-address ({})...",
+          this.port, this.bindAddress);
+      httpServer.start();
+    } else {
+      webapp.start();
     }
-    return webapp;
+    webApps.add(webapp);
   }
 
-  private static String getWebAppBaseDirectory(final String context) {
+  private String getWebAppBaseDirectory(final String context) {
     String underscoredContext = context.replace("/", "_");
     String uuid = UUID.randomUUID().toString().substring(0, 8);
     final String workingDirectory = USER_DIR.concat(FILE_PATH_SEPARATOR)
@@ -211,15 +214,30 @@ public class JettyHelper {
     return workingDirectory;
   }
 
-  private static final CountDownLatch latch = new CountDownLatch(1);
+  public void stop() {
+    if (this.httpServer == null) {
+      return;
+    }
 
-  private static String normalizeWebAppArchivePath(final String webAppArchivePath) {
-    return (webAppArchivePath.startsWith(File.separator) ? new File(webAppArchivePath)
-        : new File(".", webAppArchivePath)).getAbsolutePath();
+    logger.debug("Stopping the HTTP service...");
+    try {
+      for (WebAppContext webapp : webApps) {
+        webapp.stop();
+      }
+      this.httpServer.stop();
+    } catch (Exception e) {
+      logger.warn("Failed to stop the HTTP service because: {}", e.getMessage(), e);
+    } finally {
+      try {
+        this.httpServer.destroy();
+      } catch (Exception ignore) {
+        logger.info("Failed to properly release resources held by the HTTP service: {}",
+            ignore.getMessage(), ignore);
+      } finally {
+        this.httpServer = null;
+        System.clearProperty("catalina.base");
+        System.clearProperty("catalina.home");
+      }
+    }
   }
-
-  private static String normalizeWebAppContext(final String webAppContext) {
-    return (webAppContext.startsWith("/") ? webAppContext : "/" + webAppContext);
-  }
-
 }

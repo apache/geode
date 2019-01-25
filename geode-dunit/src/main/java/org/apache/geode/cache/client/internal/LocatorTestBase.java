@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -46,6 +47,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
@@ -115,13 +117,14 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   protected void postTearDownLocatorTestBase() throws Exception {}
 
   protected int startLocator(final String hostName, final String otherLocators) throws Exception {
-    final String testName = getUniqueName();
     disconnectFromDS();
+    final int httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
     Properties props = new Properties();
     props.put(MCAST_PORT, String.valueOf(0));
     props.put(LOCATORS, otherLocators);
     props.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    props.put(HTTP_SERVICE_PORT, String.valueOf(httpPort));
     File logFile = new File("");
     InetAddress bindAddr = null;
     try {

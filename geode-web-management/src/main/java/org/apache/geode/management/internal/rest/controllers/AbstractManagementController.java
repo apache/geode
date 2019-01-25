@@ -29,9 +29,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.ServletContextAware;
 
+import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.management.internal.api.ClusterManagementResult;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -46,9 +46,9 @@ public class AbstractManagementController implements ServletContextAware {
   @Override
   public void setServletContext(ServletContext servletContext) {
     securityService = (SecurityService) servletContext
-        .getAttribute(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+        .getAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
     clusterManagementService = (LocatorClusterManagementService) servletContext
-        .getAttribute(JettyHelper.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM);
+        .getAttribute(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM);
   }
 
   private static final Logger logger = LogService.getLogger();

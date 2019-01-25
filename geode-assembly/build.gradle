@@ -200,6 +200,8 @@ dependencies {
   acceptanceTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  acceptanceTestCompile(project(':geode-assembly:geode-assembly-test'))
+  acceptanceTestCompile('org.apache.httpcomponents:httpclient')
 
 
   uiTestCompile(project(':geode-core'))

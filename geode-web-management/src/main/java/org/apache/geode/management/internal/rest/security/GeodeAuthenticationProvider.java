@@ -28,8 +28,8 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
+import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -71,6 +71,6 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
   @Override
   public void setServletContext(ServletContext servletContext) {
     securityService = (SecurityService) servletContext
-        .getAttribute(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+        .getAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
   }
 }
