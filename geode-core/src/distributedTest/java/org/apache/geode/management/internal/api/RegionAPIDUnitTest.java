@@ -66,7 +66,7 @@ public class RegionAPIDUnitTest {
       config.setName(regionName);
       config.setRefid(RegionShortcut.PARTITION.toString());
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
-          .create(config);
+          .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();
     });
 
@@ -99,7 +99,7 @@ public class RegionAPIDUnitTest {
       config.setName(regionName);
       config.setRefid(RegionShortcut.REPLICATE.toString());
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
-          .create(config);
+          .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();
     });
 
@@ -124,7 +124,7 @@ public class RegionAPIDUnitTest {
       config.setName(regionName);
       config.setRefid(RegionShortcut.PARTITION.toString());
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
-          .create(config);
+          .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();
     });
 
