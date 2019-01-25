@@ -46,7 +46,7 @@ public class RegionCreateFunction implements InternalFunction {
 
   public static RegionCreateFunction INSTANCE = new RegionCreateFunction();
 
-  private final RegionConfigRealizer realizer = new RegionConfigRealizer();
+  private static final RegionConfigRealizer realizer = new RegionConfigRealizer();
 
   @Override
   public boolean isHA() {

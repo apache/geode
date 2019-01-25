@@ -89,7 +89,7 @@ public class InternalConfigurationPersistenceServiceTest {
 
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent())
-        .contains("<region name=\"regionA\" refid=\"REPLICATE\"/>");
+        .contains("<region name=\"regionA\" refid=\"REPLICATE\">");
   }
 
   @Test
