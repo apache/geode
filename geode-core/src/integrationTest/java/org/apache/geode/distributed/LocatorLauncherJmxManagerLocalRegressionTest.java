@@ -51,22 +51,22 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
   private int jmxManagerPort;
 
   @Before
-  public void setUpLocatorLauncherJmxManagerLocalIntegrationTest() throws Exception {
+  public void setUpLocatorLauncherJmxManagerLocalIntegrationTest() {
     disconnectFromDS();
     System.setProperty(ProcessType.PROPERTY_TEST_PREFIX, getUniqueName() + "-");
 
     int[] ports = getRandomAvailableTCPPorts(3);
-    this.defaultLocatorPort = ports[0];
-    this.nonDefaultLocatorPort = ports[1];
-    this.jmxManagerPort = ports[2];
+    defaultLocatorPort = ports[0];
+    nonDefaultLocatorPort = ports[1];
+    jmxManagerPort = ports[2];
 
-    this.initialThreads = Thread.getAllStackTraces().keySet();
+    initialThreads = Thread.getAllStackTraces().keySet();
   }
 
   @Test
-  public void locatorWithZeroJmxPortCleansUpWhenStopped() throws Exception {
+  public void locatorWithZeroJmxPortCleansUpWhenStopped() {
     startLocator(newBuilder().setDeletePidFileOnStop(true).setMemberName(getUniqueName())
-        .setPort(this.defaultLocatorPort).setRedirectOutput(false)
+        .setPort(defaultLocatorPort).setRedirectOutput(false)
         .setWorkingDirectory(getWorkingDirectoryPath()).set(LOG_LEVEL, "config")
         .set(ENABLE_CLUSTER_CONFIGURATION, "false").set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_START, "true").set(JMX_MANAGER_PORT, "0"));
@@ -78,9 +78,9 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
   }
 
   @Test
-  public void locatorWithNonZeroJmxPortCleansUpWhenStopped() throws Exception {
+  public void locatorWithNonZeroJmxPortCleansUpWhenStopped() {
     startLocator(newBuilder().setDeletePidFileOnStop(true).setMemberName(getUniqueName())
-        .setPort(this.defaultLocatorPort).setRedirectOutput(false)
+        .setPort(defaultLocatorPort).setRedirectOutput(false)
         .setWorkingDirectory(getWorkingDirectoryPath()).set(LOG_LEVEL, "config")
         .set(ENABLE_CLUSTER_CONFIGURATION, "false").set(JMX_MANAGER, "true")
         .set(JMX_MANAGER_START, "true").set(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort)));

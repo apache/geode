@@ -48,9 +48,9 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  */
 public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegrationTestCase {
 
-  protected volatile int defaultLocatorPort;
-  protected volatile int nonDefaultLocatorPort;
-  protected volatile LocatorLauncher launcher;
+  volatile int defaultLocatorPort;
+  volatile int nonDefaultLocatorPort;
+  volatile LocatorLauncher launcher;
 
   private volatile File clusterConfigDirectory;
 
@@ -71,7 +71,7 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
   }
 
   @After
-  public void tearDownAbstractLocatorLauncherIntegrationTestCase() throws Exception {
+  public void tearDownAbstractLocatorLauncherIntegrationTestCase() {
     if (launcher != null) {
       launcher.stop();
     }
@@ -83,17 +83,17 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
   }
 
   @Override
-  protected void givenEmptyWorkingDirectory() {
+  void givenEmptyWorkingDirectory() {
     File[] files = getWorkingDirectory().listFiles();
     assertThat(files).hasSize(1);
     assertThat(files[0]).isDirectory().isEqualTo(getClusterConfigDirectory());
   }
 
-  protected LocatorLauncher givenLocatorLauncher() {
+  LocatorLauncher givenLocatorLauncher() {
     return givenLocatorLauncher(newBuilder());
   }
 
-  protected LocatorLauncher givenLocatorLauncher(final Builder builder) {
+  private LocatorLauncher givenLocatorLauncher(final Builder builder) {
     return builder.build();
   }
 
@@ -101,16 +101,16 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
     return givenRunningLocator(newBuilder());
   }
 
-  protected LocatorLauncher givenRunningLocator(final Builder builder) {
+  LocatorLauncher givenRunningLocator(final Builder builder) {
     return awaitStart(builder);
   }
 
-  protected LocatorLauncher awaitStart(final LocatorLauncher launcher) {
+  LocatorLauncher awaitStart(final LocatorLauncher launcher) {
     GeodeAwaitility.await().untilAsserted(() -> assertThat(isLauncherOnline()).isTrue());
     return launcher;
   }
 
-  protected Locator getLocator() {
+  Locator getLocator() {
     return launcher.getLocator();
   }
 
@@ -118,22 +118,22 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
    * Returns a new Builder with helpful defaults for safe testing. If you need a Builder in a test
    * without any of these defaults then simply use {@code new Builder()} instead.
    */
-  protected Builder newBuilder() {
+  Builder newBuilder() {
     return new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
         .setWorkingDirectory(getWorkingDirectoryPath())
         .set(CLUSTER_CONFIGURATION_DIR, getClusterConfigDirectoryPath())
         .set(DISABLE_AUTO_RECONNECT, "true").set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
   }
 
-  protected LocatorLauncher startLocator() {
+  LocatorLauncher startLocator() {
     return awaitStart(newBuilder());
   }
 
-  protected LocatorLauncher startLocator(final Builder builder) {
+  LocatorLauncher startLocator(final Builder builder) {
     return awaitStart(builder);
   }
 
-  protected void stopLocator() {
+  void stopLocator() {
     assertThat(launcher.stop().getStatus()).isEqualTo(STOPPED);
   }
 

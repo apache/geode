@@ -50,7 +50,6 @@ import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.lang.AvailablePid;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.IgnoredException;
 
 /**
  * Abstract base class for integration tests of both {@link LocatorLauncher} and
@@ -62,13 +61,10 @@ public abstract class LauncherIntegrationTestCase {
 
   private static final int PREFERRED_FAKE_PID = 42;
 
-  private static final String EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED =
-      "MBean Not Registered In GemFire Domain";
+  volatile int localPid;
+  volatile int fakePid;
 
-  protected volatile int localPid;
-  protected volatile int fakePid;
   private volatile ServerSocket socket;
-  private IgnoredException ignoredException;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -82,39 +78,36 @@ public abstract class LauncherIntegrationTestCase {
   @Before
   public void setUpAbstractLauncherIntegrationTestCase() throws Exception {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, Integer.toString(0));
-    ignoredException =
-        IgnoredException.addIgnoredException(EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED);
     localPid = identifyPid();
     fakePid = new AvailablePid().findAvailablePid(PREFERRED_FAKE_PID);
   }
 
   @After
   public void tearDownAbstractLauncherIntegrationTestCase() throws Exception {
-    ignoredException.remove();
     if (socket != null) {
       socket.close();
     }
   }
 
-  protected abstract ProcessType getProcessType();
+  abstract ProcessType getProcessType();
 
-  protected void assertDeletionOf(final File file) {
+  void assertDeletionOf(final File file) {
     GeodeAwaitility.await().untilAsserted(() -> assertThat(file).doesNotExist());
   }
 
-  protected void assertThatServerPortIsFree(final int serverPort) {
+  void assertThatServerPortIsFree(final int serverPort) {
     assertThatPortIsFree(serverPort);
   }
 
-  protected void assertThatServerPortIsInUse(final int serverPort) {
+  void assertThatServerPortIsInUse(final int serverPort) {
     assertThatPortIsInUse(serverPort);
   }
 
-  protected void assertThatServerPortIsInUseBySocket(final int serverPort) {
+  void assertThatServerPortIsInUseBySocket(final int serverPort) {
     assertThatPortIsInUseBySocket(serverPort);
   }
 
-  protected File givenControlFile(final String name) {
+  File givenControlFile(final String name) {
     try {
       File file = new File(getWorkingDirectory(), name);
       assertThat(file.createNewFile()).isTrue();
@@ -125,19 +118,19 @@ public abstract class LauncherIntegrationTestCase {
     }
   }
 
-  protected File givenEmptyPidFile() {
+  File givenEmptyPidFile() {
     return givenPidFile(null);
   }
 
-  protected void givenEmptyWorkingDirectory() {
+  void givenEmptyWorkingDirectory() {
     assertThat(getWorkingDirectory().listFiles()).hasSize(0);
   }
 
-  protected void givenLocatorPortInUse(final int locatorPort) {
+  void givenLocatorPortInUse(final int locatorPort) {
     givenPortInUse(locatorPort);
   }
 
-  protected File givenPidFile(final Object content) {
+  File givenPidFile(final Object content) {
     try {
       File file = new File(getWorkingDirectory(), getProcessType().getPidFileName());
       FileWriter writer = new FileWriter(file);
@@ -152,15 +145,15 @@ public abstract class LauncherIntegrationTestCase {
     }
   }
 
-  protected void givenServerPortIsFree(final int serverPort) {
+  void givenServerPortIsFree(final int serverPort) {
     assertThatPortIsFree(serverPort);
   }
 
-  protected void givenServerPortInUse(final int serverPort) {
+  void givenServerPortInUse(final int serverPort) {
     givenPortInUse(serverPort);
   }
 
-  protected InputListener createExpectedListener(final String name, final String expected,
+  InputListener createExpectedListener(final String name, final String expected,
       final AtomicBoolean atomic) {
     return new InputListener() {
       @Override
@@ -197,11 +190,11 @@ public abstract class LauncherIntegrationTestCase {
     }
   }
 
-  protected List<String> getJvmArguments() {
+  List<String> getJvmArguments() {
     return ManagementFactory.getRuntimeMXBean().getInputArguments();
   }
 
-  protected int getLocatorPid() {
+  int getLocatorPid() {
     return readPidFileWithValidation();
   }
 
@@ -209,7 +202,7 @@ public abstract class LauncherIntegrationTestCase {
     return new File(getWorkingDirectory(), getUniqueName() + ".log");
   }
 
-  protected String getLogFilePath() {
+  String getLogFilePath() {
     try {
       return getLogFile().getCanonicalPath();
     } catch (IOException e) {
@@ -217,7 +210,7 @@ public abstract class LauncherIntegrationTestCase {
     }
   }
 
-  protected File getPidFile() {
+  File getPidFile() {
     return new File(getWorkingDirectory(), getProcessType().getPidFileName());
   }
 
@@ -225,27 +218,27 @@ public abstract class LauncherIntegrationTestCase {
     return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
 
-  protected int getServerPid() {
+  int getServerPid() {
     return readPidFileWithValidation();
   }
 
-  protected String getStatusFileName() {
+  String getStatusFileName() {
     return getProcessType().getStatusFileName();
   }
 
-  protected String getStatusRequestFileName() {
+  String getStatusRequestFileName() {
     return getProcessType().getStatusRequestFileName();
   }
 
-  protected String getStopRequestFileName() {
+  String getStopRequestFileName() {
     return getProcessType().getStopRequestFileName();
   }
 
-  protected File getWorkingDirectory() {
+  File getWorkingDirectory() {
     return temporaryFolder.getRoot();
   }
 
-  protected String getWorkingDirectoryPath() {
+  String getWorkingDirectoryPath() {
     try {
       return getWorkingDirectory().getCanonicalPath();
     } catch (IOException e) {
@@ -253,7 +246,7 @@ public abstract class LauncherIntegrationTestCase {
     }
   }
 
-  protected int readPidFile() {
+  int readPidFile() {
     return readPidFile(getPidFile());
   }
 
@@ -270,10 +263,6 @@ public abstract class LauncherIntegrationTestCase {
     assertThat(socket.isClosed()).isFalse();
     assertThat(socket.getLocalPort()).isEqualTo(port);
     assertThatServerPortIsInUse(port);
-  }
-
-  private void delete(final File file) {
-    assertThat(file.delete()).isTrue();
   }
 
   private void givenPortInUse(final int port) {
@@ -314,5 +303,4 @@ public abstract class LauncherIntegrationTestCase {
     assertThat(isProcessAlive(pid)).isTrue();
     return pid;
   }
-
 }

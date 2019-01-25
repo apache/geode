@@ -87,23 +87,23 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
     return getUniqueName();
   }
 
-  protected void assertStopOf(final Process process) {
+  void assertStopOf(final Process process) {
     await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   /**
    * Please leave unused parameter throwableClass for improved readability.
    */
-  protected void assertThatLocatorThrew(Class<? extends Throwable> throwableClass) {
+  void assertThatLocatorThrew(Class<? extends Throwable> throwableClass) {
     assertThat(threwBindException.get()).isTrue();
   }
 
-  protected void assertThatPidIsAlive(final int pid) {
+  void assertThatPidIsAlive(final int pid) {
     assertThat(pid).isGreaterThan(0);
     assertThat(isProcessAlive(pid)).isTrue();
   }
 
-  protected void assertThatProcessIsNotAlive(final Process process) {
+  void assertThatProcessIsNotAlive(final Process process) {
     assertThat(process.isAlive()).isFalse();
   }
 
@@ -112,40 +112,40 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
     return givenRunningLocator(new LocatorCommand(this).withCommand(Command.START));
   }
 
-  protected LocatorLauncher givenRunningLocator(final LocatorCommand command) {
+  LocatorLauncher givenRunningLocator(final LocatorCommand command) {
     return awaitStart(command);
   }
 
-  protected LocatorCommand addJvmArgument(final String arg) {
+  LocatorCommand addJvmArgument(final String arg) {
     return locatorCommand.addJvmArgument(arg);
   }
 
-  protected LocatorCommand withForce() {
+  LocatorCommand withForce() {
     return withForce(true);
   }
 
-  protected LocatorCommand withForce(final boolean value) {
+  private LocatorCommand withForce(final boolean value) {
     return locatorCommand.force(value);
   }
 
-  protected LocatorCommand withPort(final int port) {
+  LocatorCommand withPort(final int port) {
     return locatorCommand.withPort(port);
   }
 
-  protected Process getLocatorProcess() {
+  Process getLocatorProcess() {
     return process;
   }
 
   @Override
-  protected LocatorLauncher startLocator() {
+  LocatorLauncher startLocator() {
     return awaitStart(locatorCommand);
   }
 
-  protected LocatorLauncher startLocator(final LocatorCommand command) {
+  LocatorLauncher startLocator(final LocatorCommand command) {
     return awaitStart(command);
   }
 
-  protected LocatorLauncher startLocator(final LocatorCommand command,
+  LocatorLauncher startLocator(final LocatorCommand command,
       final InputListener outListener, final InputListener errListener) {
     executeCommandWithReaders(command.create(), outListener, errListener);
     LocatorLauncher launcher = awaitStart(getWorkingDirectory());
@@ -153,13 +153,13 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
     return launcher;
   }
 
-  protected void startLocatorShouldFail(final LocatorCommand command) throws InterruptedException {
+  void startLocatorShouldFail(final LocatorCommand command) throws InterruptedException {
     awaitStartFail(command, createBindExceptionListener("sysout", threwBindException),
         createBindExceptionListener("syserr", threwBindException));
 
   }
 
-  protected void startLocatorShouldFail() throws InterruptedException {
+  void startLocatorShouldFail() throws InterruptedException {
     startLocatorShouldFail(locatorCommand);
   }
 
@@ -194,7 +194,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   }
 
   @Override
-  protected LocatorLauncher awaitStart(final LocatorLauncher launcher) {
+  LocatorLauncher awaitStart(final LocatorLauncher launcher) {
     await().untilAsserted(() -> {
       try {
         assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE);
@@ -206,7 +206,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
     return launcher;
   }
 
-  protected String statusFailedWithException(Exception e) {
+  private String statusFailedWithException(Exception e) {
     StringBuilder sb = new StringBuilder();
     sb.append("Status failed with exception: ");
     sb.append("process.isAlive()=").append(process.isAlive());

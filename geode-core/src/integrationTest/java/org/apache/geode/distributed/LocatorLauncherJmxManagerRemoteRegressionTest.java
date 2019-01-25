@@ -38,15 +38,15 @@ public class LocatorLauncherJmxManagerRemoteRegressionTest
   private int jmxManagerPort;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     int[] ports = getRandomAvailableTCPPorts(3);
-    this.defaultLocatorPort = ports[0];
-    this.nonDefaultLocatorPort = ports[1];
-    this.jmxManagerPort = ports[2];
+    defaultLocatorPort = ports[0];
+    nonDefaultLocatorPort = ports[1];
+    jmxManagerPort = ports[2];
   }
 
   @Test
-  public void locatorProcessWithZeroJmxPortExitsWhenStopped() throws Exception {
+  public void locatorProcessWithZeroJmxPortExitsWhenStopped() {
     givenRunningLocator(addJvmArgument("-D" + JMX_MANAGER + "=true")
         .addJvmArgument("-D" + JMX_MANAGER_START + "=true")
         .addJvmArgument("-D" + JMX_MANAGER_PORT + "=0"));
@@ -57,7 +57,7 @@ public class LocatorLauncherJmxManagerRemoteRegressionTest
   }
 
   @Test
-  public void locatorProcessWithNonZeroJmxPortExitsWhenStopped() throws Exception {
+  public void locatorProcessWithNonZeroJmxPortExitsWhenStopped() {
     givenRunningLocator(addJvmArgument("-D" + JMX_MANAGER + "=true")
         .addJvmArgument("-D" + JMX_MANAGER_START + "=true")
         .addJvmArgument("-D" + JMX_MANAGER_PORT + "=" + jmxManagerPort));

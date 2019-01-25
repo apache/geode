@@ -16,11 +16,11 @@ package org.apache.geode.distributed;
 
 public class ServerLauncherLocalIntegrationTestCase extends ServerLauncherIntegrationTestCase {
 
-  protected ServerLauncher.Builder withDisableDefaultServer() {
+  ServerLauncher.Builder withDisableDefaultServer() {
     return withDisableDefaultServer(true);
   }
 
-  protected ServerLauncher.Builder withDisableDefaultServer(final boolean value) {
+  ServerLauncher.Builder withDisableDefaultServer(final boolean value) {
     return newBuilder().setDisableDefaultServer(value);
   }
 }

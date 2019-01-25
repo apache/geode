@@ -40,33 +40,33 @@ import org.apache.geode.internal.process.ProcessControllerFactory;
 public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteIntegrationTestCase {
 
   @Before
-  public void setUpLocatorLauncherRemoteIntegrationTest() throws Exception {
+  public void setUpLocatorLauncherRemoteIntegrationTest() {
     assertThat(new ProcessControllerFactory().isAttachAPIFound()).isTrue();
   }
 
   @Test
-  public void startCreatesPidFile() throws Exception {
+  public void startCreatesPidFile() {
     startLocator();
 
     assertThat(getPidFile()).exists();
   }
 
   @Test
-  public void pidFileContainsServerPid() throws Exception {
+  public void pidFileContainsServerPid() {
     startLocator();
 
     assertThatPidIsAlive(getLocatorPid());
   }
 
   @Test
-  public void startCreatesLogFile() throws Exception {
+  public void startCreatesLogFile() {
     startLocator();
 
     assertThat(getLogFile()).exists();
   }
 
   @Test
-  public void startDeletesStaleControlFiles() throws Exception {
+  public void startDeletesStaleControlFiles() {
     File stopRequestFile = givenControlFile(getStopRequestFileName());
     File statusRequestFile = givenControlFile(getStatusRequestFileName());
     File statusFile = givenControlFile(getStatusFileName());
@@ -82,7 +82,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
    * This test takes > 1 minute to run in {@link LocatorLauncherRemoteFileIntegrationTest}.
    */
   @Test
-  public void startOverwritesStalePidFile() throws Exception {
+  public void startOverwritesStalePidFile() {
     givenPidFile(fakePid);
 
     startLocator();
@@ -94,7 +94,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
    * This test takes > 1 minute to run in {@link LocatorLauncherRemoteFileIntegrationTest}.
    */
   @Test
-  public void startWithForceOverwritesExistingPidFile() throws Exception {
+  public void startWithForceOverwritesExistingPidFile() {
     givenPidFile(localPid);
 
     startLocator(withForce());
@@ -163,7 +163,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   }
 
   @Test
-  public void statusWithEmptyPidFileThrowsIllegalArgumentException() throws Exception {
+  public void statusWithEmptyPidFileThrowsIllegalArgumentException() {
     givenEmptyPidFile();
 
     LocatorLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
@@ -195,7 +195,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
    * This test takes > 1 minute to run in {@link LocatorLauncherRemoteFileIntegrationTest}.
    */
   @Test
-  public void statusWithStalePidFileReturnsNotResponding() throws Exception {
+  public void statusWithStalePidFileReturnsNotResponding() {
     givenPidFile(fakePid);
 
     LocatorState locatorState =
@@ -232,7 +232,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   }
 
   @Test
-  public void stopWithWorkingDirectoryReturnsStopped() throws Exception {
+  public void stopWithWorkingDirectoryReturnsStopped() {
     givenRunningLocator();
 
     LocatorState serverState =
@@ -242,7 +242,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   }
 
   @Test
-  public void stopWithWorkingDirectoryStopsLocatorProcess() throws Exception {
+  public void stopWithWorkingDirectoryStopsLocatorProcess() {
     givenRunningLocator();
 
     new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
@@ -251,7 +251,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   }
 
   @Test
-  public void stopWithWorkingDirectoryDeletesPidFile() throws Exception {
+  public void stopWithWorkingDirectoryDeletesPidFile() {
     givenRunningLocator();
 
     new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();

@@ -53,12 +53,12 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  */
 public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrationTestCase {
 
-  protected volatile int defaultServerPort;
-  protected volatile int nonDefaultServerPort;
-  protected volatile int unusedServerPort;
-  protected volatile ServerLauncher launcher;
-  protected volatile String workingDirectory;
-  protected volatile File cacheXmlFile;
+  volatile int defaultServerPort;
+  volatile int nonDefaultServerPort;
+  volatile int unusedServerPort;
+  volatile ServerLauncher launcher;
+
+  private volatile File cacheXmlFile;
 
   @Rule
   public ErrorCollector errorCollector = new ErrorCollector();
@@ -66,8 +66,6 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
   @Before
   public void setUpAbstractServerLauncherIntegrationTestCase() throws Exception {
     System.setProperty(GEMFIRE_PREFIX + MCAST_PORT, Integer.toString(0));
-
-    workingDirectory = temporaryFolder.getRoot().getCanonicalPath();
 
     int[] ports = getRandomAvailableTCPPorts(3);
     defaultServerPort = ports[0];
@@ -88,12 +86,12 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
     return ProcessType.SERVER;
   }
 
-  protected ServerLauncher awaitStart(final ServerLauncher launcher) {
+  ServerLauncher awaitStart(final ServerLauncher launcher) {
     GeodeAwaitility.await().untilAsserted(() -> assertThat(isLauncherOnline()).isTrue());
     return launcher;
   }
 
-  protected ServerLauncher awaitStart(final Builder builder) {
+  ServerLauncher awaitStart(final Builder builder) {
     launcher = builder.build();
     assertThat(launcher.start().getStatus()).isEqualTo(Status.ONLINE);
     return awaitStart(launcher);
@@ -103,17 +101,17 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
    * Returns a new Builder with helpful defaults for safe testing. If you need a Builder in a test
    * without any of these defaults then simply use {@code new Builder()} instead.
    */
-  protected Builder newBuilder() {
+  Builder newBuilder() {
     return new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
         .setWorkingDirectory(getWorkingDirectoryPath()).set(LOG_LEVEL, "config")
         .set(MCAST_PORT, "0");
   }
 
-  protected ServerLauncher givenServerLauncher() {
+  ServerLauncher givenServerLauncher() {
     return givenServerLauncher(newBuilder());
   }
 
-  protected ServerLauncher givenServerLauncher(final Builder builder) {
+  private ServerLauncher givenServerLauncher(final Builder builder) {
     return builder.build();
   }
 
@@ -121,21 +119,24 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
     return givenRunningServer(newBuilder());
   }
 
-  protected ServerLauncher givenRunningServer(final Builder builder) {
+  ServerLauncher givenRunningServer(final Builder builder) {
     return awaitStart(builder);
   }
 
-  protected ServerLauncher startServer() {
+  ServerLauncher startServer() {
     return awaitStart(newBuilder());
   }
 
-  protected ServerLauncher startServer(final Builder builder) {
+  ServerLauncher startServer(final Builder builder) {
     return awaitStart(builder);
   }
 
-  protected File givenCacheXmlFileWithServerProperties(final int serverPort,
-      final String bindAddress, final String hostnameForClients, final int maxConnections,
-      final int maxThreads, final int maximumMessageCount, final int messageTimeToLive,
+  File givenCacheXmlFileWithServerProperties(final int serverPort,
+      final String bindAddress,
+      final String hostnameForClients,
+      final int maxConnections,
+      final int maxThreads, final int maximumMessageCount,
+      final int messageTimeToLive,
       final int socketBufferSize) {
     try {
       cacheXmlFile = writeCacheXml(serverPort, bindAddress, hostnameForClients, maxConnections,
@@ -147,7 +148,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
     }
   }
 
-  protected File givenCacheXmlFileWithServerPort(final int cacheXmlPort) {
+  File givenCacheXmlFileWithServerPort(final int cacheXmlPort) {
     try {
       cacheXmlFile = writeCacheXml(cacheXmlPort);
       System.setProperty(CACHE_XML_FILE, cacheXmlFile.getCanonicalPath());
@@ -157,7 +158,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
     }
   }
 
-  protected File givenCacheXmlFile() {
+  File givenCacheXmlFile() {
     try {
       cacheXmlFile = writeCacheXml();
       System.setProperty(CACHE_XML_FILE, cacheXmlFile.getCanonicalPath());
@@ -167,11 +168,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
     }
   }
 
-  protected File getCacheXmlFile() {
-    return cacheXmlFile;
-  }
-
-  protected String getCacheXmlFilePath() {
+  String getCacheXmlFilePath() {
     try {
       return cacheXmlFile.getCanonicalPath();
     } catch (IOException e) {

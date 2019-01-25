@@ -94,15 +94,15 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
     return getUniqueName();
   }
 
-  protected void assertThatServerThrew(final Class<? extends Throwable> throwableClass) {
+  void assertThatServerThrew(final Class<? extends Throwable> throwableClass) {
     assertThat(threwBindException.get()).isTrue();
   }
 
-  protected void assertStopOf(final Process process) {
+  void assertStopOf(final Process process) {
     await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
-  protected void assertThatPidIsAlive(final int pid) {
+  void assertThatPidIsAlive(final int pid) {
     assertThat(pid).isGreaterThan(0);
     assertThat(isProcessAlive(pid)).isTrue();
   }
@@ -112,24 +112,24 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
     return givenRunningServer(serverCommand);
   }
 
-  protected ServerLauncher givenRunningServer(final ServerCommand command) {
+  ServerLauncher givenRunningServer(final ServerCommand command) {
     return awaitStart(command);
   }
 
-  protected Process getServerProcess() {
+  Process getServerProcess() {
     return process;
   }
 
   @Override
-  protected ServerLauncher startServer() {
+  ServerLauncher startServer() {
     return startServer(serverCommand);
   }
 
-  protected ServerLauncher startServer(final ServerCommand command) {
+  ServerLauncher startServer(final ServerCommand command) {
     return awaitStart(command);
   }
 
-  protected ServerLauncher startServer(final ServerCommand command,
+  ServerLauncher startServer(final ServerCommand command,
       final ProcessStreamReader.InputListener outListener,
       final ProcessStreamReader.InputListener errListener) throws IOException {
     executeCommandWithReaders(command.create(), outListener, errListener);
@@ -138,37 +138,37 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
     return launcher;
   }
 
-  protected void startServerShouldFail() throws IOException, InterruptedException {
+  void startServerShouldFail() throws IOException, InterruptedException {
     startServerShouldFail(serverCommand);
   }
 
-  protected void startServerShouldFail(final ServerCommand command)
+  void startServerShouldFail(final ServerCommand command)
       throws IOException, InterruptedException {
     startServerShouldFail(command, createBindExceptionListener("sysout", threwBindException),
         createBindExceptionListener("syserr", threwBindException));
   }
 
-  protected ServerCommand addJvmArgument(final String arg) {
+  ServerCommand addJvmArgument(final String arg) {
     return serverCommand.addJvmArgument(arg);
   }
 
-  protected ServerCommand withDisableDefaultServer() {
+  ServerCommand withDisableDefaultServer() {
     return withDisableDefaultServer(true);
   }
 
-  protected ServerCommand withDisableDefaultServer(final boolean value) {
+  private ServerCommand withDisableDefaultServer(final boolean value) {
     return serverCommand.disableDefaultServer(value);
   }
 
-  protected ServerCommand withForce() {
+  ServerCommand withForce() {
     return withForce(true);
   }
 
-  protected ServerCommand withForce(final boolean value) {
+  private ServerCommand withForce(final boolean value) {
     return serverCommand.force(value);
   }
 
-  protected ServerCommand withServerPort(final int port) {
+  ServerCommand withServerPort(final int port) {
     return serverCommand.withServerPort(port);
   }
 
@@ -196,7 +196,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   }
 
   @Override
-  protected ServerLauncher awaitStart(final ServerLauncher launcher) {
+  ServerLauncher awaitStart(final ServerLauncher launcher) {
     await().untilAsserted(() -> {
       try {
         assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE);

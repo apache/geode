@@ -36,14 +36,14 @@ import org.apache.geode.lang.AttachAPINotFoundException;
 public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRemoteIntegrationTest {
 
   @Before
-  public void setUpLocatorLauncherRemoteFileIntegrationTest() throws Exception {
+  public void setUpLocatorLauncherRemoteFileIntegrationTest() {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
     assertThat(new ProcessControllerFactory().isAttachAPIFound()).isFalse();
   }
 
   @Test
   @Override
-  public void statusWithPidReturnsOnlineWithDetails() throws Exception {
+  public void statusWithPidReturnsOnlineWithDetails() {
     givenRunningLocator();
 
     assertThatThrownBy(() -> new Builder().setPid(getLocatorPid()).build().status())
@@ -52,7 +52,7 @@ public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRem
 
   @Test
   @Override
-  public void stopWithPidDeletesPidFile() throws Exception {
+  public void stopWithPidDeletesPidFile() {
     givenRunningLocator();
 
     assertThatThrownBy(() -> new Builder().setPid(getLocatorPid()).build().stop())
@@ -61,7 +61,7 @@ public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRem
 
   @Test
   @Override
-  public void stopWithPidReturnsStopped() throws Exception {
+  public void stopWithPidReturnsStopped() {
     givenRunningLocator();
 
     assertThatThrownBy(() -> new Builder().setPid(getLocatorPid()).build().stop())
@@ -70,7 +70,7 @@ public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRem
 
   @Test
   @Override
-  public void stopWithPidStopsLocatorProcess() throws Exception {
+  public void stopWithPidStopsLocatorProcess() {
     givenRunningLocator();
 
     assertThatThrownBy(() -> new Builder().setPid(getLocatorPid()).build().stop())

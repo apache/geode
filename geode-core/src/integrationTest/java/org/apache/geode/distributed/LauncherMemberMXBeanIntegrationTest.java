@@ -172,7 +172,7 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
   }
 
   private MemberMXBean getMXBeanProxy() {
-    this.mbeanObjectName = mbeanNames.iterator().next();
+    mbeanObjectName = mbeanNames.iterator().next();
     return JMX.newMXBeanProxy(getPlatformMBeanServer(), mbeanObjectName, MemberMXBean.class, false);
   }
 
@@ -203,7 +203,7 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
   }
 
   @Override
-  protected ProcessType getProcessType() {
+  ProcessType getProcessType() {
     throw new UnsupportedOperationException(
         "getProcessType is not used by " + getClass().getSimpleName());
   }
