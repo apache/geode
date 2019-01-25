@@ -32,11 +32,19 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.sun.tools.javac.util.List;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.cli.PreconditionException;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.internal.Config;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -47,11 +55,24 @@ import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
+import org.mockito.Mock;
 
 
 public class DescribeMappingCommandTest {
-  public static final String COMMAND = "describe jdbc-mapping --region=region ";
+  public static final String COMMAND = "describe jdbc-mapping --region=region";
   private DescribeMappingCommand command;
+
+  @Mock
+  ConfigurationPersistenceService configurationPersistenceService;
+
+  @Mock
+  CacheConfig clusterConfig;
+
+  @Mock
+  CacheConfig group1Config;
+
+  @Mock
+  RegionConfig regionConfig;
 
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
@@ -59,6 +80,15 @@ public class DescribeMappingCommandTest {
   @Before
   public void setUp() {
     command = spy(DescribeMappingCommand.class);
+    configurationPersistenceService = mock(ConfigurationPersistenceService.class);
+    clusterConfig = mock(CacheConfig.class);
+    regionConfig = mock(RegionConfig.class);
+    when(command.getConfigurationPersistenceService()).thenReturn(configurationPersistenceService);
+    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(clusterConfig);
+    ArrayList<RegionConfig> regionConfigList = new ArrayList<RegionConfig>();
+    regionConfigList.add(regionConfig);
+    when(clusterConfig.getRegions()).thenReturn(regionConfigList);
+    when(regionConfig.getName()).thenReturn("region");
   }
 
   @Test
@@ -88,7 +118,6 @@ public class DescribeMappingCommandTest {
     attributes.put(ID_NAME, "myId");
     attributes.put(CATALOG_NAME, "myCatalog");
     attributes.put(SCHEMA_NAME, "mySchema");
-    attributes.put(GROUP_NAME, "myGroup");
 
     DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
 
@@ -107,7 +136,42 @@ public class DescribeMappingCommandTest {
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
-        .containsOutput("true").containsOutput(GROUP_NAME, "myGroup");
+        .containsOutput("true");
+  }
+
+  @Test
+  public void whenMemberExistsForGroup() {
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(null,
+            null);
+    Map<String, String> attributes = new LinkedHashMap<>();
+    attributes.put(REGION_NAME, "region");
+    attributes.put(PDX_NAME, "class1");
+    attributes.put(TABLE_NAME, "table1");
+    attributes.put(DATA_SOURCE_NAME, "name1");
+    attributes.put(SYNCHRONOUS_NAME, "true");
+    attributes.put(ID_NAME, "myId");
+    attributes.put(CATALOG_NAME, "myCatalog");
+    attributes.put(SCHEMA_NAME, "mySchema");
+
+    DescribeMappingResult mappingResult = new DescribeMappingResult(attributes);
+
+
+    ResultCollector rc = mock(ResultCollector.class);
+    doReturn(rc).when(command).executeFunction(any(), any(), any(Set.class));
+    when(rc.getResult()).thenReturn(
+            Collections.singletonList(new CliFunctionResult("server-1", mappingResult, "success")));
+    when(configurationPersistenceService.getCacheConfig("group1")).thenReturn(clusterConfig);
+
+
+
+    gfsh.executeAndAssertThat(command, COMMAND + " --groups=group1").statusIsSuccess()
+            .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME, REGION_NAME, PDX_NAME,
+                    TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
+            .containsOutput(REGION_NAME, "region")
+            .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
+            .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+            .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
+            .containsOutput("true");
   }
 
   @Test
@@ -120,9 +184,9 @@ public class DescribeMappingCommandTest {
         Collections.singletonList(
             new CliFunctionResult("server-1", mock(DescribeMappingResult.class), "success")));
 
-    command.describeMapping("/regionName");
+    command.describeMapping("/region", null);
 
-    verify(command, times(1)).executeFunctionAndGetFunctionResult(any(), eq("regionName"), any());
+    verify(command, times(1)).executeFunctionAndGetFunctionResult(any(), eq("region"), any());
   }
 
   @Test

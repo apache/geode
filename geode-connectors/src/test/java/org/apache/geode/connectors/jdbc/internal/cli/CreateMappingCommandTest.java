@@ -59,6 +59,8 @@ public class CreateMappingCommandTest {
   private String dataSourceName;
   private String tableName;
   private String pdxClass;
+  private String group1Name;
+  private String group2Name;
   private Set<InternalDistributedMember> members;
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
@@ -75,6 +77,8 @@ public class CreateMappingCommandTest {
     dataSourceName = "connection";
     tableName = "testTable";
     pdxClass = "myPdxClass";
+    group1Name = "group1";
+    group2Name = "group2";
     cache = mock(InternalCache.class);
     DistributionManager dm = mock(DistributionManager.class);
     when(cache.getDistributionManager()).thenReturn(dm);
@@ -116,6 +120,18 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(list);
   }
 
+  private void setupRequiredPreconditionsForGroup() {
+    ConfigurationPersistenceService configurationPersistenceService =
+            mock(ConfigurationPersistenceService.class);
+    doReturn(configurationPersistenceService).when(createRegionMappingCommand)
+            .getConfigurationPersistenceService();
+    when(configurationPersistenceService.getCacheConfig(group1Name)).thenReturn(cacheConfig);
+    when(configurationPersistenceService.getCacheConfig(group2Name)).thenReturn(cacheConfig);
+    List<RegionConfig> list = new ArrayList<>();
+    list.add(matchingRegion);
+    when(cacheConfig.getRegions()).thenReturn(list);
+  }
+
   @Test
   public void createsMappingReturnsStatusOKWhenFunctionResultSuccess() {
     setupRequiredPreconditions();
@@ -126,6 +142,33 @@ public class CreateMappingCommandTest {
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
         tableName, pdxClass, false, ids, catalog, schema, null);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    Object[] results = (Object[]) result.getConfigObject();
+    RegionMapping regionMapping = (RegionMapping) results[0];
+    boolean synchronous = (boolean) results[1];
+    assertThat(regionMapping).isNotNull();
+    assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
+    assertThat(regionMapping.getDataSourceName()).isEqualTo(dataSourceName);
+    assertThat(regionMapping.getTableName()).isEqualTo(tableName);
+    assertThat(regionMapping.getPdxName()).isEqualTo(pdxClass);
+    assertThat(regionMapping.getIds()).isEqualTo(ids);
+    assertThat(regionMapping.getCatalog()).isEqualTo(catalog);
+    assertThat(regionMapping.getSchema()).isEqualTo(schema);
+    assertThat(synchronous).isFalse();
+  }
+
+  @Test
+  public void createsMappingReturnsStatusOKWhenFunctionResultSuccessWithGroups() {
+    setupRequiredPreconditionsForGroup();
+    results.add(successFunctionResult);
+    String ids = "ids";
+    String catalog = "catalog";
+    String schema = "schema";
+    String[] groups = {group1Name, group2Name};
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+            tableName, pdxClass, false, ids, catalog, schema, groups);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();

@@ -244,7 +244,7 @@ public class CreateMappingCommandDUnitTest {
 
     server4.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false,false);
+      assertValidMapping(mapping, regionName, false, false);
     });
 
     server1.invoke(() -> {
@@ -324,7 +324,7 @@ public class CreateMappingCommandDUnitTest {
   @Test
   @Parameters({GROUP1_GROUP2_REGION, "/" + GROUP1_GROUP2_REGION})
   public void createMappingReplicatedUpdatesServiceAndClusterConfigForMultiServerGroup(
-          String regionName) {
+      String regionName) {
     setupGroupReplicate(regionName, TEST_GROUP1 + "," + TEST_GROUP2);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
@@ -372,7 +372,59 @@ public class CreateMappingCommandDUnitTest {
     });
   }
 
-  private static void assertValidMapping(RegionMapping mapping, String regionName, boolean synchronous, boolean isParallel) {
+  @Test
+  @Parameters({GROUP1_GROUP2_REGION, "/" + GROUP1_GROUP2_REGION})
+  public void createMappingPartitionedUpdatesServiceAndClusterConfigForMultiServerGroup(
+          String regionName) {
+    setupGroupPartition(regionName, TEST_GROUP1 + "," + TEST_GROUP2);
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(CATALOG_NAME, "myCatalog");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(GROUP_NAME, TEST_GROUP1 + "," + TEST_GROUP2);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    // TEST_GROUP1 and TEST_GROUP2 only contains server 2, server 3, and server 4
+    server2.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidMapping(mapping, regionName, false, true);
+    });
+
+    server3.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidMapping(mapping, regionName, false, true);
+    });
+
+    server4.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidMapping(mapping, regionName, false, true);
+    });
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertThat(mapping).isNull();
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP1);
+      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
+      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+      assertThat(regionMapping.getIds()).isEqualTo("myId");
+      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
+      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
+      validateRegionAlteredInClusterConfig(regionName, TEST_GROUP1, false);
+      validateAsyncEventQueueCreatedInClusterConfig(regionName, TEST_GROUP1, true);
+    });
+  }
+
+  private static void assertValidMapping(RegionMapping mapping, String regionName,
+      boolean synchronous, boolean isParallel) {
     assertThat(mapping.getDataSourceName()).isEqualTo("connection");
     assertThat(mapping.getTableName()).isEqualTo("myTable");
     assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");

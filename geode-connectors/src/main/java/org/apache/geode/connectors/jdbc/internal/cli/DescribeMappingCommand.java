@@ -18,6 +18,10 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_
 
 import java.util.Set;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.management.cli.ConverterHint;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -43,6 +47,8 @@ public class DescribeMappingCommand extends GfshCommand {
   private static final String DESCRIBE_MAPPING__REGION_NAME = REGION_NAME;
   private static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the JDBC mapping to be described.";
+  private static final String CREATE_MAPPING__GROUPS_NAME__HELP =
+          "Server Group of the JDBC mapping to be described.";
 
   public static final String RESULT_SECTION_NAME = "MappingDescription";
 
@@ -51,12 +57,29 @@ public class DescribeMappingCommand extends GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME,
-      mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName) {
+      mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName, @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups) {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 
     DescribeMappingResult describeMappingResult = null;
+
+    try {
+      ConfigurationPersistenceService configService = checkForClusterConfiguration();
+      if(groups != null) {
+        for(String group : groups) {
+          CacheConfig cacheConfig = configService.getCacheConfig(group);
+          checkForRegion(regionName, cacheConfig);
+        }
+      } else {
+          CacheConfig cacheConfig = configService.getCacheConfig(null);
+          checkForRegion(regionName, cacheConfig);
+        }
+    } catch(PreconditionException ex) {
+      return ResultModel.createError(ex.getMessage());
+    }
 
     Set<DistributedMember> members = findMembers(null, null);
     if (members.size() > 0) {
@@ -85,6 +108,29 @@ public class DescribeMappingCommand extends GfshCommand {
       ResultModel resultModel) {
     DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME);
     describeMappingResult.getAttributeMap().forEach(sectionModel::addData);
+  }
+
+  public ConfigurationPersistenceService checkForClusterConfiguration()
+          throws PreconditionException {
+    ConfigurationPersistenceService result = getConfigurationPersistenceService();
+    if (result == null) {
+      throw new PreconditionException("Cluster Configuration must be enabled.");
+    }
+    return result;
+  }
+
+  private RegionConfig checkForRegion(String regionName, CacheConfig cacheConfig)
+          throws PreconditionException {
+    RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
+    if (regionConfig == null) {
+      throw new PreconditionException("A region named " + regionName + " must already exist.");
+    }
+    return regionConfig;
+  }
+
+  private RegionConfig findRegionConfig(CacheConfig cacheConfig, String regionName) {
+    return cacheConfig.getRegions().stream()
+            .filter(region -> region.getName().equals(regionName)).findFirst().orElse(null);
   }
 
   @CliAvailabilityIndicator({DESCRIBE_MAPPING})
