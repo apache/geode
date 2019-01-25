@@ -19,7 +19,9 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -31,12 +33,13 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.pdx.FieldType;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 @Experimental
 public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMapping> {
@@ -70,34 +73,23 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
           + "\" not found. Create it with gfsh 'create data-source --pooled --name="
           + dataSourceName + "'.");
     }
+    InternalCache cache = (InternalCache) context.getCache();
+    TypeRegistry typeRegistry = cache.getPdxRegistry();
     try (Connection connection = dataSource.getConnection()) {
       TableMetaDataView tableMetaData =
           tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
-      PdxInstanceFactory pdxInstanceFactory =
-          context.getCache().createPdxInstanceFactory(regionMapping.getPdxName());
       Object[] output = new Object[2];
       ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
       output[1] = fieldMappings;
       for (String jdbcName : tableMetaData.getColumnNames()) {
         boolean isNullable = tableMetaData.isColumnNullable(jdbcName);
         JDBCType jdbcType = tableMetaData.getColumnDataType(jdbcName);
-        String pdxName = jdbcName;
-        // TODO: look for existing pdx types to picked pdxName
-        // It seems very unlikely that when a mapping is being
-        // created that a pdx type will already exist. So I'm not
-        // sure trying to look for an existing type is worth the effort.
-        // But that does mean that the pdx field name will always be the
-        // same as the column name. If we added a gfsh command that allowed
-        // you to create a pdx type (pretty easy to implement using PdxInstanceFactory)
-        // then it would be much more likely that a pdx type could exist
-        // when the mapping is created. In that case we should then do
-        // some extra work here to look at existing types.
-        FieldType pdxType = computeFieldType(isNullable, jdbcType);
-        pdxInstanceFactory.writeField(pdxName, null, pdxType.getFieldClass());
-        fieldMappings.add(
-            new FieldMapping(pdxName, pdxType.name(), jdbcName, jdbcType.getName(), isNullable));
+        FieldMapping fieldMapping =
+            new FieldMapping("", "", jdbcName, jdbcType.getName(), isNullable);
+        updateFieldMappingFromExistingPdxType(fieldMapping, typeRegistry,
+            regionMapping.getPdxName());
+        fieldMappings.add(fieldMapping);
       }
-      PdxInstance pdxInstance = pdxInstanceFactory.create();
       if (regionMapping.getIds() == null || regionMapping.getIds().isEmpty()) {
         List<String> keyColummnNames = tableMetaData.getKeyColumnNames();
         output[0] = String.join(",", keyColummnNames);
@@ -110,134 +102,52 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
   }
 
-  static FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {
-    switch (jdbcType) {
-      case BIT: // 1 bit
-        return computeType(isNullable, FieldType.BOOLEAN);
-      case TINYINT: // unsigned 8 bits
-        return computeType(isNullable, FieldType.SHORT);
-      case SMALLINT: // signed 16 bits
-        return computeType(isNullable, FieldType.SHORT);
-      case INTEGER: // signed 32 bits
-        return computeType(isNullable, FieldType.INT);
-      case BIGINT: // signed 64 bits
-        return computeType(isNullable, FieldType.LONG);
-      case FLOAT:
-        return computeType(isNullable, FieldType.DOUBLE);
-      case REAL:
-        return computeType(isNullable, FieldType.FLOAT);
-      case DOUBLE:
-        return computeType(isNullable, FieldType.DOUBLE);
-      case CHAR:
-        return FieldType.STRING;
-      case VARCHAR:
-        return FieldType.STRING;
-      case LONGVARCHAR:
-        return FieldType.STRING;
-      case DATE:
-        return computeDate(isNullable);
-      case TIME:
-        return computeDate(isNullable);
-      case TIMESTAMP:
-        return computeDate(isNullable);
-      case BINARY:
-        return FieldType.BYTE_ARRAY;
-      case VARBINARY:
-        return FieldType.BYTE_ARRAY;
-      case LONGVARBINARY:
-        return FieldType.BYTE_ARRAY;
-      case NULL:
-        throw new IllegalStateException("unexpected NULL jdbc column type");
-      case BLOB:
-        return FieldType.BYTE_ARRAY;
-      case BOOLEAN:
-        return computeType(isNullable, FieldType.BOOLEAN);
-      case NCHAR:
-        return FieldType.STRING;
-      case NVARCHAR:
-        return FieldType.STRING;
-      case LONGNVARCHAR:
-        return FieldType.STRING;
-      case TIME_WITH_TIMEZONE:
-        return computeDate(isNullable);
-      case TIMESTAMP_WITH_TIMEZONE:
-        return computeDate(isNullable);
-      default:
-        return FieldType.OBJECT;
+  private void updateFieldMappingFromExistingPdxType(FieldMapping fieldMapping,
+      TypeRegistry typeRegistry, String pdxClassName) {
+    String columnName = fieldMapping.getJdbcName();
+    Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(pdxClassName);
+    if (pdxTypes.isEmpty()) {
+      return;
+    }
+    PdxField foundField = findExactMatch(columnName, pdxTypes);
+    if (foundField == null) {
+      foundField = findCaseInsensitiveMatch(columnName, pdxTypes);
+    }
+    if (foundField != null) {
+      fieldMapping.setPdxName(foundField.getFieldName());
+      fieldMapping.setPdxType(foundField.getFieldType().name());
     }
   }
 
-  private static FieldType computeType(boolean isNullable, FieldType nonNullType) {
-    if (isNullable) {
-      return FieldType.OBJECT;
+  private PdxField findCaseInsensitiveMatch(String columnName, Set<PdxType> pdxTypes) {
+    HashSet<String> matchingFieldNames = new HashSet<>();
+    for (PdxType pdxType : pdxTypes) {
+      for (String existingFieldName : pdxType.getFieldNames()) {
+        if (existingFieldName.equalsIgnoreCase(columnName)) {
+          matchingFieldNames.add(existingFieldName);
+        }
+      }
     }
-    return nonNullType;
-
+    if (matchingFieldNames.isEmpty()) {
+      return null;
+    } else if (matchingFieldNames.size() > 1) {
+      throw new JdbcConnectorException(
+          "Could not determine what pdx field to use for the column name " + columnName
+              + " because the pdx fields " + String.join(", ", matchingFieldNames)
+              + " all match it.");
+    }
+    String matchingFieldName = matchingFieldNames.iterator().next();
+    return findExactMatch(matchingFieldName, pdxTypes);
   }
 
-  private static FieldType computeDate(boolean isNullable) {
-    return computeType(isNullable, FieldType.DATE);
+  private PdxField findExactMatch(String columnName, Set<PdxType> pdxTypes) {
+    for (PdxType pdxType : pdxTypes) {
+      PdxField foundField = pdxType.getPdxField(columnName);
+      if (foundField != null) {
+        return foundField;
+      }
+    }
+    return null;
   }
-
-  // Set<PdxType> pdxTypes = getPdxTypesForClassName(typeRegistry);
-  // String fieldName = findExactMatch(columnName, pdxTypes);
-  // if (fieldName == null) {
-  // fieldName = findCaseInsensitiveMatch(columnName, pdxTypes);
-  // }
-  // return fieldName;
-
-  // private Set<PdxType> getPdxTypesForClassName(TypeRegistry typeRegistry) {
-  // Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(getPdxName());
-  // if (pdxTypes.isEmpty()) {
-  // throw new JdbcConnectorException(
-  // "The class " + getPdxName() + " has not been pdx serialized.");
-  // }
-  // return pdxTypes;
-  // }
-
-  // /**
-  // * Given a column name and a set of pdx types, find the field name in those types that
-  // match,
-  // * ignoring case, the column name.
-  // *
-  // * @return the matching field name or null if no match
-  // * @throws JdbcConnectorException if no fields match
-  // * @throws JdbcConnectorException if more than one field matches
-  // */
-  // private String findCaseInsensitiveMatch(String columnName, Set<PdxType> pdxTypes) {
-  // HashSet<String> matchingFieldNames = new HashSet<>();
-  // for (PdxType pdxType : pdxTypes) {
-  // for (String existingFieldName : pdxType.getFieldNames()) {
-  // if (existingFieldName.equalsIgnoreCase(columnName)) {
-  // matchingFieldNames.add(existingFieldName);
-  // }
-  // }
-  // }
-  // if (matchingFieldNames.isEmpty()) {
-  // throw new JdbcConnectorException("The class " + getPdxName()
-  // + " does not have a field that matches the column " + columnName);
-  // } else if (matchingFieldNames.size() > 1) {
-  // throw new JdbcConnectorException(
-  // "Could not determine what pdx field to use for the column name " + columnName
-  // + " because the pdx fields " + matchingFieldNames + " all match it.");
-  // }
-  // return matchingFieldNames.iterator().next();
-  // }
-  //
-  // /**
-  // * Given a column name, search the given pdxTypes for a field whose name exactly matches the
-  // * column name.
-  // *
-  // * @return the matching field name or null if no match
-  // */
-  // private String findExactMatch(String columnName, Set<PdxType> pdxTypes) {
-  // for (PdxType pdxType : pdxTypes) {
-  // if (pdxType.getPdxField(columnName) != null) {
-  // return columnName;
-  // }
-  // }
-  // return null;
-  // }
-
 
 }

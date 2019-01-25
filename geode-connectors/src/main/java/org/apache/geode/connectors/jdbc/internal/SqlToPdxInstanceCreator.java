@@ -258,4 +258,74 @@ class SqlToPdxInstanceCreator {
     throw new JdbcConnectorException("Could not find PdxType for field " + fieldName
         + ". Add class " + pdxClassName + " with " + fieldName + " to pdx registry.");
   }
+
+  static FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {
+    switch (jdbcType) {
+      case BIT: // 1 bit
+        return computeType(isNullable, FieldType.BOOLEAN);
+      case TINYINT: // unsigned 8 bits
+        return computeType(isNullable, FieldType.SHORT);
+      case SMALLINT: // signed 16 bits
+        return computeType(isNullable, FieldType.SHORT);
+      case INTEGER: // signed 32 bits
+        return computeType(isNullable, FieldType.INT);
+      case BIGINT: // signed 64 bits
+        return computeType(isNullable, FieldType.LONG);
+      case FLOAT:
+        return computeType(isNullable, FieldType.DOUBLE);
+      case REAL:
+        return computeType(isNullable, FieldType.FLOAT);
+      case DOUBLE:
+        return computeType(isNullable, FieldType.DOUBLE);
+      case CHAR:
+        return FieldType.STRING;
+      case VARCHAR:
+        return FieldType.STRING;
+      case LONGVARCHAR:
+        return FieldType.STRING;
+      case DATE:
+        return computeDate(isNullable);
+      case TIME:
+        return computeDate(isNullable);
+      case TIMESTAMP:
+        return computeDate(isNullable);
+      case BINARY:
+        return FieldType.BYTE_ARRAY;
+      case VARBINARY:
+        return FieldType.BYTE_ARRAY;
+      case LONGVARBINARY:
+        return FieldType.BYTE_ARRAY;
+      case NULL:
+        throw new IllegalStateException("unexpected NULL jdbc column type");
+      case BLOB:
+        return FieldType.BYTE_ARRAY;
+      case BOOLEAN:
+        return computeType(isNullable, FieldType.BOOLEAN);
+      case NCHAR:
+        return FieldType.STRING;
+      case NVARCHAR:
+        return FieldType.STRING;
+      case LONGNVARCHAR:
+        return FieldType.STRING;
+      case TIME_WITH_TIMEZONE:
+        return computeDate(isNullable);
+      case TIMESTAMP_WITH_TIMEZONE:
+        return computeDate(isNullable);
+      default:
+        return FieldType.OBJECT;
+    }
+  }
+
+  private static FieldType computeType(boolean isNullable, FieldType nonNullType) {
+    if (isNullable) {
+      return FieldType.OBJECT;
+    }
+    return nonNullType;
+
+  }
+
+  private static FieldType computeDate(boolean isNullable) {
+    return computeType(isNullable, FieldType.DATE);
+  }
+
 }

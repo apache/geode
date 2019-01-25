@@ -17,7 +17,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
@@ -27,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -47,7 +47,9 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.FieldType;
-import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class CreateMappingPreconditionCheckFunctionTest {
 
@@ -60,7 +62,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   private FunctionContext<RegionMapping> context;
   private ResultSender<Object> resultSender;
   private InternalCache cache;
-  private PdxInstanceFactory pdxInstanceFactory;
+  private TypeRegistry typeRegistry;
   private DataSourceFactory dataSourceFactory;
   private TableMetaDataManager tableMetaDataManager;
   private TableMetaDataView tableMetaDataView;
@@ -73,8 +75,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     cache = mock(InternalCache.class);
-    pdxInstanceFactory = mock(PdxInstanceFactory.class);
-    when(cache.createPdxInstanceFactory(PDX_CLASS_NAME)).thenReturn(pdxInstanceFactory);
+    typeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(typeRegistry);
     regionMapping = mock(RegionMapping.class);
 
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
@@ -170,13 +172,89 @@ public class CreateMappingPreconditionCheckFunctionTest {
     assertThat(fieldsMappings).hasSize(2);
     assertThat(fieldsMappings.get(0))
         .isEqualTo(
-            new FieldMapping("col1", FieldType.DATE.name(), "col1", JDBCType.DATE.name(), false));
+            new FieldMapping("", "", "col1", JDBCType.DATE.name(), false));
     assertThat(fieldsMappings.get(1))
         .isEqualTo(
-            new FieldMapping("col2", FieldType.OBJECT.name(), "col2", JDBCType.DATE.name(), true));
-    verify(pdxInstanceFactory).writeField("col1", null, FieldType.DATE.getFieldClass());
-    verify(pdxInstanceFactory).writeField("col2", null, FieldType.OBJECT.getFieldClass());
-    verify(pdxInstanceFactory).create();
+            new FieldMapping("", "", "col2", JDBCType.DATE.name(), true));
+  }
+
+  @Test
+  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaDataAndExistingPdxType()
+      throws Exception {
+    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1", "col2"));
+    when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
+    when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
+    when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
+    when(tableMetaDataView.isColumnNullable("col2")).thenReturn(true);
+    when(tableMetaDataView.getColumnDataType("col2")).thenReturn(JDBCType.DATE);
+    PdxType pdxType = mock(PdxType.class);
+    PdxField pdxField1 = mock(PdxField.class);
+    when(pdxField1.getFieldName()).thenReturn("pdxField1");
+    when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
+    when(pdxType.getPdxField("col1")).thenReturn(pdxField1);
+    Set<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
+    when(typeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME)).thenReturn(pdxTypes);
+
+    CliFunctionResult result = function.executeFunction(context);
+
+    assertThat(result.isSuccessful()).isTrue();
+    Object[] outputs = (Object[]) result.getResultObject();
+    ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
+    assertThat(fieldsMappings).hasSize(2);
+    assertThat(fieldsMappings.get(0))
+        .isEqualTo(
+            new FieldMapping("pdxField1", FieldType.LONG.name(), "col1", JDBCType.DATE.name(),
+                false));
+    assertThat(fieldsMappings.get(1))
+        .isEqualTo(
+            new FieldMapping("", "", "col2", JDBCType.DATE.name(), true));
+  }
+
+  @Test
+  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaDataAndExistingPdxTypeWithInexactMatch()
+      throws Exception {
+    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+    when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
+    when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
+    when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
+    PdxType pdxType = mock(PdxType.class);
+    PdxField pdxField1 = mock(PdxField.class);
+    when(pdxField1.getFieldName()).thenReturn("COL1");
+    when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
+    when(pdxType.getPdxField("col1")).thenReturn(null);
+    when(pdxType.getFieldNames()).thenReturn(Arrays.asList("someOtherField", "COL1"));
+    when(pdxType.getPdxField("COL1")).thenReturn(pdxField1);
+    Set<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
+    when(typeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME)).thenReturn(pdxTypes);
+
+    CliFunctionResult result = function.executeFunction(context);
+
+    assertThat(result.isSuccessful()).isTrue();
+    Object[] outputs = (Object[]) result.getResultObject();
+    ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
+    assertThat(fieldsMappings).hasSize(1);
+    assertThat(fieldsMappings.get(0))
+        .isEqualTo(
+            new FieldMapping("COL1", FieldType.LONG.name(), "col1", JDBCType.DATE.name(), false));
+  }
+
+  @Test
+  public void executeFunctionThrowsGivenExistingPdxTypeWithMultipleInexactMatches()
+      throws Exception {
+    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+    when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
+    when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
+    when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
+    PdxType pdxType = mock(PdxType.class);
+    when(pdxType.getFieldNames()).thenReturn(Arrays.asList("Col1", "COL1"));
+    Set<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
+    when(typeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME)).thenReturn(pdxTypes);
+
+    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
+        .hasMessage("Could not determine what pdx field to use for the column name col1"
+            + " because the pdx fields Col1, COL1 all match it.");
   }
 
   @Test
@@ -225,94 +303,4 @@ public class CreateMappingPreconditionCheckFunctionTest {
     Object[] outputs = (Object[]) result.getResultObject();
     assertThat(outputs[0]).isEqualTo("keyCol1");
   }
-
-  @Test
-  public void computeFieldTypeTest() {
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.BOOLEAN))
-        .isEqualTo(FieldType.BOOLEAN);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.BOOLEAN))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.BIT))
-        .isEqualTo(FieldType.BOOLEAN);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.BIT))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.TINYINT))
-        .isEqualTo(FieldType.SHORT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.TINYINT))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.SMALLINT))
-        .isEqualTo(FieldType.SHORT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.SMALLINT))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.INTEGER))
-        .isEqualTo(FieldType.INT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.INTEGER))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.BIGINT))
-        .isEqualTo(FieldType.LONG);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.BIGINT))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.REAL))
-        .isEqualTo(FieldType.FLOAT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.REAL))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.FLOAT))
-        .isEqualTo(FieldType.DOUBLE);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.FLOAT))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.DOUBLE))
-        .isEqualTo(FieldType.DOUBLE);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.DOUBLE))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.DATE))
-        .isEqualTo(FieldType.DATE);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.DATE))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.TIME))
-        .isEqualTo(FieldType.DATE);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.TIME))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.TIMESTAMP))
-        .isEqualTo(FieldType.DATE);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.TIMESTAMP))
-        .isEqualTo(FieldType.OBJECT);
-    assertThat(
-        CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.TIME_WITH_TIMEZONE))
-            .isEqualTo(FieldType.DATE);
-    assertThat(
-        CreateMappingPreconditionCheckFunction.computeFieldType(true, JDBCType.TIME_WITH_TIMEZONE))
-            .isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false,
-        JDBCType.TIMESTAMP_WITH_TIMEZONE)).isEqualTo(FieldType.DATE);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(true,
-        JDBCType.TIMESTAMP_WITH_TIMEZONE)).isEqualTo(FieldType.OBJECT);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.CHAR))
-        .isEqualTo(FieldType.STRING);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.VARCHAR))
-        .isEqualTo(FieldType.STRING);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.LONGVARCHAR))
-        .isEqualTo(FieldType.STRING);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.NCHAR))
-        .isEqualTo(FieldType.STRING);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.NVARCHAR))
-        .isEqualTo(FieldType.STRING);
-    assertThat(
-        CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.LONGNVARCHAR))
-            .isEqualTo(FieldType.STRING);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.BLOB))
-        .isEqualTo(FieldType.BYTE_ARRAY);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.BINARY))
-        .isEqualTo(FieldType.BYTE_ARRAY);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.VARBINARY))
-        .isEqualTo(FieldType.BYTE_ARRAY);
-    assertThat(
-        CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.LONGVARBINARY))
-            .isEqualTo(FieldType.BYTE_ARRAY);
-    assertThat(CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.ROWID))
-        .isEqualTo(FieldType.OBJECT);
-    Throwable throwable = catchThrowable(
-        () -> CreateMappingPreconditionCheckFunction.computeFieldType(false, JDBCType.NULL));
-    assertThat(throwable).isInstanceOf(IllegalStateException.class);
-  }
-
 }

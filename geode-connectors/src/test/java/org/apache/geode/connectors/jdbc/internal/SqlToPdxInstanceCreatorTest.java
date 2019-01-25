@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -827,5 +828,95 @@ public class SqlToPdxInstanceCreatorTest {
     when(result.getObject(2)).thenReturn(COLUMN_VALUE_2);
     when(metaData.getColumnName(2)).thenReturn(COLUMN_NAME_2);
   }
+
+  @Test
+  public void computeFieldTypeTest() {
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.BOOLEAN))
+        .isEqualTo(FieldType.BOOLEAN);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.BOOLEAN))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.BIT))
+        .isEqualTo(FieldType.BOOLEAN);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.BIT))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.TINYINT))
+        .isEqualTo(FieldType.SHORT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.TINYINT))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.SMALLINT))
+        .isEqualTo(FieldType.SHORT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.SMALLINT))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.INTEGER))
+        .isEqualTo(FieldType.INT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.INTEGER))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.BIGINT))
+        .isEqualTo(FieldType.LONG);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.BIGINT))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.REAL))
+        .isEqualTo(FieldType.FLOAT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.REAL))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.FLOAT))
+        .isEqualTo(FieldType.DOUBLE);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.FLOAT))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.DOUBLE))
+        .isEqualTo(FieldType.DOUBLE);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.DOUBLE))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.DATE))
+        .isEqualTo(FieldType.DATE);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.DATE))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.TIME))
+        .isEqualTo(FieldType.DATE);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.TIME))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.TIMESTAMP))
+        .isEqualTo(FieldType.DATE);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.TIMESTAMP))
+        .isEqualTo(FieldType.OBJECT);
+    assertThat(
+        SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.TIME_WITH_TIMEZONE))
+            .isEqualTo(FieldType.DATE);
+    assertThat(
+        SqlToPdxInstanceCreator.computeFieldType(true, JDBCType.TIME_WITH_TIMEZONE))
+            .isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false,
+        JDBCType.TIMESTAMP_WITH_TIMEZONE)).isEqualTo(FieldType.DATE);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(true,
+        JDBCType.TIMESTAMP_WITH_TIMEZONE)).isEqualTo(FieldType.OBJECT);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.CHAR))
+        .isEqualTo(FieldType.STRING);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.VARCHAR))
+        .isEqualTo(FieldType.STRING);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.LONGVARCHAR))
+        .isEqualTo(FieldType.STRING);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.NCHAR))
+        .isEqualTo(FieldType.STRING);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.NVARCHAR))
+        .isEqualTo(FieldType.STRING);
+    assertThat(
+        SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.LONGNVARCHAR))
+            .isEqualTo(FieldType.STRING);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.BLOB))
+        .isEqualTo(FieldType.BYTE_ARRAY);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.BINARY))
+        .isEqualTo(FieldType.BYTE_ARRAY);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.VARBINARY))
+        .isEqualTo(FieldType.BYTE_ARRAY);
+    assertThat(
+        SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.LONGVARBINARY))
+            .isEqualTo(FieldType.BYTE_ARRAY);
+    assertThat(SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.ROWID))
+        .isEqualTo(FieldType.OBJECT);
+    Throwable throwable = catchThrowable(
+        () -> SqlToPdxInstanceCreator.computeFieldType(false, JDBCType.NULL));
+    assertThat(throwable).isInstanceOf(IllegalStateException.class);
+  }
+
 
 }

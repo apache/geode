@@ -61,6 +61,10 @@ public class FieldMapping implements Serializable {
     this.pdxName = value;
   }
 
+  public void setPdxType(String value) {
+    this.pdxType = value;
+  }
+
   public String getJdbcName() {
     return jdbcName;
   }
