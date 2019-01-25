@@ -60,10 +60,11 @@ public enum ElementType {
             "<jdbc:field-mapping> elements must occur within <jdbc:mapping> elements");
       }
       RegionMapping mapping = (RegionMapping) stack.peek();
-      String name = attributes.getValue(JdbcConnectorServiceXmlParser.NAME);
+      String pdxName = attributes.getValue(JdbcConnectorServiceXmlParser.PDX_NAME);
       String pdxType = attributes.getValue(JdbcConnectorServiceXmlParser.PDX_TYPE);
+      String jdbcName = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_NAME);
       String jdbcType = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_TYPE);
-      FieldMapping fieldMapping = new FieldMapping(name, pdxType, jdbcType);
+      FieldMapping fieldMapping = new FieldMapping(pdxName, pdxType, jdbcName, jdbcType);
       mapping.addFieldMapping(fieldMapping);
     }
 

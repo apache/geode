@@ -48,8 +48,9 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
  *           &lt;complexType>
  *             &lt;simpleContent>
  *               &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
- *                 &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="pdx-type" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="jdbc-name" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="jdbc-type" type="{http://www.w3.org/2001/XMLSchema}string" />
  *               &lt;/extension>
  *             &lt;/simpleContent>
@@ -79,7 +80,9 @@ public class RegionMapping implements CacheElement {
   @XmlElement(name = "field-mapping", namespace = "http://geode.apache.org/schema/jdbc")
   protected final List<FieldMapping> fieldMappings = new ArrayList<>();
   @XmlTransient
-  private final Map<String, FieldMapping> nameToFieldMappings = new HashMap<>();
+  private final Map<String, FieldMapping> pdxToFieldMappings = new HashMap<>();
+  @XmlTransient
+  private final Map<String, FieldMapping> jdbcToFieldMappings = new HashMap<>();
   @XmlAttribute(name = "data-source")
   protected String dataSourceName;
   @XmlAttribute(name = "table")
@@ -173,26 +176,31 @@ public class RegionMapping implements CacheElement {
 
   public void addFieldMapping(FieldMapping value) {
     this.fieldMappings.add(value);
-    this.nameToFieldMappings.put(value.getName(), value);
+    this.pdxToFieldMappings.put(value.getPdxName(), value);
+    this.jdbcToFieldMappings.put(value.getJdbcName(), value);
   }
 
-  public FieldMapping getFieldMappingByName(String name) {
-    return this.nameToFieldMappings.get(name);
+  public FieldMapping getFieldMappingByPdxName(String pdxName) {
+    return this.pdxToFieldMappings.get(pdxName);
+  }
+
+  public FieldMapping getFieldMappingByJdbcName(String jdbcName) {
+    return this.jdbcToFieldMappings.get(jdbcName);
   }
 
   public String getColumnNameForField(String fieldName) {
-    FieldMapping fieldMapping = getFieldMappingByName(fieldName);
+    FieldMapping fieldMapping = getFieldMappingByPdxName(fieldName);
     if (fieldMapping != null) {
-      return fieldMapping.getName();
+      return fieldMapping.getJdbcName();
     }
     throw new JdbcConnectorException(
         "A field mapping for the pdx field \"" + fieldName + "\" does not exist.");
   }
 
   public String getFieldNameForColumn(String columnName) {
-    FieldMapping fieldMapping = getFieldMappingByName(columnName);
+    FieldMapping fieldMapping = getFieldMappingByJdbcName(columnName);
     if (fieldMapping != null) {
-      return fieldMapping.getName();
+      return fieldMapping.getPdxName();
     }
     throw new JdbcConnectorException(
         "A field mapping for the column \"" + columnName + "\" does not exist.");

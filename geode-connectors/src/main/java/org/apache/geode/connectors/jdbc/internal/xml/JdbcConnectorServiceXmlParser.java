@@ -23,12 +23,12 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   public static final String NAMESPACE = "http://geode.apache.org/schema/jdbc";
   static final String DATA_SOURCE = "data-source";
   static final String TABLE = "table";
-  static final String PDX_NAME = "pdx-name";
   static final String IDS = "ids";
   static final String CATALOG = "catalog";
   static final String SCHEMA = "schema";
-  static final String NAME = "name";
+  static final String PDX_NAME = "pdx-name";
   static final String PDX_TYPE = "pdx-type";
+  static final String JDBC_NAME = "jdbc-name";
   static final String JDBC_TYPE = "jdbc-type";
 
   @Override

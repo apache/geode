@@ -6,5 +6,5 @@ org/apache/geode/connectors/jdbc/internal/cli/CreateMappingPreconditionCheckFunc
 org/apache/geode/connectors/jdbc/internal/cli/DescribeMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/ListMappingFunction,false
-org/apache/geode/connectors/jdbc/internal/configuration/FieldMapping,false,name:java/lang/String,jdbcType:java/lang/String,pdxType:java/lang/String
+org/apache/geode/connectors/jdbc/internal/configuration/FieldMapping,false,jdbcName:java/lang/String,jdbcType:java/lang/String,pdxName:java/lang/String,pdxType:java/lang/String
 org/apache/geode/connectors/jdbc/internal/configuration/RegionMapping,false,catalog:java/lang/String,dataSourceName:java/lang/String,ids:java/lang/String,pdxName:java/lang/String,regionName:java/lang/String,schema:java/lang/String,tableName:java/lang/String

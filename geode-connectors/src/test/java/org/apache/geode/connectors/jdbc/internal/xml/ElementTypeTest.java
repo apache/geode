@@ -19,8 +19,8 @@ import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.JDBC_MAP
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.CATALOG;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.DATA_SOURCE;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.IDS;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.JDBC_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.JDBC_TYPE;
-import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_TYPE;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.SCHEMA;
@@ -123,17 +123,19 @@ public class ElementTypeTest {
   public void startElementFieldMapping() {
     RegionMapping mapping = new RegionMapping();
     stack.push(mapping);
-    when(attributes.getValue(NAME)).thenReturn("myName");
+    when(attributes.getValue(PDX_NAME)).thenReturn("myPdxName");
     when(attributes.getValue(PDX_TYPE)).thenReturn("myPdxType");
+    when(attributes.getValue(JDBC_NAME)).thenReturn("myJdbcName");
     when(attributes.getValue(JDBC_TYPE)).thenReturn("myJdbcType");
-    FieldMapping expected = new FieldMapping("myName", "myPdxType", "myJdbcType");
+    FieldMapping expected = new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myJdbcType");
 
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
 
     RegionMapping mapping1 = (RegionMapping) stack.pop();
-    assertThat(mapping1.getColumnNameForField("myName")).isEqualTo("myName");
-    assertThat(mapping1.getFieldNameForColumn("myName")).isEqualTo("myName");
-    assertThat(mapping1.getFieldMappingByName("myName")).isEqualTo(expected);
+    assertThat(mapping1.getColumnNameForField("myPdxName")).isEqualTo("myJdbcName");
+    assertThat(mapping1.getFieldNameForColumn("myJdbcName")).isEqualTo("myPdxName");
+    assertThat(mapping1.getFieldMappingByJdbcName("myJdbcName")).isEqualTo(expected);
+    assertThat(mapping1.getFieldMappingByPdxName("myPdxName")).isEqualTo(expected);
   }
 
   @Test

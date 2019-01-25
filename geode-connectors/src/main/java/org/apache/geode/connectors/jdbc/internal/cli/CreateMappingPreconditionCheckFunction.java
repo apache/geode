@@ -35,6 +35,7 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.FieldType;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 
 @Experimental
@@ -93,9 +94,9 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
         // some extra work here to look at existing types.
         FieldType pdxType = computeFieldType(isNullable, jdbcType);
         pdxInstanceFactory.writeField(pdxName, null, pdxType.getFieldClass());
-        fieldMappings.add(new FieldMapping(jdbcName, pdxType.name(), jdbcType.getName()));
+        fieldMappings.add(new FieldMapping(pdxName, pdxType.name(), jdbcName, jdbcType.getName()));
       }
-      pdxInstanceFactory.create(); // force the PdxType to be created
+      PdxInstance pdxInstance = pdxInstanceFactory.create();
       if (regionMapping.getIds() == null || regionMapping.getIds().isEmpty()) {
         List<String> keyColummnNames = tableMetaData.getKeyColumnNames();
         output[0] = String.join(",", keyColummnNames);
