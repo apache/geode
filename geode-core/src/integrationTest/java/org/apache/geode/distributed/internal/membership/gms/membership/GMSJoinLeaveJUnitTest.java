@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
@@ -429,6 +431,13 @@ public class GMSJoinLeaveJUnitTest {
     await()
         .until(() -> gmsJoinLeave.getView().getViewId() > newView.getViewId());
     assertFalse(gmsJoinLeave.getView().getCrashedMembers().contains(mockMembers[1]));
+  }
+
+  @Test
+  public void multipleLocatorsWithSameAddressAreCanonicalized() throws Exception {
+    List<HostAddress> locators = GMSUtil.parseLocators(
+        "localhost[1234],localhost[1234],localhost[1234]", (InetAddress) null);
+    assertThat(locators.size()).isEqualTo(1);
   }
 
 
