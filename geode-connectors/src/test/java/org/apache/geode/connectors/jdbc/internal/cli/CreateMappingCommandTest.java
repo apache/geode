@@ -154,8 +154,8 @@ public class CreateMappingCommandTest {
     String ids = "ids";
     String catalog = "catalog";
     String schema = "schema";
-    this.fieldMappings.add(new FieldMapping("pdx1", "pdx1type", "jdbc1", "jdbc1type"));
-    this.fieldMappings.add(new FieldMapping("pdx2", "pdx2type", "jdbc2", "jdbc2type"));
+    this.fieldMappings.add(new FieldMapping("field1", "pdx1type", "jdbc1type"));
+    this.fieldMappings.add(new FieldMapping("field2", "pdx2type", "jdbc2type"));
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
         tableName, pdxClass, false, ids, catalog, schema);
