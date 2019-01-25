@@ -34,6 +34,8 @@ public class ServiceConfig {
   private final long joinTimeout;
   private final int[] membershipPortRange;
   private final long memberTimeout;
+
+  private final boolean isReconnecting;
   private Integer lossThreshold;
   private final Integer memberWeight;
   private boolean networkPartitionDetectionEnabled;
@@ -45,6 +47,10 @@ public class ServiceConfig {
   /** the transport config from the distribution manager */
   private final RemoteTransportConfig transport;
 
+
+  public boolean isReconnecting() {
+    return isReconnecting;
+  }
 
   public int getLocatorWaitTime() {
     return locatorWaitTime;
@@ -74,7 +80,6 @@ public class ServiceConfig {
   public int getMemberWeight() {
     return memberWeight;
   }
-
 
   public boolean isNetworkPartitionDetectionEnabled() {
     return networkPartitionDetectionEnabled;
@@ -110,9 +115,10 @@ public class ServiceConfig {
   public ServiceConfig(RemoteTransportConfig transport, DistributionConfig theConfig) {
     this.dconfig = theConfig;
     this.transport = transport;
+    this.isReconnecting = (transport.getOldDSMembershipInfo() != null);
 
     long defaultJoinTimeout = 24000;
-    if (theConfig.getLocators().length() > 0 && !Locator.hasLocator()) {
+    if (isReconnecting || theConfig.getLocators().length() > 0 && !Locator.hasLocator()) {
       defaultJoinTimeout = 60000;
     }
 

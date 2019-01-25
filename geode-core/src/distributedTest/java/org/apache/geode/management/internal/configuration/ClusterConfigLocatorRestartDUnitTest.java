@@ -115,12 +115,17 @@ public class ClusterConfigLocatorRestartDUnitTest {
   private void waitForLocatorToReconnect(MemberVM locator) {
     // Ensure that disconnect/reconnect sequence starts otherwise in the next await we might end up
     // with the initial locator instead of a newly created one.
-    await()
-        .until(() -> locator.invoke(() -> TestDisconnectListener.disconnectCount > 0));
+    locator.invoke(() -> await()
+        .until(() -> TestDisconnectListener.disconnectCount > 0));
 
-    await().until(() -> locator.invoke(() -> {
-      InternalLocator intLocator = InternalLocator.getLocator();
-      return intLocator != null && intLocator.isSharedConfigurationRunning();
-    }));
+    locator.invoke(() -> {
+      await().until(() -> {
+        InternalLocator intLocator = InternalLocator.getLocator();
+        return intLocator != null
+            && intLocator.getDistributedSystem() != null
+            && intLocator.getDistributedSystem().isConnected()
+            && intLocator.isSharedConfigurationRunning();
+      });
+    });
   }
 }
