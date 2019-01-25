@@ -1959,4 +1959,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     return scheduledToBeRemovedTx;
   }
 
+  @VisibleForTesting
+  public int getFailoverMapSize() {
+    return failoverMap.size();
+  }
+
 }

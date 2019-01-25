@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -359,5 +360,10 @@ public class TXFarSideCMTracker {
     this.failoverMap.clear();
     this.lastHistoryItem = 0;
     Arrays.fill(this.txHistory, null);
+  }
+
+  @VisibleForTesting
+  public int getFailoverMapSize() {
+    return failoverMap.size();
   }
 }
