@@ -122,9 +122,9 @@ public class CreateMappingCommandTest {
 
   private void setupRequiredPreconditionsForGroup() {
     ConfigurationPersistenceService configurationPersistenceService =
-            mock(ConfigurationPersistenceService.class);
+        mock(ConfigurationPersistenceService.class);
     doReturn(configurationPersistenceService).when(createRegionMappingCommand)
-            .getConfigurationPersistenceService();
+        .getConfigurationPersistenceService();
     when(configurationPersistenceService.getCacheConfig(group1Name)).thenReturn(cacheConfig);
     when(configurationPersistenceService.getCacheConfig(group2Name)).thenReturn(cacheConfig);
     List<RegionConfig> list = new ArrayList<>();
@@ -168,7 +168,7 @@ public class CreateMappingCommandTest {
     String[] groups = {group1Name, group2Name};
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-            tableName, pdxClass, false, ids, catalog, schema, groups);
+        tableName, pdxClass, false, ids, catalog, schema, groups);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();

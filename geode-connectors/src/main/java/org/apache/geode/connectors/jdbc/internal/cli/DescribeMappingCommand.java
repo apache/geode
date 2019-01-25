@@ -14,24 +14,32 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
-import org.apache.geode.management.cli.ConverterHint;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.DescribeMappingResult;
-import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -48,7 +56,7 @@ public class DescribeMappingCommand extends GfshCommand {
   private static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the JDBC mapping to be described.";
   private static final String CREATE_MAPPING__GROUPS_NAME__HELP =
-          "Server Group of the JDBC mapping to be described.";
+      "Server Group of the JDBC mapping to be described.";
 
   public static final String RESULT_SECTION_NAME = "MappingDescription";
 
@@ -57,61 +65,107 @@ public class DescribeMappingCommand extends GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel describeMapping(@CliOption(key = DESCRIBE_MAPPING__REGION_NAME,
-      mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName, @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+      mandatory = true, help = DESCRIBE_MAPPING__REGION_NAME__HELP) String regionName,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups) {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 
-    DescribeMappingResult describeMappingResult = null;
+    ArrayList<DescribeMappingResult> describeMappingResults = new ArrayList<>();
 
     try {
       ConfigurationPersistenceService configService = checkForClusterConfiguration();
-      if(groups != null) {
-        for(String group : groups) {
-          CacheConfig cacheConfig = configService.getCacheConfig(group);
-          checkForRegion(regionName, cacheConfig);
+      if (groups != null) {
+        for (String group : groups) {
+          CacheConfig cacheConfig = getCacheConfig(configService, group);
+          RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, group);
+          describeMappingResults.addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig));
         }
       } else {
-          CacheConfig cacheConfig = configService.getCacheConfig(null);
-          checkForRegion(regionName, cacheConfig);
-        }
-    } catch(PreconditionException ex) {
+        CacheConfig cacheConfig = getCacheConfig(configService, null);
+        RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, null);
+        describeMappingResults.addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig));
+      }
+    } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
     }
 
-    Set<DistributedMember> members = findMembers(null, null);
-    if (members.size() > 0) {
-      DistributedMember targetMember = members.iterator().next();
-      CliFunctionResult result = executeFunctionAndGetFunctionResult(
-          new DescribeMappingFunction(), regionName, targetMember);
-      if (result != null) {
-        describeMappingResult = (DescribeMappingResult) result.getResultObject();
-      }
-    } else {
-      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-    }
-
-    if (describeMappingResult == null) {
+    if (describeMappingResults.isEmpty()) {
       throw new EntityNotFoundException(
           EXPERIMENTAL + "\n" + "JDBC mapping for region '" + regionName + "' not found");
     }
 
-    ResultModel resultModel = new ResultModel();
-    fillResultData(describeMappingResult, resultModel);
+    ResultModel resultModel = buildResultModel(describeMappingResults);
     resultModel.setHeader(EXPERIMENTAL);
     return resultModel;
   }
 
-  private void fillResultData(DescribeMappingResult describeMappingResult,
-      ResultModel resultModel) {
+  private CacheConfig getCacheConfig(ConfigurationPersistenceService configService, String group)
+      throws PreconditionException {
+    CacheConfig result = configService.getCacheConfig(group);
+    if (result == null) {
+      throw new PreconditionException(
+          "Cache Configuration not found" + ((group == null) ? "." : " for group " + group + "."));
+    }
+    return result;
+  }
+
+  private ArrayList<DescribeMappingResult> getMappingsFromRegionConfig(CacheConfig cacheConfig,
+      RegionConfig regionConfig) {
+    CacheConfig.AsyncEventQueue asyncEventQueue = findAsyncEventQueue(cacheConfig, regionConfig);
+    ArrayList<DescribeMappingResult> results = new ArrayList<>();
+    for (CacheElement element : regionConfig.getCustomRegionElements()) {
+      if (element instanceof RegionMapping) {
+        results.add(buildDescribeMappingResult((RegionMapping) element, regionConfig.getName(),
+            asyncEventQueue == null));
+      }
+    }
+    return results;
+  }
+
+  private CacheConfig.AsyncEventQueue findAsyncEventQueue(CacheConfig cacheConfig,
+      RegionConfig regionConfig) {
+    for (CacheConfig.AsyncEventQueue queue : cacheConfig.getAsyncEventQueues()) {
+      if (queue.getId()
+          .equals(CreateMappingCommand.createAsyncEventQueueName(regionConfig.getName()))) {
+        return queue;
+      }
+    }
+    return null;
+  }
+
+  private DescribeMappingResult buildDescribeMappingResult(RegionMapping regionMapping,
+      String regionName, boolean synchronous) {
+    LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
+    attributes.put(REGION_NAME, regionName);
+    attributes.put(PDX_NAME, regionMapping.getPdxName());
+    attributes.put(TABLE_NAME, regionMapping.getTableName());
+    attributes.put(DATA_SOURCE_NAME, regionMapping.getDataSourceName());
+    attributes.put(SYNCHRONOUS_NAME, Boolean.toString(synchronous));
+    attributes.put(ID_NAME, regionMapping.getIds());
+    if (regionMapping.getCatalog() != null) {
+      attributes.put(CATALOG_NAME, regionMapping.getCatalog());
+    }
+    if (regionMapping.getSchema() != null) {
+      attributes.put(SCHEMA_NAME, regionMapping.getSchema());
+    }
+
+    return new DescribeMappingResult(attributes);
+  }
+
+  private ResultModel buildResultModel(ArrayList<DescribeMappingResult> describeMappingResult) {
+    ResultModel resultModel = new ResultModel();
     DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME);
-    describeMappingResult.getAttributeMap().forEach(sectionModel::addData);
+    for (int i = 0; i < describeMappingResult.size(); i++) {
+      describeMappingResult.get(i).getAttributeMap().forEach(sectionModel::addData);
+    }
+    return resultModel;
   }
 
   public ConfigurationPersistenceService checkForClusterConfiguration()
-          throws PreconditionException {
+      throws PreconditionException {
     ConfigurationPersistenceService result = getConfigurationPersistenceService();
     if (result == null) {
       throw new PreconditionException("Cluster Configuration must be enabled.");
@@ -119,18 +173,20 @@ public class DescribeMappingCommand extends GfshCommand {
     return result;
   }
 
-  private RegionConfig checkForRegion(String regionName, CacheConfig cacheConfig)
-          throws PreconditionException {
+  private RegionConfig checkForRegion(String regionName, CacheConfig cacheConfig, String groupName)
+      throws PreconditionException {
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
-      throw new PreconditionException("A region named " + regionName + " must already exist.");
+      String groupClause = "A region named " + regionName + " must already exist"
+          + (groupName != null ? " for group " + groupName + "." : ".");
+      throw new PreconditionException(groupClause);
     }
     return regionConfig;
   }
 
   private RegionConfig findRegionConfig(CacheConfig cacheConfig, String regionName) {
     return cacheConfig.getRegions().stream()
-            .filter(region -> region.getName().equals(regionName)).findFirst().orElse(null);
+        .filter(region -> region.getName().equals(regionName)).findFirst().orElse(null);
   }
 
   @CliAvailabilityIndicator({DESCRIBE_MAPPING})

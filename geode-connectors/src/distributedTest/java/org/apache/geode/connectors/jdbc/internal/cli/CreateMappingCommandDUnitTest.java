@@ -375,7 +375,7 @@ public class CreateMappingCommandDUnitTest {
   @Test
   @Parameters({GROUP1_GROUP2_REGION, "/" + GROUP1_GROUP2_REGION})
   public void createMappingPartitionedUpdatesServiceAndClusterConfigForMultiServerGroup(
-          String regionName) {
+      String regionName) {
     setupGroupPartition(regionName, TEST_GROUP1 + "," + TEST_GROUP2);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
