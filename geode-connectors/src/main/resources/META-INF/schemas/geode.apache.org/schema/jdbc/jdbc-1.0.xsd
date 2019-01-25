@@ -49,6 +49,7 @@ XML schema for JDBC Connector Service in Geode.
                                     <xsd:attribute type="xsd:string" name="pdx-type" use="required"/>
                                     <xsd:attribute type="xsd:string" name="jdbc-name" use="required"/>
                                     <xsd:attribute type="xsd:string" name="jdbc-type" use="required"/>
+                                    <xsd:attribute type="xsd:boolean" name="jdbc-nullable" use="required"/>
                                 </xsd:extension>	
                             </xsd:simpleContent>	
                         </xsd:complexType>	

@@ -64,7 +64,9 @@ public enum ElementType {
       String pdxType = attributes.getValue(JdbcConnectorServiceXmlParser.PDX_TYPE);
       String jdbcName = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_NAME);
       String jdbcType = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_TYPE);
-      FieldMapping fieldMapping = new FieldMapping(pdxName, pdxType, jdbcName, jdbcType);
+      String jdbcNullable = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_NULLABLE);
+      FieldMapping fieldMapping = new FieldMapping(pdxName, pdxType, jdbcName, jdbcType,
+          Boolean.parseBoolean(jdbcNullable));
       mapping.addFieldMapping(fieldMapping);
     }
 

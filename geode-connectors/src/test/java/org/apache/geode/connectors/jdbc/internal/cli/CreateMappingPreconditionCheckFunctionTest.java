@@ -169,9 +169,11 @@ public class CreateMappingPreconditionCheckFunctionTest {
     ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
     assertThat(fieldsMappings).hasSize(2);
     assertThat(fieldsMappings.get(0))
-        .isEqualTo(new FieldMapping("col1", FieldType.DATE.name(), "col1", JDBCType.DATE.name()));
+        .isEqualTo(
+            new FieldMapping("col1", FieldType.DATE.name(), "col1", JDBCType.DATE.name(), false));
     assertThat(fieldsMappings.get(1))
-        .isEqualTo(new FieldMapping("col2", FieldType.OBJECT.name(), "col2", JDBCType.DATE.name()));
+        .isEqualTo(
+            new FieldMapping("col2", FieldType.OBJECT.name(), "col2", JDBCType.DATE.name(), true));
     verify(pdxInstanceFactory).writeField("col1", null, FieldType.DATE.getFieldClass());
     verify(pdxInstanceFactory).writeField("col2", null, FieldType.OBJECT.getFieldClass());
     verify(pdxInstanceFactory).create();

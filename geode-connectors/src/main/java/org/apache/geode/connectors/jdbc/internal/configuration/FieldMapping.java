@@ -28,7 +28,7 @@ public class FieldMapping implements Serializable {
   @Override
   public String toString() {
     return "FieldMapping [pdxName=" + pdxName + ", pdxType=" + pdxType + ", jdbcName=" + jdbcName
-        + ", jdbcType=" + jdbcType + "]";
+        + ", jdbcType=" + jdbcType + ", jdbcNullable=" + jdbcNullable + "]";
   }
 
   @XmlAttribute(name = "pdx-name")
@@ -39,14 +39,18 @@ public class FieldMapping implements Serializable {
   private String jdbcName;
   @XmlAttribute(name = "jdbc-type")
   private String jdbcType;
+  @XmlAttribute(name = "jdbc-nullable")
+  private boolean jdbcNullable;
 
   public FieldMapping() {}
 
-  public FieldMapping(String pdxName, String pdxType, String jdbcName, String jdbcType) {
+  public FieldMapping(String pdxName, String pdxType, String jdbcName, String jdbcType,
+      boolean jdbcNullable) {
     this.pdxName = pdxName;
     this.pdxType = pdxType;
     this.jdbcName = jdbcName;
     this.jdbcType = jdbcType;
+    this.jdbcNullable = jdbcNullable;
   }
 
   public String getPdxName() {
@@ -65,11 +69,16 @@ public class FieldMapping implements Serializable {
     this.jdbcName = value;
   }
 
+  public boolean isJdbcNullable() {
+    return this.jdbcNullable;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((jdbcName == null) ? 0 : jdbcName.hashCode());
+    result = prime * result + (jdbcNullable ? 1231 : 1237);
     result = prime * result + ((jdbcType == null) ? 0 : jdbcType.hashCode());
     result = prime * result + ((pdxName == null) ? 0 : pdxName.hashCode());
     result = prime * result + ((pdxType == null) ? 0 : pdxType.hashCode());
@@ -93,6 +102,9 @@ public class FieldMapping implements Serializable {
         return false;
       }
     } else if (!jdbcName.equals(other.jdbcName)) {
+      return false;
+    }
+    if (jdbcNullable != other.jdbcNullable) {
       return false;
     }
     if (jdbcType == null) {

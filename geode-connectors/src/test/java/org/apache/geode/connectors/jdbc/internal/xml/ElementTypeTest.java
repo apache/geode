@@ -20,6 +20,7 @@ import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorService
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.DATA_SOURCE;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.IDS;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.JDBC_NAME;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.JDBC_NULLABLE;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.JDBC_TYPE;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.PDX_TYPE;
@@ -127,7 +128,9 @@ public class ElementTypeTest {
     when(attributes.getValue(PDX_TYPE)).thenReturn("myPdxType");
     when(attributes.getValue(JDBC_NAME)).thenReturn("myJdbcName");
     when(attributes.getValue(JDBC_TYPE)).thenReturn("myJdbcType");
-    FieldMapping expected = new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myJdbcType");
+    when(attributes.getValue(JDBC_NULLABLE)).thenReturn("true");
+    FieldMapping expected =
+        new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myJdbcType", true);
 
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
 

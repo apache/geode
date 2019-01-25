@@ -30,6 +30,7 @@ public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   static final String PDX_TYPE = "pdx-type";
   static final String JDBC_NAME = "jdbc-name";
   static final String JDBC_TYPE = "jdbc-type";
+  static final String JDBC_NULLABLE = "jdbc-nullable";
 
   @Override
   public String getNamespaceUri() {

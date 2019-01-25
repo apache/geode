@@ -94,7 +94,8 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
         // some extra work here to look at existing types.
         FieldType pdxType = computeFieldType(isNullable, jdbcType);
         pdxInstanceFactory.writeField(pdxName, null, pdxType.getFieldClass());
-        fieldMappings.add(new FieldMapping(pdxName, pdxType.name(), jdbcName, jdbcType.getName()));
+        fieldMappings.add(
+            new FieldMapping(pdxName, pdxType.name(), jdbcName, jdbcType.getName(), isNullable));
       }
       PdxInstance pdxInstance = pdxInstanceFactory.create();
       if (regionMapping.getIds() == null || regionMapping.getIds().isEmpty()) {

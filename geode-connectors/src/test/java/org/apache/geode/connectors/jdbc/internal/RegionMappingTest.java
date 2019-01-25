@@ -131,7 +131,7 @@ public class RegionMappingTest {
     String pdxClassName = "pdxClassName";
     String columnName = "columnName";
     mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    mapping.addFieldMapping(new FieldMapping(pdxClassName, null, columnName, null));
+    mapping.addFieldMapping(new FieldMapping(pdxClassName, null, columnName, null, false));
 
     assertThat(mapping.getFieldNameForColumn(columnName)).isEqualTo(pdxClassName);
   }
@@ -141,7 +141,7 @@ public class RegionMappingTest {
     String pdxClassName = "pdxClassName";
     String columnName = "columnName";
     mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    mapping.addFieldMapping(new FieldMapping(pdxClassName, null, columnName, null));
+    mapping.addFieldMapping(new FieldMapping(pdxClassName, null, columnName, null, false));
 
     assertThat(mapping.getColumnNameForField(pdxClassName)).isEqualTo(columnName);
   }
@@ -170,12 +170,12 @@ public class RegionMappingTest {
   public void verifyToStringGivenAllAttributes() {
     RegionMapping rm = new RegionMapping("regionName", "pdxClassName", "tableName",
         "dataSourceName", "ids", "catalog", "schema");
-    rm.addFieldMapping(new FieldMapping("pdxName", "pdxType", "jdbcName", "jdbcType"));
+    rm.addFieldMapping(new FieldMapping("pdxName", "pdxType", "jdbcName", "jdbcType", true));
 
     String result = rm.toString();
 
     assertThat(result).isEqualTo(
-        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='tableName', dataSourceName='dataSourceName', ids='ids', catalog='catalog', schema='schema', fieldMapping='[FieldMapping [pdxName=pdxName, pdxType=pdxType, jdbcName=jdbcName, jdbcType=jdbcType]]'}");
+        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='tableName', dataSourceName='dataSourceName', ids='ids', catalog='catalog', schema='schema', fieldMapping='[FieldMapping [pdxName=pdxName, pdxType=pdxType, jdbcName=jdbcName, jdbcType=jdbcType, jdbcNullable=true]]'}");
   }
 
   @Test
@@ -285,11 +285,12 @@ public class RegionMappingTest {
   public void verifyMappingWithDifferentFieldMappingsAreNotEqual() {
     RegionMapping rm1 =
         new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-    rm1.addFieldMapping(new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myJdbcType"));
+    rm1.addFieldMapping(
+        new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myJdbcType", false));
     RegionMapping rm2 =
         new RegionMapping(null, "pdxClassName", null, null, null, null, null);
     rm2.addFieldMapping(
-        new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myOtherJdbcType"));
+        new FieldMapping("myPdxName", "myPdxType", "myJdbcName", "myOtherJdbcType", false));
     boolean result = rm1.equals(rm2);
     assertThat(result).isFalse();
   }
