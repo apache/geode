@@ -77,7 +77,7 @@ public class CreateRegionCommandIntegrationTest {
   @Test
   public void templateRegionDoesNotExist() throws Exception {
     gfsh.executeAndAssertThat("create region --name=/FOO --template-region=/BAR").statusIsError()
-        .containsOutput("Specify a valid region path for template-region");
+        .containsOutput("Template region /BAR does not exist");
   }
 
   @Test
@@ -85,14 +85,13 @@ public class CreateRegionCommandIntegrationTest {
     gfsh.executeAndAssertThat(
         "create region --name=/FOO --template-region=REPLICATED --redundant-copies=2")
         .statusIsError().containsOutput(
-            "Parameter(s) \"[redundant-copies]\" can be used only for creating a Partitioned Region");
+            "can be used only for creating a Partitioned Region");
   }
 
   @Test
   public void conflictingPartitionAttributesWithShortCut() throws Exception {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --redundant-copies=2")
-        .statusIsError().containsOutput(
-            "Parameter(s) \"[redundant-copies]\" can be used only for creating a Partitioned Region");
+        .statusIsError().containsOutput("can be used only for creating a Partitioned Region");
   }
 
   @Test

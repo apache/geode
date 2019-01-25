@@ -137,14 +137,15 @@ public class AlterRegionCommand extends SingleGfshCommand {
     deltaConfig.setName(regionPath);
     RegionAttributesType regionAttributesType = new RegionAttributesType();
     deltaConfig.setRegionAttributes(regionAttributesType);
-    regionAttributesType.setEntryIdleTime(getExpirationAttributes(entryExpirationIdleTime,
+    regionAttributesType.setEntryIdleTime(ExpirationAttributesType.generate(entryExpirationIdleTime,
         entryExpirationIdleTimeAction, entryIdleTimeCustomExpiry));
-    regionAttributesType.setEntryTimeToLive(getExpirationAttributes(entryExpirationTTL,
+    regionAttributesType.setEntryTimeToLive(ExpirationAttributesType.generate(entryExpirationTTL,
         entryExpirationTTLAction, entryTTLCustomExpiry));
     regionAttributesType.setRegionIdleTime(
-        getExpirationAttributes(regionExpirationIdleTime, regionExpirationIdleTimeAction, null));
+        ExpirationAttributesType.generate(regionExpirationIdleTime, regionExpirationIdleTimeAction,
+            null));
     regionAttributesType.setRegionTimeToLive(
-        getExpirationAttributes(regionExpirationTTL, regionExpirationTTLAction, null));
+        ExpirationAttributesType.generate(regionExpirationTTL, regionExpirationTTLAction, null));
     if (cacheLoader != null) {
       regionAttributesType.setCacheLoader(
           new DeclarableType(cacheLoader.getClassName(), cacheLoader.getInitProperties()));
@@ -207,13 +208,17 @@ public class AlterRegionCommand extends SingleGfshCommand {
     RegionAttributesType existingAttributes = existingConfig.getRegionAttributes();
 
     existingAttributes.setEntryIdleTime(
-        combine(existingAttributes.getEntryIdleTime(), deltaAttributes.getEntryIdleTime()));
+        ExpirationAttributesType.combine(existingAttributes.getEntryIdleTime(),
+            deltaAttributes.getEntryIdleTime()));
     existingAttributes.setEntryTimeToLive(
-        combine(existingAttributes.getEntryTimeToLive(), deltaAttributes.getEntryTimeToLive()));
+        ExpirationAttributesType.combine(existingAttributes.getEntryTimeToLive(),
+            deltaAttributes.getEntryTimeToLive()));
     existingAttributes.setRegionIdleTime(
-        combine(existingAttributes.getRegionIdleTime(), deltaAttributes.getRegionIdleTime()));
+        ExpirationAttributesType.combine(existingAttributes.getRegionIdleTime(),
+            deltaAttributes.getRegionIdleTime()));
     existingAttributes.setRegionTimeToLive(
-        combine(existingAttributes.getRegionTimeToLive(), deltaAttributes.getRegionTimeToLive()));
+        ExpirationAttributesType.combine(existingAttributes.getRegionTimeToLive(),
+            deltaAttributes.getRegionTimeToLive()));
 
     if (deltaAttributes.getCacheLoader() != null) {
       if (deltaAttributes.getCacheLoader().equals(DeclarableType.EMPTY)) {
@@ -270,47 +275,4 @@ public class AlterRegionCommand extends SingleGfshCommand {
     }
     return true;
   }
-
-  ExpirationAttributesType getExpirationAttributes(Integer timeout,
-      ExpirationAction action, ClassName expiry) {
-    if (timeout == null && action == null && expiry == null) {
-      return null;
-    }
-    if (expiry != null) {
-      return new ExpirationAttributesType(timeout, action,
-          expiry.getClassName(), expiry.getInitProperties());
-    } else {
-      return new ExpirationAttributesType(timeout, action, null, null);
-    }
-  }
-
-  // this is a helper method to combine the existing with the delta ExpirationAttributesType
-  ExpirationAttributesType combine(ExpirationAttributesType existing,
-      ExpirationAttributesType delta) {
-    if (delta == null) {
-      return existing;
-    }
-
-    if (existing == null) {
-      existing = new ExpirationAttributesType();
-      existing.setAction(ExpirationAction.INVALIDATE.toXmlString());
-      existing.setTimeout("0");
-    }
-
-    if (delta.getTimeout() != null) {
-      existing.setTimeout(delta.getTimeout());
-    }
-    if (delta.getAction() != null) {
-      existing.setAction(delta.getAction());
-    }
-    if (delta.getCustomExpiry() != null) {
-      if (delta.getCustomExpiry().equals(DeclarableType.EMPTY)) {
-        existing.setCustomExpiry(null);
-      } else {
-        existing.setCustomExpiry(delta.getCustomExpiry());
-      }
-    }
-    return existing;
-  }
-
 }

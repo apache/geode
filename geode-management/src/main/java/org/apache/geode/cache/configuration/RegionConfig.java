@@ -446,6 +446,7 @@ public class RegionConfig implements CacheElement {
         break;
       }
       case "LOCAL": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
         regionAttributes.setScope(RegionAttributesScope.LOCAL);
         break;
       }
@@ -455,11 +456,13 @@ public class RegionConfig implements CacheElement {
         break;
       }
       case "LOCAL_HEAP_LRU": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
         regionAttributes.setScope(RegionAttributesScope.LOCAL);
         regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
         break;
       }
       case "LOCAL_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
         regionAttributes.setScope(RegionAttributesScope.LOCAL);
         regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
         break;

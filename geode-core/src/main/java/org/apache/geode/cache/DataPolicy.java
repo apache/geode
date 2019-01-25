@@ -303,11 +303,6 @@ public class DataPolicy implements java.io.Serializable {
     return this.name;
   }
 
-  public RegionAttributesDataPolicy toConfigType() {
-    String configName = this.name.toLowerCase().replace("_", "-");
-    return RegionAttributesDataPolicy.fromValue(configName);
-  }
-
   public static DataPolicy fromString(String s) {
     String[] allowedValues =
         new String[] {"EMPTY", "NORMAL", "REPLICATE", "PERSISTENT_REPLICATE", "PARTITION",

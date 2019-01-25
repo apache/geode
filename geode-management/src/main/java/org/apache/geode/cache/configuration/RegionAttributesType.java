@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 
 
 /**
@@ -1724,6 +1725,48 @@ public class RegionAttributesType implements Serializable {
       }
     }
 
+    public static ExpirationAttributesType generate(Integer timeout,
+        ExpirationAction action, ClassName expiry) {
+      if (timeout == null && action == null && expiry == null) {
+        return null;
+      }
+      if (expiry != null) {
+        return new ExpirationAttributesType(timeout, action,
+            expiry.getClassName(), expiry.getInitProperties());
+      } else {
+        return new ExpirationAttributesType(timeout, action, null, null);
+      }
+    }
+
+    // this is a helper method to combine the existing with the delta ExpirationAttributesType
+    public static ExpirationAttributesType combine(ExpirationAttributesType existing,
+        ExpirationAttributesType delta) {
+      if (delta == null) {
+        return existing;
+      }
+
+      if (existing == null) {
+        existing = new ExpirationAttributesType();
+        existing.setAction(ExpirationAction.INVALIDATE.toXmlString());
+        existing.setTimeout("0");
+      }
+
+      if (delta.getTimeout() != null) {
+        existing.setTimeout(delta.getTimeout());
+      }
+      if (delta.getAction() != null) {
+        existing.setAction(delta.getAction());
+      }
+      if (delta.getCustomExpiry() != null) {
+        if (delta.getCustomExpiry().equals(DeclarableType.EMPTY)) {
+          existing.setCustomExpiry(null);
+        } else {
+          existing.setCustomExpiry(delta.getCustomExpiry());
+        }
+      }
+      return existing;
+    }
+
     /**
      * @return true if timeout or action is specified
      */
@@ -1949,15 +1992,39 @@ public class RegionAttributesType implements Serializable {
     @XmlElement(name = "lru-memory-size", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.EvictionAttributes.LruMemorySize lruMemorySize;
 
-    public String toStringRep() {
-      return "lru-entry-count: " +
-          this.lruEntryCount.getMaximum() + ", " +
-          this.lruEntryCount.getAction().toString() + ", " +
-          "\nlru-heap-percentage: " +
-          this.lruHeapPercentage.getAction().toString() +
-          "\nlru-memory-size: " +
-          this.lruMemorySize.getMaximum() +
-          this.lruMemorySize.getAction().toString();
+    public static EvictionAttributes generate(String evictionAction,
+        Integer maxMemory, Integer maxEntryCount,
+        String objectSizer) {
+      if (evictionAction == null && maxMemory == null && maxEntryCount == null
+          && objectSizer == null) {
+        return null;
+      }
+
+      RegionAttributesType.EvictionAttributes evictionAttributes =
+          new RegionAttributesType.EvictionAttributes();
+      EnumActionDestroyOverflow action = EnumActionDestroyOverflow.fromValue(evictionAction);
+
+      if (maxMemory == null && maxEntryCount == null) {
+        LruHeapPercentage heapPercentage =
+            new LruHeapPercentage();
+        heapPercentage.setAction(action);
+        heapPercentage.setClassName(objectSizer);
+        evictionAttributes.setLruHeapPercentage(heapPercentage);
+      } else if (maxMemory != null) {
+        LruMemorySize memorySize =
+            new LruMemorySize();
+        memorySize.setAction(action);
+        memorySize.setClassName(objectSizer);
+        memorySize.setMaximum(maxMemory.toString());
+        evictionAttributes.setLruMemorySize(memorySize);
+      } else {
+        LruEntryCount entryCount =
+            new LruEntryCount();
+        entryCount.setAction(action);
+        entryCount.setMaximum(maxEntryCount.toString());
+        evictionAttributes.setLruEntryCount(entryCount);
+      }
+      return evictionAttributes;
     }
 
     /**
@@ -2488,6 +2555,43 @@ public class RegionAttributesType implements Serializable {
     protected String totalNumBuckets;
     @XmlAttribute(name = "colocated-with")
     protected String colocatedWith;
+
+    public static PartitionAttributes generate(String partitionResolver,
+        List<String> partitionListeners, Integer localMaxMemory,
+        Long recoveryDelay, Integer redundantCopies,
+        Long startupRecoveryDelay, Long totalMaxMemory,
+        Integer totalNumBuckets, String colocatedWith) {
+      if (partitionResolver == null &&
+          (partitionListeners == null || partitionListeners.isEmpty()) &&
+          localMaxMemory == null &&
+          recoveryDelay == null &&
+          redundantCopies == null &&
+          startupRecoveryDelay == null &&
+          totalMaxMemory == null &&
+          totalNumBuckets == null &&
+          colocatedWith == null) {
+        return null;
+      }
+
+      RegionAttributesType.PartitionAttributes partitionAttributes =
+          new RegionAttributesType.PartitionAttributes();
+      partitionAttributes.setColocatedWith(colocatedWith);
+      partitionAttributes.setLocalMaxMemory(Objects.toString(localMaxMemory, null));
+      partitionAttributes.setTotalMaxMemory(Objects.toString(totalMaxMemory, null));
+      partitionAttributes.setRecoveryDelay(Objects.toString(recoveryDelay, null));
+      partitionAttributes.setRedundantCopies(Objects.toString(redundantCopies, null));
+      partitionAttributes.setStartupRecoveryDelay(Objects.toString(startupRecoveryDelay, null));
+      partitionAttributes.setTotalNumBuckets(Objects.toString(totalNumBuckets, null));
+      if (partitionResolver != null) {
+        partitionAttributes.setPartitionResolver(new DeclarableType(partitionResolver));
+      }
+
+      if (partitionListeners != null) {
+        partitionListeners.stream().map(DeclarableType::new)
+            .forEach(partitionAttributes.getPartitionListeners()::add);
+      }
+      return partitionAttributes;
+    }
 
     /**
      * Gets the value of the partitionResolver property.
