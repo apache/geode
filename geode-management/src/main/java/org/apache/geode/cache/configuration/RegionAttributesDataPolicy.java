@@ -54,14 +54,19 @@ import org.apache.geode.annotations.Experimental;
 @XmlEnum
 @Experimental
 public enum RegionAttributesDataPolicy implements Serializable {
-
   @XmlEnumValue("empty")
-  EMPTY("empty"), @XmlEnumValue("normal")
-  NORMAL("normal"), @XmlEnumValue("partition")
-  PARTITION("partition"), @XmlEnumValue("persistent-replicate")
-  PERSISTENT_REPLICATE("persistent-replicate"), @XmlEnumValue("preloaded")
-  PRELOADED("preloaded"), @XmlEnumValue("replicate")
-  REPLICATE("replicate"), @XmlEnumValue("persistent-partition")
+  EMPTY("empty"),
+  @XmlEnumValue("normal")
+  NORMAL("normal"),
+  @XmlEnumValue("partition")
+  PARTITION("partition"),
+  @XmlEnumValue("persistent-replicate")
+  PERSISTENT_REPLICATE("persistent-replicate"),
+  @XmlEnumValue("preloaded")
+  PRELOADED("preloaded"),
+  @XmlEnumValue("replicate")
+  REPLICATE("replicate"),
+  @XmlEnumValue("persistent-partition")
   PERSISTENT_PARTITION("persistent-partition");
   private final String value;
 

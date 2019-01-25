@@ -12,28 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.internal.configuration.validators;
 
-package org.apache.geode.management.internal.api;
-
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 
-/**
- * this is responsible for applying and persisting cache configuration changes on locators
- * and/or servers.
- */
-@Experimental
-public interface ClusterManagementService {
-  /**
-   * This method will try to create the element on all the applicable members in the cluster and
-   * persist the configuration in the cluster configuration if persistence is enabled.
-   *
-   * @param config this holds the configuration attributes of the element you are trying to create
-   *        on the cluster
-   */
-  ClusterManagementResult create(CacheElement config, String group);
+public interface ConfigurationValidator<T extends CacheElement> {
 
-  ClusterManagementResult delete(CacheElement config, String group);
-
-  ClusterManagementResult update(CacheElement config, String group);
+  public void validate(T config);
 }

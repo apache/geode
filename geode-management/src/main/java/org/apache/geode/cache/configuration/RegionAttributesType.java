@@ -345,7 +345,7 @@ import org.apache.geode.cache.ExpirationAction;
 public class RegionAttributesType implements Serializable {
 
   @XmlElement(name = "key-constraint", namespace = "http://geode.apache.org/schema/cache")
-  protected Object keyConstraint;
+  protected String keyConstraint;
   @XmlElement(name = "value-constraint", namespace = "http://geode.apache.org/schema/cache")
   protected String valueConstraint;
   @XmlElement(name = "region-time-to-live", namespace = "http://geode.apache.org/schema/cache")
@@ -440,7 +440,7 @@ public class RegionAttributesType implements Serializable {
    * {@link Object }
    *
    */
-  public Object getKeyConstraint() {
+  public String getKeyConstraint() {
     return keyConstraint;
   }
 
@@ -451,7 +451,7 @@ public class RegionAttributesType implements Serializable {
    * {@link Object }
    *
    */
-  public void setKeyConstraint(Object value) {
+  public void setKeyConstraint(String value) {
     this.keyConstraint = value;
   }
 
@@ -1435,6 +1435,37 @@ public class RegionAttributesType implements Serializable {
    */
   public void setOffHeap(Boolean value) {
     this.offHeap = value;
+  }
+
+  public void setLruHeapPercentage(EnumActionDestroyOverflow action) {
+    if (evictionAttributes == null) {
+      evictionAttributes = new EvictionAttributes();
+    }
+    EvictionAttributes.LruHeapPercentage lruHeapPercentage =
+        new EvictionAttributes.LruHeapPercentage();
+    lruHeapPercentage.setAction(action);
+    evictionAttributes.setLruHeapPercentage(lruHeapPercentage);
+  }
+
+  public void setInterestPolicy(String interestPolicy) {
+    if (subscriptionAttributes == null) {
+      subscriptionAttributes = new SubscriptionAttributes();
+    }
+    subscriptionAttributes.setInterestPolicy(interestPolicy);
+  }
+
+  public void setRedundantCopy(String copies) {
+    if (partitionAttributes == null) {
+      partitionAttributes = new PartitionAttributes();
+    }
+    partitionAttributes.setRedundantCopies(copies);
+  }
+
+  public void setLocalMaxMemory(String maxMemory) {
+    if (partitionAttributes == null) {
+      partitionAttributes = new PartitionAttributes();
+    }
+    partitionAttributes.setLocalMaxMemory(maxMemory);
   }
 
 

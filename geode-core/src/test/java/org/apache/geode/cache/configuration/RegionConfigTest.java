@@ -17,29 +17,64 @@ package org.apache.geode.cache.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
+import java.io.File;
+import java.net.URL;
+
+import org.apache.commons.io.FileUtils;
+import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.config.JAXBService;
+
 public class RegionConfigTest {
+
+  private JAXBService service;
+  private CacheConfig cacheConfig, master;
+  private RegionConfig regionConfig;
+  private URL xmlResource;
+
+  @Before
+  public void before() throws Exception {
+    service = new JAXBService(CacheConfig.class);
+    regionConfig = new RegionConfig();
+    xmlResource = RegionConfigTest.class.getResource("RegionConfigTest.xml");
+    assertThat(xmlResource).isNotNull();
+    master =
+        service.unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
+  }
+
   @Test
   public void regionNameCannotBeNull() {
-    RegionConfig config = new RegionConfig();
-    assertThatThrownBy(() -> config.setName(null))
+    assertThatThrownBy(() -> regionConfig.setName(null))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   public void regionNameSwallowsSlash() {
-    RegionConfig config = new RegionConfig();
-    config.setName("/regionA");
-    assertThat(config.getName()).isEqualTo("regionA");
+    regionConfig.setName("/regionA");
+    assertThat(regionConfig.getName()).isEqualTo("regionA");
   }
 
   @Test
   public void subRegionsUnsupported() {
-    RegionConfig config = new RegionConfig();
-    assertThatThrownBy(() -> config.setName("/Parent/Child"))
+    regionConfig = new RegionConfig();
+    assertThatThrownBy(() -> regionConfig.setName("/Parent/Child"))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> config.setName("Parent/Child"))
+    assertThatThrownBy(() -> regionConfig.setName("Parent/Child"))
         .isInstanceOf(IllegalArgumentException.class);
   }
+
+  @Test
+  public void checkDefaultRegionAttributesForShortcuts() throws Exception {
+    RegionShortcut[] shortcuts = RegionShortcut.values();
+    for (RegionShortcut shortcut : shortcuts) {
+      RegionConfig config = new RegionConfig();
+      config.setRefid(shortcut.name());
+      config.setName(shortcut.name());
+      RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
+      assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
+    }
+  }
+
 }

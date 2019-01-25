@@ -39,10 +39,10 @@ import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapStorage;
+import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 
 /**
  * Internal implementation of PartitionAttributes. New attributes existing only in this class and
@@ -792,7 +792,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
   }
 
   public static PartitionAttributesImpl fromConfig(
-      RegionAttributesType.PartitionAttributes configAttributes) {
+      RegionAttributesType.PartitionAttributes configAttributes, Cache cache) {
     PartitionAttributesImpl partitionAttributes = new PartitionAttributesImpl();
     if (configAttributes == null) {
       return null;
@@ -821,11 +821,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     }
 
     if (configAttributes.getPartitionResolver() != null) {
-      try {
-        partitionAttributes.setPartitionResolver((PartitionResolver) ClassPathLoader.getLatest()
-            .forName(configAttributes.getPartitionResolver().getClassName()).newInstance());
-      } catch (Exception e) {
-      }
+      partitionAttributes.setPartitionResolver(
+          DeclarableTypeInstantiator.newInstance(configAttributes.getPartitionResolver(), cache));
     }
 
     if (configAttributes.getRecoveryDelay() != null) {
@@ -840,12 +837,8 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     if (configAttributes.getPartitionListeners() != null) {
       List<DeclarableType> configListeners = configAttributes.getPartitionListeners();
       for (int i = 0; i < configListeners.size(); i++) {
-        try {
-          partitionAttributes.addPartitionListener((PartitionListener) ClassPathLoader.getLatest()
-              .forName(configListeners.get(i).getClassName())
-              .newInstance());
-        } catch (Exception e) {
-        }
+        partitionAttributes.addPartitionListener(
+            DeclarableTypeInstantiator.newInstance(configListeners.get(i), cache));
       }
     }
 

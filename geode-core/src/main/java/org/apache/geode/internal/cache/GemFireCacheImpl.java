@@ -1000,6 +1000,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     } // synchronized
   }
 
+  @Override
   public HttpService getHttpService() {
     return httpService;
   }

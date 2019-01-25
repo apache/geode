@@ -18,10 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.management.ManagementException;
-import org.apache.geode.management.ManagementService;
 
 /**
  * Class to handle Region path.
@@ -74,6 +71,10 @@ public class RegionPath {
   }
 
   public String[] getRegionsOnParentPath() {
+    if (getParent() == null) {
+      return new String[] {};
+    }
+
     String[] regionsOnPath = getParent().split(Region.SEPARATOR);
 
     // Ignore preceding separator if there is one
@@ -85,6 +86,14 @@ public class RegionPath {
     }
 
     return regions.toArray(new String[] {});
+  }
+
+  public String getRootRegionName() {
+    if (isRoot()) {
+      return getName();
+    } else {
+      return getRegionsOnParentPath()[0];
+    }
   }
 
   /**
@@ -99,26 +108,6 @@ public class RegionPath {
 
   public boolean isRootRegion() {
     return regionParentPath == null;
-  }
-
-  public boolean existsInCache(Cache cache) {
-    return cache != null && cache.getRegion(regionPath) != null;
-  }
-
-  public boolean existsInCluster(Cache cache) {
-    boolean existsInCluster = false;
-
-    if (cache != null) {
-      ManagementService managementService = ManagementService.getExistingManagementService(cache);
-      if (managementService.isManager()) {
-        existsInCluster = managementService != null
-            && managementService.getDistributedRegionMXBean(regionPath) != null;
-      } else {
-        throw new ManagementException("Not a cache from Manager member.");
-      }
-    }
-
-    return existsInCluster;
   }
 
   @Override

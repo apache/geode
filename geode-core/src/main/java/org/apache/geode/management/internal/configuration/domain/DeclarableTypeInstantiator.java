@@ -18,6 +18,7 @@ import java.util.Properties;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ObjectType;
 import org.apache.geode.cache.configuration.ParameterType;
@@ -43,6 +44,7 @@ public abstract class DeclarableTypeInstantiator {
     }
   }
 
+
   public static <T> T newInstance(ObjectType objectType, Cache cache) {
     if (objectType.getString() != null) {
       return (T) objectType.getString();
@@ -67,6 +69,17 @@ public abstract class DeclarableTypeInstantiator {
       return object;
     } catch (Exception e) {
       throw new RuntimeException("Error instantiating class: <" + type.getClassName() + ">", e);
+    }
+  }
+
+  public static <V> V newInstance(ClassNameType className) {
+    try {
+      Class<V> loadedClass =
+          (Class<V>) ClassPathLoader.getLatest().forName(className.getClassName());
+      return loadedClass.newInstance();
+    } catch (Exception e) {
+      throw new RuntimeException("Error instantiating class: <" + className.getClassName() + ">",
+          e);
     }
   }
 }
