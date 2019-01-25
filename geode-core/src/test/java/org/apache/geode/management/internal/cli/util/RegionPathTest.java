@@ -42,6 +42,26 @@ public class RegionPathTest {
 
   @Test
   public void subRegionName() {
+    RegionPath path = new RegionPath("test1/test2");
+    assertThat(path.getParent()).isEqualTo("/test1");
+    assertThat(path.getName()).isEqualTo("test2");
+    assertThat(path.isRoot()).isFalse();
+    assertThat(path.getRegionsOnParentPath()).containsExactly("test1");
+    assertThat(path.getRootRegionName()).isEqualTo("test1");
+  }
+
+  @Test
+  public void subRegionNameWithSlash() {
+    RegionPath path = new RegionPath("/test1/test2");
+    assertThat(path.getParent()).isEqualTo("/test1");
+    assertThat(path.getName()).isEqualTo("test2");
+    assertThat(path.isRoot()).isFalse();
+    assertThat(path.getRegionsOnParentPath()).containsExactly("test1");
+    assertThat(path.getRootRegionName()).isEqualTo("test1");
+  }
+
+  @Test
+  public void subSubRegionName() {
     RegionPath path = new RegionPath("test1/test2/test3");
     assertThat(path.getParent()).isEqualTo("/test1/test2");
     assertThat(path.getName()).isEqualTo("test3");
@@ -51,7 +71,7 @@ public class RegionPathTest {
   }
 
   @Test
-  public void subRegionNameWithSlash() {
+  public void subSubRegionNameWithSlash() {
     RegionPath path = new RegionPath("/test1/test2/test3");
     assertThat(path.getParent()).isEqualTo("/test1/test2");
     assertThat(path.getName()).isEqualTo("test3");

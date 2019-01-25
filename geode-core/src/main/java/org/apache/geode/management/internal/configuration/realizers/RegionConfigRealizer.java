@@ -41,10 +41,40 @@ import org.apache.geode.management.internal.configuration.domain.DeclarableTypeI
 public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig> {
   public RegionConfigRealizer() {}
 
+  /**
+   * this is used to create only root regions.
+   *
+   * @param regionConfig the name in the regionConfig can not contain sub-regions.
+   */
   @Override
   public void create(RegionConfig regionConfig, Cache cache) {
-    String regionPath = regionConfig.getName();
-    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
+    RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
+    factory.create(regionConfig.getName());
+  }
+
+  /**
+   * this method supports creating root region and sub-regions.
+   * We need this because CreateRegionCommand should still
+   * support creating sub regions.
+   *
+   * @param regionConfig the name in regionConfig is ignored.
+   * @param regionPath this is the full path of the region
+   */
+  public void create(RegionConfig regionConfig, String regionPath, Cache cache) {
+    RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
+    RegionPath regionPathData = new RegionPath(regionPath);
+    String regionName = regionPathData.getName();
+    String parentRegionPath = regionPathData.getParent();
+    if (parentRegionPath == null) {
+      factory.create(regionName);
+      return;
+    }
+
+    Region parentRegion = cache.getRegion(parentRegionPath);
+    factory.createSubregion(parentRegion, regionName);
+  }
+
+  private RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
     RegionFactory factory = cache.createRegionFactory();
 
     factory.setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().name()));
@@ -196,16 +226,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     if (regionAttributes.isMulticastEnabled() != null) {
       factory.setMulticastEnabled(regionAttributes.isMulticastEnabled());
     }
-
-    RegionPath regionPathData = new RegionPath(regionPath);
-    String regionName = regionPathData.getName();
-    String parentRegionPath = regionPathData.getParent();
-    if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
-      Region<?, ?> parentRegion = cache.getRegion(parentRegionPath);
-      factory.createSubregion(parentRegion, regionName);
-    } else {
-      factory.create(regionName);
-    }
+    return factory;
   }
 
   @Override

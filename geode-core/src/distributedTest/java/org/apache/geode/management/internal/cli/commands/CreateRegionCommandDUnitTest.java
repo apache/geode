@@ -246,7 +246,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=PARTITION --partition-resolver=InvalidPartitionResolver")
         .statusIsError()
-        .containsOutput("Could not find class");
+        .containsOutput("Error instantiating class");
   }
 
   @Test
@@ -255,13 +255,13 @@ public class CreateRegionCommandDUnitTest {
         + " --type=REPLICATE --entry-time-to-live-custom-expiry=InvalidCustomExpiry" +
         " --enable-statistics=true")
         .statusIsError()
-        .containsOutput("Could not find class");
+        .containsOutput("Error instantiating class");
 
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=REPLICATE --entry-idle-time-custom-expiry=InvalidCustomExpiry" +
         " --enable-statistics=true")
         .statusIsError()
-        .containsOutput("Could not find class");
+        .containsOutput("Error instantiating class");
   }
 
   @Test
@@ -269,7 +269,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=REPLICATE --cache-loader=InvalidCacheLoader")
         .statusIsError()
-        .containsOutput("Could not find class");
+        .containsOutput("Error instantiating class");
   }
 
   @Test
@@ -277,7 +277,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
         + " --type=REPLICATE --cache-writer=InvalidCacheWriter")
         .statusIsError()
-        .containsOutput("Could not find class");
+        .containsOutput("Error instantiating class");
   }
 
   @Test
@@ -286,7 +286,7 @@ public class CreateRegionCommandDUnitTest {
         + " --type=REPLICATE --cache-listener=" + TestCacheListener.class.getName()
         + ",InvalidCacheListener")
         .statusIsError()
-        .containsOutput("Could not find class")
+        .containsOutput("Error instantiating class")
         .doesNotContainOutput("TestCacheListener");
   }
 
