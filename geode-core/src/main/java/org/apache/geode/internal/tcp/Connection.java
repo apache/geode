@@ -748,6 +748,7 @@ public class Connection implements Runnable {
   }
 
   private void notifyHandshakeWaiter(boolean success) {
+    // logger.info("BRUCE: notifyHandshakeWaiter invoked", new Exception("stack trace"));
     synchronized (this.handshakeSync) {
       if (success) {
         this.handshakeRead = true;
@@ -1581,6 +1582,7 @@ public class Connection implements Runnable {
       // make sure that if the reader thread exits we notify a thread waiting
       // for the handshake.
       // see bug 37524 for an example of listeners hung in waitForHandshake
+      // logger.info("BRUCE: run() invoking notifyHandshakeWaiter(false)");
       notifyHandshakeWaiter(false);
       this.readerThread.setName("unused p2p reader");
       synchronized (this.stateLock) {
@@ -1732,6 +1734,7 @@ public class Connection implements Runnable {
                 logger.debug("handshake has been cancelled {}", this);
               }
             }
+            // logger.info("BRUCE: handshake thread setting isHandshakeReader=true");
             isHandShakeReader = true;
             // Once we have read the handshake the reader can go away
             break;
@@ -2905,6 +2908,11 @@ public class Connection implements Runnable {
    * deserialized and passed to TCPConduit for further processing
    */
   private void processInputBuffer() throws ConnectionException, IOException {
+
+    // logger.info("BRUCE: processInputBuffer hash={} postion={} limit={}",
+    // Integer.toHexString(System.identityHashCode(inputBuffer)), inputBuffer.position(),
+    // inputBuffer.limit());
+
     inputBuffer.flip();
 
     ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
@@ -2938,10 +2946,10 @@ public class Connection implements Runnable {
             ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
             DataInputStream dis = new DataInputStream(bbis);
             if (!this.isReceiver) {
-              if (readHandshakeForSender(dis)) {
-                ioFilter.doneReading(peerDataBuffer);
-                return;
-              }
+              // we read the handshake and then stop processing since we don't want
+              // to process the input buffer anymore in a handshake thread
+              readHandshakeForSender(dis, peerDataBuffer);
+              return;
             } else {
               if (readHandshakeForReceiver(dis)) {
                 ioFilter.doneReading(peerDataBuffer);
@@ -2964,6 +2972,7 @@ public class Connection implements Runnable {
           }
         }
       } else {
+        // logger.info("BRUCE: processInputBuffer invoking doneReading");
         ioFilter.doneReading(peerDataBuffer);
         done = true;
       }
@@ -3277,31 +3286,55 @@ public class Connection implements Runnable {
     }
   }
 
-  private boolean readHandshakeForSender(DataInputStream dis) {
+  private void readHandshakeForSender(DataInputStream dis, ByteBuffer peerDataBuffer) {
     try {
       this.replyCode = dis.readUnsignedByte();
-      if (this.replyCode == REPLY_CODE_OK_WITH_ASYNC_INFO) {
-        this.asyncDistributionTimeout = dis.readInt();
-        this.asyncQueueTimeout = dis.readInt();
-        this.asyncMaxQueueSize = (long) dis.readInt() * (1024 * 1024);
-        if (this.asyncDistributionTimeout != 0) {
-          logger.info("{} async configuration received {}.",
-              p2pReaderName(),
-              " asyncDistributionTimeout=" + this.asyncDistributionTimeout
-                  + " asyncQueueTimeout=" + this.asyncQueueTimeout
-                  + " asyncMaxQueueSize="
-                  + (this.asyncMaxQueueSize / (1024 * 1024)));
-        }
-        // read the product version ordinal for on-the-fly serialization
-        // transformations (for rolling upgrades)
-        this.remoteVersion = Version.readVersion(dis, true);
+      // logger.info("BRUCE: readHandshakeForSender read replyCode {}", replyCode);
+      switch (replyCode) {
+        case REPLY_CODE_OK:
+          // logger.info("BRUCE: notifying handshake waitier - reply_code_ok");
+          ioFilter.doneReading(peerDataBuffer);
+          notifyHandshakeWaiter(true);
+          return;
+        case REPLY_CODE_OK_WITH_ASYNC_INFO:
+          this.asyncDistributionTimeout = dis.readInt();
+          this.asyncQueueTimeout = dis.readInt();
+          this.asyncMaxQueueSize = (long) dis.readInt() * (1024 * 1024);
+          if (this.asyncDistributionTimeout != 0) {
+            logger.info("{} async configuration received {}.",
+                p2pReaderName(),
+                " asyncDistributionTimeout=" + this.asyncDistributionTimeout
+                    + " asyncQueueTimeout=" + this.asyncQueueTimeout
+                    + " asyncMaxQueueSize="
+                    + (this.asyncMaxQueueSize / (1024 * 1024)));
+          }
+          // read the product version ordinal for on-the-fly serialization
+          // transformations (for rolling upgrades)
+          this.remoteVersion = Version.readVersion(dis, true);
+          ioFilter.doneReading(peerDataBuffer);
+          notifyHandshakeWaiter(true);
+          return;
+        default:
+          String err =
+              "Unknown handshake reply code: %s nioMessageLength: %s";
+          Object[] errArgs = new Object[] {this.replyCode,
+              messageLength};
+          if (replyCode == 0 && logger.isDebugEnabled()) { // bug 37113
+            logger.debug(
+                String.format(err, errArgs) + " (peer probably departed ungracefully)");
+          } else {
+            logger.fatal(err, errArgs);
+          }
+          this.readerShuttingDown = true;
+          requestClose(String.format(err, errArgs));
+          return;
       }
     } catch (Exception e) {
       this.owner.getConduit().getCancelCriterion().checkCancelInProgress(e);
       logger.fatal("Error deserializing P2P handshake reply", e);
       this.readerShuttingDown = true;
       requestClose("Error deserializing P2P handshake reply");
-      return true;
+      return;
     } catch (ThreadDeath td) {
       throw td;
     } catch (VirtualMachineError err) {
@@ -3320,26 +3353,8 @@ public class Connection implements Runnable {
           t);
       this.readerShuttingDown = true;
       requestClose("Throwable deserializing P2P handshake reply");
-      return true;
+      return;
     }
-    if (this.replyCode != REPLY_CODE_OK
-        && this.replyCode != REPLY_CODE_OK_WITH_ASYNC_INFO) {
-      String err =
-          "Unknown handshake reply code: %s nioMessageLength: %s";
-      Object[] errArgs = new Object[] {this.replyCode,
-          messageLength};
-      if (replyCode == 0 && logger.isDebugEnabled()) { // bug 37113
-        logger.debug(
-            String.format(err, errArgs) + " (peer probably departed ungracefully)");
-      } else {
-        logger.fatal(err, errArgs);
-      }
-      this.readerShuttingDown = true;
-      requestClose(String.format(err, errArgs));
-      return true;
-    }
-    notifyHandshakeWaiter(true);
-    return false;
   }
 
   private void setThreadName(int dominoNumber) {

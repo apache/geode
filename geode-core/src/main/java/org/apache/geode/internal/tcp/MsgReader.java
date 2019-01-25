@@ -15,7 +15,10 @@
 package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -23,6 +26,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.Buffers;
 import org.apache.geode.internal.net.NioFilter;
 
@@ -32,6 +36,8 @@ import org.apache.geode.internal.net.NioFilter;
  *
  */
 public class MsgReader {
+  private static final Logger logger = LogService.getLogger();
+
   protected final Connection conn;
   protected final Header header = new Header();
   private final NioFilter ioFilter;
@@ -44,8 +50,10 @@ public class MsgReader {
     this.conn = conn;
     this.ioFilter = nioFilter;
     this.peerNetData = peerNetData;
-    ByteBuffer buffer = ioFilter.getUnwrappedBuffer(peerNetData);
-    buffer.position(0).limit(0);
+    if (conn.getConduit().useSSL()) {
+      ByteBuffer buffer = ioFilter.getUnwrappedBuffer(peerNetData);
+      buffer.position(0).limit(0);
+    }
     this.byteBufferInputStream =
         version == null ? new ByteBufferInputStream() : new VersionedByteBufferInputStream(version);
   }
@@ -53,19 +61,36 @@ public class MsgReader {
   Header readHeader() throws IOException {
     ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
 
-    int nioMessageLength = unwrappedBuffer.getInt();
-    /* nioMessageVersion = */ Connection.calcHdrVersion(nioMessageLength);
-    nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
-    byte nioMessageType = unwrappedBuffer.get();
-    short nioMsgId = unwrappedBuffer.getShort();
+    // logger.info("BRUCE: MsgReader.readHeader buffer position {} limit {}",
+    // unwrappedBuffer.position(), unwrappedBuffer.limit());
+    Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
-    boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
-    if (directAck) {
-      nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+    int position = unwrappedBuffer.position();
+    int limit = unwrappedBuffer.limit();
+
+    try {
+      int nioMessageLength = unwrappedBuffer.getInt();
+      /* nioMessageVersion = */
+      Connection.calcHdrVersion(nioMessageLength);
+      nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
+      byte nioMessageType = unwrappedBuffer.get();
+      short nioMsgId = unwrappedBuffer.getShort();
+
+      boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
+      if (directAck) {
+        nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+      }
+
+      header.setFields(nioMessageLength, nioMessageType, nioMsgId);
+
+      return header;
+    } catch (BufferUnderflowException e) {
+      dumpState("BufferUnderflowException", e, unwrappedBuffer, position, limit);
+      throw e;
+    } finally {
+      dumpState("readHeader", null, unwrappedBuffer, position, limit);
     }
 
-    header.setFields(nioMessageLength, nioMessageType, nioMsgId);
-    return header;
   }
 
   /**
@@ -79,15 +104,38 @@ public class MsgReader {
     Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
     this.getStats().incMessagesBeingReceived(true, header.messageLength);
     long startSer = this.getStats().startMsgDeserialization();
+    int position = nioInputBuffer.position();
+    int limit = nioInputBuffer.limit();
     try {
       byteBufferInputStream.setBuffer(nioInputBuffer);
       ReplyProcessor21.initMessageRPId();
+//      dumpState("readMessage ready to deserialize", null, nioInputBuffer, position, limit);
       return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
+    } catch (RuntimeException e) {
+      dumpState("readMessage(1)", e, nioInputBuffer, position, limit);
+      throw e;
+    } catch (IOException e) {
+      dumpState("readMessage(2)", e, nioInputBuffer, position, limit);
+      throw e;
     } finally {
       this.getStats().endMsgDeserialization(startSer);
       this.getStats().decMessagesBeingReceived(header.messageLength);
       ioFilter.doneReading(nioInputBuffer);
     }
+  }
+
+  private void dumpState(String whereFrom, Throwable e, ByteBuffer inputBuffer, int position,
+      int limit) {
+     logger.info("BRUCE: {}, Connection to {}", whereFrom, conn.getRemoteAddress());
+     logger.info("BRUCE: {}, Message length {}; type {}; id {}",
+     whereFrom, header.messageLength, header.messageId, header.messageId);
+     logger.info("BRUCE: {}, starting buffer position {}; buffer limit {} buffer hash {}",
+     whereFrom, position, limit, Integer.toHexString(System.identityHashCode(inputBuffer)));
+     logger.info("BRUCE: {}, current buffer position {}; buffer limit {}",
+     whereFrom, inputBuffer.position(), inputBuffer.limit());
+     if (e != null) {
+     logger.info("BRUCE: Exception reading message", e);
+     }
   }
 
   void readChunk(Header header, MsgDestreamer md)
@@ -102,8 +150,15 @@ public class MsgReader {
 
 
   private ByteBuffer readAtLeast(int bytes) throws IOException {
+    // logger.info("BRUCE: ensureWrappedCapacity need {} buffer {} position {} limit {} capacity
+    // {}", bytes,
+    // Integer.toHexString(System.identityHashCode(peerNetData)), peerNetData.position(),
+    // peerNetData.limit(), peerNetData.capacity());
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
         Buffers.BufferType.TRACKED_RECEIVER, getStats());
+    // logger.info("BRUCE: result buffer {} position {} limit {} capacity {}",
+    // Integer.toHexString(System.identityHashCode(peerNetData)), peerNetData.position(),
+    // peerNetData.limit(), peerNetData.capacity());
     return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData, getStats());
   }
 

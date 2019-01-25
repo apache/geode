@@ -23,6 +23,7 @@ import java.nio.channels.SocketChannel;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -81,19 +82,47 @@ public class NioPlainEngine implements NioFilter {
       DMStats stats) throws IOException {
     ByteBuffer buffer = wrappedBuffer;
 
-    while (lastReadPosition - lastProcessedPosition < bytes) {
-      buffer.limit(buffer.capacity());
-      buffer.position(lastReadPosition);
+    // logger.info("BRUCE: readAtLeast({}) lastProcessedPosition={} lastReadPosition={} buffer
+    // capacity={}",
+    // bytes, lastProcessedPosition, lastReadPosition, buffer.capacity());
+
+    Assert.assertTrue(buffer.capacity() - lastProcessedPosition >= bytes);
+
+    // read into the buffer starting at the end of valid data
+    buffer.limit(buffer.capacity());
+    buffer.position(lastReadPosition);
+
+    while (buffer.position() < (lastProcessedPosition + bytes)) {
       int amountRead = channel.read(buffer);
       if (amountRead < 0) {
         throw new EOFException();
       }
-      lastReadPosition = buffer.position();
     }
+
+    // keep track of how much of the buffer contains valid data with lastReadPosition
+    lastReadPosition = buffer.position();
+
+    // set up the buffer for reading and keep track of how much has been consumed with
+    // lastProcessedPosition
     buffer.limit(lastProcessedPosition + bytes);
     buffer.position(lastProcessedPosition);
-    lastProcessedPosition = buffer.limit();
+    lastProcessedPosition += bytes;
+
+    // logger.info("BRUCE: readAtLeast new lastProcessedPosition={} lastReadPosition={}",
+    // lastProcessedPosition, lastReadPosition);
+
     return buffer;
+  }
+
+  public void doneReading(ByteBuffer unwrappedBuffer) {
+    // logger.info("BRUCE: nioFilter is compacting {}",
+    // Integer.toHexString(System.identityHashCode(unwrappedBuffer)));
+    if (unwrappedBuffer.position() != 0) {
+      unwrappedBuffer.compact();
+    } else {
+      unwrappedBuffer.position(unwrappedBuffer.limit());
+      unwrappedBuffer.limit(unwrappedBuffer.capacity());
+    }
   }
 
   @Override
