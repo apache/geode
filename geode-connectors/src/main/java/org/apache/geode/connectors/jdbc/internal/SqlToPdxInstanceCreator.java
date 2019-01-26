@@ -21,28 +21,26 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxField;
-import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 class SqlToPdxInstanceCreator {
   private final InternalCache cache;
   private final RegionMapping regionMapping;
   private final ResultSet resultSet;
-  private final TableMetaDataView tableMetaData;
   private final PdxInstanceFactory factory;
 
   public SqlToPdxInstanceCreator(InternalCache cache, RegionMapping regionMapping,
-      ResultSet resultSet, TableMetaDataView tableMetaData) {
+      ResultSet resultSet) {
     this.cache = cache;
     this.regionMapping = regionMapping;
     this.resultSet = resultSet;
-    this.tableMetaData = tableMetaData;
     this.factory = createPdxInstanceFactory();
   }
 
@@ -55,9 +53,29 @@ class SqlToPdxInstanceCreator {
     final int columnCount = metaData.getColumnCount();
     for (int i = 1; i <= columnCount; i++) {
       String columnName = metaData.getColumnName(i);
-      String fieldName = regionMapping.getFieldNameForColumn(columnName);
-      FieldType fieldType = getFieldType(typeRegistry, fieldName);
-      writeField(columnName, i, fieldName, fieldType);
+      FieldMapping columnMapping = regionMapping.getFieldMappingByJdbcName(columnName);
+      if (columnMapping == null) {
+        // TODO: this column was added since create jdbc-mapping was done.
+        // Log a warning, once, and just ignore this column
+        continue;
+      }
+      String fieldName = columnMapping.getPdxName();
+      FieldType fieldType;
+      if (fieldName.isEmpty()) {
+        PdxField pdxField =
+            typeRegistry.findFieldThatMatchesName(regionMapping.getPdxName(), columnName);
+        if (pdxField == null) {
+          fieldName = columnName;
+          JDBCType columnType = JDBCType.valueOf(columnMapping.getJdbcType());
+          fieldType = computeFieldType(columnMapping.isJdbcNullable(), columnType);
+        } else {
+          fieldName = pdxField.getFieldName();
+          fieldType = pdxField.getFieldType();
+        }
+      } else {
+        fieldType = FieldType.valueOf(columnMapping.getPdxType());
+      }
+      writeField(columnMapping, i, fieldName, fieldType);
     }
     if (resultSet.next()) {
       throw new JdbcConnectorException(
@@ -74,7 +92,8 @@ class SqlToPdxInstanceCreator {
   /**
    * @throws SQLException if the column value get fails
    */
-  private void writeField(String columnName, int columnIndex, String fieldName, FieldType fieldType)
+  private void writeField(FieldMapping columnMapping, int columnIndex, String fieldName,
+      FieldType fieldType)
       throws SQLException {
     switch (fieldType) {
       case STRING:
@@ -110,12 +129,12 @@ class SqlToPdxInstanceCreator {
         factory.writeBoolean(fieldName, resultSet.getBoolean(columnIndex));
         break;
       case DATE: {
-        factory.writeDate(fieldName, getPdxDate(columnName, columnIndex));
+        factory.writeDate(fieldName, getPdxDate(columnIndex, columnMapping));
         break;
       }
       case BYTE_ARRAY:
         byte[] byteData;
-        if (isBlobColumn(columnName)) {
+        if (isBlobColumn(columnMapping)) {
           byteData = getBlobData(columnIndex);
         } else {
           byteData = resultSet.getBytes(columnIndex);
@@ -164,7 +183,7 @@ class SqlToPdxInstanceCreator {
         break;
       case OBJECT: {
         Object v;
-        if (isBlobColumn(columnName)) {
+        if (isBlobColumn(columnMapping)) {
           v = getBlobData(columnIndex);
         } else {
           v = resultSet.getObject(columnIndex);
@@ -187,9 +206,10 @@ class SqlToPdxInstanceCreator {
     }
   }
 
-  private java.util.Date getPdxDate(String columnName, int columnIndex) throws SQLException {
+  private java.util.Date getPdxDate(int columnIndex, FieldMapping columnMapping)
+      throws SQLException {
     java.util.Date sqlDate;
-    JDBCType columnType = this.tableMetaData.getColumnDataType(columnName);
+    JDBCType columnType = JDBCType.valueOf(columnMapping.getJdbcType());
     switch (columnType) {
       case DATE:
         sqlDate = resultSet.getDate(columnIndex);
@@ -209,8 +229,8 @@ class SqlToPdxInstanceCreator {
     return pdxDate;
   }
 
-  private boolean isBlobColumn(String columnName) throws SQLException {
-    return this.tableMetaData.getColumnDataType(columnName) == JDBCType.BLOB;
+  private boolean isBlobColumn(FieldMapping columnMapping) throws SQLException {
+    return JDBCType.BLOB.name().equals(columnMapping.getJdbcType());
   }
 
   /**
@@ -244,19 +264,6 @@ class SqlToPdxInstanceCreator {
           + jdbcObject.getClass().getTypeName() + " to " + javaType.getTypeName(),
           classCastException);
     }
-  }
-
-  private FieldType getFieldType(TypeRegistry typeRegistry, String fieldName) {
-    String pdxClassName = regionMapping.getPdxName();
-    PdxType pdxType = typeRegistry.getPdxTypeForField(fieldName, pdxClassName);
-    if (pdxType != null) {
-      PdxField pdxField = pdxType.getPdxField(fieldName);
-      if (pdxField != null) {
-        return pdxField.getFieldType();
-      }
-    }
-    throw new JdbcConnectorException("Could not find PdxType for field " + fieldName
-        + ". Add class " + pdxClassName + " with " + fieldName + " to pdx registry.");
   }
 
   static FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {

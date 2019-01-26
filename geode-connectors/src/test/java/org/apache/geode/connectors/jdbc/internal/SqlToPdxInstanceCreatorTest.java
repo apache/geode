@@ -16,10 +16,8 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -31,7 +29,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Date;
 
 import junitparams.JUnitParamsRunner;
@@ -43,13 +40,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxField;
-import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 @RunWith(JUnitParamsRunner.class)
@@ -65,8 +62,8 @@ public class SqlToPdxInstanceCreatorTest {
 
   private InternalCache cache;
   private RegionMapping regionMapping;
+  private FieldMapping columnMapping = mock(FieldMapping.class);
   private ResultSet resultSet;
-  private TableMetaDataView tableMetaDataView;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -75,9 +72,12 @@ public class SqlToPdxInstanceCreatorTest {
   public void setup() throws Exception {
     cache = mock(InternalCache.class);
     regionMapping = mock(RegionMapping.class);
+    columnMapping = mock(FieldMapping.class);
+    when(columnMapping.getJdbcName()).thenReturn(COLUMN_NAME_1);
+    when(columnMapping.getPdxName()).thenReturn(PDX_FIELD_NAME_1);
+    when(columnMapping.getPdxType()).thenReturn(FieldType.OBJECT.name());
+    when(regionMapping.getFieldMappingByJdbcName(COLUMN_NAME_1)).thenReturn(columnMapping);
     resultSet = mock(ResultSet.class);
-    tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN));
   }
 
   @Test
@@ -106,24 +106,14 @@ public class SqlToPdxInstanceCreatorTest {
     setupResultSetForTwoObjectColumns(resultSet);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_2)))
-        .thenReturn(PDX_FIELD_NAME_2);
-    tableMetaDataView = mock(TableMetaDataView.class);
-    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(COLUMN_NAME_1));
-    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
-    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
     String pdxClassName = "myPdxClassName";
     when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
-    PdxType pdxType = mock(PdxType.class);
     when(regionMapping.getPdxName()).thenReturn(pdxClassName);
-    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
-    PdxField pdxField = mock(PdxField.class);
-    when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
-    when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);
-    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_2, pdxClassName)).thenReturn(pdxType);
-    when(pdxType.getPdxField(PDX_FIELD_NAME_2)).thenReturn(pdxField);
+    FieldMapping columnMapping2 = mock(FieldMapping.class);
+    when(columnMapping2.getJdbcName()).thenReturn(COLUMN_NAME_2);
+    when(columnMapping2.getPdxName()).thenReturn(PDX_FIELD_NAME_2);
+    when(columnMapping2.getPdxType()).thenReturn(FieldType.OBJECT.name());
+    when(regionMapping.getFieldMappingByJdbcName(COLUMN_NAME_2)).thenReturn(columnMapping2);
 
     createPdxInstance();
 
@@ -140,20 +130,12 @@ public class SqlToPdxInstanceCreatorTest {
     String pdxClassName = "myPdxClassName";
     when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_2)))
-        .thenReturn(PDX_FIELD_NAME_2);
-    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
-    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
-    PdxType pdxType = mock(PdxType.class);
     when(regionMapping.getPdxName()).thenReturn(pdxClassName);
-    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
-    PdxField pdxField = mock(PdxField.class);
-    when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
-    when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);
-    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_2, pdxClassName)).thenReturn(pdxType);
-    when(pdxType.getPdxField(PDX_FIELD_NAME_2)).thenReturn(pdxField);
+    FieldMapping columnMapping2 = mock(FieldMapping.class);
+    when(columnMapping2.getJdbcName()).thenReturn(COLUMN_NAME_2);
+    when(columnMapping2.getPdxName()).thenReturn(PDX_FIELD_NAME_2);
+    when(columnMapping2.getPdxType()).thenReturn(FieldType.OBJECT.name());
+    when(regionMapping.getFieldMappingByJdbcName(COLUMN_NAME_2)).thenReturn(columnMapping2);
 
     createPdxInstance();
 
@@ -168,21 +150,101 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     String fieldName1 = "pdxFieldName1";
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1))).thenReturn(fieldName1);
-    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
-    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    when(columnMapping.getPdxName()).thenReturn(fieldName1);
     String pdxClassName = "myPdxClassName";
     when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
-    PdxType pdxType = mock(PdxType.class);
     when(regionMapping.getPdxName()).thenReturn(pdxClassName);
-    when(pdxTypeRegistry.getPdxTypeForField(fieldName1, pdxClassName)).thenReturn(pdxType);
-    PdxField pdxField = mock(PdxField.class);
-    when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
-    when(pdxType.getPdxField(fieldName1)).thenReturn(pdxField);
 
     createPdxInstance();
 
     verify(factory).writeObject(fieldName1, COLUMN_VALUE_1);
+    verify(factory).create();
+  }
+
+  @Test
+  public void fieldsAreNotWrittenIfNoFieldMapping() throws Exception {
+    setupResultSet(resultSet, FieldType.OBJECT, COLUMN_VALUE_1);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
+    when(regionMapping.getFieldMappingByJdbcName(COLUMN_NAME_1)).thenReturn(null);
+
+    createPdxInstance();
+
+    verify(factory).create();
+    verifyNoMoreInteractions(factory);
+  }
+
+  @Test
+  public void readingNonNullIntegerColumnWithNoPdxTypeCausesIntPdxFieldToBeWritten()
+      throws Exception {
+    setupResultSet(resultSet, FieldType.INT, Integer.valueOf(1979));
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
+    when(columnMapping.getPdxName()).thenReturn("");
+    when(columnMapping.getPdxType()).thenReturn("");
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.INTEGER.name());
+    when(columnMapping.isJdbcNullable()).thenReturn(false);
+
+    createPdxInstance();
+
+    verify(factory).writeInt(COLUMN_NAME_1, 1979);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readingNullableIntegerColumnWithNoPdxTypeCausesObjectPdxFieldToBeWritten()
+      throws Exception {
+    setupResultSet(resultSet, FieldType.OBJECT, Integer.valueOf(1979));
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
+    when(columnMapping.getPdxName()).thenReturn("");
+    when(columnMapping.getPdxType()).thenReturn("");
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.INTEGER.name());
+    when(columnMapping.isJdbcNullable()).thenReturn(true);
+
+    createPdxInstance();
+
+    verify(factory).writeObject(COLUMN_NAME_1, Integer.valueOf(1979));
+    verify(factory).create();
+  }
+
+  @Test
+  public void fieldWritingGivesPrecedenceToFindFieldThatMatchesNameWhenRegionMappingPdxNameIsEmpty()
+      throws Exception {
+    setupResultSet(resultSet, FieldType.SHORT, Short.valueOf((short) 1979));
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    PdxField pdxField = mock(PdxField.class);
+    when(pdxField.getFieldName()).thenReturn("myPdxField1");
+    when(pdxField.getFieldType()).thenReturn(FieldType.SHORT);
+    when(pdxTypeRegistry.findFieldThatMatchesName(pdxClassName, COLUMN_NAME_1))
+        .thenReturn(pdxField);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
+    when(columnMapping.getPdxName()).thenReturn("");
+    when(columnMapping.getPdxType()).thenReturn("");
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.INTEGER.name());
+    when(columnMapping.isJdbcNullable()).thenReturn(true);
+
+    createPdxInstance();
+
+    verify(factory).writeShort("myPdxField1", (short) 1979);
     verify(factory).create();
   }
 
@@ -192,9 +254,8 @@ public class SqlToPdxInstanceCreatorTest {
     setupResultSet(resultSet, fieldType);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
-    when(tableMetaDataView.getColumnDataType(any())).thenReturn(JDBCType.NULL);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.NULL.name());
+    when(columnMapping.getPdxType()).thenReturn(fieldType.name());
 
     createPdxInstance();
 
@@ -204,7 +265,7 @@ public class SqlToPdxInstanceCreatorTest {
 
   private PdxInstance createPdxInstance() throws SQLException {
     SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
-        new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, tableMetaDataView);
+        new SqlToPdxInstanceCreator(cache, regionMapping, resultSet);
     return sqlToPdxInstanceCreator.create();
   }
 
@@ -214,9 +275,8 @@ public class SqlToPdxInstanceCreatorTest {
     setupResultSet(resultSet, fieldType, null);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
-    when(tableMetaDataView.getColumnDataType(any())).thenReturn(JDBCType.NULL);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.NULL.name());
+    when(columnMapping.getPdxType()).thenReturn(fieldType.name());
 
     createPdxInstance();
 
@@ -235,8 +295,6 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getString(1)).thenReturn("");
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
 
     createPdxInstance();
 
@@ -251,14 +309,12 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.DATE);
     java.sql.Date sqlDate = java.sql.Date.valueOf("1979-09-11");
     Date expectedValue = new Date(sqlDate.getTime());
     when(resultSet.getDate(1)).thenReturn(sqlDate);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.DATE.name());
 
     createPdxInstance();
 
@@ -273,7 +329,6 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.BLOB);
     byte[] expectedValue = new byte[] {1, 2, 3};
     Blob blob = mock(Blob.class);
     when(blob.length()).thenReturn((long) expectedValue.length);
@@ -281,8 +336,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getBlob(1)).thenReturn(blob);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.BLOB.name());
 
     createPdxInstance();
 
@@ -297,14 +351,12 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.BLOB);
     byte[] expectedValue = null;
     Blob blob = null;
     when(resultSet.getBlob(1)).thenReturn(blob);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.BLOB.name());
 
     createPdxInstance();
 
@@ -319,14 +371,12 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.BLOB);
     Blob blob = mock(Blob.class);
     when(blob.length()).thenReturn((long) Integer.MAX_VALUE + 1);
     when(resultSet.getBlob(1)).thenReturn(blob);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.BLOB.name());
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("Blob of length 2147483648 is too big to be converted to a byte array.");
 
@@ -340,7 +390,6 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.BLOB);
     byte[] expectedValue = new byte[] {1, 2, 3};
     Blob blob = mock(Blob.class);
     when(blob.length()).thenReturn((long) expectedValue.length);
@@ -348,8 +397,7 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getBlob(1)).thenReturn(blob);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.BLOB.name());
 
     createPdxInstance();
 
@@ -364,14 +412,12 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.TIME);
     java.sql.Time sqlTime = java.sql.Time.valueOf("22:33:44");
     Date expectedValue = new Date(sqlTime.getTime());
     when(resultSet.getTime(1)).thenReturn(sqlTime);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.TIME.name());
 
     createPdxInstance();
 
@@ -386,14 +432,12 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
-    when(tableMetaDataView.getColumnDataType(COLUMN_NAME_1)).thenReturn(JDBCType.TIMESTAMP);
     java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf("1979-09-11 22:33:44.567");
     Date expectedValue = new Date(sqlTimestamp.getTime());
     when(resultSet.getTimestamp(1)).thenReturn(sqlTimestamp);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
+    when(columnMapping.getJdbcType()).thenReturn(JDBCType.TIMESTAMP.name());
 
     createPdxInstance();
 
@@ -413,8 +457,6 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getObject(1)).thenReturn(sqlDate);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
 
     createPdxInstance();
 
@@ -433,8 +475,6 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getObject(1)).thenReturn(expectedValue);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
 
     createPdxInstance();
 
@@ -454,8 +494,6 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getObject(1)).thenReturn(sqlTime);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
 
     createPdxInstance();
 
@@ -475,8 +513,6 @@ public class SqlToPdxInstanceCreatorTest {
     when(resultSet.getObject(1)).thenReturn(sqlTimestamp);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
     PdxInstanceFactory factory = setupPdxInstanceFactory(fieldType);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
 
     createPdxInstance();
 
@@ -492,10 +528,6 @@ public class SqlToPdxInstanceCreatorTest {
     setupPdxInstanceFactory(fieldType);
     setupResultSetForObject(resultSet, returnValue);
     when(resultSet.next()).thenReturn(true).thenReturn(false);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_2)))
-        .thenReturn(PDX_FIELD_NAME_2);
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("Could not convert ");
 
@@ -510,58 +542,9 @@ public class SqlToPdxInstanceCreatorTest {
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     String pdxClassName = "myPdxClassName";
     when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
-    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
-    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
-    PdxType pdxType = mock(PdxType.class);
     when(regionMapping.getPdxName()).thenReturn(pdxClassName);
-    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
-    PdxField pdxField = mock(PdxField.class);
-    when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
-    when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("Multiple rows returned for query: ");
-
-    createPdxInstance();
-  }
-
-  @Test
-  public void readThrowsGivenPdxTypeWithFieldMissing() throws Exception {
-    setupResultSet(resultSet, FieldType.OBJECT);
-    when(resultSet.next()).thenReturn(true).thenReturn(false);
-    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
-    String pdxClassName = "myPdxClassName";
-    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
-    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
-    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
-    PdxType pdxType = mock(PdxType.class);
-    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
-    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
-    when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(null);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage("Could not find PdxType");
-
-    createPdxInstance();
-  }
-
-  @Test
-  public void readThrowsWithMissingPdxType() throws Exception {
-    setupResultSet(resultSet, FieldType.OBJECT);
-    when(resultSet.next()).thenReturn(true).thenReturn(false);
-    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
-    String pdxClassName = "myPdxClassName";
-    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
-    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
-    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
-    when(regionMapping.getPdxName()).thenReturn(pdxClassName);
-    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(null);
-    when(regionMapping.getFieldNameForColumn(eq(COLUMN_NAME_1)))
-        .thenReturn(PDX_FIELD_NAME_1);
-    thrown.expect(JdbcConnectorException.class);
-    thrown.expectMessage("Could not find PdxType");
 
     createPdxInstance();
   }
@@ -726,15 +709,8 @@ public class SqlToPdxInstanceCreatorTest {
     String pdxClassName = "myPdxClassName";
     when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
 
-    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
-    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
-    PdxType pdxType = mock(PdxType.class);
-
     when(regionMapping.getPdxName()).thenReturn(pdxClassName);
-    when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
-    PdxField pdxField = mock(PdxField.class);
-    when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);
-    when(pdxField.getFieldType()).thenReturn(fieldType);
+    when(columnMapping.getPdxType()).thenReturn(fieldType.name());
 
     return factory;
   }

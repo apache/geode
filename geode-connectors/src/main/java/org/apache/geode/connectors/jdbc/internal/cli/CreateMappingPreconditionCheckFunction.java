@@ -19,9 +19,7 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -38,7 +36,6 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.internal.PdxField;
-import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 @Experimental
@@ -105,49 +102,16 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
   private void updateFieldMappingFromExistingPdxType(FieldMapping fieldMapping,
       TypeRegistry typeRegistry, String pdxClassName) {
     String columnName = fieldMapping.getJdbcName();
-    Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(pdxClassName);
-    if (pdxTypes.isEmpty()) {
-      return;
-    }
-    PdxField foundField = findExactMatch(columnName, pdxTypes);
-    if (foundField == null) {
-      foundField = findCaseInsensitiveMatch(columnName, pdxTypes);
-    }
-    if (foundField != null) {
-      fieldMapping.setPdxName(foundField.getFieldName());
-      fieldMapping.setPdxType(foundField.getFieldType().name());
-    }
-  }
-
-  private PdxField findCaseInsensitiveMatch(String columnName, Set<PdxType> pdxTypes) {
-    HashSet<String> matchingFieldNames = new HashSet<>();
-    for (PdxType pdxType : pdxTypes) {
-      for (String existingFieldName : pdxType.getFieldNames()) {
-        if (existingFieldName.equalsIgnoreCase(columnName)) {
-          matchingFieldNames.add(existingFieldName);
-        }
+    try {
+      PdxField foundField = typeRegistry.findFieldThatMatchesName(pdxClassName, columnName);
+      if (foundField != null) {
+        fieldMapping.setPdxName(foundField.getFieldName());
+        fieldMapping.setPdxType(foundField.getFieldType().name());
       }
-    }
-    if (matchingFieldNames.isEmpty()) {
-      return null;
-    } else if (matchingFieldNames.size() > 1) {
+    } catch (IllegalStateException ex) {
       throw new JdbcConnectorException(
           "Could not determine what pdx field to use for the column name " + columnName
-              + " because the pdx fields " + String.join(", ", matchingFieldNames)
-              + " all match it.");
+              + " because " + ex.getMessage());
     }
-    String matchingFieldName = matchingFieldNames.iterator().next();
-    return findExactMatch(matchingFieldName, pdxTypes);
   }
-
-  private PdxField findExactMatch(String columnName, Set<PdxType> pdxTypes) {
-    for (PdxType pdxType : pdxTypes) {
-      PdxField foundField = pdxType.getPdxField(columnName);
-      if (foundField != null) {
-        return foundField;
-      }
-    }
-    return null;
-  }
-
 }

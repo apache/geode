@@ -83,7 +83,7 @@ public class SqlHandler {
         try (ResultSet resultSet = executeReadQuery(statement, entryColumnData)) {
           InternalCache cache = (InternalCache) region.getRegionService();
           SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
-              new SqlToPdxInstanceCreator(cache, regionMapping, resultSet, tableMetaData);
+              new SqlToPdxInstanceCreator(cache, regionMapping, resultSet);
           result = sqlToPdxInstanceCreator.create();
         }
       }

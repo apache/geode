@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -48,7 +47,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.internal.PdxField;
-import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class CreateMappingPreconditionCheckFunctionTest {
@@ -179,53 +177,16 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaDataAndExistingPdxType()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1", "col2"));
-    when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
-    when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
-    when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
-    when(tableMetaDataView.isColumnNullable("col2")).thenReturn(true);
-    when(tableMetaDataView.getColumnDataType("col2")).thenReturn(JDBCType.DATE);
-    PdxType pdxType = mock(PdxType.class);
-    PdxField pdxField1 = mock(PdxField.class);
-    when(pdxField1.getFieldName()).thenReturn("pdxField1");
-    when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
-    when(pdxType.getPdxField("col1")).thenReturn(pdxField1);
-    Set<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
-    when(typeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME)).thenReturn(pdxTypes);
-
-    CliFunctionResult result = function.executeFunction(context);
-
-    assertThat(result.isSuccessful()).isTrue();
-    Object[] outputs = (Object[]) result.getResultObject();
-    ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
-    assertThat(fieldsMappings).hasSize(2);
-    assertThat(fieldsMappings.get(0))
-        .isEqualTo(
-            new FieldMapping("pdxField1", FieldType.LONG.name(), "col1", JDBCType.DATE.name(),
-                false));
-    assertThat(fieldsMappings.get(1))
-        .isEqualTo(
-            new FieldMapping("", "", "col2", JDBCType.DATE.name(), true));
-  }
-
-  @Test
-  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaDataAndExistingPdxTypeWithInexactMatch()
+  public void executeFunctionReturnsFieldMappingsThatMatchTableMetaDataAndExistingPdxField()
       throws Exception {
     Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
-    PdxType pdxType = mock(PdxType.class);
     PdxField pdxField1 = mock(PdxField.class);
     when(pdxField1.getFieldName()).thenReturn("COL1");
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
-    when(pdxType.getPdxField("col1")).thenReturn(null);
-    when(pdxType.getFieldNames()).thenReturn(Arrays.asList("someOtherField", "COL1"));
-    when(pdxType.getPdxField("COL1")).thenReturn(pdxField1);
-    Set<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
-    when(typeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME)).thenReturn(pdxTypes);
+    when(typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "col1")).thenReturn(pdxField1);
 
     CliFunctionResult result = function.executeFunction(context);
 
@@ -245,16 +206,14 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
-    PdxType pdxType = mock(PdxType.class);
-    when(pdxType.getFieldNames()).thenReturn(Arrays.asList("Col1", "COL1"));
-    Set<PdxType> pdxTypes = new HashSet<>(Arrays.asList(pdxType));
-    when(typeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME)).thenReturn(pdxTypes);
+    when(typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "col1"))
+        .thenThrow(new IllegalStateException("reason"));
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
 
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
-        .hasMessage("Could not determine what pdx field to use for the column name col1"
-            + " because the pdx fields Col1, COL1 all match it.");
+        .hasMessage(
+            "Could not determine what pdx field to use for the column name col1 because reason");
   }
 
   @Test

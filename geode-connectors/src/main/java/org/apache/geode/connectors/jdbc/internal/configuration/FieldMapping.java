@@ -25,12 +25,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 @SuppressWarnings("serial")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class FieldMapping implements Serializable {
-  @Override
-  public String toString() {
-    return "FieldMapping [pdxName=" + pdxName + ", pdxType=" + pdxType + ", jdbcName=" + jdbcName
-        + ", jdbcType=" + jdbcType + ", jdbcNullable=" + jdbcNullable + "]";
-  }
-
   @XmlAttribute(name = "pdx-name")
   private String pdxName;
   @XmlAttribute(name = "pdx-type")
@@ -58,11 +52,15 @@ public class FieldMapping implements Serializable {
   }
 
   public void setPdxName(String value) {
-    this.pdxName = value;
+    pdxName = value;
+  }
+
+  public String getPdxType() {
+    return pdxType;
   }
 
   public void setPdxType(String value) {
-    this.pdxType = value;
+    pdxType = value;
   }
 
   public String getJdbcName() {
@@ -70,11 +68,15 @@ public class FieldMapping implements Serializable {
   }
 
   public void setJdbcName(String value) {
-    this.jdbcName = value;
+    jdbcName = value;
+  }
+
+  public String getJdbcType() {
+    return jdbcType;
   }
 
   public boolean isJdbcNullable() {
-    return this.jdbcNullable;
+    return jdbcNullable;
   }
 
   @Override
@@ -134,5 +136,12 @@ public class FieldMapping implements Serializable {
     }
     return true;
   }
+
+  @Override
+  public String toString() {
+    return "FieldMapping [pdxName=" + pdxName + ", pdxType=" + pdxType + ", jdbcName=" + jdbcName
+        + ", jdbcType=" + jdbcType + ", jdbcNullable=" + jdbcNullable + "]";
+  }
+
 
 }

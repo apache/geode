@@ -16,6 +16,7 @@ package org.apache.geode.pdx.internal;
 
 import static java.lang.Integer.valueOf;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -538,4 +539,57 @@ public class TypeRegistry {
   public void setPdxReadSerializedOverride(boolean overridePdxReadSerialized) {
     pdxReadSerializedOverride.set(overridePdxReadSerialized);
   }
+
+  /**
+   * Find and return the pdx field that matches the given name.
+   * An exact match will be looked for first; followed by a
+   * case insensitive match.
+   *
+   * @param pdxClassName the pdx type's class
+   * @param name the name of the field to find
+   * @return PdxField that matches name or null if no match
+   * @throws IllegalStateException if more than one field matched
+   */
+  public PdxField findFieldThatMatchesName(String pdxClassName, String name) {
+    Set<PdxType> pdxTypes = getPdxTypesForClassName(pdxClassName);
+    if (pdxTypes.isEmpty()) {
+      return null;
+    }
+    PdxField foundField = findExactMatch(name, pdxTypes);
+    if (foundField == null) {
+      foundField = findCaseInsensitiveMatch(name, pdxTypes);
+    }
+    return foundField;
+  }
+
+
+  private PdxField findCaseInsensitiveMatch(String name, Set<PdxType> pdxTypes) {
+    HashSet<String> matchingFieldNames = new HashSet<>();
+    for (PdxType pdxType : pdxTypes) {
+      for (String existingFieldName : pdxType.getFieldNames()) {
+        if (existingFieldName.equalsIgnoreCase(name)) {
+          matchingFieldNames.add(existingFieldName);
+        }
+      }
+    }
+    if (matchingFieldNames.isEmpty()) {
+      return null;
+    } else if (matchingFieldNames.size() > 1) {
+      throw new IllegalStateException(
+          "the pdx fields " + String.join(", ", matchingFieldNames) + " all match " + name);
+    }
+    String matchingFieldName = matchingFieldNames.iterator().next();
+    return findExactMatch(matchingFieldName, pdxTypes);
+  }
+
+  private PdxField findExactMatch(String name, Set<PdxType> pdxTypes) {
+    for (PdxType pdxType : pdxTypes) {
+      PdxField foundField = pdxType.getPdxField(name);
+      if (foundField != null) {
+        return foundField;
+      }
+    }
+    return null;
+  }
+
 }
