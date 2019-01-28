@@ -197,15 +197,6 @@ public class RegionMapping implements CacheElement {
         "A field mapping for the pdx field \"" + fieldName + "\" does not exist.");
   }
 
-  public String getFieldNameForColumn(String columnName) {
-    FieldMapping fieldMapping = getFieldMappingByJdbcName(columnName);
-    if (fieldMapping != null) {
-      return fieldMapping.getPdxName();
-    }
-    throw new JdbcConnectorException(
-        "A field mapping for the column \"" + columnName + "\" does not exist.");
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {

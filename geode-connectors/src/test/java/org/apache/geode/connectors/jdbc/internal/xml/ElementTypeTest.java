@@ -136,7 +136,6 @@ public class ElementTypeTest {
 
     RegionMapping mapping1 = (RegionMapping) stack.pop();
     assertThat(mapping1.getColumnNameForField("myPdxName")).isEqualTo("myJdbcName");
-    assertThat(mapping1.getFieldNameForColumn("myJdbcName")).isEqualTo("myPdxName");
     assertThat(mapping1.getFieldMappingByJdbcName("myJdbcName")).isEqualTo(expected);
     assertThat(mapping1.getFieldMappingByPdxName("myPdxName")).isEqualTo(expected);
   }

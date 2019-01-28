@@ -117,26 +117,6 @@ public class RegionMappingTest {
   }
 
   @Test
-  public void getFieldNameForColumnThrowsIfColumnNotMapped() {
-    mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-    expectedException.expect(JdbcConnectorException.class);
-    expectedException
-        .expectMessage("A field mapping for the column \"columnName\" does not exist.");
-
-    mapping.getFieldNameForColumn("columnName");
-  }
-
-  @Test
-  public void getFieldNameForColumnReturnsFieldNameIfMapped() {
-    String pdxClassName = "pdxClassName";
-    String columnName = "columnName";
-    mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    mapping.addFieldMapping(new FieldMapping(pdxClassName, null, columnName, null, false));
-
-    assertThat(mapping.getFieldNameForColumn(columnName)).isEqualTo(pdxClassName);
-  }
-
-  @Test
   public void getColumnNameForFieldReturnsColumnNameIfMapped() {
     String pdxClassName = "pdxClassName";
     String columnName = "columnName";
