@@ -189,12 +189,24 @@ public class RegionMapping implements CacheElement {
   }
 
   public String getColumnNameForField(String fieldName) {
-    FieldMapping fieldMapping = getFieldMappingByPdxName(fieldName);
-    if (fieldMapping != null) {
-      return fieldMapping.getJdbcName();
+    FieldMapping exactMatch = getFieldMappingByPdxName(fieldName);
+    if (exactMatch != null) {
+      return exactMatch.getJdbcName();
     }
-    throw new JdbcConnectorException(
-        "A field mapping for the pdx field \"" + fieldName + "\" does not exist.");
+    FieldMapping inexactMatch = null;
+    for (FieldMapping fieldMapping : getFieldMappings()) {
+      if (fieldMapping.getPdxName().equalsIgnoreCase(fieldName)) {
+        if (inexactMatch != null) {
+          throw new JdbcConnectorException(
+              "Multiple columns matched the pdx field \"" + fieldName + "\".");
+        }
+        inexactMatch = fieldMapping;
+      }
+    }
+    if (inexactMatch == null) {
+      throw new JdbcConnectorException("No column matched the pdx field \"" + fieldName + "\".");
+    }
+    return inexactMatch.getJdbcName();
   }
 
   @Override
