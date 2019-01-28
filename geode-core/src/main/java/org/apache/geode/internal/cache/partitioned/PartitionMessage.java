@@ -32,6 +32,7 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -333,6 +334,13 @@ public abstract class PartitionMessage extends DistributionMessage
           } else if (tx.isInProgress()) {
             sendReply = operateOnPartitionedRegion(dm, pr, startTime);
             tx.updateProxyServer(this.getSender());
+          } else {
+            /*
+             * This can occur when processing an in-flight message after the transaction has
+             * been failed over and committed.
+             */
+            throw new TransactionException("transactional operation elided because transaction {"
+                + tx.getTxId() + "} is closed");
           }
         } finally {
           txMgr.unmasquerade(tx);
@@ -340,8 +348,8 @@ public abstract class PartitionMessage extends DistributionMessage
       }
       thr = null;
 
-    } catch (ForceReattemptException fre) {
-      thr = fre;
+    } catch (ForceReattemptException | TransactionException e) {
+      thr = e;
     } catch (DataLocationException fre) {
       thr = new ForceReattemptException(fre.getMessage(), fre);
     } catch (DistributedSystemDisconnectedException se) {

@@ -27,6 +27,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
@@ -200,12 +201,19 @@ public abstract class RemoteOperationMessage extends DistributionMessage
           } else if (tx.isInProgress()) {
             sendReply = operateOnRegion(dm, r, startTime);
             tx.updateProxyServer(this.getSender());
+          } else {
+            /*
+             * This can occur when processing an in-flight message after the transaction has
+             * been failed over and committed.
+             */
+            throw new TransactionException("transactional operation elided because transaction {"
+                + tx.getTxId() + "} is closed");
           }
         } finally {
           txMgr.unmasquerade(tx);
         }
       }
-    } catch (RegionDestroyedException | RemoteOperationException ex) {
+    } catch (RegionDestroyedException | RemoteOperationException | TransactionException ex) {
       thr = ex;
     } catch (DistributedSystemDisconnectedException se) {
       // bug 37026: this is too noisy...
