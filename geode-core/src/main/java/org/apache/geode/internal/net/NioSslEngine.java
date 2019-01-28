@@ -42,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.logging.LogService;
 
 
@@ -308,6 +309,11 @@ public class NioSslEngine implements NioFilter {
     }
   }
 
+  /*
+   * NioSslEngine doesn't need to ensure capacity in network buffers because they
+   * are fixed in size by the SslContext. The size recommended by the context is
+   * big enough for the SslEngine to do its work.
+   */
   @Override
   public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
       Buffers.BufferType bufferType, DMStats stats) {
@@ -317,32 +323,38 @@ public class NioSslEngine implements NioFilter {
   @Override
   public ByteBuffer readAtLeast(SocketChannel channel, int bytes,
       ByteBuffer wrappedBuffer, DMStats stats) throws IOException {
+    try {
+      if (peerAppData.capacity() > bytes) {
+        // we already have a buffer that's big enough
+        if (peerAppData.capacity() - peerAppData.position() < bytes) {
+          peerAppData.compact();
+          peerAppData.flip();
+        }
+      } else {
+        peerAppData =
+            Buffers.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, bytes, this.stats);
+      }
 
-    if (peerAppData.capacity() > bytes) {
-      // we already have a buffer that's big enough
-      if (peerAppData.capacity() - peerAppData.position() < bytes) {
-        peerAppData.compact();
-        peerAppData.flip();
+      while (peerAppData.remaining() < bytes) {
+        wrappedBuffer.limit(wrappedBuffer.capacity());
+        int amountRead = channel.read(wrappedBuffer);
+        if (amountRead < 0) {
+          throw new EOFException();
+        }
+        if (amountRead > 0) {
+          wrappedBuffer.flip();
+          // prep the decoded buffer for writing
+          peerAppData.compact();
+          peerAppData = unwrap(wrappedBuffer);
+          // done writing to the decoded buffer - prep it for reading again
+          peerAppData.flip();
+        }
       }
-    } else {
-      peerAppData =
-          Buffers.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, bytes, this.stats);
-    }
-
-    while (peerAppData.remaining() < bytes) {
-      wrappedBuffer.limit(wrappedBuffer.capacity());
-      int amountRead = channel.read(wrappedBuffer);
-      if (amountRead < 0) {
-        throw new EOFException();
-      }
-      if (amountRead > 0) {
-        wrappedBuffer.flip();
-        // prep the decoded buffer for writing
-        peerAppData.compact();
-        peerAppData = unwrap(wrappedBuffer);
-        // done writing to the decoded buffer - prep it for reading again
-        peerAppData.flip();
-      }
+    } catch (IOException | RuntimeException | Error e) {
+      logger.warn(
+          "BRUCE: PID " + OSProcess.getId() + ", MsgReader.readAtLeast() is throwing an exception",
+          e);
+      throw e;
     }
     return peerAppData;
   }

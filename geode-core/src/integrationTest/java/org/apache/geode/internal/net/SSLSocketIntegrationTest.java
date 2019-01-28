@@ -202,10 +202,10 @@ public class SSLSocketIntegrationTest {
         SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
     this.serverThread = startServerNIO(serverSocket, 15000);
 
-    await().atMost(5, TimeUnit.MINUTES).until(() -> serverThread.isAlive());
+    await().until(() -> serverThread.isAlive());
 
     SocketChannel clientChannel = SocketChannel.open();
-    await().atMost(5, TimeUnit.MINUTES).until(
+    await().until(
         () -> clientChannel.connect(new InetSocketAddress(localHost, serverPort)));
 
     clientSocket = clientChannel.socket();

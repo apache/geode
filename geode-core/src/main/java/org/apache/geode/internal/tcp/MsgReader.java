@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.Buffers;
@@ -109,7 +110,7 @@ public class MsgReader {
     try {
       byteBufferInputStream.setBuffer(nioInputBuffer);
       ReplyProcessor21.initMessageRPId();
-//      dumpState("readMessage ready to deserialize", null, nioInputBuffer, position, limit);
+      // dumpState("readMessage ready to deserialize", null, nioInputBuffer, position, limit);
       return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
     } catch (RuntimeException e) {
       dumpState("readMessage(1)", e, nioInputBuffer, position, limit);
@@ -126,16 +127,19 @@ public class MsgReader {
 
   private void dumpState(String whereFrom, Throwable e, ByteBuffer inputBuffer, int position,
       int limit) {
-     logger.info("BRUCE: {}, Connection to {}", whereFrom, conn.getRemoteAddress());
-     logger.info("BRUCE: {}, Message length {}; type {}; id {}",
-     whereFrom, header.messageLength, header.messageId, header.messageId);
-     logger.info("BRUCE: {}, starting buffer position {}; buffer limit {} buffer hash {}",
-     whereFrom, position, limit, Integer.toHexString(System.identityHashCode(inputBuffer)));
-     logger.info("BRUCE: {}, current buffer position {}; buffer limit {}",
-     whereFrom, inputBuffer.position(), inputBuffer.limit());
-     if (e != null) {
-     logger.info("BRUCE: Exception reading message", e);
-     }
+    logger.info("BRUCE: {}, PID {} Connection to {}, {} SSL", whereFrom, OSProcess.getId(),
+        conn.getRemoteAddress(), conn.getConduit().useSSL());
+    logger.info("BRUCE: {}, Message length {}; type {}; id {}",
+        whereFrom, header.messageLength, header.messageType, header.messageId);
+    logger.info(
+        "BRUCE: {}, starting buffer position {}; buffer limit {} capacity {} buffer hash {}",
+        whereFrom, position, limit, inputBuffer.capacity(),
+        Integer.toHexString(System.identityHashCode(inputBuffer)));
+    logger.info("BRUCE: {}, current buffer position {}; buffer limit {}",
+        whereFrom, inputBuffer.position(), inputBuffer.limit());
+    if (e != null) {
+      logger.info("BRUCE: Exception reading message", e);
+    }
   }
 
   void readChunk(Header header, MsgDestreamer md)
