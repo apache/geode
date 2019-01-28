@@ -15,6 +15,9 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -25,6 +28,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -103,6 +107,22 @@ public class PartitionMessageTest {
     msg.process(dm);
 
     verify(msg, times(0)).operateOnPartitionedRegion(dm, pr, startTime);
+  }
+
+  @Test
+  public void messageForFinishedTXRepliesWithException() throws Exception {
+    when(txMgr.masqueradeAs(msg)).thenReturn(tx);
+    when(tx.isInProgress()).thenReturn(false);
+
+    msg.process(dm);
+
+    verify(msg, times(1)).sendReply(
+        isNull(),
+        eq(0),
+        eq(dm),
+        argThat(ex -> ex != null && ex.getCause() instanceof TransactionException),
+        eq(pr),
+        eq(startTime));
   }
 
   @Test
