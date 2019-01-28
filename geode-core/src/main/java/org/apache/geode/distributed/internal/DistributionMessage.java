@@ -496,7 +496,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
       if (pid != 0) {
         procId = " processorId=" + pid;
       }
-      if (Thread.currentThread().getName().startsWith("P2P Message Reader")) {
+      if (Thread.currentThread().getName().startsWith("P2P message reader")) {
         sender = procId;
       } else {
         sender = "sender=" + getSender() + procId;
