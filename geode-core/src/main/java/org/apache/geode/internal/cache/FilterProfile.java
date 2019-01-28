@@ -2050,6 +2050,7 @@ public class FilterProfile implements DataSerializableFixedID {
               this.hasLongID = true;
             }
             result = nextID++;
+            logger.warn("XXX IDMap.getWireID about to put realId=" + realId, new Exception());
             this.realIDs.put(realId, result);
             this.wireIDs.put(result, realId);
           }
@@ -2104,6 +2105,8 @@ public class FilterProfile implements DataSerializableFixedID {
      * remove the mapping for the given proxy ID
      */
     void removeIDMapping(Object clientId) {
+      logger.warn("XXX IDMap.removeIDMapping about to remove clientId=" + clientId,
+          new Exception());
       Long mappedId = this.realIDs.remove(clientId);
       if (mappedId != null) {
         this.wireIDs.remove(mappedId);

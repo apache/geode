@@ -122,6 +122,9 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
       ClusterStartupRule.getClientCache().close();
     });
 
+    // Wait for CacheClientProxy to be closed
+    server.invoke(() -> waitForCacheClientProxyToBeClosed());
+
     // Verify proxy id is unregistered from filter profile
     server.invoke(() -> verifyRealAndWireProxyIdsInFilterProfile(regionName, 0));
   }
@@ -175,17 +178,25 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
   private void verifySubjectsAreLoggedOut() {
     AcceptorImpl acceptor = getAcceptor();
 
+    // Wait for ServerConnections to be closed
+    waitForServerConnectionsToBeClosed(acceptor);
+
     // Verify ServerConnection subjects are logged out
-    verifyServerConnectionSubjectsAreLoggedOut(acceptor);
+    verifyServerConnectionSubjectsAreLoggedOut();
+
+    // Wait for CacheClientProxy to be closed
+    waitForCacheClientProxyToBeClosed(acceptor);
 
     // Verify the CacheClientProxy subject is logged out
-    verifyCacheClientProxyIsLoggedOut(acceptor);
+    verifyCacheClientProxyIsLoggedOut();
   }
 
-  private void verifyServerConnectionSubjectsAreLoggedOut(AcceptorImpl acceptor) {
+  private void waitForServerConnectionsToBeClosed(AcceptorImpl acceptor) {
     // Wait for all ServerConnections to be closed since handleTermination is in the finally block
     await().until(() -> acceptor.getAllServerConnections().isEmpty());
+  }
 
+  private void verifyServerConnectionSubjectsAreLoggedOut() {
     for (Subject subject : serverConnectionSubjects) {
       assertThat(subject.getPrincipal()).isNull();
       assertThat(subject.getPrincipals()).isNull();
@@ -197,13 +208,19 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     }
   }
 
-  private void verifyCacheClientProxyIsLoggedOut(AcceptorImpl acceptor) {
+  private void waitForCacheClientProxyToBeClosed(AcceptorImpl acceptor) {
     // Wait for the CacheClientProxy to be closed since handleTermination is in the finally block
     await().until(() -> acceptor.getCacheClientNotifier().getClientProxies().isEmpty());
+  }
 
+  private void verifyCacheClientProxyIsLoggedOut() {
     assertThat(proxySubject.getPrincipal()).isNull();
     assertThat(proxySubject.getPrincipals()).isNull();
     assertThat(proxySubject.isAuthenticated()).isFalse();
+  }
+
+  private void waitForCacheClientProxyToBeClosed() {
+    waitForCacheClientProxyToBeClosed(getAcceptor());
   }
 
   private void verifyRealAndWireProxyIdsInFilterProfile(String regionName, int expectedNumIds) {
