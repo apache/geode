@@ -20,6 +20,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.internal.NanoTimer;
@@ -29,9 +30,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * CachePerfStats tracks statistics about GemFire cache performance.
  */
 public class CachePerfStats {
-  public static boolean enableClockStats = false;
-
-  ////////////////// Static fields ///////////////////////////
+  public static boolean enableClockStats;
 
   private static final StatisticsType type;
 
@@ -115,7 +114,6 @@ public class CachePerfStats {
 
   protected static final int evictWorkTimeId;
 
-
   protected static final int indexUpdateInProgressId;
   protected static final int indexUpdateCompletedId;
   protected static final int indexUpdateTimeId;
@@ -156,11 +154,6 @@ public class CachePerfStats {
   protected static final int compressionDecompressionsId;
   protected static final int compressionPreCompressedBytesId;
   protected static final int compressionPostCompressedBytesId;
-
-  /** The Statistics object that we delegate most behavior to */
-  protected final Statistics stats;
-
-  //////////////////////// Static methods ////////////////////////
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -324,25 +317,20 @@ public class CachePerfStats {
         "The total number of bytes before compressing.";
     final String compressionPostCompressedBytesDesc =
         "The total number of bytes after compressing.";
-    final String evictByCriteria_evictionsDesc = "The total number of entries evicted";// total
-                                                                                       // actual
-                                                                                       // evictions
-                                                                                       // (entries
-                                                                                       // evicted)
-    final String evictByCriteria_evictionTimeDesc = "Time taken for eviction process";// total
-                                                                                      // eviction
-                                                                                      // time
-                                                                                      // including
-                                                                                      // product +
-                                                                                      // user expr.
+
+    // total actual evictions (entries evicted)
+    final String evictByCriteria_evictionsDesc = "The total number of entries evicted";
+
+    // total eviction time including product + user expr.
+    final String evictByCriteria_evictionTimeDesc = "Time taken for eviction process";
     final String evictByCriteria_evictionsInProgressDesc = "Total number of evictions in progress";
-    final String evictByCriteria_evaluationsDesc = "Total number of evaluations for eviction";// total
-                                                                                              // eviction
-                                                                                              // attempts
+
+    // total eviction attempts
+    final String evictByCriteria_evaluationsDesc = "Total number of evaluations for eviction";
+
+    // time taken to evaluate user expression.
     final String evictByCriteria_evaluationTimeDesc =
-        "Total time taken for evaluation of user expression during eviction";// time taken to
-                                                                             // evaluate user
-                                                                             // expression.
+        "Total time taken for evaluation of user expression during eviction";
 
     type = f.createType("CachePerfStats", "Statistics about GemFire cache performance",
         new StatisticDescriptor[] {
@@ -505,7 +493,6 @@ public class CachePerfStats {
             f.createLongCounter("evictByCriteria_evaluationTime",
                 evictByCriteria_evaluationTimeDesc, "nanoseconds")});
 
-    // Initialize id fields
     loadsInProgressId = type.nameToId("loadsInProgress");
     loadsCompletedId = type.nameToId("loadsCompleted");
     loadTimeId = type.nameToId("loadTime");
@@ -627,13 +614,17 @@ public class CachePerfStats {
     compressionPostCompressedBytesId = type.nameToId("postCompressedBytes");
   }
 
-  //////////////////////// Constructors ////////////////////////
+  /** The Statistics object that we delegate most behavior to */
+  protected final Statistics stats;
+
+  private final Clock clock;
 
   /**
    * Created specially for bug 39348. Should not be invoked in any other case.
    */
   public CachePerfStats() {
     stats = null;
+    clock = () -> enableClockStats ? NanoTimer.getTime() : 0;
   }
 
   /**
@@ -641,27 +632,41 @@ public class CachePerfStats {
    * factory.
    */
   public CachePerfStats(StatisticsFactory factory) {
-    stats = factory.createAtomicStatistics(type, "cachePerfStats");
+    this(factory, "cachePerfStats", () -> enableClockStats ? NanoTimer.getTime() : 0);
   }
 
   /**
    * Creates a new <code>CachePerfStats</code> and registers itself with the given statistics
    * factory.
    */
-  public CachePerfStats(StatisticsFactory factory, String name) {
-    stats = factory.createAtomicStatistics(type, "RegionStats-" + name);
+  public CachePerfStats(StatisticsFactory factory, String regionName) {
+    this(factory, "RegionStats-" + regionName, () -> enableClockStats ? NanoTimer.getTime() : 0);
+  }
+
+  @VisibleForTesting
+  CachePerfStats(StatisticsFactory factory, String textId, Clock clock) {
+    stats = factory.createAtomicStatistics(type, textId);
+    this.clock = clock;
   }
 
   /**
    * Returns the current NanoTime or, if clock stats are disabled, zero.
    *
    * @since GemFire 5.0
+   * @deprecated Please use instance method cachePerfStats.getClockTime() instead.
    */
+  @Deprecated
   public static long getStatTime() {
     return enableClockStats ? NanoTimer.getTime() : 0;
   }
 
-  ////////////////////// Accessing Stats //////////////////////
+  public static StatisticsType getStatisticsType() {
+    return type;
+  }
+
+  public long getClockTime() {
+    return clock.getTime();
+  }
 
   public int getLoadsInProgress() {
     return stats.getInt(loadsInProgressId);
@@ -739,6 +744,10 @@ public class CachePerfStats {
     return stats.getInt(putsId);
   }
 
+  public long getPutTime() {
+    return stats.getLong(putTimeId);
+  }
+
   public int getPutAlls() {
     return stats.getInt(putallsId);
   }
@@ -757,6 +766,10 @@ public class CachePerfStats {
 
   public int getGets() {
     return stats.getInt(getsId);
+  }
+
+  public long getGetTime() {
+    return stats.getLong(getTimeId);
   }
 
   public int getMisses() {
@@ -836,11 +849,11 @@ public class CachePerfStats {
   }
 
   public void incQueuedEvents(int inc) {
-    this.stats.incLong(eventsQueuedId, inc);
+    stats.incLong(eventsQueuedId, inc);
   }
 
   public long getQueuedEvents() {
-    return this.stats.getInt(eventsQueuedId);
+    return stats.getInt(eventsQueuedId);
   }
 
   public int getDeltaUpdates() {
@@ -899,16 +912,14 @@ public class CachePerfStats {
     return stats.getLong(compressionPostCompressedBytesId);
   }
 
-  ////////////////////// Updating Stats //////////////////////
-
   public long startCompression() {
     stats.incLong(compressionCompressionsId, 1);
-    return getStatTime();
+    return getClockTime();
   }
 
   public void endCompression(long startTime, long startSize, long endSize) {
     if (enableClockStats) {
-      stats.incLong(compressionCompressTimeId, getStatTime() - startTime);
+      stats.incLong(compressionCompressTimeId, getClockTime() - startTime);
     }
     stats.incLong(compressionPreCompressedBytesId, startSize);
     stats.incLong(compressionPostCompressedBytesId, endSize);
@@ -916,12 +927,12 @@ public class CachePerfStats {
 
   public long startDecompression() {
     stats.incLong(compressionDecompressionsId, 1);
-    return getStatTime();
+    return getClockTime();
   }
 
   public void endDecompression(long startTime) {
     if (enableClockStats) {
-      stats.incLong(compressionDecompressTimeId, getStatTime() - startTime);
+      stats.incLong(compressionDecompressTimeId, getClockTime() - startTime);
     }
   }
 
@@ -950,7 +961,7 @@ public class CachePerfStats {
    */
   public long startNetload() {
     stats.incInt(netloadsInProgressId, 1);
-    return getStatTime();
+    return getClockTime();
   }
 
   /**
@@ -958,7 +969,7 @@ public class CachePerfStats {
    */
   public void endNetload(long start) {
     if (enableClockStats) {
-      stats.incLong(netloadTimeId, getStatTime() - start);
+      stats.incLong(netloadTimeId, getClockTime() - start);
     }
     stats.incInt(netloadsInProgressId, -1);
     stats.incInt(netloadsCompletedId, 1);
@@ -989,7 +1000,7 @@ public class CachePerfStats {
    */
   public long startCacheWriterCall() {
     stats.incInt(cacheWriterCallsInProgressId, 1);
-    return getStatTime();
+    return getClockTime();
   }
 
   /**
@@ -997,10 +1008,14 @@ public class CachePerfStats {
    */
   public void endCacheWriterCall(long start) {
     if (enableClockStats) {
-      stats.incLong(cacheWriterCallTimeId, getStatTime() - start);
+      stats.incLong(cacheWriterCallTimeId, getClockTime() - start);
     }
     stats.incInt(cacheWriterCallsInProgressId, -1);
     stats.incInt(cacheWriterCallsCompletedId, 1);
+  }
+
+  public int getCacheWriterCallsCompleted() {
+    return stats.getInt(cacheWriterCallsCompletedId);
   }
 
   /**
@@ -1009,7 +1024,7 @@ public class CachePerfStats {
    */
   public long startCacheListenerCall() {
     stats.incInt(cacheListenerCallsInProgressId, 1);
-    return getStatTime();
+    return getClockTime();
   }
 
   /**
@@ -1018,10 +1033,14 @@ public class CachePerfStats {
    */
   public void endCacheListenerCall(long start) {
     if (enableClockStats) {
-      stats.incLong(cacheListenerCallTimeId, getStatTime() - start);
+      stats.incLong(cacheListenerCallTimeId, getClockTime() - start);
     }
     stats.incInt(cacheListenerCallsInProgressId, -1);
     stats.incInt(cacheListenerCallsCompletedId, 1);
+  }
+
+  public int getCacheListenerCallsCompleted() {
+    return stats.getInt(cacheListenerCallsCompletedId);
   }
 
   /**
@@ -1029,7 +1048,7 @@ public class CachePerfStats {
    */
   public long startGetInitialImage() {
     stats.incInt(getInitialImagesInProgressId, 1);
-    return getStatTime();
+    return getClockTime();
   }
 
   /**
@@ -1037,7 +1056,7 @@ public class CachePerfStats {
    */
   public void endGetInitialImage(long start) {
     if (enableClockStats) {
-      stats.incLong(getInitialImageTimeId, getStatTime() - start);
+      stats.incLong(getInitialImageTimeId, getClockTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
     stats.incInt(getInitialImagesCompletedId, 1);
@@ -1048,7 +1067,7 @@ public class CachePerfStats {
    */
   public void endNoGIIDone(long start) {
     if (enableClockStats) {
-      stats.incLong(getInitialImageTimeId, getStatTime() - start);
+      stats.incLong(getInitialImageTimeId, getClockTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
   }
@@ -1063,23 +1082,27 @@ public class CachePerfStats {
 
   public long startIndexUpdate() {
     stats.incInt(indexUpdateInProgressId, 1);
-    return getStatTime();
+    return getClockTime();
   }
 
   public void endIndexUpdate(long start) {
-    long ts = getStatTime();
+    long ts = getClockTime();
     stats.incLong(indexUpdateTimeId, ts - start);
     stats.incInt(indexUpdateInProgressId, -1);
     stats.incInt(indexUpdateCompletedId, 1);
   }
 
+  public int getIndexUpdateCompleted() {
+    return stats.getInt(indexUpdateCompletedId);
+  }
+
   public long startIndexInitialization() {
     stats.incInt(indexInitializationInProgressId, 1);
-    return getStatTime();
+    return getClockTime();
   }
 
   public void endIndexInitialization(long start) {
-    long ts = getStatTime();
+    long ts = getClockTime();
     stats.incLong(indexInitializationTimeId, ts - start);
     stats.incInt(indexInitializationInProgressId, -1);
     stats.incInt(indexInitializationCompletedId, 1);
@@ -1113,7 +1136,7 @@ public class CachePerfStats {
    * @return the timestamp that marks the start of the operation
    */
   public long startGet() {
-    return getStatTime();
+    return getClockTime();
   }
 
   /**
@@ -1121,7 +1144,8 @@ public class CachePerfStats {
    */
   public void endGet(long start, boolean miss) {
     if (enableClockStats) {
-      stats.incLong(getTimeId, getStatTime() - start);
+      long delta = getClockTime() - start;
+      stats.incLong(getTimeId, delta);
     }
     stats.incInt(getsId, 1);
     if (miss) {
@@ -1138,13 +1162,13 @@ public class CachePerfStats {
     if (isUpdate) {
       stats.incInt(updatesId, 1);
       if (enableClockStats) {
-        total = getStatTime() - start;
+        total = getClockTime() - start;
         stats.incLong(updateTimeId, total);
       }
     } else {
       stats.incInt(putsId, 1);
       if (enableClockStats) {
-        total = getStatTime() - start;
+        total = getClockTime() - start;
         stats.incLong(putTimeId, total);
       }
     }
@@ -1154,13 +1178,13 @@ public class CachePerfStats {
   public void endPutAll(long start) {
     stats.incInt(putallsId, 1);
     if (enableClockStats)
-      stats.incLong(putallTimeId, getStatTime() - start);
+      stats.incLong(putallTimeId, getClockTime() - start);
   }
 
   public void endRemoveAll(long start) {
     stats.incInt(removeAllsId, 1);
     if (enableClockStats)
-      stats.incLong(removeAllTimeId, getStatTime() - start);
+      stats.incLong(removeAllTimeId, getClockTime() - start);
   }
 
   public void endQueryExecution(long executionTime) {
@@ -1170,9 +1194,13 @@ public class CachePerfStats {
     }
   }
 
+  public int getQueryExecutions() {
+    return stats.getInt(queryExecutionsId);
+  }
+
   public void endQueryResultsHashCollisionProbe(long start) {
     if (enableClockStats) {
-      stats.incLong(queryResultsHashCollisionProbeTimeId, getStatTime() - start);
+      stats.incLong(queryResultsHashCollisionProbeTimeId, getClockTime() - start);
     }
   }
 
@@ -1256,7 +1284,7 @@ public class CachePerfStats {
   public void endDeltaUpdate(long start) {
     stats.incInt(deltaUpdatesId, 1);
     if (enableClockStats) {
-      stats.incLong(deltaUpdatesTimeId, getStatTime() - start);
+      stats.incLong(deltaUpdatesTimeId, getClockTime() - start);
     }
   }
 
@@ -1267,7 +1295,7 @@ public class CachePerfStats {
   public void endDeltaPrepared(long start) {
     stats.incInt(deltasPreparedId, 1);
     if (enableClockStats) {
-      stats.incLong(deltasPreparedTimeId, getStatTime() - start);
+      stats.incLong(deltasPreparedTimeId, getClockTime() - start);
     }
   }
 
@@ -1290,7 +1318,7 @@ public class CachePerfStats {
    * @since GemFire 3.5
    */
   void close() {
-    this.stats.close();
+    stats.close();
   }
 
   /**
@@ -1299,71 +1327,83 @@ public class CachePerfStats {
    * @since GemFire 3.5
    */
   public boolean isClosed() {
-    return this.stats.isClosed();
+    return stats.isClosed();
   }
 
   public int getEventQueueSize() {
-    return this.stats.getInt(eventQueueSizeId);
+    return stats.getInt(eventQueueSizeId);
   }
 
   public void incEventQueueSize(int items) {
-    this.stats.incInt(eventQueueSizeId, items);
+    stats.incInt(eventQueueSizeId, items);
   }
 
   public void incEventQueueThrottleCount(int items) {
-    this.stats.incInt(eventQueueThrottleCountId, items);
+    stats.incInt(eventQueueThrottleCountId, items);
   }
 
   protected void incEventQueueThrottleTime(long nanos) {
-    this.stats.incLong(eventQueueThrottleTimeId, nanos);
+    stats.incLong(eventQueueThrottleTimeId, nanos);
   }
 
   protected void incEventThreads(int items) {
-    this.stats.incInt(eventThreadsId, items);
+    stats.incInt(eventThreadsId, items);
   }
 
   public void incEntryCount(int delta) {
-    this.stats.incLong(entryCountId, delta);
+    stats.incLong(entryCountId, delta);
   }
 
   public long getEntries() {
-    return this.stats.getLong(entryCountId);
+    return stats.getLong(entryCountId);
   }
 
   public void incRetries() {
-    this.stats.incInt(retriesId, 1);
+    stats.incInt(retriesId, 1);
+  }
+
+  public int getRetries() {
+    return stats.getInt(retriesId);
   }
 
   public void incDiskTasksWaiting() {
-    this.stats.incInt(diskTasksWaitingId, 1);
+    stats.incInt(diskTasksWaitingId, 1);
   }
 
   public void decDiskTasksWaiting() {
-    this.stats.incInt(diskTasksWaitingId, -1);
+    stats.incInt(diskTasksWaitingId, -1);
   }
 
   public int getDiskTasksWaiting() {
-    return this.stats.getInt(diskTasksWaitingId);
+    return stats.getInt(diskTasksWaitingId);
   }
 
   public void decDiskTasksWaiting(int count) {
-    this.stats.incInt(diskTasksWaitingId, -count);
+    stats.incInt(diskTasksWaitingId, -count);
   }
 
   public void incEvictorJobsStarted() {
-    this.stats.incInt(evictorJobsStartedId, 1);
+    stats.incInt(evictorJobsStartedId, 1);
+  }
+
+  public int getEvictorJobsStarted() {
+    return stats.getInt(evictorJobsStartedId);
   }
 
   public void incEvictorJobsCompleted() {
-    this.stats.incInt(evictorJobsCompletedId, 1);
+    stats.incInt(evictorJobsCompletedId, 1);
+  }
+
+  public int getEvictorJobsCompleted() {
+    return stats.getInt(evictorJobsCompletedId);
   }
 
   public void incEvictorQueueSize(int delta) {
-    this.stats.incInt(evictorQueueSizeId, delta);
+    stats.incInt(evictorQueueSizeId, delta);
   }
 
   public void incEvictWorkTime(long delta) {
-    this.stats.incLong(evictWorkTimeId, delta);
+    stats.incLong(evictWorkTimeId, delta);
   }
 
   /**
@@ -1372,33 +1412,9 @@ public class CachePerfStats {
    * @since GemFire 3.5
    */
   public Statistics getStats() {
-    return this.stats;
+    return stats;
   }
 
-  // /**
-  // * Returns a helper object so that the event queue can record its
-  // * stats to the proper cache perf stats.
-  // * @since GemFire 3.5
-  // */
-  // public ThrottledQueueStatHelper getEventQueueHelper() {
-  // return new ThrottledQueueStatHelper() {
-  // public void incThrottleCount() {
-  // incEventQueueThrottleCount(1);
-  // }
-  // public void throttleTime(long nanos) {
-  // incEventQueueThrottleTime(nanos);
-  // }
-  // public void add() {
-  // incEventQueueSize(1);
-  // }
-  // public void remove() {
-  // incEventQueueSize(-1);
-  // }
-  // public void remove(int count) {
-  // incEventQueueSize(-count);
-  // }
-  // };
-  // }
   /**
    * Returns a helper object so that the event pool can record its stats to the proper cache perf
    * stats.
@@ -1424,7 +1440,7 @@ public class CachePerfStats {
   }
 
   public void incClearCount() {
-    this.stats.incInt(clearsId, 1);
+    stats.incInt(clearsId, 1);
   }
 
   public long getConflatedEventsCount() {
@@ -1432,55 +1448,55 @@ public class CachePerfStats {
   }
 
   public void incConflatedEventsCount() {
-    this.stats.incLong(conflatedEventsId, 1);
+    stats.incLong(conflatedEventsId, 1);
   }
 
   public int getTombstoneCount() {
-    return this.stats.getInt(tombstoneCountId);
+    return stats.getInt(tombstoneCountId);
   }
 
   public void incTombstoneCount(int amount) {
-    this.stats.incInt(tombstoneCountId, amount);
+    stats.incInt(tombstoneCountId, amount);
   }
 
   public int getTombstoneGCCount() {
-    return this.stats.getInt(tombstoneGCCountId);
+    return stats.getInt(tombstoneGCCountId);
   }
 
   public void incTombstoneGCCount() {
-    this.stats.incInt(tombstoneGCCountId, 1);
+    stats.incInt(tombstoneGCCountId, 1);
   }
 
   public void setReplicatedTombstonesSize(long size) {
-    this.stats.setLong(tombstoneOverhead1Id, size);
+    stats.setLong(tombstoneOverhead1Id, size);
   }
 
   public long getReplicatedTombstonesSize() {
-    return this.stats.getLong(tombstoneOverhead1Id);
+    return stats.getLong(tombstoneOverhead1Id);
   }
 
   public void setNonReplicatedTombstonesSize(long size) {
-    this.stats.setLong(tombstoneOverhead2Id, size);
+    stats.setLong(tombstoneOverhead2Id, size);
   }
 
   public long getNonReplicatedTombstonesSize() {
-    return this.stats.getLong(tombstoneOverhead2Id);
+    return stats.getLong(tombstoneOverhead2Id);
   }
 
   public int getClearTimeouts() {
-    return this.stats.getInt(clearTimeoutsId);
+    return stats.getInt(clearTimeoutsId);
   }
 
   public void incClearTimeouts() {
-    this.stats.incInt(clearTimeoutsId, 1);
+    stats.incInt(clearTimeoutsId, 1);
   }
 
   public void incPRQueryRetries() {
-    this.stats.incLong(partitionedRegionQueryRetriesId, 1);
+    stats.incLong(partitionedRegionQueryRetriesId, 1);
   }
 
   public long getPRQueryRetries() {
-    return this.stats.getLong(partitionedRegionQueryRetriesId);
+    return stats.getLong(partitionedRegionQueryRetriesId);
   }
 
   public QueueStatHelper getEvictionQueueStatHelper() {
@@ -1503,11 +1519,11 @@ public class CachePerfStats {
   }
 
   public void incMetaDataRefreshCount() {
-    this.stats.incLong(metaDataRefreshCountId, 1);
+    stats.incLong(metaDataRefreshCountId, 1);
   }
 
   public long getMetaDataRefreshCount() {
-    return this.stats.getLong(metaDataRefreshCountId);
+    return stats.getLong(metaDataRefreshCountId);
   }
 
   public long getImportedEntriesCount() {
@@ -1521,7 +1537,7 @@ public class CachePerfStats {
   public void endImport(long entryCount, long start) {
     stats.incLong(importedEntriesCountId, entryCount);
     if (enableClockStats) {
-      stats.incLong(importTimeId, getStatTime() - start);
+      stats.incLong(importTimeId, getClockTime() - start);
     }
   }
 
@@ -1536,7 +1552,11 @@ public class CachePerfStats {
   public void endExport(long entryCount, long start) {
     stats.incLong(exportedEntriesCountId, entryCount);
     if (enableClockStats) {
-      stats.incLong(exportTimeId, getStatTime() - start);
+      stats.incLong(exportTimeId, getClockTime() - start);
     }
+  }
+
+  interface Clock {
+    long getTime();
   }
 }
