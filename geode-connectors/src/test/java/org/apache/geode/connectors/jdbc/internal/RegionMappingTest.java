@@ -124,9 +124,9 @@ public class RegionMappingTest {
     mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
     mapping.addFieldMapping(new FieldMapping("f1", null, "c1", null, false));
     mapping.addFieldMapping(
-        new FieldMapping(pdxFieldName.toLowerCase(), null, columnName, null, false));
+        new FieldMapping("", null, pdxFieldName.toLowerCase(), null, false));
     mapping.addFieldMapping(
-        new FieldMapping(pdxFieldName.toUpperCase(), null, columnName, null, false));
+        new FieldMapping("", null, pdxFieldName.toLowerCase(), null, false));
     expectedException.expect(JdbcConnectorException.class);
     expectedException
         .expectMessage("Multiple columns matched the pdx field \"" + pdxFieldName + "\".");
@@ -146,14 +146,24 @@ public class RegionMappingTest {
   }
 
   @Test
+  public void getColumnNameForFieldReturnsColumnNameWhenMappedExactlyToJdbcName() {
+    String pdxClassName = "pdxClassName";
+    String pdxFieldName = "pdxFieldName";
+    mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
+    mapping.addFieldMapping(new FieldMapping("", null, pdxFieldName, null, false));
+
+    assertThat(mapping.getColumnNameForField(pdxFieldName)).isEqualTo(pdxFieldName);
+  }
+
+  @Test
   public void getColumnNameForFieldReturnsColumnNameWhenMappedInexactly() {
     String pdxClassName = "pdxClassName";
-    String columnName = "columnName";
     String pdxFieldName = "pdxFieldName";
+    String columnName = pdxFieldName.toLowerCase();
     mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
     mapping.addFieldMapping(new FieldMapping("f1", null, "c1", null, false));
     mapping.addFieldMapping(
-        new FieldMapping(pdxFieldName.toLowerCase(), null, columnName, null, false));
+        new FieldMapping("", null, columnName, null, false));
 
     assertThat(mapping.getColumnNameForField(pdxFieldName)).isEqualTo(columnName);
   }

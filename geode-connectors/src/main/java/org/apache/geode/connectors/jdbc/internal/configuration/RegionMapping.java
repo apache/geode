@@ -193,9 +193,13 @@ public class RegionMapping implements CacheElement {
     if (exactMatch != null) {
       return exactMatch.getJdbcName();
     }
+    exactMatch = getFieldMappingByJdbcName(fieldName);
+    if (exactMatch != null) {
+      return exactMatch.getJdbcName();
+    }
     FieldMapping inexactMatch = null;
     for (FieldMapping fieldMapping : getFieldMappings()) {
-      if (fieldMapping.getPdxName().equalsIgnoreCase(fieldName)) {
+      if (fieldMapping.getJdbcName().equalsIgnoreCase(fieldName)) {
         if (inexactMatch != null) {
           throw new JdbcConnectorException(
               "Multiple columns matched the pdx field \"" + fieldName + "\".");
