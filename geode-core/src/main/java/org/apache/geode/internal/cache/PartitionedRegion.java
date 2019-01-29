@@ -4945,7 +4945,7 @@ public class PartitionedRegion extends LocalRegion
     profile.asyncEventQueueIds = getVisibleAsyncEventQueueIds();
 
     if (getDataPolicy().withPersistence()) {
-      profile.persistentID = getDiskStore().generatePersistentID(null);
+      profile.persistentID = getDiskStore().generatePersistentID();
     }
 
     fillInProfile((PartitionProfile) profile);

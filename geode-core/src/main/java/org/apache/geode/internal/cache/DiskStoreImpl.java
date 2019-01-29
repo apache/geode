@@ -3147,7 +3147,7 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  public PersistentMemberID generatePersistentID(DiskRegionView dr) {
+  public PersistentMemberID generatePersistentID() {
     File firstDir = getInfoFileDir().getDir();
     InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
     InternalDistributedMember memberId = ids.getDistributionManager().getDistributionManagerId();

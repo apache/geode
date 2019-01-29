@@ -25,11 +25,13 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
@@ -89,8 +91,9 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
           missingIds.add(new PersistentMemberPattern(id));
         }
       }
-      Set<PersistentMemberID> localIds = mm.getPersistentIDs();
-      for (PersistentMemberID id : localIds) {
+
+      for (DiskStore diskStore : cache.listDiskStoresIncludingRegionOwned()) {
+        PersistentMemberID id = ((DiskStoreImpl) diskStore).generatePersistentID();
         localPatterns.add(new PersistentMemberPattern(id));
       }
     }
