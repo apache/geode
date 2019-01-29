@@ -30,7 +30,6 @@ import java.io.Serializable;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -59,7 +58,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @Rule
   public SerializableTestName testName = new SerializableTestName();
 
-  private MemberVM locator, server1, server2;
+  private MemberVM locator;
 
   private static String convertRegionPathToName(String regionPath) {
     if (regionPath.startsWith("/")) {
@@ -68,19 +67,11 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     return regionPath;
   }
 
-  // TODO: need to add test for server1 group
-  @After
-  public void cleanUp() throws Exception {
-    startupRule.stop(0);
-    startupRule.stop(1);
-    gfsh.disconnect();
-  }
-
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void describesExistingSynchronousMapping(String regionName) throws Exception {
     locator = startupRule.startLocatorVM(0);
-    server1 = startupRule.startServerVM(1, locator.getPort());
+    startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
@@ -116,7 +107,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   public void describesExistingSynchronousMappingWithGroups(String regionName) throws Exception {
     String groupName = "group1";
     locator = startupRule.startLocatorVM(0);
-    server1 = startupRule.startServerVM(1, groupName, locator.getPort());
+    startupRule.startServerVM(1, groupName, locator.getPort());
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat(
@@ -153,7 +144,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void describesExistingAsyncMapping(String regionName) throws Exception {
     locator = startupRule.startLocatorVM(0);
-    server1 = startupRule.startServerVM(1, locator.getPort());
+    startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
@@ -195,7 +186,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   public void describesExistingAsyncMappingWithGroup(String regionName) throws Exception {
     String groupName = "group1";
     locator = startupRule.startLocatorVM(0);
-    server1 = startupRule.startServerVM(1, groupName, locator.getPort());
+    startupRule.startServerVM(1, groupName, locator.getPort());
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat(
@@ -241,8 +232,8 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     String groupName1 = "group1";
     String groupName2 = "group2";
     locator = startupRule.startLocatorVM(0);
-    server1 = startupRule.startServerVM(1, groupName1, locator.getPort());
-    server2 = startupRule.startServerVM(2, groupName2, locator.getPort());
+    startupRule.startServerVM(1, groupName1, locator.getPort());
+    startupRule.startServerVM(2, groupName2, locator.getPort());
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE --group="
@@ -315,7 +306,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @Test
   public void reportsNoRegionFound() throws Exception {
     locator = startupRule.startLocatorVM(0);
-    server1 = startupRule.startServerVM(1, locator.getPort());
+    startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=" + TEST_REGION + " --type=REPLICATE")
         .statusIsSuccess();
@@ -333,7 +324,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @Test
   public void reportsRegionButNoMappingFound() throws Exception {
     locator = startupRule.startLocatorVM(0);
-    server1 = startupRule.startServerVM(1, locator.getPort());
+    startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=" + TEST_REGION + " --type=REPLICATE")
         .statusIsSuccess();

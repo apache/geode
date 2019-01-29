@@ -43,7 +43,6 @@ public class RegionMappingTest {
 
   private RegionMapping mapping;
 
-  // TODO add a test for server group
   @Before
   public void setUp() {
     name = "name";

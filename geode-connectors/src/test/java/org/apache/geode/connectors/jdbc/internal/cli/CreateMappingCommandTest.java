@@ -70,7 +70,6 @@ public class CreateMappingCommandTest {
   RegionConfig matchingRegion;
   RegionAttributesType matchingRegionAttributes;
 
-  // TODO: add tests for server group
   @Before
   public void setup() {
     regionName = "regionName";

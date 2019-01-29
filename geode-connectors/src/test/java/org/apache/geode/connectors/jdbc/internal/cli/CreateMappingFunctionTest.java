@@ -66,7 +66,6 @@ public class CreateMappingFunctionTest {
 
   private CreateMappingFunction function;
 
-  // TODO add a test for server group
   @Before
   public void setUp() {
     context = mock(FunctionContext.class);

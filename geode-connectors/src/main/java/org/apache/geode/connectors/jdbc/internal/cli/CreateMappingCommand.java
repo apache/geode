@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-
 import java.util.List;
 import java.util.Set;
 
@@ -120,15 +119,17 @@ public class CreateMappingCommand extends SingleGfshCommand {
     try {
       ConfigurationPersistenceService configurationPersistenceService =
           checkForClusterConfiguration();
-      // TODO: might need to review if 'null' can be something else
-      // we might need to iterate groups
-      String group = groups != null ? groups[0] : null;
-      CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(group);
-      RegionConfig regionConfig = checkForRegion(regionName, cacheConfig);
-      checkForExistingMapping(regionName, regionConfig);
-      checkForCacheLoader(regionName, regionConfig);
-      checkForCacheWriter(regionName, synchronous, regionConfig);
-      checkForAsyncQueue(regionName, synchronous, cacheConfig);
+      if (groups == null) {
+        groups = new String[] {"cluster"};
+      }
+      for (String group : groups) {
+        CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(group);
+        RegionConfig regionConfig = checkForRegion(regionName, cacheConfig);
+        checkForExistingMapping(regionName, regionConfig);
+        checkForCacheLoader(regionName, regionConfig);
+        checkForCacheWriter(regionName, synchronous, regionConfig);
+        checkForAsyncQueue(regionName, synchronous, cacheConfig);
+      }
     } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
     }

@@ -93,15 +93,6 @@ public class CreateMappingCommandDUnitTest {
 
   }
 
-  public void cleanUp() throws Exception {
-    startupRule.stop(0);
-    startupRule.stop(1);
-    startupRule.stop(2);
-    startupRule.stop(3);
-    startupRule.stop(4);
-    gfsh.disconnect();
-  }
-
   private void setupReplicate(String regionName) {
     setupReplicate(regionName, false);
   }
@@ -114,7 +105,6 @@ public class CreateMappingCommandDUnitTest {
         .statusIsSuccess();
   }
 
-  // TODO: might need a parameter for server group names
   private void setupGroupReplicate(String regionName, String groupNames) {
     gfsh.executeAndAssertThat(
         "create region --name=" + regionName + " --type=REPLICATE --groups=" + groupNames)
@@ -239,12 +229,12 @@ public class CreateMappingCommandDUnitTest {
     // TEST_GROUP1 only contains server2 and server 4
     server2.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, false);
+      assertValidMappingOnServer(mapping, regionName, false, false);
     });
 
     server4.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, false);
+      assertValidMappingOnServer(mapping, regionName, false, false);
     });
 
     server1.invoke(() -> {
@@ -259,20 +249,13 @@ public class CreateMappingCommandDUnitTest {
 
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP1);
-      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
-      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(regionMapping.getIds()).isEqualTo("myId");
-      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
-      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
-      validateRegionAlteredInClusterConfig(regionName, TEST_GROUP1, false);
-      validateAsyncEventQueueCreatedInClusterConfig(regionName, TEST_GROUP1, false);
+      assertValidMappingOnLocator(regionMapping, regionName, TEST_GROUP1, false, false);
     });
   }
 
   @Test
   @Parameters({GROUP2_REGION, "/" + GROUP2_REGION})
-  public void createMappingParitionedUpdatesServiceAndClusterConfigForServerGroup(
+  public void createMappingPartitionedUpdatesServiceAndClusterConfigForServerGroup(
       String regionName) {
     setupGroupPartition(regionName, TEST_GROUP2);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
@@ -290,12 +273,12 @@ public class CreateMappingCommandDUnitTest {
     // TEST_GROUP2 only contains server3 and server4
     server3.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, true);
+      assertValidMappingOnServer(mapping, regionName, false, true);
     });
 
     server4.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, true);
+      assertValidMappingOnServer(mapping, regionName, false, true);
     });
 
     server1.invoke(() -> {
@@ -310,14 +293,7 @@ public class CreateMappingCommandDUnitTest {
 
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP2);
-      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
-      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(regionMapping.getIds()).isEqualTo("myId");
-      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
-      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
-      validateRegionAlteredInClusterConfig(regionName, TEST_GROUP2, false);
-      validateAsyncEventQueueCreatedInClusterConfig(regionName, TEST_GROUP2, true);
+      assertValidMappingOnLocator(regionMapping, regionName, TEST_GROUP2, false, true);
     });
   }
 
@@ -341,17 +317,17 @@ public class CreateMappingCommandDUnitTest {
     // TEST_GROUP1 and TEST_GROUP2 only contains server 2, server 3, and server 4
     server2.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, false);
+      assertValidMappingOnServer(mapping, regionName, false, false);
     });
 
     server3.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, false);
+      assertValidMappingOnServer(mapping, regionName, false, false);
     });
 
     server4.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, false);
+      assertValidMappingOnServer(mapping, regionName, false, false);
     });
 
     server1.invoke(() -> {
@@ -361,14 +337,7 @@ public class CreateMappingCommandDUnitTest {
 
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP1);
-      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
-      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(regionMapping.getIds()).isEqualTo("myId");
-      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
-      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
-      validateRegionAlteredInClusterConfig(regionName, TEST_GROUP1, false);
-      validateAsyncEventQueueCreatedInClusterConfig(regionName, TEST_GROUP1, false);
+      assertValidMappingOnLocator(regionMapping, regionName, TEST_GROUP1, false, false);
     });
   }
 
@@ -392,17 +361,17 @@ public class CreateMappingCommandDUnitTest {
     // TEST_GROUP1 and TEST_GROUP2 only contains server 2, server 3, and server 4
     server2.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, true);
+      assertValidMappingOnServer(mapping, regionName, false, true);
     });
 
     server3.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, true);
+      assertValidMappingOnServer(mapping, regionName, false, true);
     });
 
     server4.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, true);
+      assertValidMappingOnServer(mapping, regionName, false, true);
     });
 
     server1.invoke(() -> {
@@ -412,27 +381,44 @@ public class CreateMappingCommandDUnitTest {
 
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP1);
-      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
-      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(regionMapping.getIds()).isEqualTo("myId");
-      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
-      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
-      validateRegionAlteredInClusterConfig(regionName, TEST_GROUP1, false);
-      validateAsyncEventQueueCreatedInClusterConfig(regionName, TEST_GROUP1, true);
+      assertValidMappingOnLocator(regionMapping, regionName, TEST_GROUP1, false, true);
     });
   }
 
-  private static void assertValidMapping(RegionMapping mapping, String regionName,
+  private static void assertValidMappingOnServer(RegionMapping mapping, String regionName,
       boolean synchronous, boolean isParallel) {
+    assertValidMapping(mapping);
+    validateRegionAlteredOnServer(regionName, synchronous);
+    if (!synchronous) {
+      validateAsyncEventQueueCreatedOnServer(regionName, isParallel);
+    }
+  }
+
+  private static void assertValidMappingOnLocator(RegionMapping mapping, String regionName,
+      String groups,
+      boolean synchronous, boolean isParallel) {
+    assertValidMapping(mapping);
+    validateRegionAlteredInClusterConfig(regionName, groups, synchronous);
+    if (!synchronous) {
+      validateAsyncEventQueueCreatedInClusterConfig(regionName, groups, isParallel);
+    }
+  }
+
+  private static void assertValidMapping(RegionMapping mapping) {
     assertThat(mapping.getDataSourceName()).isEqualTo("connection");
     assertThat(mapping.getTableName()).isEqualTo("myTable");
     assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
     assertThat(mapping.getIds()).isEqualTo("myId");
     assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
     assertThat(mapping.getSchema()).isEqualTo("mySchema");
-    validateRegionAlteredOnServer(regionName, synchronous);
-    validateAsyncEventQueueCreatedOnServer(regionName, isParallel);
+  }
+
+  private static void assertValidMappingWithoutIds(RegionMapping mapping) {
+    assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+    assertThat(mapping.getTableName()).isEqualTo("myTable");
+    assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+    assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
+    assertThat(mapping.getSchema()).isEqualTo("mySchema");
   }
 
   @Test
@@ -452,30 +438,22 @@ public class CreateMappingCommandDUnitTest {
 
     server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, false);
+      assertValidMappingOnServer(mapping, regionName, false, false);
     });
 
     // without specifying 'group/groups', the region and regionmapping will be created on all
     // servers
     server2.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertValidMapping(mapping, regionName, false, false);
+      assertValidMappingOnServer(mapping, regionName, false, false);
     });
 
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
-      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
-      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(regionMapping.getIds()).isEqualTo("myId");
-      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
-      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
-      validateRegionAlteredInClusterConfig(regionName, null, false);
-      validateAsyncEventQueueCreatedInClusterConfig(regionName, null, false);
+      assertValidMappingOnLocator(regionMapping, regionName, null, false, false);
     });
   }
 
-  // TODO: need to have createSynchronousMappingUpdatesServiceAndClusterConfigForServerGroup
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createSynchronousMappingUpdatesServiceAndClusterConfig(String regionName) {
@@ -494,41 +472,32 @@ public class CreateMappingCommandDUnitTest {
 
     server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isEqualTo("myTable");
-      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(mapping.getIds()).isEqualTo("myId");
-      assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
-      assertThat(mapping.getSchema()).isEqualTo("mySchema");
-      validateRegionAlteredOnServer(regionName, true);
+      assertValidMappingOnServer(mapping, regionName, true, false);
     });
 
     // without specifying 'group/groups', the region and regionmapping will be created on all
     // servers
     server2.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
-      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isEqualTo("myTable");
-      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(mapping.getIds()).isEqualTo("myId");
-      assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
-      assertThat(mapping.getSchema()).isEqualTo("mySchema");
-      validateRegionAlteredOnServer(regionName, true);
+      assertValidMappingOnServer(mapping, regionName, true, false);
+    });
+
+    server3.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidMappingOnServer(mapping, regionName, true, false);
+    });
+
+    server4.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidMappingOnServer(mapping, regionName, true, false);
     });
 
     locator.invoke(() -> {
-      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
-      assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(regionMapping.getTableName()).isEqualTo("myTable");
-      assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
-      assertThat(regionMapping.getIds()).isEqualTo("myId");
-      assertThat(regionMapping.getCatalog()).isEqualTo("myCatalog");
-      assertThat(regionMapping.getSchema()).isEqualTo("mySchema");
-      validateRegionAlteredInClusterConfig(regionName, null, true);
+      RegionMapping mapping = getRegionMappingFromClusterConfig(regionName, null);
+      assertValidMappingOnLocator(mapping, regionName, null, true, false);
     });
   }
 
-  // TODO: need to have a createMappingWithPartitionUpdatesServiceAndClusterConfigForServerGroup
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithPartitionUpdatesServiceAndClusterConfig(String regionName) {
@@ -561,6 +530,24 @@ public class CreateMappingCommandDUnitTest {
       validateAsyncEventQueueCreatedOnServer(regionName, true);
     });
 
+    server3.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      validateRegionAlteredOnServer(regionName, false);
+      validateAsyncEventQueueCreatedOnServer(regionName, true);
+    });
+
+    server4.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      validateRegionAlteredOnServer(regionName, false);
+      validateAsyncEventQueueCreatedOnServer(regionName, true);
+    });
+
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
@@ -571,7 +558,6 @@ public class CreateMappingCommandDUnitTest {
     });
   }
 
-  // TODO: need to have createMappingWithNoTableForServerGroup
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithNoTable(String regionName) {
@@ -603,6 +589,24 @@ public class CreateMappingCommandDUnitTest {
       validateAsyncEventQueueCreatedOnServer(regionName, false);
     });
 
+    server3.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isNull();
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      validateRegionAlteredOnServer(regionName, false);
+      validateAsyncEventQueueCreatedOnServer(regionName, false);
+    });
+
+    server4.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isNull();
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+      validateRegionAlteredOnServer(regionName, false);
+      validateAsyncEventQueueCreatedOnServer(regionName, false);
+    });
+
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
@@ -613,7 +617,6 @@ public class CreateMappingCommandDUnitTest {
     });
   }
 
-  // TODO: need to have createExistingRegionMappingFailsForServerGroup
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createExistingRegionMappingFails(String regionName) {
@@ -650,6 +653,20 @@ public class CreateMappingCommandDUnitTest {
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
     });
 
+    server3.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+    });
+
+    server4.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
+    });
+
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
@@ -658,7 +675,6 @@ public class CreateMappingCommandDUnitTest {
     });
   }
 
-  // TODO: need to add createMappingWithoutPdxNameFailsForServerGroup
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingWithoutPdxNameFails(String regionName) {

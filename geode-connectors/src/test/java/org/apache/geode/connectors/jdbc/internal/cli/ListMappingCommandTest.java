@@ -40,7 +40,6 @@ public class ListMappingCommandTest {
   public static final String COMMAND = "list jdbc-mappings";
   private ListMappingCommand command;
 
-  // TODO: add tests for server group
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
