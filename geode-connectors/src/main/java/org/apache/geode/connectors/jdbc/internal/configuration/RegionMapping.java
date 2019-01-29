@@ -195,6 +195,7 @@ public class RegionMapping implements CacheElement {
     }
     exactMatch = getFieldMappingByJdbcName(fieldName);
     if (exactMatch != null) {
+      this.pdxToFieldMappings.put(fieldName, exactMatch);
       return exactMatch.getJdbcName();
     }
     FieldMapping inexactMatch = null;
@@ -210,6 +211,7 @@ public class RegionMapping implements CacheElement {
     if (inexactMatch == null) {
       throw new JdbcConnectorException("No column matched the pdx field \"" + fieldName + "\".");
     }
+    this.pdxToFieldMappings.put(fieldName, inexactMatch);
     return inexactMatch.getJdbcName();
   }
 
