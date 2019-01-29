@@ -14,10 +14,19 @@
  */
 package org.apache.geode.management.internal.rest.security;
 
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -25,6 +34,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
+
+import org.apache.geode.management.internal.api.ClusterManagementResult;
 
 @Configuration
 @EnableWebSecurity
@@ -36,6 +49,9 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   @Autowired
   private GeodeAuthenticationProvider authProvider;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -51,13 +67,25 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        // .antMatchers("/ping", "/docs/**", "/swagger-ui.html", "/v2/api-docs/**",
-        // "/webjars/springfox-swagger-ui/**", "/swagger-resources/**")
-        // .permitAll()
+        .antMatchers("/ping", "/docs/**", "/swagger-ui.html", "/v2/api-docs/**",
+            "/webjars/springfox-swagger-ui/**", "/swagger-resources/**")
+        .permitAll()
         .anyRequest().authenticated().and().csrf().disable();
 
     if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
-      http.httpBasic();
+      http.httpBasic().authenticationEntryPoint(new AuthenticationEntryPoint() {
+        @Override
+        public void commence(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException authException)
+            throws IOException, ServletException {
+          response.addHeader("WWW-Authenticate", "Basic realm=\"GEODE\"");
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          response.setContentType(MediaType.APPLICATION_JSON_UTF8.getType());
+          ClusterManagementResult result =
+              new ClusterManagementResult(false, authException.getMessage());
+          objectMapper.writeValue(response.getWriter(), result);
+        }
+      });
     } else {
       http.authorizeRequests().anyRequest().permitAll();
     }

@@ -63,23 +63,32 @@ public class RegionManagementSecurityIntegrationTest {
   @Test
   public void sanityCheck_not_authorized() throws Exception {
     ClusterManagementResult result =
-        restClient.doPostAndAssert("/regions", json, "test", "test")
+        restClient.doPostAndAssert("/regions", json, "user", "user")
             .hasStatusCode(403)
             .getClusterManagementResult();
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getPersistenceStatus().getMessage()).isEqualTo("Access is denied");
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("user not authorized for DATA:MANAGE");
   }
 
   @Test
   public void sanityCheckWithNoCredentials() throws Exception {
-    restClient.doPostAndAssert("/regions", json, null, null)
-        .hasStatusCode(401);
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, null, null)
+            .hasStatusCode(401).getClusterManagementResult();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("Full authentication is required to access this resource");
+    assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
   public void sanityCheckWithWrongCredentials() throws Exception {
-    restClient.doPostAndAssert("/regions", json, "test", "invalid_pswd")
-        .hasStatusCode(401);
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, "test", "invalid_pswd")
+            .hasStatusCode(401).getClusterManagementResult();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("Authentication error. Please check your credentials.");
+    assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
