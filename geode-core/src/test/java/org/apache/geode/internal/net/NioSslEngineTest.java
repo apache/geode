@@ -414,6 +414,12 @@ public class NioSslEngineTest {
   }
 
 
+  /**
+   * This tests the case where a message header has been read and part of a message has been
+   * read, but the decoded buffer is too small to hold all of the message. In this case
+   * the readAtLeast method will have to expand the capacity of the decoded buffer and return
+   * the new, expanded, buffer as the method result.
+   */
   @Test
   public void readAtLeastUsingSmallAppBuffer() throws Exception {
     final int amountToRead = 150;
@@ -424,7 +430,7 @@ public class NioSslEngineTest {
 
     // force buffer expansion by making a small decoded buffer appear near to being full
     ByteBuffer unwrappedBuffer = ByteBuffer.allocate(100);
-    unwrappedBuffer.position(preexistingBytes);
+    unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
     nioSslEngine.peerAppData = unwrappedBuffer;
 
     // simulate some socket reads

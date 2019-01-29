@@ -48,6 +48,7 @@ public class BuffersTest {
   }
 
   private void createAndVerifyNewWriteBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
+    buffer.position(buffer.capacity());
     ByteBuffer newBuffer =
         Buffers.expandWriteBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer, 500,
             mock(DMStats.class));
@@ -62,6 +63,8 @@ public class BuffersTest {
   }
 
   private void createAndVerifyNewReadBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
+    buffer.position(0);
+    buffer.limit(256);
     ByteBuffer newBuffer =
         Buffers.expandReadBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer, 500,
             mock(DMStats.class));
