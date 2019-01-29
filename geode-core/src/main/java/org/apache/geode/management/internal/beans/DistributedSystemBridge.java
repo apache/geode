@@ -882,7 +882,7 @@ public class DistributedSystemBridge {
    * @return Array of PersistentMemberDetails (which contains host, directory and disk store id)
    */
   public PersistentMemberDetails[] listMissingDiskStores() {
-    PersistentMemberDetails[] missingDiskStores = null;
+    PersistentMemberDetails[] missingDiskStores = new PersistentMemberDetails[0];
 
     // No need to try and send anything if we're a Loner
     if (dm.isLoner()) {
@@ -890,7 +890,7 @@ public class DistributedSystemBridge {
     }
 
     Set<PersistentID> persistentMemberSet = MissingPersistentIDsRequest.send(dm);
-    if (persistentMemberSet != null && persistentMemberSet.size() > 0) {
+    if (persistentMemberSet != null) {
       missingDiskStores = new PersistentMemberDetails[persistentMemberSet.size()];
       int j = 0;
       for (PersistentID id : persistentMemberSet) {
