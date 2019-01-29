@@ -113,7 +113,8 @@ public class CreateMappingCommandTest {
         mock(ConfigurationPersistenceService.class);
     doReturn(configurationPersistenceService).when(createRegionMappingCommand)
         .getConfigurationPersistenceService();
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(cacheConfig);
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
@@ -229,7 +230,8 @@ public class CreateMappingCommandTest {
         mock(ConfigurationPersistenceService.class);
     doReturn(configurationPersistenceService).when(createRegionMappingCommand)
         .getConfigurationPersistenceService();
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(cacheConfig);
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
@@ -247,7 +249,8 @@ public class CreateMappingCommandTest {
         mock(ConfigurationPersistenceService.class);
     doReturn(configurationPersistenceService).when(createRegionMappingCommand)
         .getConfigurationPersistenceService();
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(cacheConfig);
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
@@ -275,7 +278,8 @@ public class CreateMappingCommandTest {
         mock(ConfigurationPersistenceService.class);
     doReturn(configurationPersistenceService).when(createRegionMappingCommand)
         .getConfigurationPersistenceService();
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(cacheConfig);
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
@@ -300,7 +304,8 @@ public class CreateMappingCommandTest {
         mock(ConfigurationPersistenceService.class);
     doReturn(configurationPersistenceService).when(createRegionMappingCommand)
         .getConfigurationPersistenceService();
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(cacheConfig);
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
@@ -325,7 +330,8 @@ public class CreateMappingCommandTest {
         mock(ConfigurationPersistenceService.class);
     doReturn(configurationPersistenceService).when(createRegionMappingCommand)
         .getConfigurationPersistenceService();
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(cacheConfig);
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);
@@ -353,7 +359,8 @@ public class CreateMappingCommandTest {
         mock(ConfigurationPersistenceService.class);
     doReturn(configurationPersistenceService).when(createRegionMappingCommand)
         .getConfigurationPersistenceService();
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(cacheConfig);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(cacheConfig);
     List<RegionConfig> list = new ArrayList<>();
     list.add(matchingRegion);
     when(cacheConfig.getRegions()).thenReturn(list);

@@ -120,7 +120,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       ConfigurationPersistenceService configurationPersistenceService =
           checkForClusterConfiguration();
       if (groups == null) {
-        groups = new String[] {"cluster"};
+        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
       }
       for (String group : groups) {
         CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(group);
