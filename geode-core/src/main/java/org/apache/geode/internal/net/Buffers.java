@@ -129,7 +129,6 @@ public class Buffers {
     }
     ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity, stats);
     newBuffer.clear();
-    existing.flip();
     newBuffer.put(existing);
     newBuffer.flip();
     releaseBuffer(type, existing, stats);

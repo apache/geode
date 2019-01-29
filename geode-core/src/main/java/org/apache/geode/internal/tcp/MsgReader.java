@@ -128,7 +128,7 @@ public class MsgReader {
   private void dumpState(String whereFrom, Throwable e, ByteBuffer inputBuffer, int position,
       int limit) {
     logger.info("BRUCE: {}, PID {} Connection to {}, {} SSL", whereFrom, OSProcess.getId(),
-        conn.getRemoteAddress(), conn.getConduit().useSSL());
+        conn.getRemoteAddress(), conn.getConduit().useSSL() ? "with" : "without");
     logger.info("BRUCE: {}, Message length {}; type {}; id {}",
         whereFrom, header.messageLength, header.messageType, header.messageId);
     logger.info(

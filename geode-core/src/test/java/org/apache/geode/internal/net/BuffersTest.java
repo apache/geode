@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.net;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
@@ -71,5 +72,34 @@ public class BuffersTest {
       byte actual = (byte) (newBuffer.get() & 0xff);
       assertEquals(expected, actual);
     }
+  }
+
+
+  // the fixed numbers in this test came from a distributed unit test failure
+  @Test
+  public void bufferPositionAndLimitForReadAreCorrectAfterExpansion() throws Exception {
+    ByteBuffer buffer = ByteBuffer.allocate(33842);
+    buffer.position(7);
+    buffer.limit(16384);
+    ByteBuffer newBuffer = Buffers.expandReadBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer,
+        40899, mock(DMStats.class));
+    assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(40899);
+    // buffer should be ready to read the same amount of data
+    assertThat(newBuffer.position()).isEqualTo(0);
+    assertThat(newBuffer.limit()).isEqualTo(16384 - 7);
+  }
+
+
+  @Test
+  public void bufferPositionAndLimitForWriteAreCorrectAfterExpansion() throws Exception {
+    ByteBuffer buffer = ByteBuffer.allocate(33842);
+    buffer.position(16384);
+    buffer.limit(buffer.capacity());
+    ByteBuffer newBuffer = Buffers.expandWriteBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer,
+        40899, mock(DMStats.class));
+    assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(40899);
+    // buffer should have the same amount of data as the old one
+    assertThat(newBuffer.position()).isEqualTo(16384);
+    assertThat(newBuffer.limit()).isEqualTo(newBuffer.capacity());
   }
 }
