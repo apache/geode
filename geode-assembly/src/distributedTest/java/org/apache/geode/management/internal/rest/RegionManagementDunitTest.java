@@ -79,6 +79,7 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createsAPartitionedRegionByDefault() throws Exception {
+    IgnoredException.addIgnoredException("cache element orders already exists.");
     String json = "{\"name\": \"orders\"}";
 
     ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
@@ -94,6 +95,13 @@ public class RegionManagementDunitTest {
 
     // make sure region is persisted
     locator.invoke(() -> verifyRegionPersisted("orders", "PARTITION"));
+
+    // create the same region 2nd time
+    result = restClient.doPostAndAssert("/regions", json)
+        .hasStatusCode(409)
+        .getClusterManagementResult();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessfullyPersisted()).isFalse();
   }
 
   @Test

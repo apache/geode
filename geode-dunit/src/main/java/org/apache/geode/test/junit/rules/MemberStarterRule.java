@@ -240,7 +240,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   public T withHttpService(boolean useDefaultPort) {
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     if (!useDefaultPort) {
-      properties.putIfAbsent(HTTP_SERVICE_PORT,
+      properties.put(HTTP_SERVICE_PORT,
           portSupplier.getAvailablePort() + "");
       this.httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
     } else {
