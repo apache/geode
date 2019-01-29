@@ -163,13 +163,13 @@ public class RegionConfig implements CacheElement {
   @XmlAttribute(name = "name", required = true)
   protected String name;
   @XmlAttribute(name = "refid")
-  protected String refid;
+  protected String type;
 
   public RegionConfig() {}
 
   public RegionConfig(String name, String refid) {
     this.name = name;
-    this.refid = refid;
+    this.type = refid;
   }
 
   public RegionAttributesType getRegionAttributes() {
@@ -333,25 +333,25 @@ public class RegionConfig implements CacheElement {
   }
 
   /**
-   * Gets the value of the refid property.
+   * Gets the value of the type property.
    *
    * possible object is
    * {@link String }
    *
    */
-  public String getRefid() {
-    return refid;
+  public String getType() {
+    return type;
   }
 
   /**
-   * Sets the value of the refid property.
+   * Sets the value of the type property.
    *
    * allowed object is
    * {@link String }
    *
    */
-  public void setRefid(String value) {
-    this.refid = value;
+  public void setType(String value) {
+    this.type = value;
     setShortcutAttributes();
   }
 
@@ -360,7 +360,7 @@ public class RegionConfig implements CacheElement {
       regionAttributes = new RegionAttributesType();
     }
 
-    switch (refid) {
+    switch (type) {
       case "PARTITION": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
         break;
@@ -487,7 +487,7 @@ public class RegionConfig implements CacheElement {
         break;
       }
       default:
-        throw new IllegalArgumentException("invalid refid " + refid);
+        throw new IllegalArgumentException("invalid type " + type);
     }
   }
 

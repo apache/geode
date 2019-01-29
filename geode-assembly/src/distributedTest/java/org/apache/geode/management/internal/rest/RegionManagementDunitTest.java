@@ -18,29 +18,32 @@ package org.apache.geode.management.internal.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 
 public class RegionManagementDunitTest {
 
-  @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  @ClassRule
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private MemberVM locator, server;
+  private static MemberVM locator, server;
 
-  private GeodeDevRestClient restClient;
+  private static GeodeDevRestClient restClient;
 
-  @Before
-  public void before() throws Exception {
+  @BeforeClass
+  public static void beforeClass() throws Exception {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server = cluster.startServerVM(1, locator.getPort());
     restClient =
@@ -48,15 +51,15 @@ public class RegionManagementDunitTest {
   }
 
   @Test
-  public void createRegion() throws Exception {
+  public void createsRegion() throws Exception {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setRefid("REPLICATE");
+    regionConfig.setType("REPLICATE");
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 
     ClusterManagementResult result =
-        restClient.doPostAndAssert("/regions", json, "test", "test")
+        restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(201)
             .getClusterManagementResult();
 
@@ -65,20 +68,59 @@ public class RegionManagementDunitTest {
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
     // make sure region is created
-    server.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion("customers");
-      assertThat(region).isNotNull();
-    });
+    server.invoke(() -> verifyRegionCreated("customers", "REPLICATE"));
 
     // make sure region is persisted
-    locator.invoke(() -> {
-      CacheConfig cacheConfig =
-          ClusterStartupRule.getLocator().getConfigurationPersistenceService()
-              .getCacheConfig("cluster");
-      assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("customers");
-    });
+    locator.invoke(() -> verifyRegionPersisted("customers", "REPLICATE"));
 
     // verify that additional server can be started with the cluster configuration
     cluster.startServerVM(2, locator.getPort());
+  }
+
+  @Test
+  public void createsAPartitionedRegionByDefault() throws Exception {
+    String json = "{\"name\": \"orders\"}";
+
+    ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
+        .hasStatusCode(201)
+        .getClusterManagementResult();
+
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
+    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+
+    // make sure region is created
+    server.invoke(() -> verifyRegionCreated("orders", "PARTITION"));
+
+    // make sure region is persisted
+    locator.invoke(() -> verifyRegionPersisted("orders", "PARTITION"));
+  }
+
+  @Test
+  public void noNameInConfig() throws Exception {
+    IgnoredException.addIgnoredException("Name of the region has to be specified");
+    String json = "{\"type\": \"REPLICATE\"}";
+
+    ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
+        .hasStatusCode(500)
+        .getClusterManagementResult();
+
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessfullyPersisted()).isFalse();
+  }
+
+  private static void verifyRegionPersisted(String regionName, String type) {
+    CacheConfig cacheConfig =
+        ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+            .getCacheConfig("cluster");
+    RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+    assertThat(regionConfig.getType()).isEqualTo(type);
+  }
+
+  private static void verifyRegionCreated(String regionName, String type) {
+    Cache cache = ClusterStartupRule.getCache();
+    Region region = cache.getRegion(regionName);
+    assertThat(region).isNotNull();
+    assertThat(region.getAttributes().getDataPolicy().toString()).isEqualTo(type);
   }
 }

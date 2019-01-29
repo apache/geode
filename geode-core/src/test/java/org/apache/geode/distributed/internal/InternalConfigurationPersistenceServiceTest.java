@@ -82,7 +82,7 @@ public class InternalConfigurationPersistenceServiceTest {
     service.updateCacheConfig("cluster", cacheConfig -> {
       RegionConfig regionConfig = new RegionConfig();
       regionConfig.setName("regionA");
-      regionConfig.setRefid("REPLICATE");
+      regionConfig.setType("REPLICATE");
       cacheConfig.getRegions().add(regionConfig);
       return cacheConfig;
     });

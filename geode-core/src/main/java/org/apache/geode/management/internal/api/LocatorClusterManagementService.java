@@ -41,6 +41,7 @@ import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationMutator;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigMutator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
+import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.exceptions.NoMembersException;
 
@@ -58,6 +59,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     mutators.put(RegionConfig.class, new RegionConfigMutator());
 
     // initialize the list of validators
+    validators.put(RegionConfig.class, new RegionConfigValidator());
   }
 
   @VisibleForTesting

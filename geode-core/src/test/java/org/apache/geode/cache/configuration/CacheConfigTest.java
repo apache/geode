@@ -48,7 +48,7 @@ public class CacheConfigTest {
     service.validateWithLocalCacheXSD();
     regionConfig = new RegionConfig();
     regionConfig.setName("regionA");
-    regionConfig.setRefid("REPLICATE");
+    regionConfig.setType("REPLICATE");
     regionXml = "<region name=\"regionA\" refid=\"REPLICATE\">";
 
     classNameTypeXml = "<class-name>my.className</class-name>";
@@ -172,7 +172,7 @@ public class CacheConfigTest {
     cacheConfig = new CacheConfig("1.0");
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("test");
-    regionConfig.setRefid("REPLICATE");
+    regionConfig.setType("REPLICATE");
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setCacheLoader(new DeclarableType("abc.Foo"));
     regionConfig.setRegionAttributes(attributes);

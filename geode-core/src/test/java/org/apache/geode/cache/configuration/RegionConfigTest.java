@@ -20,6 +20,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import java.io.File;
 import java.net.URL;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,7 @@ import org.apache.geode.internal.config.JAXBService;
 public class RegionConfigTest {
 
   private JAXBService service;
-  private CacheConfig cacheConfig, master;
+  private CacheConfig master;
   private RegionConfig regionConfig;
   private URL xmlResource;
 
@@ -66,15 +67,39 @@ public class RegionConfigTest {
   }
 
   @Test
-  public void checkDefaultRegionAttributesForShortcuts() throws Exception {
+  public void checkDefaultRegionAttributesForShortcuts() {
     RegionShortcut[] shortcuts = RegionShortcut.values();
     for (RegionShortcut shortcut : shortcuts) {
       RegionConfig config = new RegionConfig();
-      config.setRefid(shortcut.name());
+      config.setType(shortcut.name());
       config.setName(shortcut.name());
       RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
       assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
     }
   }
 
+  @Test
+  public void invalidType() {
+    regionConfig.setName("test");
+    assertThatThrownBy(() -> regionConfig.setType("INVALID-TYPE")).isInstanceOf(
+        IllegalArgumentException.class);
+  }
+
+  @Test
+  public void correctJsonAndXml() throws Exception {
+    String json = "{\"name\":\"test\", \"type\":\"REPLICATE\"}";
+    ObjectMapper mapper = new ObjectMapper();
+    regionConfig = mapper.readValue(json, RegionConfig.class);
+    assertThat(regionConfig.getName()).isEqualTo("test");
+    assertThat(regionConfig.getType()).isEqualTo("REPLICATE");
+
+    String json2 = mapper.writeValueAsString(regionConfig);
+    assertThat(json2).contains("\"type\":\"REPLICATE\"");
+    assertThat(json2).contains("\"id\":\"test\"");
+
+    CacheConfig cacheConfig = new CacheConfig();
+    cacheConfig.getRegions().add(regionConfig);
+    String xml = service.marshall(cacheConfig);
+    assertThat(xml).contains("<region name=\"test\" refid=\"REPLICATE\"");
+  }
 }

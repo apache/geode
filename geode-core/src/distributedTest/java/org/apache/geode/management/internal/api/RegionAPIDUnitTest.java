@@ -15,22 +15,21 @@
 package org.apache.geode.management.internal.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
-
-import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RegionsTest;
@@ -39,19 +38,19 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({RegionsTest.class})
 public class RegionAPIDUnitTest {
-  private MemberVM locator, server;
+  private static MemberVM locator, server;
 
-  @Rule
-  public ClusterStartupRule clusterRule = new ClusterStartupRule();
+  @ClassRule
+  public static ClusterStartupRule clusterRule = new ClusterStartupRule();
 
   @Rule
   public TestName testName = new SerializableTestName();
 
-  @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  @Before
-  public void before() throws Exception {
+  @BeforeClass
+  public static void before() throws Exception {
     locator = clusterRule.startLocatorVM(0);
     server = clusterRule.startServerVM(1, locator.getPort());
 
@@ -64,23 +63,13 @@ public class RegionAPIDUnitTest {
     locator.invoke(() -> {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
-      config.setRefid(RegionShortcut.PARTITION.toString());
+      config.setType(RegionShortcut.PARTITION.toString());
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();
     });
 
-
-    gfsh.executeAndAssertThat("list regions")
-        .statusIsSuccess()
-        .containsOutput(regionName);
-
-    server.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(regionName);
-      assertThat(region).isNotNull();
-      assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.PARTITION);
-    });
+    server.invoke(() -> verifyRegionCreated(regionName, "PARTITION"));
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/" + regionName, 1);
 
@@ -89,6 +78,8 @@ public class RegionAPIDUnitTest {
     gfsh.executeAndAssertThat("get --key='foo' --region=" + regionName)
         .statusIsSuccess()
         .containsKeyValuePair("Value", "\"125\"");
+
+    locator.invoke(() -> verifyRegionPersisted(regionName, "PARTITION"));
   }
 
   @Test
@@ -97,56 +88,56 @@ public class RegionAPIDUnitTest {
     locator.invoke(() -> {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
-      config.setRefid(RegionShortcut.REPLICATE.toString());
+      config.setType(RegionShortcut.REPLICATE.toString());
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();
     });
 
-    server.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      Region region = cache.getRegion(regionName);
-      assertThat(region).isNotNull();
-      assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
-    });
+    server.invoke(() -> verifyRegionCreated(regionName, "REPLICATE"));
 
-    gfsh.executeAndAssertThat("list regions").statusIsSuccess()
-        .containsOutput(regionName);
+    locator.invoke(() -> verifyRegionPersisted(regionName, "REPLICATE"));
   }
 
   @Test
-  public void createRegionPersists() {
-    String regionName = testName.getMethodName();
-    gfsh.executeAndAssertThat("create region --name=Dummy --type=PARTITION").statusIsSuccess();
+  public void noName() {
+    locator.invoke(() -> {
+      RegionConfig config = new RegionConfig();
+      ClusterManagementService clusterManagementService =
+          ClusterStartupRule.getLocator().getClusterManagementService();
+      assertThatThrownBy(() -> clusterManagementService.create(config, "cluster"))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("Name of the region has to be specified");
+    });
+  }
 
+  @Test
+  public void defaultTypeIsPartition() throws Exception {
+    String regionName = testName.getMethodName();
     locator.invoke(() -> {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
-      config.setRefid(RegionShortcut.PARTITION.toString());
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();
     });
 
-    gfsh.executeAndAssertThat("list regions")
-        .statusIsSuccess()
-        .containsOutput(regionName);
+    server.invoke(() -> verifyRegionCreated(regionName, "PARTITION"));
+    locator.invoke(() -> verifyRegionPersisted(regionName, "PARTITION"));
+  }
 
-    locator.invoke(() -> {
-      InternalConfigurationPersistenceService cc =
-          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
-      CacheConfig config = cc.getCacheConfig("cluster");
+  private static void verifyRegionPersisted(String regionName, String type) {
+    CacheConfig cacheConfig =
+        ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+            .getCacheConfig("cluster");
+    RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+    assertThat(regionConfig.getType()).isEqualTo(type);
+  }
 
-      List<RegionConfig> regions = config.getRegions();
-      assertThat(regions).isNotEmpty();
-      RegionConfig regionConfig = regions.get(1);
-      assertThat(regionConfig).isNotNull();
-      assertThat(regionConfig.getName()).isEqualTo(regionName);
-      assertThat(regionConfig.getRefid()).isEqualTo("PARTITION");
-      assertThat(regionConfig.getIndexes()).isEmpty();
-      assertThat(regionConfig.getRegions()).isEmpty();
-      assertThat(regionConfig.getEntries()).isEmpty();
-      assertThat(regionConfig.getCustomRegionElements()).isEmpty();
-    });
+  private static void verifyRegionCreated(String regionName, String type) {
+    Cache cache = ClusterStartupRule.getCache();
+    Region region = cache.getRegion(regionName);
+    assertThat(region).isNotNull();
+    assertThat(region.getAttributes().getDataPolicy().toString()).isEqualTo(type);
   }
 }

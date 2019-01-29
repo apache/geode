@@ -41,7 +41,7 @@ public class RegionConfigMutatorIntegrationTest {
 
   @Test
   public void sanity() throws Exception {
-    config.setRefid("REPLICATE");
+    config.setType("REPLICATE");
     config.setName("test");
     CacheConfig cacheConfig =
         locator.getLocator().getConfigurationPersistenceService().getCacheConfig("cluster", true);
