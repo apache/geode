@@ -202,6 +202,11 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
       <scope>compile</scope>
@@ -925,6 +930,11 @@
         <groupId>org.iq80.snappy</groupId>
         <artifactId>snappy</artifactId>
         <version>0.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>9.4.12.v20180830</version>
       </dependency>
       <dependency>
         <groupId>com.zaxxer</groupId>
