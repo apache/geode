@@ -18,13 +18,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.PostgresConnectionRule;
@@ -58,6 +62,25 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
   }
 
   @Override
+  protected List<FieldMapping> getSupportedPdxFieldsTableFieldMappings() {
+    List<FieldMapping> fieldMappings = Arrays.asList(
+        new FieldMapping("", "", "id", JDBCType.VARCHAR.name(), false),
+        new FieldMapping("", "", "aboolean", JDBCType.SMALLINT.name(), true),
+        new FieldMapping("", "", "abyte", JDBCType.SMALLINT.name(), true),
+        new FieldMapping("", "", "ashort", JDBCType.SMALLINT.name(), true),
+        new FieldMapping("", "", "anint", JDBCType.INTEGER.name(), true),
+        new FieldMapping("", "", "along", JDBCType.BIGINT.name(), true),
+        new FieldMapping("", "", "afloat", JDBCType.FLOAT.name(), true),
+        new FieldMapping("", "", "adouble", JDBCType.FLOAT.name(), true),
+        new FieldMapping("", "", "astring", JDBCType.VARCHAR.name(), true),
+        new FieldMapping("", "", "adate", JDBCType.TIMESTAMP.name(), true),
+        new FieldMapping("", "", "anobject", JDBCType.VARCHAR.name(), true),
+        new FieldMapping("", "", "abytearray", JDBCType.BINARY.name(), true),
+        new FieldMapping("", "", "achar", JDBCType.CHAR.name(), true));
+    return fieldMappings;
+  }
+
+  @Override
   protected boolean vendorSupportsSchemas() {
     return true;
   }
@@ -77,7 +100,7 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
     String ids = "id,name";
     Region<String, Employee> region =
         createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), ids, DB_NAME,
-            SCHEMA_NAME);
+            SCHEMA_NAME, getEmployeeTableFieldMappings());
     createPdxType();
 
     PdxInstance key =

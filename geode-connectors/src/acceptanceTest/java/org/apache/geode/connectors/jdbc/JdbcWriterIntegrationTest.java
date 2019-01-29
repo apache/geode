@@ -18,10 +18,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.After;
@@ -36,6 +39,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -103,7 +107,12 @@ public abstract class JdbcWriterIntegrationTest {
 
   protected void sharedRegionSetup(String ids, String catalog, String schema)
       throws RegionMappingExistsException {
-    employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME, ids, catalog, schema);
+    List<FieldMapping> fieldMappings = Arrays.asList(
+        new FieldMapping("", "", "id", JDBCType.VARCHAR.name(), false),
+        new FieldMapping("", "", "name", JDBCType.VARCHAR.name(), true),
+        new FieldMapping("", "", "age", JDBCType.INTEGER.name(), true));
+    employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME, ids, catalog, schema,
+        fieldMappings);
   }
 
   protected void setupRegionWithSchema(String ids) throws RegionMappingExistsException {
@@ -389,9 +398,9 @@ public abstract class JdbcWriterIntegrationTest {
   }
 
   protected Region<Object, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName,
-      String ids, String catalog, String schema)
+      String ids, String catalog, String schema, List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
-    jdbcWriter = new JdbcWriter(createSqlHandler(ids, catalog, schema), cache);
+    jdbcWriter = new JdbcWriter(createSqlHandler(ids, catalog, schema, fieldMappings), cache);
 
     RegionFactory<Object, PdxInstance> regionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -406,10 +415,11 @@ public abstract class JdbcWriterIntegrationTest {
     assertThat(size).isEqualTo(expected);
   }
 
-  protected SqlHandler createSqlHandler(String ids, String catalog, String schema)
+  protected SqlHandler createSqlHandler(String ids, String catalog, String schema,
+      List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
     return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(cache, null, ids, catalog, schema),
+        TestConfigService.getTestConfigService(cache, null, ids, catalog, schema, fieldMappings),
         testDataSourceFactory);
   }
 
