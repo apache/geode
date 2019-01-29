@@ -81,12 +81,13 @@ public class DescribeMappingCommand extends GfshCommand {
         for (String group : groups) {
           CacheConfig cacheConfig = getCacheConfig(configService, group);
           RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, group);
-          describeMappingResults.addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig));
+          describeMappingResults
+              .addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig, group));
         }
       } else {
         CacheConfig cacheConfig = getCacheConfig(configService, null);
         RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, null);
-        describeMappingResults.addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig));
+        describeMappingResults.addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig, null));
       }
     } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
@@ -113,13 +114,13 @@ public class DescribeMappingCommand extends GfshCommand {
   }
 
   private ArrayList<DescribeMappingResult> getMappingsFromRegionConfig(CacheConfig cacheConfig,
-      RegionConfig regionConfig) {
+      RegionConfig regionConfig, String group) {
     CacheConfig.AsyncEventQueue asyncEventQueue = findAsyncEventQueue(cacheConfig, regionConfig);
     ArrayList<DescribeMappingResult> results = new ArrayList<>();
     for (CacheElement element : regionConfig.getCustomRegionElements()) {
       if (element instanceof RegionMapping) {
         results.add(buildDescribeMappingResult((RegionMapping) element, regionConfig.getName(),
-            asyncEventQueue == null));
+            asyncEventQueue == null, group));
       }
     }
     return results;
@@ -137,7 +138,7 @@ public class DescribeMappingCommand extends GfshCommand {
   }
 
   private DescribeMappingResult buildDescribeMappingResult(RegionMapping regionMapping,
-      String regionName, boolean synchronous) {
+      String regionName, boolean synchronous, String group) {
     LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
     attributes.put(REGION_NAME, regionName);
     attributes.put(PDX_NAME, regionMapping.getPdxName());
@@ -151,15 +152,20 @@ public class DescribeMappingCommand extends GfshCommand {
     if (regionMapping.getSchema() != null) {
       attributes.put(SCHEMA_NAME, regionMapping.getSchema());
     }
-
-    return new DescribeMappingResult(attributes);
+    DescribeMappingResult result = new DescribeMappingResult(attributes);
+    result.setGroupName(group);
+    return result;
   }
 
   private ResultModel buildResultModel(ArrayList<DescribeMappingResult> describeMappingResult) {
     ResultModel resultModel = new ResultModel();
-    DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME);
     for (int i = 0; i < describeMappingResult.size(); i++) {
-      describeMappingResult.get(i).getAttributeMap().forEach(sectionModel::addData);
+      DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME + String.valueOf(i));
+      DescribeMappingResult result = describeMappingResult.get(i);
+      if (result.getGroupName() != null) {
+        sectionModel.addData("Mapping for group", result.getGroupName());
+      }
+      result.getAttributeMap().forEach(sectionModel::addData);
     }
     return resultModel;
   }

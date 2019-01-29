@@ -93,6 +93,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
+    commandResultAssert.doesNotContainOutput("Mapping for group");
     commandResultAssert.containsKeyValuePair(REGION_NAME,
         convertRegionPathToName(regionName));
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
@@ -131,6 +132,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
     commandResultAssert.statusIsSuccess();
+    commandResultAssert.containsKeyValuePair("Mapping for group", "group1");
     commandResultAssert.containsKeyValuePair(REGION_NAME,
         convertRegionPathToName(regionName));
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
@@ -216,6 +218,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(REGION_NAME,
         convertRegionPathToName(regionName));
 
+    commandResultAssert.containsKeyValuePair("Mapping for group", "group1");
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
@@ -228,6 +231,56 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroups(String regionName)
+      throws Exception {
+    String groupName1 = "group1";
+    String groupName2 = "group2";
+    locator = startupRule.startLocatorVM(0);
+    startupRule.startServerVM(1, groupName1, locator.getPort());
+    startupRule.startServerVM(2, groupName2, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE --group="
+        + groupName1 + "," + groupName2)
+        .statusIsSuccess();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(GROUP_NAME, groupName1 + "," + groupName2);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "testTable");
+    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(SYNCHRONOUS_NAME, "false");
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(CATALOG_NAME, "myCatalog");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
+        regionName).addOption(GROUP_NAME, groupName1 + "," + groupName2);
+
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+
+    commandResultAssert.statusIsSuccess();
+    commandResultAssert.containsKeyValuePair(REGION_NAME,
+        convertRegionPathToName(regionName));
+
+    commandResultAssert.containsKeyValuePair("Mapping for group", "group1");
+    commandResultAssert.containsKeyValuePair("Mapping for group", "group2");
+    commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
+    commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
+    commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
+    commandResultAssert.containsKeyValuePair(CATALOG_NAME, "myCatalog");
+    commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
+  }
+
+  @Test
+  @Parameters({TEST_REGION, "/" + TEST_REGION})
+  public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroupsWithDifferentMappings(
+      String regionName)
       throws Exception {
     String groupName1 = "group1";
     String groupName2 = "group2";
@@ -277,6 +330,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(REGION_NAME,
         convertRegionPathToName(regionName));
 
+    commandResultAssert.containsKeyValuePair("Mapping for group", "group1");
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
@@ -294,6 +348,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(REGION_NAME,
         convertRegionPathToName(regionName));
 
+    commandResultAssert.containsKeyValuePair("Mapping for group", "group2");
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection2");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable2");
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass2");

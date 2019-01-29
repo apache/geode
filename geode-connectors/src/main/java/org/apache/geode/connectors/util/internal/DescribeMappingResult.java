@@ -38,8 +38,19 @@ public class DescribeMappingResult implements DataSerializable {
     return this.attributeMap;
   }
 
+  private String groupName;
+
+  public String getGroupName() {
+    return groupName;
+  }
+
+  public void setGroupName(String group) {
+    groupName = group;
+  }
+
   @Override
   public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeString(groupName, out);
     DataSerializer.writeInteger(attributeMap.size(), out);
     for (Map.Entry<String, String> entry : attributeMap.entrySet()) {
       DataSerializer.writeString(entry.getKey(), out);
@@ -49,6 +60,7 @@ public class DescribeMappingResult implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException {
+    groupName = DataSerializer.readString(in);
     int dataSize = DataSerializer.readInteger(in);
 
     for (int i = 0; i < dataSize; i++) {

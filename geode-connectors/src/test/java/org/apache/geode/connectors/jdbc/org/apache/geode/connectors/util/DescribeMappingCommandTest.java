@@ -143,8 +143,6 @@ public class DescribeMappingCommandTest {
     regionMapping.setIds("myId");
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
-    ArrayList<CacheElement> elements = new ArrayList<>();
-    elements.add(regionMapping);
     when(clusterConfig.getRegions()).thenReturn(new ArrayList<>());
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
@@ -161,8 +159,6 @@ public class DescribeMappingCommandTest {
     regionMapping.setIds("myId");
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
-    ArrayList<CacheElement> elements = new ArrayList<>();
-    elements.add(regionMapping);
     when(clusterConfig.getRegions()).thenReturn(new ArrayList<>());
     when(configurationPersistenceService.getCacheConfig("group1")).thenReturn(clusterConfig);
 
@@ -185,7 +181,8 @@ public class DescribeMappingCommandTest {
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME, REGION_NAME, PDX_NAME,
+        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
+            PDX_NAME,
             TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
         .containsOutput(REGION_NAME, "region1")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
@@ -223,7 +220,8 @@ public class DescribeMappingCommandTest {
         .thenReturn(CreateMappingCommand.createAsyncEventQueueName("region3"));
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
-        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME, REGION_NAME, PDX_NAME,
+        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
+            PDX_NAME,
             TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
         .containsOutput(REGION_NAME, "region1")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
@@ -250,7 +248,8 @@ public class DescribeMappingCommandTest {
 
 
     gfsh.executeAndAssertThat(command, COMMAND + " --groups=group1").statusIsSuccess()
-        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME, REGION_NAME, PDX_NAME,
+        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
+            PDX_NAME,
             TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
         .containsOutput(REGION_NAME, "region1")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
