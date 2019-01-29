@@ -59,6 +59,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -129,7 +130,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   @Before
   public void setUp() {
-    vm0 = getVM(0);
+    vm0 = getVM(-1);
     vm1 = getVM(1);
     vm2 = getVM(2);
     vm3 = getVM(3);
@@ -1267,6 +1268,50 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
           () -> getCache().createRegionFactory(REPLICATE_PERSISTENT).create(partitionedRegionName))
               .doesNotThrowAnyException();
     });
+  }
+
+  @Test
+  public void rebalanceWithMembersOfflineDoesNotResultInMissingDiskStores() throws Exception {
+    int numBuckets = 12;
+
+    vm0.invoke(() -> createPartitionedRegion(1, -1, numBuckets, true));
+    vm1.invoke(() -> createPartitionedRegion(1, -1, numBuckets, true));
+    vm2.invoke(() -> createPartitionedRegion(1, -1, numBuckets, true));
+    vm3.invoke(() -> createPartitionedRegion(1, -1, numBuckets, true));
+
+    vm0.invoke(() -> createData(0, numBuckets, "a"));
+
+    // Stop vm0, rebalance, stop vm1, rebalance
+    vm0.invoke(() -> getCache().close());
+    rebalance(vm3);
+    vm1.invoke(() -> getCache().close());
+    rebalance(vm3);
+
+    // Check missing disk stores (should include vm0 and vm1)
+    Set<PersistentID> missingMembers = getMissingPersistentMembers(vm3);
+    assertThat(missingMembers).hasSize(2);
+
+    vm1.invoke(() -> createPartitionedRegion(1, -1, numBuckets, true));
+    vm0.invoke(() -> createPartitionedRegion(1, -1, numBuckets, true));
+
+
+    Thread.sleep(1000);
+    missingMembers = getMissingPersistentMembers(vm3);
+    assertThat(missingMembers).isEmpty();
+  }
+
+  private void rebalance(VM vm) {
+    vm.invoke(() -> getCache().getResourceManager().createRebalanceFactory().start().getResults());
+  }
+
+  private void revokePersistentMember(PersistentID missingMember, VM vm) {
+    vm.invoke(() -> AdminDistributedSystemImpl
+        .revokePersistentMember(getCache().getDistributionManager(), missingMember.getUUID()));
+  }
+
+  private Set<PersistentID> getMissingPersistentMembers(VM vm) {
+    return vm.invoke(() -> AdminDistributedSystemImpl
+        .getMissingPersistentMembers(getCache().getDistributionManager()));
   }
 
   private void moveBucketToMe(final int bucketId, final InternalDistributedMember sourceMember) {

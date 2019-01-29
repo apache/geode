@@ -810,6 +810,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     }
     synchronized (lock) {
       recoveredMembers.clear();
+      recoveredMembers.addAll(getPersistedMembers());
     }
   }
 
