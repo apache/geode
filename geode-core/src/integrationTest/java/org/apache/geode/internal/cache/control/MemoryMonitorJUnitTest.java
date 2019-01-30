@@ -114,7 +114,7 @@ public class MemoryMonitorJUnitTest {
         internalManager.getResourceListeners(ResourceType.HEAP_MEMORY);
     assertEquals(10 + SYSTEM_LISTENERS, heapListeners.size());
 
-    heapMonitor.updateStateAndSendEvent(700);
+    heapMonitor.updateStateAndSendEvent(700, "test");
     assertEquals(0, internalManager.getStats().getEvictionStartEvents());
     for (ResourceListener listener : heapListeners) {
       if (listener instanceof TestMemoryThresholdListener) {
@@ -123,7 +123,7 @@ public class MemoryMonitorJUnitTest {
     }
 
     // make sure listeners are invoked
-    heapMonitor.updateStateAndSendEvent(870);
+    heapMonitor.updateStateAndSendEvent(870, "test");
     assertEquals(0, internalManager.getStats().getEvictionStopEvents());
     assertEquals(1, internalManager.getStats().getEvictionStartEvents());
     assertEquals(0, internalManager.getStats().getHeapCriticalEvents());
@@ -135,7 +135,7 @@ public class MemoryMonitorJUnitTest {
     }
 
     // make sure same event is not triggered twice
-    heapMonitor.updateStateAndSendEvent(880);
+    heapMonitor.updateStateAndSendEvent(880, "test");
     assertEquals(0, internalManager.getStats().getEvictionStopEvents());
     assertEquals(1, internalManager.getStats().getEvictionStartEvents());
     assertEquals(0, internalManager.getStats().getHeapCriticalEvents());
@@ -160,10 +160,10 @@ public class MemoryMonitorJUnitTest {
     irm.addResourceListener(ResourceType.HEAP_MEMORY, listener);
 
     hmm.setTestMaxMemoryBytes(1000);
-    hmm.updateStateAndSendEvent(870);
+    hmm.updateStateAndSendEvent(870, "test");
     assertEquals(0, irm.getStats().getHeapCriticalEvents());
-    hmm.updateStateAndSendEvent(950);
-    hmm.updateStateAndSendEvent(770);
+    hmm.updateStateAndSendEvent(950, "test");
+    hmm.updateStateAndSendEvent(770, "test");
     assertEquals(0, irm.getStats().getHeapCriticalEvents());
     assertEquals(0, irm.getStats().getEvictionStartEvents());
 
@@ -174,7 +174,7 @@ public class MemoryMonitorJUnitTest {
     assertEquals(0, irm.getStats().getEvictionStartEvents());
     assertEquals(0, irm.getStats().getHeapCriticalEvents());
 
-    hmm.updateStateAndSendEvent(870);
+    hmm.updateStateAndSendEvent(870, "test");
     assertEquals(1, listener.getEvictionThresholdCalls());
     assertEquals(1, irm.getStats().getEvictionStartEvents());
     assertEquals(0, irm.getStats().getHeapCriticalEvents());
@@ -185,7 +185,7 @@ public class MemoryMonitorJUnitTest {
     assertEquals(1, irm.getStats().getEvictionStartEvents());
     assertEquals(0, irm.getStats().getHeapCriticalEvents());
 
-    hmm.updateStateAndSendEvent(870);
+    hmm.updateStateAndSendEvent(870, "test");
     assertEquals(1, irm.getStats().getEvictionStartEvents());
     assertEquals(0, irm.getStats().getHeapCriticalEvents());
 
@@ -194,7 +194,7 @@ public class MemoryMonitorJUnitTest {
     assertEquals(1, irm.getStats().getEvictionStartEvents());
     assertEquals(0, irm.getStats().getHeapCriticalEvents());
 
-    hmm.updateStateAndSendEvent(970);
+    hmm.updateStateAndSendEvent(970, "test");
     assertEquals(1, irm.getStats().getHeapCriticalEvents());
     assertEquals(0, listener.getEvictionThresholdCalls());
     assertEquals(1, irm.getStats().getEvictionStartEvents());
@@ -346,7 +346,7 @@ public class MemoryMonitorJUnitTest {
     assertEquals(2 + addSubregion + SYSTEM_LISTENERS,
         internalManager.getResourceListeners(ResourceType.HEAP_MEMORY).size());
 
-    heapMonitor.updateStateAndSendEvent(97);
+    heapMonitor.updateStateAndSendEvent(97, "test");
     assertEquals(1, listener.getCriticalThresholdCalls());
     boolean caughtException = false;
     try {
@@ -359,7 +359,7 @@ public class MemoryMonitorJUnitTest {
       throw new AssertionError("An expected exception was not thrown");
     }
     // make region healthy
-    heapMonitor.updateStateAndSendEvent(91);
+    heapMonitor.updateStateAndSendEvent(91, "test");
     // try the puts again
     try {
       region.put("key-1", "value-2");
@@ -458,28 +458,28 @@ public class MemoryMonitorJUnitTest {
     assertEquals(0, listener.getAllCalls());
     // test EVICTION, CRITICAL, EVICTION, NORMAL cycle
     for (int i = 0; i < 3; i++) {
-      hmm.updateStateAndSendEvent(82); // EVICTION
+      hmm.updateStateAndSendEvent(82, "test"); // EVICTION
       assertEquals(i * 4 + 1, listener.getAllCalls());
       assertEquals((i * 3) + 1, listener.getEvictionThresholdCalls());
       assertEquals(i + 1, irm.getStats().getEvictionStartEvents());
       assertEquals(82, listener.getCurrentHeapPercentage());
       assertEquals(2, listener.getBytesFromThreshold());
 
-      hmm.updateStateAndSendEvent(92); // CRITICAL
+      hmm.updateStateAndSendEvent(92, "test"); // CRITICAL
       assertEquals(i * 4 + 2, listener.getAllCalls());
       assertEquals(i + 1, listener.getCriticalThresholdCalls());
       assertEquals(i + 1, irm.getStats().getHeapCriticalEvents());
       assertEquals(92, listener.getCurrentHeapPercentage());
       assertEquals(2, listener.getBytesFromThreshold());
 
-      hmm.updateStateAndSendEvent(85); // EVICTION
+      hmm.updateStateAndSendEvent(85, "test"); // EVICTION
       assertEquals(i * 4 + 3, listener.getAllCalls());
       assertEquals((i * 3) + 3, listener.getEvictionThresholdCalls());
       assertEquals(i + 1, irm.getStats().getHeapSafeEvents());
       assertEquals(85, listener.getCurrentHeapPercentage());
       assertEquals(5, listener.getBytesFromThreshold());
 
-      hmm.updateStateAndSendEvent(76); // NORMAL
+      hmm.updateStateAndSendEvent(76, "test"); // NORMAL
       assertEquals(i * 4 + 4, listener.getAllCalls());
       assertEquals(i + 1, listener.getNormalCalls());
       assertEquals(i + 1, irm.getStats().getEvictionStopEvents());
@@ -488,8 +488,8 @@ public class MemoryMonitorJUnitTest {
     }
     listener.resetThresholdCalls();
 
-    // test EVICTION to CRITICAL back to EVICTION
-    hmm.updateStateAndSendEvent(95); // CRITICAL
+    // test CRITICAL back to NORMAL
+    hmm.updateStateAndSendEvent(95, "test"); // CRITICAL
     assertEquals(1, listener.getEvictionThresholdCalls());
     assertEquals(1, listener.getCriticalThresholdCalls());
     assertEquals(4, irm.getStats().getHeapCriticalEvents());
@@ -497,7 +497,7 @@ public class MemoryMonitorJUnitTest {
     assertEquals(1, listener.getAllCalls());
     assertEquals(95, listener.getCurrentHeapPercentage());
     assertEquals(5, listener.getBytesFromThreshold());
-    hmm.updateStateAndSendEvent(75); // EVICTION
+    hmm.updateStateAndSendEvent(75, "test"); // NORMAL
     assertEquals(1, listener.getNormalCalls());
     assertEquals(1, listener.getEvictionThresholdCalls());
     assertEquals(1, listener.getCriticalThresholdCalls());
@@ -508,47 +508,47 @@ public class MemoryMonitorJUnitTest {
 
     // generate many events in threshold thickness for eviction threshold
     for (int i = 0; i < 5; i++) {
-      hmm.updateStateAndSendEvent(82); // EVICTION
+      hmm.updateStateAndSendEvent(82, "test"); // EVICTION
       assertEquals(1, listener.getEvictionThresholdCalls());
       assertEquals((i * 2) + 1, listener.getAllCalls());
       assertEquals(82, listener.getCurrentHeapPercentage());
       assertEquals(2, listener.getBytesFromThreshold());
-      hmm.updateStateAndSendEvent(79); // EVICTION THICKNESS
+      hmm.updateStateAndSendEvent(79, "test"); // EVICTION THICKNESS
     }
     listener.resetThresholdCalls();
     // generate many events in threshold thickness for critical threshold
     for (int i = 0; i < 5; i++) {
-      hmm.updateStateAndSendEvent(92); // CRITICAL
+      hmm.updateStateAndSendEvent(92, "test"); // CRITICAL
       assertEquals(1, listener.getCriticalThresholdCalls());
       assertEquals((i * 2) + 1, listener.getAllCalls());
       assertEquals(92, listener.getCurrentHeapPercentage());
       assertEquals(2, listener.getBytesFromThreshold());
-      hmm.updateStateAndSendEvent(89); // CRITICAL THICKNESS
+      hmm.updateStateAndSendEvent(89, "test"); // CRITICAL THICKNESS
     }
-    hmm.updateStateAndSendEvent(75);
+    hmm.updateStateAndSendEvent(75, "test");
     listener.resetThresholdCalls();
 
     // generate many events around threshold thickness for eviction threshold
     for (int i = 1; i < 6; i++) {
-      hmm.updateStateAndSendEvent(82); // EVICTION
+      hmm.updateStateAndSendEvent(82, "test"); // EVICTION
       assertEquals(i, listener.getEvictionThresholdCalls());
       assertEquals(82, listener.getCurrentHeapPercentage());
       assertEquals(2, listener.getBytesFromThreshold());
-      hmm.updateStateAndSendEvent(77); // NORMAL
+      hmm.updateStateAndSendEvent(77, "test"); // NORMAL
       assertEquals(i, listener.getNormalCalls());
       assertEquals(77, listener.getCurrentHeapPercentage());
       assertEquals(3, listener.getBytesFromThreshold());
       assertEquals(i * 2, listener.getAllCalls());
     }
-    hmm.updateStateAndSendEvent(87); // EVICTION
+    hmm.updateStateAndSendEvent(87, "test"); // EVICTION
     listener.resetThresholdCalls();
     // generate many events around threshold thickness for critical threshold
     for (int i = 1; i < 6; i++) {
-      hmm.updateStateAndSendEvent(92); // CRITICAL
+      hmm.updateStateAndSendEvent(92, "test"); // CRITICAL
       assertEquals(i, listener.getCriticalThresholdCalls());
       assertEquals(92, listener.getCurrentHeapPercentage());
       assertEquals(2, listener.getBytesFromThreshold());
-      hmm.updateStateAndSendEvent(87); // EVICTION
+      hmm.updateStateAndSendEvent(87, "test"); // EVICTION
       assertEquals(i * 2, listener.getEvictionThresholdCalls());
       assertEquals(87, listener.getCurrentHeapPercentage());
       assertEquals(3, listener.getBytesFromThreshold());
@@ -557,19 +557,19 @@ public class MemoryMonitorJUnitTest {
     listener.resetThresholdCalls();
 
     // from CRITICAL drop to EVICTION THICKNESS, and then to NORMAL
-    hmm.updateStateAndSendEvent(96); // CRITICAL
+    hmm.updateStateAndSendEvent(96, "test"); // CRITICAL
     assertEquals(1, listener.getCriticalThresholdCalls());
     assertEquals(1, listener.getAllCalls());
     assertEquals(6, listener.getBytesFromThreshold());
     assertEquals(96, listener.getCurrentHeapPercentage());
     listener.resetThresholdCalls();
-    hmm.updateStateAndSendEvent(79); // EVICTION THICKNESS
+    hmm.updateStateAndSendEvent(79, "test"); // EVICTION THICKNESS
     assertEquals(1, listener.getEvictionThresholdCalls());
     assertEquals(1, listener.getAllCalls());
     assertEquals(11, listener.getBytesFromThreshold());
     assertEquals(79, listener.getCurrentHeapPercentage());
     listener.resetThresholdCalls();
-    hmm.updateStateAndSendEvent(77); // NORMAL
+    hmm.updateStateAndSendEvent(77, "test"); // NORMAL
     assertEquals(1, listener.getNormalCalls());
     assertEquals(1, listener.getAllCalls());
     assertEquals(3, listener.getBytesFromThreshold());
@@ -594,11 +594,11 @@ public class MemoryMonitorJUnitTest {
     // make sure that both thresholds are enabled, disable one threshold, make sure
     // events for the other are delivered, enable the threshold
     // eviction threshold
-    hmm.updateStateAndSendEvent(82); // EVICTION
+    hmm.updateStateAndSendEvent(82, "test"); // EVICTION
     assertEquals(1, listener.getEvictionThresholdCalls());
     assertEquals(1, listener.getAllCalls());
     assertEquals(1, irm.getStats().getEvictionStartEvents());
-    hmm.updateStateAndSendEvent(92); // CRITICAL
+    hmm.updateStateAndSendEvent(92, "test"); // CRITICAL
     assertEquals(1, listener.getCriticalThresholdCalls());
     assertEquals(2, listener.getAllCalls());
     assertEquals(1, irm.getStats().getHeapCriticalEvents());
@@ -613,16 +613,16 @@ public class MemoryMonitorJUnitTest {
     assertEquals(0, irm.getStats().getEvictionThreshold());
     assertEquals(1, irm.getStats().getEvictionStopEvents());
 
-    hmm.updateStateAndSendEvent(75); // EVICTION_DISABLED
+    hmm.updateStateAndSendEvent(75, "test"); // EVICTION_DISABLED
     assertEquals(1, listener.getNormalCalls());
     assertEquals(0, listener.getEvictionThresholdCalls());
     assertEquals(1, irm.getStats().getEvictionStopEvents());
     assertEquals(1, irm.getStats().getHeapSafeEvents());
-    hmm.updateStateAndSendEvent(85); // EVICTION_DISABLED
+    hmm.updateStateAndSendEvent(85, "test"); // EVICTION_DISABLED
     assertEquals(0, listener.getEvictionThresholdCalls());
     assertEquals(1, irm.getStats().getEvictionStartEvents());
     assertEquals(2, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(92); // CRITICAL
+    hmm.updateStateAndSendEvent(92, "test"); // CRITICAL
     assertEquals(3, listener.getAllCalls());
     assertEquals(2, listener.getCriticalThresholdCalls());
     listener.resetThresholdCalls();
@@ -630,18 +630,18 @@ public class MemoryMonitorJUnitTest {
     HeapMemoryMonitor.setTestBytesUsedForThresholdSet(92);
     irm.setEvictionHeapPercentage(80f);
     assertEquals(1, listener.getEvictionThresholdCalls());
-    hmm.updateStateAndSendEvent(84); // EVICTION
+    hmm.updateStateAndSendEvent(84, "test"); // EVICTION
     assertEquals(2, listener.getAllCalls()); // EVICTION_CRITICAL+EVICTION
-    hmm.updateStateAndSendEvent(77); // NORMAL
+    hmm.updateStateAndSendEvent(77, "test"); // NORMAL
     assertEquals(1, listener.getNormalCalls());
     assertEquals(3, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(82); // EVICTION
+    hmm.updateStateAndSendEvent(82, "test"); // EVICTION
     assertEquals(3, listener.getEvictionThresholdCalls());
     assertEquals(4, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(91); // CRITICAL
+    hmm.updateStateAndSendEvent(91, "test"); // CRITICAL
     assertEquals(2, listener.getCriticalThresholdCalls());
     assertEquals(5, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(87); // EVICTION
+    hmm.updateStateAndSendEvent(87, "test"); // EVICTION
     assertEquals(5, listener.getEvictionThresholdCalls());
     assertEquals(3, irm.getStats().getHeapSafeEvents());
     assertEquals(6, listener.getAllCalls());
@@ -655,17 +655,17 @@ public class MemoryMonitorJUnitTest {
     assertEquals(1, listener.getCriticalDisabledCalls());
     assertEquals(0, irm.getStats().getCriticalThreshold());
 
-    hmm.updateStateAndSendEvent(92); // NO EVENT
+    hmm.updateStateAndSendEvent(92, "test"); // NO EVENT
     assertEquals(0, listener.getCriticalThresholdCalls());
     assertEquals(3, irm.getStats().getHeapCriticalEvents());
     assertEquals(2, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(89); // NO EVENT
+    hmm.updateStateAndSendEvent(89, "test"); // NO EVENT
     assertEquals(3, irm.getStats().getHeapSafeEvents());
     assertEquals(3, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(77); // NORMAL
+    hmm.updateStateAndSendEvent(77, "test"); // NORMAL
     assertEquals(1, listener.getNormalCalls());
     assertEquals(4, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(93); // EVICTION
+    hmm.updateStateAndSendEvent(93, "test"); // EVICTION
     assertEquals(2, listener.getEvictionThresholdCalls());
     assertEquals(5, listener.getAllCalls());
     listener.resetThresholdCalls();
@@ -673,18 +673,18 @@ public class MemoryMonitorJUnitTest {
     HeapMemoryMonitor.setTestBytesUsedForThresholdSet(93);
     irm.setCriticalHeapPercentage(90f); // forced event
     assertEquals(1, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(92); // NO EVENT
+    hmm.updateStateAndSendEvent(92, "test"); // NO EVENT
     assertEquals(1, listener.getCriticalThresholdCalls());
     assertEquals(2, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(89); // CRITICAL THICKNESS
+    hmm.updateStateAndSendEvent(89, "test"); // CRITICAL THICKNESS
     assertEquals(1, listener.getEvictionThresholdCalls());
-    hmm.updateStateAndSendEvent(87); // EVICTION
+    hmm.updateStateAndSendEvent(87, "test"); // EVICTION
     assertEquals(2, listener.getEvictionThresholdCalls());
     assertEquals(4, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(77); // NORMAL
+    hmm.updateStateAndSendEvent(77, "test"); // NORMAL
     assertEquals(1, listener.getNormalCalls());
     assertEquals(5, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(83); // EVICTION
+    hmm.updateStateAndSendEvent(83, "test"); // EVICTION
     assertEquals(3, listener.getEvictionThresholdCalls());
     assertEquals(6, listener.getAllCalls());
     listener.resetThresholdCalls();
@@ -697,9 +697,9 @@ public class MemoryMonitorJUnitTest {
     irm.setEvictionHeapPercentage(0f);
     assertEquals(1, listener.getEvictionDisabledCalls());
 
-    hmm.updateStateAndSendEvent(95); // NO EVENT
-    hmm.updateStateAndSendEvent(87); // NO EVENT
-    hmm.updateStateAndSendEvent(77); // NO EVENT
+    hmm.updateStateAndSendEvent(95, "test"); // NO EVENT
+    hmm.updateStateAndSendEvent(87, "test"); // NO EVENT
+    hmm.updateStateAndSendEvent(77, "test"); // NO EVENT
     assertEquals(5, listener.getAllCalls()); // the two DISABLE calls
     listener.resetThresholdCalls();
 
@@ -707,23 +707,23 @@ public class MemoryMonitorJUnitTest {
     HeapMemoryMonitor.setTestBytesUsedForThresholdSet(77);
     irm.setEvictionHeapPercentage(80f);
     assertEquals(0, listener.getEvictionThresholdCalls());
-    hmm.updateStateAndSendEvent(88); // EVICTION
+    hmm.updateStateAndSendEvent(88, "test"); // EVICTION
     assertEquals(1, listener.getEvictionThresholdCalls());
     assertEquals(2, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(92); // NO EVENT
+    hmm.updateStateAndSendEvent(92, "test"); // NO EVENT
     assertEquals(3, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(77); // NORMAL
+    hmm.updateStateAndSendEvent(77, "test"); // NORMAL
     assertEquals(2, listener.getNormalCalls());
-    hmm.updateStateAndSendEvent(98); // EVICTION
+    hmm.updateStateAndSendEvent(98, "test"); // EVICTION
     assertEquals(2, listener.getEvictionThresholdCalls());
     assertEquals(5, listener.getAllCalls());
     HeapMemoryMonitor.setTestBytesUsedForThresholdSet(98);
     irm.setEvictionHeapPercentage(0f); // resets old state
     listener.resetThresholdCalls();
 
-    hmm.updateStateAndSendEvent(87); // NO EVENT
-    hmm.updateStateAndSendEvent(77); // NO EVENT
-    hmm.updateStateAndSendEvent(85); // NO EVENT
+    hmm.updateStateAndSendEvent(87, "test"); // NO EVENT
+    hmm.updateStateAndSendEvent(77, "test"); // NO EVENT
+    hmm.updateStateAndSendEvent(85, "test"); // NO EVENT
     assertEquals(3, listener.getAllCalls());
 
     // enable critical, verify that forced event is not generated
@@ -731,15 +731,15 @@ public class MemoryMonitorJUnitTest {
     irm.setCriticalHeapPercentage(90f);
     assertEquals(0, listener.getCriticalThresholdCalls());
     assertEquals(4, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(94); // CRITICAL
+    hmm.updateStateAndSendEvent(94, "test"); // CRITICAL
     assertEquals(5, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(77); // NORMAL
+    hmm.updateStateAndSendEvent(77, "test"); // NORMAL
     assertEquals(2, listener.getNormalCalls());
     assertEquals(6, listener.getAllCalls());
-    hmm.updateStateAndSendEvent(87); // NO EVENT
+    hmm.updateStateAndSendEvent(87, "test"); // NO EVENT
     assertEquals(6, listener.getAllCalls());
     assertEquals(1, listener.getCriticalThresholdCalls());
-    hmm.updateStateAndSendEvent(85); // NORMAL
+    hmm.updateStateAndSendEvent(85, "test"); // NORMAL
     assertEquals(2, listener.getNormalCalls());
   }
 
