@@ -25,7 +25,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.Buffers;

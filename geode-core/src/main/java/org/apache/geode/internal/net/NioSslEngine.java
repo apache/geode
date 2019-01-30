@@ -42,7 +42,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.logging.LogService;
 
 
