@@ -130,7 +130,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   @Before
   public void setUp() {
-    vm0 = getVM(-1);
+    vm0 = getVM(0);
     vm1 = getVM(1);
     vm2 = getVM(2);
     vm3 = getVM(3);
