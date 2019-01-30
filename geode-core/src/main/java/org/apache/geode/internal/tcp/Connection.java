@@ -90,6 +90,7 @@ import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
  */
 public class Connection implements Runnable {
   private static final Logger logger = LogService.getLogger();
+  public static final String THREAD_KIND_IDENTIFIER = "P2P message reader";
 
   private static int P2P_CONNECT_TIMEOUT;
   private static boolean IS_P2P_CONNECT_TIMEOUT_INITIALIZED = false;
@@ -1602,7 +1603,7 @@ public class Connection implements Runnable {
   private String p2pReaderName() {
     StringBuilder sb = new StringBuilder(64);
     if (this.isReceiver) {
-      sb.append("P2P message reader@");
+      sb.append(THREAD_KIND_IDENTIFIER + "@");
     } else if (this.handshakeRead) {
       sb.append("P2P message sender@");
     } else {
@@ -3348,7 +3349,7 @@ public class Connection implements Runnable {
   }
 
   private void setThreadName(int dominoNumber) {
-    Thread.currentThread().setName("P2P message reader for " + this.remoteAddr + " "
+    Thread.currentThread().setName(THREAD_KIND_IDENTIFIER + " for " + this.remoteAddr + " "
         + (this.sharedResource ? "" : "un") + "shared" + " " + (this.preserveOrder ? "" : "un")
         + "ordered" + " uid=" + this.uniqueId + (dominoNumber > 0 ? (" dom #" + dominoNumber) : "")
         + " port=" + this.socket.getPort());
