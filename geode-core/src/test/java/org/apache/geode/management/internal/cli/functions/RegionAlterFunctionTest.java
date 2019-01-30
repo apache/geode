@@ -36,15 +36,18 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EvictionAttributesMutator;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
@@ -60,6 +63,19 @@ public class RegionAlterFunctionTest {
   private AttributesMutator mutator;
   private EvictionAttributesMutator evictionMutator;
   private AbstractRegion region;
+
+  public static class MyCustomExpiry implements CustomExpiry, Declarable {
+    @Override
+    public ExpirationAttributes getExpiry(Region.Entry entry) {
+      return null;
+    }
+  }
+
+  public static class MyCacheListener extends CacheListenerAdapter {
+  }
+
+  public static class MyCacheWriter extends CacheWriterAdapter {
+  }
 
   @Before
   public void setUp() throws Exception {
@@ -179,7 +195,7 @@ public class RegionAlterFunctionTest {
         new RegionAttributesType.ExpirationAttributesType();
     regionAttributes.setEntryIdleTime(expiration);
     DeclarableType mockExpiry = mock(DeclarableType.class);
-    when(mockExpiry.newInstance(any())).thenReturn(mock(CustomExpiry.class));
+    when(mockExpiry.getClassName()).thenReturn(MyCustomExpiry.class.getName());
     expiration.setCustomExpiry(mockExpiry);
 
     function.alterRegion(cache, config);
@@ -232,16 +248,18 @@ public class RegionAlterFunctionTest {
   public void updateWithCacheListeners() {
     // suppose region has one cacheListener, and we want to replace the oldOne one with the new one
     CacheListener oldOne = mock(CacheListener.class);
-    CacheListener newOne = mock(CacheListener.class);
     when(region.getCacheListeners()).thenReturn(new CacheListener[] {oldOne});
 
     DeclarableType newCacheListenerType = mock(DeclarableType.class);
-    when(newCacheListenerType.newInstance(any())).thenReturn(newOne);
+    when(newCacheListenerType.getClassName()).thenReturn(MyCacheListener.class.getName());
     regionAttributes.getCacheListeners().add(newCacheListenerType);
+
+    ArgumentCaptor<CacheListener> argument = ArgumentCaptor.forClass(CacheListener.class);
 
     function.alterRegion(cache, config);
     verify(mutator).removeCacheListener(oldOne);
-    verify(mutator).addCacheListener(newOne);
+    verify(mutator).addCacheListener(argument.capture());
+    assertThat(argument.getValue()).isInstanceOf(MyCacheListener.class);
   }
 
   @Test
@@ -259,7 +277,7 @@ public class RegionAlterFunctionTest {
   @Test
   public void updateWithCacheWriter() {
     DeclarableType newCacheWriterDeclarable = mock(DeclarableType.class);
-    when(newCacheWriterDeclarable.newInstance(any())).thenReturn(mock(CacheWriter.class));
+    when(newCacheWriterDeclarable.getClassName()).thenReturn(MyCacheWriter.class.getName());
     regionAttributes.setCacheWriter(newCacheWriterDeclarable);
 
     function.alterRegion(cache, config);

@@ -27,11 +27,13 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 // disable artifact generation for this project
 jar.enabled = false
 
+project.ext {artifactName = 'apache-geode'}
+
 publishing {
   publications {
     maven(MavenPublication) {
       afterEvaluate {
-        artifactId = 'apache-geode'
+        artifactId = artifactName
 
         artifacts = []
 
@@ -144,6 +146,7 @@ dependencies {
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-web-management')
+  archives project(':geode-management')
   archives project(':geode-wan')
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
@@ -197,6 +200,8 @@ dependencies {
   acceptanceTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  acceptanceTestCompile(project(':geode-assembly:geode-assembly-test'))
+  acceptanceTestCompile('org.apache.httpcomponents:httpclient')
 
 
   uiTestCompile(project(':geode-core'))

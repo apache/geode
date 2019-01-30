@@ -15,12 +15,15 @@
 
 package org.apache.geode.management.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.internal.api.ClusterManagementResult;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
@@ -46,13 +49,24 @@ public class RegionManagementIntegrationTest {
   public void sanityCheck() throws Exception {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setRefid("REPLICATE");
+    regionConfig.setType("REPLICATE");
 
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 
-    restClient.doPostAndAssert("/regions", json, null, null)
-        .hasStatusCode(201)
-        .hasResponseBody().isEqualTo("customers");
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, null, null)
+            .hasStatusCode(500)
+            .getClusterManagementResult();
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("no members found to create cache element");
+  }
+
+  @Test
+  public void ping() throws Exception {
+    restClient.doGetAndAssert("/ping").hasStatusCode(200).hasResponseBody().isEqualTo("pong");
   }
 }

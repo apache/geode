@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -22,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
@@ -76,6 +79,11 @@ public class ClientUserAuths {
 
   public UserAuthAttributes getUserAuthAttributes(long userId) {
     return uniqueIdVsUserAuth.get(userId);
+  }
+
+  @VisibleForTesting
+  protected Collection<Subject> getSubjects() {
+    return Collections.unmodifiableCollection(this.uniqueIdVsSubject.values());
   }
 
   public Subject getSubject(long userId) {
@@ -188,6 +196,11 @@ public class ClientUserAuths {
       } else if (fromCacheClientProxy && userAuth.isDurable()) {// from cacheclientProxy class
         cleanUserAuth(userAuth);
       }
+    }
+
+    // Logout the subjects
+    for (Long subjectId : uniqueIdVsSubject.keySet()) {
+      removeSubject(subjectId);
     }
   }
 

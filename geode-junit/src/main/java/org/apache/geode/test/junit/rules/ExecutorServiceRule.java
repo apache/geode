@@ -14,13 +14,21 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
@@ -86,6 +94,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   protected final boolean useShutdown;
   protected final boolean useShutdownNow;
 
+  protected transient volatile DedicatedThreadFactory threadFactory;
   protected transient volatile ExecutorService executor;
 
   /**
@@ -119,7 +128,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
   @Override
   public void before() {
-    executor = Executors.newCachedThreadPool();
+    threadFactory = new DedicatedThreadFactory();
+    executor = Executors.newCachedThreadPool(threadFactory);
   }
 
   @Override
@@ -234,6 +244,98 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    */
   public <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier) {
     return CompletableFuture.supplyAsync(supplier, executor);
+  }
+
+  /**
+   * Returns the {@code Thread}s that are directly in the {@code ExecutorService}'s
+   * {@code ThreadGroup} excluding subgroups.
+   */
+  public Set<Thread> getThreads() {
+    return threadFactory.getThreads();
+  }
+
+  /**
+   * Returns an array of {@code Thread Ids} that are directly in the {@code ExecutorService}'s
+   * {@code ThreadGroup} excluding subgroups. {@code long[]} is returned to facilitate using JDK
+   * APIs such as {@code ThreadMXBean#getThreadInfo(long[], int)}.
+   */
+  public long[] getThreadIds() {
+    Set<Thread> threads = getThreads();
+    long[] threadIds = new long[threads.size()];
+
+    int i = 0;
+    for (Thread thread : threads) {
+      threadIds[i++] = thread.getId();
+    }
+
+    return threadIds;
+  }
+
+  /**
+   * Returns formatted call stacks of the {@code Thread}s that are directly in the
+   * {@code ExecutorService}'s {@code ThreadGroup} excluding subgroups.
+   */
+  public String dumpThreads() {
+    StringBuilder dump = new StringBuilder();
+    ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(getThreadIds(), 100);
+    for (ThreadInfo threadInfo : threadInfos) {
+      dump.append('"');
+      dump.append(threadInfo.getThreadName());
+      dump.append("\" ");
+      final Thread.State state = threadInfo.getThreadState();
+      dump.append("\n   java.lang.Thread.State: ");
+      dump.append(state);
+      final StackTraceElement[] stackTraceElements = threadInfo.getStackTrace();
+      for (final StackTraceElement stackTraceElement : stackTraceElements) {
+        dump.append("\n        at ");
+        dump.append(stackTraceElement);
+      }
+      dump.append("\n\n");
+    }
+    return dump.toString();
+  }
+
+  /**
+   * Modified version of {@code java.util.concurrent.Executors$DefaultThreadFactory} that uses
+   * a {@code Set<WeakReference<Thread>>} to track the {@code Thread}s in the factory's
+   * {@code ThreadGroup} excluding subgroups.
+   */
+  static class DedicatedThreadFactory implements ThreadFactory {
+    private static final AtomicInteger poolNumber = new AtomicInteger(1);
+    private final ThreadGroup group;
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private final String namePrefix;
+    private final Set<WeakReference<Thread>> directThreads = new HashSet<>();
+
+    DedicatedThreadFactory() {
+      group = new ThreadGroup(ExecutorServiceRule.class.getSimpleName() + "-ThreadGroup");
+      namePrefix = "pool-" + poolNumber.getAndIncrement() + "-thread-";
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+      Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+      if (t.isDaemon()) {
+        t.setDaemon(false);
+      }
+      if (t.getPriority() != Thread.NORM_PRIORITY) {
+        t.setPriority(Thread.NORM_PRIORITY);
+      }
+      directThreads.add(new WeakReference<>(t));
+      return t;
+    }
+
+    Set<Thread> getThreads() {
+      Set<Thread> value = new HashSet<>();
+      for (WeakReference<Thread> reference : directThreads) {
+        Thread thread = reference.get();
+        if (thread != null) {
+          value.add(thread);
+        }
+      }
+      return value;
+    }
   }
 
   public static class Builder {

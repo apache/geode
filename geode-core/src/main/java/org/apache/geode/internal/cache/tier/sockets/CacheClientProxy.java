@@ -45,6 +45,7 @@ import org.apache.shiro.util.ThreadState;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ClientSession;
@@ -865,6 +866,7 @@ public class CacheClientProxy implements ClientSession {
       return;
     }
 
+    boolean closedSocket = false;
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Terminating processing", this);
@@ -912,7 +914,7 @@ public class CacheClientProxy implements ClientSession {
         // to fix bug 37684
         // 1. check to see if dispatcher is still alive
         if (this._messageDispatcher.isAlive()) {
-          closeSocket();
+          closedSocket = closeSocket();
           destroyRQ();
           alreadyDestroyed = true;
           this._messageDispatcher.interrupt();
@@ -941,7 +943,11 @@ public class CacheClientProxy implements ClientSession {
     } finally {
       // Close the statistics
       this._statistics.close(); // fix for bug 40105
-      closeTransientFields(); // make sure this happens
+      if (closedSocket) {
+        closeOtherTransientFields();
+      } else {
+        closeTransientFields(); // make sure this happens
+      }
     }
   }
 
@@ -963,6 +969,10 @@ public class CacheClientProxy implements ClientSession {
       return;
     }
 
+    closeOtherTransientFields();
+  }
+
+  private void closeOtherTransientFields() {
     // Null out comm buffer, host address, ports and proxy id. All will be
     // replaced when the client reconnects.
     releaseCommBuffer();
@@ -981,6 +991,11 @@ public class CacheClientProxy implements ClientSession {
     // Commented to fix bug 40259
     // this.clientVersion = null;
     closeNonDurableCqs();
+
+    // Logout the subject
+    if (this.subject != null) {
+      this.subject.logout();
+    }
   }
 
   private void releaseCommBuffer() {
@@ -1932,6 +1947,11 @@ public class CacheClientProxy implements ClientSession {
 
   public Version getVersion() {
     return this.clientVersion;
+  }
+
+  @VisibleForTesting
+  protected Subject getSubject() {
+    return this.subject;
   }
 
   protected void scheduleDurableExpirationTask() {

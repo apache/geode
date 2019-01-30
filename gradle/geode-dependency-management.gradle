@@ -58,6 +58,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
           entry('geode-json')
           entry('geode-junit')
           entry('geode-lucene')
+          entry('geode-management')
           entry('geode-old-client-support')
           entry('geode-old-versions')
           entry('geode-protobuf')
@@ -67,13 +68,12 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
           entry('geode-wan')
           entry('geode-web')
           entry('geode-web-api')
-          entry('geode-management-rest-api')
+          entry('geode-web-management')
         }
 
         // informal, inter-group dependencySet
         dependency('com.sun.xml.bind:jaxb-impl:2.3.1')
         dependency('javax.xml.bind:jaxb-api:2.3.1')
-
 
         dependency(group: 'antlr', name: 'antlr', version: project.'antlr.version')
         dependency(group: 'cglib', name: 'cglib', version: project.'cglib.version')
@@ -88,6 +88,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         dependency(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
         dependency(group: 'com.google.guava', name: 'guava', version: '27.0-jre')
+        dependency(group: 'com.google.protobuf', name: 'protobuf-gradle-plugin', version: project.'protobuf-gradle-plugin.version')
         dependency(group: 'com.google.protobuf', name: 'protobuf-java', version: project.'protobuf-java.version')
         dependency(group: 'com.healthmarketscience.rmiio', name: 'rmiio', version: '2.1.2')
         dependencySet(group: 'com.jayway.jsonpath', version: '2.4.0') {
@@ -162,6 +163,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency(group: 'org.awaitility', name: 'awaitility', version: '3.1.2')
         dependency(group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.60')
         dependency(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.10')
+        dependency(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: project.'jetty.version')
         dependency(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
         dependency(group: 'org.fusesource.jansi', name: 'jansi', version: '1.17.1')
         dependencySet(group: 'org.hamcrest', version: '1.3') {

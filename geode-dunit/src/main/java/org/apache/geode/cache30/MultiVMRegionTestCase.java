@@ -91,6 +91,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -100,6 +101,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntryExpiryTask;
 import org.apache.geode.internal.cache.ExpiryTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -122,6 +124,7 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 
 /**
  * Abstract superclass of {@link Region} tests that involve more than one VM.
@@ -8222,17 +8225,25 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
       @Override
       public void run() {
+        // set log-level to fine so we'll see InitialImageOperation keys in the log for
+        // GEODE-6326
+        System.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
         try {
           final RegionFactory<?, ?> f;
           if (VM.getCurrentVMNum() == 0) {
             f = getCache().createRegionFactory(
                 getRegionAttributes(RegionShortcut.REPLICATE_PROXY.toString()));
           } else {
+            if (VM.getCurrentVMNum() == 2) {
+              InitialImageOperation.slowImageProcessing = 1;
+            }
             f = getCache().createRegionFactory(getRegionAttributes());
           }
           CCRegion = (LocalRegion) f.create(name);
         } catch (CacheException ex) {
           fail("While creating region", ex);
+        } finally {
+          System.setProperty(DistributionConfig.LOG_LEVEL_NAME, DUnitLauncher.logLevel);
         }
       }
     };
@@ -8278,41 +8289,49 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
 
     // For no-ack regions, messages may still be in flight between replicas at this point
-    await("Wait for the members to eventually be consistent")
-        .untilAsserted(() -> {
+    try {
+      await("Wait for the members to eventually be consistent")
+          .untilAsserted(() -> {
 
-          // check consistency of the regions
-          Map r1Contents = vm1.invoke(MultiVMRegionTestCase::getCCRegionContents);
-          Map r2Contents = vm2.invoke(MultiVMRegionTestCase::getCCRegionContents);
-          Map r3Contents = vm3.invoke(MultiVMRegionTestCase::getCCRegionContents);
+            // check consistency of the regions
+            Map r1Contents = vm1.invoke(MultiVMRegionTestCase::getCCRegionContents);
+            Map r2Contents = vm2.invoke(MultiVMRegionTestCase::getCCRegionContents);
+            Map r3Contents = vm3.invoke(MultiVMRegionTestCase::getCCRegionContents);
 
-          for (int i = 0; i < 10; i++) {
-            String key = "cckey" + i;
-            assertThat(r2Contents.get(key)).describedAs(
-                "r2 contents are not consistent with r1 for " + key)
-                .isEqualTo(r1Contents.get(key));
-            assertThat(r3Contents.get(key)).describedAs(
-                "r3 contents are not consistent with r2 for " + key)
-                .isEqualTo(r2Contents.get(key));
-            for (int subi = 1; subi < 3; subi++) {
-              String subkey = key + "-" + subi;
-              if (r1Contents.containsKey(subkey)) {
-                assertThat(r2Contents.get(subkey)).describedAs(
-                    "r2 contents are not consistent with r1 for subkey " + subkey).isEqualTo(
-                        r1Contents.get(subkey));
-                assertThat(r3Contents.get(subkey)).describedAs(
-                    "r3 contents are not consistent with r2 for subkey " + subkey).isEqualTo(
-                        r2Contents.get(subkey));
-              } else {
-                assertThat(r2Contents.containsKey(subkey))
-                    .describedAs("r2 contains subkey " + subkey + " that r1 does not").isFalse();
-                assertThat(r3Contents.containsKey(subkey))
-                    .describedAs("r3 contains subkey " + subkey + " that r1 does not").isFalse();
+            for (int i = 0; i < 10; i++) {
+              String key = "cckey" + i;
+              assertThat(r2Contents.get(key)).describedAs(
+                  "r2 contents are not consistent with r1 for " + key)
+                  .isEqualTo(r1Contents.get(key));
+              assertThat(r3Contents.get(key)).describedAs(
+                  "r3 contents are not consistent with r2 for " + key)
+                  .isEqualTo(r2Contents.get(key));
+              for (int subi = 1; subi < 3; subi++) {
+                String subkey = key + "-" + subi;
+                if (r1Contents.containsKey(subkey)) {
+                  assertThat(r2Contents.get(subkey)).describedAs(
+                      "r2 contents are not consistent with r1 for subkey " + subkey).isEqualTo(
+                          r1Contents.get(subkey));
+                  assertThat(r3Contents.get(subkey)).describedAs(
+                      "r3 contents are not consistent with r2 for subkey " + subkey).isEqualTo(
+                          r2Contents.get(subkey));
+                } else {
+                  assertThat(r2Contents.containsKey(subkey))
+                      .describedAs("r2 contains subkey " + subkey + " that r1 does not").isFalse();
+                  assertThat(r3Contents.containsKey(subkey))
+                      .describedAs("r3 contains subkey " + subkey + " that r1 does not").isFalse();
+                }
               }
             }
-          }
-        });
-
+          });
+    } finally {
+      vm1.invoke("dump region contents", () -> CCRegion.dumpBackingMap());
+      vm2.invoke("dump region contents", () -> {
+        CCRegion.dumpBackingMap();
+        InitialImageOperation.slowImageProcessing = 0;
+      });
+      vm3.invoke("dump region contents", () -> CCRegion.dumpBackingMap());
+    }
   }
 
   private void doOpsLoop(int runTimeMs, boolean includeClear) {

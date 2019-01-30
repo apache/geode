@@ -19,9 +19,8 @@ import javax.servlet.ServletContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.ServletContextAware;
 
+import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.internal.JettyHelper;
-import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -51,21 +50,18 @@ public class RestSecurityService implements ServletContextAware {
    * calls used in @PreAuthorize tag needs to return a boolean
    */
   public boolean authorize(String resource, String operation, String region, String key) {
-    try {
-      securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
-          key);
-      return true;
-    } catch (GemFireSecurityException ex) {
-      return false;
-    }
+    securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
+        key);
+    return true;
   }
 
   public boolean authorize(String operation, String region, String[] keys) {
     boolean authorized = false;
     for (String key : keys) {
       authorized = authorize("DATA", operation, region, key);
-      if (!authorized)
+      if (!authorized) {
         return false;
+      }
     }
     return true;
   }
@@ -78,6 +74,6 @@ public class RestSecurityService implements ServletContextAware {
   @Override
   public void setServletContext(ServletContext servletContext) {
     securityService = (SecurityService) servletContext
-        .getAttribute(JettyHelper.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+        .getAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
   }
 }

@@ -214,8 +214,10 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
@@ -602,6 +604,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
 
+  private HttpService httpService;
+
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
     String propertyName = "sun.nio.ch.bugLevel";
@@ -871,11 +875,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         this.securityService = SecurityServiceFactory.create();
       }
 
+      DistributionConfig systemConfig = system.getConfig();
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
         // We only support management on members of a distributed system
         // Should do this: if (!getSystem().isLoner()) {
         // but it causes quickstart.CqClientTest to hang
-        boolean disableJmx = system.getConfig().getDisableJmx();
+        boolean disableJmx = systemConfig.getDisableJmx();
         if (disableJmx) {
           logger.info("Running with JMX disabled.");
         } else {
@@ -983,11 +988,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       SystemFailure.signalCacheCreate();
 
-      this.diskMonitor = new DiskStoreMonitor(system.getConfig().getLogFile());
+      this.diskMonitor = new DiskStoreMonitor(systemConfig.getLogFile());
 
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
       backupService = new BackupService(this);
+      if (!this.isClient) {
+        httpService = new HttpService(systemConfig.getHttpServiceBindAddress(),
+            systemConfig.getHttpServicePort(), SSLConfigurationFactory
+                .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB));
+      }
     } // synchronized
+  }
+
+  @Override
+  public HttpService getHttpService() {
+    return httpService;
   }
 
   @Override
@@ -1290,7 +1305,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private void startRestAgentServer(GemFireCacheImpl cache) {
-    if (this.system.getConfig().getStartDevRestApi() && isNotJmxManager() && isServerNode()) {
+    if (this.system.getConfig().getStartDevRestApi() && isServerNode()) {
       this.restAgent = new RestAgent(this.system.getConfig(), this.securityService);
       this.restAgent.start(cache);
     } else {
@@ -2214,7 +2229,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           stopRedisServer();
 
-          stopRestAgentServer();
+          if (httpService != null) {
+            httpService.stop();
+          }
 
           // no need to track PR instances since we won't create any more
           // cacheServers or gatewayHubs
@@ -2478,14 +2495,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private void stopRedisServer() {
     if (this.redisServer != null)
       this.redisServer.shutdown();
-  }
-
-  private void stopRestAgentServer() {
-    if (this.restAgent != null) {
-      logger.info("Rest Server on port {} is shutting down",
-          new Object[] {this.system.getConfig().getHttpServicePort()});
-      this.restAgent.stop();
-    }
   }
 
   private void prepareDiskStoresForClose() {

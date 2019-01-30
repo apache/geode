@@ -67,9 +67,10 @@ public class GfshSignalHandler extends AbstractSignalNotificationHandler impleme
     final Signal signal = Signal.valueOfName(sig.getName());
     switch (signal) {
       case SIGINT:
-        String prompt = consoleReader.getPrompt();
-        consoleReader.resetPromptLine(prompt, "", -1);
-
+        if (consoleReader != null) {
+          String prompt = consoleReader.getPrompt();
+          consoleReader.resetPromptLine(prompt, "", -1);
+        }
         break;
       default:
         final SignalHandler handler = getOriginalSignalHandler(signal);

@@ -370,4 +370,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
    * by Geode will not be accessible from the returned cache.
    */
   InternalCacheForClientAccess getCacheForProcessingClientRequests();
+
+  HttpService getHttpService();
 }

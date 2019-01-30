@@ -33,6 +33,7 @@ import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.api.ListAssert;
 
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.api.ClusterManagementResult;
 
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
   private static Logger logger = LogService.getLogger();
@@ -73,6 +74,11 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
 
   public AbstractCharSequenceAssert<?, String> hasResponseBody() {
     return assertThat(responseBody);
+  }
+
+  public ClusterManagementResult getClusterManagementResult() throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.readValue(responseBody, ClusterManagementResult.class);
   }
 
   public HttpResponseAssert hasContentType(String contentType) {
