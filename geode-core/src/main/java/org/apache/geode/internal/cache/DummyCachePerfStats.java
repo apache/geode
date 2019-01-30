@@ -32,11 +32,6 @@ public class DummyCachePerfStats extends CachePerfStats {
   // //////////////////// Accessing Stats //////////////////////
 
   @Override
-  public int getLoadsInProgress() {
-    return 0;
-  }
-
-  @Override
   public int getLoadsCompleted() {
     return 0;
   }
@@ -47,22 +42,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getNetloadsInProgress() {
-    return 0;
-  }
-
-  @Override
   public int getNetloadsCompleted() {
-    return 0;
-  }
-
-  @Override
-  public long getNetloadTime() {
-    return 0;
-  }
-
-  @Override
-  public int getNetsearchesInProgress() {
     return 0;
   }
 
@@ -77,17 +57,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getGetInitialImagesInProgress() {
-    return 0;
-  }
-
-  @Override
   public int getGetInitialImagesCompleted() {
-    return 0;
-  }
-
-  @Override
-  public long getGetInitialImageTime() {
     return 0;
   }
 
@@ -98,11 +68,6 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public int getRegions() {
-    return 0;
-  }
-
-  @Override
-  public int getPartitionedRegions() {
     return 0;
   }
 
@@ -155,25 +120,10 @@ public class DummyCachePerfStats extends CachePerfStats {
   public void incReliableQueuedOps(int inc) {}
 
   @Override
-  public int getReliableQueueSize() {
-    return 0;
-  }
-
-  @Override
   public void incReliableQueueSize(int inc) {}
 
   @Override
-  public int getReliableQueueMax() {
-    return 0;
-  }
-
-  @Override
   public void incReliableQueueMax(int inc) {}
-
-  @Override
-  public int getReliableRegions() {
-    return 0;
-  }
 
   @Override
   public void incReliableRegions(int inc) {}
@@ -185,11 +135,6 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public void incReliableRegionsMissing(int inc) {}
-
-  @Override
-  public int getReliableRegionsQueuing() {
-    return 0;
-  }
 
   @Override
   public void incReliableRegionsQueuing(int inc) {}
@@ -220,11 +165,6 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public void incQueuedEvents(int inc) {}
-
-  @Override
-  public long getQueuedEvents() {
-    return 0;
-  }
 
   // //////////////////// Updating Stats //////////////////////
 

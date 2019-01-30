@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.StatisticDescriptor;
@@ -27,133 +26,133 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
- * CachePerfStats tracks statistics about GemFire cache performance.
+ * CachePerfStats tracks statistics about Geode cache performance and usage.
  */
 public class CachePerfStats {
   public static boolean enableClockStats;
 
   private static final StatisticsType type;
 
-  protected static final int loadsInProgressId;
-  protected static final int loadsCompletedId;
-  protected static final int loadTimeId;
-  protected static final int netloadsInProgressId;
-  protected static final int netloadsCompletedId;
-  protected static final int netloadTimeId;
-  protected static final int netsearchesInProgressId;
-  protected static final int netsearchesCompletedId;
-  protected static final int netsearchTimeId;
-  protected static final int cacheWriterCallsInProgressId;
-  protected static final int cacheWriterCallsCompletedId;
-  protected static final int cacheWriterCallTimeId;
-  protected static final int cacheListenerCallsInProgressId;
-  protected static final int cacheListenerCallsCompletedId;
-  protected static final int cacheListenerCallTimeId;
-  protected static final int getInitialImagesInProgressId;
-  protected static final int getInitialImagesCompletedId;
-  protected static final int deltaGetInitialImagesCompletedId;
-  protected static final int getInitialImageTimeId;
-  protected static final int getInitialImageKeysReceivedId;
-  protected static final int regionsId;
-  protected static final int partitionedRegionsId;
+  static final int loadsInProgressId;
+  static final int loadsCompletedId;
+  static final int loadTimeId;
+  static final int netloadsInProgressId;
+  static final int netloadsCompletedId;
+  static final int netloadTimeId;
+  static final int netsearchesInProgressId;
+  static final int netsearchesCompletedId;
+  static final int netsearchTimeId;
+  static final int cacheWriterCallsInProgressId;
+  static final int cacheWriterCallsCompletedId;
+  static final int cacheWriterCallTimeId;
+  static final int cacheListenerCallsInProgressId;
+  static final int cacheListenerCallsCompletedId;
+  static final int cacheListenerCallTimeId;
+  static final int getInitialImagesInProgressId;
+  static final int getInitialImagesCompletedId;
+  static final int deltaGetInitialImagesCompletedId;
+  static final int getInitialImageTimeId;
+  static final int getInitialImageKeysReceivedId;
+  static final int regionsId;
+  static final int partitionedRegionsId;
   protected static final int destroysId;
-  protected static final int createsId;
-  protected static final int putsId;
+  static final int createsId;
+  static final int putsId;
   protected static final int putTimeId;
-  protected static final int putallsId;
-  protected static final int putallTimeId;
-  protected static final int removeAllsId;
-  protected static final int removeAllTimeId;
+  static final int putallsId;
+  static final int putallTimeId;
+  static final int removeAllsId;
+  private static final int removeAllTimeId;
   protected static final int updatesId;
-  protected static final int updateTimeId;
-  protected static final int invalidatesId;
-  protected static final int getsId;
+  static final int updateTimeId;
+  static final int invalidatesId;
+  static final int getsId;
   protected static final int getTimeId;
   protected static final int eventQueueSizeId;
-  protected static final int eventQueueThrottleTimeId;
-  protected static final int eventQueueThrottleCountId;
-  protected static final int eventThreadsId;
-  protected static final int missesId;
+  static final int eventQueueThrottleTimeId;
+  static final int eventQueueThrottleCountId;
+  static final int eventThreadsId;
+  static final int missesId;
   protected static final int queryExecutionsId;
-  protected static final int queryExecutionTimeId;
-  protected static final int queryResultsHashCollisionsId;
-  protected static final int queryResultsHashCollisionProbeTimeId;
-  protected static final int partitionedRegionQueryRetriesId;
+  static final int queryExecutionTimeId;
+  static final int queryResultsHashCollisionsId;
+  static final int queryResultsHashCollisionProbeTimeId;
+  static final int partitionedRegionQueryRetriesId;
 
-  protected static final int txSuccessLifeTimeId;
-  protected static final int txFailedLifeTimeId;
-  protected static final int txRollbackLifeTimeId;
-  protected static final int txCommitsId;
-  protected static final int txFailuresId;
-  protected static final int txRollbacksId;
-  protected static final int txCommitTimeId;
-  protected static final int txFailureTimeId;
-  protected static final int txRollbackTimeId;
-  protected static final int txCommitChangesId;
-  protected static final int txFailureChangesId;
-  protected static final int txRollbackChangesId;
-  protected static final int txConflictCheckTimeId;
+  static final int txSuccessLifeTimeId;
+  static final int txFailedLifeTimeId;
+  static final int txRollbackLifeTimeId;
+  static final int txCommitsId;
+  static final int txFailuresId;
+  static final int txRollbacksId;
+  static final int txCommitTimeId;
+  static final int txFailureTimeId;
+  static final int txRollbackTimeId;
+  static final int txCommitChangesId;
+  static final int txFailureChangesId;
+  static final int txRollbackChangesId;
+  static final int txConflictCheckTimeId;
 
-  protected static final int reliableQueuedOpsId;
-  protected static final int reliableQueueSizeId;
-  protected static final int reliableQueueMaxId;
-  protected static final int reliableRegionsId;
-  protected static final int reliableRegionsMissingId;
-  protected static final int reliableRegionsQueuingId;
-  protected static final int reliableRegionsMissingFullAccessId;
-  protected static final int reliableRegionsMissingLimitedAccessId;
-  protected static final int reliableRegionsMissingNoAccessId;
-  protected static final int entryCountId;
+  static final int reliableQueuedOpsId;
+  static final int reliableQueueSizeId;
+  static final int reliableQueueMaxId;
+  static final int reliableRegionsId;
+  static final int reliableRegionsMissingId;
+  static final int reliableRegionsQueuingId;
+  static final int reliableRegionsMissingFullAccessId;
+  static final int reliableRegionsMissingLimitedAccessId;
+  static final int reliableRegionsMissingNoAccessId;
+  static final int entryCountId;
   protected static final int eventsQueuedId;
-  protected static final int retriesId;
+  static final int retriesId;
 
-  protected static final int diskTasksWaitingId;
-  protected static final int evictorJobsStartedId;
-  protected static final int evictorJobsCompletedId;
-  protected static final int evictorQueueSizeId;
+  static final int diskTasksWaitingId;
+  static final int evictorJobsStartedId;
+  static final int evictorJobsCompletedId;
+  static final int evictorQueueSizeId;
 
-  protected static final int evictWorkTimeId;
+  static final int evictWorkTimeId;
 
-  protected static final int indexUpdateInProgressId;
-  protected static final int indexUpdateCompletedId;
-  protected static final int indexUpdateTimeId;
-  protected static final int clearsId;
-  protected static final int indexInitializationInProgressId;
-  protected static final int indexInitializationCompletedId;
-  protected static final int indexInitializationTimeId;
+  static final int indexUpdateInProgressId;
+  static final int indexUpdateCompletedId;
+  static final int indexUpdateTimeId;
+  static final int clearsId;
+  private static final int indexInitializationInProgressId;
+  private static final int indexInitializationCompletedId;
+  private static final int indexInitializationTimeId;
 
   /** Id of the meta data refresh statistic */
-  protected static final int metaDataRefreshCountId;
+  static final int metaDataRefreshCountId;
 
-  protected static final int conflatedEventsId;
-  protected static final int tombstoneCountId;
-  protected static final int tombstoneGCCountId;
-  protected static final int tombstoneOverhead1Id;
-  protected static final int tombstoneOverhead2Id;
-  protected static final int clearTimeoutsId;
+  static final int conflatedEventsId;
+  static final int tombstoneCountId;
+  static final int tombstoneGCCountId;
+  private static final int tombstoneOverhead1Id;
+  private static final int tombstoneOverhead2Id;
+  static final int clearTimeoutsId;
 
-  protected static final int deltaUpdatesId;
-  protected static final int deltaUpdatesTimeId;
-  protected static final int deltaFailedUpdatesId;
+  static final int deltaUpdatesId;
+  private static final int deltaUpdatesTimeId;
+  static final int deltaFailedUpdatesId;
 
-  protected static final int deltasPreparedId;
-  protected static final int deltasPreparedTimeId;
-  protected static final int deltasSentId;
+  static final int deltasPreparedId;
+  private static final int deltasPreparedTimeId;
+  static final int deltasSentId;
 
-  protected static final int deltaFullValuesSentId;
-  protected static final int deltaFullValuesRequestedId;
+  static final int deltaFullValuesSentId;
+  static final int deltaFullValuesRequestedId;
 
-  protected static final int importedEntriesCountId;
-  protected static final int importTimeId;
-  protected static final int exportedEntriesCountId;
-  protected static final int exportTimeId;
+  static final int importedEntriesCountId;
+  static final int importTimeId;
+  static final int exportedEntriesCountId;
+  static final int exportTimeId;
 
-  protected static final int compressionCompressTimeId;
-  protected static final int compressionDecompressTimeId;
-  protected static final int compressionCompressionsId;
-  protected static final int compressionDecompressionsId;
-  protected static final int compressionPreCompressedBytesId;
-  protected static final int compressionPostCompressedBytesId;
+  static final int compressionCompressTimeId;
+  static final int compressionDecompressTimeId;
+  static final int compressionCompressionsId;
+  static final int compressionDecompressionsId;
+  static final int compressionPreCompressedBytesId;
+  static final int compressionPostCompressedBytesId;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -653,7 +652,7 @@ public class CachePerfStats {
    * Returns the current NanoTime or, if clock stats are disabled, zero.
    *
    * @since GemFire 5.0
-   * @deprecated Please use instance method cachePerfStats.getClockTime() instead.
+   * @deprecated Please use instance method {@link #getClockTime()} instead.
    */
   @Deprecated
   public static long getStatTime() {
@@ -664,12 +663,8 @@ public class CachePerfStats {
     return type;
   }
 
-  public long getClockTime() {
+  private long getClockTime() {
     return clock.getTime();
-  }
-
-  public int getLoadsInProgress() {
-    return stats.getInt(loadsInProgressId);
   }
 
   public int getLoadsCompleted() {
@@ -680,20 +675,8 @@ public class CachePerfStats {
     return stats.getLong(loadTimeId);
   }
 
-  public int getNetloadsInProgress() {
-    return stats.getInt(netloadsInProgressId);
-  }
-
   public int getNetloadsCompleted() {
     return stats.getInt(netloadsCompletedId);
-  }
-
-  public long getNetloadTime() {
-    return stats.getLong(netloadTimeId);
-  }
-
-  public int getNetsearchesInProgress() {
-    return stats.getInt(netsearchesInProgressId);
   }
 
   public int getNetsearchesCompleted() {
@@ -704,20 +687,12 @@ public class CachePerfStats {
     return stats.getLong(netsearchTimeId);
   }
 
-  public int getGetInitialImagesInProgress() {
-    return stats.getInt(getInitialImagesInProgressId);
-  }
-
   public int getGetInitialImagesCompleted() {
     return stats.getInt(getInitialImagesCompletedId);
   }
 
-  public int getDeltaGetInitialImagesCompleted() {
+  int getDeltaGetInitialImagesCompleted() {
     return stats.getInt(deltaGetInitialImagesCompletedId);
-  }
-
-  public long getGetInitialImageTime() {
-    return stats.getLong(getInitialImageTimeId);
   }
 
   public int getGetInitialImageKeysReceived() {
@@ -726,10 +701,6 @@ public class CachePerfStats {
 
   public int getRegions() {
     return stats.getInt(regionsId);
-  }
-
-  public int getPartitionedRegions() {
-    return stats.getInt(partitionedRegionsId);
   }
 
   public int getDestroys() {
@@ -752,7 +723,7 @@ public class CachePerfStats {
     return stats.getInt(putallsId);
   }
 
-  public int getRemoveAlls() {
+  int getRemoveAlls() {
     return stats.getInt(removeAllsId);
   }
 
@@ -784,24 +755,12 @@ public class CachePerfStats {
     stats.incInt(reliableQueuedOpsId, inc);
   }
 
-  public int getReliableQueueSize() {
-    return stats.getInt(reliableQueueSizeId);
-  }
-
   public void incReliableQueueSize(int inc) {
     stats.incInt(reliableQueueSizeId, inc);
   }
 
-  public int getReliableQueueMax() {
-    return stats.getInt(reliableQueueMaxId);
-  }
-
   public void incReliableQueueMax(int inc) {
     stats.incInt(reliableQueueMaxId, inc);
-  }
-
-  public int getReliableRegions() {
-    return stats.getInt(reliableRegionsId);
   }
 
   public void incReliableRegions(int inc) {
@@ -814,10 +773,6 @@ public class CachePerfStats {
 
   public void incReliableRegionsMissing(int inc) {
     stats.incInt(reliableRegionsMissingId, inc);
-  }
-
-  public int getReliableRegionsQueuing() {
-    return stats.getInt(reliableRegionsQueuingId);
   }
 
   public void incReliableRegionsQueuing(int inc) {
@@ -852,15 +807,11 @@ public class CachePerfStats {
     stats.incLong(eventsQueuedId, inc);
   }
 
-  public long getQueuedEvents() {
-    return stats.getInt(eventsQueuedId);
-  }
-
-  public int getDeltaUpdates() {
+  int getDeltaUpdates() {
     return stats.getInt(deltaUpdatesId);
   }
 
-  public long getDeltaUpdatesTime() {
+  long getDeltaUpdatesTime() {
     return stats.getLong(deltaUpdatesTimeId);
   }
 
@@ -868,11 +819,11 @@ public class CachePerfStats {
     return stats.getInt(deltaFailedUpdatesId);
   }
 
-  public int getDeltasPrepared() {
+  int getDeltasPrepared() {
     return stats.getInt(deltasPreparedId);
   }
 
-  public long getDeltasPreparedTime() {
+  long getDeltasPreparedTime() {
     return stats.getLong(deltasPreparedTimeId);
   }
 
@@ -884,7 +835,7 @@ public class CachePerfStats {
     return stats.getInt(deltaFullValuesSentId);
   }
 
-  public int getDeltaFullValuesRequested() {
+  int getDeltaFullValuesRequested() {
     return stats.getInt(deltaFullValuesRequestedId);
   }
 
@@ -1014,7 +965,7 @@ public class CachePerfStats {
     stats.incInt(cacheWriterCallsCompletedId, 1);
   }
 
-  public int getCacheWriterCallsCompleted() {
+  int getCacheWriterCallsCompleted() {
     return stats.getInt(cacheWriterCallsCompletedId);
   }
 
@@ -1039,7 +990,7 @@ public class CachePerfStats {
     stats.incInt(cacheListenerCallsCompletedId, 1);
   }
 
-  public int getCacheListenerCallsCompleted() {
+  int getCacheListenerCallsCompleted() {
     return stats.getInt(cacheListenerCallsCompletedId);
   }
 
@@ -1072,7 +1023,7 @@ public class CachePerfStats {
     stats.incInt(getInitialImagesInProgressId, -1);
   }
 
-  public void incDeltaGIICompleted() {
+  void incDeltaGIICompleted() {
     stats.incInt(deltaGetInitialImagesCompletedId, 1);
   }
 
@@ -1092,16 +1043,16 @@ public class CachePerfStats {
     stats.incInt(indexUpdateCompletedId, 1);
   }
 
-  public int getIndexUpdateCompleted() {
+  int getIndexUpdateCompleted() {
     return stats.getInt(indexUpdateCompletedId);
   }
 
-  public long startIndexInitialization() {
+  long startIndexInitialization() {
     stats.incInt(indexInitializationInProgressId, 1);
     return getClockTime();
   }
 
-  public void endIndexInitialization(long start) {
+  void endIndexInitialization(long start) {
     long ts = getClockTime();
     stats.incLong(indexInitializationTimeId, ts - start);
     stats.incInt(indexInitializationInProgressId, -1);
@@ -1281,7 +1232,7 @@ public class CachePerfStats {
     stats.incLong(txRollbackLifeTimeId, txLifeTime);
   }
 
-  public void endDeltaUpdate(long start) {
+  void endDeltaUpdate(long start) {
     stats.incInt(deltaUpdatesId, 1);
     if (enableClockStats) {
       stats.incLong(deltaUpdatesTimeId, getClockTime() - start);
@@ -1374,7 +1325,7 @@ public class CachePerfStats {
     stats.incInt(diskTasksWaitingId, -1);
   }
 
-  public int getDiskTasksWaiting() {
+  int getDiskTasksWaiting() {
     return stats.getInt(diskTasksWaitingId);
   }
 
@@ -1386,7 +1337,7 @@ public class CachePerfStats {
     stats.incInt(evictorJobsStartedId, 1);
   }
 
-  public int getEvictorJobsStarted() {
+  int getEvictorJobsStarted() {
     return stats.getInt(evictorJobsStartedId);
   }
 
@@ -1394,7 +1345,7 @@ public class CachePerfStats {
     stats.incInt(evictorJobsCompletedId, 1);
   }
 
-  public int getEvictorJobsCompleted() {
+  int getEvictorJobsCompleted() {
     return stats.getInt(evictorJobsCompletedId);
   }
 
@@ -1467,20 +1418,12 @@ public class CachePerfStats {
     stats.incInt(tombstoneGCCountId, 1);
   }
 
-  public void setReplicatedTombstonesSize(long size) {
+  void setReplicatedTombstonesSize(long size) {
     stats.setLong(tombstoneOverhead1Id, size);
   }
 
-  public long getReplicatedTombstonesSize() {
-    return stats.getLong(tombstoneOverhead1Id);
-  }
-
-  public void setNonReplicatedTombstonesSize(long size) {
+  void setNonReplicatedTombstonesSize(long size) {
     stats.setLong(tombstoneOverhead2Id, size);
-  }
-
-  public long getNonReplicatedTombstonesSize() {
-    return stats.getLong(tombstoneOverhead2Id);
   }
 
   public int getClearTimeouts() {
@@ -1495,7 +1438,7 @@ public class CachePerfStats {
     stats.incLong(partitionedRegionQueryRetriesId, 1);
   }
 
-  public long getPRQueryRetries() {
+  long getPRQueryRetries() {
     return stats.getLong(partitionedRegionQueryRetriesId);
   }
 
@@ -1522,16 +1465,8 @@ public class CachePerfStats {
     stats.incLong(metaDataRefreshCountId, 1);
   }
 
-  public long getMetaDataRefreshCount() {
+  long getMetaDataRefreshCount() {
     return stats.getLong(metaDataRefreshCountId);
-  }
-
-  public long getImportedEntriesCount() {
-    return stats.getLong(importedEntriesCountId);
-  }
-
-  public long getImportTime() {
-    return stats.getLong(importTimeId);
   }
 
   public void endImport(long entryCount, long start) {
@@ -1539,14 +1474,6 @@ public class CachePerfStats {
     if (enableClockStats) {
       stats.incLong(importTimeId, getClockTime() - start);
     }
-  }
-
-  public long getExportedEntriesCount() {
-    return stats.getLong(exportedEntriesCountId);
-  }
-
-  public long getExportTime() {
-    return stats.getLong(exportTimeId);
   }
 
   public void endExport(long entryCount, long start) {
