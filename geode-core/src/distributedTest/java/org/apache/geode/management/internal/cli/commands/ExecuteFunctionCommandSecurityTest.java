@@ -45,7 +45,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @ClassRule
@@ -54,13 +54,13 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator, server1, server2;
+  private static MemberVM locator;
 
   private static String REPLICATED_REGION = "replicatedRegion";
   private static String PARTITIONED_REGION = "partitionedRegion";
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     Properties locatorProps = new Properties();
     locatorProps.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     locator = lsRule.startLocatorVM(0, locatorProps);
@@ -68,14 +68,15 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
     Properties serverProps = new Properties();
     serverProps.setProperty(ResourceConstants.USER_NAME, "clusterManage");
     serverProps.setProperty(ResourceConstants.PASSWORD, "clusterManage");
-    server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
-    server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
 
     Stream.of(server1, server2).forEach(server -> server.invoke(() -> {
       FunctionService.registerFunction(new ReadFunction());
       FunctionService.registerFunction(new WriteFunction());
 
       InternalCache cache = ClusterStartupRule.getCache();
+      assertThat(cache).isNotNull();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(REPLICATED_REGION);
       cache.createRegionFactory(RegionShortcut.PARTITION).create(PARTITIONED_REGION);
     }));

@@ -58,8 +58,12 @@ public class ExecuteFunctionCommandDUnitTest {
     MemberVM server1 = cluster.startServerVM(1, "group1", locator.getPort());
     MemberVM server2 = cluster.startServerVM(2, "group1", locator.getPort());
     MemberVM server3 = cluster.startServerVM(3, "group2", locator.getPort());
-    MemberVM.invokeInEveryMember(() -> FunctionService.registerFunction(new GenericFunctionOp(functionId)), server1, server2, server3);
-    MemberVM.invokeInEveryMember(() -> FunctionService.registerFunction(new FireAndForgetFunction()), server1, server2, server3);
+    MemberVM.invokeInEveryMember(
+        () -> FunctionService.registerFunction(new GenericFunctionOp(functionId)), server1, server2,
+        server3);
+    MemberVM.invokeInEveryMember(
+        () -> FunctionService.registerFunction(new FireAndForgetFunction()), server1, server2,
+        server3);
 
     // create a partitioned region on only group1
     gfsh.executeAndAssertThat(
@@ -268,7 +272,9 @@ public class ExecuteFunctionCommandDUnitTest {
 
   @Test
   public void functionWithNoResults() {
-    TabularResultModelAssert tableAssert = gfsh.executeAndAssertThat("execute function --id=FireAndForget").statusIsSuccess().hasTableSection().hasRowSize(3).hasColumnSize(3);
+    TabularResultModelAssert tableAssert =
+        gfsh.executeAndAssertThat("execute function --id=FireAndForget").statusIsSuccess()
+            .hasTableSection().hasRowSize(3).hasColumnSize(3);
 
     tableAssert.hasColumn("Member").containsExactlyInAnyOrder("server-1", "server-2", "server-3");
     tableAssert.hasColumn("Status").containsExactlyInAnyOrder("OK", "OK", "OK");
@@ -342,8 +348,7 @@ public class ExecuteFunctionCommandDUnitTest {
 
   public static class FireAndForgetFunction implements Function {
 
-    FireAndForgetFunction() {
-    }
+    FireAndForgetFunction() {}
 
     @Override
     public String getId() {
