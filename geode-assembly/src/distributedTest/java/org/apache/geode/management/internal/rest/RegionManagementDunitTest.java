@@ -79,7 +79,6 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createsAPartitionedRegionByDefault() throws Exception {
-    IgnoredException.addIgnoredException("cache element orders already exists.");
     String json = "{\"name\": \"orders\"}";
 
     ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)

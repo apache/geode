@@ -44,7 +44,7 @@ public class ManagementControllerAdvice {
 
   @ExceptionHandler(EntityExistsException.class)
   public ResponseEntity<ClusterManagementResult> entityExists(final Exception e) {
-    logger.error(e.getMessage(), e);
+    // no need to log the error stack. User only needs to know the message.
     return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
         HttpStatus.CONFLICT);
   }
@@ -57,21 +57,18 @@ public class ManagementControllerAdvice {
 
   @ExceptionHandler({NotAuthorizedException.class, SecurityException.class})
   public ResponseEntity<ClusterManagementResult> forbidden(Exception e) {
-    logger.info(e.getMessage());
     return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
         HttpStatus.FORBIDDEN);
   }
 
   @ExceptionHandler(MalformedObjectNameException.class)
   public ResponseEntity<ClusterManagementResult> badRequest(final MalformedObjectNameException e) {
-    logger.info(e.getMessage(), e);
     return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
         HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(InstanceNotFoundException.class)
   public ResponseEntity<ClusterManagementResult> notFound(final InstanceNotFoundException e) {
-    logger.info(e.getMessage(), e);
     return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
         HttpStatus.NOT_FOUND);
   }
@@ -87,7 +84,6 @@ public class ManagementControllerAdvice {
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ClusterManagementResult> handleException(
       final AccessDeniedException cause) {
-    logger.info(cause.getMessage(), cause);
     return new ResponseEntity<>(new ClusterManagementResult(false, cause.getMessage()),
         HttpStatus.FORBIDDEN);
   }

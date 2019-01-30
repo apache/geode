@@ -86,7 +86,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
-      validator.validate(config);
+      try {
+        validator.validate(config);
+      } catch (IllegalArgumentException e) {
+        return new ClusterManagementResult(false, e.getMessage());
+      }
     }
 
     // exit early if config element already exists in cache config
