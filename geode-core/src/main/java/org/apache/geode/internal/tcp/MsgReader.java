@@ -15,47 +15,77 @@
 package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.Buffers;
+import org.apache.geode.internal.net.NioFilter;
 
 /**
  * This class is currently used for reading direct ack responses It should probably be used for all
  * of the reading done in Connection.
  *
  */
-public abstract class MsgReader {
+public class MsgReader {
+  private static final Logger logger = LogService.getLogger();
+
   protected final Connection conn;
   protected final Header header = new Header();
-  private final ByteBufferInputStream bbis;
+  private final NioFilter ioFilter;
+  private ByteBuffer peerNetData;
+  private final ByteBufferInputStream byteBufferInputStream;
 
-  public MsgReader(Connection conn, Version version) {
+
+
+  MsgReader(Connection conn, NioFilter nioFilter, ByteBuffer peerNetData, Version version) {
     this.conn = conn;
-    this.bbis =
+    this.ioFilter = nioFilter;
+    this.peerNetData = peerNetData;
+    if (conn.getConduit().useSSL()) {
+      ByteBuffer buffer = ioFilter.getUnwrappedBuffer(peerNetData);
+      buffer.position(0).limit(0);
+    }
+    this.byteBufferInputStream =
         version == null ? new ByteBufferInputStream() : new VersionedByteBufferInputStream(version);
   }
 
-  public Header readHeader() throws IOException {
-    ByteBuffer nioInputBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
-    int nioMessageLength = nioInputBuffer.getInt();
-    /* nioMessageVersion = */ Connection.calcHdrVersion(nioMessageLength);
-    nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
-    byte nioMessageType = nioInputBuffer.get();
-    short nioMsgId = nioInputBuffer.getShort();
-    boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
-    if (directAck) {
-      // logger.info("DEBUG: msg from " + getRemoteAddress() + " is direct ack" );
-      nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+  Header readHeader() throws IOException {
+    ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
+
+    Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
+
+    int position = unwrappedBuffer.position();
+    int limit = unwrappedBuffer.limit();
+
+    try {
+      int nioMessageLength = unwrappedBuffer.getInt();
+      /* nioMessageVersion = */
+      Connection.calcHdrVersion(nioMessageLength);
+      nioMessageLength = Connection.calcMsgByteSize(nioMessageLength);
+      byte nioMessageType = unwrappedBuffer.get();
+      short nioMsgId = unwrappedBuffer.getShort();
+
+      boolean directAck = (nioMessageType & Connection.DIRECT_ACK_BIT) != 0;
+      if (directAck) {
+        nioMessageType &= ~Connection.DIRECT_ACK_BIT; // clear the ack bit
+      }
+
+      header.setFields(nioMessageLength, nioMessageType, nioMsgId);
+
+      return header;
+    } catch (BufferUnderflowException e) {
+      throw e;
     }
 
-    header.nioMessageLength = nioMessageLength;
-    header.nioMessageType = nioMessageType;
-    header.nioMsgId = nioMsgId;
-    return header;
   }
 
   /**
@@ -63,60 +93,76 @@ public abstract class MsgReader {
    *
    * @return the message, or null if we only received a chunk of the message
    */
-  public DistributionMessage readMessage(Header header)
-      throws IOException, ClassNotFoundException, InterruptedException {
-    ByteBuffer nioInputBuffer = readAtLeast(header.nioMessageLength);
-    this.getStats().incMessagesBeingReceived(true, header.nioMessageLength);
+  DistributionMessage readMessage(Header header)
+      throws IOException, ClassNotFoundException {
+    ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
+    Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
+    this.getStats().incMessagesBeingReceived(true, header.messageLength);
     long startSer = this.getStats().startMsgDeserialization();
+    int position = nioInputBuffer.position();
+    int limit = nioInputBuffer.limit();
     try {
-      bbis.setBuffer(nioInputBuffer);
-      DistributionMessage msg = null;
+      byteBufferInputStream.setBuffer(nioInputBuffer);
       ReplyProcessor21.initMessageRPId();
-      // add serialization stats
-      msg = (DistributionMessage) InternalDataSerializer.readDSFID(bbis);
-      return msg;
+      // dumpState("readMessage ready to deserialize", null, nioInputBuffer, position, limit);
+      return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (IOException e) {
+      throw e;
     } finally {
       this.getStats().endMsgDeserialization(startSer);
-      this.getStats().decMessagesBeingReceived(header.nioMessageLength);
+      this.getStats().decMessagesBeingReceived(header.messageLength);
+      ioFilter.doneReading(nioInputBuffer);
     }
   }
 
-  public void readChunk(Header header, MsgDestreamer md)
-      throws IOException, ClassNotFoundException, InterruptedException {
-    ByteBuffer nioInputBuffer = readAtLeast(header.nioMessageLength);
-    this.getStats().incMessagesBeingReceived(md.size() == 0, header.nioMessageLength);
-    md.addChunk(nioInputBuffer, header.nioMessageLength);
+  void readChunk(Header header, MsgDestreamer md)
+      throws IOException {
+    ByteBuffer unwrappedBuffer = readAtLeast(header.messageLength);
+    this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
+    md.addChunk(unwrappedBuffer, header.messageLength);
+    // show that the bytes have been consumed by adjusting the buffer's position
+    unwrappedBuffer.position(unwrappedBuffer.position() + header.messageLength);
   }
 
-  public abstract ByteBuffer readAtLeast(int bytes) throws IOException;
 
-  protected DMStats getStats() {
+
+  private ByteBuffer readAtLeast(int bytes) throws IOException {
+    peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
+        Buffers.BufferType.TRACKED_RECEIVER, getStats());
+    return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData, getStats());
+  }
+
+
+
+  private DMStats getStats() {
     return conn.getConduit().getStats();
   }
 
   public static class Header {
 
-    int nioMessageLength;
-    byte nioMessageType;
-    short nioMsgId;
+    private int messageLength;
+    private byte messageType;
+    private short messageId;
 
-    public Header() {}
-
-    public int getNioMessageLength() {
-      return nioMessageLength;
+    public void setFields(int nioMessageLength, byte nioMessageType, short nioMsgId) {
+      messageLength = nioMessageLength;
+      messageType = nioMessageType;
+      messageId = nioMsgId;
     }
 
-    public byte getNioMessageType() {
-      return nioMessageType;
+    int getMessageLength() {
+      return messageLength;
     }
 
-    public short getNioMessageId() {
-      return nioMsgId;
+    byte getMessageType() {
+      return messageType;
     }
 
-
+    short getMessageId() {
+      return messageId;
+    }
   }
-
-  public void close() {}
 
 }
