@@ -316,8 +316,12 @@ task configureDepsJar(dependsOn: configurations.archives.dependencies) {
 }
 
 task configureGfshDepsJar(dependsOn: configurations.gfshDependencies.dependencies) {
-  inputs.files configureDepsJar
-  inputs.files project(':geode-core').webJar
+  inputs.files {
+    configureDepsJar
+  }
+  inputs.files {
+    project(':geode-core').webJar
+  }
 
   def output = project.buildDir.toPath().resolve('reports').resolve('gfsh_deps_jar_cp.txt')
   outputs.file {
@@ -334,20 +338,28 @@ task configureGfshDepsJar(dependsOn: configurations.gfshDependencies.dependencie
 // Configure the manifest contents in a separate always-running task to ensure correctness of
 // these dependency jars
 task depsJar (type: Jar) {
-  inputs.files configureDepsJar
+  inputs.files {
+    configureDepsJar
+  }
   description 'Assembles the jar archive that defines the gemfire classpath.'
   archiveName 'geode-dependencies.jar'
-  manifest {
-    attributes("Class-Path": configureDepsJar.outputs.files.singleFile.text)
+  doFirst {
+    manifest {
+      attributes("Class-Path": configureDepsJar.outputs.files.singleFile.text)
+    }
   }
 }
 
 task gfshDepsJar (type: Jar) {
-  inputs.files configureGfshDepsJar
+  inputs.files {
+    configureGfshDepsJar
+  }
   description 'Assembles the jar archive that defines the gfsh classpath.'
   archiveName 'gfsh-dependencies.jar'
-  manifest {
-    attributes("Class-Path": configureGfshDepsJar.outputs.files.singleFile.text)
+  doFirst {
+    manifest {
+      attributes("Class-Path": configureGfshDepsJar.outputs.files.singleFile.text)
+    }
   }
 }
 
