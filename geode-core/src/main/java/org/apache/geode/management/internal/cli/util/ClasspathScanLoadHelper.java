@@ -36,30 +36,7 @@ public class ClasspathScanLoadHelper implements AutoCloseable {
   public ClasspathScanLoadHelper(Collection<String> packagesToScan) {
     scanResult = new ClassGraph().whitelistPackages(packagesToScan.toArray(new String[] {}))
         .enableClassInfo()
-        .enableAnnotationInfo().scan(optimalNumScanThreads());
-  }
-
-  /**
-   * @return a safe number of classgraph scan threads
-   */
-  private static int optimalNumScanThreads() {
-    // assumptions
-    final int largestJarMB = 200; // all-in-one jars can take significant memory to scan
-    final int largeNumberOfJars = 300; // some frameworks bring along many dependencies
-    final int maxFileDescriptorUsage = 1500; // this is conservative, max is commonly 8K
-
-    // guard against using too many file descriptors
-    final int maxThreadsByFds = maxFileDescriptorUsage / largeNumberOfJars;
-
-    // guard against running out of memory
-    final long heapMB = Runtime.getRuntime().maxMemory() / (1024 * 1024);
-    final int maxThreadsByMem = 1 + ((int) heapMB / largestJarMB);
-
-    // limit multi-threading to available CPUs (plus 25% for I/O wait)
-    final int maxThreadsByCpus = Runtime.getRuntime().availableProcessors() * 5 / 4;
-
-    // use max number of threads that satisfies all constraints above
-    return Math.min(maxThreadsByFds, Math.min(maxThreadsByMem, maxThreadsByCpus));
+        .enableAnnotationInfo().scan(1);
   }
 
   public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
