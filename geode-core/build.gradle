@@ -229,6 +229,7 @@ dependencies {
   compile('org.eclipse.jetty:jetty-webapp') {
     ext.optional = true
   }
+  compile('org.eclipse.jetty:jetty-server')
   compileOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'

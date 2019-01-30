@@ -164,6 +164,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency(group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.60')
         dependency(group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.6.10')
         dependency(group: 'org.eclipse.jetty', name: 'jetty-webapp', version: project.'jetty.version')
+        dependency(group: 'org.eclipse.jetty', name: 'jetty-server', version: project.'jetty.version')
         dependency(group: 'org.eclipse.persistence', name: 'javax.persistence', version: '2.2.1')
         dependency(group: 'org.fusesource.jansi', name: 'jansi', version: '1.17.1')
         dependencySet(group: 'org.hamcrest', version: '1.3') {

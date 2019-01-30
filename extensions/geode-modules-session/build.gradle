@@ -44,9 +44,9 @@ dependencies {
   integrationTestCompile('org.apache.tomcat:jasper:' + project.'tomcat6.version')
   integrationTestCompile('org.assertj:assertj-core')
   integrationTestCompile('org.eclipse.jetty:jetty-http:' + project.'jetty.version' + ':tests')
-  integrationTestCompile('org.eclipse.jetty:jetty-server:' + project.'jetty.version')
+  integrationTestCompile('org.eclipse.jetty:jetty-server')
   integrationTestCompile('org.eclipse.jetty:jetty-servlet:' + project.'jetty.version' + ':tests')
-  integrationTestCompile('org.eclipse.jetty:jetty-util:' + project.'jetty.version')
+  integrationTestCompile('org.eclipse.jetty:jetty-util')
   integrationTestCompile('org.httpunit:httpunit') {
     exclude group: 'javax.servlet'
     // this version of httpunit contains very outdated xercesImpl

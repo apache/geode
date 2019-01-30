@@ -22,7 +22,7 @@ apply from: "${project.projectDir}/../../gradle/geode-dependency-management.grad
 dependencies {
   compile('org.awaitility:awaitility')
   compile('junit:junit')
-  compile('org.eclipse.jetty:jetty-server:' + project.'jetty.version')
+  compile('org.eclipse.jetty:jetty-server')
   compile('commons-io:commons-io')
   compile('org.apache.commons:commons-lang3')
   compile('mx4j:mx4j')
