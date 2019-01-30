@@ -62,8 +62,6 @@ public class MsgReader {
   Header readHeader() throws IOException {
     ByteBuffer unwrappedBuffer = readAtLeast(Connection.MSG_HEADER_BYTES);
 
-    // logger.info("BRUCE: MsgReader.readHeader buffer position {} limit {}",
-    // unwrappedBuffer.position(), unwrappedBuffer.limit());
     Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
     int position = unwrappedBuffer.position();
@@ -86,10 +84,7 @@ public class MsgReader {
 
       return header;
     } catch (BufferUnderflowException e) {
-      dumpState("BufferUnderflowException", e, unwrappedBuffer, position, limit);
       throw e;
-    } finally {
-      dumpState("readHeader", null, unwrappedBuffer, position, limit);
     }
 
   }
@@ -113,32 +108,13 @@ public class MsgReader {
       // dumpState("readMessage ready to deserialize", null, nioInputBuffer, position, limit);
       return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
     } catch (RuntimeException e) {
-      dumpState("readMessage(1)", e, nioInputBuffer, position, limit);
       throw e;
     } catch (IOException e) {
-      dumpState("readMessage(2)", e, nioInputBuffer, position, limit);
       throw e;
     } finally {
       this.getStats().endMsgDeserialization(startSer);
       this.getStats().decMessagesBeingReceived(header.messageLength);
       ioFilter.doneReading(nioInputBuffer);
-    }
-  }
-
-  private void dumpState(String whereFrom, Throwable e, ByteBuffer inputBuffer, int position,
-      int limit) {
-    logger.info("BRUCE: {}, PID {} Connection to {}, {} SSL", whereFrom, OSProcess.getId(),
-        conn.getRemoteAddress(), conn.getConduit().useSSL() ? "with" : "without");
-    logger.info("BRUCE: {}, Message length {}; type {}; id {}",
-        whereFrom, header.messageLength, header.messageType, header.messageId);
-    logger.info(
-        "BRUCE: {}, starting buffer position {}; buffer limit {} capacity {} buffer hash {}",
-        whereFrom, position, limit, inputBuffer.capacity(),
-        Integer.toHexString(System.identityHashCode(inputBuffer)));
-    logger.info("BRUCE: {}, current buffer position {}; buffer limit {}",
-        whereFrom, inputBuffer.position(), inputBuffer.limit());
-    if (e != null) {
-      logger.info("BRUCE: Exception reading message", e);
     }
   }
 
@@ -154,15 +130,8 @@ public class MsgReader {
 
 
   private ByteBuffer readAtLeast(int bytes) throws IOException {
-    // logger.info("BRUCE: ensureWrappedCapacity need {} buffer {} position {} limit {} capacity
-    // {}", bytes,
-    // Integer.toHexString(System.identityHashCode(peerNetData)), peerNetData.position(),
-    // peerNetData.limit(), peerNetData.capacity());
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
         Buffers.BufferType.TRACKED_RECEIVER, getStats());
-    // logger.info("BRUCE: result buffer {} position {} limit {} capacity {}",
-    // Integer.toHexString(System.identityHashCode(peerNetData)), peerNetData.position(),
-    // peerNetData.limit(), peerNetData.capacity());
     return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData, getStats());
   }
 

@@ -323,38 +323,31 @@ public class NioSslEngine implements NioFilter {
   @Override
   public ByteBuffer readAtLeast(SocketChannel channel, int bytes,
       ByteBuffer wrappedBuffer, DMStats stats) throws IOException {
-    try {
-      if (peerAppData.capacity() > bytes) {
-        // we already have a buffer that's big enough
-        if (peerAppData.capacity() - peerAppData.position() < bytes) {
-          peerAppData.compact();
-          peerAppData.flip();
-        }
-      } else {
-        peerAppData =
-            Buffers.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, bytes, this.stats);
+    if (peerAppData.capacity() > bytes) {
+      // we already have a buffer that's big enough
+      if (peerAppData.capacity() - peerAppData.position() < bytes) {
+        peerAppData.compact();
+        peerAppData.flip();
       }
+    } else {
+      peerAppData =
+          Buffers.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, bytes, this.stats);
+    }
 
-      while (peerAppData.remaining() < bytes) {
-        wrappedBuffer.limit(wrappedBuffer.capacity());
-        int amountRead = channel.read(wrappedBuffer);
-        if (amountRead < 0) {
-          throw new EOFException();
-        }
-        if (amountRead > 0) {
-          wrappedBuffer.flip();
-          // prep the decoded buffer for writing
-          peerAppData.compact();
-          peerAppData = unwrap(wrappedBuffer);
-          // done writing to the decoded buffer - prep it for reading again
-          peerAppData.flip();
-        }
+    while (peerAppData.remaining() < bytes) {
+      wrappedBuffer.limit(wrappedBuffer.capacity());
+      int amountRead = channel.read(wrappedBuffer);
+      if (amountRead < 0) {
+        throw new EOFException();
       }
-    } catch (IOException | RuntimeException | Error e) {
-      logger.warn(
-          "BRUCE: PID " + OSProcess.getId() + ", MsgReader.readAtLeast() is throwing an exception",
-          e);
-      throw e;
+      if (amountRead > 0) {
+        wrappedBuffer.flip();
+        // prep the decoded buffer for writing
+        peerAppData.compact();
+        peerAppData = unwrap(wrappedBuffer);
+        // done writing to the decoded buffer - prep it for reading again
+        peerAppData.flip();
+      }
     }
     return peerAppData;
   }

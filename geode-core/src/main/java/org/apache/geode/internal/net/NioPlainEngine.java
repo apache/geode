@@ -82,10 +82,6 @@ public class NioPlainEngine implements NioFilter {
       DMStats stats) throws IOException {
     ByteBuffer buffer = wrappedBuffer;
 
-    // logger.info("BRUCE: readAtLeast({}) lastProcessedPosition={} lastReadPosition={} buffer
-    // capacity={}",
-    // bytes, lastProcessedPosition, lastReadPosition, buffer.capacity());
-
     Assert.assertTrue(buffer.capacity() - lastProcessedPosition >= bytes);
 
     // read into the buffer starting at the end of valid data
@@ -108,15 +104,10 @@ public class NioPlainEngine implements NioFilter {
     buffer.position(lastProcessedPosition);
     lastProcessedPosition += bytes;
 
-    // logger.info("BRUCE: readAtLeast new lastProcessedPosition={} lastReadPosition={}",
-    // lastProcessedPosition, lastReadPosition);
-
     return buffer;
   }
 
   public void doneReading(ByteBuffer unwrappedBuffer) {
-    // logger.info("BRUCE: nioFilter is compacting {}",
-    // Integer.toHexString(System.identityHashCode(unwrappedBuffer)));
     if (unwrappedBuffer.position() != 0) {
       unwrappedBuffer.compact();
     } else {

@@ -748,7 +748,6 @@ public class Connection implements Runnable {
   }
 
   private void notifyHandshakeWaiter(boolean success) {
-    // logger.info("BRUCE: notifyHandshakeWaiter invoked", new Exception("stack trace"));
     synchronized (this.handshakeSync) {
       if (success) {
         this.handshakeRead = true;
@@ -1582,7 +1581,6 @@ public class Connection implements Runnable {
       // make sure that if the reader thread exits we notify a thread waiting
       // for the handshake.
       // see bug 37524 for an example of listeners hung in waitForHandshake
-      // logger.info("BRUCE: run() invoking notifyHandshakeWaiter(false)");
       notifyHandshakeWaiter(false);
       this.readerThread.setName("unused p2p reader");
       synchronized (this.stateLock) {
@@ -1734,7 +1732,6 @@ public class Connection implements Runnable {
                 logger.debug("handshake has been cancelled {}", this);
               }
             }
-            // logger.info("BRUCE: handshake thread setting isHandshakeReader=true");
             isHandShakeReader = true;
             // Once we have read the handshake the reader can go away
             break;
@@ -2909,10 +2906,6 @@ public class Connection implements Runnable {
    */
   private void processInputBuffer() throws ConnectionException, IOException {
 
-    // logger.info("BRUCE: processInputBuffer hash={} postion={} limit={}",
-    // Integer.toHexString(System.identityHashCode(inputBuffer)), inputBuffer.position(),
-    // inputBuffer.limit());
-
     inputBuffer.flip();
 
     ByteBuffer peerDataBuffer = ioFilter.unwrap(inputBuffer);
@@ -2972,7 +2965,6 @@ public class Connection implements Runnable {
           }
         }
       } else {
-        // logger.info("BRUCE: processInputBuffer invoking doneReading");
         ioFilter.doneReading(peerDataBuffer);
         done = true;
       }
@@ -3289,10 +3281,8 @@ public class Connection implements Runnable {
   private void readHandshakeForSender(DataInputStream dis, ByteBuffer peerDataBuffer) {
     try {
       this.replyCode = dis.readUnsignedByte();
-      // logger.info("BRUCE: readHandshakeForSender read replyCode {}", replyCode);
       switch (replyCode) {
         case REPLY_CODE_OK:
-          // logger.info("BRUCE: notifying handshake waitier - reply_code_ok");
           ioFilter.doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
           return;
