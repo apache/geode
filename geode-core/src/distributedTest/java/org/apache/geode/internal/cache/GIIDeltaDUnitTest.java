@@ -2292,7 +2292,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         cache.getLogger().info("Delta contains: " + size + " keys");
         assertEquals(expectedKeyNum, size);
 
-        int num = stats.getDeltaGetInitialImagesCompleted();
+        long num = stats.getDeltaGetInitialImagesCompleted();
         cache.getLogger().info("Delta GII completed: " + num + " times");
         assertEquals(expectedDeltaGIINum, num);
       }
