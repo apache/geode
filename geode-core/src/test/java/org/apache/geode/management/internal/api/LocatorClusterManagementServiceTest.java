@@ -77,9 +77,10 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void validationFailed() throws Exception {
-    assertThatThrownBy(() -> service.create(regionConfig, "cluster"))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Name of the region has to be specified");
+    result = service.create(regionConfig, "cluster");
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .contains("Name of the region has to be specified");
   }
 
   @Test
