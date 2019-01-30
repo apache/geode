@@ -153,7 +153,11 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
         execution = execution.withFilter(filters);
       }
 
-      List<Object> results = (List<Object>) execution.execute(function.getId()).getResult();
+      List results = null;
+      ResultCollector rc = execution.execute(function.getId());
+      if (function.hasResult()) {
+        results = (List) rc.getResult();
+      }
       List<String> resultMessage = new ArrayList<>();
       boolean functionSuccess = true;
 

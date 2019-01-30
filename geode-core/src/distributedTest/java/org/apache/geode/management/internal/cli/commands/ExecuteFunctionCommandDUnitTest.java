@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +31,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class ExecuteFunctionCommandDUnitTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
@@ -47,22 +47,19 @@ public class ExecuteFunctionCommandDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator, server1, server2, server3;
   private static final String functionId = "genericFunctionId";
-
   private static String command = "execute function --id=" + functionId + " ";
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    locator = cluster.startLocatorVM(0);
+    MemberVM locator = cluster.startLocatorVM(0);
     gfsh.connectAndVerify(locator);
 
-    server1 = cluster.startServerVM(1, "group1", locator.getPort());
-    server2 = cluster.startServerVM(2, "group1", locator.getPort());
-    server3 = cluster.startServerVM(3, "group2", locator.getPort());
-    MemberVM.invokeInEveryMember(() -> {
-      FunctionService.registerFunction(new GenericFunctionOp(functionId));
-    }, server1, server2, server3);
+    MemberVM server1 = cluster.startServerVM(1, "group1", locator.getPort());
+    MemberVM server2 = cluster.startServerVM(2, "group1", locator.getPort());
+    MemberVM server3 = cluster.startServerVM(3, "group2", locator.getPort());
+    MemberVM.invokeInEveryMember(() -> FunctionService.registerFunction(new GenericFunctionOp(functionId)), server1, server2, server3);
+    MemberVM.invokeInEveryMember(() -> FunctionService.registerFunction(new FireAndForgetFunction()), server1, server2, server3);
 
     // create a partitioned region on only group1
     gfsh.executeAndAssertThat(
@@ -73,7 +70,9 @@ public class ExecuteFunctionCommandDUnitTest {
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionA", 2);
 
     server1.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion("/regionA");
+      InternalCache cache = ClusterStartupRule.getCache();
+      assertThat(cache).isNotNull();
+      Region<String, String> region = cache.getRegion("/regionA");
       region.put("a", "a");
       region.put("b", "b");
     });
@@ -267,7 +266,16 @@ public class ExecuteFunctionCommandDUnitTest {
         "[GENERICFUNCTIONID-ARGUMENTS]", "[GENERICFUNCTIONID-ARGUMENTS]");
   }
 
+  @Test
+  public void functionWithNoResults() {
+    TabularResultModelAssert tableAssert = gfsh.executeAndAssertThat("execute function --id=FireAndForget").statusIsSuccess().hasTableSection().hasRowSize(3).hasColumnSize(3);
 
+    tableAssert.hasColumn("Member").containsExactlyInAnyOrder("server-1", "server-2", "server-3");
+    tableAssert.hasColumn("Status").containsExactlyInAnyOrder("OK", "OK", "OK");
+    tableAssert.hasColumn("Message").containsExactlyInAnyOrder("[]", "[]", "[]");
+  }
+
+  @SuppressWarnings("unused")
   public static class MyPartitionResolver implements FixedPartitionResolver {
     @Override
     public String getPartitionName(final EntryOperation opDetails,
@@ -291,7 +299,6 @@ public class ExecuteFunctionCommandDUnitTest {
     }
   }
 
-
   public static class GenericFunctionOp implements Function {
     private String functionId;
 
@@ -300,6 +307,7 @@ public class ExecuteFunctionCommandDUnitTest {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void execute(FunctionContext context) {
       String filter = null;
       if (context instanceof RegionFunctionContext) {
@@ -328,6 +336,33 @@ public class ExecuteFunctionCommandDUnitTest {
     @Override
     public String getId() {
       return functionId;
+    }
+  }
+
+
+  public static class FireAndForgetFunction implements Function {
+
+    FireAndForgetFunction() {
+    }
+
+    @Override
+    public String getId() {
+      return "FireAndForget";
+    }
+
+    @Override
+    public boolean isHA() {
+      return false;
+    }
+
+    @Override
+    public boolean hasResult() {
+      return false;
+    }
+
+    @Override
+    public void execute(FunctionContext context) {
+      // Do Nothing.
     }
   }
 }
