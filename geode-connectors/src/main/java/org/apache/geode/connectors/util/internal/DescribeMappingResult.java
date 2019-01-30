@@ -14,17 +14,12 @@
  */
 package org.apache.geode.connectors.util.internal;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-
-public class DescribeMappingResult implements DataSerializable {
+public class DescribeMappingResult {
   private final Map<String, String> attributeMap;
+  private String groupName;
 
   public DescribeMappingResult() {
     this.attributeMap = new LinkedHashMap<>();
@@ -38,38 +33,11 @@ public class DescribeMappingResult implements DataSerializable {
     return this.attributeMap;
   }
 
-  private String groupName;
-
   public String getGroupName() {
     return groupName;
   }
 
   public void setGroupName(String group) {
     groupName = group;
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(groupName, out);
-    DataSerializer.writeInteger(attributeMap.size(), out);
-    for (Map.Entry<String, String> entry : attributeMap.entrySet()) {
-      DataSerializer.writeString(entry.getKey(), out);
-      DataSerializer.writeString(entry.getValue(), out);
-    }
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException {
-    groupName = DataSerializer.readString(in);
-    int dataSize = DataSerializer.readInteger(in);
-
-    for (int i = 0; i < dataSize; i++) {
-      String key, value;
-
-      key = DataSerializer.readString(in);
-      value = DataSerializer.readString(in);
-
-      this.attributeMap.put(key, value);
-    }
   }
 }
