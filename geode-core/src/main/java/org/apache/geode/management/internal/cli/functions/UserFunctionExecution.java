@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.ERROR;
+import static org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState.OK;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
@@ -50,17 +52,90 @@ import org.apache.geode.security.ResourcePermission;
  * @since GemFire 7.0
  */
 public class UserFunctionExecution implements InternalFunction<Object[]> {
+  private static final long serialVersionUID = 1L;
+  private static Logger logger = LogService.getLogger();
   public static final String ID = UserFunctionExecution.class.getName();
 
-  private static Logger logger = LogService.getLogger();
-  private static final long serialVersionUID = 1L;
+  @Override
+  public boolean isHA() {
+    return false;
+  }
+
+  @Override
+  public String getId() {
+    return UserFunctionExecution.ID;
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.emptySet();
+  }
+
+  boolean loginRequired(SecurityService securityService) {
+    try {
+      // if the function is executed on a server with jmx-manager that user is already logged into
+      // then we do not need to do login/logout here.
+      Subject subject = securityService.getSubject();
+      return subject == null || !subject.isAuthenticated();
+    } catch (AuthenticationRequiredException e) {
+      return true;
+    }
+  }
+
+  Function<?> loadFunction(String functionId) {
+    return FunctionService.getFunction(functionId);
+  }
+
+  String[] parseArguments(String argumentsString) {
+    if (argumentsString != null && argumentsString.length() > 0) {
+      return argumentsString.split(",");
+    } else {
+      return null;
+    }
+  }
+
+  Set<String> parseFilters(String filterString) {
+    if (filterString != null && filterString.length() > 0) {
+      return Arrays.stream(filterString.split(",")).collect(Collectors.toSet());
+    } else {
+      return new HashSet<>();
+    }
+  }
+
+  ResultCollector parseResultCollector(String resultCollectorName)
+      throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+    if (resultCollectorName != null && resultCollectorName.length() > 0) {
+      return (ResultCollector) ClassPathLoader.getLatest().forName(resultCollectorName)
+          .newInstance();
+    } else {
+      return null;
+    }
+  }
+
+  Execution buildExecution(Cache cache, String onRegion) throws RegionNotFoundException {
+    Execution execution;
+    DistributedMember member = cache.getDistributedSystem().getDistributedMember();
+
+    if (onRegion != null && onRegion.length() > 0) {
+      Region region = cache.getRegion(onRegion);
+
+      if (region == null) {
+        throw new RegionNotFoundException(onRegion);
+      }
+
+      execution = FunctionService.onRegion(region);
+    } else {
+      execution = FunctionService.onMember(member);
+    }
+
+    return execution;
+  }
 
   @Override
   public void execute(FunctionContext<Object[]> context) {
     Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
-    String[] functionArgs = null;
     Object[] args = context.getArguments();
     if (args == null) {
       context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), ERROR,
@@ -74,39 +149,19 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
     String argumentsString = ((String) args[3]);
     String onRegion = ((String) args[4]);
     Properties credentials = (Properties) args[5];
-
     SecurityService securityService = ((InternalCache) context.getCache()).getSecurityService();
-    boolean loginNeeded = false;
-    try {
-      // if the function is executed on a server with jmx-manager that user is already logged into
-      // then we do not need to do login/logout here.
-      Subject subject = securityService.getSubject();
-      loginNeeded = subject == null || !subject.isAuthenticated();
-    } catch (AuthenticationRequiredException e) {
-      loginNeeded = true;
-    }
 
     boolean loginSuccessful = false;
     try {
-      if (loginNeeded) {
+
+      // Authenticate If Needed
+      if (loginRequired(securityService)) {
         securityService.login(credentials);
         loginSuccessful = true;
       }
 
-      if (argumentsString != null && argumentsString.length() > 0) {
-        functionArgs = argumentsString.split(",");
-      }
-      Set<String> filters = new HashSet<>();
-      ResultCollector resultCollectorInstance = null;
-      if (resultCollectorName != null && resultCollectorName.length() > 0) {
-        resultCollectorInstance = (ResultCollector) ClassPathLoader.getLatest()
-            .forName(resultCollectorName).newInstance();
-      }
-      if (filterString != null && filterString.length() > 0) {
-        filters = Arrays.stream(filterString.split(",")).collect(Collectors.toSet());
-      }
-
-      Function<?> function = FunctionService.getFunction(functionId);
+      // Load User Function
+      Function<?> function = loadFunction(functionId);
       if (function == null) {
         context.getResultSender()
             .lastResult(new CliFunctionResult(context.getMemberName(), ERROR,
@@ -116,22 +171,16 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
         return;
       }
 
-      // security check
+      // Parse Arguments
+      Set<String> filters = parseFilters(filterString);
+      String[] functionArgs = parseArguments(argumentsString);
+      ResultCollector resultCollectorInstance = parseResultCollector(resultCollectorName);
+
+      // Security check
       function.getRequiredPermissions(onRegion, functionArgs).forEach(securityService::authorize);
 
-      Execution execution = null;
-      if (onRegion != null && onRegion.length() > 0) {
-        Region region = cache.getRegion(onRegion);
-        if (region == null) {
-          context.getResultSender().lastResult(
-              new CliFunctionResult(context.getMemberName(), ERROR, onRegion + " does not exist"));
-          return;
-        }
-        execution = FunctionService.onRegion(region);
-      } else {
-        execution = FunctionService.onMember(member);
-      }
-
+      // Build & Configure Execution Context
+      Execution execution = buildExecution(cache, onRegion);
       if (execution == null) {
         context.getResultSender()
             .lastResult(new CliFunctionResult(context.getMemberName(), ERROR,
@@ -149,13 +198,20 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
       if (functionArgs != null && functionArgs.length > 0) {
         execution = execution.setArguments(functionArgs);
       }
+
       if (filters.size() > 0) {
         execution = execution.withFilter(filters);
       }
 
-      List<Object> results = (List<Object>) execution.execute(function.getId()).getResult();
-      List<String> resultMessage = new ArrayList<>();
+      // Execute Function and gather results
+      List results = null;
       boolean functionSuccess = true;
+      List<String> resultMessage = new ArrayList<>();
+
+      ResultCollector rc = execution.execute(function.getId());
+      if (function.hasResult()) {
+        results = (List) rc.getResult();
+      }
 
       if (results != null) {
         for (Object resultObj : results) {
@@ -169,39 +225,26 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
           }
         }
       }
-      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(),
-          functionSuccess, resultMessage.toString()));
 
+      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(),
+          functionSuccess ? OK : ERROR, resultMessage.toString()));
+    } catch (RegionNotFoundException regionNotFoundException) {
+      context.getResultSender().lastResult(
+          new CliFunctionResult(context.getMemberName(), ERROR, onRegion + " does not exist"));
     } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
       context.getResultSender()
-          .lastResult(new CliFunctionResult(context.getMemberName(), false,
+          .lastResult(new CliFunctionResult(context.getMemberName(), ERROR,
               CliStrings.format(
                   CliStrings.EXECUTE_FUNCTION__MSG__RESULT_COLLECTOR_0_NOT_FOUND_ERROR_1,
                   resultCollectorName, e.getMessage())));
     } catch (Exception e) {
       logger.error("error executing function " + functionId, e);
       context.getResultSender().lastResult(
-          new CliFunctionResult(context.getMemberName(), false, "Exception: " + e.getMessage()));
+          new CliFunctionResult(context.getMemberName(), ERROR, "Exception: " + e.getMessage()));
     } finally {
       if (loginSuccessful) {
         securityService.logout();
       }
     }
   }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.emptySet();
-  }
-
-  @Override
-  public String getId() {
-    return UserFunctionExecution.ID;
-  }
-
-  @Override
-  public boolean isHA() {
-    return false;
-  }
-
 }

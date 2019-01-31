@@ -157,10 +157,8 @@ public class CoreFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
-  public void functionRequireExpectedPermission() throws Exception {
-    functionStringMap.entrySet().stream().forEach(entry -> {
-      Function function = entry.getKey();
-      String permission = entry.getValue();
+  public void functionRequireExpectedPermission() {
+    functionStringMap.forEach((function, permission) -> {
       System.out.println("function: " + function.getId() + ", permission: " + permission);
       gfsh.executeAndAssertThat("execute function --id=" + function.getId())
           .tableHasRowCount(RESULT_HEADER, 1)
