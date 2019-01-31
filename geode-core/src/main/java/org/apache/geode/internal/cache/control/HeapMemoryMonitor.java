@@ -597,14 +597,14 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()) {
       this.cache.getLogger().error(
-          getCriticalThresholdLogMessage(event, eventOrigin, true));
+          createCriticalThresholdLogMessage(event, eventOrigin, true));
       if (!this.cache.isQueryMonitorDisabledForLowMemory()) {
         this.cache.getQueryMonitor().setLowMemory(true, event.getBytesUsed());
       }
 
     } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()) {
       this.cache.getLogger().error(
-          getCriticalThresholdLogMessage(event, eventOrigin, false));
+          createCriticalThresholdLogMessage(event, eventOrigin, false));
       if (!this.cache.isQueryMonitorDisabledForLowMemory()) {
         this.cache.getQueryMonitor().setLowMemory(false, event.getBytesUsed());
       }
@@ -843,7 +843,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     testBytesUsedForThresholdSet = newTestBytesUsedForThresholdSet;
   }
 
-  private String getCriticalThresholdLogMessage(MemoryEvent event, String eventOrigin,
+  private String createCriticalThresholdLogMessage(MemoryEvent event, String eventOrigin,
       boolean above) {
     return "Member: " + event.getMember() + " " + (above ? "above" : "below")
         + " heap critical threshold."
