@@ -33,6 +33,9 @@ public class ThreadsMonitoringImplDummy implements ThreadsMonitoring {
   public void endMonitor() {}
 
   @Override
+  public void updateThreadStatus() {}
+
+  @Override
   public ConcurrentMap<Long, AbstractExecutor> getMonitorMap() {
     return null;
   }
