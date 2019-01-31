@@ -415,17 +415,17 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     });
 
     getLogWriter().info("closing region in vm0");
-    closeRegion(vm0);
+    closeCache(vm0);
 
     updateTheEntry(vm1);
 
     getLogWriter().info("closing region in vm1");
-    closeRegion(vm1);
+    closeCache(vm1);
 
     updateTheEntry(vm2, "D");
 
     getLogWriter().info("closing region in vm2");
-    closeRegion(vm2);
+    closeCache(vm2);
 
 
     // These ought to wait for VM2 to come back
