@@ -512,33 +512,25 @@ public class CacheClientNotifier {
       }
     } else {
       CacheClientProxy staleClientProxy = this.getClientProxy(proxyId);
-      boolean toCreateNewProxy = true;
       if (staleClientProxy != null) {
-        if (staleClientProxy.isConnected() && staleClientProxy.getSocket().isConnected()) {
-          successful = false;
-          toCreateNewProxy = false;
+        // A proxy exists for this non-durable client. It must be closed.
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "CacheClientNotifier: A proxy exists for this non-durable client. It must be closed.");
+        }
+        if (staleClientProxy.startRemoval()) {
+          staleClientProxy.waitRemoval();
         } else {
-          // A proxy exists for this non-durable client. It must be closed.
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "CacheClientNotifier: A proxy exists for this non-durable client. It must be closed.");
-          }
-          if (staleClientProxy.startRemoval()) {
-            staleClientProxy.waitRemoval();
-          } else {
-            staleClientProxy.close(false, false); // do not check for queue, just close it
-            removeClientProxy(staleClientProxy); // remove old proxy from proxy set
-          }
+          staleClientProxy.close(false, false); // do not check for queue, just close it
+          removeClientProxy(staleClientProxy); // remove old proxy from proxy set
         }
       } // non-null stale proxy
 
-      if (toCreateNewProxy) {
-        // Create the new proxy for this non-durable client
-        l_proxy =
-            new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation, clientVersion,
-                acceptorId, notifyBySubscription, this.cache.getSecurityService(), subject);
-        successful = this.initializeProxy(l_proxy);
-      }
+      // Create the new proxy for this non-durable client
+      l_proxy =
+          new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation, clientVersion,
+              acceptorId, notifyBySubscription, this.cache.getSecurityService(), subject);
+      successful = this.initializeProxy(l_proxy);
     }
 
     if (!successful) {

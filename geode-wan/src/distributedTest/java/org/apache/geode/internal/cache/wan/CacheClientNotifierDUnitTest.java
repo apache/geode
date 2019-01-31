@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
@@ -192,13 +191,17 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     int serverPort = createCacheServerWithCSC(vm2, true, 3, "entry", "DEFAULT");
     checkCacheServer(vm2, serverPort, true, 3);
 
-    // create cache server 2
-    final int serverPort2 = createCacheServerWithCSC(vm2, false, 0, null, null);
-    // Currently, only the first cache server's overflow attributes will take effect
-    // It will be enhanced in GEODE-1102
-    checkCacheServer(vm2, serverPort2, true, 3);
-    LogService.getLogger().info("receiverPort=" + receiverPort + ",serverPort=" + serverPort
-        + ",serverPort2=" + serverPort2);
+    /*
+     * GEODE-6344: not to create the 2nd cacheserver on the same jvm until refix of GEODE-1183,
+     * otherwise the test might be hang
+     * // create cache server 2
+     * final int serverPort2 = createCacheServerWithCSC(vm2, false, 0, null, null);
+     * // Currently, only the first cache server's overflow attributes will take effect
+     * // It will be enhanced in GEODE-1102
+     * checkCacheServer(vm2, serverPort2, true, 3);
+     * LogService.getLogger().info("receiverPort=" + receiverPort + ",serverPort=" + serverPort
+     * + ",serverPort2=" + serverPort2);
+     */
 
     vm3.invoke(() -> createClientWithLocator(nyPort, "localhost", getTestMethodName() + "_PR",
         "123", durable));
@@ -219,8 +222,11 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     verifyRegionSize(vm4, NUM_KEYS);
     verifyRegionSize(vm3, NUM_KEYS);
 
-    // close a cache server, then re-test
-    vm2.invoke(() -> closeACacheServer(serverPort2));
+    /*
+     * GEODE-6344
+     * // close a cache server, then re-test
+     * vm2.invoke(() -> closeACacheServer(serverPort2));
+     */
 
     vm5.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", NUM_KEYS * 2));
 
