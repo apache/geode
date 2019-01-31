@@ -43,7 +43,6 @@ import org.apache.geode.management.internal.configuration.mutators.RegionConfigM
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
-import org.apache.geode.management.internal.exceptions.NoMembersException;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static Logger logger = LogService.getLogger();
@@ -77,27 +76,33 @@ public class LocatorClusterManagementService implements ClusterManagementService
       group = "cluster";
     }
 
+    if (persistenceService == null) {
+      return new ClusterManagementResult(false,
+          "Cluster configuration service needs to be enabled");
+    }
+
     ClusterManagementResult result = new ClusterManagementResult();
     ConfigurationMutator configurationMutator = mutators.get(config.getClass());
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
-      validator.validate(config);
+      try {
+        validator.validate(config);
+      } catch (IllegalArgumentException e) {
+        return new ClusterManagementResult(false, e.getMessage());
+      }
     }
-    final boolean configurationPersistenceEnabled = persistenceService != null;
 
     // exit early if config element already exists in cache config
-    if (configurationPersistenceEnabled) {
-      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-      if (configurationMutator.exists(config, currentPersistedConfig)) {
-        throw new EntityExistsException("cache element " + config.getId() + " already exists.");
-      }
+    CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+    if (configurationMutator.exists(config, currentPersistedConfig)) {
+      throw new EntityExistsException("cache element " + config.getId() + " already exists.");
     }
 
     // execute function on all members
     Set<DistributedMember> targetedMembers = findMembers(null, null);
     if (targetedMembers.size() == 0) {
-      throw new NoMembersException("no members found to create cache element");
+      return new ClusterManagementResult(false, "no members found to create cache element");
     }
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
@@ -109,25 +114,26 @@ public class LocatorClusterManagementService implements ClusterManagementService
             functionResult.isSuccessful(),
             functionResult.getStatusMessage()));
 
-    // persist configuration in cache config
-    if (configurationPersistenceEnabled) {
-      String finalGroup = group;
-      persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
-        try {
-          configurationMutator.add(config, cacheConfigForGroup);
-          result.setClusterConfigPersisted(true,
-              "successfully persisted config for " + finalGroup);
-        } catch (Exception e) {
-          String message = "failed to update cluster config for " + finalGroup;
-          logger.error(message, e);
-          result.setClusterConfigPersisted(false, message);
-          return null;
-        }
-
-        return cacheConfigForGroup;
-      });
+    if (!result.isSuccessfullyAppliedOnMembers()) {
+      result.setClusterConfigPersisted(false, "Failed to apply the update on all members.");
+      return result;
     }
 
+    // persist configuration in cache config
+    String finalGroup = group;
+    persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
+      try {
+        configurationMutator.add(config, cacheConfigForGroup);
+        result.setClusterConfigPersisted(true,
+            "successfully persisted config for " + finalGroup);
+      } catch (Exception e) {
+        String message = "failed to update cluster config for " + finalGroup;
+        logger.error(message, e);
+        result.setClusterConfigPersisted(false, message);
+        return null;
+      }
+      return cacheConfigForGroup;
+    });
     return result;
   }
 
@@ -141,11 +147,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
     throw new NotImplementedException();
   }
 
-  private Set<DistributedMember> findMembers(String[] groups, String[] members) {
+  @VisibleForTesting
+  Set<DistributedMember> findMembers(String[] groups, String[] members) {
     return CliUtil.findMembers(groups, members, distributionManager);
   }
 
-  private List<CliFunctionResult> executeAndGetFunctionResult(Function function, Object args,
+  @VisibleForTesting
+  List<CliFunctionResult> executeAndGetFunctionResult(Function function, Object args,
       Set<DistributedMember> targetMembers) {
     ResultCollector rc = CliUtil.executeFunction(function, args, targetMembers);
     return CliFunctionResult.cleanResults((List<?>) rc.getResult());

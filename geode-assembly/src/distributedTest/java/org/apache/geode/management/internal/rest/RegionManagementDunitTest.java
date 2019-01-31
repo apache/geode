@@ -94,6 +94,13 @@ public class RegionManagementDunitTest {
 
     // make sure region is persisted
     locator.invoke(() -> verifyRegionPersisted("orders", "PARTITION"));
+
+    // create the same region 2nd time
+    result = restClient.doPostAndAssert("/regions", json)
+        .hasStatusCode(409)
+        .getClusterManagementResult();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessfullyPersisted()).isFalse();
   }
 
   @Test

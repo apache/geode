@@ -82,10 +82,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.state = StatusState.OK;
   }
 
-  /**
-   * @deprecated Use {@code CliFunctionResult(String, StatusState, String)} instead
-   */
-  @Deprecated
   public CliFunctionResult(final String memberIdOrName, final boolean successful,
       final String message) {
     this(memberIdOrName, successful ? StatusState.OK : StatusState.ERROR, message);

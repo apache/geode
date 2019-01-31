@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -97,18 +96,6 @@ public class RegionAPIDUnitTest {
     server.invoke(() -> verifyRegionCreated(regionName, "REPLICATE"));
 
     locator.invoke(() -> verifyRegionPersisted(regionName, "REPLICATE"));
-  }
-
-  @Test
-  public void noName() {
-    locator.invoke(() -> {
-      RegionConfig config = new RegionConfig();
-      ClusterManagementService clusterManagementService =
-          ClusterStartupRule.getLocator().getClusterManagementService();
-      assertThatThrownBy(() -> clusterManagementService.create(config, "cluster"))
-          .isInstanceOf(IllegalArgumentException.class)
-          .hasMessageContaining("Name of the region has to be specified");
-    });
   }
 
   @Test

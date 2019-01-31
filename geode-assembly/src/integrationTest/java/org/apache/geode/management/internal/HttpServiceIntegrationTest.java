@@ -12,44 +12,73 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal;
 
-
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-
 public class HttpServiceIntegrationTest {
-
   @ClassRule
   public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
-  @ClassRule
-  public static ServerStarterRule server =
-      new ServerStarterRule().withRestService().withJMXManager().withAutoStart();
+  @Rule
+  public ServerStarterRule server = new ServerStarterRule();
+
+  private GeodeDevRestClient client;
 
   @Test
-  public void devRestIsAvailable() throws Exception {
-    GeodeDevRestClient client =
+  public void withDevRestAndJmxManager() throws Exception {
+    server.withRestService().withJMXManager().startServer();
+    client =
         new GeodeDevRestClient("/geode/v1", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/servers").hasStatusCode(200);
-  }
 
-  @Test
-  public void adminRestIsAvailable() throws Exception {
-    GeodeDevRestClient client =
+    client =
         new GeodeDevRestClient("/geode-mgmt/v1", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/version").hasStatusCode(200);
+
+    client =
+        new GeodeDevRestClient("/pulse", "localhost", server.getHttpPort(), false);
+    client.doGetAndAssert("/index.html").hasStatusCode(200);
+
   }
 
   @Test
-  public void pulseIsAvailable() throws Exception {
-    GeodeDevRestClient client =
+  public void withDevRestOnly() throws Exception {
+    server.withRestService().startServer();
+    client =
+        new GeodeDevRestClient("/geode/v1", "localhost", server.getHttpPort(), false);
+    client.doGetAndAssert("/servers").hasStatusCode(200);
+
+    client =
+        new GeodeDevRestClient("/geode-mgmt/v1", "localhost", server.getHttpPort(), false);
+    client.doGetAndAssert("/version").hasStatusCode(404);
+
+    client =
+        new GeodeDevRestClient("/pulse", "localhost", server.getHttpPort(), false);
+    client.doGetAndAssert("/index.html").hasStatusCode(404);
+  }
+
+  @Test
+  public void withAdminRestOnly() throws Exception {
+    server.withJMXManager().withHttpService().startServer();
+    client =
+        new GeodeDevRestClient("/geode/v1", "localhost", server.getHttpPort(), false);
+    client.doGetAndAssert("/servers").hasStatusCode(404);
+
+    client =
+        new GeodeDevRestClient("/geode-mgmt/v1", "localhost", server.getHttpPort(), false);
+    client.doGetAndAssert("/version").hasStatusCode(200);
+
+    client =
         new GeodeDevRestClient("/pulse", "localhost", server.getHttpPort(), false);
     client.doGetAndAssert("/index.html").hasStatusCode(200);
   }
+
 }
