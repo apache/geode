@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -513,7 +512,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     protected Exception ex = null;
 
     protected void verify(TransactionEvent txEvent) {
-      for (CacheEvent e : (List<CacheEvent>) txEvent.getEvents()) {
+      for (CacheEvent<?, ?> e : txEvent.getEvents()) {
         verifyOrigin(e);
         verifyPutAll(e);
       }
