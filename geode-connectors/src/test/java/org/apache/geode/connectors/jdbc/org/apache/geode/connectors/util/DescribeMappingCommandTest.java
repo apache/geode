@@ -66,7 +66,8 @@ public class DescribeMappingCommandTest {
     clusterConfig = mock(CacheConfig.class);
     regionConfig = mock(RegionConfig.class);
     when(command.getConfigurationPersistenceService()).thenReturn(configurationPersistenceService);
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(clusterConfig);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(clusterConfig);
     ArrayList<RegionConfig> regionConfigList = new ArrayList<RegionConfig>();
     regionConfigList.add(regionConfig);
     when(clusterConfig.getRegions()).thenReturn(regionConfigList);
@@ -109,7 +110,8 @@ public class DescribeMappingCommandTest {
     regionMapping.setSchema("mySchema");
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
-    when(configurationPersistenceService.getCacheConfig(null)).thenReturn(null);
+    when(configurationPersistenceService
+        .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(null);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("Cache Configuration not found.");

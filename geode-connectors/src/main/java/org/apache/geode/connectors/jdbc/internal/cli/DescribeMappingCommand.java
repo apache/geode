@@ -56,7 +56,7 @@ public class DescribeMappingCommand extends GfshCommand {
   private static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
       "Region name of the JDBC mapping to be described.";
   private static final String CREATE_MAPPING__GROUPS_NAME__HELP =
-      "Server Group of the JDBC mapping to be described.";
+      "Server Group(s) of the JDBC mapping to be described.";
 
   public static final String RESULT_SECTION_NAME = "MappingDescription";
 
@@ -77,17 +77,14 @@ public class DescribeMappingCommand extends GfshCommand {
 
     try {
       ConfigurationPersistenceService configService = checkForClusterConfiguration();
-      if (groups != null) {
-        for (String group : groups) {
-          CacheConfig cacheConfig = getCacheConfig(configService, group);
-          RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, group);
-          describeMappingResults
-              .addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig, group));
-        }
-      } else {
-        CacheConfig cacheConfig = getCacheConfig(configService, null);
-        RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, null);
-        describeMappingResults.addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig, null));
+      if (groups == null) {
+        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
+      }
+      for (String group : groups) {
+        CacheConfig cacheConfig = getCacheConfig(configService, group);
+        RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, group);
+        describeMappingResults
+            .addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig, group));
       }
     } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
@@ -108,7 +105,9 @@ public class DescribeMappingCommand extends GfshCommand {
     CacheConfig result = configService.getCacheConfig(group);
     if (result == null) {
       throw new PreconditionException(
-          "Cache Configuration not found" + ((group == null) ? "." : " for group " + group + "."));
+          "Cache Configuration not found"
+              + ((group.equals(ConfigurationPersistenceService.CLUSTER_CONFIG)) ? "."
+                  : " for group " + group + "."));
     }
     return result;
   }
@@ -162,7 +161,7 @@ public class DescribeMappingCommand extends GfshCommand {
     for (int i = 0; i < describeMappingResult.size(); i++) {
       DataResultModel sectionModel = resultModel.addData(RESULT_SECTION_NAME + String.valueOf(i));
       DescribeMappingResult result = describeMappingResult.get(i);
-      if (result.getGroupName() != null) {
+      if (!result.getGroupName().equals(ConfigurationPersistenceService.CLUSTER_CONFIG)) {
         sectionModel.addData("Mapping for group", result.getGroupName());
       }
       result.getAttributeMap().forEach(sectionModel::addData);
@@ -184,7 +183,8 @@ public class DescribeMappingCommand extends GfshCommand {
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
       String groupClause = "A region named " + regionName + " must already exist"
-          + (groupName != null ? " for group " + groupName + "." : ".");
+          + (!groupName.equals(ConfigurationPersistenceService.CLUSTER_CONFIG)
+              ? " for group " + groupName + "." : ".");
       throw new PreconditionException(groupClause);
     }
     return regionConfig;
