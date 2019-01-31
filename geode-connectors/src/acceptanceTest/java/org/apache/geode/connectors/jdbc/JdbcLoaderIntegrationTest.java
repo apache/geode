@@ -228,24 +228,27 @@ public abstract class JdbcLoaderIntegrationTest {
     assertThat(pdx).isNull();
   }
 
-  protected SqlHandler createSqlHandler(String pdxClassName, String ids, String catalog,
+  protected SqlHandler createSqlHandler(String regionName, String pdxClassName, String ids,
+      String catalog,
       String schema, List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
-    return new SqlHandler(new TableMetaDataManager(),
+    return new SqlHandler(cache, regionName, new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName, ids, catalog,
             schema, fieldMappings),
-        testDataSourceFactory);
+        testDataSourceFactory, true);
   }
 
   protected <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
       String ids, String catalog, String schema, List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
     JdbcLoader<K, V> jdbcLoader =
-        new JdbcLoader<>(createSqlHandler(pdxClassName, ids, catalog, schema, fieldMappings),
+        new JdbcLoader<>(
+            createSqlHandler(regionName, pdxClassName, ids, catalog, schema, fieldMappings),
             cache);
     RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setCacheLoader(jdbcLoader);
-    return regionFactory.create(regionName);
+    Region<K, V> region = regionFactory.create(regionName);
+    return region;
   }
 
   protected <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,

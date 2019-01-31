@@ -400,7 +400,8 @@ public abstract class JdbcWriterIntegrationTest {
   protected Region<Object, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName,
       String ids, String catalog, String schema, List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
-    jdbcWriter = new JdbcWriter(createSqlHandler(ids, catalog, schema, fieldMappings), cache);
+    jdbcWriter =
+        new JdbcWriter(createSqlHandler(regionName, ids, catalog, schema, fieldMappings), cache);
 
     RegionFactory<Object, PdxInstance> regionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);
@@ -415,12 +416,13 @@ public abstract class JdbcWriterIntegrationTest {
     assertThat(size).isEqualTo(expected);
   }
 
-  protected SqlHandler createSqlHandler(String ids, String catalog, String schema,
+  protected SqlHandler createSqlHandler(String regionName, String ids, String catalog,
+      String schema,
       List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
-    return new SqlHandler(new TableMetaDataManager(),
+    return new SqlHandler(cache, regionName, new TableMetaDataManager(),
         TestConfigService.getTestConfigService(cache, null, ids, catalog, schema, fieldMappings),
-        testDataSourceFactory);
+        testDataSourceFactory, false);
   }
 
   protected void assertRecordMatchesEmployee(ResultSet resultSet, String id, Employee employee)

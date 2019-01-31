@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
 
 @Experimental
@@ -38,9 +39,9 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     return sqlHandler;
   }
 
-  protected void checkInitialized(InternalCache cache) {
+  protected void checkInitialized(Region<?, ?> region) {
     if (sqlHandler == null) {
-      initialize(cache);
+      initialize(region);
     }
   }
 
@@ -48,12 +49,17 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     return operation.isLoad();
   }
 
-  private synchronized void initialize(InternalCache cache) {
+  protected boolean supportsReads() {
+    return false;
+  }
+
+  private synchronized void initialize(Region<?, ?> region) {
     if (sqlHandler == null) {
-      this.cache = cache;
+      this.cache = (InternalCache) region.getRegionService();
       JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
       TableMetaDataManager tableMetaDataManager = new TableMetaDataManager();
-      sqlHandler = new SqlHandler(tableMetaDataManager, service);
+      sqlHandler =
+          new SqlHandler(cache, region.getName(), tableMetaDataManager, service, supportsReads());
     }
   }
 }

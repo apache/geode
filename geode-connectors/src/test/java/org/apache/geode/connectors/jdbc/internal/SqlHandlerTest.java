@@ -52,6 +52,7 @@ import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
 
@@ -86,6 +87,10 @@ public class SqlHandlerTest {
     region = mock(Region.class);
     when(region.getName()).thenReturn(REGION_NAME);
     cache = mock(InternalCache.class);
+    PdxInstance pdxInstance = mock(PdxInstance.class);
+    PdxInstanceFactory pdxInstanceFactory = mock(PdxInstanceFactory.class);
+    when(pdxInstanceFactory.create()).thenReturn(pdxInstance);
+    when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
     connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
     tableMetaDataManager = mock(TableMetaDataManager.class);
@@ -98,7 +103,6 @@ public class SqlHandlerTest {
     connectorService = mock(JdbcConnectorService.class);
     dataSourceFactory = mock(DataSourceFactory.class);
     when(dataSourceFactory.getDataSource(DATA_SOURCE_NAME)).thenReturn(dataSource);
-    handler = new SqlHandler(tableMetaDataManager, connectorService, dataSourceFactory);
     key = "key";
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
@@ -114,6 +118,8 @@ public class SqlHandlerTest {
 
     statement = mock(PreparedStatement.class);
     when(this.connection.prepareStatement(any())).thenReturn(statement);
+    handler = new SqlHandler(cache, REGION_NAME, tableMetaDataManager, connectorService,
+        dataSourceFactory, true);
   }
 
   @Test
@@ -122,29 +128,25 @@ public class SqlHandlerTest {
     handler.read(region, null);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  public void readThrowsIfNoMapping() throws Exception {
-    Region region = mock(Region.class);
-    when(region.getName()).thenReturn("myRegionName");
+  public void constructorThrowsIfNoMapping() throws Exception {
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
-        "JDBC mapping for region myRegionName not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
-    handler.read(region, new Object());
+        "JDBC mapping for region regionWithNoMapping not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
+
+    new SqlHandler(cache, "regionWithNoMapping", tableMetaDataManager, connectorService,
+        dataSourceFactory, true);
   }
 
   @Test
-  public void readThrowsIfNoConnectionConfig() throws Exception {
-    @SuppressWarnings("unchecked")
-    Region<Object, Object> region2 = mock(Region.class);
-    when(region2.getName()).thenReturn("region2");
-    RegionMapping regionMapping2 = mock(RegionMapping.class);
-    when(regionMapping2.getDataSourceName()).thenReturn("bogus data source name");
-    when(regionMapping2.getRegionName()).thenReturn("region2");
-    when(connectorService.getMappingForRegion("region2")).thenReturn(regionMapping2);
-
+  public void constructorThrowsIfNoConnectionConfig() throws Exception {
+    when(regionMapping.getDataSourceName()).thenReturn("bogus data source name");
     thrown.expect(JdbcConnectorException.class);
-    handler.read(region2, new Object());
+    thrown.expectMessage(
+        "JDBC data-source named \"bogus data source name\" not found. Create it with gfsh 'create data-source --pooled --name=bogus data source name'.");
+
+    new SqlHandler(cache, REGION_NAME, tableMetaDataManager, connectorService, dataSourceFactory,
+        true);
   }
 
   @Test
@@ -804,7 +806,7 @@ public class SqlHandlerTest {
   public void handlesSQLExceptionFromGetConnection() throws Exception {
     doThrow(new SQLException("test exception")).when(dataSource).getConnection();
 
-    assertThatThrownBy(() -> handler.getConnection(DATA_SOURCE_NAME))
+    assertThatThrownBy(() -> handler.getConnection())
         .isInstanceOf(SQLException.class).hasMessage("test exception");
   }
 

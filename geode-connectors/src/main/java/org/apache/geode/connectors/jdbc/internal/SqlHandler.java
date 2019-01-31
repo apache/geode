@@ -36,28 +36,33 @@ import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
 public class SqlHandler {
-  private final JdbcConnectorService configService;
   private final TableMetaDataManager tableMetaDataManager;
-  private final DataSourceFactory dataSourceFactory;
+  private final RegionMapping regionMapping;
+  private final DataSource dataSource;
+  private final SqlToPdxInstance sqlToPdxInstance;
 
-  public SqlHandler(TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
-      DataSourceFactory dataSourceFactory) {
+  public SqlHandler(InternalCache cache, String regionName,
+      TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
+      DataSourceFactory dataSourceFactory, boolean supportReading) {
     this.tableMetaDataManager = tableMetaDataManager;
-    this.configService = configService;
-    this.dataSourceFactory = dataSourceFactory;
+    this.regionMapping = getMappingForRegion(configService, regionName);
+    this.dataSource = getDataSource(dataSourceFactory, this.regionMapping.getDataSourceName());
+    this.sqlToPdxInstance = createSqlToPdxInstance(supportReading, cache, regionMapping);
   }
 
-  public SqlHandler(TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService) {
-    this(tableMetaDataManager, configService,
-        dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
+  private static RegionMapping getMappingForRegion(JdbcConnectorService configService,
+      String regionName) {
+    RegionMapping regionMapping = configService.getMappingForRegion(regionName);
+    if (regionMapping == null) {
+      throw new JdbcConnectorException("JDBC mapping for region " + regionName
+          + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
+    }
+    return regionMapping;
   }
 
-  Connection getConnection(String dataSourceName) throws SQLException {
-    return getDataSource(dataSourceName).getConnection();
-  }
-
-  DataSource getDataSource(String dataSourceName) {
-    DataSource dataSource = this.dataSourceFactory.getDataSource(dataSourceName);
+  private static DataSource getDataSource(DataSourceFactory dataSourceFactory,
+      String dataSourceName) {
+    DataSource dataSource = dataSourceFactory.getDataSource(dataSourceName);
     if (dataSource == null) {
       throw new JdbcConnectorException("JDBC data-source named \"" + dataSourceName
           + "\" not found. Create it with gfsh 'create data-source --pooled --name="
@@ -66,14 +71,34 @@ public class SqlHandler {
     return dataSource;
   }
 
+  private static SqlToPdxInstance createSqlToPdxInstance(boolean supportReading,
+      InternalCache cache, RegionMapping regionMapping) {
+    if (!supportReading) {
+      return null;
+    }
+    SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
+        new SqlToPdxInstanceCreator(cache, regionMapping);
+    return sqlToPdxInstanceCreator.create();
+  }
+
+  public SqlHandler(InternalCache cache, String regionName,
+      TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
+      boolean supportReading) {
+    this(cache, regionName, tableMetaDataManager, configService,
+        dataSourceName -> JNDIInvoker.getDataSource(dataSourceName), supportReading);
+  }
+
+  Connection getConnection() throws SQLException {
+    return this.dataSource.getConnection();
+  }
+
   public <K, V> PdxInstance read(Region<K, V> region, K key) throws SQLException {
     if (key == null) {
       throw new IllegalArgumentException("Key for query cannot be null");
     }
 
-    RegionMapping regionMapping = getMappingForRegion(region.getName());
     PdxInstance result;
-    try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
+    try (Connection connection = getConnection()) {
       TableMetaDataView tableMetaData =
           this.tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
       EntryColumnData entryColumnData =
@@ -81,10 +106,7 @@ public class SqlHandler {
       try (PreparedStatement statement =
           getPreparedStatement(connection, tableMetaData, entryColumnData, Operation.GET)) {
         try (ResultSet resultSet = executeReadQuery(statement, entryColumnData)) {
-          InternalCache cache = (InternalCache) region.getRegionService();
-          SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
-              new SqlToPdxInstanceCreator(cache, regionMapping, resultSet);
-          result = sqlToPdxInstanceCreator.create();
+          result = sqlToPdxInstance.create(resultSet);
         }
       }
     }
@@ -95,16 +117,6 @@ public class SqlHandler {
       throws SQLException {
     setValuesInStatement(statement, entryColumnData, Operation.GET);
     return statement.executeQuery();
-  }
-
-  private RegionMapping getMappingForRegion(String regionName) {
-    RegionMapping regionMapping =
-        this.configService.getMappingForRegion(regionName);
-    if (regionMapping == null) {
-      throw new JdbcConnectorException("JDBC mapping for region " + regionName
-          + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
-    }
-    return regionMapping;
   }
 
   private void setValuesInStatement(PreparedStatement statement, EntryColumnData entryColumnData,
@@ -164,9 +176,8 @@ public class SqlHandler {
     if (value == null && !operation.isDestroy()) {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
-    RegionMapping regionMapping = getMappingForRegion(region.getName());
 
-    try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
+    try (Connection connection = getConnection()) {
       TableMetaDataView tableMetaData =
           this.tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
       EntryColumnData entryColumnData =
