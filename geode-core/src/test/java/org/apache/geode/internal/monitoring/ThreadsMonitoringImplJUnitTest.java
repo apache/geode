@@ -16,11 +16,17 @@ package org.apache.geode.internal.monitoring;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode;
+import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 
 /**
  * Contains simple tests for the {@link org.apache.geode.internal.monitoring.ThreadsMonitoringImpl}.
@@ -36,20 +42,22 @@ public class ThreadsMonitoringImplJUnitTest {
     threadsMonitoringImpl = new ThreadsMonitoringImpl(null);
   }
 
+  @After
+  public void after() {
+    threadsMonitoringImpl.close();
+  }
+
   /**
    * Tests "start monitor" modes
    */
   @Test
   public void testStartMonitor() {
-
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.FunctionExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.PooledExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.SerialQueuedExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.OneTaskOnlyExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.ScheduledThreadExecutor));
     assertTrue(threadsMonitoringImpl.startMonitor(Mode.AGSExecutor));
-
-    threadsMonitoringImpl.close();
   }
 
   /**
@@ -57,12 +65,24 @@ public class ThreadsMonitoringImplJUnitTest {
    */
   @Test
   public void testClosure() {
-
     assertTrue(threadsMonitoringImpl.getThreadsMonitoringProcess() != null);
     assertFalse(threadsMonitoringImpl.isClosed());
     threadsMonitoringImpl.close();
     assertTrue(threadsMonitoringImpl.isClosed());
     assertFalse(threadsMonitoringImpl.getThreadsMonitoringProcess() != null);
+  }
 
+  @Test
+  public void updateThreadStatus() {
+    AbstractExecutor executor = mock(AbstractExecutor.class);
+    long threadId = Thread.currentThread().getId();
+
+    threadsMonitoringImpl.getMonitorMap().put(threadId, executor);
+    threadsMonitoringImpl.updateThreadStatus();
+
+    // also test the case where there is no AbstractExcecutor present
+    threadsMonitoringImpl.getMonitorMap().remove(threadId);
+    threadsMonitoringImpl.updateThreadStatus();
+    verify(executor, times(1)).setStartTime(any(Long.class));
   }
 }

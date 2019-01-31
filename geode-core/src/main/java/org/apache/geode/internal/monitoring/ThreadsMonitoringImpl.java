@@ -87,6 +87,14 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   }
 
   @Override
+  public void updateThreadStatus() {
+    AbstractExecutor executor = monitorMap.get(Thread.currentThread().getId());
+    if (executor != null) {
+      executor.setStartTime(System.currentTimeMillis());
+    }
+  }
+
+  @Override
   public boolean startMonitor(Mode mode) {
     AbstractExecutor absExtgroup;
     switch (mode) {

@@ -49,4 +49,10 @@ public interface ThreadsMonitoring {
    * Ending the monitoring of an executor object.
    */
   public void endMonitor();
+
+  /**
+   * A long-running thread that may appear stuck should periodically update its "alive"
+   * status by invoking this method
+   */
+  public void updateThreadStatus();
 }
