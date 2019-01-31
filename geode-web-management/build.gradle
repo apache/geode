@@ -78,6 +78,9 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
+    exclude module: 'slf4j-api'
+  }
 }
 
 sourceSets {
