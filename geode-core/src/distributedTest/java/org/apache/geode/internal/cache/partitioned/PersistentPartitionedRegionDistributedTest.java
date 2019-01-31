@@ -1295,7 +1295,6 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     vm0.invoke(() -> createPartitionedRegion(1, -1, numBuckets, true));
 
 
-    Thread.sleep(1000);
     missingMembers = getMissingPersistentMembers(vm3);
     assertThat(missingMembers).isEmpty();
   }
