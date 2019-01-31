@@ -1774,8 +1774,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     protected boolean isAccessor;
     protected Exception ex = null;
 
-    protected void verify(TransactionEvent<Object, Object> txEvent) {
-      for (CacheEvent<Object, Object> e : txEvent.getEvents()) {
+    protected void verify(TransactionEvent txEvent) {
+      for (CacheEvent<?, ?> e : txEvent.getEvents()) {
         verifyOrigin(e);
         verifyPutAll(e);
       }
@@ -1789,11 +1789,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
-    private void verifyPutAll(CacheEvent<Object, Object> p_event) {
+    private void verifyPutAll(CacheEvent<?, ?> p_event) {
       if (!(p_event instanceof EntryEvent)) {
         return;
       }
-      EntryEvent<Object, Object> event = (EntryEvent<Object, Object>) p_event;
+      EntryEvent<?, ?> event = (EntryEvent<?, ?>) p_event;
       CustId knownCustId = new CustId(1);
       OrderId knownOrderId = new OrderId(2, knownCustId);
       if (event.getKey().equals(knownOrderId)) {

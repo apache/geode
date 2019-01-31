@@ -39,7 +39,7 @@ package org.apache.geode.cache;
  * @see CacheTransactionManager#getListener
  * @since GemFire 4.0
  */
-public interface TransactionListener<K, V> extends CacheCallback {
+public interface TransactionListener extends CacheCallback {
 
   /**
    * Called after a successful commit of a transaction.
@@ -47,7 +47,7 @@ public interface TransactionListener<K, V> extends CacheCallback {
    * @param event the TransactionEvent
    * @see CacheTransactionManager#commit
    */
-  void afterCommit(TransactionEvent<K, V> event);
+  void afterCommit(TransactionEvent event);
 
   /**
    * Called after an unsuccessful commit operation.
@@ -55,7 +55,7 @@ public interface TransactionListener<K, V> extends CacheCallback {
    * @param event the TransactionEvent
    * @see CacheTransactionManager#commit
    */
-  void afterFailedCommit(TransactionEvent<K, V> event);
+  void afterFailedCommit(TransactionEvent event);
 
   /**
    * Called after an explicit rollback of a transaction.
@@ -64,5 +64,5 @@ public interface TransactionListener<K, V> extends CacheCallback {
    * @see CacheTransactionManager#rollback
    * @see CacheTransactionManager#commit
    */
-  void afterRollback(TransactionEvent<K, V> event);
+  void afterRollback(TransactionEvent event);
 }

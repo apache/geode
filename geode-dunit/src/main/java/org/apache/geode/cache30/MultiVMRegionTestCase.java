@@ -5476,28 +5476,28 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
   }
 
-  private static class MyTransactionListener<K, V> implements TransactionListener<K, V> {
+  private static class MyTransactionListener implements TransactionListener {
     private volatile TransactionId expectedTxId;
-    private volatile TransactionEvent<K, V> lastEvent;
+    private volatile TransactionEvent lastEvent;
     private volatile int afterCommitCount;
     private volatile int afterFailedCommitCount;
     private volatile int afterRollbackCount;
     private volatile int closeCount;
 
     @Override
-    public synchronized void afterCommit(TransactionEvent<K, V> event) {
+    public synchronized void afterCommit(TransactionEvent event) {
       this.lastEvent = event;
       this.afterCommitCount++;
     }
 
     @Override
-    public synchronized void afterFailedCommit(TransactionEvent<K, V> event) {
+    public synchronized void afterFailedCommit(TransactionEvent event) {
       this.lastEvent = event;
       this.afterFailedCommitCount++;
     }
 
     @Override
-    public synchronized void afterRollback(TransactionEvent<K, V> event) {
+    public synchronized void afterRollback(TransactionEvent event) {
       this.lastEvent = event;
       this.afterRollbackCount++;
     }
@@ -5604,7 +5604,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   private void assertCacheCallbackEvents(String regionName, TransactionId txId, Object key,
       Object oldValue, Object newValue) {
     Region<Object, Object> re = getCache().getRegion("root").getSubregion(regionName);
-    MyTransactionListener<Object, Object> tl =
+    MyTransactionListener tl =
         firstTransactionListenerFrom(getCache().getCacheTransactionManager());
     tl.expectedTxId = txId;
     assertThat(re).describedAs("Cannot assert TX Callout Events with a null Region: " + regionName)
@@ -5664,7 +5664,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<Object, Object> tl = new MyTransactionListener<>();
+        MyTransactionListener tl = new MyTransactionListener();
         setTxListener(txMgr2, tl);
         assertThat(tl.lastEvent).isNull();
         assertThat(tl.afterCommitCount).isEqualTo(0);
@@ -5749,7 +5749,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                     .isNotNull();
                 assertThat(rgn1.getEntry("key").getValue()).isEqualTo("value");
                 CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-                MyTransactionListener<String, String> tl =
+                MyTransactionListener tl =
                     firstTransactionListenerFrom(txMgr2);
                 tl.checkAfterCommitCount(1);
                 assertThat(tl.afterFailedCommitCount).isEqualTo(0);
@@ -5757,7 +5757,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 assertThat(tl.closeCount).isEqualTo(0);
                 assertThat(tl.lastEvent.getCache()).isEqualTo(rgn1.getRegionService());
                 {
-                  Collection<EntryEvent<String, String>> events;
+                  Collection<EntryEvent<?, ?>> events;
                   RegionAttributes<String, String> attr = getRegionAttributes();
                   if (!attr.getDataPolicy().withReplication()
                       || attr.getConcurrencyChecksEnabled()) {
@@ -5811,14 +5811,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                     .isNotNull();
                 assertThat(rgn1.getEntry("key").getValue()).isEqualTo("value2");
                 CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-                MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+                MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
                 tl.checkAfterCommitCount(2);
                 assertThat(tl.lastEvent.getCache()).isEqualTo(rgn1.getRegionService());
                 {
-                  Collection<EntryEvent<String, String>> events =
+                  Collection<EntryEvent<?, ?>> events =
                       TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
                   assertThat(events.size()).isEqualTo(1);
-                  EntryEvent<String, String> ev = events.iterator().next();
+                  EntryEvent<?, ?> ev = events.iterator().next();
                   assertThat(ev.getTransactionId()).isEqualTo(tl.expectedTxId);
                   assertThat(rgn1).isSameAs(ev.getRegion());
                   assertThat(ev.getKey()).isEqualTo("key");
@@ -5864,15 +5864,15 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 assertThat(rgn1.containsKey("key")).isTrue();
                 assertThat(rgn1.containsValueForKey("key")).isFalse();
                 CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-                MyTransactionListener<String, String> tl =
+                MyTransactionListener tl =
                     firstTransactionListenerFrom(txMgr2);
                 tl.checkAfterCommitCount(3);
                 assertThat(tl.lastEvent.getCache()).isEqualTo(rgn1.getRegionService());
                 {
-                  List<EntryEvent<String, String>> events =
+                  List<EntryEvent<?, ?>> events =
                       TxEventTestUtil.getInvalidateEvents(tl.lastEvent.getEvents());
                   assertThat(events.size()).isEqualTo(1);
-                  EntryEvent<String, String> ev = events.get(0);
+                  EntryEvent<?, ?> ev = events.get(0);
                   assertThat(ev.getTransactionId()).isEqualTo(tl.expectedTxId);
                   assertThat(rgn1).isSameAs(ev.getRegion());
                   assertThat(ev.getKey()).isEqualTo("key");
@@ -5915,14 +5915,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                 Region<String, String> rgn1 = getRootRegion().getSubregion(rgnName);
                 assertThat(rgn1.containsKey("key")).isFalse();
                 CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-                MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+                MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
                 tl.checkAfterCommitCount(4);
                 assertThat(tl.lastEvent.getCache()).isEqualTo(rgn1.getRegionService());
                 {
-                  Collection<EntryEvent<String, String>> events =
+                  Collection<EntryEvent<?, ?>> events =
                       TxEventTestUtil.getDestroyEvents(tl.lastEvent.getEvents());
                   assertThat(events.size()).isEqualTo(1);
-                  EntryEvent<String, String> ev = events.iterator().next();
+                  EntryEvent<?, ?> ev = events.iterator().next();
                   assertThat(ev.getTransactionId()).isEqualTo(tl.expectedTxId);
                   assertThat(rgn1).isSameAs(ev.getRegion());
                   assertThat(ev.getKey()).isEqualTo("key");
@@ -5982,7 +5982,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           @Override
           public void run() {
             CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-            MyTransactionListener<String, String> tl = new MyTransactionListener<>();
+            MyTransactionListener tl = new MyTransactionListener();
             setTxListener(txMgr2, tl);
             try {
               Region<String, String> rgn = createRegion(rgnName);
@@ -6014,7 +6014,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // GemFireVersion.waitForJavaDebugger(getLogWriter(), "CTRLR WAITING AFTER CREATE");
 
     try {
-      MyTransactionListener<String, String> tl = new MyTransactionListener<>();
+      MyTransactionListener tl = new MyTransactionListener();
       setTxListener(txMgr, tl);
       AttributesFactory<String, String> rgnAtts = new AttributesFactory<>(getRegionAttributes());
       rgnAtts.setDataPolicy(DataPolicy.REPLICATE);
@@ -6040,10 +6040,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().info("testTXUpdateLoadNoConflict: did commit");
       assertThat(rgn.getEntry("key").getValue()).isEqualTo("txValue");
       {
-        Collection<EntryEvent<String, String>> events =
+        Collection<EntryEvent<?, ?>> events =
             TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
         assertThat(events.size()).isEqualTo(1);
-        EntryEvent<String, String> ev = events.iterator().next();
+        EntryEvent<?, ?> ev = events.iterator().next();
         assertThat(ev.getTransactionId()).isEqualTo(myTXId);
         assertThat(rgn).isSameAs(ev.getRegion());
         assertThat(ev.getKey()).isEqualTo("key");
@@ -6090,10 +6090,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().info("testTXUpdateLoadNoConflict: did commit");
       assertThat(rgn.getEntry("key3").getValue()).isEqualTo("txValue3");
       {
-        Collection<EntryEvent<String, String>> events =
+        Collection<EntryEvent<?, ?>> events =
             TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
         assertThat(events.size()).isEqualTo(1);
-        EntryEvent<String, String> ev = events.iterator().next();
+        EntryEvent<?, ?> ev = events.iterator().next();
         assertThat(ev.getTransactionId()).isEqualTo(myTXId);
         assertThat(rgn).isSameAs(ev.getRegion());
         assertThat(ev.getKey()).isEqualTo("key3");
@@ -6149,10 +6149,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       getSystem().getLogWriter().info("testTXUpdateLoadNoConflict: did commit");
       assertThat(rgn.getEntry("key").getValue()).isEqualTo("new txValue");
       {
-        Collection<EntryEvent<String, String>> events =
+        Collection<EntryEvent<?, ?>> events =
             TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
         assertThat(events.size()).isEqualTo(1);
-        EntryEvent<String, String> ev = events.iterator().next();
+        EntryEvent<?, ?> ev = events.iterator().next();
         assertThat(ev.getTransactionId()).isEqualTo(myTXId);
         assertThat(rgn).isSameAs(ev.getRegion());
         assertThat(ev.getKey()).isEqualTo("key");
@@ -6220,7 +6220,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<Object, Object> tl = new MyTransactionListener<>();
+        MyTransactionListener tl = new MyTransactionListener();
         setTxListener(txMgr2, tl);
         try {
           createRegion(rgnName1);
@@ -6247,7 +6247,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<Object, Object> tl = new MyTransactionListener<>();
+        MyTransactionListener tl = new MyTransactionListener();
         setTxListener(txMgr2, tl);
         try {
           createRegion(rgnName2);
@@ -6275,7 +6275,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<Object, Object> tl = new MyTransactionListener<>();
+        MyTransactionListener tl = new MyTransactionListener();
         setTxListener(txMgr2, tl);
         try {
           createRegion(rgnName3);
@@ -6315,14 +6315,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertThat(rgn3.getEntry("key").getValue()).isEqualTo("value3");
         }
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
         tl.checkAfterCommitCount(1);
         assertThat(tl.afterFailedCommitCount).isEqualTo(0);
         assertThat(tl.afterRollbackCount).isEqualTo(0);
         assertThat(tl.closeCount).isEqualTo(0);
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn1.getRegionService());
         {
-          Collection<EntryEvent<String, String>> events;
+          Collection<EntryEvent<?, ?>> events;
           RegionAttributes<String, String> attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
@@ -6330,7 +6330,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertThat(events.size()).isEqualTo(2);
-          List<EntryEvent<String, String>> eventList = new ArrayList<>(events);
+          List<EntryEvent<?, ?>> eventList = new ArrayList<>(events);
           eventList.sort((o1, o2) -> {
             String s1 = o1.getRegion().getFullPath() + o1.getKey();
             String s2 = o2.getRegion().getFullPath() + o2.getKey();
@@ -6359,14 +6359,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertThat(rgn3.getEntry("key").getValue()).isEqualTo("value3");
         }
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
         tl.checkAfterCommitCount(1);
         assertThat(tl.afterFailedCommitCount).isEqualTo(0);
         assertThat(tl.afterRollbackCount).isEqualTo(0);
         assertThat(tl.closeCount).isEqualTo(0);
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn2.getRegionService());
         {
-          Collection<EntryEvent<String, String>> events;
+          Collection<EntryEvent<?, ?>> events;
           RegionAttributes attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
@@ -6374,7 +6374,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertThat(events.size()).isEqualTo(2);
-          List<EntryEvent<String, String>> eventList = new ArrayList<>(events);
+          List<EntryEvent<?, ?>> eventList = new ArrayList<>(events);
           eventList.sort((o1, o2) -> {
             String s1 = o1.getRegion().getFullPath() + o1.getKey();
             String s2 = o2.getRegion().getFullPath() + o2.getKey();
@@ -6395,14 +6395,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertThat(rgn.getEntry("key")).describedAs("Could not find entry for 'key'").isNotNull();
         assertThat(rgn.getEntry("key").getValue()).isEqualTo("value1");
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
         tl.checkAfterCommitCount(1);
         assertThat(tl.afterFailedCommitCount).isEqualTo(0);
         assertThat(tl.afterRollbackCount).isEqualTo(0);
         assertThat(tl.closeCount).isEqualTo(0);
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
         {
-          Collection<EntryEvent<String, String>> events;
+          Collection<EntryEvent<?, ?>> events;
           RegionAttributes<String, String> attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
@@ -6410,7 +6410,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertThat(events.size()).isEqualTo(1);
-          EntryEvent<String, String> ev = events.iterator().next();
+          EntryEvent<?, ?> ev = events.iterator().next();
           // assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
           assertThat(rgn).isSameAs(ev.getRegion());
           assertThat(ev.getKey()).isEqualTo("key");
@@ -6435,14 +6435,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertThat(rgn.getEntry("key")).describedAs("Could not find entry for 'key'").isNotNull();
         assertThat(rgn.getEntry("key").getValue()).isEqualTo("value2");
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
         tl.checkAfterCommitCount(1);
         assertThat(tl.afterFailedCommitCount).isEqualTo(0);
         assertThat(tl.afterRollbackCount).isEqualTo(0);
         assertThat(tl.closeCount).isEqualTo(0);
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
         {
-          Collection<EntryEvent<String, String>> events;
+          Collection<EntryEvent<?, ?>> events;
           RegionAttributes<String, String> attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
@@ -6450,7 +6450,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertThat(events.size()).isEqualTo(1);
-          EntryEvent<String, String> ev = events.iterator().next();
+          EntryEvent<?, ?> ev = events.iterator().next();
           assertThat(rgn).isSameAs(ev.getRegion());
           assertThat(ev.getKey()).isEqualTo("key");
           assertThat(ev.getNewValue()).isEqualTo("value2");
@@ -6474,14 +6474,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertThat(rgn.getEntry("key")).describedAs("Could not find entry for 'key'").isNotNull();
         assertThat(rgn.getEntry("key").getValue()).isEqualTo("value3");
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
         tl.checkAfterCommitCount(1);
         assertThat(tl.afterFailedCommitCount).isEqualTo(0);
         assertThat(tl.afterRollbackCount).isEqualTo(0);
         assertThat(tl.closeCount).isEqualTo(0);
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
         {
-          Collection<EntryEvent<String, String>> events;
+          Collection<EntryEvent<?, ?>> events;
           RegionAttributes attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
@@ -6489,7 +6489,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
           }
           assertThat(events.size()).isEqualTo(1);
-          EntryEvent<String, String> ev = events.iterator().next();
+          EntryEvent<?, ?> ev = events.iterator().next();
           // assertIndexDetailsEquals(tl.expectedTxId, ev.getTransactionId());
           assertThat(rgn).isSameAs(ev.getRegion());
           assertThat(ev.getKey()).isEqualTo("key");
@@ -6895,14 +6895,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   /**
    * Clear all existing transaction listeners and install the given listener.
    */
-  private static <K, V> void setTxListener(CacheTransactionManager manager,
-      TransactionListener<K, V> listener) {
+  private static void setTxListener(CacheTransactionManager manager,
+      TransactionListener listener) {
     Stream.of(manager.getListeners())
         .forEach(manager::removeListener);
     manager.addListener(listener);
   }
 
-  private void verifyMirrorRegionEventsMatch(EntryEvent<String, String> event, Region region,
+  private void verifyMirrorRegionEventsMatch(EntryEvent<?, ?> event, Region region,
       String expectedValue) {
     assertThat(event.getRegion()).isSameAs(region);
     assertThat(event.getKey()).isEqualTo("key");
@@ -6935,7 +6935,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           @Override
           public void run() {
             CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-            MyTransactionListener<Object, Object> tl = new MyTransactionListener<>();
+            MyTransactionListener tl = new MyTransactionListener();
             setTxListener(txMgr2, tl);
             try {
               AttributesFactory<?, ?> rgnAtts = new AttributesFactory<>(getRegionAttributes());
@@ -6952,7 +6952,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           @Override
           public void run() {
             CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-            MyTransactionListener<Object, Object> tl = new MyTransactionListener<>();
+            MyTransactionListener tl = new MyTransactionListener();
             setTxListener(txMgr2, tl);
             try {
               AttributesFactory<?, ?> rgnAtts = new AttributesFactory<>(getRegionAttributes());
@@ -7001,13 +7001,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertThat(rgn.getEntry("key").getValue()).isEqualTo("value");
 
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
         tl.assertCounts(1, 0, 0, 0);
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn.getRegionService());
-        List<EntryEvent<String, String>> events =
+        List<EntryEvent<?, ?>> events =
             TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
         assertThat(events.size()).isEqualTo(1);
-        EntryEvent<String, String> ev = events.get(0);
+        EntryEvent<?, ?> ev = events.get(0);
         assertThat(rgn).isSameAs(ev.getRegion());
         assertThat(ev.getKey()).isEqualTo("key");
         assertThat(ev.getNewValue()).isEqualTo("value");
@@ -7041,7 +7041,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       private void checkCommitAndNoData(Region<String, String> rgn) {
         assertThat(rgn.getEntry("key")).isNull();
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+        MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
         tl.assertCounts(1, 0, 0, 0);
         assertThat(TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents())).isEmpty();
         assertThat(TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents())).isEmpty();
@@ -7062,7 +7062,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     assertThat(getRegionAttributes().getScope().isDistributed()).isTrue();
 
     CacheTransactionManager txMgr = this.getCache().getCacheTransactionManager();
-    MyTransactionListener<String, String> localTl = new MyTransactionListener<>();
+    MyTransactionListener localTl = new MyTransactionListener();
     TransactionId myTXId;
     setTxListener(txMgr, localTl);
     assertThat(localTl.lastEvent).isNull();
@@ -7073,7 +7073,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       @Override
       public void run() {
         CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-        MyTransactionListener<String, Object> tl = new MyTransactionListener<>();
+        MyTransactionListener tl = new MyTransactionListener();
         setTxListener(txMgr2, tl);
         assertThat(tl.lastEvent).isNull();
         tl.assertCounts(0, 0, 0, 0);
@@ -7114,12 +7114,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         public void run2() {
           Region<String, String> rgn1 = getRootRegion().getSubregion(rgnName);
           CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-          MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+          MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
 
           assertThat(rgn1.getEntry("key").getValue()).isEqualTo("value2");
           tl.assertCounts(1, 0, 0, 0);
           {
-            Collection<EntryEvent<String, String>> events;
+            Collection<EntryEvent<?, ?>> events;
             RegionAttributes attr = getRegionAttributes();
             if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
               events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
@@ -7127,7 +7127,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
             }
             assertThat(events.size()).isEqualTo(1);
-            EntryEvent<String, String> ev = events.iterator().next();
+            EntryEvent<?, ?> ev = events.iterator().next();
             assertThat(rgn1).isSameAs(ev.getRegion());
             assertThat(ev.getKey()).isEqualTo("key");
             assertThat(ev.getNewValue()).isEqualTo("value2");
@@ -7147,11 +7147,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertThat(rgn.getEntry("key").getValue()).isEqualTo("value2");
       {
         localTl.assertCounts(1, 0, 0, 0);
-        Collection<EntryEvent<String, String>> events =
+        Collection<EntryEvent<?, ?>> events =
             TxEventTestUtil.getCreateEvents(localTl.lastEvent.getEvents());
         assertThat(localTl.lastEvent.getTransactionId()).isEqualTo(myTXId);
         assertThat(events.size()).isEqualTo(1);
-        EntryEvent<String, String> ev = events.iterator().next();
+        EntryEvent<?, ?> ev = events.iterator().next();
         assertThat(ev.getTransactionId()).isEqualTo(myTXId);
         assertThat(rgn).isSameAs(ev.getRegion());
         assertThat(ev.getKey()).isEqualTo("key");
@@ -7191,13 +7191,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             public void run2() {
               Region<String, Object> rgn1 = getRootRegion().getSubregion(rgnName);
               CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-              MyTransactionListener<String, Object> tl = firstTransactionListenerFrom(txMgr2);
+              MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
 
               assertThat(rgn1.containsKey("key")).isTrue();
               assertThat(rgn1.containsValueForKey("key")).isFalse();
               tl.assertCounts(2, 0, 0, 0);
               {
-                Collection<EntryEvent<String, Object>> events;
+                Collection<EntryEvent<?, ?>> events;
                 RegionAttributes attr = getRegionAttributes();
                 if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
                   events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
@@ -7205,7 +7205,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
                 }
                 assertThat(events.size()).isEqualTo(1);
-                EntryEvent<String, Object> ev = events.iterator().next();
+                EntryEvent<?, ?> ev = events.iterator().next();
                 assertThat(rgn1).isSameAs(ev.getRegion());
                 assertThat(ev.getKey()).isEqualTo("key");
                 assertThat(ev.getNewValue()).isNull();
@@ -7226,11 +7226,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertThat(rgn.containsValueForKey("key")).isFalse();
       localTl.assertCounts(2, 0, 0, 0);
       {
-        Collection<EntryEvent<String, String>> events =
+        Collection<EntryEvent<?, ?>> events =
             TxEventTestUtil.getCreateEvents(localTl.lastEvent.getEvents());
         assertThat(localTl.lastEvent.getTransactionId()).isEqualTo(myTXId);
         assertThat(events.size()).isEqualTo(1);
-        EntryEvent<String, String> ev = events.iterator().next();
+        EntryEvent<?, ?> ev = events.iterator().next();
         assertThat(ev.getTransactionId()).isEqualTo(myTXId);
         assertThat(rgn).isSameAs(ev.getRegion());
         assertThat(ev.getKey()).isEqualTo("key");
@@ -7261,7 +7261,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             public void run2() {
               Region rgn1 = getRootRegion().getSubregion(rgnName);
               CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-              MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+              MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
 
               assertThat(rgn1.getEntry("key").getValue()).isEqualTo("value1");
               tl.assertCounts(2, 0, 0, 0); // There should be no change in counts
@@ -7293,7 +7293,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               public void run2() {
                 Region rgn1 = getRootRegion().getSubregion(rgnName);
                 CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-                MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+                MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
                 assertThat(rgn1.containsKey("key")).isTrue();
                 assertThat(rgn1.containsValueForKey("key")).isTrue();
                 assertThat(rgn1.getEntry("key").getValue()).isEqualTo("value1");
@@ -7305,10 +7305,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertThat(rgn.getEntry("key").getValue()).isNull();
         localTl.assertCounts(3, 0, 0, 0);
         {
-          Collection<EntryEvent<String, String>> events =
+          Collection<EntryEvent<?, ?>> events =
               TxEventTestUtil.getInvalidateEvents(localTl.lastEvent.getEvents());
           assertThat(events.size()).isEqualTo(1);
-          EntryEvent<String, String> ev = events.iterator().next();
+          EntryEvent<?, ?> ev = events.iterator().next();
           assertThat(ev.getTransactionId()).isEqualTo(myTXId);
           assertThat(rgn).isSameAs(ev.getRegion());
           assertThat(ev.getKey()).isEqualTo("key");
@@ -7343,16 +7343,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         public void run2() {
           Region<String, Object> rgn1 = getRootRegion().getSubregion(rgnName);
           CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-          MyTransactionListener<String, Object> tl = firstTransactionListenerFrom(txMgr2);
+          MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
 
           assertThat(rgn1.containsKey("key")).isFalse();
           assertThat(rgn1.containsValueForKey("key")).isFalse();
           tl.assertCounts(3, 0, 0, 0);
           {
-            Collection<EntryEvent<String, Object>> events =
+            Collection<EntryEvent<?, ?>> events =
                 TxEventTestUtil.getDestroyEvents(tl.lastEvent.getEvents());
             assertThat(events.size()).isEqualTo(1);
-            EntryEvent<String, Object> ev = events.iterator().next();
+            EntryEvent<?, ?> ev = events.iterator().next();
             assertThat(rgn1).isSameAs(ev.getRegion());
             assertThat(ev.getKey()).isNull();
             assertThat(ev.getNewValue()).isNull();
@@ -7401,12 +7401,12 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             public void run2() {
               Region<String, String> rgn1 = getRootRegion().getSubregion(rgnName);
               CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-              MyTransactionListener<String, String> tl = firstTransactionListenerFrom(txMgr2);
+              MyTransactionListener tl = firstTransactionListenerFrom(txMgr2);
               tl.assertCounts(4, 0, 0, 0);
               assertThat(rgn1.containsKey("key")).isTrue();
               assertThat(rgn1.getEntry("key").getValue()).isEqualTo("value1");
               {
-                Collection<EntryEvent<String, String>> events;
+                Collection<EntryEvent<?, ?>> events;
                 RegionAttributes attr = getRegionAttributes();
                 if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
                   events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
@@ -7414,7 +7414,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
                   events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
                 }
                 assertThat(events.size()).isEqualTo(1);
-                EntryEvent<String, String> ev = events.iterator().next();
+                EntryEvent<?, ?> ev = events.iterator().next();
                 assertThat(rgn1).isSameAs(ev.getRegion());
                 assertThat(ev.getKey()).isEqualTo("key");
                 assertThat(ev.getNewValue()).isEqualTo("value1");
@@ -7435,11 +7435,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertThat(rgn.containsValueForKey("key")).isFalse();
       localTl.assertCounts(4, 0, 0, 0);
       {
-        Collection<EntryEvent<String, String>> events =
+        Collection<EntryEvent<?, ?>> events =
             TxEventTestUtil.getCreateEvents(localTl.lastEvent.getEvents());
         assertThat(localTl.lastEvent.getTransactionId()).isEqualTo(myTXId);
         assertThat(events.size()).isEqualTo(1);
-        EntryEvent<String, String> ev = events.iterator().next();
+        EntryEvent<?, ?> ev = events.iterator().next();
         assertThat(ev.getTransactionId()).isEqualTo(myTXId);
         assertThat(rgn).isSameAs(ev.getRegion());
         assertThat(ev.getKey()).isEqualTo("key");
@@ -7476,11 +7476,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertThat(rgn.getEntry("key").getValue()).isEqualTo("value2");
       localTl.assertCounts(5, 0, 0, 0);
       {
-        Collection<EntryEvent<String, String>> events =
+        Collection<EntryEvent<?, ?>> events =
             TxEventTestUtil.getCreateEvents(localTl.lastEvent.getEvents());
         assertThat(localTl.lastEvent.getTransactionId()).isEqualTo(myTXId);
         assertThat(events.size()).isEqualTo(1);
-        EntryEvent<String, String> ev = events.iterator().next();
+        EntryEvent<?, ?> ev = events.iterator().next();
         assertThat(ev.getTransactionId()).isEqualTo(myTXId);
         assertThat(rgn).isSameAs(ev.getRegion());
         assertThat(ev.getKey()).isEqualTo("key");

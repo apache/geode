@@ -35,7 +35,7 @@ public class TxEventTestUtil {
    *
    * @return list of entry create events from the given cache events
    */
-  public static <K, V> List<EntryEvent<K, V>> getCreateEvents(List<CacheEvent<K, V>> cacheEvents) {
+  public static List<EntryEvent<?, ?>> getCreateEvents(List<CacheEvent<?, ?>> cacheEvents) {
     return getEntryEventsWithOperation(cacheEvents, Operation::isCreate);
   }
 
@@ -44,7 +44,7 @@ public class TxEventTestUtil {
    *
    * @return list of entry update events from the given cache events
    */
-  public static <K, V> List<EntryEvent<K, V>> getPutEvents(List<CacheEvent<K, V>> cacheEvents) {
+  public static List<EntryEvent<?, ?>> getPutEvents(List<CacheEvent<?, ?>> cacheEvents) {
     return getEntryEventsWithOperation(cacheEvents, Operation::isUpdate);
   }
 
@@ -53,8 +53,8 @@ public class TxEventTestUtil {
    *
    * @return list of entry invalidate events from the given cache events
    */
-  public static <K, V> List<EntryEvent<K, V>> getInvalidateEvents(
-      List<CacheEvent<K, V>> cacheEvents) {
+  public static List<EntryEvent<?, ?>> getInvalidateEvents(
+      List<CacheEvent<?, ?>> cacheEvents) {
     return getEntryEventsWithOperation(cacheEvents, Operation::isInvalidate);
   }
 
@@ -63,7 +63,7 @@ public class TxEventTestUtil {
    *
    * @return list of entry destroy events from the given cache events
    */
-  public static <K, V> List<EntryEvent<K, V>> getDestroyEvents(List<CacheEvent<K, V>> cacheEvents) {
+  public static List<EntryEvent<?, ?>> getDestroyEvents(List<CacheEvent<?, ?>> cacheEvents) {
     return getEntryEventsWithOperation(cacheEvents, Operation::isDestroy);
   }
 
@@ -77,8 +77,8 @@ public class TxEventTestUtil {
    * @throws ClassCastException if the predicate matches the operation of an event that is not an
    *         {@code EntryEvent}
    */
-  public static <K, V> List<EntryEvent<K, V>> getEntryEventsWithOperation(
-      List<CacheEvent<K, V>> cacheEvents,
+  public static List<EntryEvent<?, ?>> getEntryEventsWithOperation(
+      List<CacheEvent<?, ?>> cacheEvents,
       Predicate<Operation> operationPredicate) {
     return getEntryEventsMatching(cacheEvents, e -> operationPredicate.test(e.getOperation()));
   }
@@ -91,15 +91,15 @@ public class TxEventTestUtil {
    * @return list of entry events that match the predicate
    * @throws ClassCastException if the predicate matches an event that is not an {@code EntryEvent}
    */
-  public static <K, V> List<EntryEvent<K, V>> getEntryEventsMatching(
-      List<CacheEvent<K, V>> cacheEvents,
-      Predicate<? super EntryEvent<K, V>> predicate) {
+  public static List<EntryEvent<?, ?>> getEntryEventsMatching(
+      List<CacheEvent<?, ?>> cacheEvents,
+      Predicate<? super EntryEvent<?, ?>> predicate) {
     if (isNull(cacheEvents)) {
       return Collections.emptyList();
     }
     return cacheEvents.stream()
         .filter(EntryEvent.class::isInstance)
-        .map(cacheEvent -> (EntryEvent<K, V>) cacheEvent)
+        .map(cacheEvent -> (EntryEvent<?, ?>) cacheEvent)
         .filter(predicate)
         .collect(Collectors.toList());
   }
