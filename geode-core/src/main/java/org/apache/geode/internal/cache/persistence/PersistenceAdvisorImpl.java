@@ -810,6 +810,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     }
     synchronized (lock) {
       recoveredMembers.clear();
+      recoveredMembers.addAll(getPersistedMembers());
     }
   }
 
@@ -1213,18 +1214,6 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     @Override
     public boolean matches(PersistentMemberPattern pattern) {
       return pattern.matches(getPersistentID()) || pattern.matches(getInitializingID());
-    }
-
-    @Override
-    public void addPersistentIDs(Set<PersistentMemberID> localData) {
-      PersistentMemberID id = getPersistentID();
-      if (id != null) {
-        localData.add(id);
-      }
-      id = getInitializingID();
-      if (id != null) {
-        localData.add(id);
-      }
     }
   }
 }
