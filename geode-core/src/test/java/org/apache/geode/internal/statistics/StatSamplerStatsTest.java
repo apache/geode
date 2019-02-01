@@ -21,6 +21,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.function.Supplier;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -65,11 +67,12 @@ public class StatSamplerStatsTest {
   }
 
   @Test
-  public void jvmPausesWrapsFromMaxIntegerStaysPositive() {
+  public void jvmPausesIsALong() {
     statistics.incLong(jvmPausesId, Integer.MAX_VALUE);
 
     statSamplerStats.incJvmPauses();
 
     assertThat(statSamplerStats.getJvmPauses()).isPositive();
   }
+
 }

@@ -112,11 +112,11 @@ public class StatSamplerStats {
   }
 
   int getSampleCount() {
-    return this.samplerStats.getInt(SAMPLE_COUNT);
+    return this.samplerStats.getInt(sampleCountId);
   }
 
   long getJvmPauses() {
-    return this.samplerStats.getLong(JVM_PAUSES);
+    return this.samplerStats.getLong(jvmPausesId);
   }
 
   void close() {
