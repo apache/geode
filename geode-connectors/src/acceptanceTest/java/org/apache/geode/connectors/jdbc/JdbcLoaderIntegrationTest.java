@@ -223,7 +223,8 @@ public abstract class JdbcLoaderIntegrationTest {
   public void verifySimpleMiss() throws Exception {
     createEmployeeTable();
     Region<String, PdxInstance> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, null, getEmployeeTableFieldMappings());
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(),
+            getEmployeeTableFieldMappings());
     PdxInstance pdx = region.get("1");
     assertThat(pdx).isNull();
   }
