@@ -15,10 +15,9 @@
 package org.apache.geode.internal.statistics;
 
 import static org.apache.geode.internal.statistics.StatSamplerStats.jvmPausesId;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -37,12 +36,9 @@ public class StatSamplerStatsTest {
   @Before
   public void setUp() {
     StatisticsType statisticsType = StatSamplerStats.getStatisticsType();
-
-    StatisticsManager statisticsManager = mock(StatisticsManager.class);
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
 
-    statistics = spy(new LocalStatisticsImpl(statisticsType, TEXT_ID, 1, 1, false, 0,
-        statisticsManager));
+    statistics = mock(Statistics.class);
 
     when(statisticsFactory.createStatistics(eq(statisticsType), eq(TEXT_ID), eq(1L)))
         .thenReturn(statistics);
@@ -52,25 +48,16 @@ public class StatSamplerStatsTest {
 
   @Test
   public void getJvmPausesDelegatesToStatistics() {
-    statistics.incLong(jvmPausesId, Integer.MAX_VALUE);
+    statSamplerStats.getJvmPauses();
 
-    assertThat(statSamplerStats.getJvmPauses()).isEqualTo(Integer.MAX_VALUE);
+    verify(statistics).getLong(eq(jvmPausesId));
   }
 
   @Test
-  public void incJvmPausesIncrementsJvmPauses() {
+  public void incJvmPausesDelegatesToStatistics() {
     statSamplerStats.incJvmPauses();
 
-    assertThat(statistics.getLong(jvmPausesId)).isEqualTo(1);
-  }
-
-  @Test
-  public void jvmPausesIsALong() {
-    statistics.incLong(jvmPausesId, Integer.MAX_VALUE);
-
-    statSamplerStats.incJvmPauses();
-
-    assertThat(statSamplerStats.getJvmPauses()).isPositive();
+    verify(statistics).incLong(eq(jvmPausesId), eq(1L));
   }
 
 }
