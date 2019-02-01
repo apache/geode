@@ -154,11 +154,13 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public PdxType getPdxTypeForField(String fieldName, String className) {
+    initializeRegistry();
     return delegate.getPdxTypeForField(fieldName, className);
   }
 
   @Override
   public Set<PdxType> getPdxTypesForClassName(String className) {
+    initializeRegistry();
     return delegate.getPdxTypesForClassName(className);
   }
 
