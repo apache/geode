@@ -91,8 +91,15 @@ public class CommandResultAssert
 
   public CommandResultAssert containsOrderedOutput(String dataSectionName,
       String... expectedOutputs) {
-    LinkedHashMap<String, String> outputMap =
-        ((LinkedHashMap) actual.getCommandResult().getMapFromSection(dataSectionName));
+
+    LinkedHashMap<String, String> outputMap;
+    try {
+      outputMap =
+          ((LinkedHashMap) actual.getCommandResult().getMapFromSection(dataSectionName));
+    } catch (NullPointerException ex) {
+      Assert.fail("No section found for \"" + dataSectionName + "\"");
+      return this;
+    }
     String outputString = outputMap.toString();
     int outputIndex = 0;
 

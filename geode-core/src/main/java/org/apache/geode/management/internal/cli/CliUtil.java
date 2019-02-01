@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -135,13 +136,12 @@ public class CliUtil {
     allClusterMembers.add(cache.getDistributedSystem().getDistributedMember());
 
     for (DistributedMember member : allClusterMembers) {
-      for (String regionAssociatedMemberName : regionAssociatedMemberNames) {
-        String name = MBeanJMXAdapter.getMemberNameOrUniqueId(member);
-        if (name.equals(regionAssociatedMemberName)) {
-          matchedMembers.add(member);
-          if (!returnAll) {
-            return matchedMembers;
-          }
+      List<String> regionAssociatedMemberNamesList = Arrays.asList(regionAssociatedMemberNames);
+      String name = MBeanJMXAdapter.getMemberNameOrUniqueId(member);
+      if (regionAssociatedMemberNamesList.contains(name)) {
+        matchedMembers.add(member);
+        if (!returnAll) {
+          return matchedMembers;
         }
       }
     }
