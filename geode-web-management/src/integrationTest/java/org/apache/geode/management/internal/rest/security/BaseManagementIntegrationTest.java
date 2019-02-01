@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
     loader = TestContextLoader.class)
 @WebAppConfiguration
-public class BaseManagementIntegrationTest {
+public abstract class BaseManagementIntegrationTest {
 
   static RequestPostProcessor POST_PROCESSOR =
       new StandardRequestPostProcessor();
