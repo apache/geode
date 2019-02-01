@@ -36,18 +36,19 @@ import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
 public class SqlHandler {
+  private final InternalCache cache;
   private final TableMetaDataManager tableMetaDataManager;
   private final RegionMapping regionMapping;
   private final DataSource dataSource;
-  private final SqlToPdxInstance sqlToPdxInstance;
+  private volatile SqlToPdxInstance sqlToPdxInstance;
 
   public SqlHandler(InternalCache cache, String regionName,
       TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
-      DataSourceFactory dataSourceFactory, boolean supportReading) {
+      DataSourceFactory dataSourceFactory) {
+    this.cache = cache;
     this.tableMetaDataManager = tableMetaDataManager;
     this.regionMapping = getMappingForRegion(configService, regionName);
     this.dataSource = getDataSource(dataSourceFactory, this.regionMapping.getDataSourceName());
-    this.sqlToPdxInstance = createSqlToPdxInstance(supportReading, cache, regionMapping);
   }
 
   private static RegionMapping getMappingForRegion(JdbcConnectorService configService,
@@ -71,21 +72,10 @@ public class SqlHandler {
     return dataSource;
   }
 
-  private static SqlToPdxInstance createSqlToPdxInstance(boolean supportReading,
-      InternalCache cache, RegionMapping regionMapping) {
-    if (!supportReading) {
-      return null;
-    }
-    SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
-        new SqlToPdxInstanceCreator(cache, regionMapping);
-    return sqlToPdxInstanceCreator.create();
-  }
-
   public SqlHandler(InternalCache cache, String regionName,
-      TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
-      boolean supportReading) {
+      TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService) {
     this(cache, regionName, tableMetaDataManager, configService,
-        dataSourceName -> JNDIInvoker.getDataSource(dataSourceName), supportReading);
+        dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
   Connection getConnection() throws SQLException {
@@ -106,10 +96,26 @@ public class SqlHandler {
       try (PreparedStatement statement =
           getPreparedStatement(connection, tableMetaData, entryColumnData, Operation.GET)) {
         try (ResultSet resultSet = executeReadQuery(statement, entryColumnData)) {
-          result = sqlToPdxInstance.create(resultSet);
+          result = getSqlToPdxInstance().create(resultSet);
         }
       }
     }
+    return result;
+  }
+
+  private SqlToPdxInstance getSqlToPdxInstance() {
+    SqlToPdxInstance result = this.sqlToPdxInstance;
+    if (result == null) {
+      result = initializeSqlToPdxInstance();
+    }
+    return result;
+  }
+
+  private synchronized SqlToPdxInstance initializeSqlToPdxInstance() {
+    SqlToPdxInstanceCreator sqlToPdxInstanceCreator =
+        new SqlToPdxInstanceCreator(cache, regionMapping);
+    SqlToPdxInstance result = sqlToPdxInstanceCreator.create();
+    this.sqlToPdxInstance = result;
     return result;
   }
 

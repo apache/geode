@@ -119,7 +119,7 @@ public class SqlHandlerTest {
     statement = mock(PreparedStatement.class);
     when(this.connection.prepareStatement(any())).thenReturn(statement);
     handler = new SqlHandler(cache, REGION_NAME, tableMetaDataManager, connectorService,
-        dataSourceFactory, true);
+        dataSourceFactory);
   }
 
   @Test
@@ -135,7 +135,7 @@ public class SqlHandlerTest {
         "JDBC mapping for region regionWithNoMapping not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
 
     new SqlHandler(cache, "regionWithNoMapping", tableMetaDataManager, connectorService,
-        dataSourceFactory, true);
+        dataSourceFactory);
   }
 
   @Test
@@ -145,8 +145,7 @@ public class SqlHandlerTest {
     thrown.expectMessage(
         "JDBC data-source named \"bogus data source name\" not found. Create it with gfsh 'create data-source --pooled --name=bogus data source name'.");
 
-    new SqlHandler(cache, REGION_NAME, tableMetaDataManager, connectorService, dataSourceFactory,
-        true);
+    new SqlHandler(cache, REGION_NAME, tableMetaDataManager, connectorService, dataSourceFactory);
   }
 
   @Test

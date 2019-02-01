@@ -235,7 +235,7 @@ public abstract class JdbcLoaderIntegrationTest {
     return new SqlHandler(cache, regionName, new TableMetaDataManager(),
         TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName, ids, catalog,
             schema, fieldMappings),
-        testDataSourceFactory, true);
+        testDataSourceFactory);
   }
 
   protected <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,

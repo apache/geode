@@ -49,17 +49,17 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
     return operation.isLoad();
   }
 
-  protected boolean supportsReads() {
-    return false;
-  }
-
   private synchronized void initialize(Region<?, ?> region) {
     if (sqlHandler == null) {
       this.cache = (InternalCache) region.getRegionService();
       JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
       TableMetaDataManager tableMetaDataManager = new TableMetaDataManager();
-      sqlHandler =
-          new SqlHandler(cache, region.getName(), tableMetaDataManager, service, supportsReads());
+      sqlHandler = createSqlHandler(cache, region.getName(), tableMetaDataManager, service);
     }
+  }
+
+  SqlHandler createSqlHandler(InternalCache cache, String regionName,
+      TableMetaDataManager tableMetaDataManager, JdbcConnectorService service) {
+    return new SqlHandler(cache, regionName, tableMetaDataManager, service);
   }
 }

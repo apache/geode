@@ -42,11 +42,6 @@ public class JdbcLoader<K, V> extends AbstractJdbcCallback implements CacheLoade
     super(sqlHandler, cache);
   }
 
-  @Override
-  protected boolean supportsReads() {
-    return true;
-  }
-
   /**
    * @return this method always returns a PdxInstance. It does not matter what the V generic
    *         parameter is set to.

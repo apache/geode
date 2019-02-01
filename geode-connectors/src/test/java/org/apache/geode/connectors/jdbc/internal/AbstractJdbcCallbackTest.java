@@ -17,7 +17,11 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
@@ -55,7 +59,8 @@ public class AbstractJdbcCallbackTest {
 
   @Test
   public void initializedSqlHandlerIfNoneExists() {
-    jdbcCallback = new AbstractJdbcCallback() {};
+    jdbcCallback = spy(AbstractJdbcCallback.class);
+    // jdbcCallback = spy(new AbstractJdbcCallback() {});
     InternalCache cache = mock(InternalCache.class);
     Region region = mock(Region.class);
     when(region.getRegionService()).thenReturn(cache);
@@ -65,6 +70,9 @@ public class AbstractJdbcCallbackTest {
     assertThat(jdbcCallback.getSqlHandler()).isNull();
     RegionMapping regionMapping = mock(RegionMapping.class);
     when(service.getMappingForRegion("regionName")).thenReturn(regionMapping);
+    SqlHandler sqlHandler = mock(SqlHandler.class);
+    doReturn(sqlHandler).when(jdbcCallback).createSqlHandler(same(cache), eq("regionName"), any(),
+        same(service));
 
     jdbcCallback.checkInitialized(region);
 

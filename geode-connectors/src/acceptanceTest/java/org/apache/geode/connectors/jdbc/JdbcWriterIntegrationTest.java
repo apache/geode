@@ -422,7 +422,7 @@ public abstract class JdbcWriterIntegrationTest {
       throws RegionMappingExistsException {
     return new SqlHandler(cache, regionName, new TableMetaDataManager(),
         TestConfigService.getTestConfigService(cache, null, ids, catalog, schema, fieldMappings),
-        testDataSourceFactory, false);
+        testDataSourceFactory);
   }
 
   protected void assertRecordMatchesEmployee(ResultSet resultSet, String id, Employee employee)
