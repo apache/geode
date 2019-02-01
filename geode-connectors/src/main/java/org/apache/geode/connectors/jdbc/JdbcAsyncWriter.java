@@ -59,7 +59,13 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
     changeTotalEvents(events.size());
 
     if (!events.isEmpty()) {
-      checkInitialized(events.get(0).getRegion());
+      try {
+        checkInitialized(events.get(0).getRegion());
+      } catch (RuntimeException ex) {
+        changeFailedEvents(events.size());
+        logger.error("Exception initializing JdbcAsyncWriter", ex);
+        return true;
+      }
     }
 
     Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
