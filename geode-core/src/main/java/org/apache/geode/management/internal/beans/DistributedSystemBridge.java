@@ -820,18 +820,18 @@ public class DistributedSystemBridge {
    * @return a list of region names hosted on the system
    */
   public String[] listAllRegions() {
-    Iterator<DistributedRegionBridge> it = distrRegionMap.values().iterator();
     if (distrRegionMap.values().size() == 0) {
       return ManagementConstants.NO_DATA_STRING;
     }
-    String[] listOfRegions = new String[distrRegionMap.values().size()];
-    int j = 0;
+
+    List<String> listOfRegions = new ArrayList<>();
+    Iterator<DistributedRegionBridge> it = distrRegionMap.values().iterator();
     while (it.hasNext()) {
       DistributedRegionBridge bridge = it.next();
-      listOfRegions[j] = bridge.getName();
-      j++;
+      listOfRegions.add(bridge.getName());
     }
-    return listOfRegions;
+
+    return listOfRegions.toArray(new String[listOfRegions.size()]);
   }
 
   /**
