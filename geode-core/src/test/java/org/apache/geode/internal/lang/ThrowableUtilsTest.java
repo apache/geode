@@ -169,6 +169,24 @@ public class ThrowableUtilsTest {
     assertThat(hasCauseMessage(new OneException("message"), "this is the message")).isFalse();
   }
 
+  @Test
+  public void setRootCauseShouldSetTheCause() {
+    OneException exception = new OneException(new TwoException());
+    ThrowableUtils.setRootCause(exception, new OtherException());
+
+    assertThat(exception).hasCauseInstanceOf(TwoException.class);
+    assertThat(exception).hasRootCauseInstanceOf(OtherException.class);
+  }
+
+  @Test
+  public void setRootCauseShouldAvoidSelfCausation() {
+    TwoException cause = new TwoException();
+    OneException exception = new OneException(cause);
+    ThrowableUtils.setRootCause(exception, cause);
+
+    assertThat(exception).hasRootCauseInstanceOf(TwoException.class);
+  }
+
   private static class OneException extends Exception {
     public OneException() {
       // nothing

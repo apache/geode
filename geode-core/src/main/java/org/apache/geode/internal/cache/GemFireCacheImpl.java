@@ -211,6 +211,7 @@ import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
+import org.apache.geode.internal.lang.ThrowableUtils;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -1538,12 +1539,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
 
       // Attempt to stick rootCause at tail end of the exception chain.
-      Throwable nt = throwable;
-      while (nt.getCause() != null) {
-        nt = nt.getCause();
-      }
       try {
-        nt.initCause(GemFireCacheImpl.this.disconnectCause);
+        ThrowableUtils.setRootCause(throwable, GemFireCacheImpl.this.disconnectCause);
         return new CacheClosedException(reason, throwable);
       } catch (IllegalStateException ignore) {
         // Bug 39496 (JRockit related) Give up. The following
