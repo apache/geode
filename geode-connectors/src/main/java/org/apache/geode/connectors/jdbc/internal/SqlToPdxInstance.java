@@ -97,7 +97,7 @@ public class SqlToPdxInstance {
   /**
    * @throws SQLException if the column value get fails
    */
-  private Object getFieldValue(ResultSet resultSet, int columnIndex, FieldType fieldType,
+  Object getFieldValue(ResultSet resultSet, int columnIndex, FieldType fieldType,
       ResultSetMetaData metaData)
       throws SQLException {
     switch (fieldType) {
@@ -188,7 +188,7 @@ public class SqlToPdxInstance {
     char charValue = 0;
     String columnValue = resultSet.getString(columnIndex);
     if (columnValue != null && columnValue.length() > 0) {
-      charValue = columnValue.toCharArray()[0];
+      charValue = columnValue.charAt(0);
     }
     return charValue;
   }
