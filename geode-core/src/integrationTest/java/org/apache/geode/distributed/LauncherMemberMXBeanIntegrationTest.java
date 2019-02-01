@@ -19,10 +19,10 @@ import static javax.management.MBeanServerInvocationHandler.newProxyInstance;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.JMX;
@@ -34,6 +34,7 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeDataSupport;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,29 +123,39 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
     OSMetrics osMetrics = mbean.showOSMetrics();
     assertThat(osMetrics).isNotNull();
 
-    Long osMetricsCommittedMemory = osMetrics.getCommittedVirtualMemorySize();
-    float virtualMemoryRatio = osMetricsCommittedMemory.floatValue()
-        / ((Long) cds.get("committedVirtualMemorySize")).floatValue();
-
-    // On windows in particular, the memory value returned from the live bean has often already
-    // changed from the statically recorded value.
-    assertThat(virtualMemoryRatio).isCloseTo(virtualMemoryRatio, within(0.01F));
-
     // Verify conversion from CompositeData to OSMetrics
     assertThat(osMetrics.getArch()).isEqualTo(cds.get("arch"));
     assertThat(osMetrics.getAvailableProcessors()).isEqualTo(cds.get("availableProcessors"));
-    assertThat(osMetrics.getFreePhysicalMemorySize()).isEqualTo(cds.get("freePhysicalMemorySize"));
-    assertThat(osMetrics.getFreeSwapSpaceSize()).isEqualTo(cds.get("freeSwapSpaceSize"));
     assertThat(osMetrics.getMaxFileDescriptorCount()).isEqualTo(cds.get("maxFileDescriptorCount"));
     assertThat(osMetrics.getName()).isEqualTo(cds.get("name"));
-    assertThat(osMetrics.getOpenFileDescriptorCount())
-        .isEqualTo(cds.get("openFileDescriptorCount"));
-    assertThat(osMetrics.getProcessCpuTime()).isEqualTo(cds.get("processCpuTime"));
-    assertThat(osMetrics.getSystemLoadAverage()).isEqualTo(cds.get("systemLoadAverage"));
     assertThat(osMetrics.getTotalPhysicalMemorySize())
         .isEqualTo(cds.get("totalPhysicalMemorySize"));
     assertThat(osMetrics.getTotalSwapSpaceSize()).isEqualTo(cds.get("totalSwapSpaceSize"));
     assertThat(osMetrics.getVersion()).isEqualTo(cds.get("version"));
+
+    assertThat(tryConvergeVolatileOSMetrics("committedVirtualMemorySize",
+        m -> m.getCommittedVirtualMemorySize()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+    assertThat(tryConvergeVolatileOSMetrics("freePhysicalMemorySize",
+        m -> m.getFreePhysicalMemorySize()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+    assertThat(tryConvergeVolatileOSMetrics("freeSwapSpaceSize",
+        m -> m.getFreeSwapSpaceSize()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+    assertThat(tryConvergeVolatileOSMetrics("openFileDescriptorCount",
+        m -> m.getOpenFileDescriptorCount()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+    assertThat(tryConvergeVolatileOSMetrics("processCpuTime",
+        m -> m.getProcessCpuTime()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+    assertThat(tryConvergeVolatileOSMetrics("systemLoadAverage",
+        m -> m.getSystemLoadAverage()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
   }
 
   @Test
@@ -162,13 +173,74 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
             null, null);
     JVMMetrics jvmMetrics = mbean.showJVMMetrics();
     assertThat(jvmMetrics).isNotNull();
-    assertThat(jvmMetrics.getCommittedMemory()).isEqualTo(cds.get("committedMemory"));
-    assertThat(jvmMetrics.getGcCount()).isEqualTo(cds.get("gcCount"));
-    assertThat(jvmMetrics.getGcTimeMillis()).isEqualTo(cds.get("gcTimeMillis"));
+
     assertThat(jvmMetrics.getInitMemory()).isEqualTo(cds.get("initMemory"));
     assertThat(jvmMetrics.getMaxMemory()).isEqualTo(cds.get("maxMemory"));
-    assertThat(jvmMetrics.getTotalThreads()).isEqualTo(cds.get("totalThreads"));
-    assertThat(jvmMetrics.getUsedMemory()).isEqualTo(cds.get("usedMemory"));
+
+    assertThat(tryConvergeVolatileJVMMetrics("committedMemory",
+        m -> m.getCommittedMemory()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+    assertThat(tryConvergeVolatileJVMMetrics("gcCount",
+        m -> m.getGcCount()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+    assertThat(tryConvergeVolatileJVMMetrics("gcTimeMillis",
+        m -> m.getGcTimeMillis()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+
+    assertThat(tryConvergeVolatileJVMMetrics("totalThreads",
+        m -> m.getTotalThreads()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+
+    assertThat(tryConvergeVolatileJVMMetrics("usedMemory",
+        m -> m.getUsedMemory()))
+            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+  }
+
+  /*
+   * Sometimes there is a change in metric value between getting the MBean proxy and retrieving
+   * the composite data structure. Try at most 5 times otherwise return the last values retrieved.
+   */
+  private Pair<Number, Number> tryConvergeVolatileJVMMetrics(String attribute,
+      Function<JVMMetrics, Number> func) {
+    try {
+      Number cdsValue = 0;
+      Number jvmMetricValue = -1;
+      for (int i = 0; i < 5; i++) {
+        CompositeDataSupport cds = (CompositeDataSupport) getPlatformMBeanServer()
+            .invoke(mbeanObjectName, "showJVMMetrics", null, null);
+        cdsValue = (Number) cds.get(attribute);
+        jvmMetricValue = func.apply(getMXBeanProxy().showJVMMetrics());
+        if (cdsValue.equals(jvmMetricValue)) {
+          break;
+        }
+      }
+      return Pair.of(cdsValue, jvmMetricValue);
+    } catch (Exception ex) {
+      return null;
+    }
+  }
+
+  private Pair<Number, Number> tryConvergeVolatileOSMetrics(String attribute,
+      Function<OSMetrics, Number> func) {
+    try {
+      Number cdsValue = 0;
+      Number osMetricValue = -1;
+      for (int i = 0; i < 5; i++) {
+        CompositeDataSupport cds = (CompositeDataSupport) getPlatformMBeanServer()
+            .invoke(mbeanObjectName, "showOSMetrics", null, null);
+        cdsValue = (Number) cds.get(attribute);
+        osMetricValue = func.apply(getMXBeanProxy().showOSMetrics());
+        if (cdsValue.equals(osMetricValue)) {
+          break;
+        }
+      }
+      return Pair.of(cdsValue, osMetricValue);
+    } catch (Exception ex) {
+      return null;
+    }
   }
 
   private MemberMXBean getMXBeanProxy() {
