@@ -975,7 +975,7 @@ public class CachePerfStats {
    * @since GemFire 3.5
    */
   public long startCacheListenerCall() {
-    stats.incLong(cacheListenerCallsInProgressId, 1);
+    stats.incInt(cacheListenerCallsInProgressId, 1);
     return getClockTime();
   }
 
