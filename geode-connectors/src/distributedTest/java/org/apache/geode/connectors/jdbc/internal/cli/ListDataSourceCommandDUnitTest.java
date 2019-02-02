@@ -15,12 +15,18 @@
 
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -57,22 +63,49 @@ public class ListDataSourceCommandDUnitTest {
             "jdbc:derby:newDB;create=true");
   }
 
+
+  private void setupDatabase() {
+    executeSql("create table region1 (id varchar(10) primary key, name varchar(10))");
+    executeSql("create table region2 (id varchar(10) primary key, name varchar(10))");
+  }
+
+  private void teardownDatabase() {
+    executeSql("drop table region1");
+    executeSql("drop table region2");
+  }
+
+  private void executeSql(String sql) {
+    server.invoke(() -> {
+      try {
+        DataSource ds = JNDIInvoker.getDataSource("simple");
+        Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        sm.execute(sql);
+        sm.close();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   @Test
   public void listDataSourceUsedByRegionsHasCorrectOutput() {
     gfsh.executeAndAssertThat(
         "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
+    setupDatabase();
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=region2 --type=PARTITION").statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx")
+        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx --schema=app")
         .statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx")
+        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx --schema=app")
         .statusIsSuccess();
 
     CommandResultAssert result = gfsh.executeAndAssertThat("list data-source");
 
+    teardownDatabase();
     result.statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "simple", "false", "true",
             "jdbc:derby:newDB;create=true");
