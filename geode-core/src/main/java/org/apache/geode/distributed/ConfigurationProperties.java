@@ -392,6 +392,18 @@ public interface ConfigurationProperties {
    */
   String DISABLE_TCP = "disable-tcp";
   /**
+   * The static String definition of the <i>"disable-jmx"</i> property <a name="disable-tcp"/a>
+   * <p>
+   * <U>Description</U>: Turns off use of JMX, preventing the process from creating Geode MBeans.
+   * <p>
+   * <U>Default</U>: "false"
+   * <p>
+   * <U>Allowed values</U>: true or false
+   * <p>
+   * <U>Since</U>: Geode 1.9
+   */
+  String DISABLE_JMX = "disable-jmx";
+  /**
    * The static String definition of the <i>"distributed-system-id"</i> property
    * <p>
    * <a name="distributed-system-id"/a> <U>Decription:</U>A number that uniquely identifies this

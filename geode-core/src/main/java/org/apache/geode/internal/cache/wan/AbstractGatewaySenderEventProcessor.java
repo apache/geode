@@ -695,6 +695,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                       break;
                     }
                     try {
+                      if (threadMonitoring != null) {
+                        threadMonitoring.updateThreadStatus();
+                      }
                       Thread.sleep(100);
                     } catch (InterruptedException ie) {
                       Thread.currentThread().interrupt();

@@ -625,4 +625,16 @@ public class CreateRegionCommandIntegrationTest {
     gfsh.executeAndAssertThat("create region --name=FOO --type=REPLICATE --cache-listener=abc{abc}")
         .statusIsError().containsOutput("Invalid JSON: {abc}");
   }
+
+  @Test
+  public void createSubRegion() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=region --type=REPLICATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --name=region/region1 --type=REPLICATE")
+        .statusIsSuccess();
+
+    Region subregion = server.getCache().getRegion("/region/region1");
+    assertThat(subregion).isNotNull();
+
+    gfsh.executeAndAssertThat("destroy region --name=/region").statusIsSuccess();
+  }
 }

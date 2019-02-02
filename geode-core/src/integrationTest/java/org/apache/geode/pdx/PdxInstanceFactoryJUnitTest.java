@@ -1306,6 +1306,34 @@ public class PdxInstanceFactoryJUnitTest {
   }
 
   @Test
+  public void pdxInstanceEqualsReturnsTrueIfSameClassAndMissingFieldHasDefaultValue() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeInt("fieldTwo", 0);
+    PdxInstance instance = factory.create();
+    factory = cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance2 = factory.create();
+
+    assertThat(instance).isEqualTo(instance2);
+  }
+
+  @Test
+  public void pdxInstanceEqualsReturnsFalseIfNoClassAndMissingFieldHasDefaultValue() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeInt("fieldTwo", 0);
+    PdxInstance instance = factory.create();
+    factory = cache.createPdxInstanceFactory("").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance2 = factory.create();
+
+    assertThat(instance).isNotEqualTo(instance2);
+  }
+
+  @Test
   public void undeserializablePdxInstanceWithMultipleEqualFieldsInDifferentOrderAreEqual() {
     PdxInstanceFactory factory =
         cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
@@ -1313,6 +1341,28 @@ public class PdxInstanceFactoryJUnitTest {
     factory.writeString("fieldTwo", "valueTwo");
     PdxInstance instance = factory.create();
     factory = cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldTwo", "valueTwo");
+    factory.writeString("fieldOne", "valueOne");
+    PdxInstance instance2 = factory.create();
+
+    assertThat(instance).isEqualTo(instance2);
+  }
+
+  @Test
+  public void createPdxInstanceFactoryWithNullClassNameThrowsException() {
+    assertThatThrownBy(() -> cache.createPdxInstanceFactory(null))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Class name can not be null when creating a PdxInstanceFactory");
+  }
+
+  @Test
+  public void pdxInstanceWithNoCallsAndMultipleEqualFieldsInDifferentOrderAreEqual() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("");
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+    factory = cache.createPdxInstanceFactory("");
     factory.writeString("fieldTwo", "valueTwo");
     factory.writeString("fieldOne", "valueOne");
     PdxInstance instance2 = factory.create();
@@ -1339,6 +1389,17 @@ public class PdxInstanceFactoryJUnitTest {
   public void undeserializablePdxInstanceReturnsFalseFromIsDeserializable() {
     PdxInstanceFactory factory =
         cache.createPdxInstanceFactory("myPdxInstanceType").neverDeserialize();
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstance instance = factory.create();
+
+    assertThat(instance.isDeserializable()).isFalse();
+  }
+
+  @Test
+  public void pdxInstanceWithNoClassReturnsFalseFromIsDeserializable() {
+    PdxInstanceFactory factory =
+        cache.createPdxInstanceFactory("");
     factory.writeString("fieldOne", "valueOne");
     factory.writeString("fieldTwo", "valueTwo");
     PdxInstance instance = factory.create();

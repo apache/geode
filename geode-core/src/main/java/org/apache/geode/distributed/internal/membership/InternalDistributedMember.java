@@ -1191,6 +1191,24 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     return toString();
   }
 
+  @Override
+  public String getUniqueId() {
+    StringBuilder sb = new StringBuilder();
+    addFixedToString(sb);
+
+    // add version if not current
+    short version = netMbr.getVersionOrdinal();
+    if (version != Version.CURRENT.ordinal()) {
+      sb.append("(version:").append(Version.toString(version)).append(')');
+    }
+
+    if (SHOW_NETMEMBER) {
+      sb.append("[[").append(netMbr.getUniqueId()).append("]]");
+    }
+
+    return sb.toString();
+  }
+
   public void setVersionObjectForTest(Version v) {
     this.versionObj = v;
     netMbr.setVersion(v);

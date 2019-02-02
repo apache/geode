@@ -103,7 +103,7 @@ public class GMSLocator implements Locator, NetLocator {
     this.securityUDPDHAlgo = securityUDPDHAlgo;
     this.locatorString = locatorString;
     if (this.locatorString == null || this.locatorString.length() == 0) {
-      this.locators = new ArrayList<HostAddress>(0);
+      this.locators = new ArrayList<>(0);
     } else {
       this.locators = GMSUtil.parseLocators(locatorString, bindAddress);
     }
@@ -121,10 +121,24 @@ public class GMSLocator implements Locator, NetLocator {
       services.setLocator(this);
       NetView newView = services.getJoinLeave().getView();
       if (newView != null) {
-        this.view = newView;
-      } else if (localAddress != null) {
-        synchronized (this.registrants) {
-          this.registrants.add(localAddress);
+        view = newView;
+        recoveredView = null;
+      } else {
+        // if we are auto-reconnecting we may already have a membership view
+        // and should use it as a "recovered view" which only hints at who is
+        // the current membership coordinator
+        if (view != null) {
+          view.setViewId(-100); // no longer a valid view
+          recoveredView = view; // auto-reconnect will be based on the recovered view
+          view = null;
+        }
+        if (localAddress != null) {
+          if (recoveredView != null) {
+            recoveredView.remove(localAddress);
+          }
+          synchronized (this.registrants) {
+            this.registrants.add(localAddress);
+          }
         }
       }
       this.notifyAll();
@@ -134,7 +148,7 @@ public class GMSLocator implements Locator, NetLocator {
   }
 
   @VisibleForTesting
-  public File setViewFile(File file) {
+  File setViewFile(File file) {
     this.viewFile = file.getAbsoluteFile();
     return this.viewFile;
   }
@@ -160,7 +174,7 @@ public class GMSLocator implements Locator, NetLocator {
     if (services == null) {
       try {
         wait(10000);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
     }
   }
@@ -182,7 +196,7 @@ public class GMSLocator implements Locator, NetLocator {
   }
 
   @Override
-  public Object processRequest(Object request) throws IOException {
+  public Object processRequest(Object request) {
     Object response = null;
 
     if (logger.isDebugEnabled()) {
@@ -305,6 +319,7 @@ public class GMSLocator implements Locator, NetLocator {
         if (v != null && localAddress != null && !localAddress.equals(v.getCoordinator())) {
           logger.info("This member is becoming coordinator since view {}", v);
           v = null;
+          fromView = false;
         }
       }
 
@@ -339,8 +354,10 @@ public class GMSLocator implements Locator, NetLocator {
         oos.writeInt(Version.CURRENT_ORDINAL);
         DataSerializer.writeObject(view, oos);
       } finally {
-        oos.flush();
-        oos.close();
+        if (oos != null) {
+          oos.flush();
+          oos.close();
+        }
       }
     } catch (Exception e) {
       logger.warn(
@@ -411,14 +428,14 @@ public class GMSLocator implements Locator, NetLocator {
       TcpClient client = new TcpClient();
       Object response = client.requestToServer(other.getAddress(), other.getPort(),
           new GetViewRequest(), 20000, true);
-      if (response != null && (response instanceof GetViewResponse)) {
+      if (response instanceof GetViewResponse) {
         this.view = ((GetViewResponse) response).getView();
         logger.info("Peer locator recovered initial membership of {}", view);
         return true;
       }
-    } catch (IOException | ClassNotFoundException ignore) {
+    } catch (IOException | ClassNotFoundException ex) {
       logger.debug("Peer locator could not recover membership view from {}: {}", other,
-          ignore.getMessage());
+          ex.getMessage());
     }
     logger.info("Peer locator was unable to recover state from this locator");
     return false;

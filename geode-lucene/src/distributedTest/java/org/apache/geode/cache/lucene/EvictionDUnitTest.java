@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
@@ -132,7 +131,6 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
   protected void raiseFakeNotification() {
     ((GemFireCacheImpl) getCache()).getHeapEvictor().setTestAbortAfterLoopCount(1);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "0");
 
     getCache().getResourceManager()
         .setEvictionHeapPercentage(EVICTION_HEAP_PERCENTAGE_FAKE_NOTIFICATION);
@@ -140,13 +138,12 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
         ((GemFireCacheImpl) getCache()).getInternalResourceManager().getHeapMonitor();
     heapMemoryMonitor.setTestMaxMemoryBytes(TEST_MAX_MEMORY);
 
-    heapMemoryMonitor.updateStateAndSendEvent(MEMORY_USED_FAKE_NOTIFICATION);
+    heapMemoryMonitor.updateStateAndSendEvent(MEMORY_USED_FAKE_NOTIFICATION, "test");
   }
 
   protected void cleanUpAfterFakeNotification() {
     ((GemFireCacheImpl) getCache()).getHeapEvictor().setTestAbortAfterLoopCount(Integer.MAX_VALUE);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance");
   }
 
 }

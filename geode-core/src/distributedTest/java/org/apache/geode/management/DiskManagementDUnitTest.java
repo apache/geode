@@ -152,14 +152,14 @@ public class DiskManagementDUnitTest implements Serializable {
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
       PersistentMemberDetails[] missingDiskStores = distributedSystemMXBean.listMissingDiskStores();
 
-      assertThat(missingDiskStores).isNull();
+      assertThat(missingDiskStores).isEmpty();
     });
 
-    closeRegion(memberVM1);
+    closeCache(memberVM1);
 
     updateTheEntry(memberVM2, "C");
 
-    closeRegion(memberVM2);
+    closeCache(memberVM2);
 
     AsyncInvocation creatingPersistentRegionAsync = createPersistentRegionAsync(memberVM1);
 
@@ -333,11 +333,11 @@ public class DiskManagementDUnitTest implements Serializable {
     });
   }
 
-  private void closeRegion(final VM memberVM) {
+  private void closeCache(final VM memberVM) {
     memberVM.invoke("closeRegion", () -> {
       Cache cache = this.managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
-      region.close();
+      cache.close();
     });
   }
 

@@ -181,7 +181,7 @@ public class ControllableProcess {
         false);
   }
 
-  private static String fetchStatusWithValidation(final ControlNotificationHandler handler) {
+  static String fetchStatusWithValidation(final ControlNotificationHandler handler) {
     ServiceState<?> state = handler.handleStatus();
     if (state == null) {
       throw new IllegalStateException("Null ServiceState is invalid");
@@ -190,7 +190,7 @@ public class ControllableProcess {
     String jsonContent = state.toJson();
     if (jsonContent == null) {
       throw new IllegalStateException("Null JSON for status is invalid");
-    } else if (jsonContent.isEmpty()) {
+    } else if (jsonContent.trim().isEmpty()) {
       throw new IllegalStateException("Empty JSON for status is invalid");
     }
 

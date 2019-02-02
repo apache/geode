@@ -15,9 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
@@ -27,7 +27,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails;
-import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.PersistentMemberDetails;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction;
@@ -55,12 +57,17 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
     if (dataMembers.isEmpty()) {
       return ResultModel.createInfo(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);
     }
-    List<?> results = getMissingDiskStoresList(dataMembers);
+    List<ColocatedRegionDetails> missingRegions = getMissingColocatedRegionList(dataMembers);
 
-    return toMissingDiskStoresTabularResult(results);
+    DistributedSystemMXBean dsMXBean =
+        ManagementService.getManagementService(getCache()).getDistributedSystemMXBean();
+    PersistentMemberDetails[] missingDiskStores = dsMXBean.listMissingDiskStores();
+
+    return toMissingDiskStoresTabularResult(missingDiskStores, missingRegions);
   }
 
-  private List<?> getMissingDiskStoresList(Set<DistributedMember> members) {
+  private List<ColocatedRegionDetails> getMissingColocatedRegionList(
+      Set<DistributedMember> members) {
     final Execution membersFunctionExecutor = getMembersFunctionExecutor(members);
     if (membersFunctionExecutor instanceof AbstractExecution) {
       ((AbstractExecution) membersFunctionExecutor).setIgnoreDepartedMembers(true);
@@ -70,42 +77,37 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
         membersFunctionExecutor.execute(new ShowMissingDiskStoresFunction());
 
     final List<?> results = (List<?>) resultCollector.getResult();
-    final List<?> distributedPersistentRecoveryDetails = new ArrayList<>(results.size());
-    for (final Object result : results) {
-      if (result instanceof Set) {
-        distributedPersistentRecoveryDetails.addAll((Set) result);
-      }
-    }
-    return distributedPersistentRecoveryDetails;
+
+    // Clean up the data. For backwards compatibility, the ShowMissingDiskStoresFunction
+    // sends a List of Sets. Some of the sets are Set<PersistentMemberIds>, some are
+    // Set<ColocatedRegionDetails>. We want to return a List of all of the ColocatedRegionDetails,
+    // and ignore the PersistentMemberIds
+    return results.stream().filter(Set.class::isInstance)
+        .map(Set.class::cast)
+        .flatMap(Set::stream)
+        .filter(ColocatedRegionDetails.class::isInstance)
+        .map(ColocatedRegionDetails.class::cast)
+        .collect(Collectors.toList());
   }
 
-  private ResultModel toMissingDiskStoresTabularResult(final List<?> resultDetails)
+  private ResultModel toMissingDiskStoresTabularResult(
+      PersistentMemberDetails[] missingDiskStores,
+      final List<ColocatedRegionDetails> missingColocatedRegions)
       throws ResultDataException {
     ResultModel result = new ResultModel();
-    List<PersistentMemberPattern> missingDiskStores = new ArrayList<>();
-    List<ColocatedRegionDetails> missingColocatedRegions = new ArrayList<>();
 
-    for (Object detail : resultDetails) {
-      if (detail instanceof PersistentMemberPattern) {
-        missingDiskStores.add((PersistentMemberPattern) detail);
-      } else if (detail instanceof ColocatedRegionDetails) {
-        missingColocatedRegions.add((ColocatedRegionDetails) detail);
-      } else {
-        throw new ResultDataException("Unknown type of PersistentRecoveryFailures result");
-      }
-    }
-
-    boolean hasMissingDiskStores = !missingDiskStores.isEmpty();
+    boolean hasMissingDiskStores = missingDiskStores.length != 0;
     boolean hasMissingColocatedRegions = !missingColocatedRegions.isEmpty();
+
     TabularResultModel missingDiskStoreSection = result.addTable(MISSING_DISK_STORES_SECTION);
 
     if (hasMissingDiskStores) {
       missingDiskStoreSection.setHeader("Missing Disk Stores");
 
-      for (PersistentMemberPattern persistentMemberDetails : missingDiskStores) {
+      for (PersistentMemberDetails persistentMemberDetails : missingDiskStores) {
         missingDiskStoreSection.accumulate("Disk Store ID",
-            persistentMemberDetails.getUUID().toString());
-        missingDiskStoreSection.accumulate("Host", persistentMemberDetails.getHost().toString());
+            persistentMemberDetails.getDiskStoreId());
+        missingDiskStoreSection.accumulate("Host", persistentMemberDetails.getHost());
         missingDiskStoreSection.accumulate("Directory", persistentMemberDetails.getDirectory());
       }
     } else {

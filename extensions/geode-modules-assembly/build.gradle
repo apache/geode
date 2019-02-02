@@ -211,6 +211,7 @@ task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar
       filter(ReplaceTokens, tokens:['ANTLR_VERSION': project.'antlr.version'])
       filter(ReplaceTokens, tokens:['TX_VERSION': project.'javax.transaction-api.version'])
       filter(ReplaceTokens, tokens:['JGROUPS_VERSION': project.'jgroups.version'])
+      filter(ReplaceTokens, tokens:['JETTY_VERSION': project.'jetty.version'])
       filter(ReplaceTokens, tokens:['SHIRO_VERSION': project.'shiro.version'])
       filter(ReplaceTokens, tokens:['COMMONS_IO_VERSION': project.'commons-io.version'])
       filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': project.'commons-lang3.version'])

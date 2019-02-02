@@ -629,13 +629,4 @@ public class NetView implements DataSerializableFixedID {
     return NETVIEW;
   }
 
-
-  /**
-   * This will alter the NetView to throw exceptions if an attempt is made to
-   * add or remove members from the view. Do this to avoid concurrent
-   * modification exceptions.
-   */
-  public void makeImmutable() {
-    this.members = Collections.unmodifiableList(members);
-  }
 }

@@ -47,7 +47,7 @@ import java.util.List;
  * @see EntryEvent
  * @since GemFire 4.0
  */
-public interface TransactionEvent<K, V> {
+public interface TransactionEvent {
 
   /**
    * Gets the <code>TransactionId</code> associated this TransactionEvent.
@@ -63,7 +63,7 @@ public interface TransactionEvent<K, V> {
    *         operation performed by this transaction.
    * @since GemFire 5.0
    */
-  List<CacheEvent<K, V>> getEvents();
+  List<CacheEvent<?, ?>> getEvents();
 
   /**
    * Gets the Cache for this transaction event

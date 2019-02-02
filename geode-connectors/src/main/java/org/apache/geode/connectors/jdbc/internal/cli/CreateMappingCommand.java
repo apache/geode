@@ -14,8 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +38,7 @@ import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -76,6 +75,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private static final String CREATE_MAPPING__SCHEMA_NAME = MappingConstants.SCHEMA_NAME;
   private static final String CREATE_MAPPING__SCHEMA_NAME__HELP =
       "The schema that contains the database table. By default, the schema is the empty string causing the table to be referenced without a schema prefix.";
+  private static final String CREATE_MAPPING__GROUPS_NAME = "groups";
+  private static final String CREATE_MAPPING__GROUPS_NAME__HELP =
+      "The names of the server groups on which this mapping should be created.";
 
   public static String createAsyncEventQueueName(String regionPath) {
     if (regionPath.startsWith("/")) {
@@ -104,25 +106,32 @@ public class CreateMappingCommand extends SingleGfshCommand {
       @CliOption(key = CREATE_MAPPING__CATALOG_NAME,
           help = CREATE_MAPPING__CATALOG_NAME__HELP) String catalog,
       @CliOption(key = CREATE_MAPPING__SCHEMA_NAME,
-          help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema) {
+          help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups) {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 
-    // input
-    Set<DistributedMember> targetMembers = findMembersForRegion(regionName);
+    Set<DistributedMember> targetMembers = findMembers(groups, null);
     RegionMapping mapping =
         new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema);
 
     try {
       ConfigurationPersistenceService configurationPersistenceService =
           checkForClusterConfiguration();
-      CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(null);
-      RegionConfig regionConfig = checkForRegion(regionName, cacheConfig);
-      checkForExistingMapping(regionName, regionConfig);
-      checkForCacheLoader(regionName, regionConfig);
-      checkForCacheWriter(regionName, synchronous, regionConfig);
-      checkForAsyncQueue(regionName, synchronous, cacheConfig);
+      if (groups == null) {
+        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
+      }
+      for (String group : groups) {
+        CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(group);
+        RegionConfig regionConfig = checkForRegion(regionName, cacheConfig);
+        checkForExistingMapping(regionName, regionConfig);
+        checkForCacheLoader(regionName, regionConfig);
+        checkForCacheWriter(regionName, synchronous, regionConfig);
+        checkForAsyncQueue(regionName, synchronous, cacheConfig);
+      }
     } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
     }

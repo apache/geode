@@ -14,6 +14,12 @@
  */
 package org.apache.geode.internal.statistics;
 
+import static java.io.File.separator;
+import static java.lang.Byte.MAX_VALUE;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.getProperty;
+import static java.lang.System.setProperty;
+import static java.util.Arrays.fill;
 import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_DISK_SPACE_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_FILE_SIZE_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
@@ -22,24 +28,29 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeFalse;
+import static org.apache.geode.internal.GemFireVersion.getBuildId;
+import static org.apache.geode.internal.GemFireVersion.getGemFireVersion;
+import static org.apache.geode.internal.GemFireVersion.getSourceDate;
+import static org.apache.geode.internal.PureJavaMode.osStatsAreAvailable;
+import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredMemoryPoolMXBean;
+import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredPoolStatistics;
+import static org.apache.geode.internal.net.SocketCreator.getHostName;
+import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
+import static org.apache.geode.internal.statistics.HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,16 +62,10 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.GemFireStatSampler.LocalStatListenerImpl;
-import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 import org.apache.geode.internal.stats50.VMStats50;
-import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**
@@ -86,8 +91,8 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
 
   @Before
   public void setUp() throws Exception {
-    this.testDir = this.temporaryFolder.getRoot();
-    assertTrue(this.testDir.exists());
+    testDir = temporaryFolder.getRoot();
+    assertThat(testDir).exists();
   }
 
   /**
@@ -99,86 +104,136 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     disconnect();
   }
 
-  /**
-   * Tests the majority of getters and the basic functionality of the sampler.
-   *
-   * This test is skipped when running on Windows 7 because ProcessStats is not created for this OS.
-   * See #45395.
-   */
   @Test
-  public void testBasics() throws Exception {
+  public void testInitialization() throws Exception {
     connect(createGemFireProperties());
 
     GemFireStatSampler statSampler = getGemFireStatSampler();
-    assertTrue(statSampler.waitForInitialization(5000));
+    assertThat(statSampler.waitForInitialization(5000))
+        .as("initialized within 5 seconds")
+        .isTrue();
 
-    assertEquals(0, statSampler.getArchiveFileSizeLimit());
-    assertEquals(0, statSampler.getArchiveDiskSpaceLimit());
-    assertEquals(STAT_SAMPLE_RATE, statSampler.getSampleRate());
-    assertEquals(true, statSampler.isSamplingEnabled());
+    assertThat(statSampler.getArchiveFileSizeLimit())
+        .as("archive file size limit")
+        .isZero();
+    assertThat(statSampler.getArchiveDiskSpaceLimit())
+        .as("archive disk space limit")
+        .isZero();
+    assertThat(statSampler.getSampleRate())
+        .as("sample rate")
+        .isEqualTo(STAT_SAMPLE_RATE);
+    assertThat(statSampler.isSamplingEnabled())
+        .as("sampling is enabled")
+        .isTrue();
 
     int statsCount = statSampler.getStatisticsManager().getStatisticsCount();
 
-    assertEquals(statsCount, statSampler.getStatisticsManager().getStatisticsCount());
-    assertEquals(statsCount, statSampler.getStatistics().length);
+    assertThat(statSampler.getStatistics().length)
+        .as("statistics length")
+        .isEqualTo(statsCount);
 
-    assertTrue(statSampler.getSystemStartTime() < System.currentTimeMillis());
-    Assert.assertEquals(SocketCreator.getHostName(SocketCreator.getLocalHost()),
-        statSampler.getSystemDirectoryPath());
+    assertThat(statSampler.getSystemStartTime())
+        .as("system start time")
+        .isLessThanOrEqualTo(currentTimeMillis());
+    assertThat(statSampler.getSystemDirectoryPath())
+        .as("system directory path")
+        .isEqualTo(getHostName(getLocalHost()));
 
-    VMStatsContract vmStats = statSampler.getVMStats();
-    assertNotNull(vmStats);
-    assertTrue(vmStats instanceof VMStats50);
+    assertThat(statSampler.getVMStats())
+        .as("vm stats")
+        .isInstanceOf(VMStats50.class);
     /*
      * NOTE: VMStats50 is not an instance of Statistics but instead its instance contains 3
      * instances of Statistics: 1) vmStats 2) heapMemStats 3) nonHeapMemStats
      */
 
     Method getProcessStats = getGemFireStatSampler().getClass().getMethod("getProcessStats");
-    assertNotNull(getProcessStats);
+    assertThat(getProcessStats)
+        .withFailMessage("gemfire stat sampler has no getProcessStats method")
+        .isNotNull();
   }
 
   @Test
   public void testBasicProcessStats() throws Exception {
-    final String osName = System.getProperty("os.name", "unknown");
-    assumeFalse(osName.contains("Windows"));
+    final String osName = getProperty("os.name", "unknown");
+    assumeThat(osName)
+        .as("os name")
+        .doesNotContain("Windows");
 
     connect(createGemFireProperties());
     GemFireStatSampler statSampler = getGemFireStatSampler();
-    assertTrue(statSampler.waitForInitialization(5000));
+    assertThat(statSampler.waitForInitialization(5000))
+        .as("initialized within 5 seconds")
+        .isTrue();
 
     ProcessStats processStats = statSampler.getProcessStats();
     AllStatistics allStats = new AllStatistics(statSampler);
 
     if (osName.equals("SunOS")) {
-      assertNotNull(processStats);
-      assertTrue(PureJavaMode.osStatsAreAvailable());
-      assertTrue(allStats.containsStatisticsType("SolarisProcessStats"));
-      assertTrue(allStats.containsStatisticsType("SolarisSystemStats"));
+      assertThat(processStats)
+          .withFailMessage("ProcessStats were not created on" + osName)
+          .isNotNull();
+      assertThat(osStatsAreAvailable())
+          .as("os stats are available on SunOS")
+          .isTrue();
+      assertThat(allStats.containsStatisticsType("SolarisProcessStats"))
+          .as("SunOS stats include statistics type named SolarisProcessStats")
+          .isTrue();
+      assertThat(allStats.containsStatisticsType("SolarisSystemStats"))
+          .as("SunOS stats include statistics type named SolarisSystemStats")
+          .isTrue();
     } else if (osName.startsWith("Windows")) {
       // fails on Windows 7: 45395 "ProcessStats are not created on Windows 7"
-      assertNotNull("ProcessStats were not created on " + osName, processStats);
-      assertTrue(PureJavaMode.osStatsAreAvailable());
-      assertTrue(allStats.containsStatisticsType("WindowsProcessStats"));
-      assertTrue(allStats.containsStatisticsType("WindowsSystemStats"));
+      assertThat(processStats)
+          .withFailMessage("ProcessStats were not created on" + osName)
+          .isNotNull();
+      assertThat(osStatsAreAvailable())
+          .as("os stats are available on Windows")
+          .isTrue();
+      assertThat(allStats.containsStatisticsType("WindowsProcessStats"))
+          .as("Windows stats include statistics type named WindowsProcessStats")
+          .isTrue();
+      assertThat(allStats.containsStatisticsType("WindowsSystemStats"))
+          .as("Windows stats include statistics type named WindowsSystemStats")
+          .isTrue();
     } else if (osName.startsWith("Linux")) {
-      assertNotNull(processStats);
-      assertTrue(PureJavaMode.osStatsAreAvailable());
-      assertTrue(allStats.containsStatisticsType("LinuxProcessStats"));
-      assertTrue(allStats.containsStatisticsType("LinuxSystemStats"));
+      assertThat(processStats)
+          .withFailMessage("ProcessStats were not created on" + osName)
+          .isNotNull();
+      assertThat(osStatsAreAvailable())
+          .as("os stats are available on Linux")
+          .isTrue();
+      assertThat(allStats.containsStatisticsType("LinuxProcessStats"))
+          .as("Linux stats include statistics type named LinuxProcessStats")
+          .isTrue();
+      assertThat(allStats.containsStatisticsType("LinuxSystemStats"))
+          .as("Linux stats include statistics type named LinuxSystemStats")
+          .isTrue();
     } else if (osName.equals("Mac OS X")) {
-      assertNull(processStats);
-      assertFalse(PureJavaMode.osStatsAreAvailable());
-      assertFalse(allStats.containsStatisticsType("OSXProcessStats"));
-      assertFalse(allStats.containsStatisticsType("OSXSystemStats"));
+      assertThat(processStats)
+          .withFailMessage("ProcessStats were created on" + osName)
+          .isNull();
+      assertThat(osStatsAreAvailable())
+          .as("os stats are available on Mac OS X")
+          .isFalse();
+      assertThat(allStats.containsStatisticsType("OSXProcessStats"))
+          .as("Mac OS X stats include statistics type named OSXProcessStats")
+          .isFalse();
+      assertThat(allStats.containsStatisticsType("OSXSystemStats"))
+          .as("Mac OS X stats include statistics type named OSXSystemStats")
+          .isFalse();
     } else {
-      assertNull(processStats);
+      assertThat(processStats)
+          .withFailMessage("ProcessStats were created on" + osName)
+          .isNull();
     }
 
     String productDesc = statSampler.getProductDescription();
-    assertTrue(productDesc.contains(GemFireVersion.getGemFireVersion()));
-    assertTrue(productDesc.contains(GemFireVersion.getBuildId()));
-    assertTrue(productDesc.contains(GemFireVersion.getSourceDate()));
+    assertThat(productDesc)
+        .as("product description")
+        .contains(getGemFireVersion())
+        .contains(getBuildId())
+        .contains(getSourceDate());
   }
 
   /**
@@ -186,30 +241,32 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
    */
   @Test
   public void testArchiveFileExists() throws Exception {
-    final String dir = this.testDir.getAbsolutePath();
-    final String archiveFileName = dir + File.separator + this.testName.getMethodName() + ".gfs";
+    final String dir = testDir.getAbsolutePath();
+    final String archiveFileName = dir + separator + testName.getMethodName() + ".gfs";
 
     final File archiveFile1 =
-        new File(dir + File.separator + this.testName.getMethodName() + ".gfs");
+        new File(dir + separator + testName.getMethodName() + ".gfs");
 
     Properties props = createGemFireProperties();
     props.setProperty(STATISTIC_ARCHIVE_FILE, archiveFileName);
     connect(props);
 
     GemFireStatSampler statSampler = getGemFireStatSampler();
-    assertTrue(statSampler.waitForInitialization(5000));
+    assertThat(statSampler.waitForInitialization(5000))
+        .as("initialized within 5 seconds")
+        .isTrue();
 
     final File archiveFile = statSampler.getArchiveFileName();
-    assertNotNull(archiveFile);
-    assertEquals(archiveFile1, archiveFile);
+    assertThat(archiveFile).isNotNull();
+    assertThat(archiveFile)
+        .as("archive file")
+        .isEqualTo(archiveFile1);
 
     waitForFileToExist(archiveFile, 5000, 10);
 
-    assertTrue(
-        "File name incorrect: archiveFile.getName()=" + archiveFile.getName()
-            + " archiveFile.getAbsolutePath()=" + archiveFile.getAbsolutePath()
-            + " getCanonicalPath()" + archiveFile.getCanonicalPath(),
-        archiveFileName.contains(archiveFile.getName()));
+    assertThat(archiveFile.getName())
+        .as("archive file name")
+        .isSubstringOf(archiveFileName);
   }
 
   /**
@@ -220,19 +277,29 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     connect(createGemFireProperties());
 
     GemFireStatSampler statSampler = getGemFireStatSampler();
-    assertTrue(statSampler.waitForInitialization(5000));
+    assertThat(statSampler.waitForInitialization(5000))
+        .as("initialized within 5 seconds")
+        .isTrue();
 
-    assertEquals(STAT_SAMPLE_RATE, statSampler.getSampleRate());
+    assertThat(statSampler.getSampleRate())
+        .as("sample rate")
+        .isEqualTo(STAT_SAMPLE_RATE);
 
-    assertTrue(getStatisticsManager().getStatListModCount() > 0);
+    assertThat(getStatisticsManager().getStatListModCount())
+        .as("stat list mod count")
+        .isNotZero();
 
     List<Statistics> statistics = getStatisticsManager().getStatsList();
-    assertNotNull(statistics);
-    assertTrue(statistics.size() > 0);
+    assertThat(statistics).isNotNull();
+    assertThat(statistics.size())
+        .as("statistics size")
+        .isNotZero();
 
     StatisticsType statSamplerType = getStatisticsManager().findType("StatSampler");
     Statistics[] statsArray = getStatisticsManager().findStatisticsByType(statSamplerType);
-    assertEquals(1, statsArray.length);
+    assertThat(statsArray.length)
+        .as("stats array length")
+        .isEqualTo(1);
 
     final Statistics statSamplerStats = statsArray[0];
     final int initialSampleCount = statSamplerStats.getInt("sampleCount");
@@ -251,79 +318,80 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     connect(createGemFireProperties());
 
     GemFireStatSampler statSampler = getGemFireStatSampler();
-    assertTrue(statSampler.waitForInitialization(5000));
+    assertThat(statSampler.waitForInitialization(5000))
+        .as("initialized within 5 seconds")
+        .isTrue();
 
     Method getLocalListeners = getGemFireStatSampler().getClass().getMethod("getLocalListeners");
-    assertNotNull(getLocalListeners);
+    assertThat(getLocalListeners).isNotNull();
 
     Method addLocalStatListener = getGemFireStatSampler().getClass()
         .getMethod("addLocalStatListener", LocalStatListener.class, Statistics.class, String.class);
-    assertNotNull(addLocalStatListener);
+    assertThat(addLocalStatListener).isNotNull();
 
     Method removeLocalStatListener = getGemFireStatSampler().getClass()
         .getMethod("removeLocalStatListener", LocalStatListener.class);
-    assertNotNull(removeLocalStatListener);
+    assertThat(removeLocalStatListener).isNotNull();
 
-    // validate that there are no listeners
-    assertTrue(statSampler.getLocalListeners().isEmpty());
+    assertThat(statSampler.getLocalListeners())
+        .as("local listeners before adding first listener")
+        .isEmpty();
 
     // add a listener for sampleCount stat in StatSampler statistics
     StatisticsType statSamplerType = getStatisticsManager().findType("StatSampler");
     Statistics[] statsArray = getStatisticsManager().findStatisticsByType(statSamplerType);
-    assertEquals(1, statsArray.length);
+    assertThat(statsArray.length)
+        .as("stats array length")
+        .isEqualTo(1);
 
     final Statistics statSamplerStats = statsArray[0];
     final String statName = "sampleCount";
     final AtomicInteger sampleCountValue = new AtomicInteger(0);
     final AtomicInteger sampleCountChanged = new AtomicInteger(0);
 
-    LocalStatListener listener = new LocalStatListener() {
-      @Override
-      public void statValueChanged(double value) {
-        sampleCountValue.set((int) value);
-        sampleCountChanged.incrementAndGet();
-      }
+    LocalStatListener listener = value -> {
+      sampleCountValue.set((int) value);
+      sampleCountChanged.incrementAndGet();
     };
 
     statSampler.addLocalStatListener(listener, statSamplerStats, statName);
-    assertTrue(statSampler.getLocalListeners().size() == 1);
+    assertThat(statSampler.getLocalListeners())
+        .as("local listeners after adding 1 listener")
+        .hasSize(1);
 
     // there's a level of indirection here and some protected member fields
-    LocalStatListenerImpl lsli =
-        (LocalStatListenerImpl) statSampler.getLocalListeners().iterator().next();
-    assertEquals("sampleCount", lsli.stat.getName());
+    LocalStatListenerImpl lsli = statSampler.getLocalListeners().iterator().next();
+    assertThat(lsli.stat.getName())
+        .as("listener's first stat's name")
+        .isEqualTo("sampleCount");
 
-    // wait for the listener to update 4 times
-    final int expectedChanges = 4;
-    boolean done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000; done =
-          (sampleCountChanged.get() >= expectedChanges)) {
-        Thread.sleep(10);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    assertTrue("Waiting for sampleCountChanged >= " + expectedChanges, done);
+    await("listener to update several times").untilAsserted(
+        () -> assertThat(sampleCountChanged).hasValueGreaterThanOrEqualTo(4));
 
     // validate that the listener fired and updated the value
-    assertTrue(sampleCountValue.get() > 0);
-    assertTrue(sampleCountChanged.get() >= expectedChanges);
+    assertThat(sampleCountValue.get())
+        .as("sample count value after the listener has fired")
+        .isGreaterThan(0);
 
     // remove the listener
     statSampler.removeLocalStatListener(listener);
     final int expectedSampleCountValue = sampleCountValue.get();
     final int expectedSampleCountChanged = sampleCountChanged.get();
 
-    // validate that there are no listeners now
-    assertTrue(statSampler.getLocalListeners().isEmpty());
+    assertThat(statSampler.getLocalListeners())
+        .as("local listeners after removing the listener")
+        .isEmpty();
 
     // wait for 2 stat samples to occur
     waitForStatSample(statSamplerStats, expectedSampleCountValue, 5000, 10);
 
     // validate that the listener did not fire
-    assertEquals(expectedSampleCountValue, sampleCountValue.get());
-    assertEquals(expectedSampleCountChanged, sampleCountChanged.get());
+    assertThat(sampleCountValue.get())
+        .as("sample count value after the listener was removed")
+        .isEqualTo(expectedSampleCountValue);
+    assertThat(sampleCountChanged.get())
+        .as("sample count changed after the listener was removed")
+        .isEqualTo(expectedSampleCountChanged);
   }
 
   /**
@@ -334,12 +402,16 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     connect(createGemFireProperties());
 
     GemFireStatSampler statSampler = getGemFireStatSampler();
-    assertTrue(statSampler.waitForInitialization(5000));
+    assertThat(statSampler.waitForInitialization(5000))
+        .as("initialized within 5 seconds")
+        .isTrue();
 
     // validate the stat sampler is running
     StatisticsType statSamplerType = getStatisticsManager().findType("StatSampler");
     Statistics[] statsArray = getStatisticsManager().findStatisticsByType(statSamplerType);
-    assertEquals(1, statsArray.length);
+    assertThat(statsArray.length)
+        .as("stats array length")
+        .isEqualTo(1);
 
     final Statistics statSamplerStats = statsArray[0];
     final int initialSampleCount = statSamplerStats.getInt("sampleCount");
@@ -356,7 +428,9 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     // the following should timeout rather than complete
     assertStatValueDoesNotChange(statSamplerStats, "sampleCount", stoppedSampleCount, 5000, 10);
 
-    assertEquals(stoppedSampleCount, statSamplerStats.getInt("sampleCount"));
+    assertThat(statSamplerStats.getInt("sampleCount"))
+        .as("value of sample count stat after timing out")
+        .isEqualTo(stoppedSampleCount);
   }
 
   /**
@@ -364,39 +438,42 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
    */
   @Test
   public void testArchiveRolling() throws Exception {
-    final String dirName = this.testDir.getAbsolutePath() + File.separator + this.testName;
+    final String dirName = testDir.getAbsolutePath() + separator + testName;
     new File(dirName).mkdirs();
-    final String archiveFileName = dirName + File.separator + this.testName + ".gfs";
+    final String archiveFileName = dirName + separator + testName + ".gfs";
 
     final File archiveFile = new File(archiveFileName);
-    final File archiveFile1 = new File(dirName + File.separator + this.testName + "-01-01.gfs");
-    final File archiveFile2 = new File(dirName + File.separator + this.testName + "-01-02.gfs");
-    final File archiveFile3 = new File(dirName + File.separator + this.testName + "-01-03.gfs");
+    final File archiveFile1 = new File(dirName + separator + testName + "-01-01.gfs");
+    final File archiveFile2 = new File(dirName + separator + testName + "-01-02.gfs");
+    final File archiveFile3 = new File(dirName + separator + testName + "-01-03.gfs");
 
     // set the system property to use KB instead of MB for file size
-    System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
+    setProperty(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
     Properties props = createGemFireProperties();
     props.setProperty(ARCHIVE_FILE_SIZE_LIMIT, "1");
     props.setProperty(ARCHIVE_DISK_SPACE_LIMIT, "0");
     props.setProperty(STATISTIC_ARCHIVE_FILE, archiveFileName);
     connect(props);
 
-    assertTrue(getGemFireStatSampler().waitForInitialization(5000));
+    assertThat(getGemFireStatSampler().waitForInitialization(5000))
+        .as("initialized within 5 seconds")
+        .isTrue();
 
-    boolean done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 4000; done =
-          (getSampleCollector() != null && getSampleCollector().getStatArchiveHandler() != null)) {
-        Thread.sleep(10);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    assertTrue("Waiting for getSampleCollector().getStatArchiveHandler() to not be null", done);
-
+    await().untilAsserted(
+        () -> {
+          SampleCollector sampleCollector = getSampleCollector();
+          assertThat(sampleCollector)
+              .as("sample collector")
+              .isNotNull();
+          assertThat(sampleCollector.getStatArchiveHandler())
+              .as("stat archive handler")
+              .isNotNull();
+        });
     StatArchiveHandler statArchiveHandler = getSampleCollector().getStatArchiveHandler();
     StatArchiveHandlerConfig config = statArchiveHandler.getStatArchiveHandlerConfig();
-    assertEquals(1 * 1024, config.getArchiveFileSizeLimit());
+    assertThat(config.getArchiveFileSizeLimit())
+        .as("archive file size limit")
+        .isEqualTo(1024);
 
     waitForFileToExist(archiveFile, 4000, 10);
     waitForFileToExist(archiveFile1, 4000, 10);
@@ -409,53 +486,56 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
    */
   @Test
   public void testArchiveRemoval() throws Exception {
-    final String dirName = this.testDir.getAbsolutePath();// + File.separator + this.testName;
+    final String dirName = testDir.getAbsolutePath();// + File.separator + this.testName;
     new File(dirName).mkdirs();
-    final String archiveFileName = dirName + File.separator + this.testName + ".gfs";
+    final String archiveFileName = dirName + separator + testName + ".gfs";
 
     final File archiveFile = new File(archiveFileName);
-    final File archiveFile1 = new File(dirName + File.separator + this.testName + "-01-01.gfs");
-    final File archiveFile2 = new File(dirName + File.separator + this.testName + "-01-02.gfs");
-    final File archiveFile3 = new File(dirName + File.separator + this.testName + "-01-03.gfs");
-    final File archiveFile4 = new File(dirName + File.separator + this.testName + "-01-04.gfs");
+    final File archiveFile1 = new File(dirName + separator + testName + "-01-01.gfs");
+    final File archiveFile2 = new File(dirName + separator + testName + "-01-02.gfs");
+    final File archiveFile3 = new File(dirName + separator + testName + "-01-03.gfs");
+    final File archiveFile4 = new File(dirName + separator + testName + "-01-04.gfs");
 
     final int sampleRate = 1000;
 
-    // set the system property to use KB instead of MB for file size
-    System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
+    setProperty(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
     Properties props = createGemFireProperties();
     props.setProperty(STATISTIC_ARCHIVE_FILE, archiveFileName);
     props.setProperty(ARCHIVE_FILE_SIZE_LIMIT, "2");
     props.setProperty(ARCHIVE_DISK_SPACE_LIMIT, "14");
     props.setProperty(STATISTIC_SAMPLE_RATE, String.valueOf(sampleRate));
+
     connect(props);
+    assertThat(getGemFireStatSampler().waitForInitialization(5000))
+        .as("initialized within 5 seconds")
+        .isTrue();
 
-    boolean exists1 = false;
-    boolean exists2 = false;
-    boolean exists3 = false;
-    boolean exists4 = false;
-    boolean exists = false;
-    boolean done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done
-          && time.elapsedTimeMillis() < 15 * sampleRate;) {
-        exists1 = exists1 || archiveFile1.exists();
-        exists2 = exists2 || archiveFile2.exists();
-        exists3 = exists3 || archiveFile3.exists();
-        exists4 = exists4 || archiveFile4.exists();
-        exists = exists || archiveFile.exists();
-        done = exists1 && exists2 && exists3 && exists4 && exists;
-        if (!done) {
-          Thread.sleep(10);
-        }
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    assertTrue(getGemFireStatSampler().waitForInitialization(5000));
-    assertTrue("Waiting for archive files to exist:" + " exists1=" + exists1 + " exists2=" + exists2
-        + " exists3=" + exists3 + " exists4=" + exists4 + " exists=" + exists, done);
+    final AtomicBoolean rolloverArchiveFile1 = new AtomicBoolean(false);
+    final AtomicBoolean rolloverArchiveFile2 = new AtomicBoolean(false);
+    final AtomicBoolean rolloverArchiveFile3 = new AtomicBoolean(false);
+    final AtomicBoolean rolloverArchiveFile4 = new AtomicBoolean(false);
+    final AtomicBoolean currentArchiveFile = new AtomicBoolean(false);
 
+    await("current archive file and four rollover archive files")
+        .untilAsserted(() -> {
+          currentArchiveFile.lazySet(currentArchiveFile.get() || archiveFile.exists());
+          rolloverArchiveFile1.lazySet(rolloverArchiveFile1.get() || archiveFile1.exists());
+          rolloverArchiveFile2.lazySet(rolloverArchiveFile2.get() || archiveFile2.exists());
+          rolloverArchiveFile3.lazySet(rolloverArchiveFile3.get() || archiveFile3.exists());
+          rolloverArchiveFile4.lazySet(rolloverArchiveFile4.get() || archiveFile4.exists());
+          assertThat(rolloverArchiveFile1.get()
+              && rolloverArchiveFile2.get()
+              && rolloverArchiveFile3.get()
+              && rolloverArchiveFile4.get()
+              && currentArchiveFile.get())
+                  .as("Waiting for archive files to exist:"
+                      + " currentArchiveFile=" + currentArchiveFile
+                      + " rolloverArchiveFile1=" + rolloverArchiveFile1
+                      + " rolloverArchiveFile2=" + rolloverArchiveFile2
+                      + " rolloverArchiveFile3=" + rolloverArchiveFile3
+                      + " rolloverArchiveFile4=" + rolloverArchiveFile4)
+                  .isTrue();
+        });
     waitForFileToDelete(archiveFile1, 10 * sampleRate, 10);
   }
 
@@ -467,67 +547,36 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     statSampler.waitForInitialization(5000);
 
     final AtomicBoolean flag = new AtomicBoolean(false);
-    final LocalStatListener listener = new LocalStatListener() {
-      @Override
-      public void statValueChanged(double value) {
-        flag.set(true);
-      }
-    };
+    final LocalStatListener listener = value -> flag.set(true);
 
-    final String tenuredPoolName = HeapMemoryMonitor.getTenuredMemoryPoolMXBean().getName();
+    final String tenuredPoolName = getTenuredMemoryPoolMXBean().getName();
     logger.info("TenuredPoolName: {}", tenuredPoolName);
 
-    boolean done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000;) {
-        Thread.sleep(10);
-        Statistics si =
-            HeapMemoryMonitor.getTenuredPoolStatistics(
-                ((InternalDistributedSystem) this.system).getStatisticsManager());
-        if (si != null) {
-          statSampler.addLocalStatListener(listener, si, "currentUsedMemory");
-          done = true;
-        }
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    assertTrue("Waiting for " + tenuredPoolName + " statistics to be added to create listener for",
-        done);
+    Statistics tenuredPoolStatistics =
+        await("tenured pool statistics " + tenuredPoolName + " is not null")
+            .until(() -> getTenuredPoolStatistics(system.getStatisticsManager()), Objects::nonNull);
 
-    assertTrue(
-        "expected at least one stat listener, found " + statSampler.getLocalListeners().size(),
-        statSampler.getLocalListeners().size() > 0);
+    statSampler.addLocalStatListener(listener, tenuredPoolStatistics, "currentUsedMemory");
 
-    long maxTenuredMemory = HeapMemoryMonitor.getTenuredMemoryPoolMXBean().getUsage().getMax();
+    assertThat(statSampler.getLocalListeners().size() > 0)
+        .as("expected at least one stat listener, found " + statSampler.getLocalListeners().size())
+        .isTrue();
 
-    // byte[] bytes = new byte[1024 * 1024 * 10];
+    long maxTenuredMemory = getTenuredMemoryPoolMXBean().getUsage().getMax();
+
     byte[] bytes = new byte[(int) (maxTenuredMemory * 0.01)];
-    Arrays.fill(bytes, Byte.MAX_VALUE);
+    fill(bytes, MAX_VALUE);
 
-    done = false;
-    try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000; done =
-          (flag.get())) {
-        Thread.sleep(10);
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    assertTrue("Waiting for listener to set flag to true", done);
+    await("listener to be triggered").untilTrue(flag);
   }
 
   @Override
   protected StatisticsManager getStatisticsManager() {
-    return ((InternalDistributedSystem) this.system).getStatisticsManager();
-  }
-
-  protected OsStatisticsFactory getOsStatisticsFactory() {
-    return ((InternalDistributedSystem) this.system).getStatisticsManager();
+    return system.getStatisticsManager();
   }
 
   private GemFireStatSampler getGemFireStatSampler() {
-    return ((InternalDistributedSystem) this.system).getStatSampler();
+    return system.getStatSampler();
   }
 
   private SampleCollector getSampleCollector() {
@@ -552,65 +601,14 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
    */
   @SuppressWarnings("deprecation")
   private void connect(Properties props) {
-    this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
+    system = (InternalDistributedSystem) DistributedSystem.connect(props);
   }
 
   @SuppressWarnings("deprecation")
   private void disconnect() {
-    if (this.system != null) {
-      this.system.disconnect();
-      this.system = null;
+    if (system != null) {
+      system.disconnect();
+      system = null;
     }
   }
-
-  // public static class AsyncInvoker {
-  // public static AsyncInvocation invokeAsync(Runnable r) {
-  // return invokeAsync(r, "run", new Object[0]);
-  // }
-  // public static AsyncInvocation invokeAsync(Callable c) {
-  // return invokeAsync(c, "call", new Object[0]);
-  // }
-  // public static AsyncInvocation invokeAsync(
-  // final Object o, final String methodName, final Object[] args) {
-  // AsyncInvocation ai =
-  // new AsyncInvocation(o, methodName, new Runnable() {
-  // public void run() {
-  // MethExecutorResult result =
-  // MethExecutor.executeObject(o, methodName, args);
-  // if (result.exceptionOccurred()) {
-  // throw new AsyncInvocationException(result.getException());
-  // }
-  // AsyncInvocation.setReturnValue(result.getResult());
-  // }
-  // });
-  // ai.start();
-  // return ai;
-  // }
-  //
-  // public static class AsyncInvocationException extends RuntimeException {
-  // private static final long serialVersionUID = -5522299018650622945L;
-  // /**
-  // * Creates a new <code>AsyncInvocationException</code>.
-  // */
-  // public AsyncInvocationException(String message) {
-  // super(message);
-  // }
-  //
-  // /**
-  // * Creates a new <code>AsyncInvocationException</code> that was
-  // * caused by a given exception
-  // */
-  // public AsyncInvocationException(String message, Throwable thr) {
-  // super(message, thr);
-  // }
-  //
-  // /**
-  // * Creates a new <code>AsyncInvocationException</code> that was
-  // * caused by a given exception
-  // */
-  // public AsyncInvocationException(Throwable thr) {
-  // super(thr.getMessage(), thr);
-  // }
-  // }
-  // }
 }

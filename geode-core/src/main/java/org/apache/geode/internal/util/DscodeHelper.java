@@ -30,7 +30,11 @@ public class DscodeHelper {
 
   public static DSCODE toDSCODE(final byte value) throws IOException {
     try {
-      return dscodes[value];
+      DSCODE result = dscodes[value];
+      if (result == null) {
+        throw new IOException("Unknown header byte " + value);
+      }
+      return result;
     } catch (ArrayIndexOutOfBoundsException e) {
       throw new IOException("Unknown header byte: " + value);
     }

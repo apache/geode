@@ -239,7 +239,7 @@ public class EvictionDUnitTest {
     } else {
       HeapMemoryMonitor hmm = cache.getInternalResourceManager().getHeapMonitor();
       hmm.setTestMaxMemoryBytes(100);
-      hmm.updateStateAndSendEvent(90);
+      hmm.updateStateAndSendEvent(90, "test");
     }
 
     int entrySize = ENTRY_SIZE + 100;

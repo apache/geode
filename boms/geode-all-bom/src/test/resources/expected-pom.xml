@@ -113,6 +113,11 @@
         <version>4.3.20.RELEASE</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-web-management</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>com.carrotsearch.randomizedtesting</groupId>
         <artifactId>randomizedtesting-runner</artifactId>
         <version>2.5.0</version>
@@ -383,6 +388,11 @@
         <version>1.1.0</version>
       </dependency>
       <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-gradle-plugin</artifactId>
+        <version>0.8.6</version>
+      </dependency>
+      <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
         <version>3.1.0</version>
@@ -415,6 +425,11 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-pulse</artifactId>
+        <version>1.9.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-management</artifactId>
         <version>1.9.0-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -633,6 +648,11 @@
         <version>0.4</version>
       </dependency>
       <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>9.4.12.v20180830</version>
+      </dependency>
+      <dependency>
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
         <version>3.2.0</version>
@@ -691,6 +711,11 @@
         <groupId>commons-digester</groupId>
         <artifactId>commons-digester</artifactId>
         <version>2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-webapp</artifactId>
+        <version>9.4.12.v20180830</version>
       </dependency>
       <dependency>
         <groupId>com.pholser</groupId>

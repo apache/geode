@@ -1,3 +1,0 @@
-org/apache/geode/connectors/util/internal/DescribeMappingResult,2
-fromData,48
-toData,80

@@ -49,7 +49,7 @@ public class ValueComparisonHelper {
     }
   }
 
-  private static boolean basicEquals(Object v1, Object v2) {
+  static boolean basicEquals(Object v1, Object v2) {
     if (v2 != null) {
       if (v2.getClass().isArray()) {
         // fix for 52093
@@ -213,7 +213,7 @@ public class ValueComparisonHelper {
       byte[] ba2;
       if (obj instanceof CachedDeserializable) {
         CachedDeserializable cdObj = (CachedDeserializable) obj;
-        if (!cdObj.isSerialized()) {
+        if (cdObj.isSerialized()) {
           return false;
         }
         ba2 = (byte[]) cdObj.getDeserializedForReading();
@@ -227,6 +227,9 @@ public class ValueComparisonHelper {
     }
     Object cdVal = cd.getValue();
     if (cdVal instanceof byte[]) {
+      if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj)) {
+        return false;
+      }
       byte[] cdValBytes = (byte[]) cdVal;
       PdxInstance pi = InternalDataSerializer.readPdxInstance(cdValBytes, cache);
       if (pi != null) {
@@ -250,9 +253,6 @@ public class ValueComparisonHelper {
         if (obj instanceof CachedDeserializable) {
           deserializedObj = ((CachedDeserializable) obj).getDeserializedForReading();
         } else {
-          if (obj == null || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj)) {
-            return false;
-          }
           // TODO OPTIMIZE: Before serializing all of obj we could get the top
           // level class name of cdVal and compare it to the top level class name of obj.
           deserializedObj = obj;

@@ -30,6 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -38,6 +39,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -67,6 +69,8 @@ public class Fakes {
     GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     DistributionConfig config = mock(DistributionConfig.class);
+    when(config.getSecurableCommunicationChannels())
+        .thenReturn(new SecurableCommunicationChannel[] {SecurableCommunicationChannel.ALL});
     ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
     PdxInstanceFactory pdxInstanceFactory = mock(PdxInstanceFactory.class);
     TypeRegistry pdxRegistryMock = mock(TypeRegistry.class);
@@ -75,6 +79,7 @@ public class Fakes {
     LogWriter logger = mock(LogWriter.class);
     Statistics stats = mock(Statistics.class);
     TXManagerImpl txManager = mock(TXManagerImpl.class);
+    QueryMonitor queryMonitor = mock(QueryMonitor.class);
 
     InternalDistributedMember member;
     member = new InternalDistributedMember("localhost", 5555);
@@ -93,6 +98,8 @@ public class Fakes {
     when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
     when(cache.getPdxRegistry()).thenReturn(pdxRegistryMock);
     when(cache.getTxManager()).thenReturn(txManager);
+    when(cache.getLogger()).thenReturn(logger);
+    when(cache.getQueryMonitor()).thenReturn(queryMonitor);
 
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);

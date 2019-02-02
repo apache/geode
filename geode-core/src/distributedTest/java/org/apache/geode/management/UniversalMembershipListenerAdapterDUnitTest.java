@@ -1706,6 +1706,11 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     }
 
     @Override
+    public String getUniqueId() {
+      return host;
+    }
+
+    @Override
     public int compareTo(DistributedMember o) {
       if ((o == null) || !(o instanceof FakeDistributedMember)) {
         throw new InternalGemFireException("Invalidly comparing TestDistributedMember to " + o);

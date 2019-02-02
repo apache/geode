@@ -218,7 +218,7 @@ public class JAXBServiceTest {
 
     RegionConfig region = new RegionConfig();
     region.setName("testRegion");
-    region.setRefid("REPLICATE");
+    region.setType("REPLICATE");
     cache.getRegions().add(region);
   }
 

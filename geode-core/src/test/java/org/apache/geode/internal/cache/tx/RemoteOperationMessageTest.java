@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyLong;
@@ -35,6 +36,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -120,6 +122,23 @@ public class RemoteOperationMessageTest {
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
     // A reply is sent even though we do not call operationOnRegion
     verify(dm, times(1)).putOutgoing(any());
+  }
+
+  @Test
+  public void messageForFinishedTXRepliesWithException() throws Exception {
+    when(txMgr.masqueradeAs(msg)).thenReturn(tx);
+    when(tx.isInProgress()).thenReturn(false);
+    msg.setSender(sender);
+
+    msg.process(dm);
+
+    verify(msg, times(1)).sendReply(
+        eq(sender),
+        eq(0),
+        eq(dm),
+        argThat(ex -> ex != null && ex.getCause() instanceof TransactionException),
+        eq(r),
+        eq(startTime));
   }
 
   @Test

@@ -384,7 +384,7 @@ public class RebalanceCommand extends InternalGfshCommand {
       while (it.hasNext() && !matchFound) {
         DistributedMember dsmember = (DistributedMember) it.next();
         for (String memberName : membersName) {
-          if (MBeanJMXAdapter.getMemberNameOrId(dsmember).equals(memberName)) {
+          if (MBeanJMXAdapter.getMemberNameOrUniqueId(dsmember).equals(memberName)) {
             member = dsmember;
             matchFound = true;
             break;
@@ -663,7 +663,7 @@ public class RebalanceCommand extends InternalGfshCommand {
           String[] memberNames = bean.getMembers();
           for (DistributedMember dsmember : dsMembers) {
             for (String memberName : memberNames) {
-              if (MBeanJMXAdapter.getMemberNameOrId(dsmember).equals(memberName)) {
+              if (MBeanJMXAdapter.getMemberNameOrUniqueId(dsmember).equals(memberName)) {
                 MemberPRInfo memberAndItsPRRegions = new MemberPRInfo();
                 memberAndItsPRRegions.region = regionName;
                 memberAndItsPRRegions.dsMemberList.add(dsmember);

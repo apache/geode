@@ -323,7 +323,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       for (int tries = 0; !this.isJoined && !this.isStopping; tries++) {
         logger.debug("searching for the membership coordinator");
         boolean found = findCoordinator();
-        logger.info("state after looking for membership coordinator is {}", state);
+        logger.info("Discovery state after looking for membership coordinator is {}",
+            state);
         if (found) {
           logger.info("found possible coordinator {}", state.possibleCoordinator);
           if (localAddress.getNetMember().preferredForCoordinator()
@@ -1135,7 +1136,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                   + "so I will not become membership coordinator on this attempt to join");
               state.hasContactedAJoinedLocator = true;
             }
-            if (response.getCoordinator() != null) {
+            InternalDistributedMember responseCoordinator = response.getCoordinator();
+            if (responseCoordinator != null) {
               anyResponses = true;
               NetView v = response.getView();
               int viewId = v == null ? -1 : v.getViewId();
@@ -1145,14 +1147,29 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                 state.registrants.clear();
               }
               if (viewId > -1) {
-                coordinatorsWithView.add(response.getCoordinator());
+                coordinatorsWithView.add(responseCoordinator);
               }
-
-              possibleCoordinators.add(response.getCoordinator());
+              // if this node is restarting it should never create its own cluster because
+              // the QuorumChecker would have contacted a quorum of live nodes and one of
+              // them should already be the coordinator, or should become the coordinator soon
+              boolean isMyOldAddress =
+                  services.getConfig().isReconnecting() && localAddress.equals(responseCoordinator);
+              if (!isMyOldAddress) {
+                possibleCoordinators.add(response.getCoordinator());
+              }
             }
           }
         } catch (IOException | ClassNotFoundException problem) {
-          logger.debug("EOFException IOException ", problem);
+          logger.debug("Exception thrown when contacting a locator", problem);
+          if (state.locatorsContacted == 0 && System.currentTimeMillis() < giveUpTime) {
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              services.getCancelCriterion().checkCancelInProgress(e);
+              throw new SystemConnectException("Interrupted while trying to contact locators");
+            }
+          }
         }
       }
     } while (!anyResponses && System.currentTimeMillis() < giveUpTime);
@@ -1277,7 +1294,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     for (FindCoordinatorResponse resp : result) {
       logger.info("findCoordinatorFromView processing {}", resp);
       InternalDistributedMember mbr = resp.getCoordinator();
-      if (!state.alreadyTried.contains(mbr)) {
+      if (!localAddress.equals(mbr) && !state.alreadyTried.contains(mbr)) {
         boolean mbrIsNoob = (mbr.getVmViewId() < 0);
         if (mbrIsNoob) {
           // member has not yet joined
@@ -1397,7 +1414,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
 
       logger.info("received new view: {}\nold view is: {}", newView, currentView);
-      newView.makeImmutable();
 
       if (currentView == null && !this.isJoined) {
         boolean found = false;
@@ -1783,6 +1799,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     DistributionConfig dconfig = services.getConfig().getDistributionConfig();
     String bindAddr = dconfig.getBindAddress();
     locators = GMSUtil.parseLocators(dconfig.getLocators(), bindAddr);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Parsed locators are {}", locators);
+    }
   }
 
   @Override
@@ -2700,7 +2719,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       logger.debug("checking availability of these members: {}", checkers);
       ExecutorService svc =
           LoggingExecutors.newFixedThreadPool("Geode View Creator verification thread ",
-              false, suspects.size());
+              true, suspects.size());
       try {
         long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
         // submit the tasks that will remove dead members from the suspects collection

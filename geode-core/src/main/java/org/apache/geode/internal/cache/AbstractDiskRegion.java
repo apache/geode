@@ -605,7 +605,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   @Override
   public PersistentMemberID generatePersistentID() {
-    return this.ds.generatePersistentID(this);
+    return this.ds.generatePersistentID();
   }
 
   @Override

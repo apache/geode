@@ -255,7 +255,7 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
        * We have a DiskStore? Great! Simply have it generate the id.
        */
       if (null != diskStore) {
-        return diskStore.generatePersistentID(null);
+        return diskStore.generatePersistentID();
       }
 
       /*

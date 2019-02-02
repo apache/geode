@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -23,6 +25,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.internal.api.ClusterManagementResult;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -52,35 +55,50 @@ public class RegionManagementSecurityIntegrationTest {
   public void before() throws JsonProcessingException {
     regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setRefid("REPLICATE");
+    regionConfig.setType("REPLICATE");
     ObjectMapper mapper = new ObjectMapper();
     json = mapper.writeValueAsString(regionConfig);
   }
 
   @Test
   public void sanityCheck_not_authorized() throws Exception {
-    restClient.doPostAndAssert("/regions", json, "test", "test")
-        .hasStatusCode(403)
-        .hasResponseBody().isEqualTo("Access is denied");
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, "user", "user")
+            .hasStatusCode(403)
+            .getClusterManagementResult();
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("user not authorized for DATA:MANAGE");
   }
 
   @Test
   public void sanityCheckWithNoCredentials() throws Exception {
-    restClient.doPostAndAssert("/regions", json, null, null)
-        .hasStatusCode(401);
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, null, null)
+            .hasStatusCode(401).getClusterManagementResult();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("Full authentication is required to access this resource");
+    assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
   public void sanityCheckWithWrongCredentials() throws Exception {
-    restClient.doPostAndAssert("/regions", json, "test", "invalid_pswd")
-        .hasStatusCode(401);
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, "test", "invalid_pswd")
+            .hasStatusCode(401).getClusterManagementResult();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("Authentication error. Please check your credentials.");
+    assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
   public void sanityCheck_success() throws Exception {
-    restClient.doPostAndAssert("/regions", json, "dataManage", "dataManage")
-        .hasStatusCode(201)
-        .hasResponseBody().isEqualTo("customers");
+    ClusterManagementResult result =
+        restClient.doPostAndAssert("/regions", json, "dataManage", "dataManage")
+            .hasStatusCode(500)
+            .getClusterManagementResult();
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .isEqualTo("no members found to create cache element");
   }
-
 }

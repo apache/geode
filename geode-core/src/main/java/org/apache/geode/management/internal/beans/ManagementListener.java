@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.beans;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
@@ -41,6 +42,8 @@ public class ManagementListener implements ResourceEventsListener {
 
   private final InternalDistributedSystem system;
 
+  private final CancelCriterion cancelCriterion;
+
   /**
    * Adapter to co-ordinate between GemFire and Federation framework
    */
@@ -52,12 +55,15 @@ public class ManagementListener implements ResourceEventsListener {
   private final ReadWriteLock readWriteLock;
 
   public ManagementListener(InternalDistributedSystem system) {
-    this(system, new ManagementAdapter(), new ReentrantReadWriteLock());
+    this(system.getCancelCriterion(), system, new ManagementAdapter(),
+        new ReentrantReadWriteLock());
   }
 
   @VisibleForTesting
-  ManagementListener(InternalDistributedSystem system, ManagementAdapter adapter,
+  ManagementListener(CancelCriterion cancelCriterion, InternalDistributedSystem system,
+      ManagementAdapter adapter,
       ReadWriteLock readWriteLock) {
+    this.cancelCriterion = cancelCriterion;
     this.system = system;
     this.adapter = adapter;
     this.readWriteLock = readWriteLock;
@@ -105,10 +111,16 @@ public class ManagementListener implements ResourceEventsListener {
     }
     try {
       if (event == ResourceEvent.CACHE_CREATE || event == ResourceEvent.CACHE_REMOVE) {
-        readWriteLock.writeLock().lock();
+        readWriteLock.writeLock().lockInterruptibly();
       } else if (event != ResourceEvent.SYSTEM_ALERT) {
-        readWriteLock.readLock().lock();
+        readWriteLock.readLock().lockInterruptibly();
       }
+    } catch (InterruptedException e) {
+      // prefer CancelException if shutting down
+      cancelCriterion.checkCancelInProgress(e);
+      throw new RuntimeException(e);
+    }
+    try {
       switch (event) {
         case CACHE_CREATE:
           InternalCache createdCache = (InternalCache) resource;

@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.InternalCache;
@@ -46,22 +45,14 @@ public class RegionConfigRealizerTest {
   public void createsPartitionedInCache() {
     RegionConfig config = new RegionConfig();
     config.setName("regionName");
-    config.setRefid("PARTITION");
+    config.setType("PARTITION");
 
-    RegionConfigRealizer subject = new RegionConfigRealizer();
-    subject.create(config, cache);
+    RegionConfigRealizer realizer = new RegionConfigRealizer();
+    realizer.create(config, cache);
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
     verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());
     assertThat(dataPolicyArgumentCaptor.getValue()).isEqualTo(DataPolicy.PARTITION);
-
-    ArgumentCaptor<PartitionAttributes> partitionAttributesArgumentCaptor =
-        ArgumentCaptor.forClass(PartitionAttributes.class);
-    verify(regionFactory).setPartitionAttributes(partitionAttributesArgumentCaptor.capture());
-
-    PartitionAttributes partitionAttributes = partitionAttributesArgumentCaptor.getValue();
-    assertThat(partitionAttributes).isNotNull();
-    assertThat(partitionAttributes.getRedundantCopies()).isEqualTo(1);
 
     verify(regionFactory).create("regionName");
   }
@@ -70,7 +61,7 @@ public class RegionConfigRealizerTest {
   public void createsReplicateInCache() {
     RegionConfig config = new RegionConfig();
     config.setName("regionName");
-    config.setRefid("REPLICATE");
+    config.setType("REPLICATE");
 
     RegionConfigRealizer subject = new RegionConfigRealizer();
     subject.create(config, cache);

@@ -76,7 +76,7 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
     }
 
     if (dsMembers.size() == 0) {
-      return new ResultModel().createError("No members found.");
+      return ResultModel.createError("No members found.");
     }
 
     // Build up our argument list
@@ -113,6 +113,7 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
     return ResultModel.createMemberStatusResult(results, false, false);
   }
 
+  @SuppressWarnings("unused")
   public static class ExecuteFunctionCommandInterceptor implements CliAroundInterceptor {
     @Override
     public ResultModel preExecution(GfshParseResult parseResult) {
@@ -126,11 +127,11 @@ public class ExecuteFunctionCommand extends InternalGfshCommand {
 
       ResultModel result = new ResultModel();
       if (moreThanOne) {
-        return result.createError(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
+        return ResultModel.createError(CliStrings.EXECUTE_FUNCTION__MSG__OPTIONS);
       }
 
       if (onRegion == null && filter != null) {
-        return result.createError(
+        return ResultModel.createError(
             CliStrings.EXECUTE_FUNCTION__MSG__MEMBER_SHOULD_NOT_HAVE_FILTER_FOR_EXECUTION);
       }
 

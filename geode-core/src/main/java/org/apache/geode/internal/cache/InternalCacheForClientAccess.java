@@ -1218,4 +1218,9 @@ public class InternalCacheForClientAccess implements InternalCache {
   public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return this;
   }
+
+  @Override
+  public HttpService getHttpService() {
+    return delegate.getHttpService();
+  }
 }

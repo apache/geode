@@ -885,6 +885,7 @@ lib/geode-dependencies.jar
 lib/geode-jca-0.0.0.rar
 lib/geode-json-0.0.0.jar
 lib/geode-lucene-0.0.0.jar
+lib/geode-management-0.0.0.jar
 lib/geode-old-client-support-0.0.0.jar
 lib/geode-protobuf-0.0.0.jar
 lib/geode-protobuf-messages-0.0.0.jar

@@ -129,20 +129,6 @@ public class PersistentMemberManager {
     }
   }
 
-  /**
-   * Returns a set of the persistent ids that are running on this member.
-   */
-  public Set<PersistentMemberID> getPersistentIDs() {
-    synchronized (this) {
-      Set<PersistentMemberID> localData = new HashSet<PersistentMemberID>();
-      for (MemberRevocationListener listener : revocationListeners) {
-        String regionPath = listener.getRegionPath();
-        listener.addPersistentIDs(localData);
-      }
-      return localData;
-    }
-  }
-
   public boolean isRevoked(String regionPath, PersistentMemberID id) {
     for (PersistentMemberPattern member : revokedMembers.keySet()) {
       if (member.matches(id)) {
@@ -206,11 +192,6 @@ public class PersistentMemberManager {
 
   public interface MemberRevocationListener {
     void revoked(PersistentMemberPattern pattern);
-
-    /**
-     * Add the persistent id(s) of this listener to the passed in set.
-     */
-    void addPersistentIDs(Set<PersistentMemberID> localData);
 
     /**
      * Return true if this is a listener for a resource that matches the persistent member pattern

@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.InternalCache;
@@ -71,7 +72,8 @@ public class ManagementListenerTest {
     readLockInOrder = inOrder(readLock, readLock);
     writeLockInOrder = inOrder(writeLock, writeLock);
 
-    managementListener = new ManagementListener(system, managementAdapter, readWriteLock);
+    managementListener = new ManagementListener(mock(CancelCriterion.class), system,
+        managementAdapter, readWriteLock);
   }
 
   @Test
@@ -109,18 +111,18 @@ public class ManagementListenerTest {
   }
 
   @Test
-  public void handleEventUsesWriteLockForCacheCreateEvent() {
+  public void handleEventUsesWriteLockForCacheCreateEvent() throws InterruptedException {
     managementListener.handleEvent(CACHE_CREATE, null);
 
-    writeLockInOrder.verify(writeLock).lock();
+    writeLockInOrder.verify(writeLock).lockInterruptibly();
     writeLockInOrder.verify(writeLock).unlock();
   }
 
   @Test
-  public void handleEventUsesWriteLockForCacheRemoveEvent() {
+  public void handleEventUsesWriteLockForCacheRemoveEvent() throws InterruptedException {
     managementListener.handleEvent(CACHE_REMOVE, null);
 
-    writeLockInOrder.verify(writeLock).lock();
+    writeLockInOrder.verify(writeLock).lockInterruptibly();
     writeLockInOrder.verify(writeLock).unlock();
   }
 
@@ -134,13 +136,13 @@ public class ManagementListenerTest {
   }
 
   @Test
-  public void handleEventUsesReadLockForOtherEvents() {
+  public void handleEventUsesReadLockForOtherEvents() throws InterruptedException {
     for (ResourceEvent resourceEvent : ResourceEvent.values()) {
       if (resourceEvent != CACHE_CREATE && resourceEvent != CACHE_REMOVE
           && resourceEvent != SYSTEM_ALERT) {
         managementListener.handleEvent(resourceEvent, null);
 
-        readLockInOrder.verify(readLock).lock();
+        readLockInOrder.verify(readLock).lockInterruptibly();
         readLockInOrder.verify(readLock).unlock();
       }
     }

@@ -45,7 +45,7 @@ public class CacheConfigDAODUnitTest {
       ccService.updateCacheConfig("cluster", cc -> {
         RegionConfig regionConfig = new RegionConfig();
         regionConfig.setName("regionB");
-        regionConfig.setRefid("REPLICATE");
+        regionConfig.setType("REPLICATE");
         cc.getRegions().add(regionConfig);
         return cc;
       });

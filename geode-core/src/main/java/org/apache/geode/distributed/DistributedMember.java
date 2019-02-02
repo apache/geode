@@ -62,9 +62,15 @@ public interface DistributedMember extends Comparable<DistributedMember> {
   int getProcessId();
 
   /**
-   * Returns a unique identifier for this member.
+   * Returns a unique identifier for this member. Note that this value may change during the life
+   * of the member.
    */
   String getId();
+
+  /**
+   * Returns an immutable unique identifier for this member.
+   */
+  String getUniqueId();
 
   /**
    * Returns the durable attributes for this client.

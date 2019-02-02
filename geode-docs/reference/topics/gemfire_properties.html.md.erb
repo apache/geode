@@ -154,6 +154,12 @@ See <a href="../../managing/member-reconnect.html">Handling Forced Cache Disconn
 <td>false</td>
 </tr>
 <tr class="odd">
+<td>disable-jmx</td>
+<td>By default, <%=vars.product_name%> automatically creates JMX MBeans. This boolean, when true, prevents the creation of JMX MBeans. Both gfsh and Pulse require JMX MBeans.</td>
+<td>S, L</td>
+<td>false</td>
+</tr>
+<tr class="odd">
 <td>disable-tcp</td>
 <td>Boolean indicating whether to disable the use of TCP/IP sockets for inter-cache point-to-point messaging. If disabled, the cache uses datagram (UDP) sockets.</td>
 <td>S, L</td>

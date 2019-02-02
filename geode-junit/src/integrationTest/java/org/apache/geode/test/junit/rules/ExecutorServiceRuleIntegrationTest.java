@@ -40,14 +40,14 @@ public class ExecutorServiceRuleIntegrationTest {
   private static Awaits.Invocations invocations;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     hangLatch = new CountDownLatch(1);
     terminateLatch = new CountDownLatch(1);
     invocations = mock(Awaits.Invocations.class);
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     invocations = null;
 
     while (hangLatch != null && hangLatch.getCount() > 0) {
@@ -92,17 +92,17 @@ public class ExecutorServiceRuleIntegrationTest {
         ExecutorServiceRule.builder().awaitTermination(2, SECONDS).build();
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
       executorService = executorServiceRule.getExecutorService();
     }
 
     @After
-    public void after() throws Exception {
+    public void after() {
       invocations.afterTest();
     }
 
     @Test
-    public void doTest() throws Exception {
+    public void doTest() {
       executorServiceRule.runAsync(() -> {
         try {
           hangLatch.await(1, SECONDS);

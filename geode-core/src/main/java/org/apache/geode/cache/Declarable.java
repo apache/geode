@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import java.util.Properties;
 
+
 /**
  * An object that can be described in a declarative caching XML file.
  *

@@ -37,7 +37,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class ExecuteFunctionCommandWithSecurityDUnitTest {
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -48,7 +48,7 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
   private static MemberVM locator;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     locator = lsRule.startLocatorVM(0,
         l -> l.withHttpService().withSecurityManager(SimpleTestSecurityManager.class));
 

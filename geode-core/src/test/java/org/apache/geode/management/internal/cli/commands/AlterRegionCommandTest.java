@@ -78,7 +78,7 @@ public class AlterRegionCommandTest {
     cacheConfig = new CacheConfig();
     existingRegionConfig = new RegionConfig();
     existingRegionConfig.setName("/regionA");
-    existingRegionConfig.setRefid("REPLICATE");
+    existingRegionConfig.setType("REPLICATE");
     cacheConfig.getRegions().add(existingRegionConfig);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }
