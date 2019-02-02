@@ -99,7 +99,7 @@ public class CreateMappingCommandTest {
         .executeFunctionAndGetFunctionResult(any(), any(), any());
     doReturn(results).when(createRegionMappingCommand).executeAndGetFunctionResult(any(), any(),
         any());
-    doReturn(members).when(createRegionMappingCommand).findMembersForRegion(regionName);
+    doReturn(members).when(createRegionMappingCommand).findMembers(any(), any());
 
     mapping = mock(RegionMapping.class);
     when(mapping.getRegionName()).thenReturn(regionName);
