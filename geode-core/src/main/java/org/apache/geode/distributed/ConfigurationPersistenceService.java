@@ -17,6 +17,7 @@
 
 package org.apache.geode.distributed;
 
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.apache.geode.annotations.Experimental;
@@ -25,6 +26,12 @@ import org.apache.geode.cache.configuration.CacheConfig;
 @Experimental
 public interface ConfigurationPersistenceService {
   String CLUSTER_CONFIG = "cluster";
+
+  /**
+   * retrieves all the group names in the cluster
+   */
+
+  Set<String> getGroups();
 
   /**
    * retrieves the configuration object of a member group

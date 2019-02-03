@@ -2593,6 +2593,59 @@ public class RegionAttributesType implements Serializable {
       return partitionAttributes;
     }
 
+    public static PartitionAttributes combine(PartitionAttributes existing,
+        PartitionAttributes delta) {
+      if (existing == null) {
+        return delta;
+      }
+      if (delta == null) {
+        return existing;
+      }
+
+      if (delta.getRedundantCopies() != null) {
+        existing.setRedundantCopies(delta.getRedundantCopies());
+      }
+
+      if (delta.getPartitionListeners() != null) {
+        existing.getPartitionListeners().clear();
+        existing.getPartitionListeners().addAll(delta.getPartitionListeners());
+      }
+
+      if (delta.getColocatedWith() != null) {
+        existing.setColocatedWith(delta.getColocatedWith());
+      }
+
+      if (delta.getLocalMaxMemory() != null) {
+        existing.setLocalMaxMemory(delta.getLocalMaxMemory());
+      }
+
+      if (delta.getPartitionResolver() != null) {
+        existing.setPartitionResolver(delta.getPartitionResolver());
+      }
+
+      if (delta.getRecoveryDelay() != null) {
+        existing.setRecoveryDelay(delta.getRecoveryDelay());
+      }
+
+      if (delta.getStartupRecoveryDelay() != null) {
+        existing.setStartupRecoveryDelay(delta.getStartupRecoveryDelay());
+      }
+
+      if (delta.getTotalMaxMemory() != null) {
+        existing.setTotalMaxMemory(delta.getTotalMaxMemory());
+      }
+
+      if (delta.getTotalNumBuckets() != null) {
+        existing.setTotalNumBuckets(delta.getTotalNumBuckets());
+      }
+
+      if (delta.getFixedPartitionAttributes() != null) {
+        existing.getFixedPartitionAttributes().clear();
+        existing.getFixedPartitionAttributes().addAll(delta.getFixedPartitionAttributes());
+      }
+      return existing;
+    }
+
     /**
      * Gets the value of the partitionResolver property.
      *

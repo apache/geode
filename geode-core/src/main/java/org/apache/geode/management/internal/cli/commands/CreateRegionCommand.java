@@ -226,7 +226,26 @@ public class CreateRegionCommand extends SingleGfshCommand {
         getConfigurationPersistenceService();
     if (regionShortcut != null) {
       regionConfig.setType(regionShortcut.name());
-    } else {
+    }
+    // if cluster config is enabled, find the template configuration from cluster config
+    else if (persistenceService != null) {
+      RegionConfig templateRegionConfig = null;
+      for (String group : persistenceService.getGroups()) {
+        CacheConfig cacheConfig = persistenceService.getCacheConfig(group, true);
+        templateRegionConfig =
+            CacheElement.findElement(cacheConfig.getRegions(), templateRegion.substring(1));
+        if (templateRegionConfig != null) {
+          break;
+        }
+      }
+      if (templateRegionConfig == null) {
+        return ResultModel.createError("Template region " + templateRegion + " does not exist.");
+      } else {
+        regionConfig = templateRegionConfig;
+      }
+    }
+    // as a last resort, go the member that hosts this region to retrieve the template's region xml
+    else {
       // we would need to execute a function to the member hosting the template region to get the
       // region xml. cluster configuration isn't always enabled, so we cannot guarantee that we can
       // get the template region configuration from the cluster configuration.
@@ -250,17 +269,20 @@ public class CreateRegionCommand extends SingleGfshCommand {
       regionConfig = jaxbService.unMarshall(regionXml, RegionConfig.class);
       regionConfig.getCustomRegionElements().clear();
     }
+
     regionConfig.setName(regionPathData.getName());
 
     // set partition attributes
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
-    RegionAttributesType.PartitionAttributes partitionAttributes =
+    RegionAttributesType.PartitionAttributes delta =
         RegionAttributesType.PartitionAttributes.generate(partitionResolver, null, prLocalMaxMemory,
             prRecoveryDelay, prRedundantCopies, prStartupRecoveryDelay, prTotalMaxMemory,
             prTotalNumBuckets, prColocatedWith);
-    if (partitionAttributes != null) {
-      regionAttributes.setPartitionAttributes(partitionAttributes);
-    }
+
+    RegionAttributesType.PartitionAttributes partitionAttributes =
+        RegionAttributesType.PartitionAttributes.combine(
+            regionAttributes.getPartitionAttributes(), delta);
+    regionAttributes.setPartitionAttributes(partitionAttributes);
 
     // validate if partition args are supplied only for partitioned regions
     if (!regionAttributes.getDataPolicy().isPartition() && partitionAttributes != null) {
