@@ -60,7 +60,6 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
@@ -513,8 +512,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
     Socket clientSocket = null;
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getConnectedInstance();
     try {
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember,
           suspectMember.getInetAddress(), port);
