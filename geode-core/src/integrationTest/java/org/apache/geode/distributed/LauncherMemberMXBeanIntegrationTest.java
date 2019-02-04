@@ -135,27 +135,28 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
 
     assertThat(tryConvergeVolatileOSMetrics("committedVirtualMemorySize",
         m -> m.getCommittedVirtualMemorySize()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()),
+                "committed virtual memory size]");
 
     assertThat(tryConvergeVolatileOSMetrics("freePhysicalMemorySize",
         m -> m.getFreePhysicalMemorySize()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "free physical memory size");
 
     assertThat(tryConvergeVolatileOSMetrics("freeSwapSpaceSize",
         m -> m.getFreeSwapSpaceSize()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "free swap space size");
 
     assertThat(tryConvergeVolatileOSMetrics("openFileDescriptorCount",
         m -> m.getOpenFileDescriptorCount()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "open file descriptor count");
 
     assertThat(tryConvergeVolatileOSMetrics("processCpuTime",
         m -> m.getProcessCpuTime()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "process cpu time");
 
     assertThat(tryConvergeVolatileOSMetrics("systemLoadAverage",
         m -> m.getSystemLoadAverage()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "system load average");
   }
 
   @Test
@@ -179,24 +180,24 @@ public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTest
 
     assertThat(tryConvergeVolatileJVMMetrics("committedMemory",
         m -> m.getCommittedMemory()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "committed memory");
 
     assertThat(tryConvergeVolatileJVMMetrics("gcCount",
         m -> m.getGcCount()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "gc count");
 
     assertThat(tryConvergeVolatileJVMMetrics("gcTimeMillis",
         m -> m.getGcTimeMillis()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "gc time millis");
 
 
     assertThat(tryConvergeVolatileJVMMetrics("totalThreads",
         m -> m.getTotalThreads()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "total threads");
 
     assertThat(tryConvergeVolatileJVMMetrics("usedMemory",
         m -> m.getUsedMemory()))
-            .matches(pair -> pair.getLeft().equals(pair.getRight()));
+            .matches(pair -> pair.getLeft().equals(pair.getRight()), "used memory");
   }
 
   /*
