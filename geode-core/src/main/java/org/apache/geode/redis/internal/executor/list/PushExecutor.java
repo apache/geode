@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.executor.list;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -28,7 +27,6 @@ import org.apache.geode.redis.internal.RedisDataType;
 public abstract class PushExecutor extends PushXExecutor implements Extendable {
 
   private final int START_VALUES_INDEX = 2;
-  static volatile AtomicInteger puts = new AtomicInteger(0);
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
