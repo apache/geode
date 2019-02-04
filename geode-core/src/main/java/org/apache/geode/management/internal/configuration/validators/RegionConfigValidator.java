@@ -18,7 +18,7 @@ package org.apache.geode.management.internal.configuration.validators;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
-  public static String DEFAULT_REGION_TYPE = "PARTITION";
+  public static final String DEFAULT_REGION_TYPE = "PARTITION";
 
   @Override
   public void validate(RegionConfig config)

@@ -91,7 +91,7 @@ public class TombstoneService {
   /**
    * The interval to scan for expired tombstones in the queues
    */
-  public static long DEFUNCT_TOMBSTONE_SCAN_INTERVAL =
+  public static final long DEFUNCT_TOMBSTONE_SCAN_INTERVAL =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-scan-interval", 60000);
 
   /**
@@ -108,7 +108,8 @@ public class TombstoneService {
   /** maximum time a sweeper will sleep, in milliseconds. */
   public static long MAX_SLEEP_TIME = 10000;
 
-  public static boolean IDLE_EXPIRATION = false; // dunit test hook for forced batch expiration
+  public static boolean IDLE_EXPIRATION = false; // dunit test hook for forced batch
+                                                 // expiration
 
   /**
    * two sweepers, one for replicated regions (including PR buckets) and one for other regions. They
@@ -322,10 +323,10 @@ public class TombstoneService {
 
   private static class Tombstone extends CompactVersionHolder {
     // tombstone overhead size
-    public static int PER_TOMBSTONE_OVERHEAD = ReflectionSingleObjectSizer.REFERENCE_SIZE // queue's
-                                                                                          // reference
-                                                                                          // to the
-                                                                                          // tombstone
+    public static final int PER_TOMBSTONE_OVERHEAD = ReflectionSingleObjectSizer.REFERENCE_SIZE // queue's
+        // reference
+        // to the
+        // tombstone
         + ReflectionSingleObjectSizer.REFERENCE_SIZE * 3 // entry, region, member ID
         + ReflectionSingleObjectSizer.REFERENCE_SIZE // region entry value (Token.TOMBSTONE)
         + 18; // version numbers and timestamp

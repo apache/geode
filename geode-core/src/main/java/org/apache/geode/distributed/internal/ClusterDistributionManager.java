@@ -253,7 +253,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /** Is this node running an AdminDistributedSystem? */
   private static volatile boolean isDedicatedAdminVM = false;
 
-  private static ThreadLocal<Boolean> isStartupThread = new ThreadLocal<>();
+  private static final ThreadLocal<Boolean> isStartupThread = new ThreadLocal<>();
 
   /**
    * Identifier for function execution threads and any of their children

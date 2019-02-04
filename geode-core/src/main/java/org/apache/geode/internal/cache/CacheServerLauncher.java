@@ -71,11 +71,11 @@ public class CacheServerLauncher {
   public static boolean isDedicatedCacheServer =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "isDedicatedServer");
 
-  public static boolean ASSIGN_BUCKETS = Boolean.getBoolean(
+  public static final boolean ASSIGN_BUCKETS = Boolean.getBoolean(
       DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.assignBucketsToPartitions");
 
   // default is to exit if property not defined
-  public static boolean DONT_EXIT_AFTER_LAUNCH = Boolean
+  public static final boolean DONT_EXIT_AFTER_LAUNCH = Boolean
       .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.dontExitAfterLaunch");
 
   /** Should the launch command be printed? */

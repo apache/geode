@@ -35,8 +35,8 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  */
 public class EntryLogger {
   private static final SequenceLogger GRAPH_LOGGER = SequenceLoggerImpl.getInstance();
-  private static ThreadLocal<String> SOURCE = new ThreadLocal<String>();
-  private static ThreadLocal<String> SOURCE_TYPE = new ThreadLocal<String>();
+  private static final ThreadLocal<String> SOURCE = new ThreadLocal<String>();
+  private static final ThreadLocal<String> SOURCE_TYPE = new ThreadLocal<String>();
 
   public static final String TRACK_VALUES_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "EntryLogger.TRACK_VALUES";

@@ -190,7 +190,7 @@ public class DistributedSystemBridge {
   /**
    * Static reference to the platform mbean server
    */
-  private static MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
+  private static final MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
   /**
    * emitter is a helper class for sending notifications on behalf of the MemberMBean

@@ -406,7 +406,7 @@ public class AvailablePort {
   }
 
 
-  public static java.util.Random rand;
+  public static final Random rand;
 
   static {
     boolean fast = Boolean.getBoolean("AvailablePort.fastRandom");

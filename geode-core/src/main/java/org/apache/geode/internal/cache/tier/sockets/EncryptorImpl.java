@@ -105,6 +105,8 @@ public class EncryptorImpl implements Encryptor {
 
   // Members for server authentication using digital signature
 
+  // Members for server authentication using digital signature
+
   private static String certificateFilePath;
 
   private static HashMap certificateMap;

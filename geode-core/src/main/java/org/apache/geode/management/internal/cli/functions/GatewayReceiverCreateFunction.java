@@ -43,7 +43,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
 
   private static final String ID = GatewayReceiverCreateFunction.class.getName();
 
-  public static GatewayReceiverCreateFunction INSTANCE = new GatewayReceiverCreateFunction();
+  public static final GatewayReceiverCreateFunction INSTANCE = new GatewayReceiverCreateFunction();
 
   @Override
   public void execute(FunctionContext context) {

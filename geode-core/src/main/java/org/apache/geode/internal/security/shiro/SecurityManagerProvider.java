@@ -29,7 +29,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.SecurityManager;
 
 public class SecurityManagerProvider {
-  private static Logger logger = LogService.getLogger(SECURITY_LOGGER_NAME);
+  private static final Logger logger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   private org.apache.shiro.mgt.SecurityManager shiroManager;
   private SecurityManager securityManager;

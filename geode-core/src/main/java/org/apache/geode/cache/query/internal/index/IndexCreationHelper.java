@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.InternalCache;
 
 public abstract class IndexCreationHelper {
 
-  public static int INDEX_QUERY_SCOPE_ID = -2;
+  public static final int INDEX_QUERY_SCOPE_ID = -2;
 
   /**
    * Canonicalized attributes. The value in these fields is set during the execution of

@@ -27,7 +27,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class FunctionStats {
 
-  public static String statName = "FunctionStatistics";
+  public static final String statName = "FunctionStatistics";
   /** The <code>StatisticsType</code> of the statistics */
   private static final StatisticsType _type;
 

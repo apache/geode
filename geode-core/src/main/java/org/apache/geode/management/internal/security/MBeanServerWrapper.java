@@ -126,7 +126,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     return mbs.getObjectInstance(name);
   }
 
-  private static QueryExp notAccessControlMBean =
+  private static final QueryExp notAccessControlMBean =
       Query.not(Query.isInstanceOf(Query.value(AccessControlMXBean.class.getName())));
 
   @Override

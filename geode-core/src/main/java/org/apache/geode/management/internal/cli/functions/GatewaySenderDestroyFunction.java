@@ -26,7 +26,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public class GatewaySenderDestroyFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
   private static final String ID = GatewaySenderDestroyFunction.class.getName();
-  public static GatewaySenderDestroyFunction INSTANCE = new GatewaySenderDestroyFunction();
+  public static final GatewaySenderDestroyFunction INSTANCE = new GatewaySenderDestroyFunction();
 
   @Override
   public void execute(FunctionContext context) {

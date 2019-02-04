@@ -33,27 +33,28 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceConstants;
 
 public class UserInputProperty {
-  public static UserInputProperty USERNAME =
+  public static final UserInputProperty USERNAME =
       new UserInputProperty(ResourceConstants.USER_NAME, "user", false);
-  public static UserInputProperty PASSWORD =
+  public static final UserInputProperty PASSWORD =
       new UserInputProperty(ResourceConstants.PASSWORD, "password", "", true);
-  public static UserInputProperty KEYSTORE =
+  public static final UserInputProperty KEYSTORE =
       new UserInputProperty(SSL_KEYSTORE, "key-store", "", false);
-  public static UserInputProperty KEYSTORE_PASSWORD =
+  public static final UserInputProperty KEYSTORE_PASSWORD =
       new UserInputProperty(SSL_KEYSTORE_PASSWORD, "key-store-password", "", true);
-  public static UserInputProperty KEYSTORE_TYPE =
+  public static final UserInputProperty KEYSTORE_TYPE =
       new UserInputProperty(SSL_KEYSTORE_TYPE, "key-store-type", "JKS", false);
-  public static UserInputProperty TRUSTSTORE =
+  public static final UserInputProperty TRUSTSTORE =
       new UserInputProperty(SSL_TRUSTSTORE, "trust-store", "", false);
-  public static UserInputProperty TRUSTSTORE_PASSWORD =
+  public static final UserInputProperty TRUSTSTORE_PASSWORD =
       new UserInputProperty(SSL_TRUSTSTORE_PASSWORD, "trust-store-password", "", true);
-  public static UserInputProperty TRUSTSTORE_TYPE =
+  public static final UserInputProperty TRUSTSTORE_TYPE =
       new UserInputProperty(SSL_TRUSTSTORE_TYPE, "trust-store-type", "JKS", false);
-  public static UserInputProperty CIPHERS = new UserInputProperty(SSL_CIPHERS, "ssl-ciphers",
+  public static final UserInputProperty CIPHERS = new UserInputProperty(SSL_CIPHERS, "ssl-ciphers",
       DistributionConfig.DEFAULT_SSL_CIPHERS, false);
-  public static UserInputProperty PROTOCOL = new UserInputProperty(SSL_PROTOCOLS, "ssl-protocols",
-      DistributionConfig.DEFAULT_SSL_PROTOCOLS, false);
-  public static UserInputProperty COMPONENT = new UserInputProperty(SSL_ENABLED_COMPONENTS,
+  public static final UserInputProperty PROTOCOL =
+      new UserInputProperty(SSL_PROTOCOLS, "ssl-protocols",
+          DistributionConfig.DEFAULT_SSL_PROTOCOLS, false);
+  public static final UserInputProperty COMPONENT = new UserInputProperty(SSL_ENABLED_COMPONENTS,
       "ssl-enabled-components", SecurableCommunicationChannel.ALL.getConstant(), false);
 
   private final String key;

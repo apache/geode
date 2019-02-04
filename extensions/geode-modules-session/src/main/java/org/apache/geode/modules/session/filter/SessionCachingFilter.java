@@ -74,17 +74,17 @@ public class SessionCachingFilter implements Filter {
   /**
    * Can be overridden during testing.
    */
-  private static AtomicInteger started = new AtomicInteger(
+  private static final AtomicInteger started = new AtomicInteger(
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "override.session.manager.count", 1));
 
-  private static int percentInactiveTimeTriggerRebuild = Integer
+  private static final int percentInactiveTimeTriggerRebuild = Integer
       .getInteger(DistributionConfig.GEMFIRE_PREFIX + "session.inactive.trigger.rebuild", 80);
 
   /**
    * This latch ensures that at least one thread/instance has fired up the session manager before
    * any other threads complete the init method.
    */
-  private static CountDownLatch startingLatch = new CountDownLatch(1);
+  private static final CountDownLatch startingLatch = new CountDownLatch(1);
 
   /**
    * This request wrapper class extends the support class HttpServletRequestWrapper, which

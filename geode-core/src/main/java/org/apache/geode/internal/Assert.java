@@ -56,7 +56,7 @@ public class Assert {
     }
   }
 
-  private static boolean debug =
+  private static final boolean debug =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "haltOnAssertFailure");
 
   public static void fail(Object message) {

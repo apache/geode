@@ -65,7 +65,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 @SuppressWarnings("unused")
 public class ImportClusterConfigurationCommand extends GfshCommand {
-  public static Logger logger = LogService.getLogger();
+  public static final Logger logger = LogService.getLogger();
   public static final String XML_FILE = "xml-file";
   public static final String ACTION = "action";
   public static final String ACTION_HELP =

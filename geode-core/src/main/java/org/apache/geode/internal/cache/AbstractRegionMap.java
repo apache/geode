@@ -95,7 +95,7 @@ public abstract class AbstractRegionMap
    * This test hook is used to force the conditions during entry destroy. This hook is used by
    * DestroyEntryWithConcurrentOperationJUnitTest.
    */
-  static Runnable testHookRunnableForConcurrentOperation = null;
+  static final Runnable testHookRunnableForConcurrentOperation = null;
 
   private RegionEntryFactory entryFactory;
 

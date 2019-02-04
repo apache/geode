@@ -90,12 +90,12 @@ public class DefaultQueryService implements InternalQueryService {
           DistributionConfig.GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"))
       .booleanValue();
 
-  public static boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
+  public static final boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
       .valueOf(System.getProperty(
           DistributionConfig.GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
       .booleanValue();
 
-  public static boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
+  public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
       DistributionConfig.GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
 
 

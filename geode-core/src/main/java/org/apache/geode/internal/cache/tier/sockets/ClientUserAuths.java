@@ -30,7 +30,7 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 
 public class ClientUserAuths {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   // private AtomicLong counter = new AtomicLong(1);
   private Random uniqueIdGenerator = null;
   private int m_seed;

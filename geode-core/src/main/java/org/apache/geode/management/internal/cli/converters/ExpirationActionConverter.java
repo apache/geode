@@ -25,7 +25,7 @@ import org.springframework.shell.core.MethodTarget;
 import org.apache.geode.cache.ExpirationAction;
 
 public class ExpirationActionConverter implements Converter<ExpirationAction> {
-  private static ExpirationAction[] actions = {ExpirationAction.INVALIDATE,
+  private static final ExpirationAction[] actions = {ExpirationAction.INVALIDATE,
       ExpirationAction.LOCAL_INVALIDATE, ExpirationAction.DESTROY, ExpirationAction.LOCAL_DESTROY};
 
   @Override

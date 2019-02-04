@@ -39,7 +39,7 @@ import org.apache.geode.management.internal.cli.shell.GfshConfig;
  * @since GemFire 7.0
  */
 public class LogWrapper {
-  private static Object INSTANCE_LOCK = new Object();
+  private static final Object INSTANCE_LOCK = new Object();
   private static volatile LogWrapper INSTANCE = null;
 
   private Logger logger;

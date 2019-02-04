@@ -101,10 +101,10 @@ public class SmHelper {
   private static native String _getSystemId();
 
   /** Cache of class -> has zero-arg constructor */
-  private static Map zeroArgConstructorCache = new HashMap();
+  private static final Map zeroArgConstructorCache = new HashMap();
 
   /** Cache of class -> has public zero-arg constructor */
-  private static Map publicConstructorCache = new HashMap();
+  private static final Map publicConstructorCache = new HashMap();
 
   /**
    * Allocates a new JOM instance of <code>c</code> and invokes the zero-argument constructor of

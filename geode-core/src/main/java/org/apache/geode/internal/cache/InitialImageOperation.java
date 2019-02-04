@@ -127,7 +127,7 @@ public class InitialImageOperation {
   /**
    * Allowed number GIIs in parallel
    */
-  public static int MAX_PARALLEL_GIIS =
+  public static final int MAX_PARALLEL_GIIS =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "GetInitialImage.MAX_PARALLEL_GIIS", 5)
           .intValue();
 
@@ -4056,6 +4056,8 @@ public class InitialImageOperation {
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GetInitialImage.TRACE_GII");
   public static boolean FORCE_FULL_GII =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GetInitialImage.FORCE_FULL_GII");
+
+  // test hooks should be applied and waited in strict order as following
 
   // test hooks should be applied and waited in strict order as following
 

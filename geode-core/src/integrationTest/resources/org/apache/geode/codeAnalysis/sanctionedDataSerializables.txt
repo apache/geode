@@ -1056,8 +1056,8 @@ fromData,26
 toData,22
 
 org/apache/geode/internal/cache/HARegion$HARegionAdvisor$HAProfile,2
-fromData,47
-toData,45
+fromData,43
+toData,41
 
 org/apache/geode/internal/cache/InitialImageFlowControl$FlowControlPermitMessage,2
 fromData,16

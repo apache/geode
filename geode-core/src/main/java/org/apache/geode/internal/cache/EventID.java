@@ -55,7 +55,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   private static final Logger logger = LogService.getLogger();
 
   /** turns on very verbose logging ove membership id bytes */
-  private static boolean LOG_ID_BYTES =
+  private static final boolean LOG_ID_BYTES =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "log-event-member-id-bytes");
 
   /**
@@ -85,7 +85,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   private static final Version[] dsfidVersions = new Version[] {Version.GFE_80};
 
 
-  private static ThreadLocal threadIDLocal = new ThreadLocal() {
+  private static final ThreadLocal threadIDLocal = new ThreadLocal() {
     @Override
     protected Object initialValue() {
       return new ThreadAndSequenceIDWrapper();
@@ -114,7 +114,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * An array containing the helper class objects which are used to create optimized byte array for
    * an eventID , which can be sent on the network
    */
-  static AbstractEventIDByteArrayFiller[] fillerArray = new AbstractEventIDByteArrayFiller[] {
+  static final AbstractEventIDByteArrayFiller[] fillerArray = new AbstractEventIDByteArrayFiller[] {
       new ByteEventIDByteArrayFiller(), new ShortEventIDByteArrayFiller(),
       new IntegerEventIDByteArrayFiller(), new LongEventIDByteArrayFiller()};
 
@@ -804,7 +804,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
     long sequenceID = (HARegionQueue.INIT_OF_SEQUENCEID + 1);
 
-    private static AtomicLong atmLong = new AtomicLong(0);
+    private static final AtomicLong atmLong = new AtomicLong(0);
 
     ThreadAndSequenceIDWrapper() {
       threadID = atmLong.incrementAndGet();

@@ -89,7 +89,7 @@ public class GlobalTransaction {
   /*
    * to enable VERBOSE = true pass System parameter jta.VERBOSE = true while running the test.
    */
-  private static boolean VERBOSE = Boolean.getBoolean("jta.VERBOSE");
+  private static final boolean VERBOSE = Boolean.getBoolean("jta.VERBOSE");
 
   /**
    * Construct a new Global Transaction. Generates the GTid and also the xid

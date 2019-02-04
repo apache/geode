@@ -87,7 +87,7 @@ public class JNDIInvoker {
   private static TransactionManager transactionManager;
   // most of the following came from the javadocs at:
   // http://static.springsource.org/spring/docs/2.5.x/api/org/springframework/transaction/jta/JtaTransactionManager.html
-  private static String[][] knownJNDIManagers = {{"java:/TransactionManager", "JBoss"},
+  private static final String[][] knownJNDIManagers = {{"java:/TransactionManager", "JBoss"},
       {"java:comp/TransactionManager", "Cosminexus"}, // and many others
       {"java:appserver/TransactionManager", "GlassFish"}, {"java:pm/TransactionManager", "SunONE"},
       {"java:comp/UserTransaction", "Orion, JTOM, BEA WebLogic"},

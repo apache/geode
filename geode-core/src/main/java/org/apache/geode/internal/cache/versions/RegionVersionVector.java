@@ -61,27 +61,27 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   private static final Logger logger = LogService.getLogger();
 
-  public static boolean DEBUG =
+  public static final boolean DEBUG =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "VersionVector.VERBOSE"); // TODO:LOG:CONVERT:
-                                                                                       // REMOVE
-                                                                                       // THIS
+  // REMOVE
+  // THIS
 
 
 
   //////////////////// The following statics exist for unit testing. ////////////////////////////
 
   /** maximum ms wait time while waiting for dominance to be achieved */
-  public static long MAX_DOMINANCE_WAIT_TIME =
+  public static final long MAX_DOMINANCE_WAIT_TIME =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "max-dominance-wait-time", 5000);
 
   /** maximum ms pause time while waiting for dominance to be achieved */
-  public static long DOMINANCE_PAUSE_TIME =
+  public static final long DOMINANCE_PAUSE_TIME =
       Math.min(Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "dominance-pause-time", 300),
           MAX_DOMINANCE_WAIT_TIME);
 
-  private static int INITIAL_CAPACITY = 2;
-  private static int CONCURRENCY_LEVEL = 2;
-  private static float LOAD_FACTOR = 0.75f;
+  private static final int INITIAL_CAPACITY = 2;
+  private static final int CONCURRENCY_LEVEL = 2;
+  private static final float LOAD_FACTOR = 0.75f;
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
 

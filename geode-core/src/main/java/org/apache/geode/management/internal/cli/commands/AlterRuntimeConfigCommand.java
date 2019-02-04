@@ -51,7 +51,7 @@ import org.apache.geode.security.ResourcePermission;
 public class AlterRuntimeConfigCommand extends InternalGfshCommand {
   private final AlterRuntimeConfigFunction alterRunTimeConfigFunction =
       new AlterRuntimeConfigFunction();
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = {CliStrings.ALTER_RUNTIME_CONFIG},
       help = CliStrings.ALTER_RUNTIME_CONFIG__HELP)

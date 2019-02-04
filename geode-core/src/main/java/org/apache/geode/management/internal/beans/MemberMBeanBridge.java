@@ -122,14 +122,14 @@ public class MemberMBeanBridge {
   /**
    * Static reference to the Platform MBean server
    */
-  public static MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+  public static final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
 
   /**
    * Factor converting bytes to MBØØ
    */
   private static final long MBFactor = 1024 * 1024;
 
-  private static TimeUnit nanoSeconds = TimeUnit.NANOSECONDS;
+  private static final TimeUnit nanoSeconds = TimeUnit.NANOSECONDS;
 
   /** Cache Instance **/
   private InternalCache cache;

@@ -39,7 +39,7 @@ public class GatewaySenderCreateFunction implements InternalFunction {
 
   private static final String ID = GatewaySenderCreateFunction.class.getName();
 
-  public static GatewaySenderCreateFunction INSTANCE = new GatewaySenderCreateFunction();
+  public static final GatewaySenderCreateFunction INSTANCE = new GatewaySenderCreateFunction();
 
 
   @Override

@@ -88,7 +88,7 @@ public class CacheServerBridge extends ServerBridge {
 
   private ClientMembershipListener membershipListener;
 
-  public static ThreadLocal<Version> clientVersion = new ThreadLocal<Version>();
+  public static final ThreadLocal<Version> clientVersion = new ThreadLocal<Version>();
 
   protected static int identifyPid() {
     try {

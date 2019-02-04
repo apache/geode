@@ -290,7 +290,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Thread specific random number
    */
-  private static ThreadLocal threadRandom = new ThreadLocal() {
+  private static final ThreadLocal threadRandom = new ThreadLocal() {
     @Override
     protected Object initialValue() {
       int i = RANDOM.nextInt();
@@ -569,7 +569,7 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  private static DisconnectListener dsPRIdCleanUpListener = new DisconnectListener() {
+  private static final DisconnectListener dsPRIdCleanUpListener = new DisconnectListener() {
     @Override
     public String toString() {
       return "Shutdown listener for PartitionedRegion";

@@ -56,7 +56,7 @@ public class ServerDenyList {
   protected final ListenerBroadcaster broadcaster = new ListenerBroadcaster();
 
   // not final for tests.
-  static int THRESHOLD = Integer
+  static final int THRESHOLD = Integer
       .getInteger(DistributionConfig.GEMFIRE_PREFIX + "ServerDenyList.THRESHOLD", 3).intValue();
   protected final long pingInterval;
 

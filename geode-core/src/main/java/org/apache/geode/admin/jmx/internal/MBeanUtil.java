@@ -60,7 +60,7 @@ public class MBeanUtil {
   private static final String DEFAULT_DOMAIN = "GemFire";
 
   /** MBean Name for refreshTimer */
-  private static String REFRESH_TIMER_NAME = DEFAULT_DOMAIN + ":type=RefreshTimer";
+  private static final String REFRESH_TIMER_NAME = DEFAULT_DOMAIN + ":type=RefreshTimer";
 
   /* indicates whether the mbeanServer, registry & refreshTimer are started */
   private static boolean isStarted;
@@ -82,7 +82,7 @@ public class MBeanUtil {
    * <p>
    * map: key=ObjectName, value=map: key=RefreshNotificationType, value=timerNotificationId
    */
-  private static Map<NotificationListener, Map<RefreshNotificationType, Integer>> refreshClients =
+  private static final Map<NotificationListener, Map<RefreshNotificationType, Integer>> refreshClients =
       new HashMap<NotificationListener, Map<RefreshNotificationType, Integer>>();
 
   /** key=ObjectName, value=ManagedResource */

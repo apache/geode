@@ -164,7 +164,7 @@ public class ExpirationAction implements Serializable {
 
   // The 4 declarations below are necessary for serialization
   private static int nextOrdinal = 0;
-  public final int ordinal = nextOrdinal++;
+  public int ordinal = nextOrdinal++;
   private static final ExpirationAction[] VALUES =
       {INVALIDATE, LOCAL_INVALIDATE, DESTROY, LOCAL_DESTROY};
 

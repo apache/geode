@@ -58,7 +58,7 @@ public class ConnectionImpl implements Connection {
   private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
 
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Test hook to simulate a client crashing. If true, we will not notify the server when we close

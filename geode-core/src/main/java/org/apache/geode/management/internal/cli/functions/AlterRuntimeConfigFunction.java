@@ -34,7 +34,7 @@ public class AlterRuntimeConfigFunction implements InternalFunction {
 
   private static final long serialVersionUID = 1L;
 
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public void execute(FunctionContext context) {
