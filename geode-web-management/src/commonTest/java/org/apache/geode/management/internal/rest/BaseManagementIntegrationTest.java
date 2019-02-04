@@ -13,8 +13,10 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest.security;
+package org.apache.geode.management.internal.rest;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -43,6 +45,15 @@ public abstract class BaseManagementIntegrationTest {
   @Autowired
   WebApplicationContext webApplicationContext;
 
+  @BeforeClass
+  public static void beforeClass() {
+    locator.before();
+  }
+
+  @AfterClass
+  public static void afterClass() {
+    locator.after();
+  }
 }
 
 

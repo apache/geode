@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest.security;
+package org.apache.geode.management.internal.rest;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

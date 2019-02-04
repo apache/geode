@@ -111,6 +111,8 @@ dependencies {
   integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
   }
+    
+  distributedTestCompile(sourceSets.commonTest.output)
   
   distributedTestCompile('org.springframework:spring-test')
   distributedTestCompile('org.springframework:spring-webmvc')

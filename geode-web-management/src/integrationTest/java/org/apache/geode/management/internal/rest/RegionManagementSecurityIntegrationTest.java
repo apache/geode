@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest.security;
+package org.apache.geode.management.internal.rest;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -35,15 +36,17 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class RegionManagementSecurityIntegrationTest extends BaseManagementIntegrationTest {
 
-  static {
-    locator = new LocatorStarterRule()
-        .withSecurityManager(SimpleTestSecurityManager.class);
-    locator.startLocator();
-  }
-
   private RegionConfig regionConfig;
   private String json;
   private MockMvc mockMvc;
+
+  @BeforeClass
+  public static void beforeClass() {
+    locator = new LocatorStarterRule()
+        .withSecurityManager(SimpleTestSecurityManager.class)
+        .withAutoStart();
+    BaseManagementIntegrationTest.beforeClass();
+  }
 
   @Before
   public void before() throws JsonProcessingException {

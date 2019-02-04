@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest.security;
+package org.apache.geode.management.internal.rest;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,12 +35,13 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class RegionManagementIntegrationTest extends BaseManagementIntegrationTest {
 
-  static {
-    locator = new LocatorStarterRule().withHttpService();
-    locator.startLocator();
-  }
-
   private MockMvc mockMvc;
+
+  @BeforeClass
+  public static void beforeClass() {
+    locator = new LocatorStarterRule().withAutoStart();
+    BaseManagementIntegrationTest.beforeClass();
+  }
 
   @Before
   public void before() {
