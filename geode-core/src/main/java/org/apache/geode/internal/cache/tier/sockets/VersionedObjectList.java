@@ -294,7 +294,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   }
 
-  private static Version[] serializationVersions = new Version[] {Version.GFE_80};
+  private static final Version[] serializationVersions = new Version[] {Version.GFE_80};
 
   @Override
   public Version[] getSerializationVersions() {

@@ -110,9 +110,9 @@ public class TcpServer {
   public static int OLDTESTVERSION = OLDGOSSIPVERSION;
 
   public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
-  private static int MAX_POOL_SIZE =
+  private static final int MAX_POOL_SIZE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
-  private static int POOL_IDLE_TIMEOUT = 60 * 1000;
+  private static final int POOL_IDLE_TIMEOUT = 60 * 1000;
 
   private static final Logger log = LogService.getLogger();
 

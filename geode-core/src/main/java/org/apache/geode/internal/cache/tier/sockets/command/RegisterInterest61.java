@@ -50,7 +50,7 @@ public class RegisterInterest61 extends BaseCommand {
   /**
    * A debug flag used for testing vMotion during CQ registration
    */
-  public static boolean VMOTION_DURING_REGISTER_INTEREST_FLAG = false;
+  public static final boolean VMOTION_DURING_REGISTER_INTEREST_FLAG = false;
 
   public static Command getCommand() {
     return singleton;

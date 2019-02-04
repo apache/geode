@@ -54,7 +54,7 @@ public class ClientProxyMembershipID
 
   private static final Logger logger = LogService.getLogger();
 
-  private static ThreadLocal<String> POOL_NAME = new ThreadLocal<String>();
+  private static final ThreadLocal<String> POOL_NAME = new ThreadLocal<String>();
 
   public static void setPoolName(String poolName) {
     POOL_NAME.set(poolName);

@@ -48,10 +48,10 @@ public abstract class StorageCommand extends AbstractCommand {
   /**
    * thread pool for scheduling expiration tasks
    */
-  private static ScheduledExecutorService expiryExecutor =
+  private static final ScheduledExecutorService expiryExecutor =
       new ScheduledThreadPoolExecutor(1, new LoggingThreadFactory("memcached-expiryExecutor"));
 
-  private static ConcurrentMap<Object, ScheduledFuture> expiryFutures =
+  private static final ConcurrentMap<Object, ScheduledFuture> expiryFutures =
       new ConcurrentHashMap<Object, ScheduledFuture>();
 
   /**

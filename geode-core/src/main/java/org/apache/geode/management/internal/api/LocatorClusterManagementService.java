@@ -45,7 +45,7 @@ import org.apache.geode.management.internal.configuration.validators.RegionConfi
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   private DistributionManager distributionManager;
   private ConfigurationPersistenceService persistenceService;
   private HashMap<Class, ConfigurationMutator> mutators;

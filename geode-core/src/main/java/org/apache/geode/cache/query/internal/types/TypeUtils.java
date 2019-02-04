@@ -42,10 +42,10 @@ import org.apache.geode.pdx.internal.PdxString;
  */
 
 public class TypeUtils implements OQLLexerTokenTypes {
-  protected static List<Class> _numericPrimitiveClasses = Arrays.asList(
+  protected static final List<Class> _numericPrimitiveClasses = Arrays.asList(
       new Class[] {Byte.TYPE, Short.TYPE, Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE});
 
-  protected static List<Class> _numericWrapperClasses = Arrays.asList(
+  protected static final List<Class> _numericWrapperClasses = Arrays.asList(
       new Class[] {Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class});
 
   /**

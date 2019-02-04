@@ -48,7 +48,7 @@ public class TypedJson {
   /**
    * Limit of collection length to be serialized in JSON format.
    */
-  public static int DEFAULT_COLLECTION_ELEMENT_LIMIT = 100;
+  public static final int DEFAULT_COLLECTION_ELEMENT_LIMIT = 100;
 
   public static final Object NULL = GfJsonObject.NULL;
 

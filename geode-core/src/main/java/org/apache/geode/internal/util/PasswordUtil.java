@@ -23,7 +23,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class PasswordUtil {
 
-  private static byte[] init = "string".getBytes();
+  private static final byte[] init = "string".getBytes();
 
   /**
    * Decrypts an encrypted password string.

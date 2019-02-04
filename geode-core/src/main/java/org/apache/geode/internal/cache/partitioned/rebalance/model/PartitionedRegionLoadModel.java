@@ -66,7 +66,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 @SuppressWarnings("synthetic-access")
 public class PartitionedRegionLoadModel {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * A comparator that is used to sort buckets in the order that we should satisfy redundancy - most

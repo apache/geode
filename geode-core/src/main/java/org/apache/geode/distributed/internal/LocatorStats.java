@@ -32,7 +32,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * @since GemFire 5.7
  */
 public class LocatorStats {
-  private static StatisticsType type;
+  private static final StatisticsType type;
 
   private static final String KNOWN_LOCATORS = LOCATORS; // gauge
   private static final String REQUESTS_TO_LOCATOR = "locatorRequests"; // counter

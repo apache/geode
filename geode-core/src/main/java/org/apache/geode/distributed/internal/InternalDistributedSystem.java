@@ -310,12 +310,12 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Set of listeners that are invoked whenever a connection is created to the distributed system
    */
-  private static Set connectListeners = new LinkedHashSet(); // needs to be ordered
+  private static final Set connectListeners = new LinkedHashSet(); // needs to be ordered
 
   /**
    * auto-reconnect listeners
    */
-  private static List<ReconnectListener> reconnectListeners = new ArrayList<>();
+  private static final List<ReconnectListener> reconnectListeners = new ArrayList<>();
 
   /**
    * whether this DS is one created to reconnect to the distributed system after a

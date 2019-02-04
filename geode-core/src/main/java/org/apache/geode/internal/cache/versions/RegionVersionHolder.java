@@ -53,7 +53,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static List<RVVException> EMPTY_EXCEPTIONS = Collections.emptyList();
+  private static final List<RVVException> EMPTY_EXCEPTIONS = Collections.emptyList();
 
   long version = -1; // received version
   transient T id;

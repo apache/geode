@@ -113,7 +113,7 @@ public class Connection implements Runnable {
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SMALL_BUFFER_SIZE", 4096);
 
   /** counter to give connections a unique id */
-  private static AtomicLong idCounter = new AtomicLong(1);
+  private static final AtomicLong idCounter = new AtomicLong(1);
 
   /** string used as the reason for initiating suspect processing */
   public static final String INITIATING_SUSPECT_PROCESSING =
@@ -233,7 +233,7 @@ public class Connection implements Runnable {
    * instance, server-connection -> owned p2p reader (count 0) -> owned p2p reader (count 1) ->
    * owned p2p reader (count 2). This shows up in thread names as "DOM #x" (domino #x)
    */
-  private static ThreadLocal<Integer> dominoCount = new ThreadLocal<Integer>() {
+  private static final ThreadLocal<Integer> dominoCount = new ThreadLocal<Integer>() {
     @Override
     protected Integer initialValue() {
       return 0;
@@ -571,7 +571,7 @@ public class Connection implements Runnable {
     return isIdle;
   }
 
-  private static ByteBuffer okHandshakeBuf;
+  private static final ByteBuffer okHandshakeBuf;
   static {
     int msglen = 1; // one byte for reply code
     byte[] bytes = new byte[MSG_HEADER_BYTES + msglen];

@@ -32,7 +32,7 @@ import javax.naming.spi.InitialContextFactory;
  */
 public class InitialContextFactoryImpl implements InitialContextFactory {
 
-  private static Map oldSystemProps = new HashMap();
+  private static final Map oldSystemProps = new HashMap();
   // private static Hashtable env;
   private static Context ctx;
 

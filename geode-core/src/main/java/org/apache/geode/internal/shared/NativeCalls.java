@@ -47,7 +47,7 @@ public abstract class NativeCalls {
    * Note: this variable is deliberately not final so that other clients can plug in their own
    * native implementations of NativeCalls.
    */
-  protected static NativeCalls instance;
+  protected static final NativeCalls instance;
 
   static {
     NativeCalls inst;

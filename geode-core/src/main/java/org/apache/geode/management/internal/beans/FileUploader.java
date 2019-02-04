@@ -36,8 +36,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class FileUploader implements FileUploaderMBean {
-  public static String STAGED_DIR_PREFIX = "uploaded-";
-  private static Logger logger = LogService.getLogger();
+  public static final String STAGED_DIR_PREFIX = "uploaded-";
+  private static final Logger logger = LogService.getLogger();
   private RemoteStreamExporter exporter;
 
   public static class RemoteFile implements Serializable {

@@ -506,7 +506,7 @@ public class NativeCallsJNAImpl {
       // TMPFS_MAGIC
       // 0xFF534D42 , 0x73757245 , 0x564c , 0x6969 , 0x517B , 0x01021994
       // 4283649346 , 1937076805 , 22092 , 26985 , 20859 , 16914836
-      private static int[] REMOTE_TYPES =
+      private static final int[] REMOTE_TYPES =
           new int[] { /* 4283649346, */ 1937076805, 22092, 26985, 20859, 16914836};
 
       public boolean isTypeLocal() {
@@ -565,7 +565,7 @@ public class NativeCallsJNAImpl {
       // TMPFS_MAGIC
       // 0xFF534D42 , 0x73757245 , 0x564c , 0x6969 , 0x517B , 0x01021994
       // 4283649346 , 1937076805 , 22092 , 26985 , 20859 , 16914836
-      private static long[] REMOTE_TYPES =
+      private static final long[] REMOTE_TYPES =
           new long[] {4283649346l, 1937076805l, 22092l, 26985l, 20859l, 16914836l};
 
       static {

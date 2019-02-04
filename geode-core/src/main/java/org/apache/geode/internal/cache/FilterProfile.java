@@ -107,7 +107,7 @@ public class FilterProfile implements DataSerializableFixedID {
   /**
    * these booleans tell whether the associated operationType pertains to CQs or not
    */
-  static boolean[] isCQOperation =
+  static final boolean[] isCQOperation =
       {false, false, false, false, false, false, false, false, false, true, true, true, true, true};
 
   /**

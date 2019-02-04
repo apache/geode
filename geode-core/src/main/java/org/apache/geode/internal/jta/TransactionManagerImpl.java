@@ -101,7 +101,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /*
    * to enable VERBOSE = true pass System parameter jta.VERBOSE = true while running the test.
    */
-  private static boolean VERBOSE = Boolean.getBoolean("jta.VERBOSE");
+  private static final boolean VERBOSE = Boolean.getBoolean("jta.VERBOSE");
   /*
    * checks if the TransactionManager is active
    */

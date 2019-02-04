@@ -43,7 +43,7 @@ public class GemfireLogConverter {
   private static final Pattern DATE_PATTERN =
       Pattern.compile("(\\d\\d\\d\\d)/(\\d\\d)/(\\d\\d) (\\d\\d):(\\d\\d):(\\d\\d).(\\d\\d\\d)");
   private static final Pattern ALL = Pattern.compile(".*");
-  private static ArrayList<Test> tests = buildTests();
+  private static final ArrayList<Test> tests = buildTests();
 
 
   public static void convertFiles(OutputStream output, File[] files) throws IOException {

@@ -125,7 +125,7 @@ public class GatewaySenderStats {
   /** Id of the batches redistributed statistic */
   protected static int batchesRedistributedId;
   /** Id of the batches resized statistic */
-  protected static int batchesResizedId;
+  protected static final int batchesResizedId;
   /** Id of the unprocessed events added by primary statistic */
   protected static int unprocessedTokensAddedByPrimaryId;
   /** Id of the unprocessed events added by secondary statistic */

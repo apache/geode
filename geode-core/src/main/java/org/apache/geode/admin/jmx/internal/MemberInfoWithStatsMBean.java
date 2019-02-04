@@ -1232,7 +1232,7 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
   private static final Logger logger = LogService.getLogger();
 
   /* sequence generator for notifications from GemFireTypesWrapper MBean */
-  private static AtomicLong notificationSequenceNumber = new AtomicLong();
+  private static final AtomicLong notificationSequenceNumber = new AtomicLong();
 
   /* reference to the MBeanServer instance */
   private MBeanServer mBeanServer;

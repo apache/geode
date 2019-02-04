@@ -20,9 +20,9 @@ package org.apache.geode.modules.session.internal.filter;
  */
 public class Constants {
 
-  public static String GEMFIRE_SESSION_REQUEST = "_gemfire_session_request_";
+  public static final String GEMFIRE_SESSION_REQUEST = "_gemfire_session_request_";
 
-  public static String SESSION_STATISTICS_MBEAN_NAME =
+  public static final String SESSION_STATISTICS_MBEAN_NAME =
       "org.apache:type=SessionStatistics,name=sessionStatistics";
 
 }

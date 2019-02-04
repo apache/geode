@@ -522,8 +522,8 @@ public class HARegion extends DistributedRegion {
     }
 
     public static class HAProfile extends CacheProfile {
-      private static int HAS_REGISTERED_INTEREST_BIT = 0x01;
-      private static int IS_PRIMARY_BIT = 0x02;
+      private static final int HAS_REGISTERED_INTEREST_BIT = 0x01;
+      private static final int IS_PRIMARY_BIT = 0x02;
 
       boolean hasRegisteredInterest;
 

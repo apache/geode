@@ -290,7 +290,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
   /**
    * The number of bits used for generation stamp in sizeCtl. Must be at least 6 for 32bit arrays.
    */
-  private static int RESIZE_STAMP_BITS = 16;
+  private static final int RESIZE_STAMP_BITS = 16;
 
   /**
    * The maximum number of threads that can help resize. Must fit in 32 - RESIZE_STAMP_BITS bits.

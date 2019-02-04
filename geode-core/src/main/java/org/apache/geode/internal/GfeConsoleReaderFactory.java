@@ -30,7 +30,7 @@ import org.apache.geode.management.internal.cli.util.GfshConsoleReader;
  * @since GemFire 7.0.1
  */
 public class GfeConsoleReaderFactory {
-  private static GfeConsoleReader defaultConsoleReader = createConsoleReader();
+  private static final GfeConsoleReader defaultConsoleReader = createConsoleReader();
 
   public static GfeConsoleReader getDefaultConsoleReader() {
     return defaultConsoleReader;

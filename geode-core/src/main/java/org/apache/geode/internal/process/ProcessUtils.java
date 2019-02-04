@@ -31,7 +31,7 @@ import java.lang.management.ManagementFactory;
  */
 public class ProcessUtils {
 
-  private static InternalProcessUtils internal = initializeInternalProcessUtils();
+  private static final InternalProcessUtils internal = initializeInternalProcessUtils();
 
   private ProcessUtils() {
     // nothing

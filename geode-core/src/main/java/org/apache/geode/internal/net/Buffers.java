@@ -42,7 +42,7 @@ public class Buffers {
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
-  public static boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers");
+  public static final boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers");
 
   /**
    * Should only be called by threads that have currently acquired send permission.

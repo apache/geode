@@ -539,7 +539,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   }
 
   /** Is this thread currently sending a message? */
-  private static ThreadLocal sending = new ThreadLocal() {
+  private static final ThreadLocal sending = new ThreadLocal() {
     @Override
     protected Object initialValue() {
       return Boolean.FALSE;

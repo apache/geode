@@ -91,7 +91,7 @@ public class InternalResourceManager implements ResourceManager {
 
   private static ResourceObserver observer = new ResourceObserverAdapter();
 
-  private static String PR_LOAD_PROBE_CLASS =
+  private static final String PR_LOAD_PROBE_CLASS =
       System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ResourceManager.PR_LOAD_PROBE_CLASS",
           SizedBasedLoadProbe.class.getName());
 
