@@ -166,12 +166,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * disconnectListeners. {@link #addDisconnectListener} will not throw ShutdownException if the
    * value is Boolean.TRUE.
    */
-  final ThreadLocal<Boolean> isDisconnectThread = new ThreadLocal() {
-    @Override
-    public Boolean initialValue() {
-      return Boolean.FALSE;
-    }
-  };
+  private final ThreadLocal<Boolean> isDisconnectThread =
+      ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   private final StatisticsManager statisticsManager;
 
@@ -184,6 +180,73 @@ public class InternalDistributedSystem extends DistributedSystem
 
   /** services provided by other modules */
   private Map<Class, DistributedSystemService> services = new HashMap<>();
+
+  /**
+   * If the experimental multiple-system feature is enabled, always create a new system.
+   *
+   * Otherwise, create a new InternalDistributedSystem with the given properties, or connect to an
+   * existing one with the same properties.
+   */
+  public static DistributedSystem connectInternal(Properties config,
+      SecurityConfig securityConfig) {
+    if (config == null) {
+      config = new Properties();
+    }
+
+    if (ALLOW_MULTIPLE_SYSTEMS) {
+      return InternalDistributedSystem.newInstance(config);
+    }
+
+    synchronized (existingSystemsLock) {
+      if (ClusterDistributionManager.isDedicatedAdminVM()) {
+        // For a dedicated admin VM, check to see if there is already
+        // a connect that will suit our purposes.
+        DistributedSystem existingSystem = getConnection(config);
+        if (existingSystem != null) {
+          return existingSystem;
+        }
+
+      } else {
+        boolean existingSystemDisconnecting = true;
+        boolean isReconnecting = false;
+        while (!existingSystems.isEmpty() && existingSystemDisconnecting && !isReconnecting) {
+          Assert.assertTrue(existingSystems.size() == 1);
+
+          InternalDistributedSystem existingSystem = existingSystems.get(0);
+          existingSystemDisconnecting = existingSystem.isDisconnecting();
+          // a reconnecting DS will block on GemFireCache.class and a ReconnectThread
+          // holds that lock and invokes this method, so we break out of the loop
+          // if we detect this condition
+          isReconnecting = existingSystem.isReconnectingDS();
+          if (existingSystemDisconnecting) {
+            boolean interrupted = Thread.interrupted();
+            try {
+              // no notify for existingSystemsLock, just to release the sync
+              existingSystemsLock.wait(50);
+            } catch (InterruptedException ex) {
+              interrupted = true;
+            } finally {
+              if (interrupted) {
+                Thread.currentThread().interrupt();
+              }
+            }
+          } else if (existingSystem.isConnected()) {
+            existingSystem.validateSameProperties(config, existingSystem.isConnected());
+            return existingSystem;
+          } else {
+            throw new AssertionError(
+                "system should not have both disconnecting==false and isConnected==false");
+          }
+        }
+      }
+
+      // Make a new connection to the distributed system
+      InternalDistributedSystem newSystem =
+          InternalDistributedSystem.newInstance(config, securityConfig);
+      addSystem(newSystem);
+      return newSystem;
+    }
+  }
 
   public GrantorRequestProcessor.GrantorRequestContext getGrantorRequestContext() {
     return grc;
@@ -252,7 +315,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * auto-reconnect listeners
    */
-  private static List<ReconnectListener> reconnectListeners = new ArrayList<ReconnectListener>();
+  private static List<ReconnectListener> reconnectListeners = new ArrayList<>();
 
   /**
    * whether this DS is one created to reconnect to the distributed system after a
@@ -299,7 +362,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   private DistributionConfig config;
 
-  private volatile boolean shareSockets = DistributionConfig.DEFAULT_CONSERVE_SOCKETS;
+  private volatile boolean shareSockets;
 
   /**
    * if this distributed system starts a locator, it is stored here
@@ -344,7 +407,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * Creates a new instance of <code>InternalDistributedSystem</code> with the given configuration.
    */
   public static InternalDistributedSystem newInstance(Properties config) {
-    return newInstance(config, SecurityConfig.get());
+    return newInstance(config, null);
   }
 
   public static InternalDistributedSystem newInstance(Properties config,

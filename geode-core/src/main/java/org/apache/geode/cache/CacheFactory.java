@@ -211,14 +211,9 @@ public class CacheFactory {
         validateUsabilityOfSecurityCallbacks(ds);
       }
       if (ds == null) {
-        // use ThreadLocal to avoid exposing new User API in DistributedSystem
-        SecurityConfig.set(this.cacheConfig.getSecurityManager(),
-            this.cacheConfig.getPostProcessor());
-        try {
-          ds = DistributedSystem.connect(this.dsProps);
-        } finally {
-          SecurityConfig.remove();
-        }
+        ds = InternalDistributedSystem.connectInternal(dsProps, new SecurityConfig(
+            this.cacheConfig.getSecurityManager(),
+            this.cacheConfig.getPostProcessor()));
       }
       return create(ds, true, this.cacheConfig);
     }
