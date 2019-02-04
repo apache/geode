@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.membership;
+package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -44,8 +44,6 @@ import org.apache.geode.distributed.internal.LonerDistributionManager.DummyDMSta
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import org.apache.geode.distributed.internal.membership.gms.messenger.StatRecorder;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -190,7 +188,7 @@ public class StatRecorderJUnitTest {
 
     JGroupsMessenger messenger = new JGroupsMessenger();
     messenger.init(mockServices);
-    String jgroupsConfig = messenger.getJGroupsStackConfig();
+    String jgroupsConfig = messenger.jgStackConfig;
     System.out.println(jgroupsConfig);
     assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
 

@@ -127,7 +127,7 @@ public class JGroupsMessenger implements Messenger {
 
   public static boolean THROW_EXCEPTION_ON_START_HOOK;
 
-  private String jgStackConfig;
+  protected String jgStackConfig;
 
   JChannel myChannel;
   InternalDistributedMember localAddress;
@@ -139,7 +139,7 @@ public class JGroupsMessenger implements Messenger {
 
   private volatile NetView view;
 
-  private final GMSPingPonger pingPonger = new GMSPingPonger();
+  protected final GMSPingPonger pingPonger = new GMSPingPonger();
 
   protected final AtomicLong pongsReceived = new AtomicLong(0);
 
@@ -1170,27 +1170,6 @@ public class JGroupsMessenger implements Messenger {
   @Override
   public InternalDistributedMember getMemberID() {
     return localAddress;
-  }
-
-  /**
-   * returns the JGroups configuration string, for testing
-   */
-  public String getJGroupsStackConfig() {
-    return this.jgStackConfig;
-  }
-
-  /**
-   * returns the pinger, for testing
-   */
-  public GMSPingPonger getPingPonger() {
-    return this.pingPonger;
-  }
-
-  /**
-   * for unit testing we need to replace UDP with a fake UDP protocol
-   */
-  public void setJGroupsStackConfigForTesting(String config) {
-    this.jgStackConfig = config;
   }
 
   /**
