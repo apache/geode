@@ -733,6 +733,26 @@ public class GMSJoinLeaveJUnitTest {
     assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
   }
 
+  /**
+   * Given a view with [A, B, C, D, E] where C is coordinator, A failed availability checks and
+   * C shuts down we should see B become the coordinator.
+   */
+  @Test
+  public void testBecomeCoordinatorThroughShutdownWhenOlderMemberCrashed() throws Exception {
+    initMocks();
+    InternalDistributedMember A = mockMembers[0],
+        B = gmsJoinLeaveMemberId,
+        C = mockMembers[1],
+        D = mockMembers[2],
+        E = mockMembers[3];
+    prepareAndInstallView(C, createMemberList(A, B, C, D, E));
+    when(healthMonitor.getMembersFailingAvailabilityCheck()).thenReturn(Collections.singleton(A));
+    LeaveRequestMessage msg = new LeaveRequestMessage(B, C, "leaving for test");
+    msg.setSender(C);
+    gmsJoinLeave.processMessage(msg);
+    assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
+  }
+
   @Test
   public void testBecomeCoordinatorThroughViewChange() throws Exception {
     initMocks();

@@ -842,12 +842,17 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
       InternalDistributedMember oldNeighbor = nextNeighbor;
       if (oldNeighbor != newNeighbor) {
-        logger.info("Failure detection is now watching {}", newNeighbor);
+        logger.info("Failure detection is now watching " + newNeighbor
+            + "; suspects are " + suspectedMemberIds);
         nextNeighbor = newNeighbor;
       }
     }
 
     if (nextNeighbor != null && nextNeighbor.equals(localAddress)) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Health monitor is unable to find a neighbor to watch.  "
+            + "Current suspects are {}", suspectedMemberIds);
+      }
       nextNeighbor = null;
     }
 
@@ -1353,6 +1358,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public int getFailureDetectionPort() {
     return this.socketPort;
+  }
+
+  @Override
+  public Collection<InternalDistributedMember> getMembersFailingAvailabilityCheck() {
+    return Collections.unmodifiableCollection(this.suspectedMemberIds.keySet());
   }
 
   private void sendSuspectRequest(final List<SuspectRequest> requests) {

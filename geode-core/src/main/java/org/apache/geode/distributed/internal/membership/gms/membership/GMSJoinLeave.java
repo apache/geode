@@ -608,6 +608,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         leftMembers.add(mbr);
         check.removeAll(leftMembers);
       }
+      Collection<InternalDistributedMember> suspectMembers =
+          services.getHealthMonitor().getMembersFailingAvailabilityCheck();
+      check.removeAll(suspectMembers);
+      logger.info(
+          "View with removed and left members removed is {}\nremoved members: {}\nleft members: {}\nsuspect members: {}",
+          check, removedMembers, leftMembers, suspectMembers);
       if (check.getCoordinator().equals(localAddress)) {
         synchronized (viewInstallationLock) {
           becomeCoordinator(mbr);
