@@ -165,20 +165,6 @@ public class GMSLocator implements Locator, NetLocator {
     recover();
   }
 
-  private synchronized void findServices() {
-    InternalDistributedSystem sys = InternalDistributedSystem.getAnyInstance();
-    if (sys != null && services == null) {
-      logger.info("Peer locator found distributed system " + sys);
-      setMembershipManager(sys.getDM().getMembershipManager());
-    }
-    if (services == null) {
-      try {
-        wait(10000);
-      } catch (InterruptedException ignored) {
-      }
-    }
-  }
-
   @Override
   public void installView(NetView view) {
     synchronized (this.registrants) {
@@ -222,7 +208,6 @@ public class GMSLocator implements Locator, NetLocator {
 
   private FindCoordinatorResponse processFindCoordinatorRequest(
       FindCoordinatorRequest findRequest) {
-    findServices();
     if (!findRequest.getDHAlgo().equals(securityUDPDHAlgo)) {
       return new FindCoordinatorResponse(
           "Rejecting findCoordinatorRequest, as member not configured same udp security("
@@ -251,7 +236,6 @@ public class GMSLocator implements Locator, NetLocator {
     // at this level we want to return the coordinator known to membership services,
     // which may be more up-to-date than the one known by the membership manager
     if (view == null) {
-      findServices();
       if (services == null) {
         // we must know this process's identity in order to respond
         return null;

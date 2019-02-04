@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal.membership;
 import java.net.InetAddress;
 
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberFactory;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
@@ -78,16 +78,17 @@ public class MemberFactory {
    * start using it.
    *
    * @param listener the listener to notify for callbacks
-   * @param config the configuration of connection to distributed system
    * @param transport holds configuration information that can be used by the manager to configure
    *        itself
    * @param stats are used for recording statistical communications information
    * @return a MembershipManager
    */
   public static MembershipManager newMembershipManager(DistributedMembershipListener listener,
-      DistributionConfig config, RemoteTransportConfig transport, DMStats stats,
+      InternalDistributedSystem system,
+      RemoteTransportConfig transport,
+      DMStats stats,
       SecurityService securityService) {
-    return services.newMembershipManager(listener, config, transport, stats, securityService);
+    return services.newMembershipManager(listener, system, transport, stats, securityService);
   }
 
   /**

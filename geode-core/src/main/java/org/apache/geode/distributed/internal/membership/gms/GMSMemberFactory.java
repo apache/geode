@@ -20,8 +20,8 @@ import java.net.UnknownHostException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
@@ -97,9 +97,10 @@ public class GMSMemberFactory implements MemberServices {
 
   @Override
   public MembershipManager newMembershipManager(DistributedMembershipListener listener,
-      DistributionConfig config, RemoteTransportConfig transport, DMStats stats,
+      InternalDistributedSystem system,
+      RemoteTransportConfig transport, DMStats stats,
       SecurityService securityService) throws DistributionException {
-    Services services = new Services(listener, config, transport, stats, securityService);
+    Services services = new Services(listener, system, transport, stats, securityService);
     try {
       services.init();
       services.start();

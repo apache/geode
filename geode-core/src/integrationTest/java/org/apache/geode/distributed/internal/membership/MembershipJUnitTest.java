@@ -44,6 +44,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
@@ -146,8 +147,10 @@ public class MembershipJUnitTest {
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
         DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
         DMStats stats1 = mock(DMStats.class);
+        InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
+        when(mockSystem.getConfig()).thenReturn(config);
         System.out.println("creating 1st membership manager");
-        m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1,
+        m1 = MemberFactory.newMembershipManager(listener1, mockSystem, transport, stats1,
             SecurityServiceFactory.create());
         m1.startEventProcessing();
       } finally {
@@ -157,8 +160,10 @@ public class MembershipJUnitTest {
       // start the second membership manager
       DistributedMembershipListener listener2 = mock(DistributedMembershipListener.class);
       DMStats stats2 = mock(DMStats.class);
+      InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
+      when(mockSystem.getConfig()).thenReturn(config);
       System.out.println("creating 2nd membership manager");
-      m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2,
+      m2 = MemberFactory.newMembershipManager(listener2, mockSystem, transport, stats2,
           SecurityServiceFactory.create());
       m2.startEventProcessing();
 
@@ -287,8 +292,10 @@ public class MembershipJUnitTest {
         System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
         DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
         DMStats stats1 = mock(DMStats.class);
+        InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
+        when(mockSystem.getConfig()).thenReturn(config);
         System.out.println("creating 1st membership manager");
-        m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1,
+        m1 = MemberFactory.newMembershipManager(listener1, mockSystem, transport, stats1,
             SecurityServiceFactory.create());
         m1.startEventProcessing();
       } finally {
@@ -298,8 +305,10 @@ public class MembershipJUnitTest {
       // start the second membership manager
       DistributedMembershipListener listener2 = mock(DistributedMembershipListener.class);
       DMStats stats2 = mock(DMStats.class);
+      InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
+      when(mockSystem.getConfig()).thenReturn(config);
       System.out.println("creating 2nd membership manager");
-      m2 = MemberFactory.newMembershipManager(listener2, config, transport, stats2,
+      m2 = MemberFactory.newMembershipManager(listener2, mockSystem, transport, stats2,
           SecurityServiceFactory.create());
       m2.startEventProcessing();
 
