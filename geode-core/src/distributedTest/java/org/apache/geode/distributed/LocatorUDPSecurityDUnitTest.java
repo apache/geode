@@ -40,7 +40,6 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
 
   @Test
   public void testLocatorWithUDPSecurityButServer() {
-    disconnectAllFromDS();
     VM vm = VM.getVM(0);
 
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
