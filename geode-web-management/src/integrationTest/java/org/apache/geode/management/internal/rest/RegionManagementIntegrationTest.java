@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,10 +36,9 @@ public class RegionManagementIntegrationTest extends BaseManagementIntegrationTe
 
   private MockMvc mockMvc;
 
-  @BeforeClass
-  public static void beforeClass() {
+  static {
     locator = new LocatorStarterRule().withAutoStart();
-    BaseManagementIntegrationTest.beforeClass();
+    locator.before();
   }
 
   @Before

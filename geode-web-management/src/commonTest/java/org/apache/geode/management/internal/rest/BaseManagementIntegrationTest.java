@@ -15,12 +15,10 @@
 
 package org.apache.geode.management.internal.rest;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.GenericXmlWebContextLoader;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.context.web.WebMergedContextConfiguration;
@@ -31,7 +29,7 @@ import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
     loader = TestContextLoader.class)
 @WebAppConfiguration
@@ -45,15 +43,6 @@ public abstract class BaseManagementIntegrationTest {
   @Autowired
   WebApplicationContext webApplicationContext;
 
-  @BeforeClass
-  public static void beforeClass() {
-    locator.before();
-  }
-
-  @AfterClass
-  public static void afterClass() {
-    locator.after();
-  }
 }
 
 

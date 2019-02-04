@@ -45,7 +45,7 @@ public class RegionManagementSecurityIntegrationTest extends BaseManagementInteg
     locator = new LocatorStarterRule()
         .withSecurityManager(SimpleTestSecurityManager.class)
         .withAutoStart();
-    BaseManagementIntegrationTest.beforeClass();
+    locator.before();
   }
 
   @Before
