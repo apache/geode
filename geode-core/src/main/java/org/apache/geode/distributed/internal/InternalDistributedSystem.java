@@ -115,6 +115,7 @@ import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
@@ -2651,6 +2652,8 @@ public class InternalDistributedSystem extends DistributedSystem
         } catch (Exception ee) {
           logger.warn("Exception disconnecting for reconnect", ee);
         }
+
+        TypeRegistry.init();
 
         try {
           reconnectLock.wait(timeOut);
