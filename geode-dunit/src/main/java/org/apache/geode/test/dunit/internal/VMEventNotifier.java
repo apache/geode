@@ -14,23 +14,23 @@
  */
 package org.apache.geode.test.dunit.internal;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.VMEventListener;
 import org.apache.geode.test.dunit.VMEventListenerRegistry;
 
+/**
+ * Implements {@code VMEventListenerRegistry} and provides thread-safe notifications to registered
+ * listeners.
+ */
 public class VMEventNotifier implements VMEventListenerRegistry {
 
   private final List<VMEventListener> listeners;
 
   VMEventNotifier() {
-    this(new ArrayList<>());
-  }
-
-  VMEventNotifier(List<VMEventListener> listeners) {
-    this.listeners = listeners;
+    listeners = new CopyOnWriteArrayList<>();
   }
 
   @Override
@@ -43,23 +43,32 @@ public class VMEventNotifier implements VMEventListenerRegistry {
     listeners.remove(listener);
   }
 
+  /**
+   * Notifies currently registered listeners of {@link VMEventListener#afterCreateVM(VM)}.
+   * Concurrent changes to listener registration are ignored while notifying.
+   */
   public void notifyAfterCreateVM(VM vm) {
-    List<VMEventListener> listenersToNotify = new ArrayList<>(listeners);
-    for (VMEventListener listener : listenersToNotify) {
+    for (VMEventListener listener : listeners) {
       listener.afterCreateVM(vm);
     }
   }
 
+  /**
+   * Notifies currently registered listeners of {@link VMEventListener#beforeBounceVM(VM)}.
+   * Concurrent changes to listener registration are ignored while notifying.
+   */
   public void notifyBeforeBounceVM(VM vm) {
-    List<VMEventListener> listenersToNotify = new ArrayList<>(listeners);
-    for (VMEventListener listener : listenersToNotify) {
+    for (VMEventListener listener : listeners) {
       listener.beforeBounceVM(vm);
     }
   }
 
+  /**
+   * Notifies currently registered listeners of {@link VMEventListener#afterBounceVM(VM)}.
+   * Concurrent changes to listener registration are ignored while notifying.
+   */
   public void notifyAfterBounceVM(VM vm) {
-    List<VMEventListener> listenersToNotify = new ArrayList<>(listeners);
-    for (VMEventListener listener : listenersToNotify) {
+    for (VMEventListener listener : listeners) {
       listener.afterBounceVM(vm);
     }
   }
