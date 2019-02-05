@@ -44,8 +44,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
