@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -26,7 +25,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -722,6 +720,100 @@ public class SqlHandlerTest {
   }
 
   @Test
+  public void getEntryColumnDataReturnsCorrectColumnNameWhenPdxNameIsEmpty() {
+    String nonKeyColumn = "otherColumn";
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn);
+    when(fieldMapping2.getPdxName()).thenReturn("");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
+
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
+        .isEqualTo(nonKeyColumn);
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo(KEY_COLUMN);
+  }
+
+  @Test
+  public void getEntryColumnDataReturnsCorrectColumnNameWhenPdxNameIsEmptyAndJdbcNameMatchesInexactly() {
+    String nonKeyColumn = "otherColumn";
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase());
+    when(fieldMapping2.getPdxName()).thenReturn("");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
+
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
+        .isEqualTo(nonKeyColumn.toUpperCase());
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo(KEY_COLUMN);
+  }
+
+  @Test
+  public void getEntryColumnDataThrowsWhenPdxNameIsEmptyAndJdbcNameMatchesInexactlyMultipleTimes() {
+    String nonKeyColumn = "otherColumn";
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase());
+    when(fieldMapping2.getPdxName()).thenReturn("");
+    FieldMapping fieldMapping3 = mock(FieldMapping.class);
+    when(fieldMapping3.getJdbcName()).thenReturn(nonKeyColumn.toLowerCase());
+    when(fieldMapping3.getPdxName()).thenReturn("");
+    when(regionMapping.getFieldMappings())
+        .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
+    createSqlHandler();
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("Multiple columns matched the pdx field \"" + nonKeyColumn + "\".");
+
+    handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+  }
+
+  @Test
+  public void getEntryColumnDataThrowsWhenPdxNameIsEmptyAndJdbcNameDoesNotMatch() {
+    String nonKeyColumn = "otherColumn";
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase() + "noMatch");
+    when(fieldMapping2.getPdxName()).thenReturn("");
+    FieldMapping fieldMapping3 = mock(FieldMapping.class);
+    when(fieldMapping3.getJdbcName()).thenReturn("noMatch" + nonKeyColumn.toLowerCase());
+    when(fieldMapping3.getPdxName()).thenReturn("");
+    when(regionMapping.getFieldMappings())
+        .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
+    createSqlHandler();
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("No column matched the pdx field \"" + nonKeyColumn + "\".");
+
+    handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+  }
+
+  @Test
   public void returnsCorrectColumnsForUpdateWithCompositeKey() throws Exception {
     testGetEntryColumnDataForCreateOrUpdateWithCompositeKey(Operation.UPDATE);
   }
@@ -841,21 +933,6 @@ public class SqlHandlerTest {
     handler.getEntryColumnData(tableMetaDataView, nonCompositeKey, value, Operation.DESTROY);
   }
 
-  private ResultSet getPrimaryKeysMetaData() throws SQLException {
-    DatabaseMetaData metadata = mock(DatabaseMetaData.class);
-    ResultSet resultSet = mock(ResultSet.class);
-    ResultSet primaryKeys = mock(ResultSet.class);
-
-    when(connection.getMetaData()).thenReturn(metadata);
-    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
-    when(metadata.getPrimaryKeys(any(), any(), anyString())).thenReturn(primaryKeys);
-    when(primaryKeys.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
-    when(resultSet.next()).thenReturn(true).thenReturn(false);
-    when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
-
-    return primaryKeys;
-  }
-
   @Test
   public void handlesSQLExceptionFromGetConnection() throws Exception {
     doThrow(new SQLException("test exception")).when(dataSource).getConnection();
@@ -863,71 +940,4 @@ public class SqlHandlerTest {
     assertThatThrownBy(() -> handler.getConnection())
         .isInstanceOf(SQLException.class).hasMessage("test exception");
   }
-
-  /*
-   * TODO: change these tests to cover SqlHandler.getColumnNameForField
-   *
-   * @Test
-   * public void getColumnNameForFieldThrowsIfFieldNotMapped() {
-   * mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-   * expectedException.expect(JdbcConnectorException.class);
-   * expectedException
-   * .expectMessage("No column matched the pdx field \"" + fieldName1 + "\".");
-   *
-   * mapping.getColumnNameForField(fieldName1);
-   * }
-   *
-   * @Test
-   * public void getColumnNameForFieldThrowsIfMultipleFieldsMatchInexactly() {
-   * String pdxClassName = "pdxClassName";
-   * String columnName = "columnName";
-   * String pdxFieldName = "pdxFieldName";
-   * mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-   * mapping.addFieldMapping(new FieldMapping("f1", null, "c1", null, false));
-   * mapping.addFieldMapping(
-   * new FieldMapping("", null, pdxFieldName.toLowerCase(), null, false));
-   * mapping.addFieldMapping(
-   * new FieldMapping("", null, pdxFieldName.toLowerCase(), null, false));
-   * expectedException.expect(JdbcConnectorException.class);
-   * expectedException
-   * .expectMessage("Multiple columns matched the pdx field \"" + pdxFieldName + "\".");
-   *
-   * mapping.getColumnNameForField(pdxFieldName);
-   * }
-   *
-   * @Test
-   * public void getColumnNameForFieldReturnsColumnNameWhenMappedExactly() {
-   * String pdxClassName = "pdxClassName";
-   * String columnName = "columnName";
-   * String pdxFieldName = "pdxFieldName";
-   * mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-   * mapping.addFieldMapping(new FieldMapping(pdxFieldName, null, columnName, null, false));
-   *
-   * assertThat(mapping.getColumnNameForField(pdxFieldName)).isEqualTo(columnName);
-   * }
-   *
-   * @Test
-   * public void getColumnNameForFieldReturnsColumnNameWhenMappedExactlyToJdbcName() {
-   * String pdxClassName = "pdxClassName";
-   * String pdxFieldName = "pdxFieldName";
-   * mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-   * mapping.addFieldMapping(new FieldMapping("", null, pdxFieldName, null, false));
-   *
-   * assertThat(mapping.getColumnNameForField(pdxFieldName)).isEqualTo(pdxFieldName);
-   * }
-   *
-   * @Test
-   * public void getColumnNameForFieldReturnsColumnNameWhenMappedInexactly() {
-   * String pdxClassName = "pdxClassName";
-   * String pdxFieldName = "pdxFieldName";
-   * String columnName = pdxFieldName.toLowerCase();
-   * mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-   * mapping.addFieldMapping(new FieldMapping("f1", null, "c1", null, false));
-   * mapping.addFieldMapping(
-   * new FieldMapping("", null, columnName, null, false));
-   *
-   * assertThat(mapping.getColumnNameForField(pdxFieldName)).isEqualTo(columnName);
-   * }
-   */
-
 }
