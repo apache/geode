@@ -21,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 
@@ -104,68 +103,6 @@ public class RegionMappingTest {
     mapping = new RegionMapping(null, null, null, null, null, null, schema);
 
     assertThat(mapping.getSchema()).isEqualTo(schema);
-  }
-
-  @Test
-  public void getColumnNameForFieldThrowsIfFieldNotMapped() {
-    mapping = new RegionMapping(null, "pdxClassName", null, null, null, null, null);
-    expectedException.expect(JdbcConnectorException.class);
-    expectedException
-        .expectMessage("No column matched the pdx field \"" + fieldName1 + "\".");
-
-    mapping.getColumnNameForField(fieldName1);
-  }
-
-  @Test
-  public void getColumnNameForFieldThrowsIfMultipleFieldsMatchInexactly() {
-    String pdxClassName = "pdxClassName";
-    String columnName = "columnName";
-    String pdxFieldName = "pdxFieldName";
-    mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    mapping.addFieldMapping(new FieldMapping("f1", null, "c1", null, false));
-    mapping.addFieldMapping(
-        new FieldMapping("", null, pdxFieldName.toLowerCase(), null, false));
-    mapping.addFieldMapping(
-        new FieldMapping("", null, pdxFieldName.toLowerCase(), null, false));
-    expectedException.expect(JdbcConnectorException.class);
-    expectedException
-        .expectMessage("Multiple columns matched the pdx field \"" + pdxFieldName + "\".");
-
-    mapping.getColumnNameForField(pdxFieldName);
-  }
-
-  @Test
-  public void getColumnNameForFieldReturnsColumnNameWhenMappedExactly() {
-    String pdxClassName = "pdxClassName";
-    String columnName = "columnName";
-    String pdxFieldName = "pdxFieldName";
-    mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    mapping.addFieldMapping(new FieldMapping(pdxFieldName, null, columnName, null, false));
-
-    assertThat(mapping.getColumnNameForField(pdxFieldName)).isEqualTo(columnName);
-  }
-
-  @Test
-  public void getColumnNameForFieldReturnsColumnNameWhenMappedExactlyToJdbcName() {
-    String pdxClassName = "pdxClassName";
-    String pdxFieldName = "pdxFieldName";
-    mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    mapping.addFieldMapping(new FieldMapping("", null, pdxFieldName, null, false));
-
-    assertThat(mapping.getColumnNameForField(pdxFieldName)).isEqualTo(pdxFieldName);
-  }
-
-  @Test
-  public void getColumnNameForFieldReturnsColumnNameWhenMappedInexactly() {
-    String pdxClassName = "pdxClassName";
-    String pdxFieldName = "pdxFieldName";
-    String columnName = pdxFieldName.toLowerCase();
-    mapping = new RegionMapping(null, pdxClassName, null, null, null, null, null);
-    mapping.addFieldMapping(new FieldMapping("f1", null, "c1", null, false));
-    mapping.addFieldMapping(
-        new FieldMapping("", null, columnName, null, false));
-
-    assertThat(mapping.getColumnNameForField(pdxFieldName)).isEqualTo(columnName);
   }
 
   @Test

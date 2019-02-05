@@ -15,9 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.configuration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -30,7 +28,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.XSDRootElement;
-import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 
 /**
  * <p>
@@ -79,10 +76,6 @@ public class RegionMapping implements CacheElement {
 
   @XmlElement(name = "field-mapping", namespace = "http://geode.apache.org/schema/jdbc")
   protected final List<FieldMapping> fieldMappings = new ArrayList<>();
-  @XmlTransient
-  private final Map<String, FieldMapping> pdxToFieldMappings = new HashMap<>();
-  @XmlTransient
-  private final Map<String, FieldMapping> jdbcToFieldMappings = new HashMap<>();
   @XmlAttribute(name = "data-source")
   protected String dataSourceName;
   @XmlAttribute(name = "table")
@@ -176,43 +169,6 @@ public class RegionMapping implements CacheElement {
 
   public void addFieldMapping(FieldMapping value) {
     this.fieldMappings.add(value);
-    this.pdxToFieldMappings.put(value.getPdxName(), value);
-    this.jdbcToFieldMappings.put(value.getJdbcName(), value);
-  }
-
-  public FieldMapping getFieldMappingByPdxName(String pdxName) {
-    return this.pdxToFieldMappings.get(pdxName);
-  }
-
-  public FieldMapping getFieldMappingByJdbcName(String jdbcName) {
-    return this.jdbcToFieldMappings.get(jdbcName);
-  }
-
-  public String getColumnNameForField(String fieldName) {
-    FieldMapping exactMatch = getFieldMappingByPdxName(fieldName);
-    if (exactMatch != null) {
-      return exactMatch.getJdbcName();
-    }
-    exactMatch = getFieldMappingByJdbcName(fieldName);
-    if (exactMatch != null) {
-      this.pdxToFieldMappings.put(fieldName, exactMatch);
-      return exactMatch.getJdbcName();
-    }
-    FieldMapping inexactMatch = null;
-    for (FieldMapping fieldMapping : getFieldMappings()) {
-      if (fieldMapping.getJdbcName().equalsIgnoreCase(fieldName)) {
-        if (inexactMatch != null) {
-          throw new JdbcConnectorException(
-              "Multiple columns matched the pdx field \"" + fieldName + "\".");
-        }
-        inexactMatch = fieldMapping;
-      }
-    }
-    if (inexactMatch == null) {
-      throw new JdbcConnectorException("No column matched the pdx field \"" + fieldName + "\".");
-    }
-    this.pdxToFieldMappings.put(fieldName, inexactMatch);
-    return inexactMatch.getJdbcName();
   }
 
   @Override

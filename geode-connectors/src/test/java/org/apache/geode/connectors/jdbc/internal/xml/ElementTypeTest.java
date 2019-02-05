@@ -32,6 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Stack;
 
 import org.junit.Before;
@@ -135,9 +136,7 @@ public class ElementTypeTest {
     ElementType.FIELD_MAPPING.startElement(stack, attributes);
 
     RegionMapping mapping1 = (RegionMapping) stack.pop();
-    assertThat(mapping1.getColumnNameForField("myPdxName")).isEqualTo("myJdbcName");
-    assertThat(mapping1.getFieldMappingByJdbcName("myJdbcName")).isEqualTo(expected);
-    assertThat(mapping1.getFieldMappingByPdxName("myPdxName")).isEqualTo(expected);
+    assertThat(mapping1.getFieldMappings()).isEqualTo(Arrays.asList(expected));
   }
 
   @Test

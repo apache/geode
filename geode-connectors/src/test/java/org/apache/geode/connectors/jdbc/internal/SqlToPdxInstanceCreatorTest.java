@@ -71,7 +71,6 @@ public class SqlToPdxInstanceCreatorTest {
     when(columnMapping.getJdbcName()).thenReturn(COLUMN_NAME_1);
     when(columnMapping.getPdxName()).thenReturn(PDX_FIELD_NAME_1);
     when(columnMapping.getPdxType()).thenReturn(FieldType.OBJECT.name());
-    when(regionMapping.getFieldMappingByJdbcName(COLUMN_NAME_1)).thenReturn(columnMapping);
     when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(columnMapping));
   }
 
