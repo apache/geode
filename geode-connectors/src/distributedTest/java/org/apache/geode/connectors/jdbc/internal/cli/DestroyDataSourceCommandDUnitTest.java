@@ -16,6 +16,12 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.sql.DataSource;
+
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Rule;
@@ -110,16 +116,43 @@ public class DestroyDataSourceCommandDUnitTest {
     });
   }
 
+  private void createTable() {
+    executeSql("create table mySchema.myRegion (id varchar(10) primary key, name varchar(10))");
+  }
+
+  private void dropTable() {
+    executeSql("drop table mySchema.myRegion");
+  }
+
+  private void executeSql(String sql) {
+    server1.invoke(() -> {
+      try {
+        DataSource ds = JNDIInvoker.getDataSource("datasource1");
+        Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        sm.execute(sql);
+        sm.close();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   @Test
   public void destroyDataSourceFailsIfInUseByJdbcMapping() {
     gfsh.executeAndAssertThat("create region --name=myRegion --type=REPLICATE").statusIsSuccess();
-    gfsh.executeAndAssertThat(
-        "create jdbc-mapping --data-source=datasource1 --pdx-name=myPdxClass --region=myRegion")
-        .statusIsSuccess();
+    createTable();
+    try {
+      gfsh.executeAndAssertThat(
+          "create jdbc-mapping --data-source=datasource1 --pdx-name=myPdxClass --region=myRegion --schema=mySchema")
+          .statusIsSuccess();
 
-    gfsh.executeAndAssertThat("destroy data-source --name=datasource1").statusIsError()
-        .containsOutput(
-            "Data source named \"datasource1\" is still being used by region \"myRegion\"."
-                + " Use destroy jdbc-mapping --region=myRegion and then try again.");
+      gfsh.executeAndAssertThat("destroy data-source --name=datasource1").statusIsError()
+          .containsOutput(
+              "Data source named \"datasource1\" is still being used by region \"myRegion\"."
+                  + " Use destroy jdbc-mapping --region=myRegion and then try again.");
+    } finally {
+      dropTable();
+    }
   }
 }
