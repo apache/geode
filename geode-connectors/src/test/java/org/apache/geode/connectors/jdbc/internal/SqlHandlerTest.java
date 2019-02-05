@@ -32,6 +32,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 
 import javax.sql.DataSource;
@@ -347,8 +348,11 @@ public class SqlHandlerTest {
   @Test
   public void insertActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
     Object createKey = "createKey";
+
     handler.write(region, Operation.CREATE, createKey, value);
+
     verify(statement).setObject(1, createKey);
     verify(statement).executeUpdate();
     verify(statement).close();
@@ -372,6 +376,7 @@ public class SqlHandlerTest {
     when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
     when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
     when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     createSqlHandler();
 
     handler.write(region, Operation.CREATE, compositeKey, value);
@@ -387,7 +392,10 @@ public class SqlHandlerTest {
   public void updateActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
     Object updateKey = "updateKey";
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
+
     handler.write(region, Operation.UPDATE, updateKey, value);
+
     verify(statement).setObject(1, updateKey);
     verify(statement).executeUpdate();
     verify(statement).close();
@@ -411,6 +419,7 @@ public class SqlHandlerTest {
     when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
     when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
     when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     createSqlHandler();
 
     handler.write(region, Operation.UPDATE, compositeKey, value);
@@ -487,19 +496,23 @@ public class SqlHandlerTest {
   @Test
   public void preparedStatementClearedAfterExecution() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
+
     handler.write(region, Operation.CREATE, new Object(), value);
+
     verify(statement).close();
   }
 
   @Test
   public void whenInsertFailsUpdateSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(0);
-
     PreparedStatement updateStatement = mock(PreparedStatement.class);
     when(updateStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(updateStatement);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
 
     handler.write(region, Operation.CREATE, new Object(), value);
+
     verify(statement).executeUpdate();
     verify(updateStatement).executeUpdate();
     verify(statement).close();
@@ -509,13 +522,14 @@ public class SqlHandlerTest {
   @Test
   public void whenUpdateFailsInsertSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(0);
-
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
-
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
     Object putKey = "putKey";
+
     handler.write(region, Operation.UPDATE, putKey, value);
+
     verify(statement).executeUpdate();
     verify(insertStatement).executeUpdate();
     verify(statement).executeUpdate();
@@ -529,12 +543,13 @@ public class SqlHandlerTest {
   @Test
   public void whenInsertFailsWithExceptionUpdateSucceeds() throws Exception {
     when(statement.executeUpdate()).thenThrow(SQLException.class);
-
     PreparedStatement updateStatement = mock(PreparedStatement.class);
     when(updateStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(updateStatement);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
 
     handler.write(region, Operation.CREATE, new Object(), value);
+
     verify(statement).executeUpdate();
     verify(updateStatement).executeUpdate();
     verify(statement).close();
@@ -544,12 +559,13 @@ public class SqlHandlerTest {
   @Test
   public void whenUpdateFailsWithExceptionInsertSucceeds() throws Exception {
     when(statement.executeUpdate()).thenThrow(SQLException.class);
-
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
 
     handler.write(region, Operation.UPDATE, new Object(), value);
+
     verify(statement).executeUpdate();
     verify(insertStatement).executeUpdate();
     verify(statement).close();
@@ -559,13 +575,14 @@ public class SqlHandlerTest {
   @Test
   public void whenBothInsertAndUpdateFailExceptionIsThrown() throws Exception {
     when(statement.executeUpdate()).thenThrow(SQLException.class);
-
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenThrow(SQLException.class);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
-
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
     thrown.expect(SQLException.class);
+
     handler.write(region, Operation.UPDATE, new Object(), value);
+
     verify(statement).close();
     verify(insertStatement).close();
   }
@@ -656,7 +673,12 @@ public class SqlHandlerTest {
     FieldMapping fieldMapping2 = mock(FieldMapping.class);
     when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
     when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
-    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    FieldMapping fieldMapping3 = mock(FieldMapping.class);
+    String nonKeyColumn = "fieldTwoWrong";
+    when(fieldMapping3.getJdbcName()).thenReturn(nonKeyColumn);
+    when(fieldMapping3.getPdxName()).thenReturn(nonKeyColumn);
+    when(regionMapping.getFieldMappings())
+        .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
     createSqlHandler();
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("The key \"" + compositeKey
