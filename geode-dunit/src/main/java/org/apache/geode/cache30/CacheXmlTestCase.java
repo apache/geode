@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
@@ -63,6 +64,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "1");
     disconnectAllFromDS();
   }
 
