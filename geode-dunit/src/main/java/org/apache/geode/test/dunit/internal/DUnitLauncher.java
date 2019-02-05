@@ -123,6 +123,8 @@ public class DUnitLauncher {
 
   private static final String LAUNCHED_PROPERTY = GEMFIRE_PREFIX + "DUnitLauncher.LAUNCHED";
 
+  private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
+
   private static Master master;
 
   private DUnitLauncher() {}
@@ -228,9 +230,9 @@ public class DUnitLauncher {
 
     // populate the Host class with our stubs. The tests use this host class
     DUnitHost host =
-        new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager);
+        new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager,
+            vmEventNotifier);
     host.init(registry, NUM_VMS);
-
   }
 
   public static Properties getDistributedSystemProperties() {
