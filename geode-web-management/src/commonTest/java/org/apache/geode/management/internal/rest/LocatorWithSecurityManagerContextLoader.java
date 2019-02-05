@@ -15,46 +15,33 @@
 
 package org.apache.geode.management.internal.rest;
 
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.GenericXmlWebContextLoader;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.context.web.WebMergedContextConfiguration;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import org.apache.geode.internal.cache.HttpService;
+import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@RunWith(SpringRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
-    loader = TestContextLoader.class)
-@WebAppConfiguration
-public abstract class BaseManagementIntegrationTest {
+class LocatorWithSecurityManagerContextLoader extends GenericXmlWebContextLoader {
 
-  static RequestPostProcessor POST_PROCESSOR =
-      new StandardRequestPostProcessor();
+  private LocatorStarterRule locator = new LocatorStarterRule()
+      .withSecurityManager(SimpleTestSecurityManager.class)
+      .withAutoStart();
 
-  static LocatorStarterRule locator;
-
-  @Autowired
-  WebApplicationContext webApplicationContext;
-
-}
-
-
-class TestContextLoader extends GenericXmlWebContextLoader {
   @Override
   protected void loadBeanDefinitions(GenericWebApplicationContext context,
       WebMergedContextConfiguration webMergedConfig) {
+
+    locator.before();
+
     super.loadBeanDefinitions(context, webMergedConfig);
     context.getServletContext().setAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-        BaseManagementIntegrationTest.locator.getCache().getSecurityService());
+        locator.getCache().getSecurityService());
     context.getServletContext().setAttribute(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-        BaseManagementIntegrationTest.locator.getLocator().getClusterManagementService());
+        locator.getLocator().getClusterManagementService());
+
+    context.getServletContext().setAttribute("locator", locator);
   }
 
 }
