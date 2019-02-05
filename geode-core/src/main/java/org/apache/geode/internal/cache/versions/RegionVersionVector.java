@@ -61,10 +61,9 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   private static final Logger logger = LogService.getLogger();
 
+  // TODO:LOG:CONVERT: REMOVE THIS
   public static final boolean DEBUG =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "VersionVector.VERBOSE"); // TODO:LOG:CONVERT:
-  // REMOVE
-  // THIS
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "VersionVector.VERBOSE");
 
 
 

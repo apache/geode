@@ -77,9 +77,6 @@ public class SessionCachingFilter implements Filter {
   private static final AtomicInteger started = new AtomicInteger(
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "override.session.manager.count", 1));
 
-  private static final int percentInactiveTimeTriggerRebuild = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "session.inactive.trigger.rebuild", 80);
-
   /**
    * This latch ensures that at least one thread/instance has fired up the session manager before
    * any other threads complete the init method.
