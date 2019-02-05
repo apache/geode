@@ -951,18 +951,6 @@ public class JGroupsMessengerJUnitTest {
     }
   }
 
-  @Test(expected = IOException.class)
-  public void testMulticastTest() throws Exception {
-    initMocks(true);
-    boolean result = messenger.testMulticast(50);
-    // this shouldln't succeed because there's no-one to respond
-    assertFalse(result);
-    MulticastSocket socket =
-        new MulticastSocket(services.getConfig().getDistributionConfig().getMcastPort());
-    InetAddress address = services.getConfig().getDistributionConfig().getMcastAddress();
-    socket.joinGroup(address);
-  }
-
   private NetView createView(InternalDistributedMember otherMbr) {
     InternalDistributedMember sender = messenger.getMemberID();
     List<InternalDistributedMember> mbrs = new ArrayList<>();
