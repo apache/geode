@@ -51,6 +51,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
 
   /** set this to false if a test needs a non-loner distributed system */
   static boolean lonerDistributedSystem = true;
+  private static String previousMemoryEventTolerance;
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -64,7 +65,8 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "1");
+    previousMemoryEventTolerance =
+        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "1");
     disconnectAllFromDS();
   }
 
@@ -75,6 +77,11 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
 
     waitForNoRebalancing();
     Invoke.invokeInEveryVM(CacheXmlTestCase::waitForNoRebalancing);
+
+    if (previousMemoryEventTolerance != null) {
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance",
+          previousMemoryEventTolerance);
+    }
 
     super.preTearDownCacheTestCase();
   }
