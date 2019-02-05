@@ -180,12 +180,12 @@ public class CommandManager {
     packagesToScan.add(InternalGfshCommand.class.getPackage().getName());
 
     // Create one scanner to be used everywhere
-    ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
-
-    loadUserCommands(scanner, userCommandPackages);
-    loadPluginCommands();
-    loadGeodeCommands(scanner);
-    loadConverters(scanner);
+    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan)) {
+      loadUserCommands(scanner, userCommandPackages);
+      loadPluginCommands();
+      loadGeodeCommands(scanner);
+      loadConverters(scanner);
+    }
   }
 
   private void loadConverters(ClasspathScanLoadHelper scanner) {

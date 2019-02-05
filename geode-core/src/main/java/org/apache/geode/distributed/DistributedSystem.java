@@ -15,7 +15,6 @@
 package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
-import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -23,7 +22,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -77,6 +75,10 @@ import org.apache.geode.internal.util.IOUtils;
  * program will no longer access it. Disconnecting frees up certain resources and allows your
  * application to connect to a different distributed system, if desirable.
  *
+ * <P>
+ *
+ * Users should never subclass this class.
+ *
  * @since GemFire 3.0
  */
 public abstract class DistributedSystem implements StatisticsFactory {
@@ -86,7 +88,8 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * to a distributed system is allowed in a VM. This set is never modified in place (it is always
    * read only) but the reference can be updated by holders of {@link #existingSystemsLock}.
    */
-  protected static volatile List existingSystems = Collections.EMPTY_LIST;
+  protected static volatile List<InternalDistributedSystem> existingSystems =
+      Collections.EMPTY_LIST;
   /**
    * This lock must be changed to add or remove a system. It is notified when a system is removed.
    *
@@ -156,66 +159,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *
    */
   public static DistributedSystem connect(Properties config) {
-    if (config == null) {
-      // fix for bug 33992
-      config = new Properties();
-    }
-
-    if (ALLOW_MULTIPLE_SYSTEMS) {
-      return InternalDistributedSystem.newInstance(config);
-    }
-
-    synchronized (existingSystemsLock) {
-      if (ClusterDistributionManager.isDedicatedAdminVM()) {
-        // For a dedicated admin VM, check to see if there is already
-        // a connect that will suit our purposes.
-        DistributedSystem existingSystem = getConnection(config);
-        if (existingSystem != null) {
-          return existingSystem;
-        }
-
-      } else {
-        boolean existingSystemDisconnecting = true;
-        boolean isReconnecting = false;
-        while (!existingSystems.isEmpty() && existingSystemDisconnecting && !isReconnecting) {
-          Assert.assertTrue(existingSystems.size() == 1);
-
-          InternalDistributedSystem existingSystem =
-              (InternalDistributedSystem) existingSystems.get(0);
-          existingSystemDisconnecting = existingSystem.isDisconnecting();
-          // a reconnecting DS will block on GemFireCache.class and a ReconnectThread
-          // holds that lock and invokes this method, so we break out of the loop
-          // if we detect this condition
-          isReconnecting = existingSystem.isReconnectingDS();
-          if (existingSystemDisconnecting) {
-            boolean interrupted = Thread.interrupted();
-            try {
-              // no notify for existingSystemsLock, just to release the sync
-              existingSystemsLock.wait(50);
-            } catch (InterruptedException ex) {
-              interrupted = true;
-            } finally {
-              if (interrupted) {
-                Thread.currentThread().interrupt();
-              }
-            }
-          } else if (existingSystem.isConnected()) {
-            existingSystem.validateSameProperties(config, existingSystem.isConnected());
-            return existingSystem;
-          } else {
-            // This should not happen: existingSystem.isConnected()==false &&
-            // existingSystem.isDisconnecting()==false
-            throw new AssertionError(
-                "system should not have both disconnecting==false and isConnected==false");
-          }
-        }
-      }
-
-      // Make a new connection to the distributed system
-      InternalDistributedSystem newSystem = InternalDistributedSystem.newInstance(config);
-      addSystem(newSystem);
-      return newSystem;
-    }
+    return InternalDistributedSystem.connectInternal(config, null);
   }
 
   protected static void addSystem(InternalDistributedSystem newSystem) {
@@ -234,7 +178,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   protected static boolean removeSystem(InternalDistributedSystem oldSystem) {
     synchronized (existingSystemsLock) {
-      List listOfSystems = new ArrayList(existingSystems);
+      List<InternalDistributedSystem> listOfSystems = new ArrayList<>(existingSystems);
       boolean result = listOfSystems.remove(oldSystem);
       if (result) {
         int size = listOfSystems.size();
@@ -282,13 +226,11 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *
    * @since GemFire 4.0
    */
-  private static DistributedSystem getConnection(Properties config) {
+  protected static DistributedSystem getConnection(Properties config) {
     // In an admin VM you can have a connection to more than one
     // distributed system. If we are already connected to the desired
     // distributed system, return that connection.
-    List l = existingSystems;
-    for (Iterator iter = l.iterator(); iter.hasNext();) {
-      InternalDistributedSystem existingSystem = (InternalDistributedSystem) iter.next();
+    for (InternalDistributedSystem existingSystem : existingSystems) {
       if (existingSystem.sameSystemAs(config)) {
         Assert.assertTrue(existingSystem.isConnected());
         return existingSystem;
@@ -310,13 +252,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
       return existing;
 
     } else {
-      // logger.info("creating new distributed system for admin");
-      // for (java.util.Enumeration en=props.propertyNames(); en.hasMoreElements(); ) {
-      // String prop=(String)en.nextElement();
-      // logger.info(prop + "=" + props.getProperty(prop));
-      // }
       props.setProperty(CONSERVE_SOCKETS, "true");
-      // LOG: no longer using the LogWriter that was passed in
       return connect(props);
     }
   }
@@ -336,28 +272,6 @@ public abstract class DistributedSystem implements StatisticsFactory {
       ClusterDistributionManager.setIsDedicatedAdminVM(adminOnly);
     }
   }
-
-  // /**
-  // * Connects to a GemFire distributed system with a configuration
-  // * supplemented by the given properties.
-  // *
-  // * @param config
-  // * The <a href="#configuration">configuration properties</a>
-  // * used when connecting to the distributed system
-  // * @param callback
-  // * A user-specified object that is delivered with the {@link
-  // * org.apache.geode.admin.SystemMembershipEvent}
-  // * triggered by connecting.
-  // *
-  // * @see #connect(Properties)
-  // * @see org.apache.geode.admin.SystemMembershipListener#memberJoined
-  // *
-  // * @since GemFire 4.0
-  // */
-  // public static DistributedSystem connect(Properties config,
-  // Object callback) {
-  // throw new UnsupportedOperationException("Not implemented yet");
-  // }
 
   ////////////////////// Constructors //////////////////////
 

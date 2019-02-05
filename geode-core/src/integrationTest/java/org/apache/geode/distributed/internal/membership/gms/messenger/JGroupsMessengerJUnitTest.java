@@ -95,7 +95,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -175,12 +174,12 @@ public class JGroupsMessengerJUnitTest {
     // if I do this earlier then test this return messenger as null
     when(services.getMessenger()).thenReturn(messenger);
 
-    String jgroupsConfig = messenger.getJGroupsStackConfig();
+    String jgroupsConfig = messenger.jgStackConfig;
     int startIdx = jgroupsConfig.indexOf("<org");
     int insertIdx = jgroupsConfig.indexOf('>', startIdx + 4) + 1;
     jgroupsConfig = jgroupsConfig.substring(0, insertIdx) + "<" + InterceptUDP.class.getName()
         + "/>" + jgroupsConfig.substring(insertIdx);
-    messenger.setJGroupsStackConfigForTesting(jgroupsConfig);
+    messenger.jgStackConfig = jgroupsConfig;
     // System.out.println("jgroups config: " + jgroupsConfig);
 
     messenger.start();
@@ -775,7 +774,7 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testPingPong() throws Exception {
     initMocks(false);
-    GMSPingPonger pinger = messenger.getPingPonger();
+    GMSPingPonger pinger = messenger.pingPonger;
     InternalDistributedMember mbr = createAddress(8888);
     JGAddress addr = new JGAddress(mbr);
 
@@ -948,16 +947,6 @@ public class JGroupsMessengerJUnitTest {
     } catch (GemFireIOException e) {
       // pass
     }
-  }
-
-  @Test
-  public void testMulticastTest() throws Exception {
-    initMocks(true);
-    boolean result = messenger.testMulticast(50);
-    // this shouldln't succeed because there's no-one to respond
-    assertFalse(result);
-    assertFalse(AvailablePort.isPortAvailable(
-        services.getConfig().getDistributionConfig().getMcastPort(), AvailablePort.MULTICAST));
   }
 
   private NetView createView(InternalDistributedMember otherMbr) {

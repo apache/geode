@@ -60,7 +60,6 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
@@ -513,8 +512,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
     Socket clientSocket = null;
-    InternalDistributedSystem internalDistributedSystem =
-        InternalDistributedSystem.getConnectedInstance();
     try {
       logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember,
           suspectMember.getInetAddress(), port);
@@ -842,12 +839,17 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
       InternalDistributedMember oldNeighbor = nextNeighbor;
       if (oldNeighbor != newNeighbor) {
-        logger.info("Failure detection is now watching {}", newNeighbor);
+        logger.info("Failure detection is now watching " + newNeighbor
+            + "; suspects are " + suspectedMemberIds);
         nextNeighbor = newNeighbor;
       }
     }
 
     if (nextNeighbor != null && nextNeighbor.equals(localAddress)) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Health monitor is unable to find a neighbor to watch.  "
+            + "Current suspects are {}", suspectedMemberIds);
+      }
       nextNeighbor = null;
     }
 
@@ -1353,6 +1355,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   @Override
   public int getFailureDetectionPort() {
     return this.socketPort;
+  }
+
+  @Override
+  public Collection<InternalDistributedMember> getMembersFailingAvailabilityCheck() {
+    return Collections.unmodifiableCollection(this.suspectedMemberIds.keySet());
   }
 
   private void sendSuspectRequest(final List<SuspectRequest> requests) {

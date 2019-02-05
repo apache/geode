@@ -194,10 +194,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     // else, scan the classpath to find all the classes annotated with XSDRootElement
     else {
       Set<String> packages = getPackagesToScan();
-      ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages);
-      Set<Class<?>> scannedClasses = scanner.scanClasspathForAnnotation(XSDRootElement.class,
-          packages.toArray(new String[] {}));
-      this.jaxbService = new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
+      try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages)) {
+        Set<Class<?>> scannedClasses = scanner.scanClasspathForAnnotation(XSDRootElement.class,
+            packages.toArray(new String[] {}));
+        this.jaxbService =
+            new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
+      }
     }
     jaxbService.validateWithLocalCacheXSD();
   }

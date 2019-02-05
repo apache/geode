@@ -1,3 +1,5 @@
+import java.nio.file.Paths
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,100 +17,96 @@
  * limitations under the License.
  */
 
-def generatedResources = "$buildDir/generated-resources/main"
 project.ext.installs = new Properties()
+project.ext.versions = new Properties()
 
+subprojects {
+  def oldGeodeVersion = project.name
+
+  boolean useTgz = (oldGeodeVersion >= "1.7.0")
+  boolean downloadInstall = (oldGeodeVersion >= "1.2.0")
+
+  String archiveType = useTgz ? "tgz" : "zip"
+
+  // Each project is named after its fixed version, removing dots and removing any release tags.
+  // eg: 1.0.0-incubating -> test100
+  def projSrcName = "test".concat(oldGeodeVersion.split(/\.|-/)
+      .toList()
+      .subList(0,3)
+      .join(''))
+
+  project.dependencies {
+    compile "org.apache.geode:geode-common:${oldGeodeVersion}"
+    compile "org.apache.geode:geode-core:${oldGeodeVersion}"
+    compile "org.apache.geode:geode-lucene:${oldGeodeVersion}"
+    compile "org.apache.geode:geode-old-client-support:${oldGeodeVersion}"
+    compile "org.apache.geode:geode-wan:${oldGeodeVersion}"
+    compile "org.apache.geode:geode-cq:${oldGeodeVersion}"
+    compile "org.apache.geode:geode-rebalancer:${oldGeodeVersion}"
+  }
+
+  parent.ext.versions.setProperty(projSrcName, sourceSets.main.runtimeClasspath.asPath)
+
+  def unpackDest = project.buildDir.toPath().resolve('apache-geode-'.concat(oldGeodeVersion))
+
+  project.configurations.create("oldInstall")
+
+  if (downloadInstall) {
+    project.dependencies.add "oldInstall", "org.apache.geode:apache-geode:${oldGeodeVersion}@${archiveType}"
+
+    parent.ext.installs.setProperty(projSrcName, unpackDest.toString())
+  }
+  project.task("downloadAndUnzipFile") {
+
+    inputs.files {
+      configurations.oldInstall
+    }
+    outputs.dir(unpackDest)
+
+    doLast {
+      def oldArchive = configurations."oldInstall".singleFile
+      copy {
+        from(useTgz ? tarTree(oldArchive) : zipTree(oldArchive))
+        into project.buildDir
+      }
+    }
+  }
+  project.build.dependsOn(project.downloadAndUnzipFile)
+  project.downloadAndUnzipFile.onlyIf {downloadInstall}
+
+  (project.tasks.jar as Task).onlyIf {false}
+}
+
+def generatedResources = buildDir.toPath().resolve('generated-resources').resolve('main').toString()
 task createGeodeClasspathsFile {
-  File classpathsFile = file("$generatedResources/geodeOldVersionClasspaths.txt")
-  File installsFile = file("$generatedResources/geodeOldVersionInstalls.txt")
+  def classpathsFile = Paths.get(generatedResources).resolve('geodeOldVersionClasspaths.txt').toString()
+  def installsFile = Paths.get(generatedResources).resolve('geodeOldVersionInstalls.txt').toString()
   outputs.file(classpathsFile)
   outputs.file(installsFile)
-
-
-  // Add sourceSets for backwards compatibility, rolling upgrade, and
-  // pdx testing.
-  addOldVersion('test100', '1.0.0-incubating', false, false)
-  addOldVersion('test110', '1.1.0', false, false)
-  addOldVersion('test111', '1.1.1', false, false)
-  addOldVersion('test120', '1.2.0', true, false)
-  addOldVersion('test130', '1.3.0', true, false)
-  addOldVersion('test140', '1.4.0', true, false)
-  addOldVersion('test150', '1.5.0', true, false)
-  addOldVersion('test160', '1.6.0', true, false)
-  addOldVersion('test170', '1.7.0', true, false)
-  addOldVersion('test180', '1.8.0', true)
+//  outputs.cacheIf( false )
 
   doLast {
-    Properties versions = new Properties()
-    project(':geode-old-versions').sourceSets.each {
-      versions.setProperty(it.name,it.runtimeClasspath.getAsPath())
+    sourceSets.each { sset ->
+      project.ext.versions.setProperty(sset.name, sset.runtimeClasspath.asPath)
     }
-
-    classpathsFile.getParentFile().mkdirs()
 
     new FileOutputStream(classpathsFile).withStream { fos ->
-      versions.store(fos, '')
+      project.ext.versions.store(fos, '')
     }
 
-    installsFile.getParentFile().mkdirs()
-
+    // TODO potential caching issue with implicit configuration in doLast action.
     new FileOutputStream(installsFile).withStream { fos ->
       project.ext.installs.store(fos, '')
     }
   }
 }
-createGeodeClasspathsFile.mustRunAfter(clean)
 
-def addOldVersion(def source, def geodeVersion, def downloadInstall, def useTgz = true) {
-  sourceSets.create("${source}", {})
-
-  configurations {
-    "${source}Compile"
-  }
-
-  dependencies.add "${source}Compile", "org.apache.geode:geode-common:${geodeVersion}"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-core:${geodeVersion}"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-lucene:${geodeVersion}"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-old-client-support:${geodeVersion}"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-wan:${geodeVersion}"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-cq:${geodeVersion}"
-  dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:${geodeVersion}"
-
-  if (downloadInstall) {
-    configurations.create("${source}OldInstall")
-
-    def archiveType = "tgz"
-    def extractMethod = "tarTree"
-    if (!useTgz) {
-      archiveType = "zip"
-      extractMethod = "zipTree"
-    }
-
-    dependencies {
-      "${source}OldInstall"  "org.apache.geode:apache-geode:${geodeVersion}@${archiveType}"
-    }
-
-    project.ext.installs.setProperty(source, "${buildDir}/apache-geode-${geodeVersion}")
-
-    task("downloadAndUnzipFile${geodeVersion}") {
-      inputs.files {
-        configurations."${source}OldInstall"
-      }
-
-      outputs.dir("${buildDir}/apache-geode-${geodeVersion}")
-      doLast {
-        copy {
-          from "${extractMethod}"(configurations."${source}OldInstall".singleFile)
-          into project.buildDir
-        }
-      }
-    }
-    createGeodeClasspathsFile.dependsOn tasks["downloadAndUnzipFile${geodeVersion}"]
-  }
-}
+project.createGeodeClasspathsFile.mustRunAfter(clean)
+project.createGeodeClasspathsFile.inputs.files(getTasksByName('downloadAndUnzipFile', true))
+project.build.dependsOn(createGeodeClasspathsFile)
 
 sourceSets {
   main {
-    output.dir(generatedResources, builtBy: 'createGeodeClasspathsFile')
+    output.dir(generatedResources, builtBy: createGeodeClasspathsFile)
   }
 }

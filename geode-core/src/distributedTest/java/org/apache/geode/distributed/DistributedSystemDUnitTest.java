@@ -67,8 +67,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -263,7 +261,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testUDPPortRange() throws Exception {
+  public void testPortRange() throws Exception {
     Properties config = new Properties();
     config.put(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
     config.setProperty(MEMBERSHIP_PORT_RANGE,
@@ -272,30 +270,6 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     InternalDistributedSystem system = getSystem(config);
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     InternalDistributedMember member = dm.getDistributionManagerId();
-
-    verifyMembershipPortsInRange(member, this.lowerBoundOfPortRange, this.upperBoundOfPortRange);
-  }
-
-  @Test
-  public void testMembershipPortRangeWithExactThreeValues() throws Exception {
-    Properties config = new Properties();
-    config.setProperty(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
-    config.setProperty(MEMBERSHIP_PORT_RANGE,
-        this.lowerBoundOfPortRange + "-" + this.upperBoundOfPortRange);
-
-    InternalDistributedSystem system = getSystem(config);
-    Cache cache = CacheFactory.create(system);
-    cache.addCacheServer();
-
-    ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
-    InternalDistributedMember member = dm.getDistributionManagerId();
-    GMSMembershipManager gms =
-        (GMSMembershipManager) MembershipManagerHelper.getMembershipManager(system);
-    JGroupsMessenger messenger = (JGroupsMessenger) gms.getServices().getMessenger();
-    String jgConfig = messenger.getJGroupsStackConfig();
-
-    assertThat(jgConfig).as("expected to find port_range=\"2\" in " + jgConfig)
-        .contains("port_range=\"2\"");
 
     verifyMembershipPortsInRange(member, this.lowerBoundOfPortRange, this.upperBoundOfPortRange);
   }

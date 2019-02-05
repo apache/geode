@@ -31,13 +31,15 @@ public class FunctionScanner {
   public Collection<String> findFunctionsInJar(File jarFile) throws IOException {
     ClassGraph fastClasspathScanner = new ClassGraph().disableDirScanning()
         .removeTemporaryFilesAfterScan().overrideClasspath(jarFile.getAbsolutePath());
-    ScanResult scanResult = fastClasspathScanner.enableClassInfo().scan();
+    try (ScanResult scanResult = fastClasspathScanner.enableClassInfo().scan(1)) {
 
-    Set<String> functionClasses = new HashSet<>();
+      Set<String> functionClasses = new HashSet<>();
 
-    functionClasses.addAll(scanResult.getClassesImplementing(Function.class.getName()).getNames());
-    functionClasses.addAll(scanResult.getSubclasses(FunctionAdapter.class.getName()).getNames());
+      functionClasses
+          .addAll(scanResult.getClassesImplementing(Function.class.getName()).getNames());
+      functionClasses.addAll(scanResult.getSubclasses(FunctionAdapter.class.getName()).getNames());
 
-    return functionClasses;
+      return functionClasses;
+    }
   }
 }

@@ -272,28 +272,25 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   }
 
   /**
-   * Returns formatted call stacks of the {@code Thread}s that are directly in the
-   * {@code ExecutorService}'s {@code ThreadGroup} excluding subgroups.
+   * Returns thread dumps for the {@code Thread}s that are in the {@code ExecutorService}'s
+   * {@code ThreadGroup} excluding subgroups.
    */
   public String dumpThreads() {
-    StringBuilder dump = new StringBuilder();
+    StringBuilder dumpWriter = new StringBuilder();
+
     ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-    ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(getThreadIds(), 100);
+    ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(getThreadIds(), true, true);
+
     for (ThreadInfo threadInfo : threadInfos) {
-      dump.append('"');
-      dump.append(threadInfo.getThreadName());
-      dump.append("\" ");
-      final Thread.State state = threadInfo.getThreadState();
-      dump.append("\n   java.lang.Thread.State: ");
-      dump.append(state);
-      final StackTraceElement[] stackTraceElements = threadInfo.getStackTrace();
-      for (final StackTraceElement stackTraceElement : stackTraceElements) {
-        dump.append("\n        at ");
-        dump.append(stackTraceElement);
+      if (threadInfo == null) {
+        // sometimes ThreadMXBean.getThreadInfo returns array with one or more null elements
+        continue;
       }
-      dump.append("\n\n");
+      // ThreadInfo toString includes monitor and synchronizer details
+      dumpWriter.append(threadInfo);
     }
-    return dump.toString();
+
+    return dumpWriter.toString();
   }
 
   /**
@@ -301,16 +298,18 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * a {@code Set<WeakReference<Thread>>} to track the {@code Thread}s in the factory's
    * {@code ThreadGroup} excluding subgroups.
    */
-  static class DedicatedThreadFactory implements ThreadFactory {
-    private static final AtomicInteger poolNumber = new AtomicInteger(1);
+  protected static class DedicatedThreadFactory implements ThreadFactory {
+
+    private static final AtomicInteger POOL_NUMBER = new AtomicInteger(1);
+
     private final ThreadGroup group;
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final String namePrefix;
     private final Set<WeakReference<Thread>> directThreads = new HashSet<>();
 
-    DedicatedThreadFactory() {
+    protected DedicatedThreadFactory() {
       group = new ThreadGroup(ExecutorServiceRule.class.getSimpleName() + "-ThreadGroup");
-      namePrefix = "pool-" + poolNumber.getAndIncrement() + "-thread-";
+      namePrefix = "pool-" + POOL_NUMBER.getAndIncrement() + "-thread-";
     }
 
     @Override
@@ -326,7 +325,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
       return t;
     }
 
-    Set<Thread> getThreads() {
+    protected Set<Thread> getThreads() {
       Set<Thread> value = new HashSet<>();
       for (WeakReference<Thread> reference : directThreads) {
         Thread thread = reference.get();
@@ -375,7 +374,6 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
     /**
      * Enables invocation of {@code shutdownNow} during {@code tearDown}. Default is enabled.
-     *
      */
     public Builder useShutdownNow() {
       useShutdown = false;
