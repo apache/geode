@@ -55,13 +55,13 @@ class AbstractDistributedRule implements SerializableTestRule {
       public void evaluate() throws Throwable {
         VMEventListener vmEventListener = new InternalVMEventListener();
         beforeDistributedTest(description);
-        VM.getVMEventListenerRegistry().addVMEventListener(vmEventListener);
+        VM.addVMEventListener(vmEventListener);
         before();
         try {
           baseStatement.evaluate();
         } finally {
           after();
-          VM.getVMEventListenerRegistry().removeVMEventListener(vmEventListener);
+          VM.removeVMEventListener(vmEventListener);
           afterDistributedTest(description);
         }
       }

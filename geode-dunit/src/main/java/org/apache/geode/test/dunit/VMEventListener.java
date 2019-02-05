@@ -14,11 +14,31 @@
  */
 package org.apache.geode.test.dunit;
 
+/**
+ * Provides callback notifications for creation of and bouncing of dunit VMs.
+ */
 public interface VMEventListener {
 
+  /**
+   * Invoked after creating a new dunit VM.
+   *
+   * @see VM#getVM(int)
+   */
   void afterCreateVM(VM vm);
 
+  /**
+   * Invoked before bouncing a dunit VM.
+   *
+   * @see VM#bounce()
+   * @see VM#bounceForcibly()
+   */
   void beforeBounceVM(VM vm);
 
+  /**
+   * Invoked after bouncing a dunit VM.
+   *
+   * @see VM#bounce()
+   * @see VM#bounceForcibly()
+   */
   void afterBounceVM(VM vm);
 }

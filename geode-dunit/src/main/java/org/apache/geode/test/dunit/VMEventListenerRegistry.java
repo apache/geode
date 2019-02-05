@@ -14,9 +14,18 @@
  */
 package org.apache.geode.test.dunit;
 
+/**
+ * Manages registration of {@link VMEventListener}s.
+ */
 public interface VMEventListenerRegistry {
 
+  /**
+   * Registers a {@code VMEventListener}.
+   */
   void addVMEventListener(VMEventListener listener);
 
+  /**
+   * Deregisters a {@code VMEventListener}.
+   */
   void removeVMEventListener(VMEventListener listener);
 }

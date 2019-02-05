@@ -155,11 +155,17 @@ public class VM implements Serializable {
   }
 
   /**
-   * Returns the {@code VMEventListenerRegistry} which handles the registration of
-   * {@code VMEventListener}s.
+   * Registers a {@link VMEventListener}.
    */
-  public static VMEventListenerRegistry getVMEventListenerRegistry() {
-    return Host.getHost(0).getVMEventNotifier();
+  public static void addVMEventListener(final VMEventListener listener) {
+    getVMEventNotifier().addVMEventListener(listener);
+  }
+
+  /**
+   * Deregisters a {@link VMEventListener}.
+   */
+  public static void removeVMEventListener(final VMEventListener listener) {
+    getVMEventNotifier().removeVMEventListener(listener);
   }
 
   private static VMEventNotifier getVMEventNotifier() {
