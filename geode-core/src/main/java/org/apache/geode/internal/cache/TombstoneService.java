@@ -323,13 +323,11 @@ public class TombstoneService {
 
   private static class Tombstone extends CompactVersionHolder {
     // tombstone overhead size
-    public static final int PER_TOMBSTONE_OVERHEAD = ReflectionSingleObjectSizer.REFERENCE_SIZE // queue's
-        // reference
-        // to the
-        // tombstone
-        + ReflectionSingleObjectSizer.REFERENCE_SIZE * 3 // entry, region, member ID
-        + ReflectionSingleObjectSizer.REFERENCE_SIZE // region entry value (Token.TOMBSTONE)
-        + 18; // version numbers and timestamp
+    public static final int PER_TOMBSTONE_OVERHEAD =
+        ReflectionSingleObjectSizer.REFERENCE_SIZE // queue's reference to the tombstone
+            + ReflectionSingleObjectSizer.REFERENCE_SIZE * 3 // entry, region, member ID
+            + ReflectionSingleObjectSizer.REFERENCE_SIZE // region entry value (Token.TOMBSTONE)
+            + 18; // version numbers and timestamp
 
 
     RegionEntry entry;
