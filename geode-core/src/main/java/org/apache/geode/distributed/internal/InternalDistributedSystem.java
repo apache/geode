@@ -2820,7 +2820,7 @@ public class InternalDistributedSystem extends DistributedSystem
         System.setProperty(InternalLocator.INHIBIT_DM_BANNER, inhibitBanner);
       }
       if (quorumChecker != null) {
-        mbrMgr.releaseQuorumChecker(quorumChecker);
+        mbrMgr.releaseQuorumChecker(quorumChecker, reconnectDS);
       }
     }
 

@@ -1568,7 +1568,11 @@ public class Connection implements Runnable {
         logger.debug("Stopping {} for {}", p2pReaderName(), remoteAddr);
       }
       if (this.isReceiver) {
-        initiateSuspicionIfSharedUnordered();
+        try {
+          initiateSuspicionIfSharedUnordered();
+        } catch (CancelException e) {
+          // shutting down
+        }
         if (!this.sharedResource) {
           this.conduit.getStats().incThreadOwnedReceivers(-1L, dominoCount.get());
         }

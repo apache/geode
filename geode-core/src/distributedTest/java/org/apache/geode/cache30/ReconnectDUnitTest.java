@@ -140,6 +140,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           locatorPort = locPort;
           Properties props = getDistributedSystemProperties();
           locator = Locator.startLocatorAndDS(locatorPort, new File(""), props);
+          system = (InternalDistributedSystem) locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
           ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
           IgnoredException.addIgnoredException(
@@ -563,6 +564,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       try {
         InternalLocator locator =
             (InternalLocator) Locator.startLocatorAndDS(secondLocPort, null, props);
+        system = (InternalDistributedSystem) locator.getDistributedSystem();
         cache = locator.getCache();
       } catch (IOException e) {
         Assert.fail("exception starting locator", e);
