@@ -19,26 +19,24 @@ import static java.util.stream.Collectors.toSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
-import io.github.classgraph.utils.WhiteBlackList;
 
 /**
  * Utility class to scan class-path & load classes.
  *
  * @since GemFire 7.0
  */
-public class ClasspathScanLoadHelper {
+public class ClasspathScanLoadHelper implements AutoCloseable {
 
   private final ScanResult scanResult;
 
   public ClasspathScanLoadHelper(Collection<String> packagesToScan) {
     scanResult = new ClassGraph().whitelistPackages(packagesToScan.toArray(new String[] {}))
         .enableClassInfo()
-        .enableAnnotationInfo().scan();
+        .enableAnnotationInfo().scan(1);
   }
 
   public Set<Class<?>> scanPackagesForClassesImplementing(Class<?> implementedInterface,
@@ -63,13 +61,24 @@ public class ClasspathScanLoadHelper {
     return classInfoList.loadClasses().stream().collect(toSet());
   }
 
-  private boolean classMatchesPackage(String className, String packageSpec) {
+  /**
+   * replaces shell-style glob characters with their regexp equivalents
+   */
+  private static String globToRegex(final String glob) {
+    return "^" + glob.replace(".", "\\.").replace("*", ".*") + "$";
+  }
+
+  private static boolean classMatchesPackage(String className, String packageSpec) {
     if (!packageSpec.contains("*")) {
       return className.startsWith(packageSpec);
     }
 
-    Pattern globPattern = WhiteBlackList.globToPattern(packageSpec);
-    return globPattern.matcher(className).matches();
+    return className.matches(globToRegex(packageSpec));
   }
 
+  @Override
+  public void close() {
+    if (scanResult != null)
+      scanResult.close();
+  }
 }
