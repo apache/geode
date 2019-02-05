@@ -68,7 +68,6 @@ import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.Assert;
@@ -750,9 +749,6 @@ public class InternalDistributedSystem extends DistributedSystem
             LogWriterFactory.createLogWriterLogger(this.config, true);
         this.securityLogWriter.fine("SecurityLogWriter is created.");
       }
-
-      Services.setLogWriter(this.logWriter);
-      Services.setSecurityLogWriter(this.securityLogWriter);
 
       loggingSession.startSession();
 
@@ -2824,7 +2820,7 @@ public class InternalDistributedSystem extends DistributedSystem
         System.setProperty(InternalLocator.INHIBIT_DM_BANNER, inhibitBanner);
       }
       if (quorumChecker != null) {
-        mbrMgr.releaseQuorumChecker(quorumChecker);
+        mbrMgr.releaseQuorumChecker(quorumChecker, reconnectDS);
       }
     }
 

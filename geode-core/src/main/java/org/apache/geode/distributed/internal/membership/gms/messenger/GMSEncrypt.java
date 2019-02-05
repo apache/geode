@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember.InternalDistributedMemberWrapper;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 
 public final class GMSEncrypt {
   // Parameters for the Diffie-Hellman key exchange
@@ -103,7 +104,11 @@ public final class GMSEncrypt {
   }
 
   private byte[] getPublicKeyIfIAmLocator(InternalDistributedMember mbr) {
-    return services.getPublicKey(mbr);
+    GMSLocator locator = (GMSLocator) services.getLocator();
+    if (locator != null) {
+      return locator.getPublicKey(mbr);
+    }
+    return null;
   }
 
   GMSEncrypt(Services services, String dhSKAlgo) throws Exception {
@@ -162,6 +167,9 @@ public final class GMSEncrypt {
     }
     if (pk == null) {
       pk = (byte[]) view.getPublicKey(member);
+    }
+    if (pk == null) {
+      throw new IllegalStateException("unable to find public key for " + member);
     }
     return pk;
   }

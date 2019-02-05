@@ -1803,9 +1803,9 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   }
 
   @Override
-  public void releaseQuorumChecker(QuorumChecker checker) {
+  public void releaseQuorumChecker(QuorumChecker checker,
+      InternalDistributedSystem system) {
     checker.suspend();
-    InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
     if (system == null || !system.isConnected()) {
       checker.close();
     }

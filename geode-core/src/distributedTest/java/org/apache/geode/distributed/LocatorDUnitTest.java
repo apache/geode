@@ -213,8 +213,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(SECURITY_PEER_AUTH_INIT, "org.apache.geode.distributed.AuthInitializer.create");
     properties.put(SECURITY_PEER_AUTHENTICATOR,
         "org.apache.geode.distributed.MyAuthenticator.create");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(USE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
     system = getConnectedDistributedSystem(properties);
     assertThat(system.getDistributedMember().getVmKind())
@@ -391,6 +389,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, logger.getLevel().name());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.put(USE_CLUSTER_CONFIGURATION, "false");
     properties.put(SSL_CIPHERS, "any");
     properties.put(SSL_PROTOCOLS, "any");
     properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
@@ -450,6 +449,8 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.put(USE_CLUSTER_CONFIGURATION, "false");
+    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
 
     final String locators = hostname + "[" + port1 + "]";
@@ -846,7 +847,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     addDSProps(properties);
 
@@ -1212,7 +1212,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
       final Properties props = new Properties();
       props.setProperty(LOCATORS, locators);
       props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-      props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
       addDSProps(props);
       vm1.invoke(() -> {
@@ -1284,7 +1283,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
 
     final Properties dsProps = getBasicProperties(locators);
-    dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(dsProps);
 
     startLocator(vm0, dsProps, port1);
@@ -1369,7 +1367,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     final Properties dsProps = getBasicProperties(locators);
     dsProps.setProperty(LOG_LEVEL, logger.getLevel().name());
     dsProps.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     addDSProps(dsProps);
     startLocator(vm0, dsProps, port1);
@@ -1674,7 +1671,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     VM vm = VM.getVM(0);
     final Properties properties =
         getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
-    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
     if (stateFile.exists()) {
       assertThat(stateFile.delete()).isTrue();
@@ -1742,7 +1738,10 @@ public class LocatorDUnitTest implements java.io.Serializable {
   }
 
   // for child classes
-  protected void addDSProps(Properties p) {}
+  protected void addDSProps(Properties p) {
+    p.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.put(USE_CLUSTER_CONFIGURATION, "false");
+  }
 
   protected static InternalDistributedSystem getConnectedDistributedSystem(Properties properties) {
     if (system == null || !system.isConnected()) {
@@ -1841,7 +1840,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     Properties locProps = new Properties();
     locProps.setProperty(MCAST_PORT, "0");
     locProps.setProperty(MEMBER_TIMEOUT, "1000");
-    locProps.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(locProps);
 
     startLocator(vm, locProps, port);
@@ -1853,8 +1851,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
       Properties locProps1 = new Properties();
       locProps1.put(MCAST_PORT, "0");
       locProps1.put(LOG_LEVEL, logger.getLevel().name());
-      locProps1.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-      locProps1.put(USE_CLUSTER_CONFIGURATION, "false");
       addDSProps(locProps1);
 
       startLocator(vm0, locProps1, port);

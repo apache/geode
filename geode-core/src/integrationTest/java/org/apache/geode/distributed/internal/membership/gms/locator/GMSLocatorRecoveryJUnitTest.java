@@ -24,6 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,6 +44,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
@@ -174,12 +176,11 @@ public class GMSLocatorRecoveryJUnitTest {
 
       // start the first membership manager
       DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
+      InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
+      when(mockSystem.getConfig()).thenReturn(config);
       DMStats stats1 = mock(DMStats.class);
-      m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1,
+      m1 = MemberFactory.newMembershipManager(listener1, mockSystem, transport, stats1,
           SecurityServiceFactory.create());
-
-      // hook up the locator to the membership manager
-      ((InternalLocator) l).getLocatorHandler().setMembershipManager(m1);
 
       GMSLocator l2 = new GMSLocator(SocketCreator.getLocalHost(),
           m1.getLocalMember().getHost() + "[" + port + "]", true, true, new LocatorStats(), "");
