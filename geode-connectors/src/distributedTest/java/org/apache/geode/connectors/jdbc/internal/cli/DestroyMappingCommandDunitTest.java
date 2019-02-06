@@ -92,7 +92,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     gfsh.executeAndAssertThat(
         "create data-source --name=myDataSource"
             + " --username=myuser --password=mypass --pooled=false"
-            + " --url=\"jdbc:derby:newDB;create=true\"")
+            + " --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess();
     executeSql(
         "create table myuser." + TEST_REGION + " (id varchar(10) primary key, name varchar(10))");

@@ -88,7 +88,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat(
-        "create data-source --name=connection --url=\"jdbc:derby:newDB;create=true\"")
+        "create data-source --name=connection --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();

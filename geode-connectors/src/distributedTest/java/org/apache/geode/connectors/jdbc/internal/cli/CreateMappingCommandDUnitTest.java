@@ -15,7 +15,6 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
-import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
@@ -26,10 +25,17 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRO
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,6 +54,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -90,7 +97,43 @@ public class CreateMappingCommandDUnitTest {
     server4 = startupRule.startServerVM(4, TEST_GROUP1 + "," + TEST_GROUP2, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    setupDatabase();
+  }
 
+  @After
+  public void after() throws Exception {
+    teardownDatabase();
+  }
+
+  private void setupDatabase() {
+    gfsh.executeAndAssertThat(
+        "create data-source --name=connection"
+            + " --pooled=false"
+            + " --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
+    executeSql(
+        "create table mySchema.myTable (myId varchar(10) primary key, name varchar(10))");
+  }
+
+  private void teardownDatabase() {
+    executeSql("drop table mySchema.myTable");
+  }
+
+  private void executeSql(String sql) {
+    for (MemberVM server : Arrays.asList(server1, server2, server3, server4)) {
+      server.invoke(() -> {
+        try {
+          DataSource ds = JNDIInvoker.getDataSource("connection");
+          Connection conn = ds.getConnection();
+          Statement sm = conn.createStatement();
+          sm.execute(sql);
+          sm.close();
+          conn.close();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
   }
 
   private void setupReplicate(String regionName) {
@@ -220,7 +263,6 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(TABLE_NAME, "myTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(GROUP_NAME, TEST_GROUP1);
 
@@ -264,7 +306,6 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(TABLE_NAME, "myTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(GROUP_NAME, TEST_GROUP2);
 
@@ -308,7 +349,6 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(TABLE_NAME, "myTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(GROUP_NAME, TEST_GROUP1 + "," + TEST_GROUP2);
 
@@ -352,7 +392,6 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(TABLE_NAME, "myTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(GROUP_NAME, TEST_GROUP1 + "," + TEST_GROUP2);
 
@@ -409,15 +448,7 @@ public class CreateMappingCommandDUnitTest {
     assertThat(mapping.getTableName()).isEqualTo("myTable");
     assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
     assertThat(mapping.getIds()).isEqualTo("myId");
-    assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
-    assertThat(mapping.getSchema()).isEqualTo("mySchema");
-  }
-
-  private static void assertValidMappingWithoutIds(RegionMapping mapping) {
-    assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-    assertThat(mapping.getTableName()).isEqualTo("myTable");
-    assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
-    assertThat(mapping.getCatalog()).isEqualTo("myCatalog");
+    assertThat(mapping.getCatalog()).isNull();
     assertThat(mapping.getSchema()).isEqualTo("mySchema");
   }
 
@@ -431,7 +462,6 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(TABLE_NAME, "myTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -465,7 +495,6 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "true");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -506,6 +535,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(REGION_NAME, regionName);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(PDX_NAME, "myPdxClass");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -514,6 +544,7 @@ public class CreateMappingCommandDUnitTest {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getSchema()).isEqualTo("mySchema");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, true);
@@ -525,6 +556,7 @@ public class CreateMappingCommandDUnitTest {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getSchema()).isEqualTo("mySchema");
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, true);
@@ -559,13 +591,14 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  @Parameters({TEST_REGION, "/" + TEST_REGION})
+  @Parameters({"myTable", "/" + "myTable"})
   public void createMappingWithNoTable(String regionName) {
     setupReplicate(regionName);
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -626,6 +659,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(SCHEMA_NAME, "mySchema");
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     csb = new CommandStringBuilder(CREATE_MAPPING);

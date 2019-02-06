@@ -58,7 +58,7 @@ public class DestroyDataSourceCommandDUnitTest {
     gfsh.connectAndVerify(locator);
 
     gfsh.execute(
-        "create data-source --name=datasource1 --url=\"jdbc:derby:newDB;create=true\"");
+        "create data-source --name=datasource1 --url=\"jdbc:derby:memory:newDB;create=true\"");
   }
 
   @Test

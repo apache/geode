@@ -53,14 +53,14 @@ public class ListDataSourceCommandDUnitTest {
   @Test
   public void listDataSourceForSimpleDataSource() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\" --username=joe --password=myPassword")
+        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\" --username=joe --password=myPassword")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     CommandResultAssert result = gfsh.executeAndAssertThat("list data-source");
 
     result.statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "simple", "false", "false",
-            "jdbc:derby:newDB;create=true");
+            "jdbc:derby:memory:newDB;create=true");
   }
 
 
@@ -91,7 +91,7 @@ public class ListDataSourceCommandDUnitTest {
   @Test
   public void listDataSourceUsedByRegionsHasCorrectOutput() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\"")
+        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
     setupDatabase();
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
@@ -108,36 +108,36 @@ public class ListDataSourceCommandDUnitTest {
     teardownDatabase();
     result.statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "simple", "false", "true",
-            "jdbc:derby:newDB;create=true");
+            "jdbc:derby:memory:newDB;create=true");
   }
 
   @Test
   public void listDataSourceForPooledDataSource() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
+        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:memory:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     gfsh.executeAndAssertThat("list data-source").statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "pooledDataSource", "true",
             "false",
-            "jdbc:derby:newDB;create=true");
+            "jdbc:derby:memory:newDB;create=true");
   }
 
   @Test
   public void listDataSourceWithMultipleDataSourcesListsAll() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\" --username=joe --password=myPassword")
+        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\" --username=joe --password=myPassword")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
     gfsh.executeAndAssertThat(
-        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
+        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:memory:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     gfsh.executeAndAssertThat("list data-source").statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "pooledDataSource", "true",
             "false",
-            "jdbc:derby:newDB;create=true")
+            "jdbc:derby:memory:newDB;create=true")
         .tableHasRowWithValues("name", "pooled", "in use", "url", "simple", "false", "false",
-            "jdbc:derby:newDB;create=true");
+            "jdbc:derby:memory:newDB;create=true");
   }
 
   @Test

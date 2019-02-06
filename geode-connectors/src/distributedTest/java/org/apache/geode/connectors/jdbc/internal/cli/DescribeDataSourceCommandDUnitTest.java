@@ -17,14 +17,20 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -52,7 +58,7 @@ public class DescribeDataSourceCommandDUnitTest {
   @Test
   public void describeDataSourceForSimpleDataSource() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\" --username=joe --password=myPassword")
+        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\" --username=joe --password=myPassword")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     CommandResultAssert result = gfsh.executeAndAssertThat("describe data-source --name=simple");
@@ -61,45 +67,75 @@ public class DescribeDataSourceCommandDUnitTest {
         .tableHasRowWithValues("Property", "Value", "name", "simple")
         .tableHasRowWithValues("Property", "Value", "pooled", "false")
         .tableHasRowWithValues("Property", "Value", "username", "joe")
-        .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:newDB;create=true");
+        .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:memory:newDB;create=true");
     assertThat(result.getResultModel().toString()).doesNotContain("myPassword");
+  }
+
+  private void setupDatabase() {
+    executeSql("create table mySchema.region1 (myId varchar(10) primary key, name varchar(10))");
+    executeSql("create table mySchema.region2 (myId varchar(10) primary key, name varchar(10))");
+  }
+
+  private void teardownDatabase() {
+    executeSql("drop table mySchema.region1");
+    executeSql("drop table mySchema.region2");
+  }
+
+  private void executeSql(String sql) {
+    server.invoke(() -> {
+      try {
+        DataSource ds = JNDIInvoker.getDataSource("simple");
+        Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        sm.execute(sql);
+        sm.close();
+        conn.close();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   @Test
   public void describeDataSourceUsedByRegionsListsTheRegionsInOutput() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\"")
+        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=region2 --type=PARTITION").statusIsSuccess();
-    gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx");
-    gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx");
+    setupDatabase();
+    try {
+      gfsh.executeAndAssertThat(
+          "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx --schema=mySchema");
+      gfsh.executeAndAssertThat(
+          "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx --schema=mySchema");
 
-    CommandResultAssert result = gfsh.executeAndAssertThat("describe data-source --name=simple");
+      CommandResultAssert result = gfsh.executeAndAssertThat("describe data-source --name=simple");
 
-    result.statusIsSuccess()
-        .tableHasRowWithValues("Property", "Value", "name", "simple")
-        .tableHasRowWithValues("Property", "Value", "pooled", "false")
-        .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:newDB;create=true");
-    InfoResultModel infoSection = result.getResultModel()
-        .getInfoSection(DescribeDataSourceCommand.REGIONS_USING_DATA_SOURCE_SECTION);
-    assertThat(new HashSet<>(infoSection.getContent()))
-        .isEqualTo(new HashSet<>(Arrays.asList("region1", "region2")));
+      result.statusIsSuccess()
+          .tableHasRowWithValues("Property", "Value", "name", "simple")
+          .tableHasRowWithValues("Property", "Value", "pooled", "false")
+          .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:memory:newDB;create=true");
+      InfoResultModel infoSection = result.getResultModel()
+          .getInfoSection(DescribeDataSourceCommand.REGIONS_USING_DATA_SOURCE_SECTION);
+      assertThat(new HashSet<>(infoSection.getContent()))
+          .isEqualTo(new HashSet<>(Arrays.asList("region1", "region2")));
+    } finally {
+      teardownDatabase();
+    }
   }
 
   @Test
   public void describeDataSourceForPooledDataSource() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=pooled --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
+        "create data-source --name=pooled --pooled --url=\"jdbc:derby:memory:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     gfsh.executeAndAssertThat("describe data-source --name=pooled").statusIsSuccess()
         .tableHasRowWithValues("Property", "Value", "name", "pooled")
         .tableHasRowWithValues("Property", "Value", "pooled", "true")
         .tableHasRowWithValues("Property", "Value", "username", "")
-        .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:newDB;create=true")
+        .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:memory:newDB;create=true")
         .tableHasRowWithValues("Property", "Value", "pooled-data-source-factory-class",
             "org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory")
         .tableHasRowWithValues("Property", "Value", "prop1", "value1")

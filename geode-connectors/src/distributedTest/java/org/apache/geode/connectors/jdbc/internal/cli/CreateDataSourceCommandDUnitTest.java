@@ -60,7 +60,7 @@ public class CreateDataSourceCommandDUnitTest {
     VMProvider.invokeInEveryMember(
         () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0), server1, server2);
 
-    String URL = "jdbc:derby:newDB;create=true";
+    String URL = "jdbc:derby:memory:newDB;create=true";
     // create the data-source
     gfsh.executeAndAssertThat(
         "create data-source --name=jndi1 --username=myuser --password=mypass --pooled=false --url=\""
@@ -111,7 +111,7 @@ public class CreateDataSourceCommandDUnitTest {
 
     // create the binding
     gfsh.executeAndAssertThat(
-        "create data-source --name=jndiBad --username=myuser --password=mypass --pooled --pooled-data-source-factory-class=non_existent_class_name --url=\"jdbc:derby:newDB;create=true\"")
+        "create data-source --name=jndiBad --username=myuser --password=mypass --pooled --pooled-data-source-factory-class=non_existent_class_name --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsError();
   }
 }
