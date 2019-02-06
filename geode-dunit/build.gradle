@@ -50,6 +50,7 @@ dependencies {
   compile('org.assertj:assertj-core')
   compile('org.mockito:mockito-core')
   compile('org.awaitility:awaitility')
+  compile('pl.pragmatists:JUnitParams')
 
   compile('junit:junit') {
     exclude module: 'hamcrest-core'

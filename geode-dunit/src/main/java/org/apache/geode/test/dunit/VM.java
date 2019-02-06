@@ -33,6 +33,7 @@ import org.apache.geode.test.dunit.internal.MethodInvokerResult;
 import org.apache.geode.test.dunit.internal.ProcessHolder;
 import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.internal.StandAloneDUnitEnv;
+import org.apache.geode.test.dunit.internal.VMEventNotifier;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -64,7 +65,7 @@ public class VM implements Serializable {
 
   private transient volatile ProcessHolder processHolder;
 
-  private transient ChildVMLauncher childVMLauncher;
+  private final transient ChildVMLauncher childVMLauncher;
 
   /**
    * Returns the {@code VM} identity. For {@link StandAloneDUnitEnv} the number returned is a
@@ -151,6 +152,24 @@ public class VM implements Serializable {
    */
   public static VM[] toArray(VM... vms) {
     return vms;
+  }
+
+  /**
+   * Registers a {@link VMEventListener}.
+   */
+  public static void addVMEventListener(final VMEventListener listener) {
+    getVMEventNotifier().addVMEventListener(listener);
+  }
+
+  /**
+   * Deregisters a {@link VMEventListener}.
+   */
+  public static void removeVMEventListener(final VMEventListener listener) {
+    getVMEventNotifier().removeVMEventListener(listener);
+  }
+
+  private static VMEventNotifier getVMEventNotifier() {
+    return Host.getHost(0).getVMEventNotifier();
   }
 
   /**
@@ -480,6 +499,8 @@ public class VM implements Serializable {
     checkAvailability(getClass().getName(), "bounceVM");
 
     logger.info("Bouncing {} old pid is {}", id, getPid());
+    getVMEventNotifier().notifyBeforeBounceVM(this);
+
     available = false;
     try {
       if (force) {
@@ -501,7 +522,10 @@ public class VM implements Serializable {
       version = targetVersion;
       client = childVMLauncher.getStub(id);
       available = true;
+
       logger.info("Bounced {} new pid is {}", id, getPid());
+      getVMEventNotifier().notifyAfterBounceVM(this);
+
     } catch (InterruptedException | IOException | NotBoundException e) {
       throw new Error("Unable to restart VM " + id, e);
     }
