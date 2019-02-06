@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
-import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
@@ -27,14 +26,21 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRO
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.sql.DataSource;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -59,6 +65,8 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   public SerializableTestName testName = new SerializableTestName();
 
   private MemberVM locator;
+  private MemberVM server;
+  private MemberVM server2;
 
   private static String convertRegionPathToName(String regionPath) {
     if (regionPath.startsWith("/")) {
@@ -67,19 +75,61 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     return regionPath;
   }
 
+  private boolean setupDatabase;
+
+  private void setupDatabase() {
+    setupDatabase = true;
+    gfsh.executeAndAssertThat(
+        "create data-source --name=connection"
+            + " --pooled=false"
+            + " --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
+    executeSql(server, "connection",
+        "create table mySchema.testTable (myId varchar(10) primary key, name varchar(10))");
+  }
+
+  @After
+  public void after() {
+    teardownDatabase();
+  }
+
+  private void teardownDatabase() {
+    if (setupDatabase) {
+      setupDatabase = false;
+      executeSql(server, "connection", "drop table mySchema.testTable");
+    }
+  }
+
+  private void executeSql(MemberVM targetMember, String dataSource, String sql) {
+    targetMember.invoke(() -> {
+      try {
+        DataSource ds = JNDIInvoker.getDataSource("connection");
+        Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        sm.execute(sql);
+        sm.close();
+        conn.close();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void describesExistingSynchronousMapping(String regionName) throws Exception {
     locator = startupRule.startLocatorVM(0);
-    startupRule.startServerVM(1, locator.getPort());
+    server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    setupDatabase();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, regionName);
     csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(TABLE_NAME, "testTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "true");
@@ -108,9 +158,10 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   public void describesExistingSynchronousMappingWithGroups(String regionName) throws Exception {
     String groupName = "group1";
     locator = startupRule.startLocatorVM(0);
-    startupRule.startServerVM(1, groupName, locator.getPort());
+    server = startupRule.startServerVM(1, groupName, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    setupDatabase();
     gfsh.executeAndAssertThat(
         "create region --name=" + regionName + " --type=REPLICATE --group=" + groupName)
         .statusIsSuccess();
@@ -119,6 +170,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(REGION_NAME, regionName);
     csb.addOption(GROUP_NAME, groupName);
     csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(TABLE_NAME, "testTable");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "true");
@@ -146,9 +198,10 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void describesExistingAsyncMapping(String regionName) throws Exception {
     locator = startupRule.startLocatorVM(0);
-    startupRule.startServerVM(1, locator.getPort());
+    server = startupRule.startServerVM(1, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    setupDatabase();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
 
@@ -160,7 +213,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -179,7 +231,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
-    commandResultAssert.containsKeyValuePair(CATALOG_NAME, "myCatalog");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
   }
 
@@ -188,9 +239,10 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   public void describesExistingAsyncMappingWithGroup(String regionName) throws Exception {
     String groupName = "group1";
     locator = startupRule.startLocatorVM(0);
-    startupRule.startServerVM(1, groupName, locator.getPort());
+    server = startupRule.startServerVM(1, groupName, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    setupDatabase();
     gfsh.executeAndAssertThat(
         "create region --name=" + regionName + " --type=REPLICATE --group=" + groupName)
         .statusIsSuccess();
@@ -204,7 +256,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -224,7 +275,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
-    commandResultAssert.containsKeyValuePair(CATALOG_NAME, "myCatalog");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
   }
 
@@ -235,10 +285,11 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     String groupName1 = "group1";
     String groupName2 = "group2";
     locator = startupRule.startLocatorVM(0);
-    startupRule.startServerVM(1, groupName1, locator.getPort());
+    server = startupRule.startServerVM(1, groupName1, locator.getPort());
     startupRule.startServerVM(2, groupName2, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    setupDatabase();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE --group="
         + groupName1 + "," + groupName2)
         .statusIsSuccess();
@@ -252,7 +303,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -273,7 +323,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
-    commandResultAssert.containsKeyValuePair(CATALOG_NAME, "myCatalog");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
   }
 
@@ -285,10 +334,11 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     String groupName1 = "group1";
     String groupName2 = "group2";
     locator = startupRule.startLocatorVM(0);
-    startupRule.startServerVM(1, groupName1, locator.getPort());
-    startupRule.startServerVM(2, groupName2, locator.getPort());
+    server = startupRule.startServerVM(1, groupName1, locator.getPort());
+    server2 = startupRule.startServerVM(2, groupName2, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    setupDatabase();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE --group="
         + groupName1 + "," + groupName2)
         .statusIsSuccess();
@@ -302,24 +352,33 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
-    csb.addOption(CATALOG_NAME, "myCatalog");
     csb.addOption(SCHEMA_NAME, "mySchema");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    csb = new CommandStringBuilder(CREATE_MAPPING);
+    gfsh.executeAndAssertThat(
+        "create data-source --name=connection2"
+            + " --pooled=false"
+            + " --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
+    executeSql(server2, "connection2",
+        "create table mySchema2.testTable2 (myId2 varchar(10) primary key, name varchar(10))");
+    try {
+      csb = new CommandStringBuilder(CREATE_MAPPING);
 
-    csb.addOption(REGION_NAME, regionName);
-    csb.addOption(GROUP_NAME, groupName2);
-    csb.addOption(DATA_SOURCE_NAME, "connection2");
-    csb.addOption(TABLE_NAME, "testTable2");
-    csb.addOption(PDX_NAME, "myPdxClass2");
-    csb.addOption(SYNCHRONOUS_NAME, "false");
-    csb.addOption(ID_NAME, "myId2");
-    csb.addOption(CATALOG_NAME, "myCatalog2");
-    csb.addOption(SCHEMA_NAME, "mySchema2");
+      csb.addOption(REGION_NAME, regionName);
+      csb.addOption(GROUP_NAME, groupName2);
+      csb.addOption(DATA_SOURCE_NAME, "connection2");
+      csb.addOption(TABLE_NAME, "testTable2");
+      csb.addOption(PDX_NAME, "myPdxClass2");
+      csb.addOption(SYNCHRONOUS_NAME, "false");
+      csb.addOption(ID_NAME, "myId2");
+      csb.addOption(SCHEMA_NAME, "mySchema2");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+      gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    } finally {
+      executeSql(server2, "connection2", "drop table mySchema2.testTable2");
+    }
 
     csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
         regionName).addOption(GROUP_NAME, groupName1);
@@ -336,7 +395,6 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
-    commandResultAssert.containsKeyValuePair(CATALOG_NAME, "myCatalog");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
 
     csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
@@ -354,14 +412,13 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass2");
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId2");
-    commandResultAssert.containsKeyValuePair(CATALOG_NAME, "myCatalog2");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema2");
   }
 
   @Test
   public void reportsNoRegionFound() throws Exception {
     locator = startupRule.startLocatorVM(0);
-    startupRule.startServerVM(1, locator.getPort());
+    server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=" + TEST_REGION + " --type=REPLICATE")
         .statusIsSuccess();
@@ -379,7 +436,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   @Test
   public void reportsRegionButNoMappingFound() throws Exception {
     locator = startupRule.startLocatorVM(0);
-    startupRule.startServerVM(1, locator.getPort());
+    server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create region --name=" + TEST_REGION + " --type=REPLICATE")
         .statusIsSuccess();

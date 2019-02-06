@@ -16,6 +16,12 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.sql.DataSource;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -24,6 +30,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
@@ -46,30 +53,63 @@ public class JdbcClusterConfigDistributedTest {
     server = cluster.startServerVM(1, locator.getPort());
   }
 
+  private void setupDatabase() {
+    gfsh.executeAndAssertThat(
+        "create data-source --name=myDataSource"
+            + " --pooled=false"
+            + " --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
+    executeSql(
+        "create table mySchema.testTable (myId varchar(10) primary key, name varchar(10))");
+  }
+
+  private void teardownDatabase() {
+    executeSql("drop table mySchema.testTable");
+  }
+
+  private void executeSql(String sql) {
+    server.invoke(() -> {
+      try {
+        DataSource ds = JNDIInvoker.getDataSource("myDataSource");
+        Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        sm.execute(sql);
+        sm.close();
+        conn.close();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   @Test
   public void recreateCacheFromClusterConfig() throws Exception {
     gfsh.connectAndVerify(locator);
 
     gfsh.executeAndAssertThat("create region --name=regionName --type=PARTITION").statusIsSuccess();
+    setupDatabase();
+    try {
+      gfsh.executeAndAssertThat(
+          "create jdbc-mapping --region=regionName --data-source=myDataSource --table=testTable --pdx-name=myPdxClass --schema=mySchema")
+          .statusIsSuccess();
 
-    gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=regionName --data-source=myDataSource --table=testTable --pdx-name=myPdxClass")
-        .statusIsSuccess();
+      server.invoke(() -> {
+        JdbcConnectorService service =
+            ClusterStartupRule.getCache().getService(JdbcConnectorService.class);
+        validateRegionMapping(service.getMappingForRegion("regionName"));
+      });
 
-    server.invoke(() -> {
-      JdbcConnectorService service =
-          ClusterStartupRule.getCache().getService(JdbcConnectorService.class);
-      validateRegionMapping(service.getMappingForRegion("regionName"));
-    });
+      server.stop(false);
 
-    server.stop(false);
-
-    server = cluster.startServerVM(1, locator.getPort());
-    server.invoke(() -> {
-      JdbcConnectorService service =
-          ClusterStartupRule.getCache().getService(JdbcConnectorService.class);
-      validateRegionMapping(service.getMappingForRegion("regionName"));
-    });
+      server = cluster.startServerVM(1, locator.getPort());
+      server.invoke(() -> {
+        JdbcConnectorService service =
+            ClusterStartupRule.getCache().getService(JdbcConnectorService.class);
+        validateRegionMapping(service.getMappingForRegion("regionName"));
+      });
+    } finally {
+      teardownDatabase();
+    }
   }
 
   private static void validateRegionMapping(RegionMapping regionMapping) {
