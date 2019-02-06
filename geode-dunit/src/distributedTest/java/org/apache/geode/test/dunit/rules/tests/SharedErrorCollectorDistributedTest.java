@@ -37,10 +37,13 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.runners.TestRunner;
 
+/**
+ * Distributed tests for {@link SharedErrorCollector}.
+ */
 @SuppressWarnings("serial")
 public class SharedErrorCollectorDistributedTest {
 
-  static final String MESSAGE = "Failure message";
+  private static final String MESSAGE = "Failure message";
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -184,6 +187,84 @@ public class SharedErrorCollectorDistributedTest {
   @Test
   public void addErrorInMethodInDUnitVMIsReported() {
     Result result = TestRunner.runTest(AddErrorInMethodInDUnitVM.class);
+
+    assertThat(result.wasSuccessful()).isFalse();
+    List<Failure> failures = result.getFailures();
+    assertThat(failures).hasSize(1);
+    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
+        .hasMessage(MESSAGE);
+  }
+
+  @Test
+  public void addDUnitVMDoesNotFail() {
+    Result result = TestRunner.runTest(AddDUnitVM.class);
+
+    assertThat(result.wasSuccessful()).isTrue();
+  }
+
+  @Test
+  public void addErrorInNewDUnitVMIsReported() {
+    Result result = TestRunner.runTest(AddErrorInNewDUnitVM.class);
+
+    assertThat(result.wasSuccessful()).isFalse();
+    List<Failure> failures = result.getFailures();
+    assertThat(failures).hasSize(1);
+    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
+        .hasMessage(MESSAGE);
+  }
+
+  @Test
+  public void bounceDUnitVMDoesNotFail() {
+    Result result = TestRunner.runTest(BounceDUnitVM.class);
+
+    assertThat(result.wasSuccessful()).isTrue();
+  }
+
+  @Test
+  public void addErrorInBouncedDUnitVMIsReported() {
+    Result result = TestRunner.runTest(AddErrorInBouncedDUnitVM.class);
+
+    assertThat(result.wasSuccessful()).isFalse();
+    List<Failure> failures = result.getFailures();
+    assertThat(failures).hasSize(1);
+    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
+        .hasMessage(MESSAGE);
+  }
+
+  @Test
+  public void addErrorBeforeBouncingDUnitVMIsReported() {
+    Result result = TestRunner.runTest(AddErrorBeforeBouncingDUnitVM.class);
+
+    assertThat(result.wasSuccessful()).isFalse();
+    List<Failure> failures = result.getFailures();
+    assertThat(failures).hasSize(1);
+    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
+        .hasMessage(MESSAGE);
+  }
+
+  @Test
+  public void addErrorBeforeAndAfterBouncingDUnitVMIsReported() {
+    Result result = TestRunner.runTest(AddErrorBeforeAndAfterBouncingDUnitVM.class);
+
+    assertThat(result.wasSuccessful()).isFalse();
+    List<Failure> failures = result.getFailures();
+    assertThat(failures).hasSize(2);
+    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
+        .hasMessage(MESSAGE + "-before");
+    assertThat(failures.get(1).getException()).isInstanceOf(NullPointerException.class)
+        .hasMessage(MESSAGE + "-after");
+  }
+
+  @Test
+  public void successfulWhenCheckSucceedsDoesNotThrow() {
+    Result result = TestRunner.runTest(CheckSucceedsDoesNotThrow.class);
+
+    assertThat(result.wasSuccessful()).isTrue();
+  }
+
+  @Test
+  public void failsWhenCheckSucceedsDoesNotThrow() {
+    Result result = TestRunner.runTest(CheckSucceedsThrows.class);
 
     assertThat(result.wasSuccessful()).isFalse();
     List<Failure> failures = result.getFailures();
@@ -351,6 +432,130 @@ public class SharedErrorCollectorDistributedTest {
 
     private void addError() {
       errorCollector.addError(new NullPointerException(MESSAGE));
+    }
+  }
+
+  /**
+   * Used by test {@link #addDUnitVMDoesNotFail()}
+   */
+  public static class AddDUnitVM implements Serializable {
+
+    @Rule
+    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+    @Test
+    public void addDUnitVM() {
+      int startingVMCount = getVMCount();
+
+      getVM(getVMCount());
+
+      assertThat(getVMCount()).isGreaterThan(startingVMCount);
+    }
+  }
+
+  /**
+   * Used by test {@link #addErrorInNewDUnitVMIsReported()}
+   */
+  public static class AddErrorInNewDUnitVM implements Serializable {
+
+    @Rule
+    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+    @Test
+    public void exceptionInNewDUnitVM() {
+      getVM(getVMCount()).invoke(() -> errorCollector.addError(new NullPointerException(MESSAGE)));
+    }
+  }
+
+  /**
+   * Used by test {@link #addDUnitVMDoesNotFail()}
+   */
+  public static class BounceDUnitVM implements Serializable {
+
+    @Rule
+    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+    @Test
+    public void addDUnitVM() {
+      getVM(0).bounce();
+    }
+  }
+
+  /**
+   * Used by test {@link #addErrorInNewDUnitVMIsReported()}
+   */
+  public static class AddErrorInBouncedDUnitVM implements Serializable {
+
+    @Rule
+    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+    @Test
+    public void exceptionInBouncedDUnitVM() {
+      getVM(0).bounce();
+      getVM(0).invoke(() -> errorCollector.addError(new NullPointerException(MESSAGE)));
+    }
+  }
+
+  /**
+   * Used by test {@link #addErrorBeforeBouncingDUnitVMIsReported()}
+   */
+  public static class AddErrorBeforeBouncingDUnitVM implements Serializable {
+
+    @Rule
+    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+    @Test
+    public void exceptionInBouncedDUnitVM() {
+      getVM(0).invoke(() -> errorCollector.addError(new NullPointerException(MESSAGE)));
+      getVM(0).bounce();
+    }
+  }
+
+  /**
+   * Used by test {@link #addErrorBeforeAndAfterBouncingDUnitVMIsReported()}
+   */
+  public static class AddErrorBeforeAndAfterBouncingDUnitVM implements Serializable {
+
+    @Rule
+    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+    @Test
+    public void exceptionInBouncedDUnitVM() {
+      getVM(0).invoke(() -> errorCollector.addError(new NullPointerException(MESSAGE + "-before")));
+      getVM(0).bounce();
+      getVM(0).invoke(() -> errorCollector.addError(new NullPointerException(MESSAGE + "-after")));
+    }
+  }
+
+  /**
+   * Used by test {@link #successfulWhenCheckSucceedsDoesNotThrow()}
+   */
+  public static class CheckSucceedsDoesNotThrow implements Serializable {
+
+    @Rule
+    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+    @Test
+    public void checkSucceeds() {
+      Object result = errorCollector.checkSucceeds(() -> new Object());
+
+      assertThat(result).isNotNull();
+    }
+  }
+
+  /**
+   * Used by test {@link #failsWhenCheckSucceedsDoesNotThrow()}
+   */
+  public static class CheckSucceedsThrows implements Serializable {
+
+    @Rule
+    public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+    @Test
+    public void checkSucceeds() {
+      errorCollector.checkSucceeds(() -> {
+        throw new NullPointerException(MESSAGE);
+      });
     }
   }
 }
