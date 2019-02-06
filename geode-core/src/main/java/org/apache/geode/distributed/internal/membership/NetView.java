@@ -555,6 +555,7 @@ public class NetView implements DataSerializableFixedID {
     sb.append("]");
     return sb.toString();
   }
+
   /**
    * Returns the ID from this view that is equal to the argument. If no such ID exists the argument
    * is returned.
