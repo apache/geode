@@ -16,6 +16,8 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 
+import java.io.Serializable;
+
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
@@ -31,52 +33,53 @@ class AbstractDistributedRule implements SerializableTestRule {
   private final int vmCount;
   private final RemoteInvoker invoker;
 
-  protected AbstractDistributedRule() {
+  // if you alter vmEventListener at all, make sure VmEventListenerDistributedTest still passes
+  private volatile VMEventListener vmEventListener;
+
+  AbstractDistributedRule() {
     this(DEFAULT_VM_COUNT);
   }
 
-  protected AbstractDistributedRule(final int vmCount) {
+  AbstractDistributedRule(final int vmCount) {
     this(vmCount, new RemoteInvoker());
   }
 
-  protected AbstractDistributedRule(final int vmCount, final RemoteInvoker invoker) {
+  private AbstractDistributedRule(final int vmCount, final RemoteInvoker invoker) {
     this.vmCount = vmCount;
     this.invoker = invoker;
   }
 
   @Override
-  public Statement apply(final Statement statement, final Description description) {
-    return statement(statement, description);
-  }
-
-  private Statement statement(final Statement baseStatement, final Description description) {
+  public Statement apply(final Statement base, final Description description) {
     return new SerializableStatement() {
       @Override
       public void evaluate() throws Throwable {
-        VMEventListener vmEventListener = new InternalVMEventListener();
         beforeDistributedTest(description);
-        VM.addVMEventListener(vmEventListener);
-        before();
         try {
-          baseStatement.evaluate();
+          base.evaluate();
         } finally {
-          after();
-          VM.removeVMEventListener(vmEventListener);
           afterDistributedTest(description);
         }
       }
     };
   }
 
-  private void beforeDistributedTest(final Description description) throws Throwable {
+  void beforeDistributedTest(final Description description) throws Throwable {
     TestHistoryLogger.logTestHistory(description.getTestClass().getSimpleName(),
         description.getMethodName());
     DUnitLauncher.launchIfNeeded(vmCount);
     System.out.println("\n\n[setup] START TEST " + description.getClassName() + "."
         + description.getMethodName());
+
+    vmEventListener = new InternalVMEventListener();
+    VM.addVMEventListener(vmEventListener);
+    before();
   }
 
-  private void afterDistributedTest(final Description description) throws Throwable {
+  void afterDistributedTest(final Description description) throws Throwable {
+    VM.removeVMEventListener(vmEventListener);
+    after();
+
     System.out.println("\n\n[setup] END TEST " + description.getTestClass().getSimpleName()
         + "." + description.getMethodName());
   }
@@ -109,7 +112,7 @@ class AbstractDistributedRule implements SerializableTestRule {
     // override if needed
   }
 
-  private class InternalVMEventListener implements VMEventListener {
+  private class InternalVMEventListener implements VMEventListener, Serializable {
 
     @Override
     public void afterCreateVM(VM vm) {
