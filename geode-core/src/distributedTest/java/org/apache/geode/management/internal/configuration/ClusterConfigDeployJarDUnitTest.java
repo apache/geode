@@ -18,10 +18,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.io.FileWriter;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -130,6 +134,34 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(server1);
     expectedGroup1Config.verify(server2);
     expectedGroup1and2Config.verify(server3);
+  }
+
+  @Test
+  public void testInvalidJarDeploy() throws Exception {
+    IgnoredException.addIgnoredException(IllegalArgumentException.class);
+
+    // set up the locator/servers
+    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
+    // server1 in no group
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+
+    gfshConnector.connect(locator);
+    assertThat(gfshConnector.isConnected()).isTrue();
+
+    File junkFile = temporaryFolder.newFile("junk");
+    FileWriter writer = new FileWriter(junkFile);
+    writer.write("this is not a real jar");
+    writer.close();
+
+    // We want to ensure that a mix of good and bad jars does not produce a 'partial' deploy.
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar + ","
+        + junkFile.getAbsolutePath()).statusIsError();
+    gfshConnector.executeAndAssertThat("list deployed").statusIsSuccess()
+        .containsOutput("No JAR Files Found");
+
+    ConfigGroup cluster = new ConfigGroup("cluster").jars();
+    ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
+    expectedClusterConfig.verify(locator);
   }
 
   @Test
