@@ -36,6 +36,7 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -49,6 +50,11 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class DestroyMappingCommandDunitTest implements Serializable {
 
   private static final String TEST_REGION = "testRegion";
+  private static final String GROUP1_REGION = "group1Region";
+  private static final String GROUP2_REGION = "group2Region";
+  private static final String GROUP1_GROUP2_REGION = "group1Group2Region";
+  private static final String TEST_GROUP1 = "testGroup1";
+  private static final String TEST_GROUP2 = "testGroup2";
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -60,17 +66,33 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   public SerializableTestName testName = new SerializableTestName();
 
   private MemberVM locator;
-  private MemberVM server;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
+  private MemberVM server4;
 
   @Before
   public void before() throws Exception {
 
     locator = startupRule.startLocatorVM(0);
-    server = startupRule.startServerVM(1, locator.getPort());
+    server1 = startupRule.startServerVM(1, locator.getPort());
+    server2 = startupRule.startServerVM(2, TEST_GROUP1, locator.getPort());
+    server3 = startupRule.startServerVM(3, TEST_GROUP2, locator.getPort());
+    server4 = startupRule.startServerVM(4, TEST_GROUP1 + "," + TEST_GROUP2, locator.getPort());
 
     gfsh.connectAndVerify(locator);
 
     gfsh.executeAndAssertThat("create region --name=" + TEST_REGION + " --type=PARTITION")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + GROUP1_REGION + " --groups=" + TEST_GROUP1 + " --type=PARTITION")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + GROUP2_REGION + " --groups=" + TEST_GROUP2 + " --type=PARTITION")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + GROUP1_GROUP2_REGION + " --groups=" + TEST_GROUP1 + ","
+            + TEST_GROUP2 + " --type=PARTITION")
         .statusIsSuccess();
   }
 
@@ -89,6 +111,16 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     csb.addOption(DATA_SOURCE_NAME, "myDataSource");
     csb.addOption(PDX_NAME, "myPdxClass");
     csb.addOption(SYNCHRONOUS_NAME, "true");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  private void setupMappingWithServerGroup(String groups, String regionName, boolean isSync) {
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING + " --groups=" + groups);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "myDataSource");
+    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(SYNCHRONOUS_NAME, Boolean.toString(isSync));
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
@@ -127,11 +159,11 @@ public class DestroyMappingCommandDunitTest implements Serializable {
       validateRegionAlteredInClusterConfig(false);
     });
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache);
-      verifyRegionAltered(cache);
-      verifyQueueRemoved(cache);
+      verifyMappingRemovedFromService(cache, null, false);
+      verifyRegionAltered(cache, null, false);
+      verifyQueueRemoved(cache, null, false);
     });
   }
 
@@ -149,11 +181,11 @@ public class DestroyMappingCommandDunitTest implements Serializable {
       validateRegionAlteredInClusterConfig(false);
     });
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache);
-      verifyRegionAltered(cache);
-      verifyQueueRemoved(cache);
+      verifyMappingRemovedFromService(cache, null, false);
+      verifyRegionAltered(cache, null, false);
+      verifyQueueRemoved(cache, null, false);
     });
   }
 
@@ -171,11 +203,80 @@ public class DestroyMappingCommandDunitTest implements Serializable {
       validateRegionAlteredInClusterConfig(true);
     });
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache);
-      verifyRegionAltered(cache);
-      verifyQueueRemoved(cache);
+      verifyMappingRemovedFromService(cache, null, false);
+      verifyRegionAltered(cache, null, false);
+      verifyQueueRemoved(cache, null, false);
+    });
+  }
+
+  @Test
+  public void destroysMappingForServerGroup() throws Exception {
+    setupMappingWithServerGroup(TEST_GROUP1, GROUP1_REGION, true);
+    CommandStringBuilder csb =
+        new CommandStringBuilder(DESTROY_MAPPING + " --groups=" + TEST_GROUP1);
+    csb.addOption(REGION_NAME, GROUP1_REGION);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    locator.invoke(() -> {
+      assertThat(getRegionMappingFromClusterConfig()).isNull();
+      validateAsyncEventQueueRemovedFromClusterConfig();
+      validateRegionAlteredInClusterConfig(true);
+    });
+
+    // we have this region on server2 only
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      verifyMappingRemovedFromService(cache, GROUP1_REGION, false);
+      verifyRegionAltered(cache, GROUP1_REGION, false);
+      verifyQueueRemoved(cache, GROUP1_REGION, false);
+    });
+  }
+
+  @Test
+  public void destroysMappingForMultiServerGroup() throws Exception {
+    setupMappingWithServerGroup(TEST_GROUP1 + "," + TEST_GROUP2, GROUP1_GROUP2_REGION, true);
+    // Purposely destroy the mapping on one group only
+    CommandStringBuilder csb =
+        new CommandStringBuilder(DESTROY_MAPPING + " --groups=" + TEST_GROUP1);
+    csb.addOption(REGION_NAME, GROUP1_GROUP2_REGION);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    locator.invoke(() -> {
+      assertThat(getRegionMappingFromClusterConfig()).isNull();
+      validateAsyncEventQueueRemovedFromClusterConfig();
+      validateRegionAlteredInClusterConfig(true);
+    });
+
+    // server1 never has the mapping
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      verifyMappingRemovedFromService(cache, GROUP1_GROUP2_REGION, false);
+      verifyRegionAltered(cache, GROUP1_GROUP2_REGION, false);
+      verifyQueueRemoved(cache, GROUP1_GROUP2_REGION, false);
+    });
+    // server2 and server4's mapping are destroyed
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      verifyMappingRemovedFromService(cache, GROUP1_GROUP2_REGION, false);
+      verifyRegionAltered(cache, GROUP1_GROUP2_REGION, false);
+      verifyQueueRemoved(cache, GROUP1_GROUP2_REGION, false);
+    });
+    server4.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      verifyMappingRemovedFromService(cache, GROUP1_GROUP2_REGION, false);
+      verifyRegionAltered(cache, GROUP1_GROUP2_REGION, false);
+      verifyQueueRemoved(cache, GROUP1_GROUP2_REGION, false);
+    });
+    // server3 should still have the mapping
+    server3.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      verifyMappingRemovedFromService(cache, GROUP1_GROUP2_REGION, true);
+      verifyRegionAltered(cache, GROUP1_GROUP2_REGION, false);
+      verifyQueueRemoved(cache, GROUP1_GROUP2_REGION, false);
     });
   }
 
@@ -193,11 +294,11 @@ public class DestroyMappingCommandDunitTest implements Serializable {
       validateRegionAlteredInClusterConfig(true);
     });
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache);
-      verifyRegionAltered(cache);
-      verifyQueueRemoved(cache);
+      verifyMappingRemovedFromService(cache, null, false);
+      verifyRegionAltered(cache, null, false);
+      verifyQueueRemoved(cache, null, false);
     });
   }
 
@@ -231,22 +332,46 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     }
   }
 
-  private void verifyQueueRemoved(InternalCache cache) {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(TEST_REGION);
-    assertThat(cache.getAsyncEventQueue(queueName)).isNull();
+  private void verifyQueueRemoved(InternalCache cache, String regionName, boolean exists) {
+    if (regionName == null) {
+      regionName = TEST_REGION;
+    }
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
+    if (exists) {
+      assertThat(cache.getAsyncEventQueue(queueName)).isNotNull();
+    } else {
+      assertThat(cache.getAsyncEventQueue(queueName)).isNull();
+    }
   }
 
-  private void verifyRegionAltered(InternalCache cache) {
+  private void verifyRegionAltered(InternalCache cache, String regionName, boolean exists) {
+    if (regionName == null) {
+      regionName = TEST_REGION;
+    }
     Region<?, ?> region = cache.getRegion(TEST_REGION);
-    assertThat(region.getAttributes().getCacheLoader()).isNull();
-    assertThat(region.getAttributes().getCacheWriter()).isNull();
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(TEST_REGION);
-    assertThat(region.getAttributes().getAsyncEventQueueIds()).doesNotContain(queueName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
+    if (exists) {
+      assertThat(region.getAttributes().getCacheLoader()).isNotNull();
+      assertThat(region.getAttributes().getCacheWriter()).isNotNull();
+      assertThat(region.getAttributes().getAsyncEventQueueIds()).contains(queueName);
+    } else {
+      assertThat(region.getAttributes().getCacheLoader()).isNull();
+      assertThat(region.getAttributes().getCacheWriter()).isNull();
+      assertThat(region.getAttributes().getAsyncEventQueueIds()).doesNotContain(queueName);
+    }
   }
 
-  private void verifyMappingRemovedFromService(InternalCache cache) {
+  private void verifyMappingRemovedFromService(InternalCache cache, String regionName,
+      boolean exists) {
+    if (regionName == null) {
+      regionName = TEST_REGION;
+    }
     RegionMapping mapping =
-        cache.getService(JdbcConnectorService.class).getMappingForRegion(TEST_REGION);
-    assertThat(mapping).isNull();
+        cache.getService(JdbcConnectorService.class).getMappingForRegion(regionName);
+    if (exists) {
+      assertThat(mapping).isNotNull();
+    } else {
+      assertThat(mapping).isNull();
+    }
   }
 }

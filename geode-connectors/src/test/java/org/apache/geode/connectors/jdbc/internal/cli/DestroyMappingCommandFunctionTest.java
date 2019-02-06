@@ -43,6 +43,7 @@ import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -172,7 +173,7 @@ public class DestroyMappingCommandFunctionTest {
 
   @Test
   public void executeFunctionGivenARegionWithJdbcAsyncEventQueueRemovesTheQueueName() {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     when(regionAttributes.getAsyncEventQueueIds()).thenReturn(Collections.singleton(queueName));
     when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
 
@@ -194,7 +195,7 @@ public class DestroyMappingCommandFunctionTest {
 
   @Test
   public void executeFunctionGivenAJdbcAsyncWriterQueueRemovesTheQueue() {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     InternalAsyncEventQueue myQueue = mock(InternalAsyncEventQueue.class);
     when(cache.getAsyncEventQueue(queueName)).thenReturn(myQueue);
 

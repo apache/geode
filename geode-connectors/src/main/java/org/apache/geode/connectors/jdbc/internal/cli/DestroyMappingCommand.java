@@ -36,8 +36,10 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -53,19 +55,24 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   private static final String DESTROY_MAPPING__REGION_NAME = REGION_NAME;
   private static final String DESTROY_MAPPING__REGION_NAME__HELP =
       "Name of the region whose JDBC mapping will be destroyed.";
+  private static final String DESTROY_MAPPING__GROUPS_NAME__HELP =
+      "Server Group(s) of the JDBC mapping to be destroyed.";
 
   @CliCommand(value = DESTROY_MAPPING, help = DESTROY_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel destroyMapping(@CliOption(key = DESTROY_MAPPING__REGION_NAME, mandatory = true,
-      help = DESTROY_MAPPING__REGION_NAME__HELP) String regionName) {
+      help = DESTROY_MAPPING__REGION_NAME__HELP) String regionName,
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = DESTROY_MAPPING__GROUPS_NAME__HELP) String[] groups) {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 
     // input
-    Set<DistributedMember> targetMembers = findMembersForRegion(regionName);
+    Set<DistributedMember> targetMembers = findMembers(groups, null);
 
     // action
     List<CliFunctionResult> results =
@@ -125,7 +132,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   }
 
   private boolean removeJdbcAsyncEventQueueId(RegionAttributesType attributes, String regionName) {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     String queueIds = attributes.getAsyncEventQueueIds();
     if (queueIds == null) {
       return false;
@@ -141,7 +148,7 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   }
 
   private boolean removeJdbcQueueFromCache(CacheConfig cacheConfig, String regionName) {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     Iterator<AsyncEventQueue> iterator = cacheConfig.getAsyncEventQueues().iterator();
     while (iterator.hasNext()) {
       AsyncEventQueue queue = iterator.next();

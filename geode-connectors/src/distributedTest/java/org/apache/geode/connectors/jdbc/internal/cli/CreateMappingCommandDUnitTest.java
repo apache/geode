@@ -46,6 +46,7 @@ import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -125,7 +126,7 @@ public class CreateMappingCommandDUnitTest {
   private void setupAsyncEventQueue(String regionName) {
     gfsh.executeAndAssertThat(
         "create async-event-queue --id="
-            + CreateMappingCommand.createAsyncEventQueueName(regionName)
+            + MappingCommandUtils.createAsyncEventQueueName(regionName)
             + " --listener=" + JdbcAsyncWriter.class.getName())
         .statusIsSuccess();
   }
@@ -155,7 +156,7 @@ public class CreateMappingCommandDUnitTest {
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(groups);
     List<CacheConfig.AsyncEventQueue> queueList = cacheConfig.getAsyncEventQueues();
     CacheConfig.AsyncEventQueue queue = queueList.get(0);
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     assertThat(queue.getId()).isEqualTo(queueName);
     assertThat(queue.getAsyncEventListener().getClassName())
         .isEqualTo(JdbcAsyncWriter.class.getName());
@@ -182,7 +183,7 @@ public class CreateMappingCommandDUnitTest {
     if (synchronous) {
       assertThat(attributes.getCacheWriter().getClassName()).isEqualTo(JdbcWriter.class.getName());
     } else {
-      String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+      String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
       assertThat(attributes.getAsyncEventQueueIds()).isEqualTo(queueName);
     }
   }
@@ -190,7 +191,7 @@ public class CreateMappingCommandDUnitTest {
   private static void validateAsyncEventQueueCreatedOnServer(String regionName,
       boolean isParallel) {
     InternalCache cache = ClusterStartupRule.getCache();
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     AsyncEventQueue queue = cache.getAsyncEventQueue(queueName);
     assertThat(queue).isNotNull();
     assertThat(queue.getAsyncEventListener()).isInstanceOf(JdbcAsyncWriter.class);
@@ -204,7 +205,7 @@ public class CreateMappingCommandDUnitTest {
     if (synchronous) {
       assertThat(region.getAttributes().getCacheWriter()).isInstanceOf(JdbcWriter.class);
     } else {
-      String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+      String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
       assertThat(region.getAttributes().getAsyncEventQueueIds()).contains(queueName);
     }
   }
@@ -732,7 +733,7 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput("An async-event-queue named "
-            + CreateMappingCommand.createAsyncEventQueueName(regionName)
+            + MappingCommandUtils.createAsyncEventQueueName(regionName)
             + " must not already exist.");
   }
 
