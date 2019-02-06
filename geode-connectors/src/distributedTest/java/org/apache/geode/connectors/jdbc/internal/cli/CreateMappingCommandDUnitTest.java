@@ -338,6 +338,8 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP1);
       assertValidMappingOnLocator(regionMapping, regionName, TEST_GROUP1, false, false);
+      regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP2);
+      assertValidMappingOnLocator(regionMapping, regionName, TEST_GROUP2, false, false);
     });
   }
 
@@ -382,6 +384,8 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP1);
       assertValidMappingOnLocator(regionMapping, regionName, TEST_GROUP1, false, true);
+      regionMapping = getRegionMappingFromClusterConfig(regionName, TEST_GROUP2);
+      assertValidMappingOnLocator(regionMapping, regionName, TEST_GROUP2, false, true);
     });
   }
 
