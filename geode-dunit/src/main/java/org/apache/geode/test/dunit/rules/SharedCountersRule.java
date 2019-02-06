@@ -18,6 +18,7 @@ import static org.apache.geode.test.dunit.VM.getAllVMs;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,12 +81,14 @@ import org.apache.geode.test.dunit.VM;
  * For a more thorough example, please see
  * {@code org.apache.geode.cache.ReplicateCacheListenerDistributedTest} in the tests of geode-core.
  */
-@SuppressWarnings("serial,unused")
+@SuppressWarnings("serial")
 public class SharedCountersRule extends AbstractDistributedRule {
 
   private static volatile Map<Serializable, AtomicInteger> counters;
 
   private final List<Serializable> idsToInitInBefore = new ArrayList<>();
+  private final Map<Integer, Map<Serializable, AtomicInteger>> beforeBounceCounters =
+      new HashMap<>();
 
   public static Builder builder() {
     return new Builder();
@@ -95,7 +98,7 @@ public class SharedCountersRule extends AbstractDistributedRule {
     this(new Builder());
   }
 
-  SharedCountersRule(final Builder builder) {
+  private SharedCountersRule(final Builder builder) {
     idsToInitInBefore.addAll(builder.ids);
   }
 
@@ -105,7 +108,6 @@ public class SharedCountersRule extends AbstractDistributedRule {
     for (Serializable id : idsToInitInBefore) {
       invoker().invokeInEveryVMAndController(() -> initialize(id));
     }
-    idsToInitInBefore.clear();
   }
 
   @Override
@@ -113,13 +115,49 @@ public class SharedCountersRule extends AbstractDistributedRule {
     invoker().invokeInEveryVMAndController(() -> counters = null);
   }
 
+  @Override
+  protected void afterCreateVM(VM vm) {
+    vm.invoke(() -> counters = new ConcurrentHashMap<>());
+
+    for (Serializable id : idsToInitInBefore) {
+      vm.invoke(() -> initialize(id));
+    }
+
+    for (Serializable id : counters.keySet()) {
+      vm.invoke(() -> counters.putIfAbsent(id, new AtomicInteger()));
+    }
+  }
+
+  @Override
+  protected void beforeBounceVM(VM vm) {
+    beforeBounceCounters.put(vm.getId(), vm.invoke(() -> counters));
+  }
+
+  @Override
+  protected void afterBounceVM(VM vm) {
+    vm.invoke(() -> counters = new ConcurrentHashMap<>());
+
+    Map<Serializable, AtomicInteger> beforeBounceCountersForVM =
+        beforeBounceCounters.remove(vm.getId());
+    for (Serializable id : beforeBounceCountersForVM.keySet()) {
+      vm.invoke(() -> counters.putIfAbsent(id, beforeBounceCountersForVM.get(id)));
+    }
+
+    for (Serializable id : idsToInitInBefore) {
+      vm.invoke(() -> counters.putIfAbsent(id, new AtomicInteger()));
+    }
+
+    for (Serializable id : counters.keySet()) {
+      vm.invoke(() -> counters.putIfAbsent(id, new AtomicInteger()));
+    }
+  }
+
   /**
    * Initialize an {@code AtomicInteger} with value of zero identified by {@code id} in every
    * {@code VM}.
    */
   public SharedCountersRule initialize(final Serializable id) {
-    AtomicInteger value = new AtomicInteger();
-    invoker().invokeInEveryVMAndController(() -> counters.putIfAbsent(id, value));
+    invoker().invokeInEveryVMAndController(() -> counters.putIfAbsent(id, new AtomicInteger()));
     return this;
   }
 
