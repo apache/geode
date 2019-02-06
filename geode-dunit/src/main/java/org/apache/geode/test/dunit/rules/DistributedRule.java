@@ -19,8 +19,6 @@ import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstant
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
 import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
-import static org.apache.geode.test.dunit.VM.getVM;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.query.QueryTestUtils;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
@@ -117,8 +115,6 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 @SuppressWarnings("unused")
 public class DistributedRule extends AbstractDistributedRule {
 
-  private final int vmCount;
-
   /**
    * Use {@code Builder} for more options in constructing {@code DistributedRule}.
    */
@@ -142,17 +138,8 @@ public class DistributedRule extends AbstractDistributedRule {
     this(new Builder().withVMCount(vmCount));
   }
 
-  DistributedRule(final Builder builder) {
+  private DistributedRule(final Builder builder) {
     super(builder.vmCount);
-    vmCount = builder.vmCount;
-  }
-
-  @Override
-  protected void before() {
-    DUnitLauncher.launchIfNeeded(vmCount);
-    for (int i = 0; i < vmCount; i++) {
-      assertThat(getVM(i)).isNotNull();
-    }
   }
 
   @Override
