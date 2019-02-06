@@ -19,7 +19,12 @@ import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.L
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,6 +34,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -53,24 +59,54 @@ public class ListMappingCommandDUnitTest implements Serializable {
 
   private String regionName = "testRegion";
 
+
+  private void createTable() {
+    executeSql("create table mySchema.myTable (id varchar(10) primary key, name varchar(10))");
+  }
+
+  private void dropTable() {
+    executeSql("drop table mySchema.myTable");
+  }
+
+  private void executeSql(String sql) {
+    server.invoke(() -> {
+      try {
+        DataSource ds = JNDIInvoker.getDataSource("connection");
+        Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        sm.execute(sql);
+        sm.close();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
   @Test
   public void listsRegionMappingFromClusterConfiguration() throws Exception {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat(
+        "create data-source --name=connection --url=\"jdbc:derby:newDB;create=true\"")
+        .statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
+    createTable();
+    try {
+      String mapping = "create jdbc-mapping --region=" + regionName + " --data-source=connection "
+          + "--table=myTable --pdx-name=myPdxClass --schema=mySchema";
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
-    String mapping = "create jdbc-mapping --region=testRegion --data-source=connection "
-        + "--table=myTable --pdx-name=myPdxClass";
-    gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+      CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
+      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
-    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
+      commandResultAssert.statusIsSuccess();
+      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+      commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
+    } finally {
+      dropTable();
+    }
   }
 
   @Test
