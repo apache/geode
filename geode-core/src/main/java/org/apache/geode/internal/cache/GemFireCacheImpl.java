@@ -2462,12 +2462,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public boolean waitUntilReconnected(long time, TimeUnit units) throws InterruptedException {
-    boolean systemReconnected = this.system.waitUntilReconnected(time, units);
-    if (!systemReconnected) {
-      return false;
+    try {
+      boolean systemReconnected = this.system.waitUntilReconnected(time, units);
+      if (!systemReconnected) {
+        return false;
+      }
+      GemFireCacheImpl cache = getInstance();
+      return cache != null && cache.isInitialized();
+    } catch (CancelException e) {
+      throw new CacheClosedException("Cache could not be recreated", e);
     }
-    GemFireCacheImpl cache = getInstance();
-    return cache != null && cache.isInitialized();
   }
 
   @Override

@@ -58,7 +58,6 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -2383,6 +2382,11 @@ public class InternalDistributedSystem extends DistributedSystem
   private volatile boolean reconnected = false;
 
   /**
+   * If reconnect fails due to an exception it will be in this field
+   */
+  private Exception reconnectException;
+
+  /**
    * Boolean indicating that this member has been shunned by other members or a network partition
    * has occurred
    */
@@ -2717,20 +2721,19 @@ public class InternalDistributedSystem extends DistributedSystem
             logger.warn("Exception occurred while trying to connect the system during reconnect",
                 e);
             attemptingToReconnect = false;
+            reconnectException = e;
             return;
           }
           logger.warn("Caught SystemConnectException in reconnect", e);
           continue;
         } catch (GemFireConfigException e) {
-          if (isDebugEnabled) {
-            logger.debug("Attempt to reconnect failed with GemFireConfigException");
-          }
           logger.warn("Caught GemFireConfigException in reconnect", e);
           continue;
-        } catch (Exception ee) {
+        } catch (Exception e) {
           logger.warn("Exception occurred while trying to connect the system during reconnect",
-              ee);
+              e);
           attemptingToReconnect = false;
+          reconnectException = e;
           return;
         } finally {
           if (this.locatorDMTypeForced) {
@@ -2759,26 +2762,15 @@ public class InternalDistributedSystem extends DistributedSystem
                 }
               }
 
-            } catch (CacheXmlException e) {
-              logger.warn("Exception occurred while trying to create the cache during reconnect",
-                  e);
-              reconnectDS.disconnect();
-              reconnectDS = null;
-              reconnectCancelled = true;
-              break;
-            } catch (CancelException ignor) {
-              // If this reconnect is for required-roles the algorithm is recursive and we
-              // shouldn't retry at this level
-              if (!forcedDisconnect) {
-                break;
-              }
-              logger.warn("Exception occurred while trying to create the cache during reconnect",
-                  ignor);
-              reconnectDS.disconnect();
-              reconnectDS = null;
             } catch (Exception e) {
-              logger.warn("Exception occurred while trying to create the cache during reconnect",
+              // We need to give up because we'll probably get the same exception in
+              // the next attempt to build the cache.
+              logger.warn(
+                  "Exception occurred while trying to create the cache during reconnect.  Auto-reconnect is terminating.",
                   e);
+              reconnectCancelled = true;
+              reconnectException = e;
+              break;
             }
           }
         }
@@ -2790,6 +2782,8 @@ public class InternalDistributedSystem extends DistributedSystem
           } catch (InterruptedException e) {
             logger.info("Reconnect thread has been interrupted - exiting");
             Thread.currentThread().interrupt();
+            reconnectCancelled = true;
+            reconnectException = e;
             return;
           }
         }
@@ -2830,7 +2824,6 @@ public class InternalDistributedSystem extends DistributedSystem
         reconnectDS.disconnect();
       }
       attemptingToReconnect = false;
-      return;
     } else if (reconnectDS != null && reconnectDS.isConnected()) {
       logger.info("Reconnect completed.\nNew DistributedSystem is {}\nNew Cache is {}", reconnectDS,
           cache);
@@ -3033,6 +3026,10 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       recon = this.reconnectDS;
+      if (reconnectException != null) {
+        throw new DistributedSystemDisconnectedException(
+            "Reconnect attempts terminated due to exception", reconnectException);
+      }
       return !attemptingToReconnect && recon != null && recon.isConnected();
     }
   }

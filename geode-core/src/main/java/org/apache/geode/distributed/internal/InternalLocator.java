@@ -950,7 +950,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           Thread.sleep(5000);
         }
         logger.info("waiting for distributed system to reconnect...");
-        restarted = ds.waitUntilReconnected(-1, TimeUnit.SECONDS);
+        try {
+          restarted = ds.waitUntilReconnected(-1, TimeUnit.SECONDS);
+        } catch (CancelException e) {
+          // reconnect attempt failed
+        }
         if (restarted) {
           logger.info("system restarted");
         } else {

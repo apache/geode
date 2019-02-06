@@ -15,6 +15,7 @@
 package org.apache.geode.cache30;
 
 import static java.lang.System.out;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.DataPolicy.REPLICATE;
 import static org.apache.geode.cache.LossAction.RECONNECT;
@@ -37,9 +38,11 @@ import static org.apache.geode.distributed.Locator.getLocator;
 import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembershipManager;
 import static org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator.generate;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.ThreadUtils.join;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -63,6 +66,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -80,6 +84,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ReconnectListener;
@@ -1155,11 +1160,10 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         return "waiting for cache to begin reconnecting";
       }
     });
-    try {
-      cache.waitUntilReconnected(20, SECONDS);
-    } catch (InterruptedException e) {
-      fail("interrupted");
-    }
+    assertThatThrownBy(() -> cache.waitUntilReconnected(getTimeout().getValueInMS(), MILLISECONDS))
+        .isInstanceOf(CacheClosedException.class)
+        .hasMessageContaining("Cache could not be recreated")
+        .hasCauseExactlyInstanceOf(DistributedSystemDisconnectedException.class);
     assertTrue(cache.getInternalDistributedSystem().isReconnectCancelled());
     assertNull(cache.getReconnectedCache());
   }

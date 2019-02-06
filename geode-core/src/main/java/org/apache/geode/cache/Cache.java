@@ -413,6 +413,8 @@ public interface Cache extends GemFireCache {
 
   /**
    * Wait for the Cache to finish reconnecting to the distributed system and recreate a new Cache.
+   * This may throw a CacheClosedException if reconnect attempts fail due to an exception. The
+   * exception will detail what went wrong.
    *
    * @see #getReconnectedCache
    * @param time amount of time to wait, or -1 to wait forever
