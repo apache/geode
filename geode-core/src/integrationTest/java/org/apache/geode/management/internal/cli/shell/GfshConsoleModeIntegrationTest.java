@@ -21,22 +21,18 @@ import java.util.Enumeration;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import org.junit.Before;
 import org.junit.Test;
 
 
-public class GfshConsoleModeUnitTest extends GfshAbstractUnitTest {
+public class GfshConsoleModeIntegrationTest {
 
-  @Override
-  @Before
-  public void before() {
-    super.before();
-    gfsh = new Gfsh(true, null, new GfshConfig());
-  }
-
+  /**
+   * This test should remain an integration test as it checks the state of various Loggers.
+   * If run in conjunction with other (Gfsh) tests, these checks may fail.
+   */
   @Test
   public void consoleModeShouldRedirectOnlyJDKLoggers() {
-    gfsh = new Gfsh(true, null, new GfshConfig());
+    Gfsh gfsh = new Gfsh(true, null, new GfshConfig());
     LogManager logManager = LogManager.getLogManager();
     Enumeration<String> loggerNames = logManager.getLoggerNames();
     // when initialized in console mode, all log messages will show up in console
