@@ -45,12 +45,17 @@ public class GfshConsoleModeUnitTest extends GfshAbstractUnitTest {
     while (loggerNames.hasMoreElements()) {
       String loggerName = loggerNames.nextElement();
       Logger logger = logManager.getLogger(loggerName);
+      System.out.println("--->>> logger =           " + logger);
+      System.out.println("--->>> logger.getName() = " + logger.getName());
+      System.out.println("--->>> loggerName =       " + loggerName);
       // make sure jdk's logging goes to the gfsh log file
       if (loggerName.startsWith("java")) {
         assertThat(logger.getParent().getName()).endsWith("LogWrapper");
       }
       // make sure Gfsh's logging goes to the gfsh log file
       else if (loggerName.endsWith(".Gfsh")) {
+        System.out.println("--->>> Gfsh parent = " + logger.getParent().getName());
+        System.out.println("--->>> Gfsh parent = " + logger.getParent());
         assertThat(logger.getParent().getName()).doesNotEndWith("LogWrapper");
       }
       // make sure SimpleParser's logging will still show up in the console
