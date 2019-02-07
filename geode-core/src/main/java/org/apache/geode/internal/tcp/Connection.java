@@ -46,6 +46,7 @@ import javax.net.ssl.SSLException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
@@ -2828,7 +2829,7 @@ public class Connection implements Runnable {
 
       Header header = msgReader.readHeader();
 
-      ReplyMessage msg;
+      ReplyMessage msg = null;
       int len;
       if (header.getMessageType() == NORMAL_MSG_TYPE) {
         msg = (ReplyMessage) msgReader.readMessage(header);
@@ -2938,8 +2939,12 @@ public class Connection implements Runnable {
           peerDataBuffer.limit(startPos + messageLength);
 
           if (this.handshakeRead) {
-            readMessage(peerDataBuffer);
-
+            try {
+              readMessage(peerDataBuffer);
+            } catch (SerializationException e) {
+              logger.info("input buffer startPos {} oldLimit {}", startPos, oldLimit);
+              throw e;
+            }
           } else {
             ByteBufferInputStream bbis = new ByteBufferInputStream(peerDataBuffer);
             DataInputStream dis = new DataInputStream(bbis);
@@ -3124,7 +3129,16 @@ public class Connection implements Runnable {
         ReplyProcessor21.initMessageRPId();
         // add serialization stats
         long startSer = this.owner.getConduit().getStats().startMsgDeserialization();
-        msg = (DistributionMessage) InternalDataSerializer.readDSFID(bbis);
+        int startingPosition = peerDataBuffer.position();
+        try {
+          msg = (DistributionMessage) InternalDataSerializer.readDSFID(bbis);
+        } catch (SerializationException e) {
+          logger.info("input buffer starting position {} "
+              + " current position {} limit {} capacity {} message length {}",
+              startingPosition, peerDataBuffer.position(), peerDataBuffer.limit(),
+              peerDataBuffer.capacity(), messageLength);
+          throw e;
+        }
         this.owner.getConduit().getStats().endMsgDeserialization(startSer);
         if (bbis.available() != 0) {
           logger.warn("Message deserialization of {} did not read {} bytes.",
