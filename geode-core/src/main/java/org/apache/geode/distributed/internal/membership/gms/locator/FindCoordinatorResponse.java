@@ -126,7 +126,7 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
   @Override
   public String toString() {
     if (this.isShortForm) {
-      return "FindCoordinatorResponse(coordinator=" + coordinator + ")";
+      return "FindCoordinatorResponse(coordinator=" + coordinator + "; senderId=" + senderId + ")";
     } else {
       return "FindCoordinatorResponse(coordinator=" + coordinator + ", fromView=" + fromView
           + ", viewId=" + (view == null ? "null" : view.getViewId()) + ", registrants="

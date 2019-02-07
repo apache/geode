@@ -599,7 +599,7 @@ public class ClusterDistributionManager implements DistributionManager {
         Object[] logArgs = new Object[] {distributionManager.getDistributionManagerId(), transport,
             Integer.valueOf(distributionManager.getOtherDistributionManagerIds().size()),
             distributionManager.getOtherDistributionManagerIds(),
-            (logger.isInfoEnabled(LogMarker.DM_MARKER) ? " (VERBOSE, took " + delta + " ms)" : ""),
+            (logger.isInfoEnabled(LogMarker.DM_MARKER) ? " (took " + delta + " ms)" : ""),
             ((distributionManager.getDMType() == ADMIN_ONLY_DM_TYPE) ? " (admin only)"
                 : (distributionManager.getDMType() == LOCATOR_DM_TYPE) ? " (locator)" : "")};
         logger.info(LogMarker.DM_MARKER,
