@@ -19,6 +19,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 
 import javax.sql.DataSource;
 
@@ -125,17 +126,19 @@ public class DestroyDataSourceCommandDUnitTest {
   }
 
   private void executeSql(String sql) {
-    server1.invoke(() -> {
-      try {
-        DataSource ds = JNDIInvoker.getDataSource("datasource1");
-        Connection conn = ds.getConnection();
-        Statement sm = conn.createStatement();
-        sm.execute(sql);
-        sm.close();
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    for (MemberVM server : Arrays.asList(server1, server2)) {
+      server.invoke(() -> {
+        try {
+          DataSource ds = JNDIInvoker.getDataSource("datasource1");
+          Connection conn = ds.getConnection();
+          Statement sm = conn.createStatement();
+          sm.execute(sql);
+          sm.close();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
   }
 
   @Test
