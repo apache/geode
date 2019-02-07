@@ -26,16 +26,9 @@ import org.junit.Test;
 
 
 public class GfshConsoleModeUnitTest extends GfshAbstractUnitTest {
-
-  @Override
-  @Before
-  public void before() {
-    super.before();
-    gfsh = new Gfsh(true, null, new GfshConfig());
-  }
-
   @Test
   public void consoleModeShouldRedirectOnlyJDKLoggers() {
+    LogManager.getLogManager().reset();
     gfsh = new Gfsh(true, null, new GfshConfig());
     LogManager logManager = LogManager.getLogManager();
     Enumeration<String> loggerNames = logManager.getLoggerNames();
