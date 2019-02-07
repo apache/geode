@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import junitparams.JUnitParamsRunner;
@@ -121,7 +122,8 @@ public class SqlToPdxInstanceCreatorTest {
     PdxField pdxField = mock(PdxField.class);
     when(pdxField.getFieldName()).thenReturn("customPdxFieldName");
     when(pdxField.getFieldType()).thenReturn(FieldType.OBJECT);
-    when(typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, COLUMN_NAME_1)).thenReturn(pdxField);
+    when(typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, COLUMN_NAME_1))
+        .thenReturn(Collections.singleton(pdxField));
     when(cache.getPdxRegistry()).thenReturn(typeRegistry);
 
     SqlToPdxInstance result = createSqlToPdxInstance();

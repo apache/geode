@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import java.sql.JDBCType;
+import java.util.Set;
 
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
@@ -24,7 +25,7 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
-class SqlToPdxInstanceCreator {
+public class SqlToPdxInstanceCreator {
   private final InternalCache cache;
   private final RegionMapping regionMapping;
 
@@ -42,15 +43,15 @@ class SqlToPdxInstanceCreator {
       String fieldName = columnMapping.getPdxName();
       FieldType fieldType;
       if (fieldName.isEmpty()) {
-        PdxField pdxField =
+        Set<PdxField> pdxFields =
             typeRegistry.findFieldThatMatchesName(regionMapping.getPdxName(), columnName);
-        if (pdxField == null) {
+        JDBCType columnType = JDBCType.valueOf(columnMapping.getJdbcType());
+        if (pdxFields.isEmpty()) {
           fieldName = columnName;
-          JDBCType columnType = JDBCType.valueOf(columnMapping.getJdbcType());
           fieldType = computeFieldType(columnMapping.isJdbcNullable(), columnType);
         } else {
-          fieldName = pdxField.getFieldName();
-          fieldType = pdxField.getFieldType();
+          fieldName = pdxFields.iterator().next().getFieldName();
+          fieldType = findFieldType(pdxFields, columnMapping.isJdbcNullable(), columnType);
         }
       } else {
         fieldType = FieldType.valueOf(columnMapping.getPdxType());
@@ -138,6 +139,17 @@ class SqlToPdxInstanceCreator {
         break;
       default:
         throw new IllegalStateException("unhandled pdx field type " + fieldType);
+    }
+  }
+
+  public static FieldType findFieldType(Set<PdxField> pdxFields, boolean columnNullable,
+      JDBCType columnType) {
+    if (pdxFields.size() == 1) {
+      return pdxFields.iterator().next().getFieldType();
+    } else {
+      FieldType fieldTypeBasedOnJDBC = computeFieldType(columnNullable, columnType);
+      // TODO find best type in pdxFields
+      return pdxFields.iterator().next().getFieldType();
     }
   }
 

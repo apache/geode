@@ -186,7 +186,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
     PdxField pdxField1 = mock(PdxField.class);
     when(pdxField1.getFieldName()).thenReturn("COL1");
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
-    when(typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "col1")).thenReturn(pdxField1);
+    when(typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "col1"))
+        .thenReturn(Collections.singleton(pdxField1));
 
     CliFunctionResult result = function.executeFunction(context);
 

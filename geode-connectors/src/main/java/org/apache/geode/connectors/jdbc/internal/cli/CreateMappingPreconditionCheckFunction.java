@@ -20,6 +20,7 @@ import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -27,6 +28,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
+import org.apache.geode.connectors.jdbc.internal.SqlToPdxInstanceCreator;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
@@ -35,6 +37,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -103,10 +106,13 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
       TypeRegistry typeRegistry, String pdxClassName) {
     String columnName = fieldMapping.getJdbcName();
     try {
-      PdxField foundField = typeRegistry.findFieldThatMatchesName(pdxClassName, columnName);
-      if (foundField != null) {
-        fieldMapping.setPdxName(foundField.getFieldName());
-        fieldMapping.setPdxType(foundField.getFieldType().name());
+      Set<PdxField> foundFields = typeRegistry.findFieldThatMatchesName(pdxClassName, columnName);
+      if (!foundFields.isEmpty()) {
+        fieldMapping.setPdxName(foundFields.iterator().next().getFieldName());
+        JDBCType columnType = JDBCType.valueOf(fieldMapping.getJdbcType());
+        FieldType fieldType = SqlToPdxInstanceCreator.findFieldType(foundFields,
+            fieldMapping.isJdbcNullable(), columnType);
+        fieldMapping.setPdxType(fieldType.name());
       }
     } catch (IllegalStateException ex) {
       throw new JdbcConnectorException(

@@ -38,14 +38,15 @@ public class TypeRegistryTest {
   private static final String PDX_CLASS_NAME = "pdxClassName";
 
   @Test
-  public void findFieldThatMatchesNameReturnsNullGivenNoTypes() {
+  public void findFieldThatMatchesNameReturnsEmptyGivenNoTypes() {
     Set<PdxType> pdxTypesForClass = Collections.emptySet();
     when(distributedTypeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME))
         .thenReturn(pdxTypesForClass);
 
-    PdxField foundField = this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
+    Set<PdxField> foundFields =
+        this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
 
-    assertThat(foundField).isNull();
+    assertThat(foundFields).isEmpty();
   }
 
   @Test
@@ -57,9 +58,28 @@ public class TypeRegistryTest {
     when(distributedTypeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME))
         .thenReturn(pdxTypesForClass);
 
-    PdxField foundField = this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
+    Set<PdxField> foundFields =
+        this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
 
-    assertThat(foundField).isSameAs(exactMatchField);
+    assertThat(foundFields).containsExactly(exactMatchField);
+  }
+
+  @Test
+  public void findFieldThatMatchesNameReturnsTwoFieldsThatExactlyMatch() {
+    PdxType exactMatchType = mock(PdxType.class);
+    PdxField exactMatchField = mock(PdxField.class);
+    when(exactMatchType.getPdxField("fieldName")).thenReturn(exactMatchField);
+    PdxType exactMatchType2 = mock(PdxType.class);
+    PdxField exactMatchField2 = mock(PdxField.class);
+    when(exactMatchType2.getPdxField("fieldName")).thenReturn(exactMatchField2);
+    Set<PdxType> pdxTypesForClass = new HashSet<>(Arrays.asList(exactMatchType, exactMatchType2));
+    when(distributedTypeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME))
+        .thenReturn(pdxTypesForClass);
+
+    Set<PdxField> foundFields =
+        this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
+
+    assertThat(foundFields).containsExactlyInAnyOrder(exactMatchField, exactMatchField2);
   }
 
   @Test
@@ -73,13 +93,14 @@ public class TypeRegistryTest {
     when(distributedTypeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME))
         .thenReturn(pdxTypesForClass);
 
-    PdxField foundField = this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
+    Set<PdxField> foundFields =
+        this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
 
-    assertThat(foundField).isSameAs(inexactMatchField);
+    assertThat(foundFields).containsExactly(inexactMatchField);
   }
 
   @Test
-  public void findFieldThatMatchesNameReturnsNullIfFieldExistButNoneMatch() {
+  public void findFieldThatMatchesNameReturnsEmptyIfFieldExistButNoneMatch() {
     PdxType noMatchType = mock(PdxType.class);
     when(noMatchType.getPdxField("fieldName")).thenReturn(null);
     when(noMatchType.getFieldNames()).thenReturn(Arrays.asList("nomatch1", "nomatch2"));
@@ -87,9 +108,10 @@ public class TypeRegistryTest {
     when(distributedTypeRegistry.getPdxTypesForClassName(PDX_CLASS_NAME))
         .thenReturn(pdxTypesForClass);
 
-    PdxField foundField = this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
+    Set<PdxField> foundFields =
+        this.typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "fieldName");
 
-    assertThat(foundField).isNull();
+    assertThat(foundFields).isEmpty();
   }
 
   @Test

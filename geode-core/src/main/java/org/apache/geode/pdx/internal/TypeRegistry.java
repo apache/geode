@@ -16,6 +16,7 @@ package org.apache.geode.pdx.internal;
 
 import static java.lang.Integer.valueOf;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -541,29 +542,29 @@ public class TypeRegistry {
   }
 
   /**
-   * Find and return the pdx field that matches the given name.
+   * Find and return the pdx fields that match the given class and field name.
    * An exact match will be looked for first; followed by a
    * case insensitive match.
    *
    * @param pdxClassName the pdx type's class
    * @param name the name of the field to find
-   * @return PdxField that matches name or null if no match
+   * @return Set<PdxField> that match class and field name
    * @throws IllegalStateException if more than one field matched
    */
-  public PdxField findFieldThatMatchesName(String pdxClassName, String name) {
+  public Set<PdxField> findFieldThatMatchesName(String pdxClassName, String name) {
     Set<PdxType> pdxTypes = getPdxTypesForClassName(pdxClassName);
     if (pdxTypes.isEmpty()) {
-      return null;
+      return Collections.emptySet();
     }
-    PdxField foundField = findExactMatch(name, pdxTypes);
-    if (foundField == null) {
-      foundField = findCaseInsensitiveMatch(name, pdxTypes);
+    Set<PdxField> foundFields = findExactMatch(name, pdxTypes);
+    if (foundFields.isEmpty()) {
+      foundFields = findCaseInsensitiveMatch(name, pdxTypes);
     }
-    return foundField;
+    return foundFields;
   }
 
 
-  private PdxField findCaseInsensitiveMatch(String name, Set<PdxType> pdxTypes) {
+  private Set<PdxField> findCaseInsensitiveMatch(String name, Set<PdxType> pdxTypes) {
     HashSet<String> matchingFieldNames = new HashSet<>();
     for (PdxType pdxType : pdxTypes) {
       for (String existingFieldName : pdxType.getFieldNames()) {
@@ -573,7 +574,7 @@ public class TypeRegistry {
       }
     }
     if (matchingFieldNames.isEmpty()) {
-      return null;
+      return Collections.emptySet();
     } else if (matchingFieldNames.size() > 1) {
       throw new IllegalStateException(
           "the pdx fields " + String.join(", ", matchingFieldNames) + " all match " + name);
@@ -582,14 +583,21 @@ public class TypeRegistry {
     return findExactMatch(matchingFieldName, pdxTypes);
   }
 
-  private PdxField findExactMatch(String name, Set<PdxType> pdxTypes) {
+  private Set<PdxField> findExactMatch(String name, Set<PdxType> pdxTypes) {
+    Set<PdxField> result = null;
     for (PdxType pdxType : pdxTypes) {
       PdxField foundField = pdxType.getPdxField(name);
       if (foundField != null) {
-        return foundField;
+        if (result == null) {
+          result = new HashSet<>();
+        }
+        result.add(foundField);
       }
     }
-    return null;
+    if (result == null) {
+      result = Collections.emptySet();
+    }
+    return result;
   }
 
 }
