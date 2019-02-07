@@ -20,10 +20,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.shell.core.CommandResult;
 
+import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
 
 
@@ -34,6 +36,15 @@ public class GfshAbstractUnitTest {
   @Before
   public void before() {
     testString = "This is a test string.";
+  }
+
+  @After
+  public void after() {
+    // This removes and cleans up the LogWrapper instance so that subsequent tests don't fail.
+    // The alternative to calling System.gc is a bunch of reflection to dig into the guts of
+    // LogManager and iterate through contexts in order to remove the Loggers.
+    LogWrapper.close();
+    System.gc();
   }
 
   @Test
