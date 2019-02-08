@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 
 import org.apache.logging.log4j.LogManager;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.PoolManager;
@@ -77,6 +78,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
   static final int BUFFER_SIZE = Integer.getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "RegionSnapshotServiceImpl.BUFFER_SIZE", 1024 * 1024);
 
+  @Immutable
   static final SnapshotFileMapper LOCAL_MAPPER = new SnapshotFileMapper() {
     private static final long serialVersionUID = 1L;
 

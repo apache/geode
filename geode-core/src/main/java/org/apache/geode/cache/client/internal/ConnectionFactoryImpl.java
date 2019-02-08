@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
@@ -62,6 +63,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
    * @since GemFire 5.7
    */
 
+  @MutableForTesting
   public static boolean testFailedConnectionToServer = false;
 
   public ConnectionFactoryImpl(ConnectionSource source, EndpointManager endpointManager,

@@ -29,6 +29,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
@@ -88,6 +90,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * system is available. This value works the same way as specifying off-heap as a GemFire
    * property, so "100m" = 100 megabytes, "100g" = 100 gigabytes, etc.
    */
+  @MutableForTesting
   private static String testAvailableOffHeapMemory = null;
 
   /** the amount of local memory to use, in megabytes */
@@ -318,6 +321,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     return this.fixedPAttrs;
   }
 
+  @Immutable
   private static final PartitionListener[] EMPTY_PARTITION_LISTENERS = new PartitionListener[0];
 
   @Override

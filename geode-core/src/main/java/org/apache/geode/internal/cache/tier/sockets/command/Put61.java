@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.ResourceException;
@@ -46,6 +47,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class Put61 extends BaseCommand {
 
+  @Immutable
   private static final Put61 singleton = new Put61();
 
   public static Command getCommand() {

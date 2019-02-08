@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -69,6 +70,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   /**
    * Indicates that a distribution message should be sent to all other distribution managers.
    */
+  @Immutable
   public static final InternalDistributedMember ALL_RECIPIENTS = null;
 
   // common flags used by operation messages

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.collections.map.HashedMap;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
@@ -31,6 +32,7 @@ import org.apache.geode.management.internal.configuration.realizers.Configuratio
 import org.apache.geode.management.internal.configuration.realizers.RegionConfigRealizer;
 
 public class UpdateCacheFunction extends CliFunction<List> {
+  @Immutable
   private static final Map<Class, ConfigurationRealizer> realizers = new HashedMap();
   static {
     realizers.put(RegionConfig.class, new RegionConfigRealizer());

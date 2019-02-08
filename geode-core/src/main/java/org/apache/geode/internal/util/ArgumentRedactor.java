@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
@@ -27,7 +28,9 @@ public class ArgumentRedactor {
   public static final String redacted = "********";
 
   // All taboo words should be entirely lowercase.
+  @MakeImmutable
   private static final List<String> tabooToContain = ArrayUtils.asList("password");
+  @MakeImmutable
   private static final List<String> tabooForOptionToStartWith =
       ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME, DistributionConfig.SSL_SYSTEM_PROPS_NAME,
           ConfigurationProperties.SECURITY_PREFIX);

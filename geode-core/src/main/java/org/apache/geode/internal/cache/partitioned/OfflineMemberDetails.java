@@ -21,10 +21,12 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
 public interface OfflineMemberDetails extends DataSerializable {
 
+  @Immutable
   OfflineMemberDetails EMPTY_DETAILS = new OfflineMemberDetails() {
     @Override
     public Set<PersistentMemberID> getOfflineMembers(int bucketId) {

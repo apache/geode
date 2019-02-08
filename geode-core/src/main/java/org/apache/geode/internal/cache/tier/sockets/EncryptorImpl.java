@@ -63,6 +63,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -97,28 +98,38 @@ public class EncryptorImpl implements Encryptor {
 
   private String clientSKAlgo;
 
+  @MakeNotStatic
   private static PrivateKey dhPrivateKey;
 
+  @MakeNotStatic
   private static PublicKey dhPublicKey;
 
+  @MakeNotStatic
   private static String dhSKAlgo;
 
   // Members for server authentication using digital signature
 
   // Members for server authentication using digital signature
 
+  @MakeNotStatic
   private static String certificateFilePath;
 
+  @MakeNotStatic
   private static HashMap certificateMap;
 
+  @MakeNotStatic
   private static String privateKeyAlias;
 
+  @MakeNotStatic
   private static String privateKeySubject;
 
+  @MakeNotStatic
   private static PrivateKey privateKeyEncrypt;
 
+  @MakeNotStatic
   private static String privateKeySignAlgo;
 
+  @MakeNotStatic
   private static SecureRandom random;
 
   private byte appSecureMode = (byte) 0;

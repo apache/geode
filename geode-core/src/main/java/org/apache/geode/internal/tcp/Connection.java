@@ -47,6 +47,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -92,7 +94,9 @@ public class Connection implements Runnable {
   private static final Logger logger = LogService.getLogger();
   public static final String THREAD_KIND_IDENTIFIER = "P2P message reader";
 
+  @MakeNotStatic
   private static int P2P_CONNECT_TIMEOUT;
+  @MakeNotStatic
   private static boolean IS_P2P_CONNECT_TIMEOUT_INITIALIZED = false;
 
   static final int NORMAL_MSG_TYPE = 0x4c;
@@ -113,6 +117,7 @@ public class Connection implements Runnable {
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SMALL_BUFFER_SIZE", 4096);
 
   /** counter to give connections a unique id */
+  @MakeNotStatic
   private static final AtomicLong idCounter = new AtomicLong(1);
 
   /** string used as the reason for initiating suspect processing */
@@ -571,6 +576,7 @@ public class Connection implements Runnable {
     return isIdle;
   }
 
+  @MakeNotStatic
   private static final ByteBuffer okHandshakeBuf;
   static {
     int msglen = 1; // one byte for reply code
@@ -2561,6 +2567,7 @@ public class Connection implements Runnable {
   /**
    * If true then act as if the socket buffer is full and start async queuing
    */
+  @MutableForTesting
   public static volatile boolean FORCE_ASYNC_QUEUE = false;
 
   private static final int MAX_WAIT_TIME = (1 << 5); // ms (must be a power of 2)

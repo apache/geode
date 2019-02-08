@@ -39,7 +39,9 @@ import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
 import org.apache.logging.log4j.core.util.NullOutputStream;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 
 /**
  * Wraps {@link ConsoleAppender} with additions defined in {@link PausableAppender} and
@@ -54,8 +56,11 @@ public class GeodeConsoleAppender extends AbstractOutputStreamAppender<OutputStr
   public static final String PLUGIN_NAME = "GeodeConsole";
 
   private static final boolean START_PAUSED_BY_DEFAULT = false;
+  @Immutable
   private static final Target DEFAULT_TARGET = Target.SYSTEM_OUT;
+  @MakeNotStatic
   private static final AtomicInteger COUNT = new AtomicInteger();
+  @Immutable
   private static final GeodeConsoleManagerFactory MANAGER_FACTORY =
       new GeodeConsoleManagerFactory();
 

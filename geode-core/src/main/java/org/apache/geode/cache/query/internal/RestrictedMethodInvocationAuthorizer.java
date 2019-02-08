@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -31,6 +32,7 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
 
   public static final String UNAUTHORIZED_STRING = "Unauthorized access to method: ";
 
+  @MakeImmutable
   protected static final HashMap<String, Set> DEFAULT_ACCEPTLIST = createAcceptList();
 
   private SecurityService securityService;

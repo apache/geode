@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.logging.LogService;
 
 public class CommandModes {
@@ -38,6 +39,7 @@ public class CommandModes {
     return modeMap;
   }
 
+  @MakeImmutable
   private static CommandModes _allModes;
 
   private CommandModes() {

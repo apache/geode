@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.pdx.PdxSerializer;
@@ -31,6 +32,7 @@ import org.apache.geode.security.SecurityManager;
  */
 public class CacheConfig {
   public static final boolean DEFAULT_PDX_READ_SERIALIZED = false;
+  @Immutable
   public static final PdxSerializer DEFAULT_PDX_SERIALIZER = null;
   public static final String DEFAULT_PDX_DISK_STORE = null;
   public static final boolean DEFAULT_PDX_PERSISTENT = false;

@@ -22,6 +22,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.ExpirationAction;
@@ -43,6 +45,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   private LocalRegion region; // no longer final so cancel can null it out see bug 37574
 
+  @MakeNotStatic
   private static final ExecutorService executor;
 
   static {
@@ -186,7 +189,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   /**
    * @guarded.By suspendLock
    */
+  @MakeNotStatic
   private static boolean expirationSuspended = false;
+
+  @MakeNotStatic
   private static final Object suspendLock = new Object();
 
   /**
@@ -510,6 +516,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   // Should only be set by unit tests
+  @MutableForTesting
   public static ExpiryTaskListener expiryTaskListener;
 
   /**

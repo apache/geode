@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -31,6 +32,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public class RegionDestroyFunction implements InternalFunction {
   private static final long serialVersionUID = 9172773671865750685L;
 
+  @Immutable
   public static final RegionDestroyFunction INSTANCE = new RegionDestroyFunction();
 
   private static final String ID = RegionDestroyFunction.class.getName();

@@ -22,6 +22,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
@@ -40,6 +41,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DestroyIndexCommand extends SingleGfshCommand {
+  @Immutable
   private static final DestroyIndexFunction destroyIndexFunction = new DestroyIndexFunction();
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)

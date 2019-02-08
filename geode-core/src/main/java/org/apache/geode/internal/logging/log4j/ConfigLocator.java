@@ -20,6 +20,8 @@ import java.net.URL;
 import org.apache.logging.log4j.core.util.Loader;
 import org.apache.logging.log4j.util.LoaderUtil;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * Utility methods for finding the Log4J 2 configuration file.
  *
@@ -40,6 +42,7 @@ public class ConfigLocator {
   static final String SUFFIX_XML = ".xml";
 
   /** Ordered as specified on http://logging.apache.org/log4j/2.x/manual/configuration.html */
+  @MakeImmutable
   static final String[] SUFFIXES =
       new String[] {SUFFIX_TEST_YAML, SUFFIX_TEST_YML, SUFFIX_TEST_JSON, SUFFIX_TEST_JSN,
           SUFFIX_TEST_XML, SUFFIX_YAML, SUFFIX_YML, SUFFIX_JSON, SUFFIX_JSN, SUFFIX_XML};

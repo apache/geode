@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -65,6 +66,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
   private static final byte PEEK_OP = 3;
   private static final byte CLEAR_WITH_LOCKS_OP = 4;
 
+  @Immutable
   private static final GrantorInfo CLEAR_COMPLETE = new GrantorInfo(null, 0, 0, false);
 
   /**

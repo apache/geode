@@ -28,6 +28,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.ProxyCache;
@@ -83,8 +86,10 @@ public class DefaultQuery implements Query {
 
   private boolean traceOn = false;
 
+  @Immutable
   private static final Object[] EMPTY_ARRAY = new Object[0];
 
+  @MutableForTesting
   public static boolean QUERY_VERBOSE =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE");
 
@@ -96,6 +101,7 @@ public class DefaultQuery implements Query {
   public static final int COMPILED_QUERY_CLEAR_TIME = Integer.getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "Query.COMPILED_QUERY_CLEAR_TIME", 10 * 60 * 1000);
 
+  @MutableForTesting
   public static int TEST_COMPILED_QUERY_CLEAR_TIME = -1;
 
   /**
@@ -120,6 +126,7 @@ public class DefaultQuery implements Query {
 
   private volatile boolean lastUsed = true;
 
+  @MakeNotStatic
   public static TestHook testHook;
 
   /** indicates query executed remotely */

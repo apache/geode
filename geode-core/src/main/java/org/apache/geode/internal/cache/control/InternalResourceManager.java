@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceFactory;
@@ -89,6 +90,7 @@ public class InternalResourceManager implements ResourceManager {
 
   private final Map<ResourceType, ResourceMonitor> resourceMonitors;
 
+  @MutableForTesting
   private static ResourceObserver observer = new ResourceObserverAdapter();
 
   private static final String PR_LOAD_PROBE_CLASS =

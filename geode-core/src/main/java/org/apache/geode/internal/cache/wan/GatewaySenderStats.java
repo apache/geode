@@ -19,6 +19,8 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
@@ -30,6 +32,7 @@ public class GatewaySenderStats {
 
 
   /** The <code>StatisticsType</code> of the statistics */
+  @Immutable
   private static final StatisticsType type;
 
   //////////////////// Statistic "Id" Fields ////////////////////
@@ -99,65 +102,97 @@ public class GatewaySenderStats {
   protected static final String SYNCHRONIZATION_EVENTS_PROVIDED = "synchronizationEventsProvided";
 
   /** Id of the events queued statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsReceivedId;
   /** Id of the events queued statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsQueuedId;
   /** Id of the events not queued because conflated statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsNotQueuedConflatedId;
   /** Id of the event queue time statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventQueueTimeId;
   /** Id of the event queue size statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventQueueSizeId;
   /** Id of the event in secondary queue size statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int secondaryEventQueueSizeId;
   /** Id of the events processed by Parallel Queue Removal Message(PQRM) statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsProcessedByPQRMId;
   /** Id of the temp event queue size statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventTmpQueueSizeId;
   /** Id of the events distributed statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsDistributedId;
   /** Id of the events exceeding alert threshold statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsExceedingAlertThresholdId;
   /** Id of the batch distribution time statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int batchDistributionTimeId;
   /** Id of the batches distributed statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int batchesDistributedId;
   /** Id of the batches redistributed statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int batchesRedistributedId;
   /** Id of the batches resized statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static final int batchesResizedId;
   /** Id of the unprocessed events added by primary statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int unprocessedTokensAddedByPrimaryId;
   /** Id of the unprocessed events added by secondary statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int unprocessedEventsAddedBySecondaryId;
   /** Id of the unprocessed events removed by primary statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int unprocessedEventsRemovedByPrimaryId;
   /** Id of the unprocessed events removed by secondary statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int unprocessedTokensRemovedBySecondaryId;
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int unprocessedEventsRemovedByTimeoutId;
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int unprocessedTokensRemovedByTimeoutId;
   /** Id of the unprocessed events map size statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int unprocessedEventMapSizeId;
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int unprocessedTokenMapSizeId;
   /** Id of the conflation indexes size statistic */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int conflationIndexesMapSizeId;
   /** Id of filtered events */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsFilteredId;
   /** Id of not queued events */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int notQueuedEventsId;
   /** Id of events dropped due to primary sender not running */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsDroppedDueToPrimarySenderNotRunningId;
   /** Id of events conflated in batch */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int eventsConflatedFromBatchesId;
   /** Id of load balances completed */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int loadBalancesCompletedId;
   /** Id of load balances in progress */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int loadBalancesInProgressId;
   /** Id of load balance time */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int loadBalanceTimeId;
   /** Id of synchronization events enqueued */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int synchronizationEventsEnqueuedId;
   /** Id of synchronization events provided */
+  @MakeImmutable("This field is also set by AsyncEventQUeueStats???")
   protected static int synchronizationEventsProvidedId;
 
   /**

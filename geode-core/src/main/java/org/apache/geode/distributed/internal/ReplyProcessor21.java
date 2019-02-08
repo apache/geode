@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -88,6 +89,7 @@ public class ReplyProcessor21 implements MembershipListener {
   public static final double PR_SEVERE_ALERT_RATIO;
 
   /** All live reply processors in this VM */
+  @MakeNotStatic
   protected static final ProcessorKeeper21 keeper = new ProcessorKeeper21();
 
   //////////////////// Instance Methods ////////////////////

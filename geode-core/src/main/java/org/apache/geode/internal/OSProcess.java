@@ -39,6 +39,8 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.io.TeePrintStream;
 import org.apache.geode.internal.logging.LogService;
@@ -627,13 +629,18 @@ public class OSProcess {
    */
   protected static native boolean reapPid(int pid);
 
+  @MakeNotStatic
   private static Thread reaperThread;
+  @MakeNotStatic
   protected static Set pids = null;
 
   // myPid caches result of getProcessId . To provide a stable processId
   // on Linux, where processId may differ per thread, we cache the
   // processId of the reaper thread .
+  @MakeImmutable
   static final int[] myPid = new int[1]; // cache of my processId
+
+  @MakeNotStatic
   static boolean reaperStarted = false; // true if cache is valid
 
   /**

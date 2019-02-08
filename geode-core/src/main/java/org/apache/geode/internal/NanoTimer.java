@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * A timer class that reports current or elapsed time in nanonseconds. The static method
  * {@link #getTime} reports the current time. The instance methods support basic stop-watch-style
@@ -54,6 +56,7 @@ public class NanoTimer {
 
   private final TimeService timeService;
 
+  @Immutable
   private static final TimeService systemTimeService = new TimeService() {
     @Override
     public long getTime() {

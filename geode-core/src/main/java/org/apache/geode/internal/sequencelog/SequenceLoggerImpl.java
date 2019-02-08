@@ -20,12 +20,14 @@ import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.sequencelog.io.OutputStreamAppender;
 
 public class SequenceLoggerImpl implements SequenceLogger {
 
+  @Immutable
   private static final SequenceLoggerImpl INSTANCE;
 
   public static final String ENABLED_TYPES_PROPERTY =

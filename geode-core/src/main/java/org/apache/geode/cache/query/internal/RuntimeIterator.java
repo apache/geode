@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -44,6 +45,7 @@ import org.apache.geode.cache.query.types.StructType;
 public class RuntimeIterator extends AbstractCompiledValue {
 
   // token to differentiate null from uninitialized
+  @Immutable
   private static final SelectResults UNINITIALIZED = new ResultsBag(0, null);
   private Object current = UNINITIALIZED;
   private String name;

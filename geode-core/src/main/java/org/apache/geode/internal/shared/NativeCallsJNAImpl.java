@@ -43,6 +43,9 @@ import com.sun.jna.win32.StdCallLibrary;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.signal.Signal;
@@ -68,6 +71,7 @@ public class NativeCallsJNAImpl {
   /**
    * The static instance of the JNA based implementation for this platform.
    */
+  @Immutable
   private static final NativeCalls instance = getImplInstance();
 
   private static NativeCalls getImplInstance() {
@@ -425,6 +429,7 @@ public class NativeCallsJNAImpl {
 
     private ThreadLocal<Structure> tSpecs = new ThreadLocal<Structure>();
 
+    @MakeNotStatic
     private static boolean isStatFSEnabled;
 
     public static class FSIDIntArr2 extends Structure {
@@ -506,6 +511,7 @@ public class NativeCallsJNAImpl {
       // TMPFS_MAGIC
       // 0xFF534D42 , 0x73757245 , 0x564c , 0x6969 , 0x517B , 0x01021994
       // 4283649346 , 1937076805 , 22092 , 26985 , 20859 , 16914836
+      @Immutable
       private static final int[] REMOTE_TYPES =
           new int[] { /* 4283649346, */ 1937076805, 22092, 26985, 20859, 16914836};
 
@@ -565,6 +571,7 @@ public class NativeCallsJNAImpl {
       // TMPFS_MAGIC
       // 0xFF534D42 , 0x73757245 , 0x564c , 0x6969 , 0x517B , 0x01021994
       // 4283649346 , 1937076805 , 22092 , 26985 , 20859 , 16914836
+      @Immutable
       private static final long[] REMOTE_TYPES =
           new long[] {4283649346l, 1937076805l, 22092l, 26985l, 20859l, 16914836l};
 
@@ -677,6 +684,7 @@ public class NativeCallsJNAImpl {
       return false;
     }
 
+    @MakeImmutable
     public static final String[] FallocateFileSystems = {"ext4", "xfs", "btrfs", "ocfs2"};
 
     @Override

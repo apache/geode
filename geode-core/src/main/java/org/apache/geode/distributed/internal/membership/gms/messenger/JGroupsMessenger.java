@@ -70,6 +70,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemConnectException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
@@ -125,6 +126,7 @@ public class JGroupsMessenger implements Messenger {
   private static final short JGROUPS_TYPE_JGADDRESS = 2000;
   private static final short JGROUPS_PROTOCOL_TRANSPORT = 1000;
 
+  @MutableForTesting
   public static boolean THROW_EXCEPTION_ON_START_HOOK;
 
   protected String jgStackConfig;

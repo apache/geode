@@ -19,6 +19,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.SharedLibrary;
 import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
 
@@ -28,6 +30,7 @@ import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
  * is currently a singleton so all the methods on it are static.
  */
 public class AddressableMemoryManager {
+  @Immutable
   private static final UnsafeWrapper unsafe;
   private static final int ARRAY_BYTE_BASE_OFFSET;
   private static final String reason;
@@ -174,11 +177,16 @@ public class AddressableMemoryManager {
   }
 
   @SuppressWarnings("rawtypes")
+  @MakeNotStatic
   private static volatile Class dbbClass = null;
   @SuppressWarnings("rawtypes")
+  @MakeNotStatic
   private static volatile Constructor dbbCtor = null;
+  @MakeNotStatic
   private static volatile boolean dbbCreateFailed = false;
+  @MakeNotStatic
   private static volatile Method dbbAddressMethod = null;
+  @MakeNotStatic
   private static volatile boolean dbbAddressFailed = false;
 
   /**

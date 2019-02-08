@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.server.ServerLoadProbeAdapter;
 import org.apache.geode.cache.server.ServerMetrics;
@@ -39,6 +40,7 @@ import org.apache.geode.internal.cache.xmlcache.Declarable2;
  *
  * @since GemFire 5.7
  */
+@Immutable
 public class ConnectionCountProbe extends ServerLoadProbeAdapter
     implements Declarable2, DataSerializable {
 

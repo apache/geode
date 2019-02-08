@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
@@ -49,6 +50,7 @@ public class CompiledOperation extends AbstractCompiledValue {
   private final CompiledValue receiver; // may be null if implicit to scope
   private final String methodName;
   private final List args;
+  @MakeNotStatic
   private static final ConcurrentMap cache = new ConcurrentHashMap();
 
 

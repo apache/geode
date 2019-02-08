@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -42,6 +43,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ListRegionCommand extends InternalGfshCommand {
+  @Immutable
   private static final GetRegionsFunction getRegionsFunction = new GetRegionsFunction();
 
   @CliCommand(value = {CliStrings.LIST_REGION}, help = CliStrings.LIST_REGION__HELP)

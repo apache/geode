@@ -53,6 +53,9 @@ import joptsimple.OptionSet;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
@@ -102,6 +105,7 @@ import org.apache.geode.security.GemFireSecurityException;
 @SuppressWarnings({"unused"})
 public class ServerLauncher extends AbstractLauncher<String> {
 
+  @MakeImmutable
   private static final Map<String, String> helpMap = new HashMap<>();
 
   static {
@@ -144,6 +148,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         String.valueOf(getDefaultServerPort())));
   }
 
+  @MakeImmutable
   private static final Map<Command, String> usageMap = new TreeMap<>();
 
   static {
@@ -160,8 +165,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private static final String DEFAULT_SERVER_LOG_NAME = "gemfire";
   private static final String SERVER_SERVICE_NAME = "Server";
 
+  @MakeNotStatic
   private static final AtomicReference<ServerLauncher> INSTANCE = new AtomicReference<>();
 
+  @Immutable
   private static final ServerLauncherCacheProvider DEFAULT_CACHE_PROVIDER =
       new DefaultServerLauncherCacheProvider();
 
@@ -1355,6 +1362,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    */
   public static class Builder {
 
+    @Immutable
     protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
 
     private boolean serverBindAddressSetByUser;

@@ -19,6 +19,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
@@ -30,6 +31,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class DiskStoreStats {
 
+  @Immutable
   private static final StatisticsType type;
 
   //////////////////// Statistic "Id" Fields ////////////////////

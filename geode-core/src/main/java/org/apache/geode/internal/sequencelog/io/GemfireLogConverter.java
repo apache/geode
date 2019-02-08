@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.sequencelog.GraphType;
@@ -43,6 +44,7 @@ public class GemfireLogConverter {
   private static final Pattern DATE_PATTERN =
       Pattern.compile("(\\d\\d\\d\\d)/(\\d\\d)/(\\d\\d) (\\d\\d):(\\d\\d):(\\d\\d).(\\d\\d\\d)");
   private static final Pattern ALL = Pattern.compile(".*");
+  @Immutable
   private static final ArrayList<Test> tests = buildTests();
 
 

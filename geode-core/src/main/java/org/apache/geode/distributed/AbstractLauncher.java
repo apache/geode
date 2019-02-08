@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
@@ -71,6 +72,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   public static final String WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE =
       "The working directory for the %s could not be found.";
 
+  @Immutable
   protected static final Boolean DEFAULT_FORCE = Boolean.FALSE;
 
   /**

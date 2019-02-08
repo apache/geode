@@ -22,6 +22,7 @@ import java.net.SocketAddress;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.VersionException;
@@ -34,6 +35,8 @@ import org.apache.geode.internal.security.SecurityService;
 
 class ServerSideHandshakeFactory {
   private static final Logger logger = LogService.getLogger();
+
+  @Immutable
   static final Version currentServerVersion = Version.CURRENT;
 
   ServerSideHandshake readHandshake(Socket socket, int timeout, CommunicationMode communicationMode,

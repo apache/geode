@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
@@ -55,6 +56,7 @@ public class InternalFunctionExecutionServiceImpl
 
   private static final String[] EMPTY_GROUPS = new String[0];
 
+  @MakeNotStatic
   private static final ConcurrentHashMap<String, Function> idToFunctionMap =
       new ConcurrentHashMap<>();
 

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.admin;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.admin.Alert;
 
 /**
@@ -24,13 +26,18 @@ import org.apache.geode.internal.admin.Alert;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Immutable
 public class AlertLevel implements java.io.Serializable {
   private static final long serialVersionUID = -4752438966587392126L;
 
+  @Immutable
   public static final AlertLevel WARNING = new AlertLevel(Alert.WARNING, "WARNING");
+  @Immutable
   public static final AlertLevel ERROR = new AlertLevel(Alert.ERROR, "ERROR");
+  @Immutable
   public static final AlertLevel SEVERE = new AlertLevel(Alert.SEVERE, "SEVERE");
 
+  @Immutable
   public static final AlertLevel OFF = new AlertLevel(Alert.OFF, "OFF");
 
   /** The severity level of this AlertLevel. Greater is more severe. */
@@ -43,8 +50,10 @@ public class AlertLevel implements java.io.Serializable {
   /** int used as ordinal to represent this AlertLevel */
   public final int ordinal = nextOrdinal++;
 
+  @MakeImmutable("Uncessary field")
   private static int nextOrdinal = 0;
 
+  @Immutable
   private static final AlertLevel[] VALUES = {WARNING, ERROR, SEVERE, OFF};
 
   private Object readResolve() throws java.io.ObjectStreamException {

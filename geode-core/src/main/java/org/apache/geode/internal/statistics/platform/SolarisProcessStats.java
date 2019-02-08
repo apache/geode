@@ -19,6 +19,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.statistics.HostStatHelper;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
@@ -61,6 +62,7 @@ public class SolarisProcessStats {
   private static final int cpuUsedDOUBLE = 0;
   private static final int memoryUsedDOUBLE = 1;
 
+  @Immutable
   private static final StatisticsType myType;
 
   private static void checkOffset(String name, int offset) {

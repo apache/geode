@@ -19,6 +19,8 @@ package org.apache.geode.cache;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.cache.tier.sockets.InterestResultPolicyImpl;
 
 /**
@@ -35,18 +37,24 @@ import org.apache.geode.internal.cache.tier.sockets.InterestResultPolicyImpl;
 public class InterestResultPolicy implements Serializable {
   private static final long serialVersionUID = -4993765891973030160L;
 
+  @MakeImmutable
   private static byte nextOrdinal = 0;
 
+  @Immutable
   private static final InterestResultPolicy[] VALUES = new InterestResultPolicy[3];
 
+  @Immutable
   public static final InterestResultPolicy NONE = new InterestResultPolicyImpl("NONE");
+  @Immutable
   public static final InterestResultPolicy KEYS = new InterestResultPolicyImpl("KEYS");
+  @Immutable
   public static final InterestResultPolicy KEYS_VALUES =
       new InterestResultPolicyImpl("KEYS_VALUES");
 
   /**
    * The <code>InterestResultPolicy</code> used by default; it is {@link #KEYS_VALUES}.
    */
+  @Immutable
   public static final InterestResultPolicy DEFAULT = KEYS_VALUES;
 
 

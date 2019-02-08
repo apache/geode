@@ -49,6 +49,7 @@ import io.netty.util.concurrent.Future;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -146,6 +147,7 @@ public class GeodeRedisServer {
   /**
    * Thread used to start main method
    */
+  @MakeNotStatic
   private static Thread mainThread = null;
 
   /**

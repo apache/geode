@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketServerLocation;
 import org.apache.geode.internal.cache.BucketServerLocation66;
@@ -39,6 +40,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class GetClientPRMetadataCommand extends BaseCommand {
 
+  @Immutable
   private static final GetClientPRMetadataCommand singleton = new GetClientPRMetadataCommand();
 
   public static Command getCommand() {

@@ -48,6 +48,7 @@ import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
 
 /**
@@ -59,6 +60,7 @@ import org.apache.geode.internal.Assert;
 public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml implements XMLReader {
 
   /** An empty <code>Attributes</code> */
+  @Immutable
   private static final Attributes EMPTY = new AttributesImpl();
 
   ///////////////////////// Instance Fields ////////////////////////

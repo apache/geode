@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -157,6 +158,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
    * a "fake" operation which just extracts the queue status from the connection
    */
   private static class HasQueueOp implements Op {
+    @Immutable
     public static final HasQueueOp SINGLETON = new HasQueueOp();
 
     @Override

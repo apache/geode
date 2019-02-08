@@ -36,6 +36,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.Region;
@@ -91,6 +93,7 @@ public class PoolImpl implements InternalPool {
    * For durable client tests only. Connection Sources read this flag and return an empty list of
    * servers.
    */
+  @MutableForTesting
   public static volatile boolean TEST_DURABLE_IS_NET_DOWN = false;
 
   private final String name;
@@ -1144,7 +1147,10 @@ public class PoolImpl implements InternalPool {
    *
    * @since GemFire 5.7
    */
+  @MakeNotStatic
   private final AtomicInteger attachCount = new AtomicInteger();
+
+  @MutableForTesting
   public static volatile boolean IS_INSTANTIATOR_CALLBACK = false;
 
   /**
@@ -1312,41 +1318,49 @@ public class PoolImpl implements InternalPool {
   /**
    * A debug flag used for testing used in ClientServerObserver
    */
+  @MutableForTesting
   public static volatile boolean AFTER_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
 
   /**
    * A debug flag used for testing used in ClientServerObserver
    */
+  @MutableForTesting
   public static volatile boolean BEFORE_REGISTER_CALLBACK_FLAG = false;
 
   /**
    * A debug flag used for testing used in ClientServerObserver
    */
+  @MutableForTesting
   public static volatile boolean BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = false;
 
   /**
    * A debug flag used for testing used in ClientServerObserver
    */
+  @MutableForTesting
   public static volatile boolean AFTER_REGISTER_CALLBACK_FLAG = false;
 
   /**
    * A debug flag used for testing used in ClientServerObserver
    */
+  @MutableForTesting
   public static volatile boolean BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
 
   /**
    * A debug flag used for testing used in ClientServerObserver
    */
+  @MutableForTesting
   public static volatile boolean BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG = false;
   /**
    * A debug flag used for testing used in ClientServerObserver
    */
+  @MutableForTesting
   public static volatile boolean AFTER_QUEUE_DESTROY_MESSAGE_FLAG = false;
 
   /**
    * Test hook flag to notify observer(s) that a primary is recovered either from a backup or from a
    * new connection.
    */
+  @MutableForTesting
   public static volatile boolean AFTER_PRIMARY_RECOVERED_CALLBACK_FLAG = false;
 
   public abstract static class PoolTask implements Runnable {

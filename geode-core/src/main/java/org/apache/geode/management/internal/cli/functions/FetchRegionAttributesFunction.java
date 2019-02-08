@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
@@ -41,6 +42,7 @@ public class FetchRegionAttributesFunction implements InternalFunction {
 
   private static final String ID = FetchRegionAttributesFunction.class.getName();
 
+  @Immutable
   public static final FetchRegionAttributesFunction INSTANCE = new FetchRegionAttributesFunction();
 
   @Override

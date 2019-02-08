@@ -36,6 +36,7 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.alerting.AlertLevel;
 import org.apache.geode.internal.alerting.AlertMessaging;
@@ -53,6 +54,7 @@ public class AlertAppender extends AbstractAppender
 
   private static final boolean START_PAUSED_BY_DEFAULT = true;
 
+  @MakeNotStatic
   private static final AtomicReference<AlertAppender> instanceRef = new AtomicReference<>();
 
   private final AtomicReference<AlertMessaging> alertMessagingRef = new AtomicReference<>();

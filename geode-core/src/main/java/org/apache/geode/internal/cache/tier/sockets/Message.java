@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SerializationException;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -104,7 +106,9 @@ public class Message {
 
   private static final int DEFAULT_CHUNK_SIZE = 1024;
 
+  @Immutable
   private static final byte[] TRUE = defineTrue();
+  @Immutable
   private static final byte[] FALSE = defineFalse();
 
   private static final int NO_HEADER_READ_TIMEOUT = 0;
@@ -269,6 +273,7 @@ public class Message {
     addStringPart(str, false);
   }
 
+  @MakeNotStatic
   private static final Map<String, byte[]> CACHED_STRINGS = new ConcurrentHashMap<>();
 
   public void addStringPart(String str, boolean enableCaching) {

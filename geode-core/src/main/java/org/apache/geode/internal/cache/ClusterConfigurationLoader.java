@@ -45,6 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.UnmodifiableException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -73,6 +74,7 @@ public class ClusterConfigurationLoader {
 
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final Function GET_CLUSTER_CONFIG_FUNCTION = new GetClusterConfigurationFunction();
 
   /**

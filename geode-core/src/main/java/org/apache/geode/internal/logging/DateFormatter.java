@@ -18,6 +18,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * Defines the common date format for GemFire and provides DateFormat instances.
  */
@@ -28,6 +30,7 @@ public class DateFormatter {
    */
   public static final String FORMAT_STRING = "yyyy/MM/dd HH:mm:ss.SSS z";
 
+  @MakeImmutable("Data formatters are not thread safe!")
   private static final DateFormat TIME_FORMATTER = createDateFormat();
 
   /**

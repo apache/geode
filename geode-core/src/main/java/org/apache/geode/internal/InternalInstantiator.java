@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -60,21 +61,25 @@ public class InternalInstantiator {
   /**
    * Maps Class names to their Instantiator instance.
    */
+  @MakeNotStatic
   private static final ConcurrentMap/* <String,Instantiator> */ dsMap = new ConcurrentHashMap();
 
   /** Maps the id of an instantiator to its Instantiator instance */
+  @MakeNotStatic
   private static final ConcurrentMap/* <Integer,Instantiator|Marker> */ idsToInstantiators =
       new ConcurrentHashMap();
 
   /**
    * Maps the name of the instantiated-class to an instance of InstantiatorAttributesHolder.
    */
+  @MakeNotStatic
   private static final ConcurrentHashMap<String, InstantiatorAttributesHolder> classNamesToHolders =
       new ConcurrentHashMap<String, InstantiatorAttributesHolder>();
 
   /**
    * Maps the id of an instantiator to an instance of InstantiatorAttributesHolder.
    */
+  @MakeNotStatic
   private static final ConcurrentHashMap<Integer, InstantiatorAttributesHolder> idsToHolders =
       new ConcurrentHashMap<Integer, InstantiatorAttributesHolder>();
 

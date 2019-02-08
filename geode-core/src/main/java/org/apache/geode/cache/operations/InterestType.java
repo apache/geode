@@ -15,11 +15,15 @@
 
 package org.apache.geode.cache.operations;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * Enumeration for various interest types supported by GemFire.
  *
  * @since GemFire 5.5
  */
+@Immutable
 public final class InterestType {
 
   public static final byte TP_KEY = 0;
@@ -28,23 +32,28 @@ public final class InterestType {
 
   public static final byte TP_LIST = 4;
 
+  @MakeImmutable
   private static byte nextOrdinal = 0;
 
+  @Immutable
   private static final InterestType[] VALUES = new InterestType[10];
 
   /**
    * For registering interest in a specific key.
    */
+  @Immutable
   public static final InterestType KEY = new InterestType("KEY", TP_KEY);
 
   /**
    * For registering interest in a list of keys.
    */
+  @Immutable
   public static final InterestType LIST = new InterestType("LIST", TP_LIST);
 
   /**
    * For registering interest in all keys matching a regular expression.
    */
+  @Immutable
   public static final InterestType REGULAR_EXPRESSION =
       new InterestType("REGULAR_EXPRESSION", TP_REGEX);
 

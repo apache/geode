@@ -18,6 +18,9 @@ package org.apache.geode.cache;
 
 import java.io.ObjectStreamException;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * Enumerated type for region subscription interest policy. The interest policy specifies what data
  * a subscriber is interested in having in it's region.
@@ -28,11 +31,14 @@ import java.io.ObjectStreamException;
  *
  * @since GemFire 5.0
  */
+@Immutable
 public class InterestPolicy implements java.io.Serializable {
   private static final long serialVersionUID = 1567179436331385968L;
 
+  @MakeImmutable
   private static byte nextOrdinal = 0;
 
+  @Immutable
   private static final InterestPolicy[] VALUES = new InterestPolicy[2];
 
   /**
@@ -55,6 +61,7 @@ public class InterestPolicy implements java.io.Serializable {
    * listener in a VM using this policy will receive notification of all changes to the partitioned
    * region.
    */
+  @Immutable
   public static final InterestPolicy ALL = new InterestPolicy("ALL");
 
   /**
@@ -75,11 +82,13 @@ public class InterestPolicy implements java.io.Serializable {
    * be notified in the VM holding the affected data. That is, listeners are only notified if the
    * affected* key-value pair is in the same process as the listener.
    */
+  @Immutable
   public static final InterestPolicy CACHE_CONTENT = new InterestPolicy("CACHE_CONTENT");
 
   /**
    * The interest policy used by default; it is {@link #CACHE_CONTENT}.
    */
+  @Immutable
   public static final InterestPolicy DEFAULT = CACHE_CONTENT;
 
 

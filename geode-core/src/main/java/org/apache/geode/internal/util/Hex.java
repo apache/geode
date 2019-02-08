@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.util;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Provides hexadecimal conversion and display utilities.
  *
  */
 public class Hex {
   /** hex chars */
+  @Immutable
   private static final char[] HEX =
       {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 

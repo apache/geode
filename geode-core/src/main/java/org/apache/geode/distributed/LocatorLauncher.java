@@ -51,6 +51,9 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
@@ -91,8 +94,10 @@ import org.apache.geode.management.internal.cli.util.HostUtils;
 @SuppressWarnings({"unused"})
 public class LocatorLauncher extends AbstractLauncher<String> {
 
+  @Immutable
   private static final Boolean DEFAULT_LOAD_SHARED_CONFIG_FROM_DIR = Boolean.FALSE;
 
+  @MakeImmutable
   private static final Map<String, String> helpMap = new HashMap<>();
 
   static {
@@ -129,6 +134,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         "An option to cause the Locator to redirect standard out and standard error to the GemFire log file.");
   }
 
+  @MakeImmutable
   private static final Map<Command, String> usageMap = new TreeMap<>();
 
   static {
@@ -145,6 +151,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private static final String DEFAULT_LOCATOR_LOG_NAME = "locator";
   private static final String LOCATOR_SERVICE_NAME = "Locator";
 
+  @MakeNotStatic
   private static final AtomicReference<LocatorLauncher> INSTANCE = new AtomicReference<>();
 
   // private transient volatile boolean debug;
@@ -1196,6 +1203,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   public static class Builder {
 
+    @Immutable
     protected static final Command DEFAULT_COMMAND = Command.UNSPECIFIED;
 
     private Boolean debug;

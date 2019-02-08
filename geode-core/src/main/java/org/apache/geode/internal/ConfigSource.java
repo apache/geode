@@ -16,11 +16,14 @@ package org.apache.geode.internal;
 
 import java.io.Serializable;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Describes where the value of a configuration attribute came from.
  *
  * @since GemFire 7.0
  */
+@Immutable
 public class ConfigSource implements Serializable {
   private static final long serialVersionUID = -4097017272431018553L;
 
@@ -81,10 +84,15 @@ public class ConfigSource implements Serializable {
     return this.description;
   }
 
+  @Immutable
   private static final ConfigSource API_SINGLETON = new ConfigSource(Type.API);
+  @Immutable
   private static final ConfigSource SYSPROP_SINGLETON = new ConfigSource(Type.SYSTEM_PROPERTY);
+  @Immutable
   private static final ConfigSource XML_SINGLETON = new ConfigSource(Type.XML);
+  @Immutable
   private static final ConfigSource RUNTIME_SINGLETON = new ConfigSource(Type.RUNTIME);
+  @Immutable
   private static final ConfigSource LAUNCHER_SINGLETON = new ConfigSource(Type.LAUNCHER);
 
   public static ConfigSource api() {

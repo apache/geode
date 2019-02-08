@@ -22,12 +22,14 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * A StatisticsFactory that creates disconnected statistics
  */
 public class DummyStatisticsFactory implements StatisticsFactory {
 
+  @Immutable
   private static final StatisticsTypeFactoryImpl tf =
       (StatisticsTypeFactoryImpl) StatisticsTypeFactoryImpl.singleton();
 

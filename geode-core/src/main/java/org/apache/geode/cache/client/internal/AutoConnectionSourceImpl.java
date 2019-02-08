@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.ToDataException;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
@@ -65,7 +67,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   private TcpClient tcpClient;
 
+  @MakeImmutable
   protected static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
+
+  @Immutable
   private static final Comparator<HostAddress> SOCKET_ADDRESS_COMPARATOR =
       new Comparator<HostAddress>() {
         @Override

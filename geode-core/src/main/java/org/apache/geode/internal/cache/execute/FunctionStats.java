@@ -19,6 +19,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -29,6 +30,7 @@ public class FunctionStats {
 
   public static final String statName = "FunctionStatistics";
   /** The <code>StatisticsType</code> of the statistics */
+  @Immutable
   private static final StatisticsType _type;
 
   private FunctionServiceStats aggregateStats;
@@ -176,6 +178,7 @@ public class FunctionStats {
   private final Statistics _stats;
 
   /** This is an instance of the FunctionStats when the statsDisabled = true; */
+  @Immutable
   private static final FunctionStats dummy = createDummy();
 
   // ///////////////////// Constructors ///////////////////////

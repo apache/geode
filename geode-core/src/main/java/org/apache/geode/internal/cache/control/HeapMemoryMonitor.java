@@ -36,6 +36,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.execute.Function;
@@ -84,6 +86,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   private final LocalStatListener statListener = new LocalHeapStatListener();
 
   // JVM MXBean used to report changes in heap memory usage
+  @Immutable
   private static final MemoryPoolMXBean tenuredMemoryPoolMXBean;
   static {
     MemoryPoolMXBean matchingMemoryPoolMXBean = null;
@@ -140,7 +143,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   private final InternalCache cache;
   private final ResourceManagerStats stats;
 
+  @MutableForTesting
   private static boolean testDisableMemoryUpdates = false;
+  @MutableForTesting
   private static long testBytesUsedForThresholdSet = -1;
 
   /**

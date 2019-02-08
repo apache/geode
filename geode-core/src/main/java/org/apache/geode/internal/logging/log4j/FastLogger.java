@@ -21,6 +21,8 @@ import org.apache.logging.log4j.spi.ExtendedLogger;
 import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
 import org.apache.logging.log4j.status.StatusLogger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 /**
  * Overrides is-enabled checks for log levels below INFO to avoid performance penalties when the log
  * level is INFO or above. If delegating is true then it will always delegate to
@@ -30,6 +32,7 @@ import org.apache.logging.log4j.status.StatusLogger;
 public class FastLogger extends ExtendedLoggerWrapper {
   private static final long serialVersionUID = 7084130827962463327L;
 
+  @MakeNotStatic
   private static volatile boolean delegating = true;
 
   public FastLogger(final Logger logger) {

@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.IOUtils;
@@ -72,6 +73,7 @@ import org.apache.geode.management.internal.web.domain.QueryParameterSource;
 @SuppressWarnings("unused")
 public class ShellCommandsController extends AbstractCommandsController {
 
+  @Immutable
   private static final MultipartFile[] DEFAULT_MULTIPART_FILE = null;
 
   private static final String DEFAULT_INDEX_TYPE = "range";

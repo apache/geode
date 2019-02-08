@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
@@ -40,6 +41,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class RequestEventValue extends BaseCommand {
 
+  @Immutable
   private static final RequestEventValue singleton = new RequestEventValue();
 
   public static Command getCommand() {

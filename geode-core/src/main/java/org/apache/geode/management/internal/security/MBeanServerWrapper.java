@@ -45,6 +45,7 @@ import javax.management.remote.MBeanServerForwarder;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.security.GemFireSecurityException;
@@ -126,6 +127,7 @@ public class MBeanServerWrapper implements MBeanServerForwarder {
     return mbs.getObjectInstance(name);
   }
 
+  @Immutable
   private static final QueryExp notAccessControlMBean =
       Query.not(Query.isInstanceOf(Query.value(AccessControlMXBean.class.getName())));
 

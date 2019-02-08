@@ -72,6 +72,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -157,6 +159,7 @@ public class DiskStoreImpl implements DiskStore {
    * which destroy operation issued notification for release). The delay occurs iff the flag used
    * for enabling callbacks to CacheObserver is enabled true
    */
+  @MutableForTesting
   static volatile long DEBUG_DELAY_JOINING_WITH_COMPACTOR = 500;
 
   /**
@@ -245,6 +248,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * For some testing purposes we would not consider top property if this flag is set to true
    **/
+  @MutableForTesting
   public static boolean SET_IGNORE_PREALLOCATE = false;
 
   /**
@@ -256,7 +260,9 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * For testing - to keep track of files for which fallocate happened
    */
+  @MutableForTesting
   public static volatile HashSet<String> TEST_CHK_FALLOC_DIRS;
+  @MutableForTesting
   public static volatile HashSet<String> TEST_NO_FALLOC_DIRS;
 
   private final InternalCache cache;
@@ -4061,7 +4067,9 @@ public class DiskStoreImpl implements DiskStore {
         false);
   }
 
+  @MakeNotStatic
   private static Cache offlineCache = null;
+  @MakeNotStatic
   private static DistributedSystem offlineDS = null;
 
   private static void cleanupOffline() {

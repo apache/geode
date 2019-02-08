@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -52,6 +53,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class ExecuteRegionFunction61 extends BaseCommand {
 
+  @Immutable
   private static final ExecuteRegionFunction61 singleton = new ExecuteRegionFunction61();
 
   public static Command getCommand() {

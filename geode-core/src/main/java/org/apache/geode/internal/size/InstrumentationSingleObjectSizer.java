@@ -16,9 +16,12 @@ package org.apache.geode.internal.size;
 
 import java.lang.instrument.Instrumentation;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 
 public class InstrumentationSingleObjectSizer implements SingleObjectSizer {
 
+  @MakeImmutable
   private static Instrumentation instrumentation;
 
   public static void premain(String agentArgs, Instrumentation instrumentation) {
