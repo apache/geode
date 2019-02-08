@@ -13,17 +13,12 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest;
+package org.apache.geode.management.client;
 
-import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,56 +26,56 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.internal.rest.BaseLocatorContextLoader;
+import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
-public class RegionManagementIntegrationTest {
-
-  static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
+public class ClusterManagementClientDUnitTest {
+  private static final ResponseErrorHandler ERROR_HANDLER = new RestTemplateResponseErrorHandler();
 
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  private MockMvc mockMvc;
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
+
+  private MemberVM server1;
+  private ClusterManagementService client;
 
   @Before
   public void before() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+    MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
         .build();
+    MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mockMvc);
+    client = ClusterManagementServiceProvider.getService(requestFactory);
+
+    server1 = cluster.startServerVM(1,
+        BaseLocatorContextLoader.getLocatorFromContext(webApplicationContext).getPort());
   }
 
   @Test
   @WithMockUser
-  public void sanityCheck() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
-    regionConfig.setName("customers");
-    regionConfig.setType("REPLICATE");
+  public void createRegion() {
+    RegionConfig region = new RegionConfig();
+    region.setName("customer");
+    region.setType("REPLICATE");
 
-    ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(regionConfig);
+    ClusterManagementResult result = client.create(region, "");
 
-    mockMvc.perform(post("/v2/regions")
-        .with(POST_PROCESSOR)
-        .content(json))
-        .andExpect(status().isInternalServerError())
-        .andExpect(jsonPath("$.persistenceStatus.success", is(false)))
-        .andExpect(jsonPath("$.persistenceStatus.message",
-            is("no members found to create cache element")));
-  }
-
-  @Test
-  @WithMockUser
-  public void ping() throws Exception {
-    mockMvc.perform(get("/v2/ping")
-        .with(POST_PROCESSOR))
-        .andExpect(content().string("pong"));
+    assertThat(result.isSuccessful()).isTrue();
   }
 }

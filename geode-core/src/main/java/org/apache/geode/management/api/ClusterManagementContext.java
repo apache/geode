@@ -13,20 +13,8 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest;
+package org.apache.geode.management.api;
 
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
-
-public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
-
-  private final LocatorStarterRule locator;
-
-  public PlainLocatorContextLoader() {
-    locator = new LocatorStarterRule().withAutoStart();
-  }
-
-  @Override
-  public LocatorStarterRule getLocator() {
-    return locator;
-  }
+public enum ClusterManagementContext {
+  FOR_SERVER, FOR_LOCATOR, FOR_CLIENT
 }

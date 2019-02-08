@@ -13,20 +13,23 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest;
+package org.apache.geode.management.client;
 
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
+import java.io.IOException;
 
-public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.web.client.ResponseErrorHandler;
 
-  private final LocatorStarterRule locator;
-
-  public PlainLocatorContextLoader() {
-    locator = new LocatorStarterRule().withAutoStart();
+public class RestTemplateResponseErrorHandler implements ResponseErrorHandler {
+  @Override
+  public boolean hasError(ClientHttpResponse response) throws IOException {
+    // All errors should be handled by the server and be returned as part of the
+    // ResponseEntity<ClusterManagementResult>.
+    return false;
   }
 
   @Override
-  public LocatorStarterRule getLocator() {
-    return locator;
+  public void handleError(ClientHttpResponse response) throws IOException {
+    // this should not be necessary
   }
 }

@@ -20,7 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-class StandardRequestPostProcessor implements RequestPostProcessor {
+public class StandardRequestPostProcessor implements RequestPostProcessor {
   @Override
   public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
     request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);

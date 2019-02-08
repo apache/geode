@@ -33,7 +33,7 @@ import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.api.ListAssert;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
   private static final Logger logger = LogService.getLogger();

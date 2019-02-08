@@ -22,7 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;

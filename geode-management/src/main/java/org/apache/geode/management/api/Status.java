@@ -12,21 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.api;
 
-package org.apache.geode.management.internal.rest;
+public class Status {
+  boolean success;
+  String message;
 
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
+  // needed for json deserialization
+  public Status() {}
 
-public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
-
-  private final LocatorStarterRule locator;
-
-  public PlainLocatorContextLoader() {
-    locator = new LocatorStarterRule().withAutoStart();
+  public Status(boolean success, String message) {
+    this.success = success;
+    this.message = message;
   }
 
-  @Override
-  public LocatorStarterRule getLocator() {
-    return locator;
+  public boolean isSuccess() {
+    return success;
+  }
+
+  public void setSuccess(boolean success) {
+    this.success = success;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
   }
 }
