@@ -49,9 +49,6 @@ subprojects {
         }
       }
     }
-    project {
-      name = sanitizedName()
-    }
     // Several files have UTF-8 encoding and Eclipse running on Windows
     // will have trouble unless we tell it to use UTF-8 encoding.
     // This setting needs to go into the core.resources.prefs file,

@@ -72,8 +72,6 @@ apply from: "${scriptDir}/geode-dependency-management.gradle"
 // Those subprojects that are properly managed by Spring will apply this plugin explicitly.
 versionManagement.applySpringDependencyManagement = false
 
-// utilities.gradle MUST be read before publish.gradle for reasons
-apply from: "${scriptDir}/utilities.gradle"
 apply from: "${scriptDir}/java.gradle"
 apply from: "${scriptDir}/ide.gradle"
 apply from: "${scriptDir}/dependency-resolution.gradle"
