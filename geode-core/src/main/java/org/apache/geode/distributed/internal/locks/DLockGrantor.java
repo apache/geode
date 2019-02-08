@@ -32,7 +32,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -145,6 +147,10 @@ public class DLockGrantor {
    * Handles special lock-reservation type for transactions.
    */
   private final TXReservationMgr resMgr = new TXReservationMgr(false);
+
+  private final Map<InternalDistributedMember, Long> membersDepartedTime = new HashMap();
+  private final int membersDepartedTimeKeptSize = 10;
+  private final long departedMemberKeptInMapMilliSeconds = 24 * 60 * 60 * 1000;
 
   /**
    * Enforces waiting until this grantor is initialized. Used to block all lock requests until
@@ -498,7 +504,13 @@ public class DLockGrantor {
         }
 
         DLockBatch batch = (DLockBatch) request.getObjectName();
-        this.resMgr.makeReservation((IdentityArrayList) batch.getReqs());
+        synchronized (membersDepartedTime) {
+          // the transaction host/txLock requester has departed.
+          if (membersDepartedTime.containsKey(batch.getOwner())) {
+            throw new TransactionDataNodeHasDepartedException("Transaction host has been departed");
+          }
+          resMgr.makeReservation((IdentityArrayList) batch.getReqs());
+        }
         if (isTraceEnabled_DLS) {
           logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] granting {}",
               batch.getBatchId());
@@ -522,6 +534,10 @@ public class DLockGrantor {
    * @return lock batches that were created by owner
    */
   public DLockBatch[] getLockBatches(InternalDistributedMember owner) {
+    // put owner into the map first so that no new threads will handle in-flight requests
+    // from the departed member to lock keys
+    recordMemberDepartedTime(owner);
+
     // Key: Object batchId, Value: DLockBatch batch
     synchronized (this.batchLocks) {
       List batchList = new ArrayList();
@@ -533,6 +549,26 @@ public class DLockGrantor {
       }
       return (DLockBatch[]) batchList.toArray(new DLockBatch[batchList.size()]);
     }
+  }
+
+  void recordMemberDepartedTime(InternalDistributedMember owner) {
+    synchronized (membersDepartedTime) {
+      if (membersDepartedTime.size() >= membersDepartedTimeKeptSize) {
+        // remove all departed members kept in map longer than 1 day
+        membersDepartedTime.entrySet()
+            .removeIf(entries -> entries.getValue() < departedMembersToBeExpiredTime());
+      }
+      membersDepartedTime.put(owner, System.currentTimeMillis());
+    }
+  }
+
+  long departedMembersToBeExpiredTime() {
+    return System.currentTimeMillis() - departedMemberKeptInMapMilliSeconds;
+  }
+
+  @VisibleForTesting
+  Map getMembersDepartedTimeRecords() {
+    return membersDepartedTime;
   }
 
   /**
