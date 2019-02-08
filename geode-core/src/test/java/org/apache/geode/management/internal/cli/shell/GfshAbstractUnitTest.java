@@ -20,6 +20,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.Enumeration;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.shell.core.CommandResult;
@@ -34,6 +39,25 @@ public class GfshAbstractUnitTest {
   @Before
   public void before() {
     testString = "This is a test string.";
+  }
+
+  @After
+  public void after() {
+    // This removes and cleans up the LogWrapper instance so that subsequent tests don't fail.
+    removeLogWrapper();
+  }
+
+  void removeLogWrapper() {
+    Logger rootLogger = LogManager.getLogManager().getLogger("");
+
+    for (Enumeration<String> enumeration = LogManager.getLogManager().getLoggerNames(); enumeration
+        .hasMoreElements();) {
+      String loggerName = enumeration.nextElement();
+      Logger logger = Logger.getLogger(loggerName);
+      if (logger.getParent() != null && logger.getParent().getName().endsWith(".LogWrapper")) {
+        logger.setParent(rootLogger);
+      }
+    }
   }
 
   @Test
