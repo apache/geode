@@ -25,9 +25,9 @@ geode-rebalancer-0.0.0.jar
 geode-wan-0.0.0.jar
 grumpy-core-0.2.2.jar
 istack-commons-runtime-2.2.jar
-jackson-annotations-2.9.7.jar
-jackson-core-2.9.7.jar
-jackson-databind-2.9.7.jar
+jackson-annotations-2.9.8.jar
+jackson-core-2.9.8.jar
+jackson-databind-2.9.8.jar
 jansi-1.17.1.jar
 javax.activation-1.2.0.jar
 javax.activation-api-1.2.0.jar
