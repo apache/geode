@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 
 
 /**
@@ -36,7 +35,7 @@ public class ResumptionAction implements java.io.Serializable {
 
   /** No special action takes place when reliability resumes. */
   @Immutable
-  public static final ResumptionAction NONE = new ResumptionAction("NONE");
+  public static final ResumptionAction NONE = new ResumptionAction("NONE", 0);
 
   /**
    * Resumption of reliability causes the region to be cleared of all data and
@@ -46,17 +45,13 @@ public class ResumptionAction implements java.io.Serializable {
    * {@link RegionReinitializedException}.
    */
   @Immutable
-  public static final ResumptionAction REINITIALIZE = new ResumptionAction("REINITIALIZE");
+  public static final ResumptionAction REINITIALIZE = new ResumptionAction("REINITIALIZE", 1);
 
   /** The name of this mirror type. */
   private final transient String name;
 
-  // The 4 declarations below are necessary for serialization
   /** byte used as ordinal to represent this Scope */
-  public final byte ordinal = nextOrdinal++;
-
-  @MakeNotStatic
-  private static byte nextOrdinal = 0;
+  public final byte ordinal;
 
   @Immutable
   private static final ResumptionAction[] PRIVATE_VALUES = {NONE, REINITIALIZE};
@@ -70,8 +65,9 @@ public class ResumptionAction implements java.io.Serializable {
   }
 
   /** Creates a new instance of ResumptionAction. */
-  private ResumptionAction(String name) {
+  private ResumptionAction(String name, int ordinal) {
     this.name = name;
+    this.ordinal = (byte) ordinal;
   }
 
   /** Return the ResumptionAction represented by specified ordinal */
