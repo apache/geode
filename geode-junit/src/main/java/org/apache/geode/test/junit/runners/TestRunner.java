@@ -18,6 +18,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.hash;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,8 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+import org.junit.runners.model.MultipleFailureException;
+
 
 /**
  * Used by JUnit rule unit tests to execute inner test cases.
@@ -47,8 +50,15 @@ public class TestRunner {
 
     List<Failure> failures = result.getFailures();
     if (!failures.isEmpty()) {
-      Failure firstFailure = failures.get(0);
-      throw new AssertionError(firstFailure.getException());
+      List<Throwable> errors = new ArrayList<>();
+      for (Failure failure : failures) {
+        errors.add(failure.getException());
+      }
+      try {
+        MultipleFailureException.assertEmpty(errors);
+      } catch (Exception e) {
+        throw new AssertionError(e);
+      }
     }
 
     assertThat(result.wasSuccessful()).isTrue();
