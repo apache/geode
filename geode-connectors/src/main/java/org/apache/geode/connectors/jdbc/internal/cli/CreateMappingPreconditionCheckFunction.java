@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.io.ObjectInputStream;
+import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -23,6 +24,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.sql.DataSource;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -35,10 +38,14 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.FieldType;
+import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 @Experimental
@@ -65,6 +72,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
   @Override
   public CliFunctionResult executeFunction(FunctionContext<RegionMapping> context)
       throws Exception {
+    Logger logger = LogService.getLogger();
     RegionMapping regionMapping = context.getArguments();
     String dataSourceName = regionMapping.getDataSourceName();
     DataSource dataSource = dataSourceFactory.getDataSource(dataSourceName);
@@ -75,31 +83,70 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
     InternalCache cache = (InternalCache) context.getCache();
     TypeRegistry typeRegistry = cache.getPdxRegistry();
+    PdxInstanceFactory pdxFactory = null;
     try (Connection connection = dataSource.getConnection()) {
       TableMetaDataView tableMetaData =
           tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
       Object[] output = new Object[2];
       ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
       output[1] = fieldMappings;
+      Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(regionMapping.getPdxName());
+      if (pdxTypes.isEmpty()) {
+        if (!checkForDomainClass(regionMapping.getPdxName())) {
+          pdxFactory = cache.createPdxInstanceFactory(regionMapping.getPdxName());
+        } else {
+          pdxTypes = typeRegistry.getPdxTypesForClassName(regionMapping.getPdxName());
+        }
+      }
       for (String jdbcName : tableMetaData.getColumnNames()) {
         boolean isNullable = tableMetaData.isColumnNullable(jdbcName);
         JDBCType jdbcType = tableMetaData.getColumnDataType(jdbcName);
         FieldMapping fieldMapping =
             new FieldMapping("", "", jdbcName, jdbcType.getName(), isNullable);
-        updateFieldMappingFromExistingPdxType(fieldMapping, typeRegistry,
-            regionMapping.getPdxName());
+        if (pdxTypes.isEmpty()) {
+          addFieldToNewPdx(pdxFactory, fieldMapping);
+        } else {
+          updateFieldMappingFromExistingPdxType(fieldMapping, typeRegistry,
+              regionMapping.getPdxName());
+        }
         fieldMappings.add(fieldMapping);
       }
       if (regionMapping.getIds() == null || regionMapping.getIds().isEmpty()) {
-        List<String> keyColummnNames = tableMetaData.getKeyColumnNames();
-        output[0] = String.join(",", keyColummnNames);
+        List<String> keyColumnNames = tableMetaData.getKeyColumnNames();
+        output[0] = String.join(",", keyColumnNames);
       }
-
+      if (pdxTypes.isEmpty() && pdxFactory != null) {
+        pdxFactory.create();
+      }
       String member = context.getMemberName();
       return new CliFunctionResult(member, output);
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
     }
+  }
+
+  private boolean checkForDomainClass(String pdxName) {
+    try {
+      Class<?> clazz = Class.forName(pdxName);
+      if (clazz == null)
+        return false;
+      Constructor<?> ctor = clazz.getConstructor();
+      Object object = ctor.newInstance(new Object[] {});
+      BlobHelper.serializeToBlob(object);
+      return true;
+    } catch (Exception ex) {
+      return false;
+    }
+  }
+
+  private void addFieldToNewPdx(PdxInstanceFactory pdxFactory, FieldMapping fieldMapping) {
+    fieldMapping.setPdxName(fieldMapping.getJdbcName());
+    JDBCType columnType = JDBCType.valueOf(fieldMapping.getJdbcType());
+    FieldType fieldType =
+        SqlToPdxInstanceCreator.computeFieldType(fieldMapping.isJdbcNullable(), columnType);
+    fieldMapping.setPdxType(fieldType.name());
+    SqlToPdxInstanceCreator.writeField(pdxFactory, fieldMapping, fieldMapping.getJdbcName(),
+        fieldType);
   }
 
   private void updateFieldMappingFromExistingPdxType(FieldMapping fieldMapping,

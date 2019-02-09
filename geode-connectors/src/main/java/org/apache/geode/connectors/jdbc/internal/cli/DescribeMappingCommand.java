@@ -25,6 +25,8 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_N
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -34,6 +36,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -153,6 +156,7 @@ public class DescribeMappingCommand extends GfshCommand {
     }
     DescribeMappingResult result = new DescribeMappingResult(attributes);
     result.setGroupName(group);
+    result.setFieldMappings(regionMapping.getFieldMappings());
     return result;
   }
 
@@ -165,6 +169,28 @@ public class DescribeMappingCommand extends GfshCommand {
         sectionModel.addData("Mapping for group", result.getGroupName());
       }
       result.getAttributeMap().forEach(sectionModel::addData);
+
+      DataResultModel sectionModel2 =
+          resultModel.addData(RESULT_SECTION_NAME + "Field Mappings" + String.valueOf(i));
+      List<FieldMapping> fieldMappings = result.getFieldMappings();
+
+      Map<String, String> attributeMap = result.getAttributeMap();
+      sectionModel2
+          .setHeader("PDX field to JDBC column mappings for class " + attributeMap.get("pdx-name"));
+
+      int maxLen = 0;
+      for (FieldMapping fieldMapping : fieldMappings) {
+        if (fieldMapping.getPdxName().length() > maxLen)
+          maxLen = fieldMapping.getPdxName().length();
+      }
+      maxLen = maxLen + 4;
+      String outValueFormat = "Column: %-18s Type: %-12s Nullable: %b";
+      String outKeyFormat = "%-" + maxLen + "s";
+      for (FieldMapping fieldMapping : fieldMappings) {
+        sectionModel2.addData(String.format(outKeyFormat, fieldMapping.getPdxName()),
+            String.format(outValueFormat, fieldMapping.getJdbcName(), fieldMapping.getJdbcType(),
+                fieldMapping.isJdbcNullable()));
+      }
     }
     return resultModel;
   }

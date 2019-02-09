@@ -65,7 +65,8 @@ public class CreateMappingCommandTest {
   private Set<InternalDistributedMember> members;
   private CliFunctionResult preconditionCheckResults;
   private ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
-  private Object[] preconditionOutput = new Object[] {null, fieldMappings};
+
+  private Object[] preconditionOutput = new Object[] {null, fieldMappings, null};
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
   private RegionMapping mapping;

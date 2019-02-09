@@ -51,6 +51,7 @@ import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
@@ -67,6 +68,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 public class CreateMappingCommandDUnitTest {
 
   private static final String TEST_REGION = "testRegion";
+  private static final String EMPLOYEE_REGION = "employeeRegion";
   private static final String GROUP1_REGION = "group1Region";
   private static final String GROUP2_REGION = "group2Region";
   private static final String GROUP1_GROUP2_REGION = "group1Group2Region";
@@ -113,10 +115,14 @@ public class CreateMappingCommandDUnitTest {
         .statusIsSuccess();
     executeSql(
         "create table mySchema.myTable (myId varchar(10) primary key, name varchar(10))");
+    executeSql(
+        "create table mySchema." + EMPLOYEE_REGION
+            + "(ID varchar(10) primary key, NAME varchar(10), AGE int)");
   }
 
   private void teardownDatabase() {
     executeSql("drop table mySchema.myTable");
+    executeSql("drop table mySchema." + EMPLOYEE_REGION);
   }
 
   private void executeSql(String sql) {
@@ -197,8 +203,12 @@ public class CreateMappingCommandDUnitTest {
     CacheConfig cacheConfig =
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(groups);
     List<CacheConfig.AsyncEventQueue> queueList = cacheConfig.getAsyncEventQueues();
-    CacheConfig.AsyncEventQueue queue = queueList.get(0);
     String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+
+    CacheConfig.AsyncEventQueue queue = queueList.stream()
+        .filter(q -> q.getId().equals(queueName)).findFirst()
+        .orElse(null);
+
     assertThat(queue.getId()).isEqualTo(queueName);
     assertThat(queue.getAsyncEventListener().getClassName())
         .isEqualTo(JdbcAsyncWriter.class.getName());
@@ -452,6 +462,36 @@ public class CreateMappingCommandDUnitTest {
     assertThat(mapping.getSchema()).isEqualTo("mySchema");
   }
 
+  private static void assertValidEmployeeMappingOnServer(RegionMapping mapping, String regionName,
+      boolean synchronous, boolean isParallel, String tableName) {
+    assertValidEmployeeMapping(mapping, tableName);
+    validateRegionAlteredOnServer(regionName, synchronous);
+    if (!synchronous) {
+      validateAsyncEventQueueCreatedOnServer(regionName, isParallel);
+    }
+  }
+
+  private static void assertValidEmployeeMappingOnLocator(RegionMapping mapping, String regionName,
+      String groups,
+      boolean synchronous, boolean isParallel, String tableName) {
+    assertValidEmployeeMapping(mapping, tableName);
+    validateRegionAlteredInClusterConfig(regionName, groups, synchronous);
+    if (!synchronous) {
+      validateAsyncEventQueueCreatedInClusterConfig(regionName, groups, isParallel);
+    }
+  }
+
+  private static void assertValidEmployeeMapping(RegionMapping mapping, String tableName) {
+    assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+    assertThat(mapping.getTableName()).isEqualTo(tableName);
+    assertThat(mapping.getPdxName()).isEqualTo("org.apache.geode.connectors.jdbc.Employee");
+    assertThat(mapping.getIds()).isEqualTo("id");
+    assertThat(mapping.getCatalog()).isNull();
+    assertThat(mapping.getSchema()).isEqualTo("mySchema");
+    List<FieldMapping> fieldMappings = mapping.getFieldMappings();
+    assertThat(fieldMappings.size()).isEqualTo(3);
+  }
+
   @Test
   @Parameters({TEST_REGION, "/" + TEST_REGION})
   public void createMappingUpdatesServiceAndClusterConfig(String regionName) {
@@ -481,6 +521,99 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
       assertValidMappingOnLocator(regionMapping, regionName, null, false, false);
+    });
+  }
+
+  @Test
+  @Parameters({EMPLOYEE_REGION, "/" + EMPLOYEE_REGION})
+  public void createMappingWithDomainClassUpdatesServiceAndClusterConfig(String regionName) {
+    setupReplicate(regionName);
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    // csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.Employee");
+    // csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidEmployeeMappingOnServer(mapping, regionName, false, false, "employeeRegion");
+    });
+
+    // without specifying 'group/groups', the region and regionmapping will be created on all
+    // servers
+    server2.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidEmployeeMappingOnServer(mapping, regionName, false, false, "employeeRegion");
+    });
+
+    server3.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidEmployeeMappingOnServer(mapping, regionName, false, false, "employeeRegion");
+    });
+
+    server4.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(regionName);
+      assertValidEmployeeMappingOnServer(mapping, regionName, false, false, "employeeRegion");
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
+      assertValidEmployeeMappingOnLocator(regionMapping, regionName, null, false, false,
+          "employeeRegion");
+    });
+  }
+
+  @Test
+  public void createTwoMappingsWithSamePdxName() {
+    String region1Name = "region1";
+    String region2Name = "region2";
+    setupReplicate(region1Name);
+    setupReplicate(region2Name);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.Employee");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region2Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.Employee");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(region1Name);
+      assertValidEmployeeMappingOnServer(mapping, region1Name, false, false, "employeeRegion");
+    });
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(region2Name);
+      assertValidEmployeeMappingOnServer(mapping, region2Name, false, false, "employeeRegion");
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(region1Name, null);
+      assertValidEmployeeMappingOnLocator(regionMapping, region1Name, null, false, false,
+          "employeeRegion");
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(region2Name, null);
+      assertValidEmployeeMappingOnLocator(regionMapping, region2Name, null, false, false,
+          "employeeRegion");
     });
   }
 
@@ -602,10 +735,12 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
+    String justRegion = regionName.startsWith("/") ? regionName.substring(1) : regionName;
+
     server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isNull();
+      assertThat(mapping.getTableName()).isEqualTo(justRegion);
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
@@ -616,7 +751,7 @@ public class CreateMappingCommandDUnitTest {
     server2.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isNull();
+      assertThat(mapping.getTableName()).isEqualTo(justRegion);
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
@@ -625,7 +760,7 @@ public class CreateMappingCommandDUnitTest {
     server3.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isNull();
+      assertThat(mapping.getTableName()).isEqualTo(justRegion);
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
@@ -634,7 +769,7 @@ public class CreateMappingCommandDUnitTest {
     server4.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isNull();
+      assertThat(mapping.getTableName()).isEqualTo(justRegion);
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
@@ -643,7 +778,7 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(regionMapping.getTableName()).isNull();
+      assertThat(regionMapping.getTableName()).isEqualTo(justRegion);
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredInClusterConfig(regionName, null, false);
       validateAsyncEventQueueCreatedInClusterConfig(regionName, null, false);

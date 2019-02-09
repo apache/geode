@@ -68,7 +68,8 @@ public class SqlToPdxInstanceCreator {
     return cache.createPdxInstanceFactory(valueClassName);
   }
 
-  private void writeField(PdxInstanceFactory factory, FieldMapping columnMapping, String fieldName,
+  public static void writeField(PdxInstanceFactory factory, FieldMapping columnMapping,
+      String fieldName,
       FieldType fieldType) {
     switch (fieldType) {
       case STRING:
@@ -153,7 +154,7 @@ public class SqlToPdxInstanceCreator {
     }
   }
 
-  static FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {
+  public static FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {
     switch (jdbcType) {
       case NULL:
         throw new IllegalStateException("unexpected NULL jdbc column type");

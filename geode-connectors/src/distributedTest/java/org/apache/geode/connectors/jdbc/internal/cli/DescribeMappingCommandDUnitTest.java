@@ -286,10 +286,12 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     String groupName2 = "group2";
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, groupName1, locator.getPort());
-    startupRule.startServerVM(2, groupName2, locator.getPort());
+    server2 = startupRule.startServerVM(2, groupName2, locator.getPort());
 
     gfsh.connectAndVerify(locator);
     setupDatabase();
+    executeSql(server2, "connection",
+        "create table mySchema.testTable (myId varchar(10) primary key, name varchar(10))");
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE --group="
         + groupName1 + "," + groupName2)
         .statusIsSuccess();
@@ -305,25 +307,29 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(ID_NAME, "myId");
     csb.addOption(SCHEMA_NAME, "mySchema");
 
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+    try {
+      gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
-        regionName).addOption(GROUP_NAME, groupName1 + "," + groupName2);
+      csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
+          regionName).addOption(GROUP_NAME, groupName1 + "," + groupName2);
 
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.containsKeyValuePair(REGION_NAME,
-        convertRegionPathToName(regionName));
+      commandResultAssert.statusIsSuccess();
+      commandResultAssert.containsKeyValuePair(REGION_NAME,
+          convertRegionPathToName(regionName));
 
-    commandResultAssert.containsKeyValuePair("Mapping for group", "group1");
-    commandResultAssert.containsKeyValuePair("Mapping for group", "group2");
-    commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
-    commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
-    commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
-    commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
-    commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
+      commandResultAssert.containsKeyValuePair("Mapping for group", "group1");
+      commandResultAssert.containsKeyValuePair("Mapping for group", "group2");
+      commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
+      commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
+      commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+      commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
+      commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
+      commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
+    } finally {
+      executeSql(server2, "connection", "drop table mySchema.testTable");
+    }
   }
 
   @Test
