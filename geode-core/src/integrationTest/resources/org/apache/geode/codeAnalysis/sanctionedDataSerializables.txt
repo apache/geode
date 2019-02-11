@@ -494,11 +494,13 @@ org/apache/geode/internal/admin/remote/ChangeRefreshIntervalMessage,2
 fromData,16
 toData,16
 
-org/apache/geode/internal/admin/remote/ClientHealthStats,4
+org/apache/geode/internal/admin/remote/ClientHealthStats,6
 fromData,73
-fromDataPre_GFE_8_0_0_0,65
+fromDataPre_GEODE_1_9_0_0,77
+fromDataPre_GFE_8_0_0_0,69
 toData,73
-toDataPre_GFE_8_0_0_0,65
+toDataPre_GEODE_1_9_0_0,77
+toDataPre_GFE_8_0_0_0,69
 
 org/apache/geode/internal/admin/remote/CompactRequest,2
 fromData,6

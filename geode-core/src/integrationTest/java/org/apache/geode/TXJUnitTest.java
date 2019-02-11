@@ -247,9 +247,9 @@ public class TXJUnitTest {
       cmtre.setUserAttribute("uaValue1");
       assertEquals("uaValue1", cmtre.getUserAttribute());
 
-      int txRollbackChanges = stats.getTxRollbackChanges();
-      int txCommitChanges = stats.getTxCommitChanges();
-      int txFailureChanges = stats.getTxFailureChanges();
+      long txRollbackChanges = stats.getTxRollbackChanges();
+      long txCommitChanges = stats.getTxCommitChanges();
+      long txFailureChanges = stats.getTxFailureChanges();
       this.txMgr.begin();
       Region.Entry txre = this.region.getEntry("uaKey");
       assertEquals(this.region, txre.getRegion());
@@ -299,9 +299,9 @@ public class TXJUnitTest {
     }
 
     {
-      int txRollbackChanges = stats.getTxRollbackChanges();
-      int txCommitChanges = stats.getTxCommitChanges();
-      int txFailureChanges = stats.getTxFailureChanges();
+      long txRollbackChanges = stats.getTxRollbackChanges();
+      long txCommitChanges = stats.getTxCommitChanges();
+      long txFailureChanges = stats.getTxFailureChanges();
       this.region.create("key1", "value1");
       this.txMgr.begin();
       this.region.invalidate("key1");
@@ -432,7 +432,7 @@ public class TXJUnitTest {
   @Test
   public void testTwoRegionTxs() throws CacheException {
     final CachePerfStats stats = this.cache.getCachePerfStats();
-    int txCommitChanges;
+    long txCommitChanges;
     TransactionId myTxId;
 
     AttributesFactory<String, String> attributesFactory = new AttributesFactory<>();
@@ -2739,7 +2739,7 @@ public class TXJUnitTest {
   }
 
   private void doNonTxInvalidateRegionOp(CachePerfStats stats) throws Exception {
-    int txRollbackChanges = stats.getTxRollbackChanges();
+    long txRollbackChanges = stats.getTxRollbackChanges();
     this.region.create("key1", "value1");
     this.region.create("key2", "value2");
     this.txMgr.begin();
@@ -2771,7 +2771,7 @@ public class TXJUnitTest {
   }
 
   private void doNonTxDestroyRegionOp(CachePerfStats stats) throws Exception {
-    int txRollbackChanges = stats.getTxRollbackChanges();
+    long txRollbackChanges = stats.getTxRollbackChanges();
     this.region.put("key1", "value1");
     this.region.put("key2", "value2");
     this.txMgr.begin();
@@ -4627,15 +4627,15 @@ public class TXJUnitTest {
       private long txSuccessLifeTime;
       private long txFailedLifeTime;
       private long txRollbackLifeTime;
-      private int txCommits;
-      private int txFailures;
-      private int txRollbacks;
+      private long txCommits;
+      private long txFailures;
+      private long txRollbacks;
       private long txCommitTime;
       private long txFailureTime;
       private long txRollbackTime;
-      private int txCommitChanges;
-      private int txFailureChanges;
-      private int txRollbackChanges;
+      private long txCommitChanges;
+      private long txFailureChanges;
+      private long txRollbackChanges;
 
       private CachePerfStats stats;
 
@@ -4670,15 +4670,15 @@ public class TXJUnitTest {
         this.txRollbackLifeTime = txRollbackLifeTime;
       }
 
-      private void setTxCommits(int txCommits) {
+      private void setTxCommits(long txCommits) {
         this.txCommits = txCommits;
       }
 
-      private void setTxFailures(int txFailures) {
+      private void setTxFailures(long txFailures) {
         this.txFailures = txFailures;
       }
 
-      private void setTxRollbacks(int txRollbacks) {
+      private void setTxRollbacks(long txRollbacks) {
         this.txRollbacks = txRollbacks;
       }
 
@@ -4694,15 +4694,15 @@ public class TXJUnitTest {
         this.txRollbackTime = txRollbackTime;
       }
 
-      private void setTxCommitChanges(int txCommitChanges) {
+      private void setTxCommitChanges(long txCommitChanges) {
         this.txCommitChanges = txCommitChanges;
       }
 
-      private void setTxFailureChanges(int txFailureChanges) {
+      private void setTxFailureChanges(long txFailureChanges) {
         this.txFailureChanges = txFailureChanges;
       }
 
-      private void setTxRollbackChanges(int txRollbackChanges) {
+      private void setTxRollbackChanges(long txRollbackChanges) {
         this.txRollbackChanges = txRollbackChanges;
       }
 
@@ -4831,10 +4831,10 @@ public class TXJUnitTest {
   public void testCacheStats() throws CacheException {
     CachePerfStats cacheStats = this.cache.getCachePerfStats();
     // quick sanity check to make sure perf stats work non-tx
-    int creates;
-    int destroys;
-    int puts;
-    int invalidates;
+    long creates;
+    long destroys;
+    long puts;
+    long invalidates;
 
     creates = cacheStats.getCreates();
     destroys = cacheStats.getDestroys();
@@ -5778,7 +5778,7 @@ public class TXJUnitTest {
 
     { // distributed invalidate
       // first make sure invalidate is counted as a change
-      int txRollbackChanges = stats.getTxRollbackChanges();
+      long txRollbackChanges = stats.getTxRollbackChanges();
       this.region.create("key1", "value1");
       this.txMgr.begin();
       this.region.invalidate("key1");
@@ -5837,7 +5837,7 @@ public class TXJUnitTest {
 
     { // local invalidate
       // first make sure invalidate is counted as a change
-      int txRollbackChanges = stats.getTxRollbackChanges();
+      long txRollbackChanges = stats.getTxRollbackChanges();
       this.region.create("key1", "value1");
       this.txMgr.begin();
       this.region.localInvalidate("key1");
