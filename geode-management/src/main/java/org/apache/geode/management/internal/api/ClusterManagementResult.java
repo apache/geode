@@ -47,6 +47,10 @@ public class ClusterManagementResult {
     this.persistenceStatus = new Status(success, message);
   }
 
+  public void setClusterConfigNoOp(String message) {
+    this.persistenceStatus = new Status(Status.Result.NO_OP, message);
+  }
+
   public Map<String, Status> getMemberStatuses() {
     return memberStatuses;
   }
@@ -76,8 +80,13 @@ public class ClusterManagementResult {
    */
   @JsonIgnore
   public boolean isSuccessful() {
-    return (persistenceStatus.status == Status.Result.NOT_APPLICABLE || isSuccessfullyPersisted())
+    return (isStatusNA() || isSuccessfullyPersisted())
         && isSuccessfullyAppliedOnMembers();
+  }
+
+  @JsonIgnore
+  public boolean isStatusNA() {
+    return persistenceStatus.status == Status.Result.NOT_APPLICABLE;
   }
 
 }

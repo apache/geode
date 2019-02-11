@@ -100,8 +100,12 @@ public class RegionManagementDunitTest {
     HttpResponseAssert httpAssert = restClient.doPostAndAssert("/regions", json);
     result = httpAssert.hasStatusCode(200)
         .getClusterManagementResult();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getMemberStatuses()).isNotEmpty();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.getPersistenceStatus().getMessage()).isEqualTo(
+        "cache element orders already exists.");
   }
 
   @Test
