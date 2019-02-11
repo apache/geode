@@ -263,6 +263,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     int locatorsContacted = 0;
     boolean hasContactedAJoinedLocator;
     NetView view;
+    int lastFindCoordinatorInViewId = -1000;
     final Set<FindCoordinatorResponse> responses = new HashSet<>();
 
     void cleanup() {
@@ -472,29 +473,31 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
       response = joinResponse[0];
 
-      if (response != null && response.getCurrentView() != null && !isJoined) {
-        // reset joinResponse[0]
-        joinResponse[0] = null;
-        // we got view here that means either we have to wait for
-        NetView v = response.getCurrentView();
-        InternalDistributedMember coord = v.getCoordinator();
-        if (searchState.alreadyTried.contains(coord)) {
-          searchState.view = response.getCurrentView();
-          // we already sent join request to it..so lets wait some more time here
-          // assuming we got this response immediately, so wait for same timeout here..
-          long timeout = Math.max(services.getConfig().getMemberTimeout(),
-              services.getConfig().getJoinTimeout() / 5);
-          joinResponse.wait(timeout);
-          response = joinResponse[0];
-        } else {
-          // try on this coordinator
-          searchState.view = response.getCurrentView();
-          response = null;
+      if (services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().length() > 0) {
+        if (response != null && response.getCurrentView() != null && !isJoined) {
+          // reset joinResponse[0]
+          joinResponse[0] = null;
+          // we got view here that means either we have to wait for
+          NetView v = response.getCurrentView();
+          InternalDistributedMember coord = v.getCoordinator();
+          if (searchState.alreadyTried.contains(coord)) {
+            searchState.view = response.getCurrentView();
+            // we already sent join request to it..so lets wait some more time here
+            // assuming we got this response immediately, so wait for same timeout here..
+            long timeout = Math.max(services.getConfig().getMemberTimeout(),
+                services.getConfig().getJoinTimeout() / 5);
+            joinResponse.wait(timeout);
+            response = joinResponse[0];
+          } else {
+            // try on this coordinator
+            searchState.view = response.getCurrentView();
+            response = null;
+          }
+          searchState.view = v;
         }
-        searchState.view = v;
-      }
-      if (isJoined) {
-        return null;
+        if (isJoined) {
+          return null;
+        }
       }
     }
     return response;
@@ -1012,12 +1015,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     boolean viewContainsMyNewAddress = false;
-    if (!this.isJoined) {
+    if (!this.isJoined && !m.isPreparing()) {
       // if we're still waiting for a join response and we're in this view we
       // should install the view so join() can finish its work
       for (InternalDistributedMember mbr : view.getMembers()) {
-        if (localAddress.equals(mbr)
-            && !services.getMessenger().isOldMembershipIdentifier(mbr)) {
+        if (localAddress.equals(mbr)) {
           viewContainsMyNewAddress = true;
           break;
         }
@@ -1030,9 +1032,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             .send(new ViewAckMessage(view.getViewId(), m.getSender(), this.preparedView));
       } else {
         this.preparedView = view;
-        if (viewContainsMyNewAddress) {
-          installView(view); // this will notifyAll the joinResponse
-        }
         ackView(m);
       }
     } else { // !preparing
@@ -1092,12 +1091,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     assert this.localAddress != null;
 
-    // If we've already tried to bootstrap from locators that
-    // haven't joined the system (e.g., a collocated locator)
-    // then jump to using the membership view to try to find
-    // the coordinator
     if (!state.hasContactedAJoinedLocator && state.registrants.size() >= locators.size()
-        && state.view != null) {
+        && state.view != null && state.viewId > state.lastFindCoordinatorInViewId) {
+      state.lastFindCoordinatorInViewId = state.viewId;
+      logger.info("using findCoordinatorFromView");
       return findCoordinatorFromView();
     }
 
@@ -1159,7 +1156,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               // the QuorumChecker would have contacted a quorum of live nodes and one of
               // them should already be the coordinator, or should become the coordinator soon
               boolean isMyOldAddress =
-                  services.getConfig().isReconnecting() && localAddress.equals(responseCoordinator);
+                  services.getConfig().isReconnecting() && localAddress.equals(responseCoordinator)
+                      && responseCoordinator.getVmViewId() >= 0;
               if (!isMyOldAddress) {
                 possibleCoordinators.add(response.getCoordinator());
               }
@@ -1220,6 +1218,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
       }
     }
+    logger.info("findCoordinator chose {} out of these possible coordinators: {}",
+        state.possibleCoordinator, possibleCoordinators);
     return true;
   }
 

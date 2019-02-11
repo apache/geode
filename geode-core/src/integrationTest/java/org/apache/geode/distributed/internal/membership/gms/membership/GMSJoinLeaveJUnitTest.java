@@ -635,29 +635,6 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
-  public void testViewWithOldIDNotAcceptedAsJoinResponse() throws Exception {
-    initMocks();
-    when(messenger.isOldMembershipIdentifier(any(DistributedMember.class)))
-        .thenReturn(Boolean.TRUE);
-    List<InternalDistributedMember> mbrs = new LinkedList<>();
-    Set<InternalDistributedMember> shutdowns = new HashSet<>();
-    Set<InternalDistributedMember> crashes = new HashSet<>();
-    mbrs.add(mockMembers[0]);
-    mbrs.add(mockMembers[1]);
-    mbrs.add(mockMembers[2]);
-    InternalDistributedMember oldId = new InternalDistributedMember(
-        gmsJoinLeaveMemberId.getInetAddress(), gmsJoinLeaveMemberId.getPort());
-    oldId.setVmViewId(0);
-    mbrs.add(oldId);
-
-    // prepare the view
-    NetView netView = new NetView(mockMembers[0], 1, mbrs, shutdowns, crashes);
-    gmsJoinLeave.processMessage(new InstallViewMessage(netView, null, true));
-    assertEquals(-1, gmsJoinLeaveMemberId.getVmViewId());
-    verify(messenger).isOldMembershipIdentifier(isA(DistributedMember.class));
-  }
-
-  @Test
   public void testRemoveCausesForcedDisconnect() throws Exception {
     String reason = "testing";
     initMocks();

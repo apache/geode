@@ -107,6 +107,12 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   private boolean wasReconnectingSystem;
 
   /**
+   * This indicates that the DistributedSystem using this membership manager performed
+   * a successful auto-reconnect. This may include successful recreation of a Cache
+   */
+  private boolean reconnectCompleted;
+
+  /**
    * A quorum checker is created during reconnect and is held here so it is available to the UDP
    * protocol for passing off the ping-pong responses used in the quorum-checking algorithm.
    */
@@ -1785,7 +1791,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    */
   @Override
   public boolean isReconnectingDS() {
-    return !this.hasJoined && this.wasReconnectingSystem;
+    return this.wasReconnectingSystem && !this.reconnectCompleted;
   }
 
   @Override
@@ -2179,6 +2185,17 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     this.directChannel = dc;
     this.tcpDisabled = false;
   }
+
+  @Override
+  public void setReconnectCompleted(boolean reconnectCompleted) {
+    this.reconnectCompleted = reconnectCompleted;
+  }
+
+  @Override
+  public boolean isReconnectCompleted() {
+    return reconnectCompleted;
+  }
+
 
   /*
    * non-thread-owned serial channels and high priority channels are not included
