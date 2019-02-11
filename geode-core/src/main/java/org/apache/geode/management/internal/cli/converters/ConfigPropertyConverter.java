@@ -32,7 +32,7 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 public class ConfigPropertyConverter
     implements Converter<JndiBindingsType.JndiBinding.ConfigProperty> {
 
-  private static ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = new ObjectMapper();
   static {
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
   }

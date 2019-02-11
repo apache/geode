@@ -126,7 +126,7 @@ public class PRHARedundancyProvider {
       Long.getLong(DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME);
 
   public final PartitionedRegion prRegion;
-  private static AtomicLong insufficientLogTimeStamp = new AtomicLong(0);
+  private static final AtomicLong insufficientLogTimeStamp = new AtomicLong(0);
   private final AtomicBoolean firstInsufficentStoresLogged = new AtomicBoolean(false);
 
   /**

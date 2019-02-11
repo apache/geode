@@ -39,7 +39,8 @@ public class CacheXmlPropertyResolverHelper {
    * This <code>HashMap </code> contains valid suffixes and prefixes to be parsed by
    * {@link CacheXmlPropertyResolverHelper} like {}, [] or ().
    */
-  private static HashMap<String, String> validSuffixAndPrefixes = new HashMap<String, String>();
+  private static final HashMap<String, String> validSuffixAndPrefixes =
+      new HashMap<String, String>();
 
   static {
     validSuffixAndPrefixes.put("}", "{");

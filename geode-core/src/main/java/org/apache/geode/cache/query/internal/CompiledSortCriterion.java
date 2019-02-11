@@ -258,7 +258,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
   static class ProjectionField extends AbstractCompiledValue {
 
-    private static ProjectionField singleton = new ProjectionField();
+    private static final ProjectionField singleton = new ProjectionField();
 
     private ProjectionField() {}
 

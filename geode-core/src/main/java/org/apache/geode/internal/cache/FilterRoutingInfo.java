@@ -46,9 +46,10 @@ import org.apache.geode.internal.VersionedDataSerializable;
  */
 public class FilterRoutingInfo implements VersionedDataSerializable {
 
-  private static boolean OLD_MEMBERS_OPTIMIZED = Boolean.getBoolean("optimized-cq-serialization");
+  private static final boolean OLD_MEMBERS_OPTIMIZED =
+      Boolean.getBoolean("optimized-cq-serialization");
 
-  private static Version[] serializationVersions = new Version[] {Version.GFE_71};
+  private static final Version[] serializationVersions = new Version[] {Version.GFE_71};
 
   /** Set to true if any peer members has any filters. */
   private boolean memberWithFilterInfoExists = false;
@@ -359,7 +360,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       this.cqs = null;
     }
 
-    private static Version[] serializationVersions = new Version[] {Version.GFE_80};
+    private static final Version[] serializationVersions = new Version[] {Version.GFE_80};
 
     @Override
     public Version[] getSerializationVersions() {

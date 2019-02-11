@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class DiskStoreUpgrader {
 
-  public static String STACKTRACE_START = "--------------------------";
+  public static final String STACKTRACE_START = "--------------------------";
 
   public static void main(String[] args) {
     String errorString = null;

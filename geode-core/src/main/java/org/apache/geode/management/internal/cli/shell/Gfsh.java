@@ -131,11 +131,11 @@ public class Gfsh extends JLineShell {
 
   protected static PrintStream gfshout = System.out;
   protected static PrintStream gfsherr = System.err;
-  protected static ThreadLocal<Gfsh> gfshThreadLocal = new ThreadLocal<>();
+  protected static final ThreadLocal<Gfsh> gfshThreadLocal = new ThreadLocal<>();
   private static Gfsh instance;
   // This flag is used to restrict column trimming to table only types
-  private static ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<>();
-  private static String OS = System.getProperty("os.name").toLowerCase();
+  private static final ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<>();
+  private static final String OS = System.getProperty("os.name").toLowerCase();
   private final Map<String, String> env = new TreeMap<>();
   private final List<String> readonlyAppEnv = new ArrayList<>();
   // Map to keep reference to actual user specified Command String

@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.configuration.realizers.Configuratio
 import org.apache.geode.management.internal.configuration.realizers.RegionConfigRealizer;
 
 public class UpdateCacheFunction extends CliFunction<List> {
-  private static Map<Class, ConfigurationRealizer> realizers = new HashedMap();
+  private static final Map<Class, ConfigurationRealizer> realizers = new HashedMap();
   static {
     realizers.put(RegionConfig.class, new RegionConfigRealizer());
   }

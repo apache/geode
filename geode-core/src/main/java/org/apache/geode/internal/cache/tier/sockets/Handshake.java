@@ -131,8 +131,8 @@ public abstract class Handshake {
    *
    * @since GemFire 5.7
    */
-  public static byte clientConflationForTesting = 0;
-  public static boolean setClientConflationForTesting = false;
+  public static final byte clientConflationForTesting = 0;
+  public static final boolean setClientConflationForTesting = false;
 
   /** Constructor used for subclasses */
   protected Handshake() {}

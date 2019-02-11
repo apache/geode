@@ -29,39 +29,39 @@ public class CommandProcessingException extends RuntimeException {
   private static final long serialVersionUID = -1398779521639575884L;
 
   /** Error Type indicating an invalid command */
-  public static int COMMAND_INVALID = 1;
+  public static final int COMMAND_INVALID = 1;
   /** Error Type indicating an ambiguous command name */
-  public static int COMMAND_NAME_AMBIGUOUS = 2;
+  public static final int COMMAND_NAME_AMBIGUOUS = 2;
   /**
    * Error Type indicating an unknown or unavailable command. GemFire CLI Commands are context
    * sensitive & might not be always available.
    */
-  public static int COMMAND_INVALID_OR_UNAVAILABLE = 3;
+  public static final int COMMAND_INVALID_OR_UNAVAILABLE = 3;
   /** Error Type indicating an invalid named parameter of a command. */
-  public static int OPTION_INVALID = 4;
+  public static final int OPTION_INVALID = 4;
   /** Error Type indicating an invalid parameter of a command. */
-  public static int ARGUMENT_INVALID = 5;
+  public static final int ARGUMENT_INVALID = 5;
   /** Error Type indicating an invalid value for a parameter of a command. */
-  public static int OPTION_VALUE_INVALID = 6;
+  public static final int OPTION_VALUE_INVALID = 6;
   /**
    * Error Type indicating the absence of a mandatory named parameter of a command.
    */
-  public static int REQUIRED_OPTION_MISSING = 7;
+  public static final int REQUIRED_OPTION_MISSING = 7;
   /** Error Type indicating the absence of a mandatory parameter of a command. */
-  public static int REQUIRED_ARGUMENT_MISSING = 8;
+  public static final int REQUIRED_ARGUMENT_MISSING = 8;
   /**
    * Error Type indicating the absence of value for named parameter of a command.
    */
-  public static int OPTION_VALUE_REQUIRED = 9;
+  public static final int OPTION_VALUE_REQUIRED = 9;
   /**
    * Error Type indicating IO errors occurred while accessing File/Network resource
    */
-  public static int RESOURCE_ACCESS_ERROR = 11;
+  public static final int RESOURCE_ACCESS_ERROR = 11;
 
   private final int errorType;
   private final Object errorData;
 
-  private static String[] errorTypeStrings = {"", // 0
+  private static final String[] errorTypeStrings = {"", // 0
       "COMMAND_INVALID", // 1
       "COMMAND_NAME_AMBIGUOUS", // 2
       "COMMAND_INVALID_OR_UNAVAILABLE", // 3

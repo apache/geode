@@ -201,7 +201,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   class Helper {
     private static final Logger logger = LogService.getLogger();
 
-    private static AtomicInteger notificationSequenceNumber = new AtomicInteger();
+    private static final AtomicInteger notificationSequenceNumber = new AtomicInteger();
 
     public static int setAndReturnRefreshInterval(SystemMemberJmx member, int refreshInterval) {
       int ret = refreshInterval;

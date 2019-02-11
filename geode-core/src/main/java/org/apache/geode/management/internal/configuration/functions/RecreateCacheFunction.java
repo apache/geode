@@ -23,7 +23,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 public class RecreateCacheFunction implements InternalFunction {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public void execute(FunctionContext context) {

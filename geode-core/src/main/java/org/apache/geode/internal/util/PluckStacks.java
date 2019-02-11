@@ -46,7 +46,7 @@ import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand
  */
 
 public class PluckStacks {
-  static boolean DEBUG = Boolean.getBoolean("PluckStacks.DEBUG");
+  static final boolean DEBUG = Boolean.getBoolean("PluckStacks.DEBUG");
 
   // only print one stack dump from each file
   static final boolean ONE_STACK = Boolean.getBoolean("oneDump");

@@ -50,16 +50,16 @@ public class Installer {
   private static final Argument ARG_HELP =
       new Argument("-h", false).setDescription("Displays this help message.");
 
-  private static Argument ARG_GEMFIRE_PARAMETERS = new Argument("-p", false, "param=value")
+  private static final Argument ARG_GEMFIRE_PARAMETERS = new Argument("-p", false, "param=value")
       .setDescription("Specific parameter for inclusion into the "
           + "session filter definition as a regular " + "init-param. Can be given multiple times.");
 
-  private static Argument ARG_CACHE_TYPE = new Argument("-t", false, "cache-type")
+  private static final Argument ARG_CACHE_TYPE = new Argument("-t", false, "cache-type")
       .setDescription("Type of cache. Must be one of 'peer-to-peer' or "
           + "'client-server'. Default is peer-to-peer.")
       .setDefaults("peer-to-peer");
 
-  private static Argument ARG_WEB_XML_FILE =
+  private static final Argument ARG_WEB_XML_FILE =
       new Argument("-w", true, "web.xml file").setDescription("The web.xml file to be modified.");
 
 

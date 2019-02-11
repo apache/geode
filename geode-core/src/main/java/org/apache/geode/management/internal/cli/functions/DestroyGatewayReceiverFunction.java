@@ -32,7 +32,8 @@ public class DestroyGatewayReceiverFunction extends CliFunction {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1490927519860899562L;
   private static final String ID = DestroyGatewayReceiverFunction.class.getName();
-  public static DestroyGatewayReceiverFunction INSTANCE = new DestroyGatewayReceiverFunction();
+  public static final DestroyGatewayReceiverFunction INSTANCE =
+      new DestroyGatewayReceiverFunction();
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext context) {

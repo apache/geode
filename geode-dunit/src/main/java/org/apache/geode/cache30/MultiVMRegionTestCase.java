@@ -4971,13 +4971,9 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               // reset slow
               org.apache.geode.internal.cache.InitialImageOperation.slowImageProcessing = 0;
               // if global scope, the region doesn't get destroyed until after region creation
-              try {
-                Thread.sleep(3000);
-              } catch (InterruptedException ie) {
-                fail("interrupted");
-              }
-              assertThat(getRootRegion().getSubregion(name) == null
-                  || getRegionAttributes().getScope().isGlobal()).isTrue();
+              await().until(
+                  () -> getRootRegion().getSubregion(name) == null || getRegionAttributes()
+                      .getScope().isGlobal());
             }
           });
       if (getRegionAttributes().getScope().isGlobal()) {

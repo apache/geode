@@ -487,7 +487,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @since GemFire 5.0
    * @deprecated As of 9.0, please use {@link #getPropertiesFile()} instead.
    */
-  public static String PROPERTY_FILE = getPropertiesFile();
+  public static final String PROPERTY_FILE = getPropertiesFile();
 
   /**
    * The <code>SECURITY_PROPERTIES_FILE_PROPERTY</code> is the system property that can be used to
@@ -556,7 +556,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @since GemFire 6.6.2
    * @deprecated As of 9.0, please use {@link #getSecurityPropertiesFile()} instead.
    */
-  public static String SECURITY_PROPERTY_FILE = getSecurityPropertiesFile();
+  public static final String SECURITY_PROPERTY_FILE = getSecurityPropertiesFile();
 
   /**
    * Gets an <code>URL</code> for the properties file, if one can be found, that the connect method

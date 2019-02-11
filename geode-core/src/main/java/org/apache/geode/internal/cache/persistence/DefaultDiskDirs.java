@@ -24,7 +24,7 @@ import java.util.Optional;
 
 public class DefaultDiskDirs {
 
-  static File[] DEFAULT_DISK_DIRS_VALUE = new File[] {new File(".")};
+  static final File[] DEFAULT_DISK_DIRS_VALUE = new File[] {new File(".")};
 
   public static File[] getDefaultDiskDirs() {
     Optional<String> value = getProductStringProperty(DEFAULT_DISK_DIRS_PROPERTY);

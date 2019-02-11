@@ -92,7 +92,7 @@ subprojects {
   // be created as libs/foo-sources.jar instead of libs/extensions/foo-sources.jar for example.
   tasks.all { task ->
     if (task instanceof Jar) {
-      baseName = sanitizedName()
+      baseName = project.name
     }
   }
 

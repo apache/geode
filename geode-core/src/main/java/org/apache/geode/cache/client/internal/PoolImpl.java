@@ -143,7 +143,7 @@ public class PoolImpl implements InternalPool {
   private final GatewaySender gatewaySender;
 
   private boolean keepAlive = false;
-  private static Object simpleLock = new Object();
+  private static final Object simpleLock = new Object();
 
   public static final int PRIMARY_QUEUE_NOT_AVAILABLE = -2;
   public static final int PRIMARY_QUEUE_TIMED_OUT = -1;

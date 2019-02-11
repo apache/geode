@@ -164,7 +164,7 @@ public class ReplyProcessor21 implements MembershipListener {
   /**
    * whether the next replyProcessor for the current thread should perform severe-alert processing
    */
-  private static ThreadLocal<Boolean> forceSevereAlertProcessing =
+  private static final ThreadLocal<Boolean> forceSevereAlertProcessing =
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   ////////////////////// Static Methods /////////////////////

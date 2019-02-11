@@ -41,7 +41,7 @@ public class FetchRegionAttributesFunction implements InternalFunction {
 
   private static final String ID = FetchRegionAttributesFunction.class.getName();
 
-  public static FetchRegionAttributesFunction INSTANCE = new FetchRegionAttributesFunction();
+  public static final FetchRegionAttributesFunction INSTANCE = new FetchRegionAttributesFunction();
 
   @Override
   public boolean isHA() {

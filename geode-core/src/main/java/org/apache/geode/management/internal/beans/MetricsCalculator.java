@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class MetricsCalculator {
 
-  private static TimeUnit milliSeconds = TimeUnit.MILLISECONDS;
+  private static final TimeUnit milliSeconds = TimeUnit.MILLISECONDS;
 
   private static long toSeconds(long fromTime, long toTime) {
     return milliSeconds.toSeconds((toTime - fromTime));

@@ -27,8 +27,8 @@ import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class FileResultModel {
-  public static int FILE_TYPE_BINARY = 0;
-  public static int FILE_TYPE_TEXT = 1;
+  public static final int FILE_TYPE_BINARY = 0;
+  public static final int FILE_TYPE_TEXT = 1;
 
   private String filename;
   private int type;

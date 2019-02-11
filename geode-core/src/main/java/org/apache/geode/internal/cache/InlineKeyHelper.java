@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  *
  */
 public class InlineKeyHelper {
-  public static boolean INLINE_REGION_KEYS =
+  public static final boolean INLINE_REGION_KEYS =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_INLINE_REGION_KEYS");
 
   /**

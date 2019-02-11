@@ -45,7 +45,7 @@ public class ClientHealthStatus {
    * "numOfGets", IntCounter, "The total number of times a successful get has been done on this
    * cache." Java: CachePerfStats.gets Native: Not yet Defined
    */
-  private int numOfGets;
+  private long numOfGets;
 
   /**
    * "numOfPuts", IntCounter, "The total number of times an entry is added or replaced in this cache
@@ -53,19 +53,19 @@ public class ClientHealthStatus {
    * or netloading a value). Note that this only counts puts done explicitly on this cache. It does
    * not count updates pushed from other caches." Java: CachePerfStats.puts Native: Not yet Defined
    */
-  private int numOfPuts;
+  private long numOfPuts;
 
   /**
    * Represents number of cache misses in this client. IntCounter, "Total number of times a get on
    * the cache did not find a value already in local memory." Java: CachePerfStats.misses
    */
-  private int numOfMisses;
+  private long numOfMisses;
 
   /**
    * Represents number of cache listners calls completed. IntCounter, "Total number of times a cache
    * listener call has completed." Java: CachePerfStats.cacheListenerCallsCompleted
    */
-  private int numOfCacheListenerCalls;
+  private long numOfCacheListenerCalls;
 
   /**
    * Represents total number of active threads in the client VM. IntCounter, "Current number of live
@@ -119,7 +119,7 @@ public class ClientHealthStatus {
   /**
    * Returns the number of times a successful get operation has occurred.
    */
-  public int getNumOfGets() {
+  public long getNumOfGets() {
     return numOfGets;
   }
 
@@ -129,21 +129,21 @@ public class ClientHealthStatus {
    * searching, or net loading a value. The count only includes operations done explicitly on this
    * cache, not those that are pushed from other caches.
    */
-  public int getNumOfPuts() {
+  public long getNumOfPuts() {
     return numOfPuts;
   }
 
   /**
    * Returns the number of times a cache miss has occurred.
    */
-  public int getNumOfMisses() {
+  public long getNumOfMisses() {
     return numOfMisses;
   }
 
   /**
    * Returns the number of times a cache listener call has completed.
    */
-  public int getNumOfCacheListenerCalls() {
+  public long getNumOfCacheListenerCalls() {
     return numOfCacheListenerCalls;
   }
 
@@ -185,7 +185,7 @@ public class ClientHealthStatus {
   /**
    * Sets the number of times a successful get operation has occurred.
    */
-  public void setNumOfGets(int numOfGets) {
+  public void setNumOfGets(long numOfGets) {
     this.numOfGets = numOfGets;
   }
 
@@ -193,21 +193,21 @@ public class ClientHealthStatus {
    * Set the number of times an entry was added or replaced in this cache as a result of a local
    * operation.
    */
-  public void setNumOfPuts(int numOfPuts) {
+  public void setNumOfPuts(long numOfPuts) {
     this.numOfPuts = numOfPuts;
   }
 
   /**
    * Sets the number of times a cache miss has occurred.
    */
-  public void setNumOfMisses(int numOfMisses) {
+  public void setNumOfMisses(long numOfMisses) {
     this.numOfMisses = numOfMisses;
   }
 
   /**
    * Sets the number of times a cache listener call has completed.
    */
-  public void setNumOfCacheListenerCalls(int numOfCacheListenerCalls) {
+  public void setNumOfCacheListenerCalls(long numOfCacheListenerCalls) {
     this.numOfCacheListenerCalls = numOfCacheListenerCalls;
   }
 

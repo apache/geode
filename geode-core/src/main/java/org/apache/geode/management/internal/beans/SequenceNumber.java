@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SequenceNumber {
 
   /** Sequence number for resource related notifications **/
-  private static AtomicLong sequenceNumber = new AtomicLong(1);
+  private static final AtomicLong sequenceNumber = new AtomicLong(1);
 
   public static long next() {
     long retVal = sequenceNumber.incrementAndGet();

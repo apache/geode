@@ -62,8 +62,7 @@ public final class EvictionAction extends EnumSyntax implements Serializable {
   }
 
   // TODO post Java 1.8.0u45 uncomment final flag, see JDK-8076152
-  private static /* final */ EvictionAction[] enumValueTable =
-      {NONE, LOCAL_DESTROY, OVERFLOW_TO_DISK};
+  private static final EvictionAction[] enumValueTable = {NONE, LOCAL_DESTROY, OVERFLOW_TO_DISK};
 
   @Override
   protected EnumSyntax[] getEnumValueTable() {

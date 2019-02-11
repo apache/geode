@@ -47,7 +47,7 @@ public class DataCommandResult implements Serializable {
 
   private static final long serialVersionUID = 2601227194108110936L;
 
-  public static Logger logger = LogManager.getLogger();
+  public static final Logger logger = LogManager.getLogger();
   public static final String DATA_INFO_SECTION = "data-info";
   public static final String QUERY_SECTION = "query";
   public static final String LOCATION_SECTION = "location";

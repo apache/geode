@@ -439,7 +439,7 @@ public class ConnectionStats implements MessageStats {
   // An array of all of the ids that represent operation statistics. This
   // is used by the getOps method to aggregate the individual stats
   // into a total value for all operations.
-  private static int[] opIds;
+  private static final int[] opIds;
 
   static {
     try {

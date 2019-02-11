@@ -256,6 +256,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   NetView quorumLostView;
 
   static class SearchState {
+    public int joinedMembersContacted;
     Set<InternalDistributedMember> alreadyTried = new HashSet<>();
     Set<InternalDistributedMember> registrants = new HashSet<>();
     InternalDistributedMember possibleCoordinator;
@@ -265,6 +266,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     NetView view;
     int lastFindCoordinatorInViewId = -1000;
     final Set<FindCoordinatorResponse> responses = new HashSet<>();
+    public int responsesExpected;
 
     void cleanup() {
       alreadyTried.clear();
@@ -278,6 +280,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     public String toString() {
       StringBuffer sb = new StringBuffer(200);
       sb.append("SearchState(locatorsContacted=").append(locatorsContacted)
+          .append("; findInViewResponses=").append(joinedMembersContacted)
           .append("; alreadyTried=").append(alreadyTried).append("; registrants=")
           .append(registrants).append("; possibleCoordinator=").append(possibleCoordinator)
           .append("; viewId=").append(viewId).append("; hasContactedAJoinedLocator=")
@@ -330,7 +333,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           logger.info("found possible coordinator {}", state.possibleCoordinator);
           if (localAddress.getNetMember().preferredForCoordinator()
               && state.possibleCoordinator.equals(this.localAddress)) {
-            if (tries > 2 || System.currentTimeMillis() < giveupTime) {
+            if (state.joinedMembersContacted <= 0 &&
+                (tries > 2 || System.currentTimeMillis() < giveupTime)) {
               synchronized (viewInstallationLock) {
                 becomeCoordinator();
               }
@@ -1249,6 +1253,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
     recipients.remove(localAddress);
 
+    logger.info("sending FindCoordinatorRequests to {}", recipients);
+
     boolean testing = unitTesting.contains("findCoordinatorFromView");
     synchronized (state.responses) {
       if (!testing) {
@@ -1280,6 +1286,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
       try {
         if (!testing) {
+          state.responsesExpected = recipients.size();
           state.responses.wait(DISCOVERY_TIMEOUT);
         }
       } catch (InterruptedException e) {
@@ -1290,36 +1297,43 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       state.responses.clear();
     }
 
-    InternalDistributedMember coord = null;
+    InternalDistributedMember bestGuessCoordinator = null;
     if (localAddress.getNetMember().preferredForCoordinator()) {
       // it's possible that all other potential coordinators are gone
       // and this new member must become the coordinator
-      coord = localAddress;
+      bestGuessCoordinator = localAddress;
     }
-    boolean coordIsNoob = true;
+    state.joinedMembersContacted = 0;
+    boolean bestGuessIsNotMember = true;
     for (FindCoordinatorResponse resp : result) {
       logger.info("findCoordinatorFromView processing {}", resp);
-      InternalDistributedMember mbr = resp.getCoordinator();
-      if (!localAddress.equals(mbr) && !state.alreadyTried.contains(mbr)) {
-        boolean mbrIsNoob = (mbr.getVmViewId() < 0);
-        if (mbrIsNoob) {
+      InternalDistributedMember suggestedCoordinator = resp.getCoordinator();
+      if (resp.getSenderId().getVmViewId() >= 0) {
+        state.joinedMembersContacted++;
+      }
+      if (!localAddress.equals(suggestedCoordinator)
+          && !state.alreadyTried.contains(suggestedCoordinator)) {
+        boolean suggestedIsNotMember = (suggestedCoordinator.getVmViewId() < 0);
+        if (suggestedIsNotMember) {
           // member has not yet joined
-          if (coordIsNoob && (coord == null || coord.compareTo(mbr, false) > 0)) {
-            coord = mbr;
+          if (bestGuessIsNotMember && (bestGuessCoordinator == null
+              || bestGuessCoordinator.compareTo(suggestedCoordinator, false) > 0)) {
+            bestGuessCoordinator = suggestedCoordinator;
           }
         } else {
           // member has already joined
-          if (coordIsNoob || mbr.getVmViewId() > coord.getVmViewId()) {
-            coord = mbr;
-            coordIsNoob = false;
+          if (bestGuessIsNotMember
+              || suggestedCoordinator.getVmViewId() > bestGuessCoordinator.getVmViewId()) {
+            bestGuessCoordinator = suggestedCoordinator;
+            bestGuessIsNotMember = false;
           }
         }
+        logger.info("findCoordinatorFromView's best guess is now {}", bestGuessCoordinator);
       }
-      logger.info("findCoordinatorFromView is selecting {}", coord);
     }
 
-    state.possibleCoordinator = coord;
-    return coord != null;
+    state.possibleCoordinator = bestGuessCoordinator;
+    return bestGuessCoordinator != null;
   }
 
   /**
@@ -1378,7 +1392,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void processFindCoordinatorResponse(FindCoordinatorResponse resp) {
     synchronized (searchState.responses) {
       searchState.responses.add(resp);
-      searchState.responses.notifyAll();
+      if (searchState.responsesExpected <= searchState.responses.size()) {
+        searchState.responses.notifyAll();
+      }
     }
     setCoordinatorPublicKey(resp);
   }

@@ -262,7 +262,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static final String PRE_GEODE_190_SERVER_CQIMPL =
       "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
 
-  private static InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
+  private static final InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
   /**
    * A deserialization filter for ObjectInputStreams
    */

@@ -31,7 +31,7 @@ public class ObjectGraphSizer {
       System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
           ReflectionSingleObjectSizer.class.getName());
   static final SingleObjectSizer SIZE_OF_UTIL;
-  private static ObjectFilter NULL_FILTER = new ObjectFilter() {
+  private static final ObjectFilter NULL_FILTER = new ObjectFilter() {
     @Override
     public boolean accept(Object parent, Object object) {
       return true;

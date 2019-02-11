@@ -219,7 +219,7 @@ public abstract class ServerConnection implements Runnable {
   private long processingMessageStartTime = -1;
   private Object processingMessageLock = new Object();
 
-  private static ConcurrentHashMap<ClientProxyMembershipID, ClientUserAuths> proxyIdVsClientUserAuths =
+  private static final ConcurrentHashMap<ClientProxyMembershipID, ClientUserAuths> proxyIdVsClientUserAuths =
       new ConcurrentHashMap<>();
 
 

@@ -55,7 +55,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 @SuppressWarnings("unused")
 public class ExportClusterConfigurationCommand extends GfshCommand {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   public static final String XML_FILE = "xml-file";
 
   @CliCommand(value = {CliStrings.EXPORT_SHARED_CONFIG},

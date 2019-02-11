@@ -1738,19 +1738,19 @@ public class SystemAdmin {
   private static String statisticsEnabledOption = null;
   private static boolean remove = false;
   private static String sysDirName = null;
-  private static ArrayList archiveOption = new ArrayList();
+  private static final ArrayList archiveOption = new ArrayList();
   private static String printStacksOption = null;
   private static String outOption = null;
   private static Properties propertyOption = new Properties();
   private static boolean serverOption = true;
   private static boolean peerOption = true;
   private static String gemfirePropertiesFileOption = null;
-  private static ArrayList xoptions = new ArrayList();
+  private static final ArrayList xoptions = new ArrayList();
   private static String hostnameForClientsOption = null;
   private static String baselineDir = null; // Baseline directory option value for backup command
   private static String outputDir = null;
 
-  private static Map cmdOptionsMap = new HashMap();
+  private static final Map cmdOptionsMap = new HashMap();
   static {
     cmdOptionsMap.put("gemfire", new String[] {"--help", "-h", "-help", "-debug", "-q"});
     cmdOptionsMap.put("version", new String[] {});

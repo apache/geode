@@ -289,7 +289,7 @@ public class DataQueryEngine {
 
   static class JsonisedErrorMessage {
 
-    private static String message = "message";
+    private static final String message = "message";
 
     private GfJsonObject gFJsonObject = new GfJsonObject();
 

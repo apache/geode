@@ -27,7 +27,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class FunctionStats {
 
-  public static String statName = "FunctionStatistics";
+  public static final String statName = "FunctionStatistics";
   /** The <code>StatisticsType</code> of the statistics */
   private static final StatisticsType _type;
 
@@ -88,18 +88,6 @@ public class FunctionStats {
    */
   private static final String FUNCTION_EXECUTION_EXCEPTIONS = "functionExecutionsExceptions";
 
-  // /**
-  // * Total number of bytes received before invoking the function
-  // * Name of the functionExecution bytes received statistic
-  // */
-  // private static final String BYTES_RECEIVED = "bytesReceived";
-  //
-  // /**
-  // * Total number of bytes serialized for the result of the function
-  // * Name of the bytes serialized statistic
-  // */
-  // private static final String BYTES_SERIALIZED = "bytesSerialized";
-
   /** Id of the FUNCTION_EXECUTIONS_COMPLETED statistic */
   private static final int _functionExecutionsCompletedId;
 
@@ -126,13 +114,6 @@ public class FunctionStats {
 
   /** Id of the FUNCTION_EXECUTIONS_EXCEPTIONS statistic */
   private static final int _functionExecutionExceptions;
-
-  // /** Id of the RESULTS_RECEIVED statistic */
-  // private static final int _bytesReceived;
-  //
-  // /** Id of the FUNCTION_EXECUTIONS_EXCEPTIONS statistic */
-  // private static final int _bytesSerialized;
-
 
   /**
    * Static initializer to create and initialize the <code>StatisticsType</code>
@@ -173,18 +154,8 @@ public class FunctionStats {
 
             f.createIntCounter(FUNCTION_EXECUTION_EXCEPTIONS,
                 "Total number of Exceptions Occurred while executing function", "operations"),
-
-        // f
-        // .createLongCounter(
-        // BYTES_RECEIVED,
-        // "Total number of bytes received before invoking the function",
-        // "Bytes"),
-        // f
-        // .createLongCounter(
-        // BYTES_SERIALIZED,
-        // "Total number of bytes serialized for the result of the function",
-        // "Bytes"),
         });
+
     // Initialize id fields
     _functionExecutionsCompletedId = _type.nameToId(FUNCTION_EXECUTIONS_COMPLETED);
     _functionExecutionsCompletedProcessingTimeId =
@@ -197,8 +168,6 @@ public class FunctionStats {
     _functionExecutionsHasResultRunningId = _type.nameToId(FUNCTION_EXECUTIONS_HASRESULT_RUNNING);
     _functionExecutionExceptions = _type.nameToId(FUNCTION_EXECUTION_EXCEPTIONS);
     _resultsReceived = _type.nameToId(RESULTS_RECEIVED);
-    // _bytesReceived = _type.nameToId(BYTES_RECEIVED);
-    // _bytesSerialized = _type.nameToId(BYTES_SERIALIZED);
   }
 
   // //////////////////// Instance Fields //////////////////////
@@ -212,7 +181,7 @@ public class FunctionStats {
   // ///////////////////// Constructors ///////////////////////
 
   private FunctionStats() {
-    this._stats = new DummyStatisticsImpl(this._type, null, 0);
+    this._stats = new DummyStatisticsImpl(_type, null, 0);
     this.aggregateStats = FunctionServiceStats.createDummy();
   }
 

@@ -12,22 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.cache;
 
-package org.apache.geode.management.internal.configuration.validators;
+import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.junit.Test;
 
-public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
-  public static final String DEFAULT_REGION_TYPE = "PARTITION";
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 
-  @Override
-  public void validate(RegionConfig config)
-      throws IllegalArgumentException {
-    if (config.getName() == null) {
-      throw new IllegalArgumentException("Name of the region has to be specified.");
-    }
-    if (config.getType() == null) {
-      config.setType(DEFAULT_REGION_TYPE);
-    }
+public class CacheStatisticsTest {
+
+  @Test
+  public void whenRegionPuts_increasesStatisticsPutCounter() {
+    CacheFactory cacheFactory = new CacheFactory();
+    Region<String, String> region =
+        cacheFactory.create().<String, String>createRegionFactory(RegionShortcut.PARTITION)
+            .create("region");
+
+
+    GemFireCacheImpl regionService = (GemFireCacheImpl) region.getRegionService();
+    long oldPuts = regionService.getCachePerfStats().getPuts();
+
+    region.put("some", "value");
+
+    long newPuts = regionService.getCachePerfStats().getPuts();
+
+    assertEquals(oldPuts + 1, newPuts);
   }
 }

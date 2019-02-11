@@ -124,7 +124,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     protected TOperation op;
     protected EventID eventID;
 
-    private static Version[] serializationVersions = null; // new Version[]{ };
+    private static final Version[] serializationVersions = null; // new Version[]{ };
 
     /**
      * for deserialization

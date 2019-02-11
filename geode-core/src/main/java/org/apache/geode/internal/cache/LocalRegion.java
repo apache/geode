@@ -11073,7 +11073,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       long ts = NanoTimer.getTime();
       this.stats.incLong(loadTimeId, ts - start);
       this.stats.incInt(loadsInProgressId, -1);
-      this.stats.incInt(loadsCompletedId, 1);
+      this.stats.incLong(loadsCompletedId, 1);
 
       // need to think about timings
       this.cachePerfStats.endLoad(start);
@@ -11098,7 +11098,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         this.stats.incLong(netloadTimeId, getStatTime() - start);
       }
       this.stats.incInt(netloadsInProgressId, -1);
-      this.stats.incInt(netloadsCompletedId, 1);
+      this.stats.incLong(netloadsCompletedId, 1);
       this.cachePerfStats.endNetload(start);
     }
 
@@ -11123,7 +11123,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       long ts = NanoTimer.getTime();
       this.stats.incLong(netsearchTimeId, ts - start);
       this.stats.incInt(netsearchesInProgressId, -1);
-      this.stats.incInt(netsearchesCompletedId, 1);
+      this.stats.incLong(netsearchesCompletedId, 1);
       this.cachePerfStats.endNetsearch(start);
     }
 
@@ -11146,7 +11146,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         this.stats.incLong(cacheWriterCallTimeId, getStatTime() - start);
       }
       this.stats.incInt(cacheWriterCallsInProgressId, -1);
-      this.stats.incInt(cacheWriterCallsCompletedId, 1);
+      this.stats.incLong(cacheWriterCallsCompletedId, 1);
       this.cachePerfStats.endCacheWriterCall(start);
     }
 
@@ -11171,7 +11171,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         this.stats.incLong(cacheListenerCallTimeId, getStatTime() - start);
       }
       this.stats.incInt(cacheListenerCallsInProgressId, -1);
-      this.stats.incInt(cacheListenerCallsCompletedId, 1);
+      this.stats.incLong(cacheListenerCallsCompletedId, 1);
       this.cachePerfStats.endCacheListenerCall(start);
     }
 
@@ -11194,7 +11194,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         this.stats.incLong(getInitialImageTimeId, getStatTime() - start);
       }
       this.stats.incInt(getInitialImagesInProgressId, -1);
-      this.stats.incInt(getInitialImagesCompletedId, 1);
+      this.stats.incLong(getInitialImagesCompletedId, 1);
       this.cachePerfStats.endGetInitialImage(start);
     }
 
@@ -11228,7 +11228,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       long ts = getStatTime();
       this.stats.incLong(indexUpdateTimeId, ts - start);
       this.stats.incInt(indexUpdateInProgressId, -1);
-      this.stats.incInt(indexUpdateCompletedId, 1);
+      this.stats.incLong(indexUpdateCompletedId, 1);
       this.cachePerfStats.endIndexUpdate(start);
     }
 
@@ -11247,19 +11247,19 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void incDestroys() {
-      this.stats.incInt(destroysId, 1);
+      this.stats.incLong(destroysId, 1);
       this.cachePerfStats.incDestroys();
     }
 
     @Override
     public void incCreates() {
-      this.stats.incInt(createsId, 1);
+      this.stats.incLong(createsId, 1);
       this.cachePerfStats.incCreates();
     }
 
     @Override
     public void incInvalidates() {
-      this.stats.incInt(invalidatesId, 1);
+      this.stats.incLong(invalidatesId, 1);
       this.cachePerfStats.incInvalidates();
     }
 
@@ -11295,9 +11295,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (enableClockStats) {
         this.stats.incLong(getTimeId, getStatTime() - start);
       }
-      this.stats.incInt(getsId, 1);
+      this.stats.incLong(getsId, 1);
       if (miss) {
-        this.stats.incInt(missesId, 1);
+        this.stats.incLong(missesId, 1);
       }
       this.cachePerfStats.endGet(start, miss);
     }
@@ -11310,13 +11310,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     public long endPut(long start, boolean isUpdate) {
       long total = 0;
       if (isUpdate) {
-        this.stats.incInt(updatesId, 1);
+        this.stats.incLong(updatesId, 1);
         if (enableClockStats) {
           total = getStatTime() - start;
           this.stats.incLong(updateTimeId, total);
         }
       } else {
-        this.stats.incInt(putsId, 1);
+        this.stats.incLong(putsId, 1);
         if (enableClockStats) {
           total = getStatTime() - start;
           this.stats.incLong(putTimeId, total);
@@ -11328,7 +11328,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void endPutAll(long start) {
-      this.stats.incInt(putallsId, 1);
+      this.stats.incLong(putallsId, 1);
       if (enableClockStats) {
         this.stats.incLong(putallTimeId, getStatTime() - start);
       }
@@ -11337,7 +11337,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void endQueryExecution(long executionTime) {
-      this.stats.incInt(queryExecutionsId, 1);
+      this.stats.incLong(queryExecutionsId, 1);
       if (enableClockStats) {
         this.stats.incLong(queryExecutionTimeId, executionTime);
       }
@@ -11366,8 +11366,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void txSuccess(long opTime, long txLifeTime, int txChanges) {
-      this.stats.incInt(txCommitsId, 1);
-      this.stats.incInt(txCommitChangesId, txChanges);
+      this.stats.incLong(txCommitsId, 1);
+      this.stats.incLong(txCommitChangesId, txChanges);
       this.stats.incLong(txCommitTimeId, opTime);
       this.stats.incLong(txSuccessLifeTimeId, txLifeTime);
       this.cachePerfStats.txSuccess(opTime, txLifeTime, txChanges);
@@ -11375,8 +11375,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void txFailure(long opTime, long txLifeTime, int txChanges) {
-      this.stats.incInt(txFailuresId, 1);
-      this.stats.incInt(txFailureChangesId, txChanges);
+      this.stats.incLong(txFailuresId, 1);
+      this.stats.incLong(txFailureChangesId, txChanges);
       this.stats.incLong(txFailureTimeId, opTime);
       this.stats.incLong(txFailedLifeTimeId, txLifeTime);
       this.cachePerfStats.txFailure(opTime, txLifeTime, txChanges);
@@ -11384,8 +11384,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void txRollback(long opTime, long txLifeTime, int txChanges) {
-      this.stats.incInt(txRollbacksId, 1);
-      this.stats.incInt(txRollbackChangesId, txChanges);
+      this.stats.incLong(txRollbacksId, 1);
+      this.stats.incLong(txRollbackChangesId, txChanges);
       this.stats.incLong(txRollbackTimeId, opTime);
       this.stats.incLong(txRollbackLifeTimeId, txLifeTime);
       this.cachePerfStats.txRollback(opTime, txLifeTime, txChanges);
@@ -11423,7 +11423,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void incRetries() {
-      this.stats.incInt(retriesId, 1);
+      this.stats.incLong(retriesId, 1);
       this.cachePerfStats.incRetries();
     }
 
@@ -11447,13 +11447,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void incEvictorJobsStarted() {
-      this.stats.incInt(evictorJobsStartedId, 1);
+      this.stats.incLong(evictorJobsStartedId, 1);
       this.cachePerfStats.incEvictorJobsStarted();
     }
 
     @Override
     public void incEvictorJobsCompleted() {
-      this.stats.incInt(evictorJobsCompletedId, 1);
+      this.stats.incLong(evictorJobsCompletedId, 1);
       this.cachePerfStats.incEvictorJobsCompleted();
     }
 
@@ -11471,7 +11471,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void incClearCount() {
-      this.stats.incInt(clearsId, 1);
+      this.stats.incLong(clearsId, 1);
       this.cachePerfStats.incClearCount();
     }
 

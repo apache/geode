@@ -46,7 +46,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ChangeLogLevelCommand extends InternalGfshCommand {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @CliCommand(value = CliStrings.CHANGE_LOGLEVEL, help = CliStrings.CHANGE_LOGLEVEL__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_LOGS},

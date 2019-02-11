@@ -3620,7 +3620,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  private static byte[] TOMBSTONE_BYTES;
+  private static final byte[] TOMBSTONE_BYTES;
   static {
     try {
       TOMBSTONE_BYTES = BlobHelper.serializeToBlob(Token.TOMBSTONE);

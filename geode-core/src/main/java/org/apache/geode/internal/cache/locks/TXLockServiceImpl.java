@@ -38,10 +38,10 @@ public class TXLockServiceImpl extends TXLockService {
   private static final Logger logger = LogService.getLogger();
 
   /** Transaction lock requests never timeout */
-  private static long TIMEOUT_MILLIS = -1;
+  private static final long TIMEOUT_MILLIS = -1;
 
   /** Transaction lock leases never expire */
-  private static long LEASE_MILLIS = -1;
+  private static final long LEASE_MILLIS = -1;
 
   // -------------------------------------------------------------------------
   // Constructor and instance variables

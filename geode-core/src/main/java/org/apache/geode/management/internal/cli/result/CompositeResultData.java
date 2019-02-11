@@ -26,7 +26,7 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
  * @since GemFire 7.0
  */
 public class CompositeResultData extends AbstractResultData {
-  public static String SEPARATOR = "__separator__";
+  public static final String SEPARATOR = "__separator__";
 
   private int subsectionCount;
 

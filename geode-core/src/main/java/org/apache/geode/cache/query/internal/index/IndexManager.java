@@ -107,7 +107,7 @@ public class IndexManager {
   private final int INDEX_MAINTENANCE_BUFFER =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", -1);
 
-  public static boolean JOIN_OPTIMIZATION =
+  public static final boolean JOIN_OPTIMIZATION =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "index.DisableJoinOptimization");
 
   // Added for test purposes only.

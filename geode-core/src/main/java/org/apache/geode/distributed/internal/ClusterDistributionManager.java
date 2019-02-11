@@ -253,7 +253,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /** Is this node running an AdminDistributedSystem? */
   private static volatile boolean isDedicatedAdminVM = false;
 
-  private static ThreadLocal<Boolean> isStartupThread = new ThreadLocal<>();
+  private static final ThreadLocal<Boolean> isStartupThread = new ThreadLocal<>();
 
   /**
    * Identifier for function execution threads and any of their children
@@ -599,7 +599,7 @@ public class ClusterDistributionManager implements DistributionManager {
         Object[] logArgs = new Object[] {distributionManager.getDistributionManagerId(), transport,
             Integer.valueOf(distributionManager.getOtherDistributionManagerIds().size()),
             distributionManager.getOtherDistributionManagerIds(),
-            (logger.isInfoEnabled(LogMarker.DM_MARKER) ? " (VERBOSE, took " + delta + " ms)" : ""),
+            (logger.isInfoEnabled(LogMarker.DM_MARKER) ? " (took " + delta + " ms)" : ""),
             ((distributionManager.getDMType() == ADMIN_ONLY_DM_TYPE) ? " (admin only)"
                 : (distributionManager.getDMType() == LOCATOR_DM_TYPE) ? " (locator)" : "")};
         logger.info(LogMarker.DM_MARKER,

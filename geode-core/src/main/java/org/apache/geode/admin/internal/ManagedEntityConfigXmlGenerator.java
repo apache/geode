@@ -59,7 +59,7 @@ import org.apache.geode.internal.Assert;
 public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml implements XMLReader {
 
   /** An empty <code>Attributes</code> */
-  private static Attributes EMPTY = new AttributesImpl();
+  private static final Attributes EMPTY = new AttributesImpl();
 
   ///////////////////////// Instance Fields ////////////////////////
 

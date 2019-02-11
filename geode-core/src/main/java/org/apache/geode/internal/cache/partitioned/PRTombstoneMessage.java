@@ -55,7 +55,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
 
   private static final Logger logger = LogService.getLogger();
 
-  private static Version[] serializationVersions = null;
+  private static final Version[] serializationVersions = null;
 
   private Set<Object> keys;
   private EventID eventID;

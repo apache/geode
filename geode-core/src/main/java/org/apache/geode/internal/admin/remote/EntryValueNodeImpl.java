@@ -48,7 +48,7 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
   private String name;
   private boolean primitive;
   private EntryValueNodeImpl[] fields;
-  private static ThreadLocal recursionSet = new ThreadLocal();
+  private static final ThreadLocal recursionSet = new ThreadLocal();
 
   public static EntryValueNodeImpl createFromValueRoot(Object value, boolean logicalInspection) {
     recursionSet.set(new IdentityHashMap());

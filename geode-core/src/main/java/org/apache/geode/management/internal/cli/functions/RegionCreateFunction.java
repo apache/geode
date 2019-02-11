@@ -44,7 +44,7 @@ public class RegionCreateFunction implements InternalFunction {
 
   private static final String ID = RegionCreateFunction.class.getName();
 
-  public static RegionCreateFunction INSTANCE = new RegionCreateFunction();
+  public static final RegionCreateFunction INSTANCE = new RegionCreateFunction();
 
   private static final RegionConfigRealizer realizer = new RegionConfigRealizer();
 

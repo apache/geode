@@ -34,17 +34,17 @@ import org.apache.geode.cache.Region;
  */
 public class ResourcePermission extends WildcardPermission {
 
-  public static String ALL = "*";
-  public static String NULL = "NULL";
+  public static final String ALL = "*";
+  public static final String NULL = "NULL";
 
   /**
    * @deprecated use ALL
    */
-  public static String ALL_REGIONS = "*";
+  public static final String ALL_REGIONS = "*";
   /**
    * @deprecated use All
    */
-  public static String ALL_KEYS = "*";
+  public static final String ALL_KEYS = "*";
 
   public enum Resource {
     ALL, NULL, CLUSTER, DATA;

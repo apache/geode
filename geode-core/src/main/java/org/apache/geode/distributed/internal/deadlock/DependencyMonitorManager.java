@@ -34,7 +34,8 @@ import org.apache.geode.internal.CopyOnWriteHashSet;
  */
 public class DependencyMonitorManager {
 
-  private static Set<DependencyMonitor> monitors = new CopyOnWriteHashSet<DependencyMonitor>();
+  private static final Set<DependencyMonitor> monitors =
+      new CopyOnWriteHashSet<DependencyMonitor>();
 
   static {
     // The DLockDependencyMonitor won't get loaded unless we add it here.
