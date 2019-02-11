@@ -26,7 +26,6 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -105,8 +104,6 @@ public class RegionEventImpl
     this.callbackArgument = callbackArgument;
     this.originRemote = originRemote;
     this.distributedMember = distributedMember;
-    // TODO:ASIF: Remove this Assert from production env.
-    Assert.assertTrue(eventID != null);
     this.eventId = eventID;
   }
 

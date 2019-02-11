@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
@@ -72,6 +73,15 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   /** Serial numbers of the buckets for this region */
   private int bucketSerials[];
 
+  /** Event ID of the destroy operation created at the origin */
+  private EventID eventID;
+
+  @Override
+  public EventID getEventID() {
+    return eventID;
+  }
+
+
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
    */
@@ -92,6 +102,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
     this.prSerial = region.getSerialNumber();
     Assert.assertTrue(this.prSerial != DistributionAdvisor.ILLEGAL_SERIAL);
     this.bucketSerials = serials;
+    this.eventID = event.getEventId();
   }
 
   /**
@@ -177,7 +188,8 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
       logger.trace(LogMarker.DM_VERBOSE, "{} operateOnRegion: {}", getClass().getName(),
           r.getFullPath());
     }
-    RegionEventImpl event = new RegionEventImpl(r, this.op, this.cbArg, true, r.getMyId());
+    RegionEventImpl event =
+        new RegionEventImpl(r, this.op, this.cbArg, true, r.getMyId(), getEventID());
     r.basicDestroyRegion(event, false, false, true);
 
     return true;
@@ -203,7 +215,19 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   }
 
   @Override
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_190};
+  }
+
+
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_9_0_0(in);
+    this.eventID = DataSerializer.readObject(in);
+
+  }
+
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
@@ -217,6 +241,11 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GEODE_1_9_0_0(out);
+    DataSerializer.writeObject(this.eventID, out);
+  }
+
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.cbArg, out);
     out.writeByte(this.op.ordinal);
@@ -226,6 +255,8 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
       out.writeInt(this.bucketSerials[i]);
     }
   }
+
+
 
   /**
    * The response on which to wait for all the replies. This response ignores any exceptions
