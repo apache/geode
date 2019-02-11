@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.internal.api.Status;
 
 @Controller("regionManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -39,7 +40,10 @@ public class RegionManagementController extends AbstractManagementController {
     ClusterManagementResult result =
         clusterManagementService.create(regionConfig, "cluster");
     return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+        result.isSuccessful() ? HttpStatus.CREATED
+            : ((!result.isSuccessfullyAppliedOnMembers()
+                && (result.getPersistenceStatus().getStatus() == Status.Result.NOT_APPLICABLE))
+                    ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR));
   }
 
   @RequestMapping(method = RequestMethod.GET, value = "/ping")

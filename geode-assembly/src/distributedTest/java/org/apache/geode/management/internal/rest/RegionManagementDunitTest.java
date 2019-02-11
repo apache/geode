@@ -32,6 +32,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.HttpResponseAssert;
 
 public class RegionManagementDunitTest {
 
@@ -96,11 +97,11 @@ public class RegionManagementDunitTest {
     locator.invoke(() -> verifyRegionPersisted("orders", "PARTITION"));
 
     // create the same region 2nd time
-    result = restClient.doPostAndAssert("/regions", json)
-        .hasStatusCode(409)
+    HttpResponseAssert httpAssert = restClient.doPostAndAssert("/regions", json);
+    result = httpAssert.hasStatusCode(200)
         .getClusterManagementResult();
     assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isSuccessfullyPersisted()).isTrue();
   }
 
   @Test

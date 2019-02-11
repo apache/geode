@@ -37,4 +37,6 @@ public interface ClusterManagementService {
   ClusterManagementResult delete(CacheElement config, String group);
 
   ClusterManagementResult update(CacheElement config, String group);
+
+  boolean exists(CacheElement config, String group);
 }

@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.api;
 
 public class Status {
-  enum Result {
+  public enum Result {
     SUCCESS, FAILURE, NOT_APPLICABLE
   }
 
