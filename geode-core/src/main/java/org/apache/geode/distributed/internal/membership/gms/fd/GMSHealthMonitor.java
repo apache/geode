@@ -1062,7 +1062,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     // only respond if the intended recipient is this member
     InternalDistributedMember me = localAddress;
 
-    if (me.getVmViewId() >= 0 && m.getTarget().equals(me)) {
+    if (me == null || me.getVmViewId() >= 0 && m.getTarget().equals(me)) {
       HeartbeatMessage hm = new HeartbeatMessage(m.getRequestId());
       hm.setRecipient(m.getSender());
       Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(hm);

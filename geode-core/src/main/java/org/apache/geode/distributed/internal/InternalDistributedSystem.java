@@ -1262,7 +1262,7 @@ public class InternalDistributedSystem extends DistributedSystem
     boolean isForcedDisconnect = dm.getRootCause() instanceof ForcedDisconnectException;
     boolean rejoined = false;
     this.reconnected = false;
-    if (isForcedDisconnect) {
+    if (isForcedDisconnect && !this.isReconnectingDS) {
       this.forcedDisconnect = true;
       resetReconnectAttemptCounter();
       rejoined = tryReconnect(true, reason, GemFireCacheImpl.getInstance());

@@ -178,6 +178,10 @@ public class GMSLocator implements Locator, NetLocator {
 
   @Override
   public void setIsCoordinator(boolean isCoordinator) {
+    if (isCoordinator) {
+      logger.info("Location services has received notification that this node is becoming"
+          + " membership coordinator");
+    }
     this.isCoordinator = isCoordinator;
   }
 
@@ -250,6 +254,9 @@ public class GMSLocator implements Locator, NetLocator {
 
     synchronized (registrants) {
       registrants.add(findRequest.getMemberID());
+      if (recoveredView != null) {
+        recoveredView.remove(findRequest.getMemberID());
+      }
     }
 
     if (v != null) {
@@ -299,9 +306,7 @@ public class GMSLocator implements Locator, NetLocator {
     synchronized (registrants) {
       if (isCoordinator) {
         coordinator = localAddress;
-
         if (v != null && localAddress != null && !localAddress.equals(v.getCoordinator())) {
-          logger.info("This member is becoming coordinator since view {}", v);
           v = null;
           fromView = false;
         }

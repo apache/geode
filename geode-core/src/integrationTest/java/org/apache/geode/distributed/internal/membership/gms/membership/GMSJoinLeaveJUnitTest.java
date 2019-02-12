@@ -622,7 +622,7 @@ public class GMSJoinLeaveJUnitTest {
     previousMemberId.setVmViewId(0);
     NetView view = new NetView(mockMembers[0], 1,
         createMemberList(mockMembers[0], previousMemberId, mockMembers[1]));
-    InstallViewMessage viewMessage = new InstallViewMessage(view, 0, true);
+    InstallViewMessage viewMessage = new InstallViewMessage(view, 0, false);
     viewMessage.setSender(mockMembers[0]);
     gmsJoinLeave.processMessage(viewMessage);
     assertEquals(0, gmsJoinLeaveMemberId.getVmViewId());

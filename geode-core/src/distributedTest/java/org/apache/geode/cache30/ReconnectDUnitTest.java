@@ -1075,7 +1075,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         ReconnectDUnitTest.savedCache = (GemFireCacheImpl) getCache();
         Region myRegion = createRegion("myRegion", createAtts());
         myRegion.put("MyKey", "MyValue");
-        myRegion.getAttributesMutator().addCacheListener(new CacheKillingListener());
+        myRegion.getAttributesMutator()
+            .addCacheListener(new CacheListenerTriggeringForcedDisconnect());
       }
     };
 
@@ -1327,10 +1328,12 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * CacheKillingListener crashes the distributed system when it is invoked for the first time.
+   * CacheListenerTriggeringForcedDisconnect crashes the distributed system when it is invoked for
+   * the first time.
    * After that it ignores any notifications.
    */
-  public static class CacheKillingListener extends CacheListenerAdapter implements Declarable {
+  public static class CacheListenerTriggeringForcedDisconnect extends CacheListenerAdapter
+      implements Declarable {
     public static int crashCount = 0;
 
     @Override

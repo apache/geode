@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -85,6 +86,7 @@ import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
@@ -170,6 +172,19 @@ public class JGroupsMessenger implements Messenger {
    * or in a past one & retained through an auto-reconnect.
    */
   private Set<DistributedMember> usedDistributedMemberIdentifiers = new HashSet<>();
+
+  /**
+   * During reconnect a QuorumChecker holds the JGroups channel and responds to Ping
+   * and Pong messages but also queues any messages it doesn't recognize. These need
+   * to be delivered to handlers after membership services have been rebuilt.
+   */
+  private Queue<Message> queuedMessagesFromReconnect;
+
+  /**
+   * The JGroupsReceiver is handed messages by the JGroups Channel. It is responsible
+   * for deserializating and dispatching those messages to the appropriate handler
+   */
+  private JGroupsReceiver jgroupsReceiver;
 
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
@@ -307,6 +322,7 @@ public class JGroupsMessenger implements Messenger {
         MembershipInformation oldInfo = (MembershipInformation) oldDSMembershipInfo;
         myChannel = oldInfo.getChannel();
         usedDistributedMemberIdentifiers = oldInfo.getMembershipIdentifiers();
+        queuedMessagesFromReconnect = oldInfo.getQueuedMessages();
 
         // scrub the old channel
         ViewId vid = new ViewId(new JGAddress(), 0);
@@ -343,7 +359,8 @@ public class JGroupsMessenger implements Messenger {
 
     try {
       myChannel.setReceiver(null);
-      myChannel.setReceiver(new JGroupsReceiver());
+      jgroupsReceiver = new JGroupsReceiver();
+      myChannel.setReceiver(jgroupsReceiver);
       if (!reconnecting) {
         myChannel.connect("AG"); // apache g***** (whatever we end up calling it)
       }
@@ -385,7 +402,17 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public void started() {}
+  public void started() {
+    if (queuedMessagesFromReconnect != null) {
+      logger.info("Delivering {} messages queued by quorum checker",
+          queuedMessagesFromReconnect.size());
+      for (Message message : queuedMessagesFromReconnect) {
+        jgroupsReceiver.receive(message, true);
+      }
+      queuedMessagesFromReconnect.clear();
+      queuedMessagesFromReconnect = null;
+    }
+  }
 
   @Override
   public void stop() {
@@ -1224,6 +1251,10 @@ public class JGroupsMessenger implements Messenger {
 
     @Override
     public void receive(Message jgmsg) {
+      receive(jgmsg, false);
+    }
+
+    private void receive(Message jgmsg, boolean fromQuorumChecker) {
       long startTime = DistributionStats.getStatTime();
       try {
         if (services.getManager().shutdownInProgress()) {
@@ -1277,7 +1308,13 @@ public class JGroupsMessenger implements Messenger {
             logger.trace("JGroupsMessenger dispatching {} from {}", msg, msg.getSender());
           }
           filterIncomingMessage(msg);
-          getMessageHandler(msg).processMessage(msg);
+          MessageHandler handler = getMessageHandler(msg);
+          if (fromQuorumChecker && handler instanceof HealthMonitor) {
+            // ignore suspect / heartbeat messages that happened during
+            // auto-reconnect because they very likely have old member IDs in them
+          } else {
+            handler.processMessage(msg);
+          }
 
           // record the scheduling of broadcast messages
           NakAckHeader2 header = (NakAckHeader2) jgmsg.getHeader(nackack2HeaderId);

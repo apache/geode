@@ -199,6 +199,10 @@ public class TcpServer {
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
   }
 
+  public void restartCompleted(InternalDistributedSystem ds) {
+    this.handler.restartCompleted(ds);
+  }
+
   public void start() throws IOException {
     this.shuttingDown = false;
     startServerThread();

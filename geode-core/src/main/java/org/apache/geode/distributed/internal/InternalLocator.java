@@ -1112,6 +1112,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       endStartLocator(this.myDs);
       logger.info("Locator restart completed");
     }
+    this.server.restartCompleted(newSystem);
   }
 
   public ClusterManagementService getClusterManagementService() {
@@ -1260,6 +1261,15 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       if (ds != null) {
         for (TcpHandler handler : this.allHandlers) {
           handler.restarting(ds, cache, sharedConfig);
+        }
+      }
+    }
+
+    @Override
+    public void restartCompleted(DistributedSystem ds) {
+      if (ds != null) {
+        for (TcpHandler handler : this.allHandlers) {
+          handler.restartCompleted(ds);
         }
       }
     }

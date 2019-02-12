@@ -2560,10 +2560,16 @@ public class GMSMembershipManager implements MembershipManager, Manager {
           shutdownCause);
     }
 
+    if (this.isReconnectingDS()) {
+      logger.info("Reconnecting system failed to connect");
+      uncleanShutdown(reason,
+          new ForcedDisconnectException("reconnecting system failed to connect"));
+      return;
+    }
+
     if (!services.getConfig().getDistributionConfig().getDisableAutoReconnect()) {
       saveCacheXmlForReconnect();
     }
-
 
     Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
       // stop server locators immediately since they may not have correct

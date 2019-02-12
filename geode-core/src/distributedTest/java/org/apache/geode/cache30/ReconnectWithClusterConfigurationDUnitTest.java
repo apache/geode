@@ -25,10 +25,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -41,8 +44,11 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -53,40 +59,62 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
 public class ReconnectWithClusterConfigurationDUnitTest implements Serializable {
-  static final int NUM_VMS = 2;
+  static final int NUM_LOCATORS = 2;
+  static final int NUM_VMS = 4;
   static DistributedSystem system;
   static Cache cache;
-  static int locatorPort;
+  static int[] locatorPorts = new int[NUM_LOCATORS];
   static Properties dsProperties;
 
   @Rule
   public DistributedRule distributedRule = DistributedRule.builder().withVMCount(NUM_VMS).build();
 
   @Before
-  public void setup() throws Exception {
-    locatorPort = (int) VM.getVM(0).invoke("start locator", () -> {
-      try {
-        Disconnect.disconnectFromDS();
-        dsProperties = null;
-        Properties props = getDistributedSystemProperties();
-        dsProperties.remove(LOCATORS);
-        locator = Locator.startLocatorAndDS(0, new File(""), props);
-        system = locator.getDistributedSystem();
-        cache = ((InternalLocator) locator).getCache();
-        ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
-        IgnoredException.addIgnoredException(
-            "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
-      } catch (IOException e) {
-        Assert.fail("unable to start locator", e);
-      }
-      return locator.getPort();
-    });
-    final int locPort = locatorPort;
-    Invoke.invokeInEveryVM("set locator port", () -> locatorPort = locPort);
+  public void setup() {
+    List<AvailablePort.Keeper> randomAvailableTCPPortKeepers =
+        AvailablePortHelper.getRandomAvailableTCPPortKeepers(NUM_LOCATORS);
+    for (int i = 0; i < NUM_LOCATORS; i++) {
+      AvailablePort.Keeper keeper = randomAvailableTCPPortKeepers.get(i);
+      locatorPorts[i] = keeper.getPort();
+    }
+    final int[] locPorts = locatorPorts;
+    Invoke.invokeInEveryVM("set locator ports", () -> locatorPorts = locPorts);
+    for (int i = 0; i < NUM_LOCATORS; i++) {
+      final int locatorNumber = i;
+      randomAvailableTCPPortKeepers.get(locatorNumber).release();
+      VM.getVM(i).invoke("start locator", () -> {
+        try {
+          Disconnect.disconnectFromDS();
+          dsProperties = null;
+          Properties props = getDistributedSystemProperties();
+          locator = Locator.startLocatorAndDS(locatorPorts[locatorNumber], new File(""), props);
+          system = locator.getDistributedSystem();
+          cache = ((InternalLocator) locator).getCache();
+          ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
+          IgnoredException.addIgnoredException(
+              "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
+        } catch (IOException e) {
+          Assert.fail("unable to start locator", e);
+        }
+      });
+    }
   }
 
   @After
   public void teardown() {
+    for (int i = 0; i < NUM_LOCATORS; i++) {
+      VM.getVM(i).invoke(() -> {
+        InternalLocator locator = InternalLocator.getLocator();
+        if (locator != null) {
+          InternalConfigurationPersistenceService sharedConfig =
+              locator.getConfigurationPersistenceService();
+          if (sharedConfig != null) {
+            sharedConfig.destroySharedConfiguration();
+          }
+          locator.stop();
+        }
+      });
+    }
     Invoke.invokeInEveryVM(() -> {
       if (system != null) {
         system.disconnect();
@@ -98,16 +126,30 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
 
   public Properties getDistributedSystemProperties() {
     dsProperties = new Properties();
-    dsProperties.put(MAX_WAIT_TIME_RECONNECT, "10000");
+    dsProperties.put(MAX_WAIT_TIME_RECONNECT, "20000");
     dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
     dsProperties.put(DISABLE_AUTO_RECONNECT, "false");
     dsProperties.put(ENABLE_CLUSTER_CONFIGURATION, "true");
     dsProperties.put(USE_CLUSTER_CONFIGURATION, "true");
-    dsProperties.put(LOCATORS, "localHost[" + locatorPort + "]");
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append("localHost[")
+        .append(locatorPorts[0])
+        .append(']');
+    for (int i = 1; i < NUM_LOCATORS; i++) {
+      stringBuilder.append(",localHost[")
+          .append(locatorPorts[0])
+          .append(']');
+    }
+    dsProperties.put(LOCATORS, stringBuilder.toString());
     dsProperties.put(MCAST_PORT, "0");
     dsProperties.put(MEMBER_TIMEOUT, "5000");
     dsProperties.put(LOG_LEVEL, "info");
-    dsProperties.put(NAME, "vm" + VM.getCurrentVMNum());
+    int vmNumber = VM.getCurrentVMNum();
+    if (vmNumber < NUM_LOCATORS) {
+      dsProperties.put(NAME, "loc" + VM.getCurrentVMNum());
+    } else {
+      dsProperties.put(NAME, "vm" + VM.getCurrentVMNum());
+    }
     return dsProperties;
   }
 
@@ -115,7 +157,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
   @Test
   public void testReconnectAfterMeltdown() throws InterruptedException {
 
-    for (int i = 1; i < NUM_VMS; i++) {
+    for (int i = NUM_LOCATORS; i < NUM_VMS; i++) {
       VM.getVM(i).invoke("create cache", () -> {
         cache = new CacheFactory(getDistributedSystemProperties()).create();
         system = cache.getDistributedSystem();
@@ -129,13 +171,20 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
     for (AsyncInvocation crasher : crashers) {
       crasher.join();
     }
+    AsyncInvocation[] waiters = new AsyncInvocation[NUM_VMS];
     for (int i = NUM_VMS - 1; i >= 0; i--) {
-      VM.getVM(i).invoke("wait for reconnect", () -> {
+      waiters[i] = VM.getVM(i).invokeAsync("wait for reconnect", () -> {
         system.waitUntilReconnected(GeodeAwaitility.getTimeout().getValueInMS(),
             TimeUnit.MILLISECONDS);
         system = system.getReconnectedSystem();
         cache = cache.getReconnectedCache();
+        await().untilAsserted(() -> assertThat(system.getAllOtherMembers().size())
+            .withFailMessage("wrong number of members: " + system.getAllOtherMembers())
+            .isEqualTo(NUM_VMS - 1));
       });
+    }
+    for (AsyncInvocation waiter : waiters) {
+      waiter.join();
     }
   }
 
