@@ -45,6 +45,7 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -170,29 +171,75 @@ public class DescribeMappingCommand extends GfshCommand {
       }
       result.getAttributeMap().forEach(sectionModel::addData);
 
-      DataResultModel sectionModel2 =
-          resultModel.addData(RESULT_SECTION_NAME + "Field Mappings" + String.valueOf(i));
+      InfoResultModel sectionModel2 =
+          resultModel.addInfo(RESULT_SECTION_NAME + "Field Mappings" + String.valueOf(i));
       List<FieldMapping> fieldMappings = result.getFieldMappings();
 
       Map<String, String> attributeMap = result.getAttributeMap();
       sectionModel2
           .setHeader("PDX field to JDBC column mappings for class " + attributeMap.get("pdx-name"));
-
-      int maxLen = 0;
-      for (FieldMapping fieldMapping : fieldMappings) {
-        if (fieldMapping.getPdxName().length() > maxLen)
-          maxLen = fieldMapping.getPdxName().length();
-      }
-      maxLen = maxLen + 4;
-      String outValueFormat = "Column: %-18s Type: %-12s Nullable: %b";
-      String outKeyFormat = "%-" + maxLen + "s";
-      for (FieldMapping fieldMapping : fieldMappings) {
-        sectionModel2.addData(String.format(outKeyFormat, fieldMapping.getPdxName()),
-            String.format(outValueFormat, fieldMapping.getJdbcName(), fieldMapping.getJdbcType(),
-                fieldMapping.isJdbcNullable()));
-      }
+      sectionModel2.addLine("\n");
+      buildFieldInfo(sectionModel2, fieldMappings);
     }
     return resultModel;
+  }
+
+  private void buildFieldInfo(InfoResultModel sectionModel2, List<FieldMapping> fieldMappings) {
+    int pdxLen = 8;
+    int jdbcLen = 8;
+    for (FieldMapping fieldMapping : fieldMappings) {
+      if (fieldMapping.getPdxName().trim().length() > pdxLen) {
+        pdxLen = fieldMapping.getPdxName().trim().length();
+      }
+      if (fieldMapping.getJdbcName().trim().length() > jdbcLen) {
+        jdbcLen = fieldMapping.getJdbcName().trim().length();
+      }
+    }
+    pdxLen = pdxLen + 4;
+    jdbcLen = jdbcLen + 4;
+    String headerRow = buildFieldHeaderRow(pdxLen, jdbcLen);
+    String headerText = buildFieldHeaderText(pdxLen, jdbcLen);
+    sectionModel2.addLine(headerRow);
+    sectionModel2.addLine(headerText);
+    sectionModel2.addLine(headerRow);
+    String outPDXFormat = " %-" + pdxLen + "s %-12s";
+    String outJDBCFormat = " %-" + jdbcLen + "s %-12s %b";
+    for (FieldMapping fieldMapping : fieldMappings) {
+      sectionModel2.addLine(
+          String.format(outPDXFormat, fieldMapping.getPdxName(), fieldMapping.getPdxType()) +
+              String.format(outJDBCFormat, fieldMapping.getJdbcName(), fieldMapping.getJdbcType(),
+                  fieldMapping.isJdbcNullable()));
+    }
+  }
+
+  private String buildFieldHeaderRow(int pdxLen, int jdbcLen) {
+    StringBuilder sb = new StringBuilder();
+    String rowItem = new String("|");
+    for (int i = 0; i < pdxLen; i++) {
+      rowItem = rowItem + "-";
+    }
+    sb.append(rowItem);
+    sb.append("|------------");
+    rowItem = new String("|");
+    for (int i = 0; i < jdbcLen; i++) {
+      rowItem = rowItem + "-";
+    }
+    sb.append(rowItem);
+    sb.append("|------------");
+    sb.append("|---------");
+    return sb.toString();
+  }
+
+  private String buildFieldHeaderText(int pdxLen, int jdbcLen) {
+    StringBuilder sb = new StringBuilder();
+    int pdxPadded = pdxLen + 1;
+    int jdbcPadded = jdbcLen + 1;
+    sb.append(String.format("%-" + pdxPadded + "s", "|PDX Field"));
+    sb.append(String.format("%-13s", "|PDX Type"));
+    sb.append(String.format("%-" + jdbcPadded + "s", "|JDBC Column"));
+    sb.append(String.format("%-13s", "|JDBC Type"));
+    sb.append("|Nullable");
+    return sb.toString();
   }
 
   public ConfigurationPersistenceService checkForClusterConfiguration()

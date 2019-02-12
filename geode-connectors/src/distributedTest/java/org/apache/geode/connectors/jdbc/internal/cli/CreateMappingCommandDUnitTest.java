@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
@@ -25,9 +26,11 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRO
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,6 +59,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -69,6 +73,8 @@ public class CreateMappingCommandDUnitTest {
 
   private static final String TEST_REGION = "testRegion";
   private static final String EMPLOYEE_REGION = "employeeRegion";
+  private static final String EMPLOYEE_LOWER = "employee";
+  private static final String EMPLOYEE_UPPER = "EMPLOYEE";
   private static final String GROUP1_REGION = "group1Region";
   private static final String GROUP2_REGION = "group2Region";
   private static final String GROUP1_GROUP2_REGION = "group1Group2Region";
@@ -118,11 +124,15 @@ public class CreateMappingCommandDUnitTest {
     executeSql(
         "create table mySchema." + EMPLOYEE_REGION
             + "(ID varchar(10) primary key, NAME varchar(10), AGE int)");
+    executeSql(
+        "create table mySchema." + EMPLOYEE_UPPER
+            + "(ID varchar(10) primary key, name varchar(10), AGE int)");
   }
 
   private void teardownDatabase() {
     executeSql("drop table mySchema.myTable");
     executeSql("drop table mySchema." + EMPLOYEE_REGION);
+    executeSql("drop table mySchema." + EMPLOYEE_UPPER);
   }
 
   private void executeSql(String sql) {
@@ -460,6 +470,15 @@ public class CreateMappingCommandDUnitTest {
     assertThat(mapping.getIds()).isEqualTo("myId");
     assertThat(mapping.getCatalog()).isNull();
     assertThat(mapping.getSchema()).isEqualTo("mySchema");
+    List<FieldMapping> fieldMappings = mapping.getFieldMappings();
+    assertThat(fieldMappings.size()).isEqualTo(2);
+    List<String> pdxFieldNames = new ArrayList<>();
+    for (FieldMapping fieldMapping : fieldMappings) {
+      pdxFieldNames.add(fieldMapping.getPdxName());
+    }
+    assertThat(pdxFieldNames.size()).isEqualTo(2);
+    assertThat(pdxFieldNames).contains("MYID"); // pdx types built from metadata
+    assertThat(pdxFieldNames).contains("NAME"); // use the metadata field names
   }
 
   private static void assertValidEmployeeMappingOnServer(RegionMapping mapping, String regionName,
@@ -490,6 +509,13 @@ public class CreateMappingCommandDUnitTest {
     assertThat(mapping.getSchema()).isEqualTo("mySchema");
     List<FieldMapping> fieldMappings = mapping.getFieldMappings();
     assertThat(fieldMappings.size()).isEqualTo(3);
+    List<String> pdxFieldNames = new ArrayList<>();
+    for (FieldMapping fieldMapping : fieldMappings) {
+      pdxFieldNames.add(fieldMapping.getPdxName());
+    }
+    assertThat(pdxFieldNames.contains("id"));
+    assertThat(pdxFieldNames.contains("name"));
+    assertThat(pdxFieldNames.contains("age"));
   }
 
   @Test
@@ -533,8 +559,13 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(DATA_SOURCE_NAME, "connection");
     // csb.addOption(TABLE_NAME, "employeeRegion");
     csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.Employee");
-    // csb.addOption(ID_NAME, "id");
+    csb.addOption(ID_NAME, "id");
     csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
+        regionName);
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
@@ -615,6 +646,74 @@ public class CreateMappingCommandDUnitTest {
       assertValidEmployeeMappingOnLocator(regionMapping, region2Name, null, false, false,
           "employeeRegion");
     });
+  }
+
+  @Test
+  public void createMappingsWithExistingPdxName() {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+
+    server1.invoke(() -> {
+      try { // build a PDX registry entry
+        Class<?> clazz = Class.forName("org.apache.geode.connectors.jdbc.Employee");
+        assertThat(clazz).isNotNull();
+        Constructor<?> ctor = clazz.getConstructor();
+        Object object = ctor.newInstance(new Object[] {});
+        BlobHelper.serializeToBlob(object);
+      } catch (Exception ex) {
+        assertThat(false).isEqualTo(ex);
+      }
+    });
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.Employee");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(region1Name);
+      assertValidEmployeeMappingOnServer(mapping, region1Name, false, false, "employeeRegion");
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(region1Name, null);
+      assertValidEmployeeMappingOnLocator(regionMapping, region1Name, null, false, false,
+          "employeeRegion");
+    });
+
+  }
+
+  @Test
+  public void createMappingUsingRegionNameUsesDomainClass() {
+    setupReplicate(EMPLOYEE_LOWER);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, EMPLOYEE_LOWER);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.Employee");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    // TODO We are saving the lower case table name in region mapping,
+    // even though the metadata lookup found an upper case table name.
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(EMPLOYEE_LOWER);
+      assertValidEmployeeMappingOnServer(mapping, EMPLOYEE_LOWER, false, false, EMPLOYEE_LOWER);
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(EMPLOYEE_LOWER, null);
+      assertValidEmployeeMappingOnLocator(regionMapping, EMPLOYEE_LOWER, null, false, false,
+          EMPLOYEE_LOWER);
+    });
+
   }
 
   @Test

@@ -87,15 +87,22 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     try (Connection connection = dataSource.getConnection()) {
       TableMetaDataView tableMetaData =
           tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
+      // TODO the table name returned in tableMetaData may be different than
+      // the table name specified on the command line at this point.
+      // Do we want to update the region mapping to hold the "real" table name
       Object[] output = new Object[2];
       ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
       output[1] = fieldMappings;
       Set<PdxType> pdxTypes = typeRegistry.getPdxTypesForClassName(regionMapping.getPdxName());
-      if (pdxTypes.isEmpty()) {
-        if (!checkForDomainClass(regionMapping.getPdxName())) {
-          pdxFactory = cache.createPdxInstanceFactory(regionMapping.getPdxName());
+      if (pdxTypes.isEmpty()) { // No pre-existing PDX registry entry
+        if (!checkForDomainClass(regionMapping.getPdxName())) { // Could not load class from
+                                                                // classpath
+          pdxFactory = cache.createPdxInstanceFactory(regionMapping.getPdxName()); // Start new
+                                                                                   // registry entry
         } else {
-          pdxTypes = typeRegistry.getPdxTypesForClassName(regionMapping.getPdxName());
+          pdxTypes = typeRegistry.getPdxTypesForClassName(regionMapping.getPdxName()); // get new
+                                                                                       // registry
+                                                                                       // info
         }
       }
       for (String jdbcName : tableMetaData.getColumnNames()) {
