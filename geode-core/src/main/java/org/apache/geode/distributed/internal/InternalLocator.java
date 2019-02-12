@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -217,36 +218,26 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    *
    * GuardedBy must synchronize on locatorLock
    */
-  private static InternalLocator locator;
-
-  private static final Object locatorLock = new Object();
+  private static AtomicReference<InternalLocator> locatorRef = new AtomicReference<>();
 
   // TODO: getLocator() overrides static method of a superclass
   public static InternalLocator getLocator() {
-    // synchronize in order to fix #46336 (race condition in createLocator)
-    synchronized (locatorLock) {
-      return locator;
-    }
+    return locatorRef.get();
   }
 
   // TODO: hasLocator() overrides static method of a superclass
   public static boolean hasLocator() {
-    synchronized (locatorLock) {
-      return locator != null;
-    }
+    return locatorRef.get() != null;
   }
 
   private static void removeLocator(InternalLocator locator) {
     if (locator == null) {
       return;
     }
-    synchronized (locatorLock) {
-      locator.loggingSession.stopSession();
-      locator.loggingSession.shutdown();
-      if (locator.equals(InternalLocator.locator)) {
-        InternalLocator.locator = null;
-      }
-    }
+    locator.loggingSession.stopSession();
+    locator.loggingSession.shutdown();
+
+    locatorRef.compareAndSet(locator, null);
   }
 
   public LocatorMembershipListener getlocatorMembershipListener() {
@@ -274,28 +265,32 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       InetAddress bindAddress, String hostnameForClients,
       Properties distributedSystemProperties,
       boolean startDistributedSystem) {
-    synchronized (locatorLock) {
-      if (hasLocator()) {
-        throw new IllegalStateException(
-            "A locator can not be created because one already exists in this JVM.");
-      }
-      InternalLocator locator =
-          new InternalLocator(port, loggingSession, logFile, logger, securityLogger, bindAddress,
-              hostnameForClients, distributedSystemProperties, null, startDistributedSystem);
-      InternalLocator.locator = locator;
-      return locator;
+
+    if (hasLocator()) {
+      throw new IllegalStateException(
+          "A locator can not be created because one already exists in this JVM.");
     }
+    InternalLocator locator =
+        new InternalLocator(port, loggingSession, logFile, logger, securityLogger, bindAddress,
+            hostnameForClients, distributedSystemProperties, null, startDistributedSystem);
+
+    if (!locatorRef.compareAndSet(null, locator)) {
+      throw new IllegalStateException(
+          "A locator can not be created because one already exists in this JVM.");
+    }
+
+    return locator;
   }
 
   private static void setLocator(InternalLocator locator) {
-    synchronized (locatorLock) {
-      if (InternalLocator.locator != null && InternalLocator.locator != locator) {
+    InternalLocator prev;
+    do {
+      prev = locatorRef.get();
+      if (prev != null && prev != locator) {
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
-
-      InternalLocator.locator = locator;
-    }
+    } while (!locatorRef.compareAndSet(prev, locator));
   }
 
   /**
@@ -688,8 +683,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     clusterManagementService =
-        new LocatorClusterManagementService(locator.myCache.getDistributionManager(),
-            locator.configurationPersistenceService);
+        new LocatorClusterManagementService(locatorRef.get().myCache.getDistributionManager(),
+            locatorRef.get().configurationPersistenceService);
 
     // start management rest service
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
@@ -1057,57 +1052,53 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   private void restartWithoutDS() throws IOException {
-    synchronized (locatorLock) {
-      if (locator != this && hasLocator()) {
-        throw new IllegalStateException(
-            "A locator can not be created because one already exists in this JVM.");
-      }
-      this.myDs = null;
-      this.myCache = null;
-      logger.info("Locator restart: initializing TcpServer peer location services");
-      this.server.restarting(null, null, null);
-      if (this.productUseLog.isClosed()) {
-        this.productUseLog.reopen();
-      }
-      if (!this.server.isAlive()) {
-        logger.info("Locator restart: starting TcpServer");
-        startTcpServer();
-      }
+    if (locatorRef.get() != this && hasLocator()) {
+      throw new IllegalStateException(
+          "A locator can not be created because one already exists in this JVM.");
+    }
+    this.myDs = null;
+    this.myCache = null;
+    logger.info("Locator restart: initializing TcpServer peer location services");
+    this.server.restarting(null, null, null);
+    if (this.productUseLog.isClosed()) {
+      this.productUseLog.reopen();
+    }
+    if (!this.server.isAlive()) {
+      logger.info("Locator restart: starting TcpServer");
+      startTcpServer();
     }
   }
 
   private void restartWithDS(InternalDistributedSystem newSystem, InternalCache newCache)
       throws IOException {
 
-    synchronized (locatorLock) {
-      if (locator != this && hasLocator()) {
-        throw new IllegalStateException(
-            "A locator can not be created because one already exists in this JVM.");
-      }
-      this.myDs = newSystem;
-      this.myCache = newCache;
-      this.myDs.setDependentLocator(this);
-      logger.info("Locator restart: initializing TcpServer");
-
-      this.server.restarting(newSystem, newCache, this.configurationPersistenceService);
-      if (this.productUseLog.isClosed()) {
-        this.productUseLog.reopen();
-      }
-      this.productUseLog.monitorUse(newSystem);
-      if (isSharedConfigurationEnabled()) {
-        this.configurationPersistenceService =
-            new InternalConfigurationPersistenceService(newCache);
-        startClusterManagementService();
-      }
-      if (!this.server.isAlive()) {
-        logger.info("Locator restart: starting TcpServer");
-        startTcpServer();
-      }
-      logger.info("Locator restart: initializing JMX manager");
-      startJmxManagerLocationService(newCache);
-      endStartLocator(this.myDs);
-      logger.info("Locator restart completed");
+    if (locatorRef.get() != this && hasLocator()) {
+      throw new IllegalStateException(
+          "A locator can not be created because one already exists in this JVM.");
     }
+    this.myDs = newSystem;
+    this.myCache = newCache;
+    this.myDs.setDependentLocator(this);
+    logger.info("Locator restart: initializing TcpServer");
+
+    this.server.restarting(newSystem, newCache, this.configurationPersistenceService);
+    if (this.productUseLog.isClosed()) {
+      this.productUseLog.reopen();
+    }
+    this.productUseLog.monitorUse(newSystem);
+    if (isSharedConfigurationEnabled()) {
+      this.configurationPersistenceService =
+          new InternalConfigurationPersistenceService(newCache);
+      startClusterManagementService();
+    }
+    if (!this.server.isAlive()) {
+      logger.info("Locator restart: starting TcpServer");
+      startTcpServer();
+    }
+    logger.info("Locator restart: initializing JMX manager");
+    startJmxManagerLocationService(newCache);
+    endStartLocator(this.myDs);
+    logger.info("Locator restart completed");
   }
 
   public ClusterManagementService getClusterManagementService() {
@@ -1414,13 +1405,13 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     try {
-      if (locator.configurationPersistenceService == null) {
+      if (locatorRef.get().configurationPersistenceService == null) {
         // locator.configurationPersistenceService will already be created in case of auto-reconnect
-        locator.configurationPersistenceService =
-            new InternalConfigurationPersistenceService(locator.myCache);
+        locatorRef.get().configurationPersistenceService =
+            new InternalConfigurationPersistenceService(locatorRef.get().myCache);
       }
-      locator.configurationPersistenceService
-          .initSharedConfiguration(locator.loadFromSharedConfigDir());
+      locatorRef.get().configurationPersistenceService
+          .initSharedConfiguration(locatorRef.get().loadFromSharedConfigDir());
       logger.info(
           "Cluster configuration service start up completed successfully and is now running ....");
       isSharedConfigurationStarted = true;
