@@ -40,22 +40,20 @@ public class RegionManagementController extends AbstractManagementController {
     ClusterManagementResult result =
         clusterManagementService.create(regionConfig, "cluster");
 
-    HttpStatus status;
-    if (result.isSuccessful()) {
-      if (result.isStatusNA()) {
-        status = HttpStatus.OK;
-      } else {
-        status = HttpStatus.CREATED;
-      }
+    HttpStatus httpStatus;
+    Status.Result requestStatus = result.getPersistenceStatus().getStatus();
+    if (requestStatus == Status.Result.NO_OP) {
+      httpStatus = HttpStatus.OK;
+    } else if (result.isSuccessful()) {
+      httpStatus = HttpStatus.CREATED;
     } else {
       boolean condition = !result.isSuccessfullyAppliedOnMembers()
           && (result.getPersistenceStatus().getStatus() == Status.Result.NOT_APPLICABLE);
-      status = (condition
+      httpStatus = (condition
           ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    ResponseEntity response = new ResponseEntity<>(result,
-        status);
-    return response;
+
+    return new ResponseEntity<>(result, httpStatus);
   }
 
   @RequestMapping(method = RequestMethod.GET, value = "/ping")

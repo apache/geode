@@ -101,7 +101,7 @@ public class RegionManagementDunitTest {
     result = httpAssert.hasStatusCode(200)
         .getClusterManagementResult();
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMemberStatuses()).isNotEmpty();
+    assertThat(result.getMemberStatuses()).isEmpty();
     assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessfullyPersisted()).isTrue();
     assertThat(result.getPersistenceStatus().getMessage()).isEqualTo(
