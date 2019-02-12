@@ -78,7 +78,7 @@ class GeodeDependencyManagementPlugin implements Plugin<Project> {
         dependency(group: 'antlr', name: 'antlr', version: project.'antlr.version')
         dependency(group: 'cglib', name: 'cglib', version: project.'cglib.version')
         dependency(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.5.0')
-        dependencySet(group: 'com.fasterxml.jackson.core', version: '2.9.7') {
+        dependencySet(group: 'com.fasterxml.jackson.core', version: '2.9.8') {
           entry 'jackson-annotations'
           entry 'jackson-core'
           entry 'jackson-databind'
