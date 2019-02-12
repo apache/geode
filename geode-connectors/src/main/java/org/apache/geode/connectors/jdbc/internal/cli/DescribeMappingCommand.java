@@ -184,61 +184,72 @@ public class DescribeMappingCommand extends GfshCommand {
     return resultModel;
   }
 
-  private void buildFieldInfo(InfoResultModel sectionModel2, List<FieldMapping> fieldMappings) {
-    int pdxLen = 8;
-    int jdbcLen = 8;
-    for (FieldMapping fieldMapping : fieldMappings) {
-      if (fieldMapping.getPdxName().trim().length() > pdxLen) {
-        pdxLen = fieldMapping.getPdxName().trim().length();
-      }
-      if (fieldMapping.getJdbcName().trim().length() > jdbcLen) {
-        jdbcLen = fieldMapping.getJdbcName().trim().length();
-      }
+  private int getColumnWidth(String columnText, int currentColumnWidth) {
+    if (columnText.trim().length() > currentColumnWidth) {
+      return columnText.trim().length();
     }
-    pdxLen = pdxLen + 4;
-    jdbcLen = jdbcLen + 4;
-    String headerRow = buildFieldHeaderRow(pdxLen, jdbcLen);
-    String headerText = buildFieldHeaderText(pdxLen, jdbcLen);
+    return currentColumnWidth;
+  }
+
+  private void buildFieldInfo(InfoResultModel sectionModel2, List<FieldMapping> fieldMappings) {
+    int pdxLen = "PDX Field".length();
+    int pdxTypeLen = "PDX Type".length();
+    int jdbcLen = "JDBC Column".length();
+    int jdbcTypeLen = "JDBC Type".length();
+
+    for (FieldMapping fieldMapping : fieldMappings) {
+      pdxLen = getColumnWidth(fieldMapping.getPdxName(), pdxLen);
+      pdxTypeLen = getColumnWidth(fieldMapping.getPdxType(), pdxTypeLen);
+      jdbcLen = getColumnWidth(fieldMapping.getJdbcName(), jdbcLen);
+      jdbcTypeLen = getColumnWidth(fieldMapping.getJdbcType(), jdbcTypeLen);
+    }
+    String headerRow = buildFieldHeaderRow(pdxLen, pdxTypeLen, jdbcLen, jdbcTypeLen);
+    String headerText = buildFieldHeaderText(pdxLen, pdxTypeLen, jdbcLen, jdbcTypeLen);
     sectionModel2.addLine(headerRow);
     sectionModel2.addLine(headerText);
     sectionModel2.addLine(headerRow);
-    String outPDXFormat = " %-" + pdxLen + "s %-12s";
-    String outJDBCFormat = " %-" + jdbcLen + "s %-12s %b";
+    String format = ' ' + getColumnFormat(pdxLen) + ' '
+        + getColumnFormat(pdxTypeLen) + ' '
+        + getColumnFormat(jdbcLen) + ' '
+        + getColumnFormat(jdbcTypeLen) + ' '
+        + "%b";
     for (FieldMapping fieldMapping : fieldMappings) {
       sectionModel2.addLine(
-          String.format(outPDXFormat, fieldMapping.getPdxName(), fieldMapping.getPdxType()) +
-              String.format(outJDBCFormat, fieldMapping.getJdbcName(), fieldMapping.getJdbcType(),
-                  fieldMapping.isJdbcNullable()));
+          String.format(format, fieldMapping.getPdxName(), fieldMapping.getPdxType(),
+              fieldMapping.getJdbcName(), fieldMapping.getJdbcType(),
+              fieldMapping.isJdbcNullable()));
     }
   }
 
-  private String buildFieldHeaderRow(int pdxLen, int jdbcLen) {
+  private String getColumnFormat(int columnWidth) {
+    return "%-" + columnWidth + "s";
+  }
+
+  private void appendColumn(StringBuilder stringBuilder, int columnWidth) {
+    stringBuilder.append('|');
+    for (int i = 0; i < columnWidth; i++) {
+      stringBuilder.append('-');
+    }
+  }
+
+  private String buildFieldHeaderRow(int pdxLen, int pdxTypeLen, int jdbcLen, int jdbcTypeLen) {
     StringBuilder sb = new StringBuilder();
-    String rowItem = new String("|");
-    for (int i = 0; i < pdxLen; i++) {
-      rowItem = rowItem + "-";
-    }
-    sb.append(rowItem);
-    sb.append("|------------");
-    rowItem = new String("|");
-    for (int i = 0; i < jdbcLen; i++) {
-      rowItem = rowItem + "-";
-    }
-    sb.append(rowItem);
-    sb.append("|------------");
-    sb.append("|---------");
+    appendColumn(sb, pdxLen);
+    appendColumn(sb, pdxTypeLen);
+    appendColumn(sb, jdbcLen);
+    appendColumn(sb, jdbcTypeLen);
+    appendColumn(sb, "Nullable".length());
+    sb.append('|');
     return sb.toString();
   }
 
-  private String buildFieldHeaderText(int pdxLen, int jdbcLen) {
+  private String buildFieldHeaderText(int pdxLen, int pdxTypeLen, int jdbcLen, int jdbcTypeLen) {
     StringBuilder sb = new StringBuilder();
-    int pdxPadded = pdxLen + 1;
-    int jdbcPadded = jdbcLen + 1;
-    sb.append(String.format("%-" + pdxPadded + "s", "|PDX Field"));
-    sb.append(String.format("%-13s", "|PDX Type"));
-    sb.append(String.format("%-" + jdbcPadded + "s", "|JDBC Column"));
-    sb.append(String.format("%-13s", "|JDBC Type"));
-    sb.append("|Nullable");
+    sb.append(String.format(getColumnFormat(pdxLen), "|PDX Field"));
+    sb.append(String.format(getColumnFormat(pdxTypeLen), "|PDX Type"));
+    sb.append(String.format(getColumnFormat(jdbcLen), "|JDBC Column"));
+    sb.append(String.format(getColumnFormat(jdbcTypeLen), "|JDBC Type"));
+    sb.append("|Nullable|");
     return sb.toString();
   }
 

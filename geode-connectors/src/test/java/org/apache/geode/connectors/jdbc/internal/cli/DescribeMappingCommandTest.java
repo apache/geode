@@ -36,6 +36,7 @@ import org.mockito.Mock;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -227,7 +228,39 @@ public class DescribeMappingCommandTest {
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
-        .containsOutput("false");
+        .containsOutput("synchronous", "false")
+        .containsOutput("PDX field to JDBC column mappings for class", "class1");
+  }
+
+
+  @Test
+  public void todo() {
+    RegionMapping regionMapping = new RegionMapping();
+    regionMapping.setRegionName("region1");
+    regionMapping.setPdxName("class1");
+    regionMapping.setTableName("table1");
+    regionMapping.setDataSourceName("name1");
+    regionMapping.setIds("myId");
+    regionMapping.setCatalog("myCatalog");
+    regionMapping.setSchema("mySchema");
+    FieldMapping fieldMapping =
+        new FieldMapping("pdxName1", "pdxType1", "jdbcName1", "jdbcType1", true);
+    regionMapping.addFieldMapping(fieldMapping);
+    ArrayList<CacheElement> elements = new ArrayList<>();
+    elements.add(regionMapping);
+    when(regionConfig.getCustomRegionElements()).thenReturn(elements);
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
+            PDX_NAME,
+            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
+        .containsOutput(REGION_NAME, "region1")
+        .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
+        .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
+        .containsOutput("synchronous", "false")
+        .containsOutput("PDX field to JDBC column mappings for class", "class1")
+        .containsOutput("pdxName1", "pdxType1", "jdbcName1", "jdbcType1", "true");
   }
 
   @Test
