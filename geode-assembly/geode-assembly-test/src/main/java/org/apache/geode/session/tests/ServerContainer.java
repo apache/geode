@@ -18,10 +18,13 @@ import static org.apache.geode.session.tests.ContainerInstall.TMP_DIR;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.IntSupplier;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
@@ -64,7 +67,7 @@ public abstract class ServerContainer {
   public String description;
   public File gemfireLogFile;
   public File cacheXMLFile;
-  public File logDir;
+  public File cargoLogDir;
 
   public String loggingLevel;
 
@@ -101,8 +104,8 @@ public abstract class ServerContainer {
     description = generateUniqueContainerDescription(containerDescriptors);
     // Setup logging
     loggingLevel = DEFAULT_LOGGING_LEVEL;
-    logDir = new File(DEFAULT_LOG_DIR + description);
-    logDir.mkdirs();
+    cargoLogDir = new File(DEFAULT_LOG_DIR + description);
+    cargoLogDir.mkdirs();
 
     logger.info("Creating new container {}", description);
 
@@ -128,7 +131,7 @@ public abstract class ServerContainer {
         "-Djava.security.egd=file:/dev/./urandom");
 
     // Setup the gemfire log file for this container
-    gemfireLogFile = new File(logDir.getAbsolutePath() + "/gemfire.log");
+    gemfireLogFile = new File(cargoLogDir.getAbsolutePath() + "/gemfire.log");
     gemfireLogFile.getParentFile().mkdirs();
     setSystemProperty("log-file", gemfireLogFile.getAbsolutePath());
 
@@ -140,12 +143,12 @@ public abstract class ServerContainer {
     // Set container's home dir to where it was installed
     container.setHome(install.getHome());
     // Set container output log to directory setup for it
-    container.setOutput(logDir.getAbsolutePath() + "/container.log");
+    container.setOutput(cargoLogDir.getAbsolutePath() + "/container.log");
 
     // Set cacheXML file
     File installXMLFile = install.getCacheXMLFile();
     // Sets the cacheXMLFile variable and adds the cache XML file server system property map
-    setCacheXMLFile(new File(logDir.getAbsolutePath() + "/" + installXMLFile.getName()));
+    setCacheXMLFile(new File(cargoLogDir.getAbsolutePath() + "/" + installXMLFile.getName()));
     // Copy the cacheXML file to a new, unique location for this container
     FileUtils.copyFile(installXMLFile, cacheXMLFile);
   }
@@ -230,17 +233,38 @@ public abstract class ServerContainer {
     container.stop();
   }
 
-  public void dumpLogs() throws IOException {
+  public void dumpLogs() {
     System.out.println("Logs for container " + this);
-    for (File file : logDir.listFiles()) {
-      dumpToStdOut(file);
-    }
-
-    for (File file : new File(containerConfigHome, "logs").listFiles()) {
-      dumpToStdOut(file);
-    }
-
+    dumpLogsInDir(cargoLogDir.toPath());
+    dumpLogsInDir(containerConfigHome.toPath().resolve("logs"));
     dumpConfiguration();
+  }
+
+  private static void dumpLogsInDir(Path dir) {
+    try (Stream<Path> paths = Files.list(dir)) {
+      paths.forEach(ServerContainer::dumpToStdOut);
+    } catch (IOException thrown) {
+      System.out.println("-------------------------------------------");
+      System.out.println("Exception while dumping log files from directory to stdout.");
+      System.out.println("   Directory: " + dir.toAbsolutePath());
+      System.out.println("   Exception: " + thrown);
+      System.out.println("-------------------------------------------");
+    }
+  }
+
+  private static void dumpToStdOut(Path path) {
+    System.out.println("-------------------------------------------");
+    System.out.println(path.toAbsolutePath());
+    System.out.println("-------------------------------------------");
+    try {
+      Files.copy(path, System.out);
+    } catch (IOException thrown) {
+      System.out.println("Exception while dumping log file to stdout.");
+      System.out.println("   File: " + path.toAbsolutePath());
+      System.out.println("   Exception: " + thrown);
+    }
+    System.out.println("-------------------------------------------");
+    System.out.println();
   }
 
   private void dumpConfiguration() {
@@ -253,21 +277,12 @@ public abstract class ServerContainer {
     System.out.println("Properties:");
     configuration.getProperties().entrySet().forEach(System.out::println);
     System.out.println("-------------------------------------------");
-    System.out.println("");
-  }
-
-  private void dumpToStdOut(final File file) throws IOException {
-    System.out.println("-------------------------------------------");
-    System.out.println(file.getAbsolutePath());
-    System.out.println("-------------------------------------------");
-    FileUtils.copyFile(file, System.out);
-    System.out.println("-------------------------------------------");
-    System.out.println("");
+    System.out.println();
   }
 
   /**
    * Copies the container configuration (found through {@link #getConfiguration()}) to the logging
-   * directory specified by {@link #logDir}
+   * directory specified by {@link #cargoLogDir}
    */
   public void cleanUp() throws IOException {
     File configDir = new File(getConfiguration().getHome());

@@ -55,7 +55,7 @@ public class TomcatContainer extends ServerContainer {
     super(install, containerConfigHome, containerDescriptors, portSupplier);
 
     // Setup container specific XML files
-    contextXMLFile = new File(logDir.getAbsolutePath() + "/context.xml");
+    contextXMLFile = new File(cargoLogDir.getAbsolutePath() + "/context.xml");
     serverXMLFile = new File(DEFAULT_CONF_DIR + "server.xml");
 
     // Copy the default container context XML file from the install to the specified path

@@ -62,7 +62,7 @@ public class GenericAppServerContainer extends ServerContainer {
     modifyWarScript.setExecutable(true);
 
     // Setup modify_war script logging file
-    modifyWarScriptLog = new File(logDir + "/warScript.log");
+    modifyWarScriptLog = new File(cargoLogDir + "/warScript.log");
     modifyWarScriptLog.createNewFile();
 
     // Ignore tests that are running on windows, since they can't run the modify war script
