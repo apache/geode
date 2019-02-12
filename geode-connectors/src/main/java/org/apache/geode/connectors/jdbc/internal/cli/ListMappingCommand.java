@@ -58,9 +58,6 @@ public class ListMappingCommand extends GfshCommand {
 
     try {
       ConfigurationPersistenceService configService = checkForClusterConfiguration();
-      if (configService == null) {
-
-      }
       if (groups == null) {
         groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
       }

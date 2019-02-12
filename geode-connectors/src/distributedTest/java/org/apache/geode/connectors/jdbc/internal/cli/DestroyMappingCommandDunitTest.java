@@ -161,9 +161,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, null, false);
-      verifyRegionAltered(cache, null, false);
-      verifyQueueRemoved(cache, null, false);
+      assertThat(mappingRemovedFromService(cache, TEST_REGION)).isTrue();
+      verifyRegionAltered(cache, TEST_REGION, false);
+      assertThat(queueRemoved(cache, TEST_REGION)).isTrue();
     });
   }
 
@@ -183,9 +183,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, null, false);
-      verifyRegionAltered(cache, null, false);
-      verifyQueueRemoved(cache, null, false);
+      assertThat(mappingRemovedFromService(cache, TEST_REGION)).isTrue();
+      verifyRegionAltered(cache, TEST_REGION, false);
+      assertThat(queueRemoved(cache, TEST_REGION)).isTrue();
     });
   }
 
@@ -205,9 +205,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, null, false);
-      verifyRegionAltered(cache, null, false);
-      verifyQueueRemoved(cache, null, false);
+      assertThat(mappingRemovedFromService(cache, TEST_REGION)).isTrue();
+      verifyRegionAltered(cache, TEST_REGION, false);
+      assertThat(queueRemoved(cache, TEST_REGION)).isTrue();
     });
   }
 
@@ -229,9 +229,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     // we have this region on server2 only
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, GROUP1_REGION, false);
+      assertThat(mappingRemovedFromService(cache, GROUP1_REGION)).isTrue();
       verifyRegionAltered(cache, GROUP1_REGION, false);
-      verifyQueueRemoved(cache, GROUP1_REGION, false);
+      assertThat(queueRemoved(cache, GROUP1_REGION)).isTrue();
     });
   }
 
@@ -254,29 +254,29 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     // server1 never has the mapping
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, GROUP1_GROUP2_REGION, false);
+      assertThat(mappingRemovedFromService(cache, GROUP1_GROUP2_REGION)).isTrue();
       verifyRegionAltered(cache, GROUP1_GROUP2_REGION, false);
-      verifyQueueRemoved(cache, GROUP1_GROUP2_REGION, false);
+      assertThat(queueRemoved(cache, GROUP1_GROUP2_REGION)).isTrue();
     });
     // server2 and server4's mapping are destroyed
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, GROUP1_GROUP2_REGION, false);
+      assertThat(mappingRemovedFromService(cache, GROUP1_GROUP2_REGION)).isTrue();
       verifyRegionAltered(cache, GROUP1_GROUP2_REGION, false);
-      verifyQueueRemoved(cache, GROUP1_GROUP2_REGION, false);
+      assertThat(queueRemoved(cache, GROUP1_GROUP2_REGION)).isTrue();
     });
     server4.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, GROUP1_GROUP2_REGION, false);
+      assertThat(mappingRemovedFromService(cache, GROUP1_GROUP2_REGION)).isTrue();
       verifyRegionAltered(cache, GROUP1_GROUP2_REGION, false);
-      verifyQueueRemoved(cache, GROUP1_GROUP2_REGION, false);
+      assertThat(queueRemoved(cache, GROUP1_GROUP2_REGION)).isTrue();
     });
     // server3 should still have the mapping
     server3.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, GROUP1_GROUP2_REGION, true);
+      assertThat(mappingRemovedFromService(cache, GROUP1_GROUP2_REGION)).isFalse();
       verifyRegionAltered(cache, GROUP1_GROUP2_REGION, false);
-      verifyQueueRemoved(cache, GROUP1_GROUP2_REGION, false);
+      assertThat(queueRemoved(cache, GROUP1_GROUP2_REGION)).isTrue();
     });
   }
 
@@ -296,9 +296,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      verifyMappingRemovedFromService(cache, null, false);
-      verifyRegionAltered(cache, null, false);
-      verifyQueueRemoved(cache, null, false);
+      assertThat(mappingRemovedFromService(cache, TEST_REGION)).isTrue();
+      verifyRegionAltered(cache, TEST_REGION, false);
+      assertThat(queueRemoved(cache, TEST_REGION)).isTrue();
     });
   }
 
@@ -332,22 +332,12 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     }
   }
 
-  private void verifyQueueRemoved(InternalCache cache, String regionName, boolean exists) {
-    if (regionName == null) {
-      regionName = TEST_REGION;
-    }
+  private boolean queueRemoved(InternalCache cache, String regionName) {
     String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
-    if (exists) {
-      assertThat(cache.getAsyncEventQueue(queueName)).isNotNull();
-    } else {
-      assertThat(cache.getAsyncEventQueue(queueName)).isNull();
-    }
+    return cache.getAsyncEventQueue(queueName) == null;
   }
 
   private void verifyRegionAltered(InternalCache cache, String regionName, boolean exists) {
-    if (regionName == null) {
-      regionName = TEST_REGION;
-    }
     Region<?, ?> region = cache.getRegion(TEST_REGION);
     String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     if (exists) {
@@ -361,17 +351,9 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     }
   }
 
-  private void verifyMappingRemovedFromService(InternalCache cache, String regionName,
-      boolean exists) {
-    if (regionName == null) {
-      regionName = TEST_REGION;
-    }
+  private boolean mappingRemovedFromService(InternalCache cache, String regionName) {
     RegionMapping mapping =
         cache.getService(JdbcConnectorService.class).getMappingForRegion(regionName);
-    if (exists) {
-      assertThat(mapping).isNotNull();
-    } else {
-      assertThat(mapping).isNull();
-    }
+    return (mapping == null);
   }
 }
