@@ -182,10 +182,6 @@ public class ListMappingCommandDUnitTest implements Serializable {
             + TEST_GROUP2 + " --data-source=connection " + "--table=myTable --pdx-name=myPdxClass";
     gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
-//    CommandStringBuilder csbd = new CommandStringBuilder(
-//        "describe jdbc-mapping --region=" + regionName + " --groups=" + TEST_GROUP1);
-//    gfsh.executeAndAssertThat(csbd.toString()).statusIsSuccess();
-
     {
       CommandStringBuilder csb =
           new CommandStringBuilder(LIST_MAPPING);
