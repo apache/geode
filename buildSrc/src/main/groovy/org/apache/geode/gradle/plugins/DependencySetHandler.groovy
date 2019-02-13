@@ -30,7 +30,6 @@ class DependencySetHandler {
 
   void entry(String name) {
     this.project.dependencies.constraints {
-      // TODO
       api(group: group, name: name, version: version)
     }
   }
