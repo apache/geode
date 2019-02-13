@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -36,7 +35,6 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -70,9 +68,10 @@ public class LocatorClusterManagementServiceTest {
     cacheConfig.getRegions().add(regionConfig);
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
 
-    assertThatThrownBy(() -> service.create(regionConfig, "cluster"))
-        .isInstanceOf(EntityExistsException.class)
-        .hasMessageContaining("cache element test already exists");
+    result = service.create(regionConfig, "cluster");
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getPersistenceStatus().getMessage())
+        .contains("cache element test already exists");
   }
 
   @Test

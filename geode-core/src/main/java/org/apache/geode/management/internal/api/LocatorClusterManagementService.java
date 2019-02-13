@@ -95,11 +95,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       result =
           new ClusterManagementResult(Status.Result.NO_OP,
               "cache element " + config.getId() + " already exists.");
-      // for (DistributedMember member : targetedMembers) {
-      // result.addMemberStatus(member.getId(), true, "idk");
-      // }
       return result;
-      // throw new EntityExistsException("cache element " + config.getId() + " already exists.");
     }
 
     // execute function on all members
