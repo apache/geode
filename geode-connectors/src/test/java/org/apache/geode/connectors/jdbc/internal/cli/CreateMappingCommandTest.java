@@ -42,6 +42,7 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -340,7 +341,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getRegionAttributes()).thenReturn(loaderAttribute);
     List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
     AsyncEventQueue matchingQueue = mock(AsyncEventQueue.class);
-    String queueName = createRegionMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     when(matchingQueue.getId()).thenReturn(queueName);
     asyncEventQueues.add(matchingQueue);
     when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
@@ -369,7 +370,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getRegionAttributes()).thenReturn(loaderAttribute);
     List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
     AsyncEventQueue matchingQueue = mock(AsyncEventQueue.class);
-    String queueName = createRegionMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     when(matchingQueue.getId()).thenReturn(queueName);
     asyncEventQueues.add(matchingQueue);
     when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
@@ -431,7 +432,7 @@ public class CreateMappingCommandTest {
     createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     assertThat(queueList.size()).isEqualTo(1);
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     AsyncEventQueue createdQueue = queueList.get(0);
     assertThat(createdQueue.getId()).isEqualTo(queueName);
     assertThat(createdQueue.isParallel()).isFalse();
@@ -486,7 +487,7 @@ public class CreateMappingCommandTest {
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     assertThat(argument.getValue()).isEqualTo(queueName);
   }
 
@@ -505,7 +506,7 @@ public class CreateMappingCommandTest {
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     assertThat(argument.getValue()).isEqualTo(queueName);
   }
 
@@ -524,7 +525,7 @@ public class CreateMappingCommandTest {
 
     ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
     verify(matchingRegionAttributes).setAsyncEventQueueIds(argument.capture());
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     assertThat(argument.getValue()).isEqualTo("q1,q2," + queueName);
   }
 
@@ -537,7 +538,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(list);
     List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
     when(cacheConfig.getAsyncEventQueues()).thenReturn(queueList);
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     String existingQueues = "q1," + queueName + ",q2";
     when(matchingRegionAttributes.getAsyncEventQueueIds()).thenReturn(existingQueues);
 
@@ -595,20 +596,20 @@ public class CreateMappingCommandTest {
 
   @Test
   public void createAsyncEventQueueNameWithRegionPathReturnsQueueNameThatIsTheSameAsRegionWithNoSlash() {
-    String queueName1 = CreateMappingCommand.createAsyncEventQueueName("regionName");
-    String queueName2 = CreateMappingCommand.createAsyncEventQueueName("/regionName");
+    String queueName1 = MappingCommandUtils.createAsyncEventQueueName("regionName");
+    String queueName2 = MappingCommandUtils.createAsyncEventQueueName("/regionName");
     assertThat(queueName1).isEqualTo(queueName2);
   }
 
   @Test
   public void createAsyncEventQueueNameWithEmptyStringReturnsQueueName() {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName("");
+    String queueName = MappingCommandUtils.createAsyncEventQueueName("");
     assertThat(queueName).isEqualTo("JDBC#");
   }
 
   @Test
   public void createAsyncEventQueueNameWithSubregionNameReturnsQueueNameWithNoSlashes() {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName("/parent/child/grandchild");
+    String queueName = MappingCommandUtils.createAsyncEventQueueName("/parent/child/grandchild");
     assertThat(queueName).isEqualTo("JDBC#parent_child_grandchild");
   }
 

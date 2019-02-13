@@ -25,6 +25,7 @@ import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
@@ -53,7 +54,7 @@ public class CreateMappingFunction extends CliFunction<Object[]> {
     Region<?, ?> region = verifyRegionExists(context.getCache(), regionName);
 
     // action
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     if (!synchronous) {
       createAsyncEventQueue(context.getCache(), queueName,
           region.getAttributes().getDataPolicy().withPartitioning());
