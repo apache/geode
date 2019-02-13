@@ -165,6 +165,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.init(services);
     gmsJoinLeave.start();
     gmsJoinLeave.started();
+    gmsJoinLeave.setLocalAddress(gmsJoinLeaveMemberId);
   }
 
   @After

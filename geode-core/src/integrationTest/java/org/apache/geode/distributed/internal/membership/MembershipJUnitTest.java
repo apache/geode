@@ -47,7 +47,6 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
@@ -448,20 +447,6 @@ public class MembershipJUnitTest {
     } catch (GemFireConfigException e) {
       // expected
     }
-  }
-
-  /**
-   * test the GMSUtil.formatBytes() method
-   */
-  @Test
-  public void testFormatBytes() throws Exception {
-    byte[] bytes = new byte[200];
-    for (int i = 0; i < bytes.length; i++) {
-      bytes[i] = (byte) (i % 255);
-    }
-    String str = GMSUtil.formatBytes(bytes, 0, bytes.length);
-    System.out.println(str);
-    assertEquals(600 + 4, str.length());
   }
 
   @Test
