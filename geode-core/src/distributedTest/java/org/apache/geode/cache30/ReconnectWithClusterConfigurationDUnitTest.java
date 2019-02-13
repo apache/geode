@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.cache30.ReconnectDUnitTest.locator;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
@@ -63,6 +62,7 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
   static final int NUM_VMS = 4;
   static DistributedSystem system;
   static Cache cache;
+  static Locator locator;
   static int[] locatorPorts = new int[NUM_LOCATORS];
   static Properties dsProperties;
 

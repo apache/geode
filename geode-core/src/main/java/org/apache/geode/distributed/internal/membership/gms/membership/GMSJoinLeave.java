@@ -619,7 +619,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           services.getHealthMonitor().getMembersFailingAvailabilityCheck();
       check.removeAll(suspectMembers);
       logger.info(
-          "View with removed and left members removed is {}\nremoved members: {}\nleft members: {}\nsuspect members: {}",
+          "View with removed and left members removed is {}; removed members: {}; left members: {}; suspect members: {}",
           check, removedMembers, leftMembers, suspectMembers);
       if (check.getCoordinator().equals(localAddress)) {
         synchronized (viewInstallationLock) {
