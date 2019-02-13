@@ -14,28 +14,26 @@
  */
 package org.apache.geode.test.dunit.rules.tests;
 
-import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.getVMCount;
+import static org.apache.geode.test.junit.runners.TestRunner.runTestWithExpectedFailures;
+import static org.apache.geode.test.junit.runners.TestRunner.runTestWithValidation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
-import org.junit.runner.Result;
-import org.junit.runner.notification.Failure;
 
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
-import org.apache.geode.test.junit.runners.TestRunner;
 
 /**
  * Distributed tests for {@link SharedErrorCollector}.
@@ -48,233 +46,147 @@ public class SharedErrorCollectorDistributedTest {
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
 
-  @Before
-  public void setUp() {
-    assertThat(getVMCount()).isGreaterThanOrEqualTo(DEFAULT_VM_COUNT);
-  }
-
   @Test
-  public void errorCollectorHasExpectedField() throws Exception {
+  public void errorCollectorHasFieldNamedErrors() throws Exception {
     Field errorsField = ErrorCollector.class.getDeclaredField("errors");
+
     assertThat(errorsField.getDeclaringClass()).isEqualTo(ErrorCollector.class);
   }
 
   @Test
-  public void checkThatFailureInControllerIsReported() {
-    Result result = TestRunner.runTest(CheckThatFailsInController.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(AssertionError.class)
-        .hasMessageContaining(MESSAGE);
+  public void whenCheckThatFailsInController_resultIncludesError() {
+    assertFailsWithCollectedErrors(CheckThatFailsInController.class, new AssertionError(MESSAGE));
   }
 
   @Test
-  public void addErrorInControllerIsReported() {
-    Result result = TestRunner.runTest(AddErrorInController.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE);
+  public void whenControllerAddsError_resultIncludesError() {
+    assertFailsWithCollectedErrors(AddErrorInController.class, new NullPointerException(MESSAGE));
   }
 
   @Test
-  public void checkThatFailureInDUnitVMIsReported() {
-    Result result = TestRunner.runTest(CheckThatFailsInDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(AssertionError.class)
-        .hasMessageContaining(MESSAGE);
+  public void whenCheckThatFailsInDUnitVM_resultIncludesError() {
+    assertFailsWithCollectedErrors(CheckThatFailsInDUnitVM.class, new AssertionError(MESSAGE));
   }
 
   @Test
-  public void checkThatFailureInEveryDUnitVMIsReported() {
-    Result result = TestRunner.runTest(CheckThatFailsInEveryDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(getVMCount());
-    int i = 0;
-    for (Failure failure : failures) {
-      assertThat(failure.getException()).isInstanceOf(AssertionError.class)
-          .hasMessageContaining(MESSAGE + " in VM-" + i++);
+  public void whenCheckThatFailsInEveryDUnitVM_resultIncludesAllErrors() {
+    List<Throwable> errors = new ArrayList<>();
+    for (VM vm : getAllVMs()) {
+      errors.add(new AssertionError(MESSAGE + " in VM-" + vm.getId()));
     }
+
+    assertFailsWithCollectedErrors(CheckThatFailsInEveryDUnitVM.class, errors);
   }
 
   @Test
-  public void checkThatFailureInEveryDUnitVMAndControllerIsReported() {
-    Result result = TestRunner.runTest(CheckThatFailsInEveryDUnitVMAndController.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(getVMCount() + 1);
-    boolean first = true;
-    int i = 0;
-    for (Failure failure : failures) {
-      if (first) {
-        assertThat(failure.getException()).isInstanceOf(AssertionError.class)
-            .hasMessageContaining(MESSAGE + " in VM-CONTROLLER");
-        first = false;
-      } else {
-        assertThat(failure.getException()).isInstanceOf(AssertionError.class)
-            .hasMessageContaining(MESSAGE + " in VM-" + i++);
-      }
+  public void whenCheckThatFailsInEveryDUnitVMAndController_resultIncludesAllErrors() {
+    List<Throwable> errors = new ArrayList<>();
+    errors.add(new AssertionError(MESSAGE + " in VM-CONTROLLER"));
+    for (VM vm : getAllVMs()) {
+      errors.add(new AssertionError(MESSAGE + " in VM-" + vm.getId()));
     }
+
+    assertFailsWithCollectedErrors(CheckThatFailsInEveryDUnitVMAndController.class, errors);
   }
 
   @Test
-  public void checkThatFailureInMethodInDUnitVMIsReported() {
-    Result result = TestRunner.runTest(CheckThatFailsInMethodInDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(AssertionError.class)
-        .hasMessageContaining(MESSAGE);
+  public void whenCheckThatFailsInMethodInDUnitVM_resultIncludesError() {
+    assertFailsWithCollectedErrors(CheckThatFailsInMethodInDUnitVM.class,
+        new AssertionError(MESSAGE));
   }
 
   @Test
-  public void addErrorInDUnitVMIsReported() {
-    Result result = TestRunner.runTest(AddErrorInDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE);
+  public void whenDUnitVMAddsError_resultIncludesError() {
+    assertFailsWithCollectedErrors(AddErrorInDUnitVM.class, new NullPointerException(MESSAGE));
   }
 
   @Test
-  public void addErrorInEveryDUnitVMIsReported() {
-    Result result = TestRunner.runTest(AddErrorInEveryDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(getVMCount());
-    int i = 0;
-    for (Failure failure : failures) {
-      assertThat(failure.getException()).isInstanceOf(NullPointerException.class)
-          .hasMessageContaining(MESSAGE + " in VM-" + i++);
+  public void whenEveryDUnitVMAddsError_resultIncludesAllErrors() {
+    List<Throwable> errors = new ArrayList<>();
+    for (VM vm : getAllVMs()) {
+      errors.add(new NullPointerException(MESSAGE + " in VM-" + vm.getId()));
     }
+
+    assertFailsWithCollectedErrors(AddErrorInEveryDUnitVM.class, errors);
   }
 
   @Test
-  public void addErrorInEveryDUnitVMAndControllerIsReported() {
-    Result result = TestRunner.runTest(AddErrorInEveryDUnitVMAndController.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(getVMCount() + 1);
-    boolean first = true;
-    int i = 0;
-    for (Failure failure : failures) {
-      if (first) {
-        assertThat(failure.getException()).isInstanceOf(NullPointerException.class)
-            .hasMessageContaining(MESSAGE + " in VM-CONTROLLER");
-        first = false;
-      } else {
-        assertThat(failure.getException()).isInstanceOf(NullPointerException.class)
-            .hasMessageContaining(MESSAGE + " in VM-" + i++);
-      }
+  public void whenEveryDUnitVMAndControllerAddsError_resultIncludesAllErrors() {
+    List<Throwable> errors = new ArrayList<>();
+    errors.add(new NullPointerException(MESSAGE + " in VM-CONTROLLER"));
+    for (VM vm : getAllVMs()) {
+      errors.add(new NullPointerException(MESSAGE + " in VM-" + vm.getId()));
     }
+
+    assertFailsWithCollectedErrors(AddErrorInEveryDUnitVMAndController.class, errors);
   }
 
   @Test
-  public void addErrorInMethodInDUnitVMIsReported() {
-    Result result = TestRunner.runTest(AddErrorInMethodInDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE);
+  public void whenDUnitVMAddsErrorInMethod_resultIncludesError() {
+    assertFailsWithCollectedErrors(AddErrorInMethodInDUnitVM.class,
+        new NullPointerException(MESSAGE));
   }
 
   @Test
-  public void addDUnitVMDoesNotFail() {
-    Result result = TestRunner.runTest(AddDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isTrue();
+  public void whenNewDUnitVMDoesNotAddError_resultIsSuccessful() {
+    assertPasses(AddDUnitVM.class);
   }
 
   @Test
-  public void addErrorInNewDUnitVMIsReported() {
-    Result result = TestRunner.runTest(AddErrorInNewDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE);
+  public void whenNewDUnitVMAddsError_resultIncludesError() {
+    assertFailsWithCollectedErrors(AddErrorInNewDUnitVM.class, new NullPointerException(MESSAGE));
   }
 
   @Test
-  public void bounceDUnitVMDoesNotFail() {
-    Result result = TestRunner.runTest(BounceDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isTrue();
+  public void whenBouncedDUnitVMDoesNotAddError_resultIsSuccessful() {
+    assertPasses(BounceDUnitVM.class);
   }
 
   @Test
-  public void addErrorInBouncedDUnitVMIsReported() {
-    Result result = TestRunner.runTest(AddErrorInBouncedDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE);
+  public void whenBouncedDUnitVMAddsErrorAfterBounce_resultIncludesError() {
+    assertFailsWithCollectedErrors(AddErrorInBouncedDUnitVM.class,
+        new NullPointerException(MESSAGE));
   }
 
   @Test
-  public void addErrorBeforeBouncingDUnitVMIsReported() {
-    Result result = TestRunner.runTest(AddErrorBeforeBouncingDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE);
+  public void whenBouncedDUnitVMAddsErrorBeforeBounce_resultIncludesError() {
+    assertFailsWithCollectedErrors(AddErrorBeforeBouncingDUnitVM.class,
+        new NullPointerException(MESSAGE));
   }
 
   @Test
-  public void addErrorBeforeAndAfterBouncingDUnitVMIsReported() {
-    Result result = TestRunner.runTest(AddErrorBeforeAndAfterBouncingDUnitVM.class);
-
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(2);
-    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE + "-before");
-    assertThat(failures.get(1).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE + "-after");
+  public void whenBouncedDUnitVMAddsErrorBeforeAndAfterBounce_resultIncludesError() {
+    assertFailsWithCollectedErrors(AddErrorBeforeAndAfterBouncingDUnitVM.class,
+        new NullPointerException(MESSAGE + "-before"),
+        new NullPointerException(MESSAGE + "-after"));
   }
 
   @Test
-  public void successfulWhenCheckSucceedsDoesNotThrow() {
-    Result result = TestRunner.runTest(CheckSucceedsDoesNotThrow.class);
-
-    assertThat(result.wasSuccessful()).isTrue();
+  public void whenCheckSucceedsDoesNotThrow_resultIsSuccessful() {
+    assertPasses(CheckSucceedsDoesNotThrow.class);
   }
 
   @Test
-  public void failsWhenCheckSucceedsDoesNotThrow() {
-    Result result = TestRunner.runTest(CheckSucceedsThrows.class);
+  public void whenCheckSucceedsThrows_resultIncludesError() {
+    assertFailsWithCollectedErrors(CheckSucceedsThrows.class, new NullPointerException(MESSAGE));
+  }
 
-    assertThat(result.wasSuccessful()).isFalse();
-    List<Failure> failures = result.getFailures();
-    assertThat(failures).hasSize(1);
-    assertThat(failures.get(0).getException()).isInstanceOf(NullPointerException.class)
-        .hasMessage(MESSAGE);
+  private void assertPasses(final Class<?> test) {
+    runTestWithValidation(test);
+  }
+
+  private void assertFailsWithCollectedErrors(final Class<?> test,
+      final Throwable... collectedErrors) {
+    runTestWithExpectedFailures(test, collectedErrors);
+  }
+
+  private void assertFailsWithCollectedErrors(final Class<?> test,
+      final List<Throwable> collectedErrors) {
+    runTestWithExpectedFailures(test, collectedErrors);
   }
 
   /**
-   * Used by test {@link #checkThatFailureInControllerIsReported()}
+   * Used by test {@link #whenCheckThatFailsInController_resultIncludesError()}
    */
   public static class CheckThatFailsInController {
 
@@ -288,7 +200,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorInControllerIsReported()}
+   * Used by test {@link #whenControllerAddsError_resultIncludesError()}
    */
   public static class AddErrorInController {
 
@@ -302,7 +214,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #checkThatFailureInDUnitVMIsReported()}
+   * Used by test {@link #whenCheckThatFailsInDUnitVM_resultIncludesError()}
    */
   public static class CheckThatFailsInDUnitVM implements Serializable {
 
@@ -316,7 +228,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #checkThatFailureInEveryDUnitVMIsReported()}
+   * Used by test {@link #whenCheckThatFailsInEveryDUnitVM_resultIncludesAllErrors()}
    */
   public static class CheckThatFailsInEveryDUnitVM implements Serializable {
 
@@ -333,7 +245,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #checkThatFailureInEveryDUnitVMAndControllerIsReported()}
+   * Used by test {@link #whenCheckThatFailsInEveryDUnitVMAndController_resultIncludesAllErrors()}
    */
   public static class CheckThatFailsInEveryDUnitVMAndController implements Serializable {
 
@@ -351,7 +263,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #checkThatFailureInMethodInDUnitVMIsReported()}
+   * Used by test {@link #whenCheckThatFailsInMethodInDUnitVM_resultIncludesError()}
    */
   public static class CheckThatFailsInMethodInDUnitVM implements Serializable {
 
@@ -369,7 +281,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorInDUnitVMIsReported()}
+   * Used by test {@link #whenDUnitVMAddsError_resultIncludesError()}
    */
   public static class AddErrorInDUnitVM implements Serializable {
 
@@ -383,7 +295,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorInEveryDUnitVMIsReported()}
+   * Used by test {@link #whenEveryDUnitVMAddsError_resultIncludesAllErrors()}
    */
   public static class AddErrorInEveryDUnitVM implements Serializable {
 
@@ -400,7 +312,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorInEveryDUnitVMAndControllerIsReported()}
+   * Used by test {@link #whenEveryDUnitVMAndControllerAddsError_resultIncludesAllErrors()}
    */
   public static class AddErrorInEveryDUnitVMAndController implements Serializable {
 
@@ -418,7 +330,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorInMethodInDUnitVMIsReported()}
+   * Used by test {@link #whenDUnitVMAddsErrorInMethod_resultIncludesError()}
    */
   public static class AddErrorInMethodInDUnitVM implements Serializable {
 
@@ -436,7 +348,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addDUnitVMDoesNotFail()}
+   * Used by test {@link #whenNewDUnitVMDoesNotAddError_resultIsSuccessful()}
    */
   public static class AddDUnitVM implements Serializable {
 
@@ -454,7 +366,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorInNewDUnitVMIsReported()}
+   * Used by test {@link #whenNewDUnitVMAddsError_resultIncludesError()}
    */
   public static class AddErrorInNewDUnitVM implements Serializable {
 
@@ -468,7 +380,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addDUnitVMDoesNotFail()}
+   * Used by test {@link #whenBouncedDUnitVMDoesNotAddError_resultIsSuccessful()}
    */
   public static class BounceDUnitVM implements Serializable {
 
@@ -482,7 +394,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorInNewDUnitVMIsReported()}
+   * Used by test {@link #whenBouncedDUnitVMAddsErrorAfterBounce_resultIncludesError()}
    */
   public static class AddErrorInBouncedDUnitVM implements Serializable {
 
@@ -497,7 +409,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorBeforeBouncingDUnitVMIsReported()}
+   * Used by test {@link #whenBouncedDUnitVMAddsErrorBeforeBounce_resultIncludesError()}
    */
   public static class AddErrorBeforeBouncingDUnitVM implements Serializable {
 
@@ -512,7 +424,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #addErrorBeforeAndAfterBouncingDUnitVMIsReported()}
+   * Used by test {@link #whenBouncedDUnitVMAddsErrorBeforeAndAfterBounce_resultIncludesError()}
    */
   public static class AddErrorBeforeAndAfterBouncingDUnitVM implements Serializable {
 
@@ -528,7 +440,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #successfulWhenCheckSucceedsDoesNotThrow()}
+   * Used by test {@link #whenCheckSucceedsDoesNotThrow_resultIsSuccessful()}
    */
   public static class CheckSucceedsDoesNotThrow implements Serializable {
 
@@ -544,7 +456,7 @@ public class SharedErrorCollectorDistributedTest {
   }
 
   /**
-   * Used by test {@link #failsWhenCheckSucceedsDoesNotThrow()}
+   * Used by test {@link #whenCheckSucceedsThrows_resultIncludesError()}
    */
   public static class CheckSucceedsThrows implements Serializable {
 
