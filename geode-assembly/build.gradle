@@ -16,12 +16,13 @@
  */
 
 
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 import java.nio.file.Paths
 
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
-apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 // disable artifact generation for this project
@@ -99,10 +100,7 @@ repositories {
 }
 
 configurations {
-  bundled {
-    description 'A dependency that is shipped with geode, but is not required to compile'
-  }
-  gfshDependencies
+  gfshDependencies.extendsFrom compile  // extend from compile for version management to apply
 
   // Configurations used to download and cache web application servers for session module testing
   webServerTomcat6
@@ -135,6 +133,8 @@ task downloadWebServers(type:Copy) {
 }
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
+
   archives project(':geode-common')
   archives project(':geode-json')
   archives project(':geode-core')
@@ -232,11 +232,11 @@ dependencies {
   upgradeTestRuntime files({ downloadWebServers } )
 
   //Web servers used for session module testing
-  webServerTomcat6('apache:tomcat:' + project.'tomcat6.version' + '@zip')
-  webServerTomcat7('org.apache.tomcat:tomcat:' + project.'tomcat7.version' + '@zip')
-  webServerTomcat8('org.apache.tomcat:tomcat:' + project.'tomcat8.version' + '@zip')
-  webServerTomcat9('org.apache.tomcat:tomcat:' + project.'tomcat9.version' + '@zip')
-  webServerJetty('org.eclipse.jetty:jetty-distribution:' + project.'jetty.version' + '@zip')
+  webServerTomcat6('apache:tomcat:' + DependencyConstraints.get('tomcat6.version') + '@zip')
+  webServerTomcat7('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat7.version') + '@zip')
+  webServerTomcat8('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat8.version') + '@zip')
+  webServerTomcat9('org.apache.tomcat:tomcat:' + DependencyConstraints.get('tomcat9.version') + '@zip')
+  webServerJetty('org.eclipse.jetty:jetty-distribution:' + DependencyConstraints.get('jetty.version') + '@zip')
 
   gfshDependencies ('org.springframework:spring-web') {
     exclude module: 'spring-core'
@@ -438,7 +438,7 @@ distributions {
   }
 
   main {
-    baseName = 'apache-geode' //TODO rootProject.name
+    baseName = 'apache-geode'
     contents {
       duplicatesStrategy 'exclude'
       exclude '*.asc'
@@ -481,7 +481,6 @@ distributions {
         from project(':geode-rebalancer').configurations.runtimeClasspath
         from project(':geode-rebalancer').configurations.archives.allArtifacts.files
 
-        from configurations.bundled
         from configurations.gfshDependencies
 
         //These tasks are included as closures (wrapped in {}) because gradle may evaluate
@@ -573,4 +572,3 @@ task dumpInstalledJars(dependsOn: installDist) {
     }
   }
 }
-

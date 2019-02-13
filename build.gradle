@@ -24,7 +24,7 @@ buildscript {
   }
 
   dependencies {
-    // Newer versions of the nebula plugins require gradle-info-plugin 4.0.2 or higher, which in 
+    // Newer versions of the nebula plugins require gradle-info-plugin 4.0.2 or higher, which in
     // depends on JGit 5.0.  Conversely, gradle-git relies of JGit 4.0.
     // Be mindful of potential classpath issues when updating any of these three dependencies.
     classpath "com.netflix.nebula:nebula-project-plugin:5.1.0"
@@ -66,11 +66,6 @@ allprojects {
     buildDir = buildRoot + project.path.replace(":", "/") + "/build"
   }
 }
-
-apply from: "${scriptDir}/geode-dependency-management.gradle"
-// We will apply project versions here at the root project until they can be removed
-// Those subprojects that are properly managed by Spring will apply this plugin explicitly.
-versionManagement.applySpringDependencyManagement = false
 
 apply from: "${scriptDir}/java.gradle"
 apply from: "${scriptDir}/ide.gradle"

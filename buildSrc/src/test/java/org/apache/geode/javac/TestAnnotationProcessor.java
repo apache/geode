@@ -19,20 +19,26 @@ import org.junit.Test;
 
 public class TestAnnotationProcessor {
   private static final String VALID_CLASS_TEMPLATE = "package org.apache.geode;\n"
-      + "import org.junit.runner.RunWith;\n" + "import org.junit.runners.Parameterized;\n"
+      + "import org.junit.runner.RunWith;\n"
+      + "import org.junit.runners.Parameterized;\n"
       + "import org.junit.experimental.categories.Category;\n"
       + "import org.apache.geode.test.junit.categories.UnitTest;\n"
       + "import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;\n"
       + "@Category(UnitTest.class)\n"
       + "@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)\n"
-      + "@RunWith(Parameterized.class)\n" + "public class Test {\n" + "}\n";
+      + "@RunWith(Parameterized.class)\n"
+      + "public class Test {\n"
+      + "}\n";
 
   private static final String INVALID_CLASS_TEMPLATE = "package org.apache.geode;\n"
-      + "import org.junit.runner.RunWith;\n" + "import org.junit.runners.Parameterized;\n"
+      + "import org.junit.runner.RunWith;\n"
+      + "import org.junit.runners.Parameterized;\n"
       + "import org.junit.experimental.categories.Category;\n"
       + "import org.apache.geode.test.junit.categories.UnitTest;\n"
       + "@Category(UnitTest.class)\n"
-      + "@RunWith(Parameterized.class)\n" + "public class Test {\n" + "}\n";
+      + "@RunWith(Parameterized.class)\n"
+      + "public class Test {\n"
+      + "}\n";
 
   private TestCompiler compiler = new TestCompiler();
 

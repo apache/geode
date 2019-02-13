@@ -15,19 +15,55 @@
  * limitations under the License.
  */
 
-apply plugin: "java"
-apply plugin: "maven-publish"
+plugins {
+  id 'geode-dependency-constraints'
+  id 'java'
+  id 'maven-publish'
+}
 
-jar.enabled = false
-apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
+// Published subprojects mark themselves via the 'constrainVersionInBom' external property.
+// To correctly publish the constraint that Geode module versions must match, we must wait
+// for all subprojects to be evaluated to guarantee correct visibility of this property.
+// We exclude from this list any project in the :boms project path.
+rootProject.subprojects
+    .findAll { p -> !project(':boms').allprojects.contains(p) }
+    .each { p ->
+  logger.debug "Imposing evaluation constraint: ${project}.evaluationDependsOn ${p.path}"
+  project.evaluationDependsOn p.path
+}
+
 apply from: "${project.projectDir}/../../gradle/publish.gradle"
 
 
 publishing {
   publications {
     maven(MavenPublication) {
+      // publish.gradle injects 'from components.java', as well as some other pom configuration.
       pom.packaging 'pom'
       artifacts = []
+
+      pom {
+        withXml {
+          // For our published bom, we do not want to specify the scope of each.  Or so I'm told.
+          asNode().dependencyManagement.dependencies.dependency.each {
+            dep -> dep.remove(dep['scope'])
+          }
+        }
+        withXml {
+          // Published Geode artifacts are constrained to match the version of this BOM.
+          def thisNode = asNode()
+          project.rootProject.subprojects.each { p ->
+            if (p.findProperty('constrainVersionInBom') ) {
+              def geodeDependency =
+                  thisNode.dependencyManagement.dependencies*.appendNode('dependency')
+               geodeDependency*.appendNode('groupId')*.setValue('org.apache.geode')
+               geodeDependency*.appendNode('artifactId')*.setValue((p.findProperty('artifactName') ?: p.name))
+               geodeDependency*.appendNode('version')*.setValue(p.version.toString())
+            }
+          }
+          thisNode
+        }
+      }
     }
   }
 }
