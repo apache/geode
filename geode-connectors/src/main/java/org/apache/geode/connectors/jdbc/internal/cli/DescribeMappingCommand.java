@@ -26,7 +26,6 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_N
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -45,8 +44,8 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -171,86 +170,25 @@ public class DescribeMappingCommand extends GfshCommand {
       }
       result.getAttributeMap().forEach(sectionModel::addData);
 
-      InfoResultModel sectionModel2 =
-          resultModel.addInfo(RESULT_SECTION_NAME + "Field Mappings" + String.valueOf(i));
+      TabularResultModel fieldMappingTable =
+          resultModel.addTable(RESULT_SECTION_NAME + "Field Mappings" + String.valueOf(i));
       List<FieldMapping> fieldMappings = result.getFieldMappings();
 
-      Map<String, String> attributeMap = result.getAttributeMap();
-      sectionModel2
-          .setHeader("PDX field to JDBC column mappings for class " + attributeMap.get("pdx-name"));
-      sectionModel2.addLine("\n");
-      buildFieldInfo(sectionModel2, fieldMappings);
+      fieldMappingTable.setHeader("PDX Field to JDBC Column Mappings");
+      buildFieldMappingTable(fieldMappingTable, fieldMappings);
     }
     return resultModel;
   }
 
-  private int getColumnWidth(String columnText, int currentColumnWidth) {
-    if (columnText.trim().length() > currentColumnWidth) {
-      return columnText.trim().length();
-    }
-    return currentColumnWidth;
-  }
-
-  private void buildFieldInfo(InfoResultModel sectionModel2, List<FieldMapping> fieldMappings) {
-    int pdxLen = "PDX Field".length();
-    int pdxTypeLen = "PDX Type".length();
-    int jdbcLen = "JDBC Column".length();
-    int jdbcTypeLen = "JDBC Type".length();
-
+  private void buildFieldMappingTable(TabularResultModel fieldMappingTable,
+      List<FieldMapping> fieldMappings) {
+    fieldMappingTable.setColumnHeader("PDX Field", "PDX Type", "JDBC Column", "JDBC Type",
+        "Nullable");
     for (FieldMapping fieldMapping : fieldMappings) {
-      pdxLen = getColumnWidth(fieldMapping.getPdxName(), pdxLen);
-      pdxTypeLen = getColumnWidth(fieldMapping.getPdxType(), pdxTypeLen);
-      jdbcLen = getColumnWidth(fieldMapping.getJdbcName(), jdbcLen);
-      jdbcTypeLen = getColumnWidth(fieldMapping.getJdbcType(), jdbcTypeLen);
+      fieldMappingTable.addRow(fieldMapping.getPdxName(), fieldMapping.getPdxType(),
+          fieldMapping.getJdbcName(), fieldMapping.getJdbcType(),
+          Boolean.toString(fieldMapping.isJdbcNullable()));
     }
-    String headerRow = buildFieldHeaderRow(pdxLen, pdxTypeLen, jdbcLen, jdbcTypeLen);
-    String headerText = buildFieldHeaderText(pdxLen, pdxTypeLen, jdbcLen, jdbcTypeLen);
-    sectionModel2.addLine(headerRow);
-    sectionModel2.addLine(headerText);
-    sectionModel2.addLine(headerRow);
-    String format = ' ' + getColumnFormat(pdxLen) + ' '
-        + getColumnFormat(pdxTypeLen) + ' '
-        + getColumnFormat(jdbcLen) + ' '
-        + getColumnFormat(jdbcTypeLen) + ' '
-        + "%b";
-    for (FieldMapping fieldMapping : fieldMappings) {
-      sectionModel2.addLine(
-          String.format(format, fieldMapping.getPdxName(), fieldMapping.getPdxType(),
-              fieldMapping.getJdbcName(), fieldMapping.getJdbcType(),
-              fieldMapping.isJdbcNullable()));
-    }
-  }
-
-  private String getColumnFormat(int columnWidth) {
-    return "%-" + columnWidth + "s";
-  }
-
-  private void appendColumn(StringBuilder stringBuilder, int columnWidth) {
-    stringBuilder.append('|');
-    for (int i = 0; i < columnWidth; i++) {
-      stringBuilder.append('-');
-    }
-  }
-
-  private String buildFieldHeaderRow(int pdxLen, int pdxTypeLen, int jdbcLen, int jdbcTypeLen) {
-    StringBuilder sb = new StringBuilder();
-    appendColumn(sb, pdxLen);
-    appendColumn(sb, pdxTypeLen);
-    appendColumn(sb, jdbcLen);
-    appendColumn(sb, jdbcTypeLen);
-    appendColumn(sb, "Nullable".length());
-    sb.append('|');
-    return sb.toString();
-  }
-
-  private String buildFieldHeaderText(int pdxLen, int pdxTypeLen, int jdbcLen, int jdbcTypeLen) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(String.format(getColumnFormat(pdxLen), "|PDX Field"));
-    sb.append(String.format(getColumnFormat(pdxTypeLen), "|PDX Type"));
-    sb.append(String.format(getColumnFormat(jdbcLen), "|JDBC Column"));
-    sb.append(String.format(getColumnFormat(jdbcTypeLen), "|JDBC Type"));
-    sb.append("|Nullable|");
-    return sb.toString();
   }
 
   public ConfigurationPersistenceService checkForClusterConfiguration()

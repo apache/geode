@@ -228,13 +228,11 @@ public class DescribeMappingCommandTest {
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
-        .containsOutput("synchronous", "false")
-        .containsOutput("PDX field to JDBC column mappings for class", "class1");
+        .containsOutput("synchronous", "false");
   }
 
-
   @Test
-  public void todo() {
+  public void commandSuccessWithFieldMappings() {
     RegionMapping regionMapping = new RegionMapping();
     regionMapping.setRegionName("region1");
     regionMapping.setPdxName("class1");
@@ -246,6 +244,9 @@ public class DescribeMappingCommandTest {
     FieldMapping fieldMapping =
         new FieldMapping("pdxName1", "pdxType1", "jdbcName1", "jdbcType1", true);
     regionMapping.addFieldMapping(fieldMapping);
+    FieldMapping fieldMapping2 =
+        new FieldMapping("veryLongpdxName2", "pdxType2", "veryLongjdbcName2", "jdbcType2", false);
+    regionMapping.addFieldMapping(fieldMapping2);
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
@@ -259,8 +260,8 @@ public class DescribeMappingCommandTest {
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
         .containsOutput("synchronous", "false")
-        .containsOutput("PDX field to JDBC column mappings for class", "class1")
-        .containsOutput("pdxName1", "pdxType1", "jdbcName1", "jdbcType1", "true");
+        .containsOutput("pdxName1", "pdxType1", "jdbcName1", "jdbcType1", "true")
+        .containsOutput("veryLongpdxName2", "pdxType2", "veryLongjdbcName2", "jdbcType2", "false");
   }
 
   @Test
