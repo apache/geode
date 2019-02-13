@@ -1646,8 +1646,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   public void start() {}
 
   @Override
-  public void started() {
-    this.localAddress = services.getMessenger().getMemberID();
+  public void started() {}
+
+  public void setLocalAddress(InternalDistributedMember address) {
+    this.localAddress = address;
     GMSMember mbr = (GMSMember) this.localAddress.getNetMember();
 
     if (services.getConfig().areLocatorsPreferredAsCoordinators()) {

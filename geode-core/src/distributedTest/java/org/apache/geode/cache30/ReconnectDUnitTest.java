@@ -485,15 +485,14 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   /** this will throw an exception if location services aren't running */
   private void ensureLocationServiceRunning(VM vm) {
-    vm.invoke(new SerializableRunnable("ensureLocationServiceRunning") {
-      @Override
-      public void run() {
+    vm.invoke("ensureLocationServiceRunning", () -> {
+      await().untilAsserted(() -> {
         InternalLocator intloc = (InternalLocator) locator;
         ServerLocator serverLocator = intloc.getServerLocatorAdvisee();
         // the initialization flag in the locator's ControllerAdvisor will
         // be set if a handshake has been performed
         assertTrue(serverLocator.getDistributionAdvisor().isInitialized());
-      }
+      });
     });
   }
 
@@ -1295,7 +1294,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
-              return msys.isReconnecting();
+              return msys.isReconnecting() || msys.getReconnectedSystem() != null;
             }
 
             @Override

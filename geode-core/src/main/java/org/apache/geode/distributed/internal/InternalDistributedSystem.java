@@ -2758,6 +2758,10 @@ public class InternalDistributedSystem extends DistributedSystem
         System.setProperty(InternalLocator.INHIBIT_DM_BANNER, inhibitBanner);
       }
       dm.getMembershipManager().setReconnectCompleted(true);
+      InternalDistributedSystem newds = reconnectDS;
+      if (newds != null) {
+        newds.getDM().getMembershipManager().setReconnectCompleted(true);
+      }
       if (quorumChecker != null) {
         mbrMgr.releaseQuorumChecker(quorumChecker, reconnectDS);
       }

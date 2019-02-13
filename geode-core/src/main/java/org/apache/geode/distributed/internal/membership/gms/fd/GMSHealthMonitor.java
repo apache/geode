@@ -1009,7 +1009,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     stopServices();
   }
 
-  void setLocalAddress(InternalDistributedMember idm) {
+  @Override
+  public void setLocalAddress(InternalDistributedMember idm) {
     this.localAddress = idm;
   }
 
