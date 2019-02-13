@@ -123,6 +123,22 @@ public class CreateRegionCommandDUnitTest {
   }
 
   @Test
+  public void multipleTemplateRegionTypes() throws Exception {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + " --type=REPLICATE --group=group1")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + " --type=REPLICATE_PROXY --group=group2")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("create region --name=failed --template-region=" + regionName)
+        .statusIsError()
+        .hasInfoSection().hasOutput()
+        .contains("Multiple types of template region /multipleTemplateRegionTypes exist.");
+  }
+
+  @Test
   public void testCreateRegionWithGoodCompressor() throws Exception {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --name=" + regionName

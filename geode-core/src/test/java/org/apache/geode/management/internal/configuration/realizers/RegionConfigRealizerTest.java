@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.configuration.realizers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
 
@@ -41,7 +40,7 @@ public class RegionConfigRealizerTest {
     cache = mock(InternalCache.class);
     regionFactory = mock(RegionFactory.class);
     when(cache.createRegionFactory()).thenReturn(regionFactory);
-    realizer = spy(RegionConfigRealizer.class);
+    realizer = new RegionConfigRealizer();
   }
 
   @Test

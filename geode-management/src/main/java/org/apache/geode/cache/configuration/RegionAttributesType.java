@@ -501,6 +501,20 @@ public class RegionAttributesType implements Serializable {
   }
 
   /**
+   * update the region time to live using timeout, action or expiry. If all three are null, there
+   * would be no update to the existing value
+   *
+   * @param timeout could be null
+   * @param action could be null
+   * @param expiry could be null
+   */
+  public void updateRegionTimeToLive(Integer timeout,
+      ExpirationAction action, ClassName expiry) {
+    regionTimeToLive = ExpirationAttributesType.combine(regionTimeToLive,
+        ExpirationAttributesType.generate(timeout, action, expiry));
+  }
+
+  /**
    * Gets the value of the regionIdleTime property.
    *
    * possible object is
@@ -521,6 +535,21 @@ public class RegionAttributesType implements Serializable {
   public void setRegionIdleTime(ExpirationAttributesType value) {
     this.regionIdleTime = value;
   }
+
+  /**
+   * update the region idle time using timeout, action or expiry. If all three are null, there
+   * would be no update to the existing value
+   *
+   * @param timeout could be null
+   * @param action could be null
+   * @param expiry could be null
+   */
+  public void updateRegionIdleTime(Integer timeout,
+      ExpirationAction action, ClassName expiry) {
+    regionIdleTime = ExpirationAttributesType.combine(regionIdleTime,
+        ExpirationAttributesType.generate(timeout, action, expiry));
+  }
+
 
   /**
    * Gets the value of the entryTimeToLive property.
@@ -545,6 +574,20 @@ public class RegionAttributesType implements Serializable {
   }
 
   /**
+   * update the entry time to live using timeout, action or expiry. If all three are null, there
+   * would be no update to the existing value
+   *
+   * @param timeout could be null
+   * @param action could be null
+   * @param expiry could be null
+   */
+  public void updateEntryTimeToLive(Integer timeout,
+      ExpirationAction action, ClassName expiry) {
+    entryTimeToLive = ExpirationAttributesType.combine(entryTimeToLive,
+        ExpirationAttributesType.generate(timeout, action, expiry));
+  }
+
+  /**
    * Gets the value of the entryIdleTime property.
    *
    * possible object is
@@ -564,6 +607,20 @@ public class RegionAttributesType implements Serializable {
    */
   public void setEntryIdleTime(ExpirationAttributesType value) {
     this.entryIdleTime = value;
+  }
+
+  /**
+   * update the entry idle time using timeout, action or expiry. If all three are null, there
+   * would be no update to the existing value
+   *
+   * @param timeout could be null
+   * @param action could be null
+   * @param expiry could be null
+   */
+  public void updateEntryIdleTime(Integer timeout,
+      ExpirationAction action, ClassName expiry) {
+    entryIdleTime = ExpirationAttributesType.combine(entryIdleTime,
+        ExpirationAttributesType.generate(timeout, action, expiry));
   }
 
   /**

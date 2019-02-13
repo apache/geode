@@ -74,9 +74,9 @@ public class CreateRegionCommandTest {
 
   @Test
   public void missingName() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command, "create region");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    parser.executeAndAssertThat(command, "create region")
+        .statusIsError()
+        .hasInfoSection().hasOutput().contains("Invalid command");
   }
 
   @Test

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 import joptsimple.internal.Strings;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -40,7 +42,6 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
-import org.apache.geode.cache.configuration.RegionAttributesType.ExpirationAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -227,47 +228,55 @@ public class CreateRegionCommand extends SingleGfshCommand {
     if (regionShortcut != null) {
       regionConfig.setType(regionShortcut.name());
     }
-    // if cluster config is enabled, find the template configuration from cluster config
-    else if (persistenceService != null) {
-      RegionConfig templateRegionConfig = null;
-      for (String group : persistenceService.getGroups()) {
-        CacheConfig cacheConfig = persistenceService.getCacheConfig(group, true);
-        templateRegionConfig =
-            CacheElement.findElement(cacheConfig.getRegions(), templateRegion.substring(1));
-        if (templateRegionConfig != null) {
-          break;
+    // get the attributes from the template region
+    else {
+      List<RegionConfig> templateRegionConfigs = new ArrayList<>();
+      // get the potential template region config from the cluster configuration
+      if (persistenceService != null) {
+        templateRegionConfigs = persistenceService.getGroups().stream()
+            .flatMap(g -> persistenceService.getCacheConfig(g, true).getRegions().stream())
+            .filter(c -> c.getName().equals(templateRegion.substring(1)))
+            .collect(Collectors.toList());
+      }
+      // as a last resort, go the member that hosts this region to retrieve the template's region
+      // xml
+      else {
+        // we would need to execute a function to the member hosting the template region to get the
+        // region xml. cluster configuration isn't always enabled, so we cannot guarantee that we
+        // can
+        // get the template region configuration from the cluster configuration.
+        Set<DistributedMember> regionAssociatedMembers = findMembersForRegion(templateRegion);
+
+        if (!regionAssociatedMembers.isEmpty()) {
+          List<CliFunctionResult> regionXmlResults = executeAndGetFunctionResult(
+              FetchRegionAttributesFunction.INSTANCE, templateRegion, regionAssociatedMembers);
+
+          JAXBService jaxbService = new JAXBService(CacheConfig.class);
+          templateRegionConfigs = regionXmlResults.stream().filter(CliFunctionResult::isSuccessful)
+              .map(CliFunctionResult::getResultObject).map(String.class::cast)
+              .map(s -> jaxbService.unMarshall(s, RegionConfig.class))
+              .collect(Collectors.toList());
         }
       }
-      if (templateRegionConfig == null) {
-        return ResultModel.createError("Template region " + templateRegion + " does not exist.");
-      } else {
-        regionConfig = templateRegionConfig;
-      }
-    }
-    // as a last resort, go the member that hosts this region to retrieve the template's region xml
-    else {
-      // we would need to execute a function to the member hosting the template region to get the
-      // region xml. cluster configuration isn't always enabled, so we cannot guarantee that we can
-      // get the template region configuration from the cluster configuration.
-      Set<DistributedMember> regionAssociatedMembers = findAnyMembersForRegion(templateRegion);
-      if (regionAssociatedMembers.isEmpty()) {
+
+      if (templateRegionConfigs.isEmpty()) {
         return ResultModel.createError("Template region " + templateRegion + " does not exist.");
       }
-      List<CliFunctionResult> regionXmlResult = executeAndGetFunctionResult(
-          FetchRegionAttributesFunction.INSTANCE, templateRegion, regionAssociatedMembers);
-      String regionXml = (String) regionXmlResult.stream()
-          .filter(CliFunctionResult::isSuccessful)
-          .findFirst().get().getResultObject();
-
-      if (regionXml == null) {
-        return ResultModel
-            .createError("Failed to retrieve attributes of template region " + templateRegion);
+      if (templateRegionConfigs.size() == 1) {
+        regionConfig = templateRegionConfigs.get(0);
       }
-
-      // we only care about region attributes part, so we don't need other extensions' xsd classes
-      JAXBService jaxbService = new JAXBService(CacheConfig.class);
-      regionConfig = jaxbService.unMarshall(regionXml, RegionConfig.class);
-      regionConfig.getCustomRegionElements().clear();
+      // found more than one configuration with this name. fail ff they have different attributes.
+      else {
+        RegionConfig first = templateRegionConfigs.get(0);
+        for (int i = 1; i < templateRegionConfigs.size(); i++) {
+          if (!EqualsBuilder.reflectionEquals(first, templateRegionConfigs.get(i), false, null,
+              true)) {
+            return ResultModel.createError("Multiple types of template region " + templateRegion
+                + " exist. Can not resolve template region attributes.");
+          }
+        }
+        regionConfig = first;
+      }
     }
 
     regionConfig.setName(regionPathData.getName());
@@ -427,22 +436,13 @@ public class CreateRegionCommand extends SingleGfshCommand {
       regionAttributes.setDiskSynchronous(diskSynchronous);
     }
 
-    regionAttributes.setEntryIdleTime(ExpirationAttributesType.combine(
-        regionAttributes.getEntryIdleTime(), ExpirationAttributesType
-            .generate(entryExpirationIdleTime, entryExpirationIdleTimeAction,
-                entryIdleTimeCustomExpiry)));
-
-    regionAttributes.setEntryTimeToLive(ExpirationAttributesType.combine(
-        regionAttributes.getEntryTimeToLive(), ExpirationAttributesType
-            .generate(entryExpirationTTL, entryExpirationTTLAction, entryTTLCustomExpiry)));
-
-    regionAttributes.setRegionIdleTime(ExpirationAttributesType.combine(
-        regionAttributes.getRegionIdleTime(), ExpirationAttributesType
-            .generate(regionExpirationIdleTime, regionExpirationIdleTimeAction, null)));
-
-    regionAttributes.setRegionTimeToLive(ExpirationAttributesType.combine(
-        regionAttributes.getRegionTimeToLive(), ExpirationAttributesType
-            .generate(regionExpirationTTL, regionExpirationTTLAction, null)));
+    regionAttributes.updateEntryIdleTime(entryExpirationIdleTime, entryExpirationIdleTimeAction,
+        entryIdleTimeCustomExpiry);
+    regionAttributes.updateEntryTimeToLive(entryExpirationTTL, entryExpirationTTLAction,
+        entryTTLCustomExpiry);
+    regionAttributes.updateRegionIdleTime(regionExpirationIdleTime, regionExpirationIdleTimeAction,
+        null);
+    regionAttributes.updateRegionTimeToLive(regionExpirationTTL, regionExpirationTTLAction, null);
 
     // unlike expiration attributes, if any single eviction attributes is set, we will replace
     // the template eviction attributes with this new eviction attributes. we do not combine
@@ -589,10 +589,12 @@ public class CreateRegionCommand extends SingleGfshCommand {
     }
 
     String existingDataPolicy = regionBean.getRegionType();
-    // either C is local, or E is local or E and C are both non-proxy regions. this is to make
-    // sure local, replicate or partition regions have unique names across the entire cluster
-    if (regionShortcut.isLocal() || existingDataPolicy.equals("NORMAL") || !regionShortcut.isProxy()
-        && (regionBean.getMemberCount() > regionBean.getEmptyNodes())) {
+    // fail if either C is local, or E is local or E and C are both non-proxy regions. this is to
+    // make sure local, replicate or partition regions have unique names across the entire cluster
+    boolean existingRegionIsNotProxy = regionBean.getMemberCount() > regionBean.getEmptyNodes();
+    boolean toBeCreatedIsNotProxy = !regionShortcut.isProxy();
+    if (regionShortcut.isLocal() || existingDataPolicy.equals("NORMAL") || (toBeCreatedIsNotProxy
+        && existingRegionIsNotProxy)) {
       throw new EntityExistsException(
           String.format("Region %s already exists on the cluster.", regionPath));
     }
