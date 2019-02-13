@@ -145,7 +145,7 @@ public class DescribeMappingCommand extends GfshCommand {
         regionConfig,
         group)) {
       results.add(buildDescribeMappingResult(mapping, regionConfig.getName(),
-          MappingCommandUtils.isMappingAsync(cacheConfig, regionConfig), group));
+          MappingCommandUtils.isMappingSynchronous(cacheConfig, regionConfig), group));
     }
     return results;
   }

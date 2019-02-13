@@ -69,7 +69,7 @@ public class MappingCommandUtils {
     return results;
   }
 
-  public static boolean isMappingAsync(CacheConfig cacheConfig, RegionConfig regionConfig) {
+  public static boolean isMappingSynchronous(CacheConfig cacheConfig, RegionConfig regionConfig) {
     return findAsyncEventQueue(cacheConfig, regionConfig) == null;
   }
 
