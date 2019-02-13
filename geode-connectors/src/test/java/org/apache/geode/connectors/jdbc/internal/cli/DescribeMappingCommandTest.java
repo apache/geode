@@ -36,7 +36,6 @@ import org.mockito.Mock;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.ConfigurationPersistenceService;

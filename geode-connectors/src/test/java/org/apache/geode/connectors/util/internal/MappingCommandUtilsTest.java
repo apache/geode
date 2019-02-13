@@ -16,22 +16,21 @@ package org.apache.geode.connectors.util.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-
 import java.util.List;
-import org.junit.Before ;
+
+import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.cli.PreconditionException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheConfig.AsyncEventQueue;
 
 
 public class MappingCommandUtilsTest {
@@ -53,7 +52,8 @@ public class MappingCommandUtilsTest {
   @Test
   public void getCacheConfigReturnsCorrectCacheConfig() throws PreconditionException {
     when(configurationPersistenceService.getCacheConfig(GROUPNAME)).thenReturn(cacheConfig);
-    CacheConfig result = MappingCommandUtils.getCacheConfig(configurationPersistenceService, GROUPNAME);
+    CacheConfig result =
+        MappingCommandUtils.getCacheConfig(configurationPersistenceService, GROUPNAME);
 
     assertThat(result).isEqualTo(cacheConfig);
   }
@@ -76,12 +76,13 @@ public class MappingCommandUtilsTest {
     RegionMapping validRegionMapping = mock(RegionMapping.class);
     CacheElement invalidRegionMapping = mock(CacheElement.class);
     List<CacheElement> cacheElements = new ArrayList<>();
-    cacheElements.add((CacheElement)validRegionMapping);
+    cacheElements.add((CacheElement) validRegionMapping);
     cacheElements.add(invalidRegionMapping);
 
     when(regionConfig.getCustomRegionElements()).thenReturn(cacheElements);
 
-    List<RegionMapping> results = MappingCommandUtils.getMappingsFromRegionConfig(cacheConfig, regionConfig, GROUPNAME);
+    List<RegionMapping> results =
+        MappingCommandUtils.getMappingsFromRegionConfig(cacheConfig, regionConfig, GROUPNAME);
 
     assertThat(results.size()).isEqualTo(1);
     assertThat(results.get(0)).isEqualTo(validRegionMapping);
@@ -98,7 +99,8 @@ public class MappingCommandUtilsTest {
   public void testFindAsyncEventQueueReturnsCorrectObject() {
     AsyncEventQueue asyncEventQueue = mock(AsyncEventQueue.class);
     AsyncEventQueue wrongAsyncEventQueue = mock(AsyncEventQueue.class);
-    when(asyncEventQueue.getId()).thenReturn(MappingCommandUtils.createAsyncEventQueueName(TESTREGION));
+    when(asyncEventQueue.getId())
+        .thenReturn(MappingCommandUtils.createAsyncEventQueueName(TESTREGION));
     when(wrongAsyncEventQueue.getId()).thenReturn("Wrong Id");
 
     List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
@@ -117,7 +119,8 @@ public class MappingCommandUtilsTest {
   public void testIsMappingAsyncReturnsCorrectValue() {
     AsyncEventQueue asyncEventQueue = mock(AsyncEventQueue.class);
     AsyncEventQueue wrongAsyncEventQueue = mock(AsyncEventQueue.class);
-    when(asyncEventQueue.getId()).thenReturn(MappingCommandUtils.createAsyncEventQueueName(TESTREGION));
+    when(asyncEventQueue.getId())
+        .thenReturn(MappingCommandUtils.createAsyncEventQueueName(TESTREGION));
     when(wrongAsyncEventQueue.getId()).thenReturn("Wrong Id");
 
     List<AsyncEventQueue> asyncEventQueues = new ArrayList<>();
@@ -132,4 +135,3 @@ public class MappingCommandUtilsTest {
     assertThat(result).isEqualTo(false);
   }
 }
-
