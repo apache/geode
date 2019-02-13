@@ -15,12 +15,15 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -148,9 +151,8 @@ public class DLockGrantor {
    */
   private final TXReservationMgr resMgr = new TXReservationMgr(false);
 
-  private final Map<InternalDistributedMember, Long> membersDepartedTime = new HashMap();
-  private final int membersDepartedTimeKeptSize = 10;
-  private final long departedMemberKeptInMapMilliSeconds = 24 * 60 * 60 * 1000;
+  private final Map<InternalDistributedMember, Long> membersDepartedTime = new LinkedHashMap();
+  private final long departedMemberKeptInMapMilliSeconds = DAYS.toMillis(1);
 
   /**
    * Enforces waiting until this grantor is initialized. Used to block all lock requests until
@@ -504,13 +506,8 @@ public class DLockGrantor {
         }
 
         DLockBatch batch = (DLockBatch) request.getObjectName();
-        synchronized (membersDepartedTime) {
-          // the transaction host/txLock requester has departed.
-          if (membersDepartedTime.containsKey(batch.getOwner())) {
-            throw new TransactionDataNodeHasDepartedException("Transaction host has been departed");
-          }
-          resMgr.makeReservation((IdentityArrayList) batch.getReqs());
-        }
+        checkIfHostDeparted(batch.getOwner());
+        resMgr.makeReservation((IdentityArrayList) batch.getReqs());
         if (isTraceEnabled_DLS) {
           logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] granting {}",
               batch.getBatchId());
@@ -525,6 +522,17 @@ public class DLockGrantor {
     }
   }
 
+  private void checkIfHostDeparted(InternalDistributedMember owner) {
+    // Already held batchLocks; hold membersDepartedTime lock just for clarity
+    synchronized (membersDepartedTime) {
+      // the transaction host/txLock requester has departed.
+      if (membersDepartedTime.containsKey(owner)) {
+        throw new TransactionDataNodeHasDepartedException(
+            "The transaction host " + owner + " is no longer a member of the cluster.");
+      }
+    }
+  }
+
   /**
    * Returns transaction optimized lock batches that were created by the specified owner.
    * <p>
@@ -534,12 +542,12 @@ public class DLockGrantor {
    * @return lock batches that were created by owner
    */
   public DLockBatch[] getLockBatches(InternalDistributedMember owner) {
-    // put owner into the map first so that no new threads will handle in-flight requests
-    // from the departed member to lock keys
-    recordMemberDepartedTime(owner);
-
     // Key: Object batchId, Value: DLockBatch batch
     synchronized (this.batchLocks) {
+      // put owner into the map first so that no new threads will handle in-flight requests
+      // from the departed member to lock keys
+      recordMemberDepartedTime(owner);
+
       List batchList = new ArrayList();
       for (Iterator iter = this.batchLocks.values().iterator(); iter.hasNext();) {
         DLockBatch batch = (DLockBatch) iter.next();
@@ -552,18 +560,22 @@ public class DLockGrantor {
   }
 
   void recordMemberDepartedTime(InternalDistributedMember owner) {
+    // Already held batchLocks; hold membersDepartedTime lock just for clarity
     synchronized (membersDepartedTime) {
-      if (membersDepartedTime.size() >= membersDepartedTimeKeptSize) {
-        // remove all departed members kept in map longer than 1 day
-        membersDepartedTime.entrySet()
-            .removeIf(entries -> entries.getValue() < departedMembersToBeExpiredTime());
+      long currentTime = getCurrentTime();
+      for (Iterator iterator = membersDepartedTime.values().iterator(); iterator.hasNext();) {
+        if ((long) iterator.next() < currentTime - departedMemberKeptInMapMilliSeconds) {
+          iterator.remove();
+        } else {
+          break;
+        }
       }
-      membersDepartedTime.put(owner, System.currentTimeMillis());
+      membersDepartedTime.put(owner, currentTime);
     }
   }
 
-  long departedMembersToBeExpiredTime() {
-    return System.currentTimeMillis() - departedMemberKeptInMapMilliSeconds;
+  long getCurrentTime() {
+    return System.currentTimeMillis();
   }
 
   @VisibleForTesting

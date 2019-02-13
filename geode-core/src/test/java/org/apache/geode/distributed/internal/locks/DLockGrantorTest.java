@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.locks;
 
+import static java.util.concurrent.TimeUnit.DAYS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -74,12 +75,15 @@ public class DLockGrantorTest {
   @Test
   public void recordMemberDepartedTimeRemovesExpiredMembers() {
     DLockGrantor spy = spy(grantor);
-    for (int i = 0; i < 10; i++) {
+    long currentTime = System.currentTimeMillis();
+    doReturn(currentTime).doReturn(currentTime).doReturn(currentTime + 1 + DAYS.toMillis(1))
+        .when(spy).getCurrentTime();
+
+    for (int i = 0; i < 2; i++) {
       spy.recordMemberDepartedTime(mock(InternalDistributedMember.class));
     }
-    assertThat(spy.getMembersDepartedTimeRecords().size()).isEqualTo(10);
+    assertThat(spy.getMembersDepartedTimeRecords().size()).isEqualTo(2);
 
-    doReturn(System.currentTimeMillis() + 1).when(spy).departedMembersToBeExpiredTime();
     InternalDistributedMember owner = mock(InternalDistributedMember.class);
     spy.recordMemberDepartedTime(owner);
 
