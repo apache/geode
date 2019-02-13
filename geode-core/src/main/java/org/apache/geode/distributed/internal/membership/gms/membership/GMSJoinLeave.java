@@ -998,6 +998,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
 
   private void processViewMessage(final InstallViewMessage m) {
+    logger.debug("processing membership view message {}", m);
 
     NetView view = m.getView();
 
@@ -1032,10 +1033,25 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     if (m.isPreparing()) {
       if (this.preparedView != null && this.preparedView.getViewId() >= view.getViewId()) {
-        services.getMessenger()
-            .send(new ViewAckMessage(view.getViewId(), m.getSender(), this.preparedView));
+        if (this.preparedView.getViewId() == view.getViewId() &&
+            this.preparedView.getCreator().equals(view.getCreator())) {
+          // this can happen if we received two prepares during auto-reconnect
+        } else {
+          services.getMessenger()
+              .send(new ViewAckMessage(view.getViewId(), m.getSender(), this.preparedView));
+        }
       } else {
         this.preparedView = view;
+        // complete filling in the member ID of this node, if possible
+        for (InternalDistributedMember mbr : view.getMembers()) {
+          if (this.localAddress.equals(mbr)) {
+            this.birthViewId = mbr.getVmViewId();
+            this.localAddress.setVmViewId(this.birthViewId);
+            GMSMember me = (GMSMember) this.localAddress.getNetMember();
+            me.setBirthViewId(birthViewId);
+            break;
+          }
+        }
         ackView(m);
       }
     } else { // !preparing

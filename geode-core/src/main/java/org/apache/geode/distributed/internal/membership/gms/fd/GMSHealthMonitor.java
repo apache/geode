@@ -317,7 +317,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (playingDead) {
           logger.debug("HealthMonitor: simulating sick member in health check");
         } else if (uuidLSBs == myUUID.getLeastSignificantBits()
-            && uuidMSBs == myUUID.getMostSignificantBits() && vmViewId == myVmViewId) {
+            && uuidMSBs == myUUID.getMostSignificantBits()
+            && (vmViewId == myVmViewId || myVmViewId < 0)) {
           logger.debug("HealthMonitor: sending OK reply");
           out.write(OK);
           out.flush();

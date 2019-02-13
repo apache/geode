@@ -16,6 +16,7 @@ package org.apache.geode.cache30;
 
 import static java.lang.System.out;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.DataPolicy.REPLICATE;
 import static org.apache.geode.cache.LossAction.RECONNECT;
@@ -406,7 +407,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             System.out.println("ds.isReconnecting() = " + ds.isReconnecting());
             boolean failure = true;
             try {
-              ds.waitUntilReconnected(60, SECONDS);
+              ds.waitUntilReconnected(getTimeout().getValueInMS(), MILLISECONDS);
               savedSystem = ds.getReconnectedSystem();
               locator = (InternalLocator) getLocator();
               assertTrue("Expected system to be restarted", ds.getReconnectedSystem() != null);
@@ -515,7 +516,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for ds to begin reconnecting";
               }
             });
-            long waitTime = 120;
+            long waitTime = 600;
             System.out.println("VM" + VM.getCurrentVMNum() + " waiting up to "
                 + waitTime + " seconds for reconnect to complete");
             try {
@@ -1103,7 +1104,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         });
         out.println("entering reconnect wait for " + cache);
         try {
-          cache.waitUntilReconnected(20, SECONDS);
+          cache.waitUntilReconnected(5, MINUTES);
         } catch (InterruptedException e) {
           fail("interrupted");
         }
