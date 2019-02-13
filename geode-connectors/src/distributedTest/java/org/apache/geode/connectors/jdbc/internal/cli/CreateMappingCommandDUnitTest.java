@@ -477,8 +477,8 @@ public class CreateMappingCommandDUnitTest {
       pdxFieldNames.add(fieldMapping.getPdxName());
     }
     assertThat(pdxFieldNames.size()).isEqualTo(2);
-    assertThat(pdxFieldNames).contains("MYID"); // pdx types built from metadata
-    assertThat(pdxFieldNames).contains("NAME"); // use the metadata field names
+    assertThat(pdxFieldNames).contains("");
+    assertThat(pdxFieldNames).contains("");
   }
 
   private static void assertValidEmployeeMappingOnServer(RegionMapping mapping, String regionName,
@@ -834,12 +834,10 @@ public class CreateMappingCommandDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    String justRegion = regionName.startsWith("/") ? regionName.substring(1) : regionName;
-
     server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isEqualTo(justRegion);
+      assertThat(mapping.getTableName()).isNull();
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
@@ -850,7 +848,7 @@ public class CreateMappingCommandDUnitTest {
     server2.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isEqualTo(justRegion);
+      assertThat(mapping.getTableName()).isNull();
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
@@ -859,7 +857,7 @@ public class CreateMappingCommandDUnitTest {
     server3.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isEqualTo(justRegion);
+      assertThat(mapping.getTableName()).isNull();
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
@@ -868,7 +866,7 @@ public class CreateMappingCommandDUnitTest {
     server4.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
       assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(mapping.getTableName()).isEqualTo(justRegion);
+      assertThat(mapping.getTableName()).isNull();
       assertThat(mapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredOnServer(regionName, false);
       validateAsyncEventQueueCreatedOnServer(regionName, false);
@@ -877,7 +875,7 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       RegionMapping regionMapping = getRegionMappingFromClusterConfig(regionName, null);
       assertThat(regionMapping.getDataSourceName()).isEqualTo("connection");
-      assertThat(regionMapping.getTableName()).isEqualTo(justRegion);
+      assertThat(regionMapping.getTableName()).isNull();
       assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
       validateRegionAlteredInClusterConfig(regionName, null, false);
       validateAsyncEventQueueCreatedInClusterConfig(regionName, null, false);

@@ -114,11 +114,6 @@ public class CreateMappingCommand extends SingleGfshCommand {
       regionName = regionName.substring(1);
     }
 
-    // SAJ
-    if (table == null) {
-      table = regionName;
-    }
-
     Set<DistributedMember> targetMembers = findMembers(groups, null);
     RegionMapping mapping =
         new RegionMapping(regionName, pdxName, table, dataSourceName, id, catalog, schema);
