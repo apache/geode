@@ -42,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.logging.LogService;
 
@@ -63,18 +64,23 @@ public class MBeanUtil {
   private static final String REFRESH_TIMER_NAME = DEFAULT_DOMAIN + ":type=RefreshTimer";
 
   /* indicates whether the mbeanServer, registry & refreshTimer are started */
+  @MakeNotStatic
   private static boolean isStarted;
 
   /** The Commons-Modeler configuration registry for our managed beans */
+  @MakeNotStatic
   private static Registry registry;
 
   /** The <code>MBeanServer</code> for this application */
+  @MakeNotStatic
   private static MBeanServer mbeanServer;
 
   /** MBean name of the Timer which handles refresh notifications */
+  @MakeNotStatic
   private static ObjectName refreshTimerObjectName;
 
   /** Actual TimerMBean responsible for refresh notifications */
+  @MakeNotStatic
   private static TimerMBean refreshTimer;
 
   /**
@@ -82,10 +88,12 @@ public class MBeanUtil {
    * <p>
    * map: key=ObjectName, value=map: key=RefreshNotificationType, value=timerNotificationId
    */
+  @MakeNotStatic
   private static final Map<NotificationListener, Map<RefreshNotificationType, Integer>> refreshClients =
       new HashMap<NotificationListener, Map<RefreshNotificationType, Integer>>();
 
   /** key=ObjectName, value=ManagedResource */
+  @MakeNotStatic
   private static final Map<ObjectName, ManagedResource> managedResources =
       new HashMap<ObjectName, ManagedResource>();
 

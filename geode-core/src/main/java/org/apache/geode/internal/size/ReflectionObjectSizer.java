@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
@@ -44,8 +45,10 @@ import org.apache.geode.internal.statistics.StatisticsManager;
  */
 public class ReflectionObjectSizer implements ObjectSizer, Serializable {
 
+  @Immutable
   private static final ReflectionObjectSizer INSTANCE = new ReflectionObjectSizer();
 
+  @Immutable
   private static final ObjectFilter FILTER = new ObjectFilter() {
 
     @Override

@@ -16,20 +16,26 @@ package org.apache.geode.admin.jmx.internal;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * Type-safe definition for refresh notifications.
  *
  * @since GemFire 3.5
  *
  */
+@Immutable
 public class RefreshNotificationType implements java.io.Serializable {
   private static final long serialVersionUID = 4376763592395613794L;
 
   /** Notify StatisticResource to refresh statistics */
+  @Immutable
   public static final RefreshNotificationType STATISTIC_RESOURCE_STATISTICS =
       new RefreshNotificationType("GemFire.Timer.StatisticResource.statistics.refresh", "refresh");
 
   /** Notify SystemMember to refresh config */
+  @Immutable
   public static final RefreshNotificationType SYSTEM_MEMBER_CONFIG =
       new RefreshNotificationType("GemFire.Timer.SystemMember.config.refresh", "refresh");
 
@@ -43,8 +49,10 @@ public class RefreshNotificationType implements java.io.Serializable {
   /** int used as ordinal to represent this Scope */
   public final int ordinal = nextOrdinal++;
 
+  @MakeImmutable
   private static int nextOrdinal = 0;
 
+  @Immutable
   private static final RefreshNotificationType[] VALUES =
       {STATISTIC_RESOURCE_STATISTICS, SYSTEM_MEMBER_CONFIG};
 

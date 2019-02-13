@@ -19,12 +19,14 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 
 /**
  * Manages registration of {@link LoggingSessionListener}s and provides notifications to them.
  */
 public class LoggingSessionListeners {
 
+  @MakeNotStatic
   private static final LoggingSessionListeners INSTANCE = new LoggingSessionListeners();
 
   public static LoggingSessionListeners get() {

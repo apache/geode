@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.logging.LogWriterLevel;
 
 /**
@@ -29,7 +30,9 @@ import org.apache.geode.internal.logging.LogWriterLevel;
  */
 public class LogLevel {
 
+  @MakeImmutable
   private static final Map<String, Level> ANY_NAME_TO_LEVEL = new HashMap<>();
+  @MakeImmutable
   private static final Map<String, LogWriterLevel> ANY_NAME_TO_LOGWRITERLEVEL = new HashMap<>();
 
   static {

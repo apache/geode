@@ -15,6 +15,7 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 
@@ -23,6 +24,7 @@ import org.apache.geode.distributed.internal.QueueStatHelper;
  * connection to the distributed system.
  *
  */
+@Immutable
 public class DummyDLockStats implements DistributedLockStats {
 
   @Override

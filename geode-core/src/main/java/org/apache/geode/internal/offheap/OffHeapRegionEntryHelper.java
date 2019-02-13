@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.offheap;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.DiskId;
@@ -46,6 +47,7 @@ public class OffHeapRegionEntryHelper {
   protected static final long TOMBSTONE_ADDRESS = 8L << 1;
   public static final int MAX_LENGTH_FOR_DATA_AS_ADDRESS = 8;
 
+  @Immutable
   private static final Token[] addrToObj =
       new Token[] {null, Token.INVALID, Token.LOCAL_INVALID, Token.DESTROYED, Token.REMOVED_PHASE1,
           Token.REMOVED_PHASE2, Token.END_OF_STREAM, Token.NOT_AVAILABLE, Token.TOMBSTONE,};

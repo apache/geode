@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
@@ -78,6 +79,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   private volatile List<ServerLocation> cachedLocators;
   private final Object cachedLocatorsLock = new Object();
 
+  @MakeNotStatic
   private static final AtomicInteger profileSN = new AtomicInteger();
 
   private static final long SERVER_LOAD_LOG_INTERVAL = (60 * 60 * 1000); // log server load once an

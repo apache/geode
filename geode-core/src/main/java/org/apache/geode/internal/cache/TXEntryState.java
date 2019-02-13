@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
@@ -1975,6 +1976,7 @@ public class TXEntryState implements Releasable {
     }
   }
 
+  @Immutable
   private static final TXEntryStateFactory factory = new TXEntryStateFactory() {
 
     @Override

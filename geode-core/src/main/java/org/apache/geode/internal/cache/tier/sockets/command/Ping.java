@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
@@ -28,6 +29,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class Ping extends BaseCommand {
 
+  @Immutable
   private static final Ping singleton = new Ping();
 
   public static Command getCommand() {

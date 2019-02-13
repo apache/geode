@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.internal.ConnectionImpl;
 import org.apache.geode.cache.execute.Function;
@@ -51,6 +52,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class ExecuteRegionFunctionSingleHop extends BaseCommand {
 
+  @Immutable
   private static final ExecuteRegionFunctionSingleHop singleton =
       new ExecuteRegionFunctionSingleHop();
 

@@ -20,6 +20,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.security.PrivilegedAction;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * A {@link PrintWriter} that collects its output in a string builder, which can then be used to
  * construct a string. This completely avoids any locking etc.
@@ -29,6 +31,7 @@ public class StringPrintWriter extends PrintWriter {
 
   private final StringBuilder sb;
 
+  @Immutable
   private static final Writer dummyLock = new StringWriter();
 
   private final String lineSep;

@@ -201,6 +201,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidValueException;
 import org.apache.geode.UnmodifiableException;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.AbstractConfig;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
@@ -895,6 +897,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     return ca.type();
   }
 
+  @Immutable
   static final Map dcAttDescriptions;
 
   static {
@@ -1515,6 +1518,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     }
   }
 
+  @MakeImmutable
   static final Map<String, Method> checkers = new HashMap<>();
 
   static {

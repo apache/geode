@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -36,6 +37,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 public abstract class AbstractDataSource implements Serializable, DataSource, AutoCloseable {
 
+  @Immutable
   private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
 
   protected transient PrintWriter dataSourcePW;

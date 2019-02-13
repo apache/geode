@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.internal.index;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
@@ -37,6 +38,7 @@ public class MapIndexStore implements IndexStore {
   Region region;
   private boolean indexOnValues = false;
   private boolean indexOnRegionKeys = false;
+  @MakeNotStatic("Is this a bug that this is even static?")
   private static boolean needToCallHasNext = true;
 
   public MapIndexStore(IndexMap indexMap, Region region) {

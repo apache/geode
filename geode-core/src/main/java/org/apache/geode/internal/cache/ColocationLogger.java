@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
@@ -43,6 +44,7 @@ public class ColocationLogger implements Runnable {
    * Sleep period (milliseconds) between posting log entries.
    */
   private static final int DEFAULT_LOG_INTERVAL = 30000;
+  @MutableForTesting
   private static int LOG_INTERVAL = DEFAULT_LOG_INTERVAL;
 
   /**

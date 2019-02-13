@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -44,9 +46,11 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
 
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final Optional<Integer> EVICTION_SCAN_MAX_THREADS = SystemPropertyHelper
       .getProductIntegerProperty(SystemPropertyHelper.EVICTION_SCAN_MAX_THREADS);
 
+  @MakeNotStatic
   private static final ExecutorService SINGLETON_EXECUTOR = createExecutor();
 
   private static final int DEFAULT_EVICTION_SCAN_THRESHOLD_PERCENT = 25;

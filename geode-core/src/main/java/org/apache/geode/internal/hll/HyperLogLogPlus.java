@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.executor.hll.Varint;
 
 
@@ -66,10 +67,12 @@ public class HyperLogLogPlus implements ICardinality, Serializable {
 
   // threshold and bias data taken from google's bias correction data set:
   // https://docs.google.com/document/d/1gyjfMHy43U9OWBXxfaeG-3MjGzejW1dlpyMwEYAAWEI/view?fullscreen#
-  static final double[] thresholdData =
+  @Immutable
+  private static final double[] thresholdData =
       {10, 20, 40, 80, 220, 400, 900, 1800, 3100, 6500, 15500, 20000, 50000, 120000, 350000};
 
-  static final double[][] rawEstimateData = {
+  @Immutable
+  private static final double[][] rawEstimateData = {
       // precision 4
       {11, 11.717, 12.207, 12.7896, 13.2882, 13.8204, 14.3772, 14.9342, 15.5202, 16.161, 16.7722,
           17.4636, 18.0396, 18.6766, 19.3566, 20.0454, 20.7936, 21.4856, 22.2666, 22.9946, 23.766,
@@ -454,7 +457,8 @@ public class HyperLogLogPlus implements ICardinality, Serializable {
           1251260.649, 1257697.86, 1264320.983, 1270736.319, 1277274.694, 1283804.95, 1290211.514,
           1296858.568, 1303455.691,}};
 
-  static final double[][] biasData = {
+  @Immutable
+  private static final double[][] biasData = {
       // precision 4
       {10, 9.717, 9.207, 8.7896, 8.2882, 7.8204, 7.3772, 6.9342, 6.5202, 6.161, 5.7722, 5.4636,
           5.0396, 4.6766, 4.3566, 4.0454, 3.7936, 3.4856, 3.2666, 2.9946, 2.766, 2.4692, 2.3638,

@@ -39,6 +39,8 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.logging.LogService;
@@ -52,19 +54,28 @@ import org.apache.geode.internal.statistics.VMStatsContract;
 public class VMStats50 implements VMStatsContract {
   private static final Logger logger = LogService.getLogger(VMStats50.class.getName());
 
+  @Immutable
   private static final StatisticsType vmType;
 
+  @Immutable
   private static final ClassLoadingMXBean clBean;
+  @Immutable
   private static final MemoryMXBean memBean;
+  @Immutable
   private static final OperatingSystemMXBean osBean;
   /**
    * This is actually an instance of UnixOperatingSystemMXBean but this class is not available on
    * Windows so needed to make this a runtime check.
    */
+  @Immutable
   private static final Object unixBean;
+  @Immutable
   private static final Method getMaxFileDescriptorCount;
+  @Immutable
   private static final Method getOpenFileDescriptorCount;
+  @Immutable
   private static final Method getProcessCpuTime;
+  @Immutable
   private static final ThreadMXBean threadBean;
 
   private static final int pendingFinalizationCountId;
@@ -81,18 +92,22 @@ public class VMStats50 implements VMStatsContract {
   private static final int totalMemoryId;
   private static final int maxMemoryId;
 
+  @Immutable
   private static final StatisticsType memoryUsageType;
   private static final int mu_initMemoryId;
   private static final int mu_maxMemoryId;
   private static final int mu_usedMemoryId;
   private static final int mu_committedMemoryId;
 
+  @Immutable
   private static final StatisticsType gcType;
   private static final int gc_collectionsId;
   private static final int gc_collectionTimeId;
+  @MakeNotStatic
   private final Map<GarbageCollectorMXBean, Statistics> gcMap =
       new HashMap<GarbageCollectorMXBean, Statistics>();
 
+  @Immutable
   private static final StatisticsType mpType;
   private static final int mp_l_initMemoryId;
   private static final int mp_l_maxMemoryId;
@@ -106,6 +121,7 @@ public class VMStats50 implements VMStatsContract {
   private static final int mp_collectionUsageThresholdId;
   private static final int mp_usageExceededId;
   private static final int mp_collectionUsageExceededId;
+  @MakeNotStatic
   private final Map<MemoryPoolMXBean, Statistics> mpMap =
       new HashMap<MemoryPoolMXBean, Statistics>();
 
@@ -119,6 +135,7 @@ public class VMStats50 implements VMStatsContract {
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableThreadStats");
   private final Map<Long, ThreadStatInfo> threadMap =
       THREAD_STATS_ENABLED ? new HashMap<Long, ThreadStatInfo>() : null;
+  @Immutable
   private static final StatisticsType threadType;
   private static final int thread_blockedId;
   private static final int thread_lockOwnerId;

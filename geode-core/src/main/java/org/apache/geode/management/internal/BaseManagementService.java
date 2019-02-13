@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -40,10 +41,12 @@ public abstract class BaseManagementService extends ManagementService {
   /**
    * The main mapping between different resources and Service instance Object can be Cache
    */
+  @MakeNotStatic
   protected static final Map<Object, BaseManagementService> instances =
       new HashMap<Object, BaseManagementService>();
 
   /** List of connected <code>DistributedSystem</code>s */
+  @MakeNotStatic
   private static final List<InternalDistributedSystem> systems =
       new ArrayList<InternalDistributedSystem>(1);
 

@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import java.util.Properties;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.DiskWriteAttributes;
@@ -86,6 +87,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
    */
   public static final int DEFAULT_DISK_DIR_SIZE = DiskStoreFactory.DEFAULT_DISK_DIR_SIZE;
 
+  @Immutable
   private static final DiskWriteAttributes DEFAULT_ASYNC_DWA;
   static {
     Properties props = new Properties();
@@ -93,6 +95,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
     DEFAULT_ASYNC_DWA = new DiskWriteAttributesImpl(props);
   }
 
+  @Immutable
   private static final DiskWriteAttributes DEFAULT_SYNC_DWA;
   static {
     Properties props = new Properties();

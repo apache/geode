@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
@@ -50,6 +51,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
 
   private volatile Set/* <DistributedMember> */ cachedControllerAdvise;
 
+  @Immutable
   private static final Filter CONTROLLER_FILTER = new Filter() {
     @Override
     public boolean include(Profile profile) {
@@ -57,6 +59,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     }
   };
 
+  @Immutable
   private static final Filter BRIDGE_SERVER_FILTER = new Filter() {
     @Override
     public boolean include(Profile profile) {

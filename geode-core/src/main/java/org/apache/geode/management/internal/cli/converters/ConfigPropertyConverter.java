@@ -23,6 +23,7 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 
 /***
@@ -32,6 +33,7 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 public class ConfigPropertyConverter
     implements Converter<JndiBindingsType.JndiBinding.ConfigProperty> {
 
+  @MakeImmutable
   private static final ObjectMapper mapper = new ObjectMapper();
   static {
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);

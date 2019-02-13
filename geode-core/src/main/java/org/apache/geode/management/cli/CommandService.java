@@ -17,6 +17,8 @@ package org.apache.geode.management.cli;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.cache.InternalCache;
@@ -36,8 +38,10 @@ import org.apache.geode.management.internal.cli.remote.MemberCommandService;
  * @deprecated since 1.3 use OnlineCommandProcessor directly
  */
 public abstract class CommandService {
+  @Immutable
   protected static final Map<String, String> EMPTY_ENV = Collections.emptyMap();
 
+  @MakeNotStatic
   private static CommandService localCommandService;
 
   /* ************* Methods to be implemented by sub-classes START *********** */

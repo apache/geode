@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
@@ -60,6 +61,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     implements Serializable {
   private static final long serialVersionUID = 2241078661206355376L;
 
+  @Immutable
   private static final RegionAttributes defaultAttributes = new AttributesFactory().create();
 
   /** The attributes' cache listener */

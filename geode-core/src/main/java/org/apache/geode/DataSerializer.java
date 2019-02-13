@@ -48,6 +48,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.RegionNotFoundException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -3152,6 +3153,7 @@ public abstract class DataSerializer {
   /**
    * maps a class to its enum constants.
    */
+  @MakeNotStatic
   private static final ConcurrentMap knownEnums = new ConcurrentHashMap();
 
   /**

@@ -23,6 +23,8 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 /**
  * Factory class to creates ContextImpl. Provides implementation for InitialContextFactory.
  *
@@ -32,8 +34,10 @@ import javax.naming.spi.InitialContextFactory;
  */
 public class InitialContextFactoryImpl implements InitialContextFactory {
 
+  @MakeNotStatic
   private static final Map oldSystemProps = new HashMap();
   // private static Hashtable env;
+  @MakeNotStatic
   private static Context ctx;
 
   /**

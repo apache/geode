@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
@@ -37,6 +38,7 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
  */
 public class SizeClassOnceObjectSizer implements ObjectSizer, Serializable, Declarable {
 
+  @Immutable
   private static final SizeClassOnceObjectSizer INSTANCE = new SizeClassOnceObjectSizer();
 
   private final transient Map<Class, Integer> savedSizes =

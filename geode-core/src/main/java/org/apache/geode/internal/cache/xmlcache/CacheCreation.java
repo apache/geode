@@ -42,6 +42,7 @@ import javax.transaction.TransactionManager;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -325,6 +326,7 @@ public class CacheCreation implements InternalCache {
     createInProgress.set(null);
   }
 
+  @Immutable
   private static final RegionAttributes defaults = new AttributesFactory().create();
 
   RegionAttributes getDefaultAttributes() {

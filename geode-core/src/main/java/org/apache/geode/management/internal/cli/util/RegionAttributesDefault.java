@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
@@ -26,7 +27,9 @@ import org.apache.geode.internal.cache.AbstractRegion;
  *
  */
 public class RegionAttributesDefault {
+  @Immutable
   public static final Scope SCOPE = AbstractRegion.DEFAULT_SCOPE.DISTRIBUTED_NO_ACK;
+  @Immutable
   public static final DataPolicy DATA_POLICY = DataPolicy.DEFAULT;
   public static final boolean CLONING_ENABLED = false;
   public static final boolean CONCURRENCY_CHECK_ENABLED = true;

@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
@@ -55,6 +56,7 @@ abstract class RVVException
     implements Comparable<RVVException>, Cloneable, VersionedDataSerializable {
   private static final long serialVersionUID = 2021977010704105114L;
 
+  @MutableForTesting
   protected static boolean UseTreeSetsForTesting = false;
 
   /**

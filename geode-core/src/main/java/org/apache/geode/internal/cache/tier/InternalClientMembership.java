@@ -28,6 +28,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
@@ -62,6 +64,7 @@ public class InternalClientMembership {
    * This list is never modified in place, and a new list is installed only under the control of
    * (@link #membershipLock}.
    */
+  @MakeNotStatic
   private static volatile List<ClientMembershipListener> clientMembershipListeners =
       Collections.emptyList();
 
@@ -76,9 +79,11 @@ public class InternalClientMembership {
    *
    * Access synchronized via {@link #systems}
    */
+  @MakeNotStatic
   private static ExecutorService executor;
 
   /** List of connected <code>DistributedSystem</code>s */
+  @MakeNotStatic
   private static final List systems = new ArrayList(1);
 
   /**
@@ -86,6 +91,7 @@ public class InternalClientMembership {
    *
    * guarded.By InternalClientMembership.class
    */
+  @MakeNotStatic
   private static boolean isMonitoring = false;
 
   /**
@@ -581,6 +587,7 @@ public class InternalClientMembership {
   }
 
   /** If set to true for testing then notification will be synchronous */
+  @MutableForTesting
   private static boolean forceSynchronous = false;
 
   /** Set to true if synchronous notification is needed for testing */

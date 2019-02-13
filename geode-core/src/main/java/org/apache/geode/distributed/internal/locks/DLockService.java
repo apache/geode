@@ -38,6 +38,8 @@ import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -2551,6 +2553,7 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
 
   /** Destroys all named locking services on disconnect from system */
+  @MakeNotStatic("This object is actually immutable ... but it uses singletons")
   protected static final InternalDistributedSystem.DisconnectListener disconnectListener =
       new InternalDistributedSystem.DisconnectListener() {
         @Override
@@ -2580,8 +2583,10 @@ public class DLockService extends DistributedLockService {
 
   // ----------------------------------------------------------------
 
+  @Immutable
   private static final DummyDLockStats DUMMY_STATS = new DummyDLockStats();
 
+  @Immutable
   static final SuspendLockingToken SUSPEND_LOCKING_TOKEN = new SuspendLockingToken();
 
   // -------------------------------------------------------------------------
@@ -2589,14 +2594,17 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
 
   /** Map of all locking services. */
+  @MakeNotStatic
   protected static final Map<String, DLockService> services = new HashMap<>();
 
   private static final Object creationLock = new Object();
 
   /** All DLock threads belong to this group */
+  @MakeNotStatic
   private static ThreadGroup threadGroup;
 
   /** DLock statistics; static because multiple dlock instances can exist */
+  @MakeNotStatic
   private static DistributedLockStats stats = DUMMY_STATS;
 
   // -------------------------------------------------------------------------
@@ -2623,6 +2631,7 @@ public class DLockService extends DistributedLockService {
    *
    * @see DLockService#getSerialNumber()
    */
+  @MakeNotStatic
   private static final AtomicInteger serialNumberSequencer = new AtomicInteger(START_SERIAL_NUMBER);
 
   /**
@@ -2951,6 +2960,7 @@ public class DLockService extends DistributedLockService {
   // -------------------------------------------------------------------------
 
   /** Used as the name (key) for the suspend locking entry in the tokens map */
+  @Immutable
   public static class SuspendLockingToken implements DataSerializableFixedID {
     public SuspendLockingToken() {}
 

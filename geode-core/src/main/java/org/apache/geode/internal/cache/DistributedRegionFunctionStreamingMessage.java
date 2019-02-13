@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -79,6 +80,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   private static final short IS_REEXECUTE = UNRESERVED_FLAGS_START;
 
   /** default exception to ensure a false-positive response is never returned */
+  @Immutable
   static final ForceReattemptException UNHANDLED_EXCEPTION =
       (ForceReattemptException) new ForceReattemptException("Unknown exception").fillInStackTrace();
 

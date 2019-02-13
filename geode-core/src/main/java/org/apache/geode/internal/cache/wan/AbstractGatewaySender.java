@@ -29,6 +29,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
@@ -177,6 +179,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   /**
    * The number of seconds to wait before stopping the GatewaySender. Default is 0 seconds.
    */
+  @MutableForTesting
   public static int MAXIMUM_SHUTDOWN_WAIT_TIME =
       Integer.getInteger("GatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME", 0).intValue();
 
@@ -189,6 +192,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public static final int QUEUE_SIZE_THRESHOLD =
       Integer.getInteger("GatewaySender.QUEUE_SIZE_THRESHOLD", 5000).intValue();
 
+  @MutableForTesting
   public static int TOKEN_TIMEOUT =
       Integer.getInteger("GatewaySender.TOKEN_TIMEOUT", 120000).intValue();
 
@@ -1280,6 +1284,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   public static class DefaultGatewayEventFilter
       implements org.apache.geode.internal.cache.GatewayEventFilter {
+    @Immutable
     private static final DefaultGatewayEventFilter singleton = new DefaultGatewayEventFilter();
 
     private DefaultGatewayEventFilter() {}

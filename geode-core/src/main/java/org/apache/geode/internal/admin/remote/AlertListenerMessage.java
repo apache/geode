@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -42,7 +43,7 @@ import org.apache.geode.management.internal.AlertDetails;
  * {@code Awaitility}.
  */
 public class AlertListenerMessage extends PooledDistributionMessage implements AdminMessageType {
-
+  @MakeNotStatic
   private static final AtomicReference<Listener> listenerRef = new AtomicReference<>();
 
   private int alertLevel;

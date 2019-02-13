@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.snapshot.SnapshotIterator;
 import org.apache.geode.internal.ExitCode;
@@ -67,6 +68,7 @@ public class GFSnapshot {
   public static final int SNAP_VER_2 = 2;
 
   /** the snapshot file format */
+  @Immutable
   private static final byte[] SNAP_FMT = {0x47, 0x46, 0x53};
 
   private GFSnapshot() {}

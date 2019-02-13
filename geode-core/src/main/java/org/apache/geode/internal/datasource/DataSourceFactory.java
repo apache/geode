@@ -42,6 +42,7 @@ import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.datasource.PooledDataSourceFactory;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.logging.LogService;
@@ -322,8 +323,11 @@ public class DataSourceFactory {
   /*
    * Test hook for replacing URL
    */
+  @MutableForTesting
   private static String TEST_CONNECTION_URL = null;
+  @MutableForTesting
   private static String TEST_CONNECTION_HOST = null;
+  @MutableForTesting
   private static String TEST_CONNECTION_PORT = null;
 
   /*

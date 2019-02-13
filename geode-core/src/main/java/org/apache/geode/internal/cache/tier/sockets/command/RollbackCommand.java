@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -31,6 +32,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class RollbackCommand extends BaseCommand {
 
+  @Immutable
   private static final RollbackCommand singleton = new RollbackCommand();
 
   public static Command getCommand() {

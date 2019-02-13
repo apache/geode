@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
+
 /**
  * Used for test hooks to during the persistence process.
  *
  */
 
 public class PersistenceObserverHolder {
+  @MutableForTesting
   private static PersistenceObserver INSTANCE = new PersistenceObserverAdapter();
 
   public static void setInstance(PersistenceObserver instance) {

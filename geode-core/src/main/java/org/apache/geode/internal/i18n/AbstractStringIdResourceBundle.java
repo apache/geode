@@ -24,6 +24,7 @@ import java.util.Locale;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.ClassPathLoader;
 
@@ -42,6 +43,7 @@ public class AbstractStringIdResourceBundle {
    * The {@link java.util.ResourceBundle} that implements the message lookup English has a special
    * implementation for speed.
    */
+  @MakeImmutable
   private static AbstractStringIdResourceBundle messageBundle;
 
   /**

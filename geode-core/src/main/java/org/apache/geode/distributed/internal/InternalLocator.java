@@ -42,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
@@ -217,6 +218,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    *
    * GuardedBy must synchronize on locatorLock
    */
+  @MakeNotStatic
   private static InternalLocator locator;
 
   private static final Object locatorLock = new Object();

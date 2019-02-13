@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionResolver;
@@ -38,6 +39,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class GetClientPartitionAttributesCommand66 extends BaseCommand {
 
+  @Immutable
   private static final GetClientPartitionAttributesCommand66 singleton =
       new GetClientPartitionAttributesCommand66();
 

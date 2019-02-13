@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -170,6 +171,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     private boolean hasRVV;
 
     /** The versions in which this message was modified */
+    @Immutable
     private static final Version[] dsfidVersions = null;
 
     @Override

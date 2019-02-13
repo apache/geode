@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.EntryEvent;
@@ -22,6 +23,7 @@ import org.apache.geode.cache.RegionMembershipListener;
 import org.apache.geode.cache.RegionRoleListener;
 import org.apache.geode.cache.RoleEvent;
 
+@Immutable
 public abstract class EnumListenerEvent {
 
   private final String name;
@@ -44,47 +46,66 @@ public abstract class EnumListenerEvent {
    */
   public abstract void dispatchEvent(CacheEvent event, CacheListener listener);
 
+  @Immutable
   public static final EnumListenerEvent AFTER_CREATE = new AFTER_CREATE(); // 1
 
+  @Immutable
   public static final EnumListenerEvent AFTER_UPDATE = new AFTER_UPDATE(); // 2
 
+  @Immutable
   public static final EnumListenerEvent AFTER_INVALIDATE = new AFTER_INVALIDATE(); // 3
 
+  @Immutable
   public static final EnumListenerEvent AFTER_DESTROY = new AFTER_DESTROY(); // 4
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REGION_CREATE = new AFTER_REGION_CREATE(); // 5
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REGION_INVALIDATE = new AFTER_REGION_INVALIDATE(); // 6
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REGION_CLEAR = new AFTER_REGION_CLEAR(); // 7
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REGION_DESTROY = new AFTER_REGION_DESTROY(); // 8
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REMOTE_REGION_CREATE =
       new AFTER_REMOTE_REGION_CREATE();// 9
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REMOTE_REGION_DEPARTURE =
       new AFTER_REMOTE_REGION_DEPARTURE(); // 10
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REMOTE_REGION_CRASH = new AFTER_REMOTE_REGION_CRASH();// 11
 
+  @Immutable
   public static final EnumListenerEvent AFTER_ROLE_GAIN = new AFTER_ROLE_GAIN();// 12
 
+  @Immutable
   public static final EnumListenerEvent AFTER_ROLE_LOSS = new AFTER_ROLE_LOSS();// 13
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REGION_LIVE = new AFTER_REGION_LIVE();// 14
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REGISTER_INSTANTIATOR =
       new AFTER_REGISTER_INSTANTIATOR();// 15
 
+  @Immutable
   public static final EnumListenerEvent AFTER_REGISTER_DATASERIALIZER =
       new AFTER_REGISTER_DATASERIALIZER();// 16
 
+  @Immutable
   public static final EnumListenerEvent AFTER_TOMBSTONE_EXPIRATION =
       new AFTER_TOMBSTONE_EXPIRATION(); // 17
 
+  @Immutable
   public static final EnumListenerEvent TIMESTAMP_UPDATE = new TIMESTAMP_UPDATE(); // 18
 
+  @Immutable
   private static final EnumListenerEvent[] instances =
       new EnumListenerEvent[] {AFTER_CREATE, AFTER_UPDATE, AFTER_INVALIDATE, AFTER_DESTROY,
           AFTER_REGION_CREATE, AFTER_REGION_INVALIDATE, AFTER_REGION_CLEAR, AFTER_REGION_DESTROY,

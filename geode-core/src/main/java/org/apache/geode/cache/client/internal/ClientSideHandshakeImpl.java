@@ -40,6 +40,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.distributed.DistributedMember;
@@ -77,6 +78,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   /**
    * Another test hook, holding a version ordinal that is higher than CURRENT
    */
+  @MutableForTesting
   private static short overrideClientVersion = -1;
 
   private final byte replyCode;

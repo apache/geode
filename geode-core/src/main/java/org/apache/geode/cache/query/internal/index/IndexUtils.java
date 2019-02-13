@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.IndexType;
@@ -33,6 +34,7 @@ public class IndexUtils {
 
   public static final boolean useOnlyExactIndexs = false;
 
+  @MutableForTesting
   public static TestHook testHook;
 
   public static void setTestHook(TestHook testHook) {

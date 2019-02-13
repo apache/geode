@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
@@ -44,8 +45,10 @@ public class RegionCreateFunction implements InternalFunction {
 
   private static final String ID = RegionCreateFunction.class.getName();
 
+  @Immutable
   public static final RegionCreateFunction INSTANCE = new RegionCreateFunction();
 
+  @Immutable
   private static final RegionConfigRealizer realizer = new RegionConfigRealizer();
 
   @Override

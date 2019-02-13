@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -31,6 +32,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 public class AddPdxType extends BaseCommand {
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final AddPdxType singleton = new AddPdxType();
 
   public static Command getCommand() {

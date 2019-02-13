@@ -27,6 +27,8 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -53,6 +55,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final List<RVVException> EMPTY_EXCEPTIONS = Collections.emptyList();
 
   long version = -1; // received version
@@ -61,6 +64,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   boolean isDepartedMember;
 
   // non final for tests
+  @MutableForTesting
   public static int BIT_SET_WIDTH = 64 * 16; // should be a multiple of 4 64-bit longs
 
   private long bitSetVersion = 1;

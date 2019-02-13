@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.CacheTime;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -66,6 +67,7 @@ public class TombstoneService {
    *
    * The default is 600,000 milliseconds (10 minutes).
    */
+  @MutableForTesting
   public static long REPLICATE_TOMBSTONE_TIMEOUT =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-timeout", 600000L);
 
@@ -78,6 +80,7 @@ public class TombstoneService {
    * <p>
    * The default is 480,000 milliseconds (8 minutes)
    */
+  @MutableForTesting
   public static long NON_REPLICATE_TOMBSTONE_TIMEOUT =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "non-replicated-tombstone-timeout", 480000);
 
@@ -85,6 +88,7 @@ public class TombstoneService {
    * The max number of tombstones in an expired batch. This covers all replicated regions, including
    * PR buckets. The default is 100,000 expired tombstones.
    */
+  @MutableForTesting
   public static int EXPIRED_TOMBSTONE_LIMIT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-threshold", 100000);
 
@@ -99,15 +103,19 @@ public class TombstoneService {
    * percentage is somewhat less than the LRU Heap evictor so that we evict tombstones before we
    * start evicting cache data.
    */
+  @MutableForTesting
   public static double GC_MEMORY_THRESHOLD =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-memory-threshold",
           30 /* 100-HeapLRUCapacityController.DEFAULT_HEAP_PERCENTAGE */) * 0.01;
 
   /** this is a test hook for causing the tombstone service to act as though free memory is low */
+  @MutableForTesting
   public static boolean FORCE_GC_MEMORY_EVENTS = false;
   /** maximum time a sweeper will sleep, in milliseconds. */
+  @MutableForTesting
   public static long MAX_SLEEP_TIME = 10000;
 
+  @MutableForTesting
   public static boolean IDLE_EXPIRATION = false; // dunit test hook for forced batch
                                                  // expiration
 

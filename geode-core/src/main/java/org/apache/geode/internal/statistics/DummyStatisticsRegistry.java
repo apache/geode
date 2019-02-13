@@ -19,12 +19,14 @@ import java.util.List;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * A statistics registry that creates dummy statistics instances, and does not keep a list of the
  * instances it has created.
  */
 public class DummyStatisticsRegistry extends StatisticsRegistry {
+  @Immutable
   private static final List<Statistics> emptyInstances = Collections.emptyList();
 
   public DummyStatisticsRegistry(String systemName, long startTime) {

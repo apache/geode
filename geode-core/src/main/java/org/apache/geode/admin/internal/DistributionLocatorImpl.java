@@ -29,6 +29,7 @@ import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -47,6 +48,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   /**
    * How many new <code>DistributionLocator</code>s have been created?
    */
+  @MakeNotStatic
   private static int newLocators = 0;
 
   //////////////////// Instance Fields ////////////////////

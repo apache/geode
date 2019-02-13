@@ -15,6 +15,9 @@
 package org.apache.geode.admin;
 
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * Type-safe definition for system members.
  *
@@ -24,16 +27,20 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Immutable
 public class SystemMemberType implements java.io.Serializable {
   private static final long serialVersionUID = 3284366994485749302L;
 
   /** GemFire shared-memory manager connected to the distributed system */
+  @Immutable
   public static final SystemMemberType MANAGER = new SystemMemberType("GemFireManager");
 
   /** Application connected to the distributed system */
+  @Immutable
   public static final SystemMemberType APPLICATION = new SystemMemberType("Application");
 
   /** GemFire Cache VM connected to the distributed system */
+  @Immutable
   public static final SystemMemberType CACHE_VM = new SystemMemberType("CacheVm");
 
   /**
@@ -42,6 +49,7 @@ public class SystemMemberType implements java.io.Serializable {
    * @deprecated as of 5.7 use {@link #CACHE_VM} instead.
    */
   @Deprecated
+  @Immutable
   public static final SystemMemberType CACHE_SERVER = CACHE_VM;
 
 
@@ -52,8 +60,10 @@ public class SystemMemberType implements java.io.Serializable {
   /** int used as ordinal to represent this Scope */
   public final int ordinal = nextOrdinal++;
 
+  @MakeImmutable("nextOrdinal is not required, it could be passed into the constructors")
   private static int nextOrdinal = 0;
 
+  @Immutable
   private static final SystemMemberType[] VALUES = {MANAGER, APPLICATION, CACHE_VM};
 
   private Object readResolve() throws java.io.ObjectStreamException {

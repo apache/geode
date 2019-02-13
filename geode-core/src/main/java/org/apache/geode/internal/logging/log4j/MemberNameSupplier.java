@@ -17,8 +17,11 @@ package org.apache.geode.internal.logging.log4j;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 public class MemberNameSupplier implements Supplier<String> {
 
+  @MakeNotStatic
   private static final AtomicReference<String> memberName = new AtomicReference<>("");
 
   public void set(String newValue) {

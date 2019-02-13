@@ -21,6 +21,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
@@ -36,6 +37,7 @@ import org.apache.geode.security.ResourcePermission;
 
 public class CreateDefinedIndexesCommand extends SingleGfshCommand {
   public static final String CREATE_DEFINED_INDEXES_SECTION = "create-defined-indexes";
+  @Immutable
   private static final CreateDefinedIndexesFunction createDefinedIndexesFunction =
       new CreateDefinedIndexesFunction();
 

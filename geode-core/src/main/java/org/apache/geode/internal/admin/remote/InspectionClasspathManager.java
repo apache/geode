@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 public class InspectionClasspathManager {
+  @MakeNotStatic
   private static InspectionClasspathManager internalRef;
   private Map pathsToLoaders = new HashMap();
   private ThreadLocal oldClassLoader = new ThreadLocal();

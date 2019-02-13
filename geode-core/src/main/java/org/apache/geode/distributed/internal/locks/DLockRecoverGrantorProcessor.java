@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -47,6 +48,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   protected static final DefaultMessageProcessor nullServiceProcessor =
       new DefaultMessageProcessor();
 

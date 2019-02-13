@@ -37,6 +37,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -122,11 +125,14 @@ public class PRHARedundancyProvider {
 
   public static final String DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME =
       DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionDatastoreDiscoveryTimeout";
+  @MakeNotStatic
   static volatile Long DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS =
       Long.getLong(DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME);
 
   public final PartitionedRegion prRegion;
+  @MakeNotStatic
   private static final AtomicLong insufficientLogTimeStamp = new AtomicLong(0);
+  @MakeNotStatic
   private final AtomicBoolean firstInsufficentStoresLogged = new AtomicBoolean(false);
 
   /**
@@ -439,6 +445,7 @@ public class PRHARedundancyProvider {
   public static final long INSUFFICIENT_LOGGING_THROTTLE_TIME = TimeUnit.SECONDS.toNanos(
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "InsufficientLoggingThrottleTime", 2)
           .intValue());
+  @MutableForTesting
   public static volatile boolean TEST_MODE = false;
   // since 6.6, please use the distributed system property enforce-unique-host instead.
   // public static final boolean ENFORCE_UNIQUE_HOST_STORAGE_ALLOCATION =
@@ -826,6 +833,7 @@ public class PRHARedundancyProvider {
     return false;
   }
 
+  @MutableForTesting
   private static volatile EndBucketCreationObserver testEndObserverInstance;
 
   // Observer for testing purpose
@@ -2046,9 +2054,13 @@ public class PRHARedundancyProvider {
   }
 
   private static class ManageBucketRsp {
+    @Immutable
     static final ManageBucketRsp NO = new ManageBucketRsp("NO");
+    @Immutable
     static final ManageBucketRsp YES = new ManageBucketRsp("YES");
+    @Immutable
     static final ManageBucketRsp NO_INITIALIZING = new ManageBucketRsp("NO_INITIALIZING");
+    @Immutable
     public static final ManageBucketRsp CLOSED = new ManageBucketRsp("CLOSED");
 
     private final String name;

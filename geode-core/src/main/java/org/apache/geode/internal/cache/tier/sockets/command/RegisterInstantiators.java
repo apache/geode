@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -35,6 +36,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class RegisterInstantiators extends BaseCommand {
 
+  @Immutable
   private static final RegisterInstantiators singleton = new RegisterInstantiators();
 
   public static Command getCommand() {

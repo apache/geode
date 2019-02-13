@@ -31,6 +31,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -82,6 +85,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   /** The versions in which this message was modified */
+  @Immutable
   private static final Version[] dsfidVersions = new Version[] {Version.GFE_80};
 
 
@@ -97,23 +101,27 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * the distributed system associated with the static client_side_event_identity
    */
+  @MakeNotStatic
   private static volatile DistributedSystem system = null;
 
   /**
    * the membership id of the distributed system in this client (if running in a client) that is
    * reflected in client_side_event_identity
    */
+  @MakeNotStatic
   private static DistributedMember systemMemberId;
 
   /**
    * this form of client ID is used in event identifiers to reduce the size of the ID
    */
+  @MakeNotStatic
   private static volatile byte[] client_side_event_identity = null;
 
   /**
    * An array containing the helper class objects which are used to create optimized byte array for
    * an eventID , which can be sent on the network
    */
+  @MakeImmutable
   static final AbstractEventIDByteArrayFiller[] fillerArray = new AbstractEventIDByteArrayFiller[] {
       new ByteEventIDByteArrayFiller(), new ShortEventIDByteArrayFiller(),
       new IntegerEventIDByteArrayFiller(), new LongEventIDByteArrayFiller()};
@@ -804,6 +812,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
     long sequenceID = (HARegionQueue.INIT_OF_SEQUENCEID + 1);
 
+    @MakeNotStatic
     private static final AtomicLong atmLong = new AtomicLong(0);
 
     ThreadAndSequenceIDWrapper() {

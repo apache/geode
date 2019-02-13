@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.annotations.internal.MutableForTesting;
 
 /**
  * A holder for a disk Directory. Used for maintaining the available space and updating disk
@@ -42,6 +43,7 @@ public class DirectoryHolder {
   private final DiskDirectoryStats dirStats;
 
   /** For testing purposes we can set the disk directory size in bytes **/
+  @MutableForTesting
   static boolean SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
 
   DirectoryHolder(StatisticsFactory factory, File dir, long space, int index) {
