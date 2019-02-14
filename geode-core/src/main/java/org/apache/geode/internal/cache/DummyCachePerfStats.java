@@ -32,7 +32,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   // //////////////////// Accessing Stats //////////////////////
 
   @Override
-  public long getLoadsCompleted() {
+  public int getLoadsCompleted() {
     return 0;
   }
 
@@ -42,12 +42,12 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public long getNetloadsCompleted() {
+  public int getNetloadsCompleted() {
     return 0;
   }
 
   @Override
-  public long getNetsearchesCompleted() {
+  public int getNetsearchesCompleted() {
     return 0;
   }
 
@@ -57,7 +57,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public long getGetInitialImagesCompleted() {
+  public int getGetInitialImagesCompleted() {
     return 0;
   }
 
@@ -72,42 +72,42 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public long getDestroys() {
+  public int getDestroys() {
     return 0;
   }
 
   @Override
-  public long getCreates() {
+  public int getCreates() {
     return 0;
   }
 
   @Override
-  public long getPuts() {
+  public int getPuts() {
     return 0;
   }
 
   @Override
-  public long getPutAlls() {
+  public int getPutAlls() {
     return 0;
   }
 
   @Override
-  public long getUpdates() {
+  public int getUpdates() {
     return 0;
   }
 
   @Override
-  public long getInvalidates() {
+  public int getInvalidates() {
     return 0;
   }
 
   @Override
-  public long getGets() {
+  public int getGets() {
     return 0;
   }
 
   @Override
-  public long getMisses() {
+  public int getMisses() {
     return 0;
   }
 
@@ -257,12 +257,12 @@ public class DummyCachePerfStats extends CachePerfStats {
   public void endQueryExecution(long executionTime) {}
 
   @Override
-  public long getTxCommits() {
+  public int getTxCommits() {
     return 0;
   }
 
   @Override
-  public long getTxCommitChanges() {
+  public int getTxCommitChanges() {
     return 0;
   }
 
@@ -277,12 +277,12 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public long getTxFailures() {
+  public int getTxFailures() {
     return 0;
   }
 
   @Override
-  public long getTxFailureChanges() {
+  public int getTxFailureChanges() {
     return 0;
   }
 
@@ -297,12 +297,12 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public long getTxRollbacks() {
+  public int getTxRollbacks() {
     return 0;
   }
 
   @Override
-  public long getTxRollbackChanges() {
+  public int getTxRollbackChanges() {
     return 0;
   }
 

@@ -28,6 +28,8 @@ import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -48,7 +50,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
   }
 
   @Override
-  protected final void postSetUpCqQueryDUnitTest() {
+  protected final void postSetUpCqQueryDUnitTest() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       @Override
       public void run() {
@@ -58,7 +60,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
   }
 
   @Override
-  public final void preTearDownCacheTestCase() {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       @Override
       public void run() {
@@ -69,9 +71,10 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
   }
 
   @Test
-  public void testCqExecuteWithoutQueryExecution() {
-    final VM server = VM.getVM(0);
-    final VM client = VM.getVM(1);
+  public void testCqExecuteWithoutQueryExecution() throws Exception {
+    final Host host = Host.getHost(0);
+    final VM server = host.getVM(0);
+    final VM client = host.getVM(1);
     final int numOfEntries = 10;
     final String cqName = "testCqExecuteWithoutQueryExecution_1";
 
@@ -79,8 +82,8 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     // Create values.
     createValues(server, regions[0], numOfEntries);
 
-    final int thePort = server.invoke(CqQueryDUnitTest::getCacheServerPort);
-    final String host0 = NetworkUtils.getServerHostName();
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     createClient(client, thePort, host0);
@@ -97,7 +100,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
       public void run2() throws CacheException {
         assertFalse("CqServiceImpl.EXECUTE_QUERY_DURING_INIT flag should be false ",
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
-        long numOfQueryExecutions = (long) getCache().getCachePerfStats()
+        int numOfQueryExecutions = (Integer) ((GemFireCacheImpl) getCache()).getCachePerfStats()
             .getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0,
             numOfQueryExecutions);
@@ -120,8 +123,9 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
     waitForCreated(client, cqName, KEY + numOfEntries * 2);
 
-    validateCQ(client, cqName, noTest, numOfEntries, 0, 0, numOfEntries,
-        0, 0, numOfEntries);
+    validateCQ(client, cqName, /* resultSize: */ noTest, /* creates: */ numOfEntries,
+        /* updates: */ 0, /* deletes; */ 0, /* queryInserts: */ numOfEntries, /* queryUpdates: */ 0,
+        /* queryDeletes: */ 0, /* totalEvents: */ numOfEntries);
 
     // Update values.
     createValues(server, regions[0], 5);
@@ -131,24 +135,27 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
 
     // validate Update events.
-    validateCQ(client, cqName, noTest, numOfEntries, 15, 0, numOfEntries,
-        15, 0, numOfEntries + 15);
+    validateCQ(client, cqName, /* resultSize: */ noTest, /* creates: */ numOfEntries,
+        /* updates: */ 15, /* deletes; */ 0, /* queryInserts: */ numOfEntries,
+        /* queryUpdates: */ 15, /* queryDeletes: */ 0, /* totalEvents: */ numOfEntries + 15);
 
     // Validate delete events.
     deleteValues(server, regions[0], 5);
     waitForDestroyed(client, cqName, KEY + 5);
 
-    validateCQ(client, cqName, noTest, numOfEntries, 15, 5, numOfEntries,
-        15, 5, numOfEntries + 15 + 5);
+    validateCQ(client, cqName, /* resultSize: */ noTest, /* creates: */ numOfEntries,
+        /* updates: */ 15, /* deletes; */5, /* queryInserts: */ numOfEntries,
+        /* queryUpdates: */ 15, /* queryDeletes: */ 5, /* totalEvents: */ numOfEntries + 15 + 5);
 
     closeClient(client);
     closeServer(server);
   }
 
   @Test
-  public void testCqExecuteWithoutQueryExecutionAndNoRSCaching() {
-    final VM server = VM.getVM(0);
-    final VM client = VM.getVM(1);
+  public void testCqExecuteWithoutQueryExecutionAndNoRSCaching() throws Exception {
+    final Host host = Host.getHost(0);
+    final VM server = host.getVM(0);
+    final VM client = host.getVM(1);
     final int numOfEntries = 10;
     final String cqName = "testCqExecuteWithoutQueryExecution_1";
 
@@ -163,8 +170,8 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
     // Create values.
     createValues(server, regions[0], numOfEntries);
 
-    final int thePort = server.invoke(CqQueryDUnitTest::getCacheServerPort);
-    final String host0 = NetworkUtils.getServerHostName();
+    final int thePort = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     createClient(client, thePort, host0);
@@ -183,7 +190,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
         assertFalse(DistributionConfig.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS flag should be false ",
             CqServiceProvider.MAINTAIN_KEYS);
-        long numOfQueryExecutions = (long) getCache().getCachePerfStats()
+        int numOfQueryExecutions = (Integer) ((GemFireCacheImpl) getCache()).getCachePerfStats()
             .getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0,
             numOfQueryExecutions);
@@ -205,8 +212,9 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
     waitForCreated(client, cqName, KEY + numOfEntries * 2);
 
-    validateCQ(client, cqName, noTest, numOfEntries, 0, 0, numOfEntries,
-        0, 0, numOfEntries);
+    validateCQ(client, cqName, /* resultSize: */ noTest, /* creates: */ numOfEntries,
+        /* updates: */ 0, /* deletes; */ 0, /* queryInserts: */ numOfEntries, /* queryUpdates: */ 0,
+        /* queryDeletes: */ 0, /* totalEvents: */ numOfEntries);
 
     // Update values.
     createValues(server, regions[0], 5);
@@ -216,15 +224,17 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
 
     // validate Update events.
-    validateCQ(client, cqName, noTest, numOfEntries, 15, 0, numOfEntries,
-        15, 0, numOfEntries + 15);
+    validateCQ(client, cqName, /* resultSize: */ noTest, /* creates: */ numOfEntries,
+        /* updates: */ 15, /* deletes; */ 0, /* queryInserts: */ numOfEntries,
+        /* queryUpdates: */ 15, /* queryDeletes: */ 0, /* totalEvents: */ numOfEntries + 15);
 
     // Validate delete events.
     deleteValues(server, regions[0], 5);
     waitForDestroyed(client, cqName, KEY + 5);
 
-    validateCQ(client, cqName, noTest, numOfEntries, 15, 5, numOfEntries,
-        15, 5, numOfEntries + 15 + 5);
+    validateCQ(client, cqName, /* resultSize: */ noTest, /* creates: */ numOfEntries,
+        /* updates: */ 15, /* deletes; */5, /* queryInserts: */ numOfEntries,
+        /* queryUpdates: */ 15, /* queryDeletes: */ 5, /* totalEvents: */ numOfEntries + 15 + 5);
 
     closeClient(client);
     closeServer(server);
@@ -237,19 +247,20 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
   // when their respective servers are shutdown
   @Override
   @Test
-  public void testCQAllServersLeaveMultiplePool() {
-    VM server1 = VM.getVM(1);
-    VM server2 = VM.getVM(2);
-    VM client = VM.getVM(3);
+  public void testCQAllServersLeaveMultiplePool() throws Exception {
+    final Host host = Host.getHost(0);
+    VM server1 = host.getVM(1);
+    VM server2 = host.getVM(2);
+    VM client = host.getVM(3);
 
     createServer(server1);
 
-    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
-    final String host0 = NetworkUtils.getServerHostName();
+    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
 
     createServer(server2, ports[0]);
-    final int thePort2 = server2.invoke(CqQueryDUnitTest::getCacheServerPort);
+    final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     Wait.pause(8 * 1000);
 
     // Create client

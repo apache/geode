@@ -513,7 +513,7 @@ public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
     return bridge.getNetLoadsAverageLatency();
   }
 
-  private long getTotalNetSearchCompleted() {
+  private int getTotalNetSearchCompleted() {
     return bridge.getTotalNetSearchCompleted();
   }
 

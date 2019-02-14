@@ -27,6 +27,8 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -43,7 +45,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
   }
 
   @Override
-  public final void postSetUp() {
+  public final void postSetUp() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       @Override
       public void run() {
@@ -53,7 +55,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
   }
 
   @Override
-  public final void preTearDownCacheTestCase() {
+  public final void preTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
       @Override
       public void run() {
@@ -64,9 +66,10 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
   }
 
   @Test
-  public void testCqExecuteWithoutQueryExecution() {
-    final VM server = VM.getVM(0);
-    final VM client = VM.getVM(1);
+  public void testCqExecuteWithoutQueryExecution() throws Exception {
+    final Host host = Host.getHost(0);
+    final VM server = host.getVM(0);
+    final VM client = host.getVM(1);
     final int numOfEntries = 10;
     final String cqName = "testCqExecuteWithoutQueryExecution_1";
 
@@ -75,8 +78,8 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
     createValues(server, regions[0], numOfEntries);
 
     final int thePort =
-        server.invoke(PartitionedRegionCqQueryOptimizedExecuteDUnitTest::getCacheServerPort);
-    final String host0 = NetworkUtils.getServerHostName();
+        server.invoke(() -> PartitionedRegionCqQueryOptimizedExecuteDUnitTest.getCacheServerPort());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     createClient(client, thePort, host0);
@@ -93,7 +96,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
       public void run2() throws CacheException {
         assertFalse("CqServiceImpl.EXECUTE_QUERY_DURING_INIT flag should be false ",
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
-        long numOfQueryExecutions = (long) getCache().getCachePerfStats()
+        int numOfQueryExecutions = (Integer) ((GemFireCacheImpl) getCache()).getCachePerfStats()
             .getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0,
             numOfQueryExecutions);
@@ -115,8 +118,10 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
 
     cqHelper.waitForCreated(client, cqName, KEY + numOfEntries * 2);
 
-    cqHelper.validateCQ(client, cqName, CqQueryDUnitTest.noTest, numOfEntries, 0, 0,
-        numOfEntries, 0, 0, numOfEntries);
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+        /* creates: */ numOfEntries, /* updates: */ 0, /* deletes; */ 0,
+        /* queryInserts: */ numOfEntries, /* queryUpdates: */ 0, /* queryDeletes: */ 0,
+        /* totalEvents: */ numOfEntries);
 
     // Update values.
     createValues(server, regions[0], 5);
@@ -126,24 +131,29 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
 
 
     // validate Update events.
-    cqHelper.validateCQ(client, cqName, CqQueryDUnitTest.noTest, numOfEntries, 15, 0,
-        numOfEntries, 15, 0, numOfEntries + 15);
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+        /* creates: */ numOfEntries, /* updates: */ 15, /* deletes; */ 0,
+        /* queryInserts: */ numOfEntries, /* queryUpdates: */ 15, /* queryDeletes: */ 0,
+        /* totalEvents: */ numOfEntries + 15);
 
     // Validate delete events.
     cqHelper.deleteValues(server, regions[0], 5);
     cqHelper.waitForDestroyed(client, cqName, KEY + 5);
 
-    cqHelper.validateCQ(client, cqName, CqQueryDUnitTest.noTest, numOfEntries, 15, 5,
-        numOfEntries, 15, 5, numOfEntries + 15 + 5);
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+        /* creates: */ numOfEntries, /* updates: */ 15, /* deletes; */5,
+        /* queryInserts: */ numOfEntries, /* queryUpdates: */ 15, /* queryDeletes: */ 5,
+        /* totalEvents: */ numOfEntries + 15 + 5);
 
     cqHelper.closeClient(client);
     cqHelper.closeServer(server);
   }
 
   @Test
-  public void testCqExecuteWithoutQueryExecutionAndNoRSCaching() {
-    final VM server = VM.getVM(0);
-    final VM client = VM.getVM(1);
+  public void testCqExecuteWithoutQueryExecutionAndNoRSCaching() throws Exception {
+    final Host host = Host.getHost(0);
+    final VM server = host.getVM(0);
+    final VM client = host.getVM(1);
     final int numOfEntries = 10;
     final String cqName = "testCqExecuteWithoutQueryExecution_1";
 
@@ -158,8 +168,8 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
     // Create values.
     createValues(server, regions[0], numOfEntries);
 
-    final int thePort = server.invoke(PartitionedRegionCqQueryDUnitTest::getCacheServerPort);
-    final String host0 = NetworkUtils.getServerHostName();
+    final int thePort = server.invoke(() -> PartitionedRegionCqQueryDUnitTest.getCacheServerPort());
+    final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
     createClient(client, thePort, host0);
@@ -178,7 +188,7 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
         assertFalse(DistributionConfig.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS flag should be false ",
             CqServiceProvider.MAINTAIN_KEYS);
-        long numOfQueryExecutions = (long) getCache().getCachePerfStats()
+        int numOfQueryExecutions = (Integer) ((GemFireCacheImpl) getCache()).getCachePerfStats()
             .getStats().get("queryExecutions");
         assertEquals("Number of query executions for cq.execute should be 0 ", 0,
             numOfQueryExecutions);
@@ -200,8 +210,10 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
 
     cqHelper.waitForCreated(client, cqName, KEY + numOfEntries * 2);
 
-    cqHelper.validateCQ(client, cqName, CqQueryDUnitTest.noTest, numOfEntries, 0, 0,
-        numOfEntries, 0, 0, numOfEntries);
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+        /* creates: */ numOfEntries, /* updates: */ 0, /* deletes; */ 0,
+        /* queryInserts: */ numOfEntries, /* queryUpdates: */ 0, /* queryDeletes: */ 0,
+        /* totalEvents: */ numOfEntries);
 
     // Update values.
     createValues(server, regions[0], 5);
@@ -211,15 +223,19 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
 
 
     // validate Update events.
-    cqHelper.validateCQ(client, cqName, CqQueryDUnitTest.noTest, numOfEntries, 15, 0,
-        numOfEntries, 15, 0, numOfEntries + 15);
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+        /* creates: */ numOfEntries, /* updates: */ 15, /* deletes; */ 0,
+        /* queryInserts: */ numOfEntries, /* queryUpdates: */ 15, /* queryDeletes: */ 0,
+        /* totalEvents: */ numOfEntries + 15);
 
     // Validate delete events.
     cqHelper.deleteValues(server, regions[0], 5);
     cqHelper.waitForDestroyed(client, cqName, KEY + 5);
 
-    cqHelper.validateCQ(client, cqName, CqQueryDUnitTest.noTest, numOfEntries, 15, 5,
-        numOfEntries, 15, 5, numOfEntries + 15 + 5);
+    cqHelper.validateCQ(client, cqName, /* resultSize: */ cqHelper.noTest,
+        /* creates: */ numOfEntries, /* updates: */ 15, /* deletes; */5,
+        /* queryInserts: */ numOfEntries, /* queryUpdates: */ 15, /* queryDeletes: */ 5,
+        /* totalEvents: */ numOfEntries + 15 + 5);
 
     cqHelper.closeClient(client);
     cqHelper.closeServer(server);
