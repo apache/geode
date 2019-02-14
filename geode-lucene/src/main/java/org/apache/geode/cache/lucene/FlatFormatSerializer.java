@@ -28,6 +28,7 @@ import org.apache.lucene.document.Document;
 
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
@@ -84,8 +85,9 @@ public class FlatFormatSerializer implements LuceneSerializer {
   }
 
   private List<String> tokenizeField(String indexedFieldName) {
-    List<String> tokenizedFields = tokenizedFieldCache.computeIfAbsent(indexedFieldName,
-        field -> Arrays.asList(indexedFieldName.split("\\.")));
+    List<String> tokenizedFields =
+        JavaWorkarounds.computeIfAbsent(tokenizedFieldCache, indexedFieldName,
+            field -> Arrays.asList(indexedFieldName.split("\\.")));
     return tokenizedFields;
   }
 

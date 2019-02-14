@@ -34,6 +34,7 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.InternalPdxInstance;
@@ -152,7 +153,7 @@ public class AttributeDescriptor {
     key.add(targetClass);
     key.add(_name);
 
-    Member m = _localCache.computeIfAbsent(key, k -> {
+    Member m = JavaWorkarounds.computeIfAbsent(_localCache, key, k -> {
       Member member = getReadField(targetClass);
       return member == null ? getReadMethod(targetClass) : member;
     });

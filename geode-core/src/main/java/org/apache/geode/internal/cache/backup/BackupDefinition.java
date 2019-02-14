@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.internal.util.JavaWorkarounds;
 
 class BackupDefinition {
 
@@ -79,7 +80,8 @@ class BackupDefinition {
   }
 
   void addOplogFileToBackup(DiskStore diskStore, Path fileLocation) {
-    Set<Path> files = oplogFilesByDiskStore.computeIfAbsent(diskStore, k -> new HashSet<>());
+    Set<Path> files =
+        JavaWorkarounds.computeIfAbsent(oplogFilesByDiskStore, diskStore, k -> new HashSet<>());
     files.add(fileLocation);
   }
 }
