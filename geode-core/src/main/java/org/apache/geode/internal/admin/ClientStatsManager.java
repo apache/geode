@@ -194,16 +194,16 @@ public class ClientStatsManager {
     }
     ClientHealthStats stats = new ClientHealthStats();
 
-    long gets = -1;
-    long puts = -1;
-    long misses = -1;
-    long cacheListenerCalls = -1;
+    int gets = -1;
+    int puts = -1;
+    int misses = -1;
+    int cacheListenerCalls = -1;
 
     if (cachePerfStats != null) {
-      gets = cachePerfStats.getLong("gets");
-      puts = cachePerfStats.getLong("puts");
-      misses = cachePerfStats.getLong("misses");
-      cacheListenerCalls = cachePerfStats.getLong("cacheListenerCallsCompleted");
+      gets = cachePerfStats.getInt("gets");
+      puts = cachePerfStats.getInt("puts");
+      misses = cachePerfStats.getInt("misses");
+      cacheListenerCalls = cachePerfStats.getInt("cacheListenerCallsCompleted");
     }
 
     long processCpuTime = -1;

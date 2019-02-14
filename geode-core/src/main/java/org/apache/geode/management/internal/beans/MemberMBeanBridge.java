@@ -1398,8 +1398,8 @@ public class MemberMBeanBridge {
     return netLoadsAverageLatency.getAverageLatency();
   }
 
-  public long getTotalNetSearchCompleted() {
-    return getMemberLevelStatistic(StatsKey.NET_SEARCH_COMPLETED).longValue();
+  public int getTotalNetSearchCompleted() {
+    return getMemberLevelStatistic(StatsKey.NET_SEARCH_COMPLETED).intValue();
   }
 
   public long getNetSearchAverageLatency() {

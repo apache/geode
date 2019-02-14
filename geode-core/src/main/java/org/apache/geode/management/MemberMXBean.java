@@ -555,7 +555,7 @@ public interface MemberMXBean {
   /**
    * Returns the total number of times that a network search initiated by this cache has completed.
    */
-  long getTotalNetSearchCompleted();
+  int getTotalNetSearchCompleted();
 
   /**
    * Returns the net search average latency.
