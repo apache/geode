@@ -22,7 +22,8 @@ public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
   private final LocatorStarterRule locator;
 
   public PlainLocatorContextLoader() {
-    locator = new LocatorStarterRule().withAutoStart();
+    locator = new LocatorStarterRule()
+        .withAutoStart();
   }
 
   @Override
