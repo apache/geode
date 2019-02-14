@@ -25,14 +25,14 @@ import org.apache.geode.annotations.Immutable;
  * Statistics related to the statistic sampler.
  */
 public class StatSamplerStats {
-  static final String SAMPLE_COUNT = "sampleCount";
-  private static final String SAMPLE_TIME = "sampleTime";
-  private static final String DELAY_DURATION = "delayDuration";
-  private static final String STAT_RESOURCES = "statResources";
-  private static final String JVM_PAUSES = "jvmPauses";
-  private static final String SAMPLE_CALLBACKS = "sampleCallbacks";
-  private static final String SAMPLE_CALLBACK_ERRORS = "sampleCallbackErrors";
-  private static final String SAMPLE_CALLBACK_DURATION = "sampleCallbackDuration";
+  public static final String SAMPLE_COUNT = "sampleCount"; // int
+  public static final String SAMPLE_TIME = "sampleTime"; // long
+  public static final String DELAY_DURATION = "delayDuration"; // int
+  public static final String STAT_RESOURCES = "statResources"; // int
+  public static final String JVM_PAUSES = "jvmPauses"; // int
+  public static final String SAMPLE_CALLBACKS = "sampleCallbacks"; // int
+  public static final String SAMPLE_CALLBACK_ERRORS = "sampleCallbackErrors"; // int
+  public static final String SAMPLE_CALLBACK_DURATION = "sampleCallbackDuration"; // long
 
   @Immutable
   private static final StatisticsType samplerType;
@@ -40,11 +40,10 @@ public class StatSamplerStats {
   private static final int sampleTimeId;
   private static final int delayDurationId;
   private static final int statResourcesId;
-  static final int jvmPausesId;
+  private static final int jvmPausesId;
   private static final int sampleCallbacksId;
   private static final int sampleCallbackErrorsId;
   private static final int sampleCallbackDurationId;
-
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     samplerType = f.createType("StatSampler", "Stats on the statistic sampler.",
@@ -59,7 +58,7 @@ public class StatSamplerStats {
             f.createIntGauge(STAT_RESOURCES,
                 "Current number of statistic resources being sampled by this sampler.", "resources",
                 false),
-            f.createLongCounter(JVM_PAUSES,
+            f.createIntCounter(JVM_PAUSES,
                 "Total number of JVM pauses (which may or may not be full GC pauses) detected by this sampler. A JVM pause is defined as a system event which kept the statistics sampler thread from sampling for 3000 or more milliseconds. This threshold can be customized by setting the system property gemfire.statSamplerDelayThreshold (units are milliseconds).",
                 "jvmPauses", false),
             f.createIntGauge(SAMPLE_CALLBACKS,
@@ -82,46 +81,54 @@ public class StatSamplerStats {
 
   private final Statistics samplerStats;
 
-  StatSamplerStats(StatisticsFactory f, long id) {
+  public StatSamplerStats(StatisticsFactory f, long id) {
     this.samplerStats = f.createStatistics(samplerType, "statSampler", id);
   }
 
-  static StatisticsType getStatisticsType() {
-    return samplerType;
-  }
-
-  void tookSample(long nanosSpentWorking, int statResources, long nanosSpentSleeping) {
+  public void tookSample(long nanosSpentWorking, int statResources, long nanosSpentSleeping) {
     this.samplerStats.incInt(sampleCountId, 1);
     this.samplerStats.incLong(sampleTimeId, nanosSpentWorking / 1000000);
     this.samplerStats.setInt(delayDurationId, (int) (nanosSpentSleeping / 1000000));
     this.samplerStats.setInt(statResourcesId, statResources);
   }
 
-  void incJvmPauses() {
-    this.samplerStats.incLong(jvmPausesId, 1);
+  public void incJvmPauses() {
+    this.samplerStats.incInt(jvmPausesId, 1);
   }
 
-  void incSampleCallbackErrors(int delta) {
+  public void incSampleCallbackErrors(int delta) {
     this.samplerStats.incInt(sampleCallbackErrorsId, delta);
   }
 
-  void setSampleCallbacks(int count) {
+  public void setSampleCallbacks(int count) {
     this.samplerStats.setInt(sampleCallbacksId, count);
   }
 
-  void incSampleCallbackDuration(long delta) {
+  public void incSampleCallbackDuration(long delta) {
     this.samplerStats.incLong(sampleCallbackDurationId, delta);
   }
 
-  int getSampleCount() {
-    return this.samplerStats.getInt(sampleCountId);
+  public int getSampleCount() {
+    return this.samplerStats.getInt(SAMPLE_COUNT);
   }
 
-  long getJvmPauses() {
-    return this.samplerStats.getLong(jvmPausesId);
+  public long getSampleTime() {
+    return this.samplerStats.getLong(SAMPLE_TIME);
   }
 
-  void close() {
+  public int getDelayDuration() {
+    return this.samplerStats.getInt(DELAY_DURATION);
+  }
+
+  public int getStatResources() {
+    return this.samplerStats.getInt(STAT_RESOURCES);
+  }
+
+  public int getJvmPauses() {
+    return this.samplerStats.getInt(JVM_PAUSES);
+  }
+
+  public void close() {
     this.samplerStats.close();
   }
 
