@@ -20,6 +20,7 @@ import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
@@ -49,10 +50,11 @@ public class ModelCommandResult implements CommandResult {
   private ResultModel result;
   private List<String> commandOutput;
   private int commandOutputIndex;
-  @MakeImmutable
-  private static final Map<String, List<String>> EMPTY_TABLE_MAP = new LinkedHashMap<>();
-  @MakeImmutable
-  private static final List<String> EMPTY_LIST = new ArrayList<>();
+  @Immutable
+  private static final Map<String, List<String>> EMPTY_TABLE_MAP =
+      Collections.unmodifiableMap(new LinkedHashMap<>());
+  @Immutable
+  private static final List<String> EMPTY_LIST = Collections.emptyList();
 
   public ModelCommandResult(ResultModel result) {
     this.result = result;

@@ -42,7 +42,6 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.DateFormatter;
@@ -51,13 +50,6 @@ import org.apache.geode.internal.logging.DateFormatter;
  * StatArchiveReader provides APIs to read statistic snapshots from an archive file.
  */
 public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
-
-  @MakeImmutable("Number formats are not thread safe")
-  protected static final NumberFormat nf = NumberFormat.getNumberInstance();
-  static {
-    nf.setMaximumFractionDigits(2);
-    nf.setGroupingUsed(false);
-  }
 
   private final StatArchiveFile[] archives;
   private boolean dump;
@@ -697,6 +689,8 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       if (endTime != -1) {
         result.append(" endTime=\"").append(new Date(endTime)).append("\"");
       }
+
+      NumberFormat nf = getNumberFormat();
       result.append(" min=").append(nf.format(min));
       result.append(" max=").append(nf.format(max));
       result.append(" average=").append(nf.format(avg));
@@ -1224,6 +1218,7 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
     protected void dump(PrintWriter stream) {
       calcStats();
       stream.print("  " + descriptor.getName() + "=");
+      NumberFormat nf = getNumberFormat();
       stream.print("[size=" + getSnapshotsSize() + " min=" + nf.format(min) + " max="
           + nf.format(max) + " avg=" + nf.format(avg) + " stddev=" + nf.format(stddev) + "]");
       if (Boolean.getBoolean("StatArchiveReader.dumpall")) {
@@ -3334,4 +3329,12 @@ public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
       return result;
     }
   }
+
+  private static NumberFormat getNumberFormat() {
+    NumberFormat nf = NumberFormat.getNumberInstance();
+    nf.setMaximumFractionDigits(2);
+    nf.setGroupingUsed(false);
+    return nf;
+  }
+
 }

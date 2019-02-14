@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.cache.UnsupportedVersionException;
@@ -103,8 +102,9 @@ public class TcpServer {
   // GossipServer.
   public static final int OLDGOSSIPVERSION = 1001;
 
-  @MakeImmutable
-  private static final Map<Integer, Short> GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap<>();
+  @MutableForTesting("The map used here is mutable, because some tests modify it")
+  private static final Map<Integer, Short> GOSSIP_TO_GEMFIRE_VERSION_MAP =
+      createGossipToVersionMap();
 
   // For test purpose only
   @MutableForTesting
@@ -150,9 +150,11 @@ public class TcpServer {
    * handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS are same for then
    * current GOSSIPVERSION should be used.
    */
-  static {
-    GOSSIP_TO_GEMFIRE_VERSION_MAP.put(GOSSIPVERSION, Version.GFE_71.ordinal());
-    GOSSIP_TO_GEMFIRE_VERSION_MAP.put(OLDGOSSIPVERSION, Version.GFE_57.ordinal());
+  private static Map<Integer, Short> createGossipToVersionMap() {
+    HashMap<Integer, Short> map = new HashMap<>();
+    map.put(GOSSIPVERSION, Version.GFE_71.ordinal());
+    map.put(OLDGOSSIPVERSION, Version.GFE_57.ordinal());
+    return map;
   }
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,

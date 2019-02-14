@@ -39,8 +39,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
@@ -124,8 +124,8 @@ public class JNDIInvoker {
    * transaction manager bound to JNDI context or try to bind itself as a JTA transaction manager.
    * Also region operations will <b>not</b> participate in an ongoing JTA transaction.
    */
-  @MakeImmutable
-  private static Boolean IGNORE_JTA =
+  @MutableForTesting
+  private static boolean IGNORE_JTA =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA");
 
   @Immutable

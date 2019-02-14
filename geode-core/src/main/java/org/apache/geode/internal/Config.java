@@ -100,11 +100,6 @@ public interface Config {
   String[] getAttributeNames();
 
   /**
-   * Gets the attributes names of just this config; does not include inherited attributes.
-   */
-  String[] getSpecificAttributeNames();
-
-  /**
    * Returns whether or not this configuration is the same as another configuration.
    */
   boolean sameAs(Config other);
