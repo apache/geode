@@ -71,7 +71,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateRegionCommand extends SingleGfshCommand {
-  private static String[] PARTITION_ATTRIBUTES = new String[] {
+  private static final String[] PARTITION_ATTRIBUTES = new String[] {
       CliStrings.CREATE_REGION__COLOCATEDWITH,
       CliStrings.CREATE_REGION__LOCALMAXMEMORY,
       CliStrings.CREATE_REGION__RECOVERYDELAY,
