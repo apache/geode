@@ -460,8 +460,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       throw new GemFireSecurityException(failReason);
     }
 
-    // there is no way we can rech here right now
-    throw new RuntimeException("Join Request Failed with response " + joinResponse[0]);
+    throw new RuntimeException("Join Request Failed with response " + response);
   }
 
   private JoinResponseMessage waitForJoinResponse() throws InterruptedException {
@@ -1364,9 +1363,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         // 2. Member which was coordinator but just now some other member became coordinator
         // 3. we got message with secret key, but still view is coming and that will inform the
         // joining thread
-        if (rsp.getRejectionMessage() != null || rsp.getCurrentView() != null) {
+        if (rsp.getRejectionMessage() != null) {
           joinResponse[0] = rsp;
           joinResponse.notifyAll();
+        } else if (rsp.getCurrentView() != null) {
+          // ignore - we get to join when we receive a view. Joining earlier may
+          // confuse other members if we've reused an old address
         } else {
           // we got secret key lets add it
           services.getMessenger().setClusterSecretKey(rsp.getSecretPk());
