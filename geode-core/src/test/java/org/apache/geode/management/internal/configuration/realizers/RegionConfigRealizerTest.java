@@ -33,12 +33,14 @@ import org.apache.geode.internal.cache.InternalCache;
 public class RegionConfigRealizerTest {
   InternalCache cache;
   RegionFactory regionFactory;
+  RegionConfigRealizer realizer;
 
   @Before
   public void setup() {
     cache = mock(InternalCache.class);
     regionFactory = mock(RegionFactory.class);
     when(cache.createRegionFactory()).thenReturn(regionFactory);
+    realizer = new RegionConfigRealizer();
   }
 
   @Test
@@ -47,7 +49,6 @@ public class RegionConfigRealizerTest {
     config.setName("regionName");
     config.setType("PARTITION");
 
-    RegionConfigRealizer realizer = new RegionConfigRealizer();
     realizer.create(config, cache);
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
@@ -63,8 +64,7 @@ public class RegionConfigRealizerTest {
     config.setName("regionName");
     config.setType("REPLICATE");
 
-    RegionConfigRealizer subject = new RegionConfigRealizer();
-    subject.create(config, cache);
+    realizer.create(config, cache);
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
     verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());

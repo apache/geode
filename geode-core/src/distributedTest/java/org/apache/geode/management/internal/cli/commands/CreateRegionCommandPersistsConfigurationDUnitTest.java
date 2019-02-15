@@ -310,10 +310,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
         assertThat(attr.isStatisticsEnabled())
             .describedAs("Expecting statistics to be enabled for region " + name)
             .isTrue();
-        assertThat(attr.isCloningEnabled())
-            .describedAs("Expecting cloning to be enabled for region " + name
-                + " since compressor is provided")
-            .isTrue();
+        assertThat(attr.isCloningEnabled()).isNull();
         assertThat(attr.isEnableSubscriptionConflation())
             .describedAs("Expecting subscription conflation to be enabled for region "
                 + name)
@@ -505,7 +502,6 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       List<String> regionNames = Arrays.asList(regionName, regionNameFromTemplate);
       regionNames.forEach(name -> {
         RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
-        assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
 
         RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();

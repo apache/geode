@@ -71,16 +71,16 @@ public class ExportClusterConfigurationCommandDUnitTest {
   @Test
   public void getClusterConfig() {
     gfsh.executeAndAssertThat(EXPORT_SHARED_CONFIG).statusIsSuccess()
-        .containsOutput("<region name=\"regionA\">").containsOutput("cluster.xml")
-        .doesNotContainOutput("<region name=\"regionB\">");
+        .containsOutput("<region name=\"regionA\"").containsOutput("cluster.xml")
+        .doesNotContainOutput("<region name=\"regionB\"");
   }
 
 
   @Test
   public void getClusterConfigInGroup() {
     gfsh.executeAndAssertThat(EXPORT_SHARED_CONFIG + " --group=groupB")
-        .containsOutput("<region name=\"regionB\">")
-        .doesNotContainOutput("<region name=\"regionA\">");
+        .containsOutput("<region name=\"regionB\"")
+        .doesNotContainOutput("<region name=\"regionA\"");
   }
 
   @Test
@@ -92,7 +92,7 @@ public class ExportClusterConfigurationCommandDUnitTest {
     assertThat(xmlFile).exists();
     String content = FileUtils.readFileToString(xmlFile, Charset.defaultCharset());
     assertThat(content).startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>")
-        .contains("<region name=\"regionA\">");
+        .contains("<region name=\"regionA\"");
   }
 
   @Test

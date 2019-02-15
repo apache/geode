@@ -19,7 +19,6 @@ package org.apache.geode.cache;
 import java.io.ObjectStreamException;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 
 
 /**
@@ -301,11 +300,6 @@ public class DataPolicy implements java.io.Serializable {
   @Override
   public String toString() {
     return this.name;
-  }
-
-  public RegionAttributesDataPolicy toConfigType() {
-    String configName = this.name.toLowerCase().replace("_", "-");
-    return RegionAttributesDataPolicy.fromValue(configName);
   }
 
   public static DataPolicy fromString(String s) {
