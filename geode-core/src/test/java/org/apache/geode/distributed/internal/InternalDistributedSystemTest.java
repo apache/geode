@@ -46,10 +46,10 @@ public class InternalDistributedSystemTest {
   private static final String STATISTICS_TEXT_ID = "statistics-text-id";
   private static final long STATISTICS_NUMERIC_ID = 2349;
 
-  @Mock
+  @Mock(name = "autowiredStatisticsManagerFactory")
   public StatisticsManagerFactory statisticsManagerFactory;
 
-  @Mock
+  @Mock(name = "autowiredStatisticsManager")
   public StatisticsManager statisticsManager;
 
   private InternalDistributedSystem internalDistributedSystem;
@@ -65,11 +65,12 @@ public class InternalDistributedSystemTest {
 
   @Test
   public void createsStatisticsManagerViaFactory() {
-    boolean defaultStatsDisabled = false;
-    String defaultMemberName = "";
-    StatisticsManager statisticsManagerCreatedByFactory = mock(StatisticsManager.class);
+    StatisticsManagerFactory statisticsManagerFactory =
+        mock(StatisticsManagerFactory.class, "statisticsManagerFactory");
+    StatisticsManager statisticsManagerCreatedByFactory =
+        mock(StatisticsManager.class, "statisticsManagerCreatedByFactory");
     when(statisticsManagerFactory
-        .create(eq(defaultMemberName), anyLong(), eq(defaultStatsDisabled)))
+        .create(any(), anyLong(), eq(false)))
             .thenReturn(statisticsManagerCreatedByFactory);
 
     InternalDistributedSystem result =

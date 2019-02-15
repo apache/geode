@@ -24,7 +24,6 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
 import java.util.Properties;
@@ -59,7 +58,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceO
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
@@ -327,71 +325,6 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     vm0.invoke(() -> checkData(0, 4, "a", partitionedRegionName));
     assertThat(vm1.invoke(() -> getBucketList(partitionedRegionName))).isEqualTo(bucketsOnVM1);
     assertThat(vm0.invoke(() -> getBucketList(partitionedRegionName))).isEmpty();
-  }
-
-  /**
-   * RegressionTest for bug 42226. <br>
-   * 1. Member A has the bucket <br>
-   * 2. Member B starts creating the bucket. It tells member A that it hosts the bucket <br>
-   * 3. Member A crashes <br>
-   * 4. Member B destroys the bucket and throws a partition offline exception, because it wasn't
-   * able to complete initialization. <br>
-   * 5. Member A recovers, and gets stuck waiting for member B.
-   *
-   * <p>
-   * TRAC 42226: recycled VM hangs during re-start while waiting for Partition to come online (after
-   * Controller VM sees unexpected PartitionOffLineException while doing ops)
-   */
-  @Test
-  public void doesNotWaitForPreviousInstanceOfOnlineServer() {
-    // Add a hook to disconnect from the distributed system when the initial image message shows up.
-    vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
-        @Override
-        public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
-          if (message instanceof RequestImageMessage) {
-            RequestImageMessage requestImageMessage = (RequestImageMessage) message;
-            // Don't disconnect until we see a bucket
-            if (requestImageMessage.regionPath.contains("_B_")) {
-              DistributionMessageObserver.setInstance(null);
-              disconnectFromDS();
-            }
-          }
-        }
-
-        @Override
-        public void afterProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
-          // nothing
-        }
-      });
-    });
-
-    vm0.invoke(() -> createPartitionedRegion(1, 0, 1, true));
-
-    // Make sure we create a bucket
-    vm0.invoke(() -> createData(0, 1, "a", partitionedRegionName));
-
-    // This should recover redundancy, which should cause vm0 to disconnect
-
-    try (IgnoredException ie = addIgnoredException(PartitionOfflineException.class)) {
-      vm1.invoke(() -> createPartitionedRegion(1, 0, 1, true));
-
-      // Make sure get a partition offline exception
-      vm1.invoke(() -> {
-        assertThatThrownBy(() -> createData(0, 1, "a", partitionedRegionName))
-            .isInstanceOf(PartitionOfflineException.class);
-      });
-    }
-
-    // Make sure vm0 is really disconnected (avoids a race with the observer).
-    vm0.invoke(() -> disconnectFromDS());
-
-    // This should recreate the bucket
-    vm0.invoke(() -> createPartitionedRegion(1, 0, 1, true));
-
-    vm1.invoke(() -> checkData(0, 1, "a", partitionedRegionName));
   }
 
   /**
