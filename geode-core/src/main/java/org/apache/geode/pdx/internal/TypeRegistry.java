@@ -186,30 +186,32 @@ public class TypeRegistry {
 
   /**
    * Create a type id for a type that may come locally, or from a remote member.
+   *
+   * @return the existing type or the new type
    */
-  public int defineType(PdxType newType) {
+  public PdxType defineType(PdxType newType) {
     Integer existingId = this.typeToId.get(newType);
     if (existingId != null) {
-      int eid = existingId;
-      newType.setTypeId(eid);
-      return eid;
+      return this.idToType.get(existingId);
     }
 
     int id = this.distributedTypeRegistry.defineType(newType);
-    newType.setTypeId(id);
     PdxType oldType = this.idToType.get(id);
     if (oldType == null) {
+      newType.setTypeId(id);
       this.idToType.put(id, newType);
       this.typeToId.put(newType, id);
       if (logger.isInfoEnabled()) {
         logger.info("Caching {}", newType.toFormattedString());
       }
-    } else if (!oldType.equals(newType)) {
-      Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType
-          + " new type=" + newType);
+      return newType;
+    } else {
+      if (!oldType.equals(newType)) {
+        Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType
+            + " new type=" + newType);
+      }
+      return oldType;
     }
-
-    return id;
   }
 
   public void addRemoteType(int typeId, PdxType newType) {
@@ -236,14 +238,13 @@ public class TypeRegistry {
       if (t != null) {
         return t;
       }
-      defineType(newType);
-      this.localTypeIds.put(o.getClass(), newType);
+      PdxType existingType = defineType(newType);
+      this.localTypeIds.put(o.getClass(), existingType);
+      return existingType;
     } else {
       // Defining a type for PdxInstanceFactory.
-      defineType(newType);
+      return defineType(newType);
     }
-
-    return newType;
   }
 
   public TypeRegistration getTypeRegistration() {

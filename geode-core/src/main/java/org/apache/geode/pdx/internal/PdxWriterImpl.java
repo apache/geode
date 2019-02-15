@@ -533,7 +533,8 @@ public class PdxWriterImpl implements PdxWriter {
           // We created a new type that had unreadData.
           // In this case we don't define a local type
           // but we do set the serialized type.
-          typeId = this.tr.defineType(newType);
+          this.newType = this.tr.defineType(newType);
+          typeId = this.newType.getTypeId();
           this.unreadData.setSerializedType(newType);
         } else {
           this.newType = this.tr.defineLocalType(this.pdx, newType);
