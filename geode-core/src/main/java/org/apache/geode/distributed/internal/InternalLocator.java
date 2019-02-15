@@ -1051,7 +1051,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           }
           this.stoppedForReconnect = false;
         }
-        restartWithDS(newSystem, GemFireCacheImpl.getInstance());
+        try {
+          restartWithDS(newSystem, GemFireCacheImpl.getInstance());
+        } catch (CancelException e) {
+          this.stoppedForReconnect = true;
+          return false;
+        }
         setLocator(this);
         restarted = true;
       }
@@ -1093,7 +1098,14 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       this.myDs.setDependentLocator(this);
       logger.info("Locator restart: initializing TcpServer");
 
-      this.server.restarting(newSystem, newCache, this.configurationPersistenceService);
+      try {
+        this.server.restarting(newSystem, newCache, this.configurationPersistenceService);
+      } catch (CancelException e) {
+        this.myDs = null;
+        this.myCache = null;
+        logger.info("Locator restart: attempt to restart location services failed", e);
+        throw e;
+      }
       if (this.productUseLog.isClosed()) {
         this.productUseLog.reopen();
       }

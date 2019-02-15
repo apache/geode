@@ -17,6 +17,7 @@ package org.apache.geode.cache30;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
@@ -126,11 +127,12 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
 
   public Properties getDistributedSystemProperties() {
     dsProperties = new Properties();
-    dsProperties.put(MAX_WAIT_TIME_RECONNECT, "20000");
+    dsProperties.put(MAX_WAIT_TIME_RECONNECT, "" + (5000 * NUM_VMS));
     dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
     dsProperties.put(DISABLE_AUTO_RECONNECT, "false");
     dsProperties.put(ENABLE_CLUSTER_CONFIGURATION, "true");
     dsProperties.put(USE_CLUSTER_CONFIGURATION, "true");
+    dsProperties.put(HTTP_SERVICE_PORT, "0");
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("localHost[")
         .append(locatorPorts[0])
