@@ -724,16 +724,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
-        <artifactId>geode-all-bom</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
-        <artifactId>geode-client-bom</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.geode</groupId>
         <artifactId>geode-lucene-test</artifactId>
         <version>1.9.0-SNAPSHOT</version>
       </dependency>

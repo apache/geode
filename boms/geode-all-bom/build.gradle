@@ -51,9 +51,11 @@ publishing {
         }
         withXml {
           // Published Geode artifacts are constrained to match the version of this BOM.
+          // As with the evaluationDependsOn block, we exclude any child of the :boms subproject
           def thisNode = asNode()
           project.rootProject.subprojects.each { p ->
-            if (p.findProperty('constrainVersionInBom') ) {
+            if (p.findProperty('constrainVersionInBom')
+                && !project(':boms').allprojects.contains(p)) {
               def geodeDependency =
                   thisNode.dependencyManagement.dependencies*.appendNode('dependency')
                geodeDependency*.appendNode('groupId')*.setValue('org.apache.geode')
