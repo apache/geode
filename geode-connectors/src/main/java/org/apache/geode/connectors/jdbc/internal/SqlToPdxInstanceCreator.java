@@ -14,16 +14,11 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.sql.JDBCType;
-import java.util.Set;
-
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstanceFactory;
-import org.apache.geode.pdx.internal.PdxField;
-import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class SqlToPdxInstanceCreator {
   private final InternalCache cache;
@@ -35,27 +30,12 @@ public class SqlToPdxInstanceCreator {
   }
 
   public SqlToPdxInstance create() {
-    TypeRegistry typeRegistry = cache.getPdxRegistry();
     SqlToPdxInstance result = new SqlToPdxInstance();
     PdxInstanceFactory templateFactory = createPdxInstanceFactory();
     for (FieldMapping columnMapping : regionMapping.getFieldMappings()) {
       String columnName = columnMapping.getJdbcName();
       String fieldName = columnMapping.getPdxName();
-      FieldType fieldType;
-      if (fieldName.isEmpty()) {
-        Set<PdxField> pdxFields =
-            typeRegistry.findFieldThatMatchesName(regionMapping.getPdxName(), columnName);
-        JDBCType columnType = JDBCType.valueOf(columnMapping.getJdbcType());
-        if (pdxFields.isEmpty()) {
-          fieldName = columnName;
-          fieldType = computeFieldType(columnMapping.isJdbcNullable(), columnType);
-        } else {
-          fieldName = pdxFields.iterator().next().getFieldName();
-          fieldType = findFieldType(pdxFields, columnMapping.isJdbcNullable(), columnType);
-        }
-      } else {
-        fieldType = FieldType.valueOf(columnMapping.getPdxType());
-      }
+      FieldType fieldType = FieldType.valueOf(columnMapping.getPdxType());
       result.addMapping(columnName, fieldName, fieldType);
       writeField(templateFactory, columnMapping, fieldName, fieldType);
     }
@@ -141,81 +121,5 @@ public class SqlToPdxInstanceCreator {
       default:
         throw new IllegalStateException("unhandled pdx field type " + fieldType);
     }
-  }
-
-  public static FieldType findFieldType(Set<PdxField> pdxFields, boolean columnNullable,
-      JDBCType columnType) {
-    if (pdxFields.size() == 1) {
-      return pdxFields.iterator().next().getFieldType();
-    } else {
-      FieldType fieldTypeBasedOnJDBC = computeFieldType(columnNullable, columnType);
-      // TODO find best type in pdxFields
-      return pdxFields.iterator().next().getFieldType();
-    }
-  }
-
-  public static FieldType computeFieldType(boolean isNullable, JDBCType jdbcType) {
-    switch (jdbcType) {
-      case NULL:
-        throw new IllegalStateException("unexpected NULL jdbc column type");
-      case BOOLEAN:
-        return computeType(isNullable, FieldType.BOOLEAN);
-      case BIT: // 1 bit
-        return computeType(isNullable, FieldType.BOOLEAN);
-      case TINYINT: // unsigned 8 bits
-        return computeType(isNullable, FieldType.SHORT);
-      case SMALLINT: // signed 16 bits
-        return computeType(isNullable, FieldType.SHORT);
-      case INTEGER: // signed 32 bits
-        return computeType(isNullable, FieldType.INT);
-      case BIGINT: // signed 64 bits
-        return computeType(isNullable, FieldType.LONG);
-      case FLOAT:
-        return computeType(isNullable, FieldType.DOUBLE);
-      case REAL:
-        return computeType(isNullable, FieldType.FLOAT);
-      case DOUBLE:
-        return computeType(isNullable, FieldType.DOUBLE);
-      case CHAR:
-        return FieldType.STRING;
-      case VARCHAR:
-        return FieldType.STRING;
-      case LONGVARCHAR:
-        return FieldType.STRING;
-      case DATE:
-        return FieldType.DATE;
-      case TIME:
-        return FieldType.DATE;
-      case TIMESTAMP:
-        return FieldType.DATE;
-      case BINARY:
-        return FieldType.BYTE_ARRAY;
-      case VARBINARY:
-        return FieldType.BYTE_ARRAY;
-      case LONGVARBINARY:
-        return FieldType.BYTE_ARRAY;
-      case BLOB:
-        return FieldType.BYTE_ARRAY;
-      case NCHAR:
-        return FieldType.STRING;
-      case NVARCHAR:
-        return FieldType.STRING;
-      case LONGNVARCHAR:
-        return FieldType.STRING;
-      case TIME_WITH_TIMEZONE:
-        return FieldType.DATE;
-      case TIMESTAMP_WITH_TIMEZONE:
-        return FieldType.DATE;
-      default:
-        return FieldType.OBJECT;
-    }
-  }
-
-  private static FieldType computeType(boolean isNullable, FieldType nonNullType) {
-    if (isNullable) {
-      return FieldType.OBJECT;
-    }
-    return nonNullType;
-
   }
 }

@@ -607,10 +607,6 @@ public class CreateMappingCommandDUnitTest {
     setupReplicate(region1Name);
     setupReplicate(region2Name);
 
-    server1.invoke(() -> {
-      ClusterStartupRule.getCache().registerPdxMetaData(new Employee());
-    });
-
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, region1Name);
     csb.addOption(DATA_SOURCE_NAME, "connection");
@@ -696,15 +692,10 @@ public class CreateMappingCommandDUnitTest {
     }
   }
 
-
   @Test
   public void createMappingsWithExistingPdxName() {
     String region1Name = "region1";
     setupReplicate(region1Name);
-
-    server1.invoke(() -> {
-      ClusterStartupRule.getCache().registerPdxMetaData(new Employee());
-    });
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, region1Name);
@@ -731,10 +722,6 @@ public class CreateMappingCommandDUnitTest {
   @Test
   public void createMappingUsingRegionNameUsesDomainClass() {
     setupReplicate(EMPLOYEE_LOWER);
-
-    server1.invoke(() -> {
-      ClusterStartupRule.getCache().registerPdxMetaData(new Employee());
-    });
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, EMPLOYEE_LOWER);

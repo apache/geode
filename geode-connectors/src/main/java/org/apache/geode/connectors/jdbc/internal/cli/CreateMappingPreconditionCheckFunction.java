@@ -15,6 +15,8 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.io.ObjectInputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -24,11 +26,11 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
-import org.apache.geode.connectors.jdbc.internal.SqlToPdxInstanceCreator;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
@@ -37,28 +39,35 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.pdx.FieldType;
+import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 @Experimental
 public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMapping> {
 
   private transient DataSourceFactory dataSourceFactory;
+  private transient ClassFactory classFactory;
   private transient TableMetaDataManager tableMetaDataManager;
 
-  CreateMappingPreconditionCheckFunction(DataSourceFactory factory, TableMetaDataManager manager) {
+  CreateMappingPreconditionCheckFunction(DataSourceFactory factory, ClassFactory classFactory,
+      TableMetaDataManager manager) {
     this.dataSourceFactory = factory;
+    this.classFactory = classFactory;
     this.tableMetaDataManager = manager;
   }
 
   CreateMappingPreconditionCheckFunction() {
-    this(dataSourceName -> JNDIInvoker.getDataSource(dataSourceName), new TableMetaDataManager());
+    this(dataSourceName -> JNDIInvoker.getDataSource(dataSourceName),
+        className -> Class.forName(className),
+        new TableMetaDataManager());
   }
 
   // used by java during deserialization
   private void readObject(ObjectInputStream stream) {
     this.dataSourceFactory = dataSourceName -> JNDIInvoker.getDataSource(dataSourceName);
+    this.classFactory = className -> Class.forName(className);
     this.tableMetaDataManager = new TableMetaDataManager();
   }
 
@@ -75,6 +84,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
     InternalCache cache = (InternalCache) context.getCache();
     TypeRegistry typeRegistry = cache.getPdxRegistry();
+    PdxType pdxType = getPdxTypeForClass(cache, typeRegistry, regionMapping.getPdxName());
     try (Connection connection = dataSource.getConnection()) {
       TableMetaDataView tableMetaData =
           tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
@@ -84,13 +94,19 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
       Object[] output = new Object[2];
       ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
       output[1] = fieldMappings;
-      for (String jdbcName : tableMetaData.getColumnNames()) {
+      Set<String> columnNames = tableMetaData.getColumnNames();
+      if (columnNames.size() != pdxType.getFieldCount()) {
+        throw new JdbcConnectorException(
+            "The table and pdx class must have the same number of columns/fields. But the table has "
+                + columnNames.size()
+                + " columns and the pdx class has " + pdxType.getFieldCount() + " fields.");
+      }
+      List<PdxField> pdxFields = pdxType.getFields();
+      for (String jdbcName : columnNames) {
         boolean isNullable = tableMetaData.isColumnNullable(jdbcName);
         JDBCType jdbcType = tableMetaData.getColumnDataType(jdbcName);
         FieldMapping fieldMapping =
-            new FieldMapping("", "", jdbcName, jdbcType.getName(), isNullable);
-        updateFieldMappingFromExistingPdxType(fieldMapping, typeRegistry,
-            regionMapping.getPdxName());
+            createFieldMapping(jdbcName, jdbcType.getName(), isNullable, pdxFields);
         fieldMappings.add(fieldMapping);
       }
       if (regionMapping.getIds() == null || regionMapping.getIds().isEmpty()) {
@@ -104,22 +120,98 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
   }
 
-  private void updateFieldMappingFromExistingPdxType(FieldMapping fieldMapping,
-      TypeRegistry typeRegistry, String pdxClassName) {
-    String columnName = fieldMapping.getJdbcName();
-    try {
-      Set<PdxField> foundFields = typeRegistry.findFieldThatMatchesName(pdxClassName, columnName);
-      if (!foundFields.isEmpty()) {
-        fieldMapping.setPdxName(foundFields.iterator().next().getFieldName());
-        JDBCType columnType = JDBCType.valueOf(fieldMapping.getJdbcType());
-        FieldType fieldType = SqlToPdxInstanceCreator.findFieldType(foundFields,
-            fieldMapping.isJdbcNullable(), columnType);
-        fieldMapping.setPdxType(fieldType.name());
+  private FieldMapping createFieldMapping(String jdbcName, String jdbcType, boolean jdbcNullable,
+      List<PdxField> pdxFields) {
+    String pdxName = null;
+    String pdxType = null;
+    for (PdxField pdxField : pdxFields) {
+      if (pdxField.getFieldName().equals(jdbcName)) {
+        pdxName = pdxField.getFieldName();
+        pdxType = pdxField.getFieldType().name();
+        break;
       }
-    } catch (IllegalStateException ex) {
-      throw new JdbcConnectorException(
-          "Could not determine what pdx field to use for the column name " + columnName
-              + " because " + ex.getMessage());
     }
+    if (pdxName == null) {
+      // look for one inexact match
+      for (PdxField pdxField : pdxFields) {
+        if (pdxField.getFieldName().equalsIgnoreCase(jdbcName)) {
+          if (pdxName != null) {
+            throw new JdbcConnectorException(
+                "More than one PDX field name matched the column name \"" + jdbcName + "\"");
+          }
+          pdxName = pdxField.getFieldName();
+          pdxType = pdxField.getFieldType().name();
+        }
+      }
+    }
+    if (pdxName == null) {
+      throw new JdbcConnectorException(
+          "No PDX field name matched the column name \"" + jdbcName + "\"");
+    }
+    return new FieldMapping(pdxName, pdxType, jdbcName, jdbcType, jdbcNullable);
+  }
+
+  private PdxType getPdxTypeForClass(InternalCache cache, TypeRegistry typeRegistry,
+      String className) {
+    Class<?> clazz = loadPdxClass(className);
+    PdxType result = typeRegistry.getExistingTypeForClass(clazz);
+    if (result != null) {
+      return result;
+    }
+    return generatePdxTypeForClass(cache, typeRegistry, clazz);
+  }
+
+  /**
+   * Generates and returns a PdxType for the given class.
+   * The generated PdxType is also stored in the TypeRegistry.
+   *
+   * @param cache used to generate pdx type
+   * @param clazz the class to generate a PdxType for
+   * @return the generated PdxType
+   * @throws JdbcException if a PdxType can not be generated
+   */
+  private PdxType generatePdxTypeForClass(InternalCache cache, TypeRegistry typeRegistry,
+      Class<?> clazz) {
+    if (PdxSerializable.class.isAssignableFrom(clazz)) {
+      Object object = createInstance(clazz);
+      try {
+        cache.registerPdxMetaData(object);
+      } catch (SerializationException ex) {
+        throw new JdbcConnectorException(
+            "Could not generate a PdxType for the class " + clazz.getName() + " because: " + ex);
+      }
+      // serialization will leave the type in the registry
+      return typeRegistry.getExistingTypeForClass(clazz);
+    }
+    // TODO
+    // Otherwise use the ReflectionBasedAutoSerializer to generate
+    // a PdxType for the class.
+    throw new JdbcConnectorException(
+        "Could not generate a PdxType for the class " + clazz.getName());
+  }
+
+  private Object createInstance(Class<?> clazz) {
+    try {
+      Constructor<?> ctor = clazz.getConstructor();
+      return ctor.newInstance(new Object[] {});
+    } catch (NoSuchMethodException | SecurityException | InstantiationException
+        | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+      throw new JdbcConnectorException(
+          "Could not generate a PdxType for the class " + clazz.getName()
+              + " because it did not have a public zero arg constructor. Details: " + ex);
+    }
+  }
+
+  private Class<?> loadPdxClass(String className) {
+    try {
+      return this.classFactory.loadClass(className);
+    } catch (ClassNotFoundException ex) {
+      throw new JdbcConnectorException(
+          "The pdx class \"" + className + "\" could not be loaded because: " + ex);
+    }
+  }
+
+  public interface ClassFactory {
+    public Class loadClass(String className) throws ClassNotFoundException;
   }
 }

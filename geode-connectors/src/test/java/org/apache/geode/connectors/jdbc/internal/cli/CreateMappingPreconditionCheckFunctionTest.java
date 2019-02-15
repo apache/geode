@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -41,12 +42,14 @@ import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
+import org.apache.geode.connectors.jdbc.internal.cli.CreateMappingPreconditionCheckFunction.ClassFactory;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class CreateMappingPreconditionCheckFunctionTest {
@@ -62,14 +65,19 @@ public class CreateMappingPreconditionCheckFunctionTest {
   private InternalCache cache;
   private TypeRegistry typeRegistry;
   private DataSourceFactory dataSourceFactory;
+  private ClassFactory classFactory;
   private TableMetaDataManager tableMetaDataManager;
   private TableMetaDataView tableMetaDataView;
   private DataSource dataSource;
+  private PdxType pdxType = mock(PdxType.class);
 
   private CreateMappingPreconditionCheckFunction function;
 
+  public static class PdxClassDummy {
+  }
+
   @Before
-  public void setUp() throws SQLException {
+  public void setUp() throws SQLException, ClassNotFoundException {
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     cache = mock(InternalCache.class);
@@ -91,11 +99,15 @@ public class CreateMappingPreconditionCheckFunctionTest {
     Connection connection = mock(Connection.class);
     when(dataSource.getConnection()).thenReturn(connection);
     when(dataSourceFactory.getDataSource(DATA_SOURCE_NAME)).thenReturn(dataSource);
+    classFactory = mock(ClassFactory.class);
+    when(classFactory.loadClass(PDX_CLASS_NAME)).thenReturn(PdxClassDummy.class);
+    when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(pdxType);
     tableMetaDataManager = mock(TableMetaDataManager.class);
     tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
         .thenReturn(tableMetaDataView);
-    function = new CreateMappingPreconditionCheckFunction(dataSourceFactory, tableMetaDataManager);
+    function = new CreateMappingPreconditionCheckFunction(dataSourceFactory, classFactory,
+        tableMetaDataManager);
   }
 
   @Test
@@ -141,6 +153,18 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
+  public void executeFunctionThrowsIfClassNotFound() throws ClassNotFoundException {
+    ClassNotFoundException ex = new ClassNotFoundException("class not found");
+    when(classFactory.loadClass(PDX_CLASS_NAME)).thenThrow(ex);
+
+    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
+        .hasMessage("The pdx class \"" + PDX_CLASS_NAME
+            + "\" could not be loaded because: java.lang.ClassNotFoundException: class not found");
+  }
+
+  @Test
   public void executeFunctionReturnsNoFieldMappingsIfNoColumns() throws Exception {
     Set<String> columnNames = Collections.emptySet();
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
@@ -161,6 +185,15 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
     when(tableMetaDataView.isColumnNullable("col2")).thenReturn(true);
     when(tableMetaDataView.getColumnDataType("col2")).thenReturn(JDBCType.DATE);
+    when(pdxType.getFieldCount()).thenReturn(2);
+    PdxField field1 = mock(PdxField.class);
+    when(field1.getFieldName()).thenReturn("col1");
+    when(field1.getFieldType()).thenReturn(FieldType.DATE);
+    PdxField field2 = mock(PdxField.class);
+    when(field2.getFieldName()).thenReturn("col2");
+    when(field2.getFieldType()).thenReturn(FieldType.DATE);
+    List<PdxField> pdxFields = Arrays.asList(field1, field2);
+    when(pdxType.getFields()).thenReturn(pdxFields);
 
     CliFunctionResult result = function.executeFunction(context);
 
@@ -170,10 +203,10 @@ public class CreateMappingPreconditionCheckFunctionTest {
     assertThat(fieldsMappings).hasSize(2);
     assertThat(fieldsMappings.get(0))
         .isEqualTo(
-            new FieldMapping("", "", "col1", JDBCType.DATE.name(), false));
+            new FieldMapping("col1", FieldType.DATE.name(), "col1", JDBCType.DATE.name(), false));
     assertThat(fieldsMappings.get(1))
         .isEqualTo(
-            new FieldMapping("", "", "col2", JDBCType.DATE.name(), true));
+            new FieldMapping("col2", FieldType.DATE.name(), "col2", JDBCType.DATE.name(), true));
   }
 
   @Test
@@ -186,8 +219,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
     PdxField pdxField1 = mock(PdxField.class);
     when(pdxField1.getFieldName()).thenReturn("COL1");
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
-    when(typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "col1"))
-        .thenReturn(Collections.singleton(pdxField1));
+    when(pdxType.getFieldCount()).thenReturn(1);
+    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
 
     CliFunctionResult result = function.executeFunction(context);
 
@@ -207,14 +240,57 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
     when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
     when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
-    when(typeRegistry.findFieldThatMatchesName(PDX_CLASS_NAME, "col1"))
-        .thenThrow(new IllegalStateException("reason"));
+    when(pdxType.getFieldCount()).thenReturn(1);
+    PdxField pdxField1 = mock(PdxField.class);
+    when(pdxField1.getFieldName()).thenReturn("COL1");
+    when(pdxField1.getFieldType()).thenReturn(FieldType.DATE);
+    PdxField pdxField2 = mock(PdxField.class);
+    when(pdxField2.getFieldName()).thenReturn("Col1");
+    when(pdxField2.getFieldType()).thenReturn(FieldType.DATE);
+    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1, pdxField2));
+
+    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
+        .hasMessage("More than one PDX field name matched the column name \"col1\"");
+  }
+
+  @Test
+  public void executeFunctionThrowsGivenExistingPdxTypeWithNoMatches()
+      throws Exception {
+    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+    when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
+    when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
+    when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
+    when(pdxType.getFieldCount()).thenReturn(1);
+    PdxField pdxField1 = mock(PdxField.class);
+    when(pdxField1.getFieldName()).thenReturn("pdxCOL1");
+    when(pdxField1.getFieldType()).thenReturn(FieldType.DATE);
+    PdxField pdxField2 = mock(PdxField.class);
+    when(pdxField2.getFieldName()).thenReturn("pdxCol1");
+    when(pdxField2.getFieldType()).thenReturn(FieldType.DATE);
+    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1, pdxField2));
+
+    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
+        .hasMessage("No PDX field name matched the column name \"col1\"");
+  }
+
+  @Test
+  public void executeFunctionThrowsGivenExistingPdxTypeWithWrongNumberOfFields()
+      throws Exception {
+    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
+    when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
+    when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
+    when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
+    when(pdxType.getFieldCount()).thenReturn(2);
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
 
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
         .hasMessage(
-            "Could not determine what pdx field to use for the column name col1 because reason");
+            "The table and pdx class must have the same number of columns/fields. But the table has 1 columns and the pdx class has 2 fields.");
   }
 
   @Test
