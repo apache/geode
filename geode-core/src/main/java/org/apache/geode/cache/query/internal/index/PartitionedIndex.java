@@ -58,6 +58,10 @@ public class PartitionedIndex extends AbstractIndex {
   private Map<Region, List<Index>> bucketIndexes =
       Collections.synchronizedMap(new HashMap<Region, List<Index>>());
 
+  //An arbitrary bucket index from this PartiionedIndex that is used as a representative
+  //index for the entire PartitionIndex.  Usually used for scoring/sizing of an index when
+  //selecting which index to use
+  private volatile Index arbitraryBucketIndex;
   /**
    * Type on index represented by this partitioned index.
    *
@@ -108,6 +112,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   public void addToBucketIndexes(Region r, Index index) {
     synchronized (this.bucketIndexes) {
+      setArbitraryBucketIndex(index);
       List<Index> indexes = this.bucketIndexes.get(r);
       if (indexes == null) {
         indexes = new ArrayList<Index>();
@@ -125,6 +130,9 @@ public class PartitionedIndex extends AbstractIndex {
         if (indexes.isEmpty()) {
           this.bucketIndexes.remove(r);
         }
+      }
+      if (index == arbitraryBucketIndex) {
+        setArbitraryBucketIndex(retrieveArbitraryBucketIndex());
       }
     }
   }
@@ -170,10 +178,13 @@ public class PartitionedIndex extends AbstractIndex {
     }
   }
 
-  /**
-   * Returns one of the bucket index. To get all bucket index use getBucketIndexes()
-   */
-  public Index getBucketIndex() {
+  public void setArbitraryBucketIndex(Index index) {
+    if (arbitraryBucketIndex == null) {
+      arbitraryBucketIndex = index;
+    }
+  }
+
+  public Index retrieveArbitraryBucketIndex() {
     Index index = null;
     synchronized (this.bucketIndexes) {
       if (this.bucketIndexes.size() > 0) {
@@ -184,6 +195,10 @@ public class PartitionedIndex extends AbstractIndex {
       }
     }
     return index;
+  }
+
+  public Index getBucketIndex() {
+    return arbitraryBucketIndex;
   }
 
   protected Map.Entry<Region, List<Index>> getFirstBucketIndex() {
@@ -273,7 +288,6 @@ public class PartitionedIndex extends AbstractIndex {
       }
     }
   }
-
 
 
   @Override
@@ -423,7 +437,6 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Internal class for partitioned index statistics. Statistics are not supported right now.
-   *
    */
   class PartitionedIndexStatistics extends InternalIndexStatistics {
     private IndexStats vsdStats;
@@ -590,7 +603,8 @@ public class PartitionedIndex extends AbstractIndex {
    */
   @Override
   void lockedQuery(Object lowerBoundKey, int lowerBoundOperator, Object upperBoundKey,
-      int upperBoundOperator, Collection results, Set keysToRemove, ExecutionContext context)
+      int upperBoundOperator, Collection results, Set keysToRemove,
+      ExecutionContext context)
       throws TypeMismatchException {
     throw new RuntimeException(
         "Not supported on partitioned index");
