@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.ResourceException;
@@ -41,6 +42,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Put extends BaseCommand {
 
+  @Immutable
   private static final Put singleton = new Put();
 
   public static Command getCommand() {

@@ -37,6 +37,7 @@ import javax.management.ReflectionException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -64,6 +65,7 @@ import org.apache.geode.management.RegionMXBean;
  */
 public class MBeanJMXAdapter implements ManagementConstants {
   /** The <code>MBeanServer</code> for this application */
+  @MutableForTesting
   public static MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
 
   private final Map<ObjectName, Object> localGemFireMBean;

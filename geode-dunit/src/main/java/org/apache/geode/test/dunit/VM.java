@@ -24,6 +24,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
@@ -152,6 +153,27 @@ public class VM implements Serializable {
    */
   public static VM[] toArray(VM... vms) {
     return vms;
+  }
+
+  /**
+   * Returns an array of all provided VMs.
+   */
+  public static VM[] toArray(List<VM> vmList) {
+    return vmList.toArray(new VM[0]);
+  }
+
+  /**
+   * Returns an array of all provided VMs.
+   */
+  public static VM[] toArray(List<VM> vmList, VM... vms) {
+    return ArrayUtils.addAll(vmList.toArray(new VM[0]), vms);
+  }
+
+  /**
+   * Returns an array of all provided VMs.
+   */
+  public static VM[] toArray(VM[] vmArray, VM... vms) {
+    return ArrayUtils.addAll(vmArray, vms);
   }
 
   /**

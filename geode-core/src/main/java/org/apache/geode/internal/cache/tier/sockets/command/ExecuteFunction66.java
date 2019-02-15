@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.client.internal.ConnectionImpl;
@@ -59,11 +61,13 @@ import org.apache.geode.internal.security.SecurityService;
  * @since GemFire 6.6
  */
 public class ExecuteFunction66 extends BaseCommand {
-
+  @Immutable
   private static final ExecuteFunction66 singleton = new ExecuteFunction66();
 
+  @MakeNotStatic
   private static volatile boolean asyncTxWarningIssued;
 
+  @Immutable
   private static final ExecutorService execService =
       LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true);
 

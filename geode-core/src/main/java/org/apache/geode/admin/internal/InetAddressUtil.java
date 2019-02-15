@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
@@ -39,11 +40,13 @@ public class InetAddressUtil {
   private static final Logger logger = LogService.getLogger();
 
   /** InetAddress instance representing the local host */
+  @Immutable
   public static final InetAddress LOCALHOST = createLocalHost();
 
   public static final String LOOPBACK_ADDRESS =
       SocketCreator.preferIPv6Addresses() ? "::1" : "127.0.0.1";
 
+  @Immutable
   public static final InetAddress LOOPBACK = InetAddressUtil.toInetAddress(LOOPBACK_ADDRESS);
 
   /** Disallows InetAddressUtil instantiation. */

@@ -31,6 +31,7 @@ import javax.management.MalformedObjectNameException;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessLauncherContext;
@@ -50,6 +51,7 @@ public class StartMemberUtils {
 
   private static final String JAVA_HOME = System.getProperty("java.home");
   static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
+  @Immutable
   private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
 
   static final String EXTENSIONS_PATHNAME = IOUtils.appendToPath(GEODE_HOME, "extensions");

@@ -18,6 +18,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
@@ -26,6 +27,7 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
   public static final String typeName = "AsyncEventQueueStatistics";
 
   /** The <code>StatisticsType</code> of the statistics */
+  @Immutable
   public static final StatisticsType type;
 
 

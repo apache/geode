@@ -17,6 +17,8 @@ package org.apache.geode.i18n;
 import java.text.MessageFormat;
 import java.util.Locale;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.i18n.AbstractStringIdResourceBundle;
 
 /**
@@ -41,18 +43,22 @@ public class StringId {
   /** the English translation of text */
   private final String text;
   /** ResourceBundle to use for translation, shared amongst all instances */
+  @MakeImmutable("This appears to never be modified at runtime")
   private static volatile AbstractStringIdResourceBundle rb = null;
   /**
    * The locale of the current ResourceBundle, if this changes we must update the ResourceBundle.
    */
+  @MakeImmutable("This appears to never be modified at runtime")
   private static volatile Locale currentLocale = null;
 
+  @MakeImmutable("This appears to never be modified at runtime")
   private static boolean includeMsgIDs;
 
   /**
    * A StringId to allow users to log a literal String using the
    * {@link org.apache.geode.LogWriter}
    */
+  @Immutable
   public static final StringId LITERAL = new StringId(1, "{0}");
 
   static {

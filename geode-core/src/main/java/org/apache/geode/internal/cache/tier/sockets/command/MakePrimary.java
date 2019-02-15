@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -27,6 +28,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class MakePrimary extends BaseCommand {
 
+  @Immutable
   private static final MakePrimary singleton = new MakePrimary();
 
   public static Command getCommand() {

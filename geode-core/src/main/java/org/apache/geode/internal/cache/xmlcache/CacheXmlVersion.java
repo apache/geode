@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import java.util.HashMap;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * {@link Enum} for Cache XML versions. Resolves issues with old String based comparisons. Under the
  * old String comparison version "8.1" was older than "8_0" and "10.0" was older than "9.0".
@@ -48,6 +50,7 @@ public enum CacheXmlVersion {
   GEODE_1_0(CacheXml.VERSION_1_0, null, null, CacheXml.SCHEMA_1_0_LOCATION,
       CacheXml.GEODE_NAMESPACE);
 
+  @MakeImmutable
   private static final HashMap<String, CacheXmlVersion> valuesForVersion = new HashMap<>();
   static {
     for (final CacheXmlVersion cacheXmlVersion : values()) {

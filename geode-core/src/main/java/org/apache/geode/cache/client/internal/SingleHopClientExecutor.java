@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
@@ -48,6 +49,7 @@ public class SingleHopClientExecutor {
 
   private static final Logger logger = LogService.getLogger();
 
+  @MakeNotStatic
   static final ExecutorService execService =
       LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true);
 

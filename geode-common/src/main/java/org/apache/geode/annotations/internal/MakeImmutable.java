@@ -12,18 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.management.cli.CliFunction;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+package org.apache.geode.annotations.internal;
 
-public class ListMappingFunction extends CliFunction<Void> {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
-  @Override
-  public CliFunctionResult executeFunction(FunctionContext<Void> context) {
-    JdbcConnectorService service = FunctionContextArgumentProvider.getJdbcConnectorService(context);
-    return new CliFunctionResult(context.getMemberName(), service.getRegionMappings());
-  }
+/**
+ * Annotates a field that should be made explicitly immutable.
+ *
+ * This is a field that we never actually modify, but it's value is a class that could
+ * potentially accidentally be modified, such as an array, or a mutable collection (eg, HashMap).
+ *
+ * Consider wrapping the value in Collections.unmodifiableXXX, or turning an array into
+ * an unmodifiable list.
+ */
+@Target({ElementType.FIELD, ElementType.TYPE})
+public @interface MakeImmutable {
+
+  /** Optional description */
+  String value() default "";
 }

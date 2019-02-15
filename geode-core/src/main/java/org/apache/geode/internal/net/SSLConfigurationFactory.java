@@ -23,6 +23,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -37,6 +38,7 @@ public class SSLConfigurationFactory {
   public static final String JAVAX_TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
   public static final String JAVAX_TRUSTSTORE_TYPE = "javax.net.ssl.trustStoreType";
 
+  @MakeImmutable
   private static SSLConfigurationFactory instance = new SSLConfigurationFactory();
   private DistributionConfig distributionConfig = null;
   private Map<SecurableCommunicationChannel, SSLConfig> registeredSSLConfig = new HashMap<>();

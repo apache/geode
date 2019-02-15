@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
@@ -208,6 +209,7 @@ class ProxyRegionMap implements RegionMap {
   /**
    * Used by basicPut to signal the caller that the put was successful.
    */
+  @Immutable
   private static final RegionEntry markerEntry = new ProxyRegionEntry();
 
   @Override

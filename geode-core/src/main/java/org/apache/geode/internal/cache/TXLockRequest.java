@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.locks.TXLockId;
@@ -142,6 +143,7 @@ public class TXLockRequest {
     releaseDistributed(system);
   }
 
+  @MakeNotStatic
   private static final TXReservationMgr resMgr = new TXReservationMgr(true);
 
   /**

@@ -32,6 +32,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheRuntimeException;
@@ -83,6 +85,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   private static final Logger logger = LogService.getLogger();
 
   // Keep a 60 second history @ an estimated 1092 transactions/second ~= 16^4
+  @MakeNotStatic
   protected static final TXFarSideCMTracker txTracker = new TXFarSideCMTracker((60 * 1092));
 
   private ArrayList<RegionCommit> regions; // list of RegionCommit instances
@@ -134,21 +137,25 @@ public class TXCommitMessage extends PooledDistributionMessage
    * A token to be put in TXManagerImpl#failoverMap to represent a CommitConflictException while
    * committing a transaction
    */
+  @Immutable
   public static final TXCommitMessage CMT_CONFLICT_MSG = new TXCommitMessage();
   /**
    * A token to be put in TXManagerImpl#failoverMap to represent a
    * TransactionDataNodeHasDepartedException
    * while committing a transaction
    */
+  @Immutable
   public static final TXCommitMessage REBALANCE_MSG = new TXCommitMessage();
   /**
    * A token to be put in TXManagerImpl#failoverMap to represent an exception while committing a
    * transaction
    */
+  @Immutable
   public static final TXCommitMessage EXCEPTION_MSG = new TXCommitMessage();
   /**
    * A token to be put in TXManagerImpl#failoverMap to represent a rolled back transaction
    */
+  @Immutable
   public static final TXCommitMessage ROLLBACK_MSG = new TXCommitMessage();
 
   public TXCommitMessage(TXId txIdent, DistributionManager dm, TXState txState) {

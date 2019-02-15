@@ -38,6 +38,7 @@ import java.util.stream.Stream;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
@@ -56,8 +57,8 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 public class DeployedJar {
 
   private static final Logger logger = LogService.getLogger();
+  @MakeNotStatic("This object gets updated in the production code")
   private static final MessageDigest messageDigest = getMessageDigest();
-  private static final byte[] ZERO_BYTES = new byte[0];
   private static final Pattern PATTERN_SLASH = Pattern.compile("/");
 
   private final String jarName;

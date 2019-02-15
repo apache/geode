@@ -39,7 +39,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
@@ -85,6 +88,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   private final ThreadLocal<Boolean> pauseJTA;
 
+  @MakeNotStatic
   private static TXManagerImpl currentInstance = null;
 
   // The unique transaction ID for this Manager
@@ -98,6 +102,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   private final CachePerfStats cachePerfStats;
 
+  @Immutable
   private static final TransactionListener[] EMPTY_LISTENERS = new TransactionListener[0];
 
   /**
@@ -148,6 +153,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   /**
    * A flag to allow persistent transactions. public for testing.
    */
+  @MutableForTesting
   public static boolean ALLOW_PERSISTENT_TRANSACTIONS =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ALLOW_PERSISTENT_TRANSACTIONS");
 
@@ -698,6 +704,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
+  @Immutable
   private static final TXStateProxy PAUSED = new PausedTXStateProxyImpl();
 
   /**
@@ -1733,6 +1740,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
           CustomEntryConcurrentHashMap.DEFAULT_CONCURRENCY_LEVEL, true,
           new RefCountMapEntryCreator());
 
+  @Immutable
   private static final MapCallback<AbstractRegionEntry, RefCountMapEntry, Object, Object> incCallback =
       new MapCallback<AbstractRegionEntry, RefCountMapEntry, Object, Object>() {
         @Override
@@ -1752,6 +1760,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         }
       };
 
+  @Immutable
   private static final MapCallback<AbstractRegionEntry, RefCountMapEntry, Object, Object> decCallback =
       new MapCallback<AbstractRegionEntry, RefCountMapEntry, Object, Object>() {
         @Override

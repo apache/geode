@@ -29,6 +29,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import java.util.Properties;
 
 import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 
@@ -119,6 +120,7 @@ public interface DistributedSystemConfig extends Cloneable {
    *
    * @since GemFire 6.5
    */
+  @MakeImmutable
   int[] DEFAULT_MEMBERSHIP_PORT_RANGE = DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 
   /**

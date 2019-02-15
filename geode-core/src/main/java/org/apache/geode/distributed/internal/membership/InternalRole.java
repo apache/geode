@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -52,6 +53,7 @@ public class InternalRole implements Role {
   private final String name;
 
   /** Static canonical instances of roles. key=name, value=InternalRole */
+  @MakeNotStatic
   private static final Map roles = new HashMap(); // could use ConcurrentHashMap
 
   /** Contructs a new InternalRole instance for the specified role name */

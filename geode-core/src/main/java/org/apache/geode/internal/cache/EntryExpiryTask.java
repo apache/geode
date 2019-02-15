@@ -23,6 +23,7 @@ import java.util.concurrent.locks.Lock;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -51,6 +52,7 @@ public class EntryExpiryTask extends ExpiryTask {
    *
    * This field is nether private nor final so that dunits can manipulate it as necessary.
    */
+  @MutableForTesting
   public static boolean expireSendsEntryAsCallback =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EXPIRE_SENDS_ENTRY_AS_CALLBACK");
 

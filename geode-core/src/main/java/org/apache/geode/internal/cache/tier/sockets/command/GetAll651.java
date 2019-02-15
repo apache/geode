@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -38,6 +39,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GetAll651 extends BaseCommand {
 
+  @Immutable
   private static final GetAll651 singleton = new GetAll651();
 
   public static Command getCommand() {

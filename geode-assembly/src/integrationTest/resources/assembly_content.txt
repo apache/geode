@@ -147,6 +147,7 @@ javadoc/org/apache/geode/admin/package-frame.html
 javadoc/org/apache/geode/admin/package-summary.html
 javadoc/org/apache/geode/admin/package-tree.html
 javadoc/org/apache/geode/annotations/Experimental.html
+javadoc/org/apache/geode/annotations/Immutable.html
 javadoc/org/apache/geode/annotations/VisibleForTesting.html
 javadoc/org/apache/geode/annotations/package-frame.html
 javadoc/org/apache/geode/annotations/package-summary.html

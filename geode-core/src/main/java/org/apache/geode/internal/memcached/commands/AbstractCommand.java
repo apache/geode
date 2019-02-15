@@ -23,6 +23,7 @@ import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
 
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -45,6 +46,7 @@ public abstract class AbstractCommand implements CommandProcessor {
 
   protected static final char N = '\n';
 
+  @Immutable
   protected static final Charset asciiCharset = Charset.forName("US-ASCII");
 
   protected static final int POSITION_RESPONSE_STATUS = 6;

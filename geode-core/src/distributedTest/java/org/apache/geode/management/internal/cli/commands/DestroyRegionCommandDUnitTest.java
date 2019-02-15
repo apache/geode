@@ -116,13 +116,13 @@ public class DestroyRegionCommandDUnitTest {
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       Configuration group1Config = service.getConfiguration("group1");
       assertThat(group1Config.getCacheXmlContent())
-          .containsOnlyOnce("<region name=\"region1\">")
+          .containsOnlyOnce("<region name=\"region1\"")
           .containsOnlyOnce("data-policy=\"empty\"")
           .containsOnlyOnce("scope=\"distributed-ack\"");
 
       Configuration clusterConfig = service.getConfiguration("group2");
       assertThat(clusterConfig.getCacheXmlContent())
-          .containsOnlyOnce("<region name=\"region1\">")
+          .containsOnlyOnce("<region name=\"region1\"")
           .containsOnlyOnce("data-policy=\"replicate\"")
           .containsOnlyOnce("scope=\"distributed-ack\"");
     });

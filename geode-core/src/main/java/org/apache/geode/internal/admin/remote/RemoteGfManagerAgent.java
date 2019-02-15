@@ -39,6 +39,7 @@ import org.apache.geode.IncompatibleSystemException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.OperationCancelledException;
 import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -179,6 +180,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   /**
    * Safe to read, updates controlled by {@link #enumerationSync}
    */
+  @MakeNotStatic
   private static volatile ArrayList allAgents = new ArrayList();
 
   private static void addAgent(RemoteGfManagerAgent toAdd) {
@@ -200,6 +202,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   /**
    * break any potential circularity in {@link #loadEmergencyClasses()}
    */
+  @MakeNotStatic
   private static volatile boolean emergencyClassesLoaded = false;
 
   /**

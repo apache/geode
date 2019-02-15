@@ -83,6 +83,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.ClientSocketFactory;
@@ -144,9 +145,11 @@ public class SocketCreator {
   /**
    * all classes should use this variable to determine whether to use IPv4 or IPv6 addresses
    */
+  @MakeNotStatic
   private static boolean useIPv6Addresses = !Boolean.getBoolean("java.net.preferIPv4Stack")
       && Boolean.getBoolean("java.net.preferIPv6Addresses");
 
+  @MakeNotStatic
   private static final Map<InetAddress, String> hostNames = new HashMap<>();
 
   /**
@@ -158,11 +161,13 @@ public class SocketCreator {
   /**
    * set this to false to inhibit host name lookup
    */
+  @MakeNotStatic
   public static volatile boolean resolve_dns = true;
 
   /**
    * set this to false to use an inet_addr in a client's ID
    */
+  @MakeNotStatic
   public static volatile boolean use_client_host_name = true;
 
   /**

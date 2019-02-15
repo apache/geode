@@ -32,6 +32,7 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ExitCode;
 
@@ -443,6 +444,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
 
   //////////////////////// Main Program ////////////////////////
 
+  @Immutable
   private static final PrintStream err = System.err;
 
   /**

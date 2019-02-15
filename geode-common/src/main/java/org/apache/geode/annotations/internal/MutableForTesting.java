@@ -12,31 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache;
 
-import static org.junit.Assert.assertEquals;
+package org.apache.geode.annotations.internal;
 
-import org.junit.Test;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+/**
+ * Annotates a static field that is only mutable for testing purposes.
+ *
+ * This field may not even need to exist outside of test contexts.
+ *
+ * These fields should generally be treated like {@link MakeNotStatic} fields and turned
+ * into cache scoped fields, or simply eliminated.
+ */
+@Target({ElementType.FIELD})
+public @interface MutableForTesting {
 
-public class CacheStatisticsTest {
-
-  @Test
-  public void whenRegionPuts_increasesStatisticsPutCounter() {
-    CacheFactory cacheFactory = new CacheFactory();
-    Region<String, String> region =
-        cacheFactory.create().<String, String>createRegionFactory(RegionShortcut.PARTITION)
-            .create("region");
-
-
-    GemFireCacheImpl regionService = (GemFireCacheImpl) region.getRegionService();
-    long oldPuts = regionService.getCachePerfStats().getPuts();
-
-    region.put("some", "value");
-
-    long newPuts = regionService.getCachePerfStats().getPuts();
-
-    assertEquals(oldPuts + 1, newPuts);
-  }
+  /** Optional description */
+  String value() default "";
 }

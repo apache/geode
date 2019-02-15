@@ -19,6 +19,8 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.pattern.ConverterKeys;
 import org.apache.logging.log4j.core.pattern.LogEventPatternConverter;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Formats the event member name.
  */
@@ -28,6 +30,7 @@ public class MemberNamePatternConverter extends LogEventPatternConverter {
   /**
    * Singleton.
    */
+  @Immutable
   static final MemberNamePatternConverter INSTANCE = new MemberNamePatternConverter();
 
   private final MemberNameSupplier memberNameSupplier;

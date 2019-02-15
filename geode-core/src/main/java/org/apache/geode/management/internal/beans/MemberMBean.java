@@ -519,7 +519,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
   }
 
   @Override
-  public long getTotalNetSearchCompleted() {
+  public int getTotalNetSearchCompleted() {
     return bridge.getTotalNetSearchCompleted();
   }
 

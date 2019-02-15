@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DLockToken;
@@ -30,6 +31,7 @@ import org.apache.geode.distributed.internal.locks.DLockToken;
  *
  */
 public class DLockDependencyMonitor implements DependencyMonitor {
+  @Immutable
   static final DLockDependencyMonitor INSTANCE;
 
   static {

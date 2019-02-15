@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.entries;
 
 import java.util.UUID;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.InlineKeyHelper;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -27,6 +28,7 @@ public abstract class VersionedThinLRURegionEntryHeap extends VersionedThinLRURe
     super(context, value);
   }
 
+  @Immutable
   private static final VersionedThinLRURegionEntryHeapFactory factory =
       new VersionedThinLRURegionEntryHeapFactory();
 

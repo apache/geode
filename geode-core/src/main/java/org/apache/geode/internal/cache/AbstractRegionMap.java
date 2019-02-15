@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DiskAccessException;
@@ -95,6 +96,7 @@ public abstract class AbstractRegionMap
    * This test hook is used to force the conditions during entry destroy. This hook is used by
    * DestroyEntryWithConcurrentOperationJUnitTest.
    */
+  @MutableForTesting
   static final Runnable testHookRunnableForConcurrentOperation = null;
 
   private RegionEntryFactory entryFactory;
@@ -1311,6 +1313,7 @@ public abstract class AbstractRegionMap
    * then this property will not cause a listener on that client to be notified of the invalidate. A
    * non-empty "caching-proxy" will receive invalidates from the server.
    */
+  @MutableForTesting
   public static boolean FORCE_INVALIDATE_EVENT =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "FORCE_INVALIDATE_EVENT");
 

@@ -23,6 +23,7 @@ import org.apache.geode.admin.CacheVm;
 import org.apache.geode.admin.CacheVmConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.admin.SystemMemberType;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.GemFireVM;
@@ -36,6 +37,7 @@ import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
 public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm, CacheServer {
 
   /** How many new <code>CacheServer</code>s have been created? */
+  @MakeNotStatic
   private static int newCacheServers = 0;
 
   /////////////////////// Instance Fields ///////////////////////

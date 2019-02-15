@@ -33,6 +33,7 @@ import javax.net.ssl.SSLException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Version;
@@ -58,6 +59,7 @@ public class TcpClient {
 
   private static final int DEFAULT_REQUEST_TIMEOUT = 60 * 2 * 1000;
 
+  @MakeNotStatic
   private static final Map<InetSocketAddress, Short> serverVersions =
       new HashMap<>();
 

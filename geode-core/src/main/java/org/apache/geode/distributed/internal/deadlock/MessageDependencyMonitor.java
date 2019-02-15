@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -39,6 +40,7 @@ public class MessageDependencyMonitor implements DependencyMonitor {
   private final UnsafeThreadLocal<MessageWithReply> processingMessages =
       new UnsafeThreadLocal<MessageWithReply>();
 
+  @MakeNotStatic
   public static final MessageDependencyMonitor INSTANCE;
 
   static {

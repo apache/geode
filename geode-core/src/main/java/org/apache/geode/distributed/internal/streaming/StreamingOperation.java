@@ -33,6 +33,7 @@ import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
@@ -630,5 +631,6 @@ public abstract class StreamingOperation {
 
   }
 
+  @Immutable
   public static final GemFireRethrowable CHUNK_FULL = new GemFireRethrowable();
 }

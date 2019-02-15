@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -75,9 +74,9 @@ public class CreateRegionCommandTest {
 
   @Test
   public void missingName() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command, "create region");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    parser.executeAndAssertThat(command, "create region")
+        .statusIsError()
+        .hasInfoSection().hasOutput().contains("Invalid command");
   }
 
   @Test
@@ -131,22 +130,6 @@ public class CreateRegionCommandTest {
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getMessageFromContent())
         .contains("eviction-object-sizer cannot be specified with eviction-entry-count");
-  }
-
-  @Test
-  public void templateRegionAttributesNotAvailable() throws Exception {
-    doReturn(null).when(command).getRegionAttributes(eq(cache), any());
-    DistributedSystemMXBean dsMBean = mock(DistributedSystemMXBean.class);
-    doReturn(dsMBean).when(command).getDSMBean();
-    doReturn(new String[] {}).when(dsMBean).listGatewaySenders();
-    doReturn(Collections.emptySet()).when(command).findMembers(any(), any());
-    doReturn(true).when(command).regionExists(any());
-
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --template-region=regionA");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent())
-        .contains("Could not retrieve region attributes for given path");
   }
 
   @Test

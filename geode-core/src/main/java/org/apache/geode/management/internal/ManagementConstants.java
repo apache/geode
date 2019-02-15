@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.management.internal.beans.QueryDataFunction;
 
@@ -57,14 +58,17 @@ public interface ManagementConstants {
   float NOT_AVAILABLE_FLOAT = -1.0f;
   double NOT_AVAILABLE_DOUBLE = -1.0;
 
+  @Immutable
   String[] NO_DATA_STRING = new String[0];
 
+  @Immutable
   ObjectName[] NO_DATA_OBJECTNAME = new ObjectName[0];
 
   String UNDEFINED = "UNDEFINED";
 
   int RESULT_INDEX = 0;
 
+  @Immutable
   TimeUnit nanoSeconds = TimeUnit.NANOSECONDS;
 
   /** Equivalent to SEVERE level **/

@@ -37,6 +37,8 @@ import org.apache.geode.CopyException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -84,6 +86,7 @@ import org.apache.geode.security.GemFireSecurityException;
 public abstract class BaseCommand implements Command {
   protected static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final byte[] OK_BYTES = new byte[] {0};
 
   public static final int MAXIMUM_CHUNK_SIZE =
@@ -110,8 +113,10 @@ public abstract class BaseCommand implements Command {
   private static final int MAX_INCOMING_MESSAGES =
       Integer.getInteger("BridgeServer.MAX_INCOMING_MSGS", -1);
 
+  @MakeNotStatic
   private static final Semaphore INCOMING_DATA_LIMITER;
 
+  @MakeNotStatic
   private static final Semaphore INCOMING_MSG_LIMITER;
 
   static {

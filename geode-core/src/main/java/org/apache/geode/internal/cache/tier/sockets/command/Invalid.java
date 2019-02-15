@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -25,6 +26,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class Invalid extends BaseCommand {
 
+  @Immutable
   private static final Invalid singleton = new Invalid();
 
   public static Command getCommand() {

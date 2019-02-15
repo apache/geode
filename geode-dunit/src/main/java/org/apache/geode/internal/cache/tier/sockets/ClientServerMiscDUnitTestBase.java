@@ -75,6 +75,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.logging.LogService;
@@ -411,8 +412,12 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
         // replace with null oldvalue matches invalidated entry
         pr.putIfAbsent("otherKeyForNull", null);
+        int puts = ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getPuts();
         boolean success = pr.replace("otherKeyForNull", null, "no longer invalid");
         assertTrue(success);
+        int newputs = ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getPuts();
+        assertEquals("stats not updated properly or replace malfunctioned", newputs, puts + 1);
+
       }
     });
   }

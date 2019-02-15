@@ -29,20 +29,19 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.configuration.DeclarableType;
-import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapStorage;
-import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 
 /**
  * Internal implementation of PartitionAttributes. New attributes existing only in this class and
@@ -88,6 +87,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * system is available. This value works the same way as specifying off-heap as a GemFire
    * property, so "100m" = 100 megabytes, "100g" = 100 gigabytes, etc.
    */
+  @MutableForTesting
   private static String testAvailableOffHeapMemory = null;
 
   /** the amount of local memory to use, in megabytes */
@@ -318,6 +318,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     return this.fixedPAttrs;
   }
 
+  @Immutable
   private static final PartitionListener[] EMPTY_PARTITION_LISTENERS = new PartitionListener[0];
 
   @Override
@@ -789,59 +790,5 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
     }
 
     return computeOffHeapLocalMaxMemory();
-  }
-
-  public static PartitionAttributesImpl fromConfig(
-      RegionAttributesType.PartitionAttributes configAttributes, Cache cache) {
-    PartitionAttributesImpl partitionAttributes = new PartitionAttributesImpl();
-    if (configAttributes == null) {
-      return null;
-    }
-
-    if (configAttributes.getRedundantCopies() != null) {
-      partitionAttributes
-          .setRedundantCopies(Integer.valueOf(configAttributes.getRedundantCopies()));
-    }
-
-    if (configAttributes.getTotalMaxMemory() != null) {
-      partitionAttributes.setTotalMaxMemory(Integer.valueOf(configAttributes.getTotalMaxMemory()));
-    }
-
-    if (configAttributes.getTotalNumBuckets() != null) {
-      partitionAttributes
-          .setTotalNumBuckets(Integer.valueOf(configAttributes.getTotalNumBuckets()));
-    }
-
-    if (configAttributes.getLocalMaxMemory() != null) {
-      partitionAttributes.setLocalMaxMemory(Integer.valueOf(configAttributes.getLocalMaxMemory()));
-    }
-
-    if (configAttributes.getColocatedWith() != null) {
-      partitionAttributes.setColocatedWith(configAttributes.getColocatedWith());
-    }
-
-    if (configAttributes.getPartitionResolver() != null) {
-      partitionAttributes.setPartitionResolver(
-          DeclarableTypeInstantiator.newInstance(configAttributes.getPartitionResolver(), cache));
-    }
-
-    if (configAttributes.getRecoveryDelay() != null) {
-      partitionAttributes.setRecoveryDelay(Long.valueOf(configAttributes.getRecoveryDelay()));
-    }
-
-    if (configAttributes.getStartupRecoveryDelay() != null) {
-      partitionAttributes
-          .setStartupRecoveryDelay(Long.valueOf(configAttributes.getStartupRecoveryDelay()));
-    }
-
-    if (configAttributes.getPartitionListeners() != null) {
-      List<DeclarableType> configListeners = configAttributes.getPartitionListeners();
-      for (int i = 0; i < configListeners.size(); i++) {
-        partitionAttributes.addPartitionListener(
-            DeclarableTypeInstantiator.newInstance(configListeners.get(i), cache));
-      }
-    }
-
-    return partitionAttributes;
   }
 }

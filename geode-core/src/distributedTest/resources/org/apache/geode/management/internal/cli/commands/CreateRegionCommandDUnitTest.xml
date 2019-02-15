@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+  ~ agreements. See the NOTICE file distributed with this work for additional information regarding
+  ~ copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance with the License. You may obtain a
+  ~ copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software distributed under the License
+  ~ is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+  ~ or implied. See the License for the specific language governing permissions and limitations under
+  ~ the License.
+  -->
+<cache>
+    <region name="PARTITION" refid="PARTITION">
+        <region-attributes data-policy="partition"/>
+    </region>
+    <region name="PARTITION_REDUNDANT" refid="PARTITION_REDUNDANT">
+        <region-attributes data-policy="partition">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_PERSISTENT" refid="PARTITION_PERSISTENT">
+        <region-attributes data-policy="persistent-partition"/>
+    </region>
+    <region name="PARTITION_REDUNDANT_PERSISTENT" refid="PARTITION_REDUNDANT_PERSISTENT">
+        <region-attributes data-policy="persistent-partition">
+            <partition-attributes redundant-copies="1"/>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_OVERFLOW" refid="PARTITION_OVERFLOW">
+        <region-attributes data-policy="partition">
+            <eviction-attributes>
+                <lru-heap-percentage action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_REDUNDANT_OVERFLOW" refid="PARTITION_REDUNDANT_OVERFLOW">
+        <region-attributes data-policy="partition">
+            <partition-attributes redundant-copies="1"/>
+            <eviction-attributes>
+                <lru-heap-percentage action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_PERSISTENT_OVERFLOW" refid="PARTITION_PERSISTENT_OVERFLOW">
+        <region-attributes data-policy="persistent-partition">
+            <eviction-attributes>
+                <lru-heap-percentage action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_REDUNDANT_PERSISTENT_OVERFLOW"
+            refid="PARTITION_REDUNDANT_PERSISTENT_OVERFLOW">
+        <region-attributes data-policy="persistent-partition">
+            <partition-attributes redundant-copies="1"/>
+            <eviction-attributes>
+                <lru-heap-percentage action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_HEAP_LRU" refid="PARTITION_HEAP_LRU">
+        <region-attributes data-policy="partition">
+            <eviction-attributes>
+                <lru-heap-percentage action="local-destroy"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_REDUNDANT_HEAP_LRU" refid="PARTITION_REDUNDANT_HEAP_LRU">
+        <region-attributes data-policy="partition">
+            <partition-attributes redundant-copies="1"/>
+            <eviction-attributes>
+                <lru-heap-percentage action="local-destroy"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="REPLICATE" refid="REPLICATE">
+        <region-attributes data-policy="replicate" scope="distributed-ack"/>
+    </region>
+    <region name="REPLICATE_PERSISTENT" refid="REPLICATE_PERSISTENT">
+        <region-attributes data-policy="persistent-replicate" scope="distributed-ack"/>
+    </region>
+    <region name="REPLICATE_OVERFLOW" refid="REPLICATE_OVERFLOW">
+        <region-attributes data-policy="replicate" scope="distributed-ack">
+            <eviction-attributes>
+                <lru-heap-percentage action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="REPLICATE_PERSISTENT_OVERFLOW" refid="REPLICATE_PERSISTENT_OVERFLOW">
+        <region-attributes data-policy="persistent-replicate" scope="distributed-ack">
+            <eviction-attributes>
+                <lru-heap-percentage action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="REPLICATE_HEAP_LRU" refid="REPLICATE_HEAP_LRU">
+        <region-attributes data-policy="preloaded" scope="distributed-ack">
+            <subscription-attributes interest-policy="all"/>
+            <eviction-attributes>
+                <lru-heap-percentage action="local-destroy"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="LOCAL" refid="LOCAL">
+        <region-attributes data-policy="normal" scope="local"/>
+    </region>
+    <region name="LOCAL_PERSISTENT" refid="LOCAL_PERSISTENT">
+        <region-attributes data-policy="persistent-replicate" scope="local"/>
+    </region>
+    <region name="LOCAL_HEAP_LRU" refid="LOCAL_HEAP_LRU">
+        <region-attributes data-policy="normal" scope="local">
+            <eviction-attributes>
+                <lru-heap-percentage action="local-destroy"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="LOCAL_OVERFLOW" refid="LOCAL_OVERFLOW">
+        <region-attributes data-policy="normal" scope="local">
+            <eviction-attributes>
+                <lru-heap-percentage action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="LOCAL_PERSISTENT_OVERFLOW" refid="LOCAL_PERSISTENT_OVERFLOW">
+        <region-attributes data-policy="persistent-replicate" scope="local">
+            <eviction-attributes>
+                <lru-heap-percentage action="overflow-to-disk"/>
+            </eviction-attributes>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_PROXY" refid="PARTITION_PROXY">
+        <region-attributes data-policy="partition">
+            <partition-attributes local-max-memory="0"/>
+        </region-attributes>
+    </region>
+    <region name="PARTITION_PROXY_REDUNDANT" refid="PARTITION_PROXY_REDUNDANT">
+        <region-attributes data-policy="partition">
+            <partition-attributes local-max-memory="0" redundant-copies="1"/>
+        </region-attributes>
+    </region>
+    <region name="REPLICATE_PROXY" refid="REPLICATE_PROXY">
+        <region-attributes data-policy="empty" scope="distributed-ack"/>
+    </region>
+</cache>

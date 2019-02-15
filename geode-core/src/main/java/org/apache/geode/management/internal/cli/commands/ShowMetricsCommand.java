@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -72,20 +73,25 @@ public class ShowMetricsCommand extends GfshCommand {
     transaction
   }
 
+  @MakeImmutable
   static final List<Category> REGION_METRIC_CATEGORIES = Arrays.asList(Category.callback,
       Category.diskstore, Category.eviction, Category.partition, Category.region);
 
+  @MakeImmutable
   static final List<Category> SYSTEM_METRIC_CATEGORIES =
       Arrays.asList(Category.cache, Category.cluster, Category.diskstore, Category.query);
 
+  @MakeImmutable
   static final List<Category> SYSTEM_REGION_METRIC_CATEGORIES = Arrays.asList(Category.callback,
       Category.cluster, Category.diskstore, Category.eviction, Category.partition, Category.region);
 
+  @MakeImmutable
   static final List<Category> MEMBER_METRIC_CATEGORIES =
       Arrays.asList(Category.communication, Category.diskstore, Category.distribution,
           Category.eviction, Category.function, Category.jvm, Category.lock, Category.member,
           Category.offheap, Category.region, Category.serialization, Category.transaction);
 
+  @MakeImmutable
   static final List<Category> MEMBER_WITH_PORT_METRIC_CATEGORIES =
       Arrays.asList(Category.cacheserver, Category.communication, Category.diskstore,
           Category.distribution, Category.eviction, Category.function, Category.jvm, Category.lock,

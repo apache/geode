@@ -45,6 +45,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -77,6 +78,7 @@ public class ConnectCommand extends OfflineGfshCommand {
   private static final int VERSION_MAJOR = 0;
   private static final int VERSION_MINOR = 1;
 
+  @Immutable
   private static final UserInputProperty[] USER_INPUT_PROPERTIES =
       {UserInputProperty.KEYSTORE, UserInputProperty.KEYSTORE_PASSWORD,
           UserInputProperty.KEYSTORE_TYPE, UserInputProperty.TRUSTSTORE,

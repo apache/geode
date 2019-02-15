@@ -17,10 +17,12 @@ package org.apache.geode.internal.util;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.DSCODE;
 
 public class DscodeHelper {
 
+  @Immutable
   private static final DSCODE[] dscodes = new DSCODE[128];
 
   static {

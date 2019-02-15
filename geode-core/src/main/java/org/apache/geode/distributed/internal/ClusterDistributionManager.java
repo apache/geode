@@ -53,6 +53,7 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -251,13 +252,16 @@ public class ClusterDistributionManager implements DistributionManager {
 
 
   /** Is this node running an AdminDistributedSystem? */
+  @MakeNotStatic
   private static volatile boolean isDedicatedAdminVM = false;
 
+  @MakeNotStatic
   private static final ThreadLocal<Boolean> isStartupThread = new ThreadLocal<>();
 
   /**
    * Identifier for function execution threads and any of their children
    */
+  @MakeNotStatic()
   private static final InheritableThreadLocal<Boolean> isFunctionExecutionThread =
       new InheritableThreadLocal<Boolean>() {
         @Override

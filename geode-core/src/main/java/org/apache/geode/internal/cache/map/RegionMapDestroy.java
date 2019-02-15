@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.map;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TimeoutException;
@@ -46,6 +47,7 @@ public class RegionMapDestroy {
 
   private static final Logger logger = LogService.getLogger();
 
+  @MutableForTesting
   static Runnable testHookRunnableForConcurrentOperation;
 
   private final InternalRegion internalRegion;

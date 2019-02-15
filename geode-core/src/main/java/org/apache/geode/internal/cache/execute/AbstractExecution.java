@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.client.internal.ProxyCache;
@@ -95,6 +96,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
   protected ProxyCache proxyCache;
 
+  @MakeNotStatic
   private static final ConcurrentHashMap<String, byte[]> idToFunctionAttributes =
       new ConcurrentHashMap<String, byte[]>();
 

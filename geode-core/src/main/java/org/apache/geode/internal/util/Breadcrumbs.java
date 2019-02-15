@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.util;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.EventID;
 
@@ -28,6 +30,7 @@ public class Breadcrumbs {
 
   private static final ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>();
 
+  @MutableForTesting
   public static boolean ENABLED =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enable-breadcrumbs");
 
@@ -44,6 +47,7 @@ public class Breadcrumbs {
   }
 
   /** crumb with the highest ordinal, for initialization of delimiter strings */
+  @Immutable
   private static final CrumbType Crumbiest = CrumbType.PROBLEM;
 
   private static final String[] crumbLabels = new String[] {"rcv", "evt", "snd", "oops"};

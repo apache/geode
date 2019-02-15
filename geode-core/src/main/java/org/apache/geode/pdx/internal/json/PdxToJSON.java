@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
@@ -39,6 +40,8 @@ import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
  * This class converts a PdxInstance into a JSON document.
  */
 public class PdxToJSON {
+
+  @MutableForTesting
   public static boolean PDXTOJJSON_UNQUOTEFIELDNAMES =
       Boolean.getBoolean("pdxToJson.unQuoteFieldNames");
   private PdxInstance m_pdxInstance;

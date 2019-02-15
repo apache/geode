@@ -14,19 +14,24 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
 
 /**
- * Distributed version of RestoreSystemProperties which affects all DUnit JVMs including the Locator
- * JVM and the test JVM.
+ * Distributed version of RestoreSystemProperties JUnit Rule that restores system properties in all
+ * DUnit VMs (except for the hidden Locator VM) in addition to the JVM running JUnit (known as the
+ * Controller VM).
  */
 public class DistributedRestoreSystemProperties extends AbstractDistributedRule {
 
-  private static final AccessibleRestoreSystemProperties restoreSystemProperties =
-      new AccessibleRestoreSystemProperties();
+  private static volatile AccessibleRestoreSystemProperties restoreSystemProperties;
 
   public DistributedRestoreSystemProperties() {
-    // nothing
+    // default vmCount
+  }
+
+  public DistributedRestoreSystemProperties(int vmCount) {
+    super(vmCount);
   }
 
   @Override
@@ -39,8 +44,19 @@ public class DistributedRestoreSystemProperties extends AbstractDistributedRule 
     invoker().invokeInEveryVMAndController(() -> invokeAfter());
   }
 
+  @Override
+  protected void afterCreateVM(VM vm) {
+    vm.invoke(() -> invokeBefore());
+  }
+
+  @Override
+  protected void afterBounceVM(VM vm) {
+    vm.invoke(() -> invokeBefore());
+  }
+
   private void invokeBefore() throws Exception {
     try {
+      restoreSystemProperties = new AccessibleRestoreSystemProperties();
       restoreSystemProperties.before();
     } catch (Throwable throwable) {
       if (throwable instanceof Exception) {

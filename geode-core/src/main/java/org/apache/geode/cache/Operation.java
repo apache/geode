@@ -18,6 +18,8 @@ package org.apache.geode.cache;
 
 import java.io.ObjectStreamException;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.OpType;
 
@@ -31,10 +33,13 @@ import org.apache.geode.internal.cache.OpType;
  *
  * @since GemFire 5.0
  */
+@Immutable
 public class Operation implements java.io.Serializable {
   private static final long serialVersionUID = -7521751729852504238L;
 
+  @MakeImmutable
   private static byte nextOrdinal = 0;
+  @Immutable
   private static final Operation[] VALUES = new Operation[55];
 
   private static final byte OP_TYPE_CREATE = OpType.CREATE;
@@ -70,6 +75,7 @@ public class Operation implements java.io.Serializable {
   /**
    * A marker operation.
    */
+  @Immutable
   public static final Operation MARKER = new Operation("MARKER", false, // isLocal
       false, // isRegion
       OP_TYPE_MARKER, OP_DETAILS_NONE);
@@ -79,6 +85,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#create(Object, Object)
    */
+  @Immutable
   public static final Operation CREATE = new Operation("CREATE", false, // isLocal
       false, // isRegion
       OP_TYPE_CREATE, OP_DETAILS_NONE);
@@ -88,6 +95,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#putAll
    */
+  @Immutable
   public static final Operation PUTALL_CREATE = new Operation("PUTALL_CREATE", false, // isLocal
       false, // isRegion
       OP_TYPE_CREATE, OP_DETAILS_PUTALL);
@@ -97,6 +105,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#get(Object)
    */
+  @Immutable
   public static final Operation GET = new Operation("GET", false, // isLocal
       false, // isRegion
       OP_TYPE_GET, OP_DETAILS_NONE);
@@ -106,6 +115,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#getEntry(Object)
    */
+  @Immutable
   public static final Operation GET_ENTRY = new Operation("GET_ENTRY", false, // isLocal
       false, // isRegion
       OP_TYPE_GET_ENTRY, OP_DETAILS_NONE);
@@ -115,6 +125,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#containsKey(Object)
    */
+  @Immutable
   public static final Operation CONTAINS_KEY = new Operation("CONTAINS_KEY", false, // isLocal
       false, // isRegion
       OP_TYPE_CONTAINS_KEY, OP_DETAILS_NONE);
@@ -123,6 +134,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#containsValueForKey(Object)
    */
+  @Immutable
   public static final Operation CONTAINS_VALUE = new Operation("CONTAINS_VALUE", false, // isLocal
       false, // isRegion
       OP_TYPE_CONTAINS_VALUE, OP_DETAILS_NONE);
@@ -132,6 +144,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#containsValueForKey(Object)
    */
+  @Immutable
   public static final Operation CONTAINS_VALUE_FOR_KEY =
       new Operation("CONTAINS_VALUE_FOR_KEY", false, // isLocal
           false, // isRegion
@@ -142,6 +155,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see FunctionService
    */
+  @Immutable
   public static final Operation FUNCTION_EXECUTION = new Operation("FUNCTION_EXECUTION", false, // isLocal
       false, // isRegion
       OP_TYPE_FUNCTION_EXECUTION, OP_DETAILS_NONE);
@@ -151,6 +165,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#get(Object)
    */
+  @Immutable
   public static final Operation SEARCH_CREATE = new Operation("SEARCH_CREATE", false, // isLocal
       false, // isRegion
       OP_TYPE_CREATE, OP_DETAILS_SEARCH);
@@ -161,6 +176,7 @@ public class Operation implements java.io.Serializable {
    * @see Region#get(Object)
    * @see CacheLoader
    */
+  @Immutable
   public static final Operation LOCAL_LOAD_CREATE = new Operation("LOCAL_LOAD_CREATE", false, // isLocal
       false, // isRegion
       OP_TYPE_CREATE, OP_DETAILS_LOCAL_LOAD);
@@ -170,6 +186,7 @@ public class Operation implements java.io.Serializable {
    * @see Region#get(Object)
    * @see CacheLoader
    */
+  @Immutable
   public static final Operation NET_LOAD_CREATE = new Operation("NET_LOAD_CREATE", false, // isLocal
       false, // isRegion
       OP_TYPE_CREATE, OP_DETAILS_NET_LOAD);
@@ -179,6 +196,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#put(Object, Object)
    */
+  @Immutable
   public static final Operation UPDATE = new Operation("UPDATE", false, // isLocal
       false, // isRegion
       OP_TYPE_UPDATE, OP_DETAILS_NONE);
@@ -188,6 +206,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#putAll
    */
+  @Immutable
   public static final Operation PUTALL_UPDATE = new Operation("PUTALL_UPDATE", false, // isLocal
       false, // isRegion
       OP_TYPE_UPDATE, OP_DETAILS_PUTALL);
@@ -197,6 +216,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#get(Object)
    */
+  @Immutable
   public static final Operation SEARCH_UPDATE = new Operation("SEARCH_UPDATE", false, // isLocal
       false, // isRegion
       OP_TYPE_UPDATE, OP_DETAILS_SEARCH);
@@ -207,6 +227,7 @@ public class Operation implements java.io.Serializable {
    * @see Region#get(Object)
    * @see CacheLoader
    */
+  @Immutable
   public static final Operation LOCAL_LOAD_UPDATE = new Operation("LOCAL_LOAD_UPDATE", false, // isLocal
       false, // isRegion
       OP_TYPE_UPDATE, OP_DETAILS_LOCAL_LOAD);
@@ -217,6 +238,7 @@ public class Operation implements java.io.Serializable {
    * @see Region#get(Object)
    * @see CacheLoader
    */
+  @Immutable
   public static final Operation NET_LOAD_UPDATE = new Operation("NET_LOAD_UPDATE", false, // isLocal
       false, // isRegion
       OP_TYPE_UPDATE, OP_DETAILS_NET_LOAD);
@@ -226,6 +248,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#invalidate(Object)
    */
+  @Immutable
   public static final Operation INVALIDATE = new Operation("INVALIDATE", false, // isLocal
       false, // isRegion
       OP_TYPE_INVALIDATE, OP_DETAILS_NONE);
@@ -235,6 +258,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#localInvalidate(Object)
    */
+  @Immutable
   public static final Operation LOCAL_INVALIDATE = new Operation("LOCAL_INVALIDATE", true, // isLocal
       false, // isRegion
       OP_TYPE_INVALIDATE, OP_DETAILS_NONE);
@@ -244,6 +268,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#destroy(Object)
    */
+  @Immutable
   public static final Operation DESTROY = new Operation("DESTROY", false, // isLocal
       false, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -252,6 +277,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#localDestroy(Object)
    */
+  @Immutable
   public static final Operation LOCAL_DESTROY = new Operation("LOCAL_DESTROY", true, // isLocal
       false, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -261,6 +287,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#localDestroy(Object)
    */
+  @Immutable
   public static final Operation EVICT_DESTROY = new Operation("EVICT_DESTROY", true, // isLocal
       false, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_EVICT);
@@ -271,6 +298,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#loadSnapshot
    */
+  @Immutable
   public static final Operation REGION_LOAD_SNAPSHOT = new Operation("REGION_LOAD_SNAPSHOT", false, // isLocal
       true, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -280,6 +308,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#localDestroyRegion()
    */
+  @Immutable
   public static final Operation REGION_LOCAL_DESTROY = new Operation("REGION_LOCAL_DESTROY", true, // isLocal
       true, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -290,6 +319,7 @@ public class Operation implements java.io.Serializable {
    * @see Region#createSubregion
    * @see Cache#createRegion
    */
+  @Immutable
   public static final Operation REGION_CREATE = new Operation("REGION_CREATE", true, // isLocal
       true, // isRegion
       OP_TYPE_CREATE, OP_DETAILS_NONE);
@@ -299,6 +329,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#close
    */
+  @Immutable
   public static final Operation REGION_CLOSE = new Operation("REGION_CLOSE", true, // isLocal
       true, // isRegion
       OP_TYPE_DESTROY, // @todo darrel: should close be a destroy?
@@ -309,6 +340,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#destroyRegion()
    */
+  @Immutable
   public static final Operation REGION_DESTROY = new Operation("REGION_DESTROY", false, // isLocal
       true, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -320,6 +352,7 @@ public class Operation implements java.io.Serializable {
    * @see RegionAttributes#getEntryIdleTimeout
    * @see ExpirationAction#DESTROY
    */
+  @Immutable
   public static final Operation EXPIRE_DESTROY = new Operation("EXPIRE_DESTROY", false, // isLocal
       false, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_EXPIRE);
@@ -330,6 +363,7 @@ public class Operation implements java.io.Serializable {
    * @see RegionAttributes#getEntryIdleTimeout
    * @see ExpirationAction#LOCAL_DESTROY
    */
+  @Immutable
   public static final Operation EXPIRE_LOCAL_DESTROY = new Operation("EXPIRE_LOCAL_DESTROY", true, // isLocal
       false, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_EXPIRE);
@@ -340,6 +374,7 @@ public class Operation implements java.io.Serializable {
    * @see RegionAttributes#getEntryIdleTimeout
    * @see ExpirationAction#INVALIDATE
    */
+  @Immutable
   public static final Operation EXPIRE_INVALIDATE = new Operation("EXPIRE_INVALIDATE", false, // isLocal
       false, // isRegion
       OP_TYPE_INVALIDATE, OP_DETAILS_EXPIRE);
@@ -351,6 +386,7 @@ public class Operation implements java.io.Serializable {
    * @see RegionAttributes#getEntryIdleTimeout
    * @see ExpirationAction#LOCAL_INVALIDATE
    */
+  @Immutable
   public static final Operation EXPIRE_LOCAL_INVALIDATE =
       new Operation("EXPIRE_LOCAL_INVALIDATE", true, // isLocal
           false, // isRegion
@@ -363,6 +399,7 @@ public class Operation implements java.io.Serializable {
    * @see RegionAttributes#getRegionIdleTimeout
    * @see ExpirationAction#DESTROY
    */
+  @Immutable
   public static final Operation REGION_EXPIRE_DESTROY =
       new Operation("REGION_EXPIRE_DESTROY", false, // isLocal
           true, // isRegion
@@ -374,6 +411,7 @@ public class Operation implements java.io.Serializable {
    * @see RegionAttributes#getRegionIdleTimeout
    * @see ExpirationAction#LOCAL_DESTROY
    */
+  @Immutable
   public static final Operation REGION_EXPIRE_LOCAL_DESTROY =
       new Operation("REGION_EXPIRE_LOCAL_DESTROY", true, // isLocal
           true, // isRegion
@@ -385,6 +423,7 @@ public class Operation implements java.io.Serializable {
    * @see RegionAttributes#getRegionIdleTimeout
    * @see ExpirationAction#INVALIDATE
    */
+  @Immutable
   public static final Operation REGION_EXPIRE_INVALIDATE =
       new Operation("REGION_EXPIRE_INVALIDATE", false, // isLocal
           true, // isRegion
@@ -396,6 +435,7 @@ public class Operation implements java.io.Serializable {
    * @see RegionAttributes#getRegionIdleTimeout
    * @see ExpirationAction#LOCAL_INVALIDATE
    */
+  @Immutable
   public static final Operation REGION_EXPIRE_LOCAL_INVALIDATE =
       new Operation("REGION_EXPIRE_LOCAL_INVALIDATE", true, // isLocal
           true, // isRegion
@@ -405,6 +445,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#localInvalidateRegion()
    */
+  @Immutable
   public static final Operation REGION_LOCAL_INVALIDATE =
       new Operation("REGION_LOCAL_INVALIDATE", true, // isLocal
           true, // isRegion
@@ -415,6 +456,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#invalidateRegion()
    */
+  @Immutable
   public static final Operation REGION_INVALIDATE = new Operation("REGION_INVALIDATE", false, // isLocal
       true, // isRegion
       OP_TYPE_INVALIDATE, OP_DETAILS_NONE);
@@ -424,6 +466,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#clear
    */
+  @Immutable
   public static final Operation REGION_CLEAR = new Operation("REGION_CLEAR", false, // isLocal
       true, // isRegion
       OP_TYPE_CLEAR, OP_DETAILS_NONE);
@@ -432,6 +475,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Region#localClear
    */
+  @Immutable
   public static final Operation REGION_LOCAL_CLEAR = new Operation("REGION_LOCAL_CLEAR", true, // isLocal
       true, // isRegion
       OP_TYPE_CLEAR, OP_DETAILS_NONE);
@@ -441,6 +485,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see CacheFactory#create
    */
+  @Immutable
   public static final Operation CACHE_CREATE = new Operation("CACHE_CREATE", true, // isLocal
       true, // isRegion
       OP_TYPE_CREATE, OP_DETAILS_NONE);
@@ -450,6 +495,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see Cache#close()
    */
+  @Immutable
   public static final Operation CACHE_CLOSE = new Operation("CACHE_CLOSE", true, // isLocal
       true, // isRegion
       OP_TYPE_DESTROY, // @todo darrel: should close be a destroy?
@@ -462,6 +508,7 @@ public class Operation implements java.io.Serializable {
    * period.<br>
    * Note that this is marked as a region operation.
    */
+  @Immutable
   public static final Operation FORCED_DISCONNECT = new Operation("FORCED_DISCONNECT", true, // isLocal
       true, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -471,6 +518,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see ResumptionAction#REINITIALIZE
    */
+  @Immutable
   public static final Operation REGION_REINITIALIZE = new Operation("REGION_REINITIALIZE", true, // isLocal
       true, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -480,6 +528,7 @@ public class Operation implements java.io.Serializable {
    *
    * @see LossAction#RECONNECT
    */
+  @Immutable
   public static final Operation CACHE_RECONNECT = new Operation("CACHE_RECONNECT", true, // isLocal
       true, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -490,6 +539,7 @@ public class Operation implements java.io.Serializable {
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(Object, Object)
    * @since GemFire 6.5
    */
+  @Immutable
   public static final Operation PUT_IF_ABSENT = new Operation("PUT_IF_ABSENT", false, // isLocal
       false, // isRegion
       OP_TYPE_CREATE, OP_DETAILS_GUARANTEES_OLD_VALUE);
@@ -500,6 +550,7 @@ public class Operation implements java.io.Serializable {
    * @see java.util.concurrent.ConcurrentMap#replace(Object, Object, Object)
    * @since GemFire 6.5
    */
+  @Immutable
   public static final Operation REPLACE = new Operation("REPLACE", false, // isLocal
       false, // isRegion
       OP_TYPE_UPDATE, OP_DETAILS_GUARANTEES_OLD_VALUE);
@@ -510,6 +561,7 @@ public class Operation implements java.io.Serializable {
    * @see java.util.concurrent.ConcurrentMap#remove(Object, Object)
    * @since GemFire 6.5
    */
+  @Immutable
   public static final Operation REMOVE = new Operation("REMOVE", false, // isLocal
       false, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
@@ -517,6 +569,7 @@ public class Operation implements java.io.Serializable {
   /**
    * An internal operation used to update the version stamp of an entry.
    */
+  @Immutable
   public static final Operation UPDATE_VERSION_STAMP = new Operation("UPDATE_VERSION", false, // isLocal
       false, // isRegion
       OP_TYPE_UPDATE_VERSION, // opType
@@ -529,6 +582,7 @@ public class Operation implements java.io.Serializable {
    * @see Region#removeAll(java.util.Collection)
    * @since GemFire 8.1
    */
+  @Immutable
   public static final Operation REMOVEALL_DESTROY = new Operation("REMOVEALL_DESTROY", false, // isLocal
       false, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_REMOVEALL);
@@ -536,6 +590,7 @@ public class Operation implements java.io.Serializable {
   /**
    * A 'get for register interest' operation.
    */
+  @Immutable
   public static final Operation GET_FOR_REGISTER_INTEREST =
       new Operation("GET_FOR_REGISTER_INTEREST", false, // isLocal
           false, // isRegion

@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
@@ -48,6 +49,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 public class GetAllWithCallback extends BaseCommand {
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final GetAllWithCallback singleton = new GetAllWithCallback();
 
   public static Command getCommand() {

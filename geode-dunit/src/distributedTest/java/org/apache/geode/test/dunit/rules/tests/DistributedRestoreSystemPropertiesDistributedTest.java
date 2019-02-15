@@ -23,38 +23,31 @@ import java.io.Serializable;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
+/**
+ * Distributed tests for {@link DistributedRestoreSystemProperties}.
+ */
 @SuppressWarnings("serial")
 public class DistributedRestoreSystemPropertiesDistributedTest {
 
   private static final String NULL_PROPERTY = "NULL_PROPERTY";
   private static final String PREEXISTING_PROPERTY = "PREEXISTING_PROPERTY";
   private static final String PREEXISTING_VALUE = "PREEXISTING_VALUE";
+  private static final String NEW_PROPERTY = "NEW_PROPERTY";
+  private static final String NEW_VALUE = "NEW_VALUE";
 
-  @ClassRule
-  public static DistributedRule distributedRule = new DistributedRule();
-
-  @BeforeClass
-  public static void assertPreconditions() {
-    assertThat(System.getProperty(NULL_PROPERTY)).isNull();
-    assertThat(System.getProperty(PREEXISTING_PROPERTY)).isNull();
-    for (int i = 0; i < getVMCount(); i++) {
-      getVM(i).invoke(() -> {
-        assertThat(System.getProperty(NULL_PROPERTY)).isNull();
-        assertThat(System.getProperty(PREEXISTING_PROPERTY)).isNull();
-      });
-    }
-  }
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Before
   public void setUp() {
+    assertPreconditions();
+
     System.setProperty(PREEXISTING_PROPERTY, PREEXISTING_VALUE);
     for (int i = 0; i < getVMCount(); i++) {
       getVM(i).invoke(() -> {
@@ -97,6 +90,35 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
     }
   }
 
+  @Test
+  public void newVMWithNewPropertyHasValueReset() {
+    runTestWithValidation(NewVMWithNewProperty.class);
+
+    getVM(getVMCount() - 1).invoke(() -> {
+      assertThat(System.getProperty(NEW_PROPERTY)).isNull();
+    });
+  }
+
+  @Test
+  public void bouncedVMWithNewPropertyHasValueReset() {
+    runTestWithValidation(BouncedVMWithNewProperty.class);
+
+    getVM(0).invoke(() -> {
+      assertThat(System.getProperty(NEW_PROPERTY)).isNull();
+    });
+  }
+
+  private void assertPreconditions() {
+    assertThat(System.getProperty(NULL_PROPERTY)).isNull();
+    assertThat(System.getProperty(PREEXISTING_PROPERTY)).isNull();
+    for (int i = 0; i < getVMCount(); i++) {
+      getVM(i).invoke(() -> {
+        assertThat(System.getProperty(NULL_PROPERTY)).isNull();
+        assertThat(System.getProperty(PREEXISTING_PROPERTY)).isNull();
+      });
+    }
+  }
+
   /**
    * Used by test {@link #nullPropertyWithDifferentValues()}.
    */
@@ -132,6 +154,37 @@ public class DistributedRestoreSystemPropertiesDistributedTest {
       getVM(1).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm1"));
       getVM(2).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm2"));
       getVM(3).invoke(() -> System.setProperty(PREEXISTING_PROPERTY, "vm3"));
+    }
+  }
+
+  /**
+   * Used by test {@link #newVMWithNewPropertyHasValueReset()}.
+   */
+  public static class NewVMWithNewProperty implements Serializable {
+
+    @Rule
+    public DistributedRestoreSystemProperties restoreSystemProperties =
+        new DistributedRestoreSystemProperties();
+
+    @Test
+    public void preexistingPropertyWithDifferentValues() {
+      getVM(getVMCount()).invoke(() -> System.setProperty(NEW_PROPERTY, NEW_VALUE));
+    }
+  }
+
+  /**
+   * Used by test {@link #bouncedVMWithNewPropertyHasValueReset()}.
+   */
+  public static class BouncedVMWithNewProperty implements Serializable {
+
+    @Rule
+    public DistributedRestoreSystemProperties restoreSystemProperties =
+        new DistributedRestoreSystemProperties();
+
+    @Test
+    public void preexistingPropertyWithDifferentValues() {
+      getVM(0).bounce();
+      getVM(0).invoke(() -> System.setProperty(NEW_PROPERTY, NEW_VALUE));
     }
   }
 }

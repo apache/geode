@@ -78,13 +78,11 @@ public enum RegionAttributesDataPolicy implements Serializable {
     return value;
   }
 
-  public static RegionAttributesDataPolicy fromValue(String v) {
-    for (RegionAttributesDataPolicy c : RegionAttributesDataPolicy.values()) {
-      if (c.value.equals(v)) {
-        return c;
-      }
-    }
-    throw new IllegalArgumentException(v);
+  public boolean isPersistent() {
+    return this.value.startsWith("persistent");
   }
 
+  public boolean isPartition() {
+    return this.value.endsWith("partition");
+  }
 }

@@ -17,6 +17,7 @@ package org.apache.geode.internal;
 
 import java.io.Console;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.GfshConsoleReader;
@@ -30,6 +31,7 @@ import org.apache.geode.management.internal.cli.util.GfshConsoleReader;
  * @since GemFire 7.0.1
  */
 public class GfeConsoleReaderFactory {
+  @Immutable
   private static final GfeConsoleReader defaultConsoleReader = createConsoleReader();
 
   public static GfeConsoleReader getDefaultConsoleReader() {

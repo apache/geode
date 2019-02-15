@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region.Entry;
@@ -47,6 +48,7 @@ import org.apache.geode.internal.logging.LogService;
 public class TXStateProxyImpl implements TXStateProxy {
   private static final Logger logger = LogService.getLogger();
 
+  @MakeNotStatic
   protected static final AtomicBoolean txDistributedClientWarningIssued = new AtomicBoolean();
 
   private boolean isJTA;

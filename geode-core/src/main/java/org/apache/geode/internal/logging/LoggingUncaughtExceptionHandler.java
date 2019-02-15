@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * This class delegates to a static singleton that handles all exceptions not caught by any thread
@@ -32,6 +33,7 @@ import org.apache.geode.SystemFailure;
  */
 public class LoggingUncaughtExceptionHandler {
 
+  @Immutable
   private static final Implementation handler =
       new Implementation(LogService.getLogger(), error -> SystemFailure.setFailure(error));
 

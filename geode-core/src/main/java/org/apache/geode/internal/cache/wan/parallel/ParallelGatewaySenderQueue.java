@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -130,6 +131,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   public static final int DEFAULT_MESSAGE_SYNC_INTERVAL = 10;
 
   // TODO:REF: how to change the message sync interval ? should it be common for serial and parallel
+  @MutableForTesting
   protected static volatile int messageSyncInterval = DEFAULT_MESSAGE_SYNC_INTERVAL;
 
   // TODO:REF: name change for thread, as it appears in the log

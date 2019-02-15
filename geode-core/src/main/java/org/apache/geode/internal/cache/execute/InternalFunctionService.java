@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
@@ -31,6 +32,7 @@ import org.apache.geode.cache.execute.FunctionService;
  */
 public class InternalFunctionService extends FunctionService {
 
+  @MakeNotStatic
   private static final InternalFunctionService INSTANCE =
       new InternalFunctionService(new InternalFunctionExecutionServiceImpl());
 

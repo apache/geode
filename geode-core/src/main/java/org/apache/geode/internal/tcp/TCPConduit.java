@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
@@ -79,6 +80,7 @@ public class TCPConduit implements Runnable {
   /**
    * max amount of time (ms) to wait for listener threads to stop
    */
+  @MakeNotStatic
   private static int LISTENER_CLOSE_TIMEOUT;
 
   /**
@@ -95,6 +97,7 @@ public class TCPConduit implements Runnable {
    * a SYN "cookie" mechanism is used to bypass the backlog queue. If this is turned off
    * though connection requests are dropped when the queue is full.
    */
+  @MakeNotStatic
   private static int BACKLOG;
 
   /**

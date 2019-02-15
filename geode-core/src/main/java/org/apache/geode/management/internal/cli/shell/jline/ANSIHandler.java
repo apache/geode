@@ -15,12 +15,15 @@
 package org.apache.geode.management.internal.cli.shell.jline;
 
 
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * Overrides jline.History to add History without newline characters.
  *
  * @since GemFire 7.0
  */
 public class ANSIHandler {
+  @MakeImmutable
   private static ANSIHandler instance;
 
   private boolean isAnsiEnabled;

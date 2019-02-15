@@ -57,6 +57,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
@@ -139,6 +140,7 @@ import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
   /** An empty <code>Attributes</code> */
+  @MakeImmutable
   private static final Attributes EMPTY = new AttributesImpl();
 
   /** The content handler to which SAX events are generated */

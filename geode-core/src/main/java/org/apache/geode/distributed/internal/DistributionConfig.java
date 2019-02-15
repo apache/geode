@@ -195,6 +195,8 @@ import java.util.Properties;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.UnmodifiableException;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Config;
@@ -1475,6 +1477,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * The default value of the {@link ConfigurationProperties#MCAST_FLOW_CONTROL} property
    */
+  @Immutable
   FlowControlParams DEFAULT_MCAST_FLOW_CONTROL = new FlowControlParams(1048576, (float) 0.25, 5000);
 
   /**
@@ -1831,6 +1834,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    */
   String RESTRICT_MEMBERSHIP_PORT_RANGE = GEMFIRE_PREFIX + "use-ephemeral-ports";
 
+  @MakeImmutable
   int[] DEFAULT_MEMBERSHIP_PORT_RANGE = new int[] {41000, 61000};
 
   @ConfigAttributeGetter(name = MEMBERSHIP_PORT_RANGE)
@@ -4964,6 +4968,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    *
    * @since Geode 1.0
    */
+  @Immutable
   SecurableCommunicationChannel[] DEFAULT_SSL_ENABLED_COMPONENTS =
       new SecurableCommunicationChannel[] {};
 
@@ -5247,9 +5252,13 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   // *************** Initializers to gather all the annotations in this class
   // ************************
 
+  @MakeImmutable
   Map<String, ConfigAttribute> attributes = new HashMap<>();
+  @MakeImmutable
   Map<String, Method> setters = new HashMap<>();
+  @MakeImmutable
   Map<String, Method> getters = new HashMap<>();
+  @MakeImmutable
   String[] dcValidAttributeNames = init();
 
   static String[] init() {

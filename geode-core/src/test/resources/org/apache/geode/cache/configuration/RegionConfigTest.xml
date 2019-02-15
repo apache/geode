@@ -107,20 +107,20 @@
         </region-attributes>
     </region>
     <region name="LOCAL" refid="LOCAL">
-        <region-attributes scope="local"/>
+        <region-attributes data-policy="normal" scope="local"/>
     </region>
     <region name="LOCAL_PERSISTENT" refid="LOCAL_PERSISTENT">
         <region-attributes data-policy="persistent-replicate" scope="local"/>
     </region>
     <region name="LOCAL_HEAP_LRU" refid="LOCAL_HEAP_LRU">
-        <region-attributes scope="local">
+        <region-attributes data-policy="normal" scope="local">
             <eviction-attributes>
                 <lru-heap-percentage action="local-destroy"/>
             </eviction-attributes>
         </region-attributes>
     </region>
     <region name="LOCAL_OVERFLOW" refid="LOCAL_OVERFLOW">
-        <region-attributes scope="local">
+        <region-attributes data-policy="normal" scope="local">
             <eviction-attributes>
                 <lru-heap-percentage action="overflow-to-disk"/>
             </eviction-attributes>

@@ -16,11 +16,14 @@ package org.apache.geode.internal.logging;
 
 import java.io.File;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * {@link LogFile} with default details of null values.
  */
 public class NullLogFile extends LogFile {
 
+  @Immutable
   private static final NullLogFile INSTANCE = new NullLogFile();
 
   public static NullLogFile get() {

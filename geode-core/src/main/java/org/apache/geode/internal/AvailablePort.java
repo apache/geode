@@ -31,6 +31,7 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -406,6 +407,7 @@ public class AvailablePort {
   }
 
 
+  @Immutable
   public static final Random rand;
 
   static {
@@ -491,7 +493,9 @@ public class AvailablePort {
 
   /////////////////////// Main Program ///////////////////////
 
+  @Immutable
   private static final PrintStream out = System.out;
+  @Immutable
   private static final PrintStream err = System.err;
 
   private static void usage(String s) {

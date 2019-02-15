@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.memcached.KeyWrapper;
@@ -48,9 +49,11 @@ public abstract class StorageCommand extends AbstractCommand {
   /**
    * thread pool for scheduling expiration tasks
    */
+  @MakeNotStatic
   private static final ScheduledExecutorService expiryExecutor =
       new ScheduledThreadPoolExecutor(1, new LoggingThreadFactory("memcached-expiryExecutor"));
 
+  @MakeNotStatic
   private static final ConcurrentMap<Object, ScheduledFuture> expiryFutures =
       new ConcurrentHashMap<Object, ScheduledFuture>();
 

@@ -41,6 +41,8 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Operation;
@@ -190,12 +192,14 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
   /**
    * to enable test flag TODO: eliminate isUsedByTest
    */
+  @MutableForTesting
   public static boolean isUsedByTest;
 
   /**
    * Indicates if full value was requested from server as a result of failure in applying delta
    * bytes. TODO: only used for test assertion
    */
+  @MutableForTesting
   static boolean fullValueRequested = false;
 
   private final ServerLocation location;
@@ -1840,6 +1844,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
    */
   public static class CCUStats implements MessageStats {
 
+    @Immutable
     private static final StatisticsType type;
     private static final int messagesBeingReceivedId;
     private static final int messageBytesBeingReceivedId;

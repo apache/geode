@@ -45,6 +45,8 @@ import javax.transaction.xa.Xid;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -52,6 +54,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 @Deprecated
 public class GlobalTransaction {
 
+  @MutableForTesting
   public static boolean DISABLE_TRANSACTION_TIMEOUT_SETTING = false;
   /**
    * GTid is a byte array identifying every instance of a global transaction uniquely
@@ -76,6 +79,7 @@ public class GlobalTransaction {
   /**
    * A counter to uniquely generate the GTid
    */
+  @MakeNotStatic
   private static long mCounter = 1;
   /**
    * A timer Task for Transaction TimeOut
@@ -547,6 +551,7 @@ public class GlobalTransaction {
    * @see #IdsForId
    * @guarded.By {@link #DmidMutex}
    */
+  @MakeNotStatic
   private static String DMid = null;
 
   /**
@@ -555,6 +560,7 @@ public class GlobalTransaction {
    * @see #DMid
    * @guarded.By {@link #DmidMutex}
    */
+  @MakeNotStatic
   private static InternalDistributedSystem IdsForId = null;
 
   /**

@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
 
@@ -84,6 +85,7 @@ public class SystemTimer {
    * @guarded.By self
    */
   // <T, HashMap<Object, ArrayList<WeakReference<SystemTimer>>>>
+  @MakeNotStatic
   private static final HashMap allSwarms = new HashMap();
 
   /**
@@ -122,6 +124,7 @@ public class SystemTimer {
    *
    * @see #sweepAllSwarms
    */
+  @MakeNotStatic
   private static long lastSweepAllTime = 0;
 
   /**

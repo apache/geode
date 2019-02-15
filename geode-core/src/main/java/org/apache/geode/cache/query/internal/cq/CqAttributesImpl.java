@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesMutator;
@@ -33,6 +34,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
 
   private volatile ArrayList<CqListener> cqListeners = null;
 
+  @Immutable
   private static final CqListener[] EMPTY_LISTENERS = new CqListener[0];
 
   /**

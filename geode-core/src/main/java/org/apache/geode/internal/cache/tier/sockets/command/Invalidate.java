@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.operations.InvalidateOperationContext;
@@ -42,6 +43,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Invalidate extends BaseCommand {
 
+  @Immutable
   private static final Invalidate singleton = new Invalidate();
 
   public static Command getCommand() {

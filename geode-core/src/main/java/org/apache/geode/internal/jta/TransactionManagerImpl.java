@@ -50,6 +50,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 
@@ -78,6 +79,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * Singleton transactionManager
    */
+  @MakeNotStatic
   private static TransactionManagerImpl transactionManager = null;
   /**
    * Transaction TimeOut thread

@@ -3,5 +3,4 @@ org/apache/geode/connectors/jdbc/internal/RegionMappingExistsException,false
 org/apache/geode/connectors/jdbc/internal/RegionMappingNotFoundException,false
 org/apache/geode/connectors/jdbc/internal/cli/CreateMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyMappingFunction,false
-org/apache/geode/connectors/jdbc/internal/cli/ListMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/configuration/RegionMapping,false,catalog:java/lang/String,dataSourceName:java/lang/String,ids:java/lang/String,pdxName:java/lang/String,regionName:java/lang/String,schema:java/lang/String,tableName:java/lang/String

@@ -642,11 +642,13 @@ public class ProxyJUnitTest {
     ExpectedEntryEvent expee = new ExpectedEntryEvent();
     expee.r = r;
     expee.key = "key";
-    long creates = getStats().getCreates();
-    long destroys = getStats().getDestroys();
-    long invalidates = getStats().getInvalidates();
-    long gets = getStats().getGets();
-    long misses = getStats().getMisses();
+    int creates = getStats().getCreates();
+    // int puts = getStats().getPuts();
+    // int updates = getStats().getUpdates();
+    int destroys = getStats().getDestroys();
+    int invalidates = getStats().getInvalidates();
+    int gets = getStats().getGets();
+    int misses = getStats().getMisses();
 
     r.put("key", "value", cbArg);
     expee.op = Operation.CREATE;
@@ -834,10 +836,13 @@ public class ProxyJUnitTest {
     checkNoCW();
     checkCL(expre);
 
-    long creates = getStats().getCreates();
-    long destroys = getStats().getDestroys();
-    long gets = getStats().getGets();
-    long misses = getStats().getMisses();
+    int creates = getStats().getCreates();
+    // int puts = getStats().getPuts();
+    // int updates = getStats().getUpdates();
+    int destroys = getStats().getDestroys();
+    // int invalidates = getStats().getInvalidates();
+    int gets = getStats().getGets();
+    int misses = getStats().getMisses();
     ExpectedEntryEvent expee = new ExpectedEntryEvent();
     expee.r = r;
     expee.key = "key";
@@ -923,9 +928,13 @@ public class ProxyJUnitTest {
     checkNoTL();
     checkCL(expre);
 
-    long creates = getStats().getCreates();
-    long destroys = getStats().getDestroys();
-    long invalidates = getStats().getInvalidates();
+    int creates = getStats().getCreates();
+    // int puts = getStats().getPuts();
+    // int updates = getStats().getUpdates();
+    int destroys = getStats().getDestroys();
+    int invalidates = getStats().getInvalidates();
+    // int gets = getStats().getGets();
+    // int misses = getStats().getMisses();
     ExpectedEntryEvent expee = new ExpectedEntryEvent();
     expee.r = r;
     expee.key = "key";

@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 /**
  * Used by tests to get notifications about the lifecycle of a MemoryAllocatorImpl.
  *
@@ -95,5 +97,6 @@ public interface LifecycleListener {
   /**
    * Following should be private but java 8 does not support that.
    */
+  @MakeNotStatic
   List<LifecycleListener> lifecycleListeners = new CopyOnWriteArrayList<LifecycleListener>();
 }

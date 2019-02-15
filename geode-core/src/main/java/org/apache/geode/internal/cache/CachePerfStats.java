@@ -19,7 +19,9 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.internal.NanoTimer;
@@ -29,8 +31,10 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * CachePerfStats tracks statistics about Geode cache performance and usage.
  */
 public class CachePerfStats {
+  @MakeNotStatic
   public static boolean enableClockStats;
 
+  @Immutable
   private static final StatisticsType type;
 
   static final int loadsInProgressId;
@@ -334,27 +338,27 @@ public class CachePerfStats {
     type = f.createType("CachePerfStats", "Statistics about GemFire cache performance",
         new StatisticDescriptor[] {
             f.createIntGauge("loadsInProgress", loadsInProgressDesc, "operations"),
-            f.createLongCounter("loadsCompleted", loadsCompletedDesc, "operations"),
+            f.createIntCounter("loadsCompleted", loadsCompletedDesc, "operations"),
             f.createLongCounter("loadTime", loadTimeDesc, "nanoseconds", false),
             f.createIntGauge("netloadsInProgress", netloadsInProgressDesc, "operations"),
-            f.createLongCounter("netloadsCompleted", netloadsCompletedDesc, "operations"),
+            f.createIntCounter("netloadsCompleted", netloadsCompletedDesc, "operations"),
             f.createLongCounter("netloadTime", netloadTimeDesc, "nanoseconds", false),
             f.createIntGauge("netsearchesInProgress", netsearchesInProgressDesc, "operations"),
-            f.createLongCounter("netsearchesCompleted", netsearchesCompletedDesc, "operations"),
+            f.createIntCounter("netsearchesCompleted", netsearchesCompletedDesc, "operations"),
             f.createLongCounter("netsearchTime", netsearchTimeDesc, "nanoseconds"),
             f.createIntGauge("cacheWriterCallsInProgress", cacheWriterCallsInProgressDesc,
                 "operations"),
-            f.createLongCounter("cacheWriterCallsCompleted", cacheWriterCallsCompletedDesc,
+            f.createIntCounter("cacheWriterCallsCompleted", cacheWriterCallsCompletedDesc,
                 "operations"),
             f.createLongCounter("cacheWriterCallTime", cacheWriterCallTimeDesc, "nanoseconds"),
             f.createIntGauge("cacheListenerCallsInProgress", cacheListenerCallsInProgressDesc,
                 "operations"),
-            f.createLongCounter("cacheListenerCallsCompleted", cacheListenerCallsCompletedDesc,
+            f.createIntCounter("cacheListenerCallsCompleted", cacheListenerCallsCompletedDesc,
                 "operations"),
             f.createLongCounter("cacheListenerCallTime", cacheListenerCallTimeDesc, "nanoseconds"),
             f.createIntGauge("indexUpdateInProgress", "Current number of ops in progress",
                 "operations"),
-            f.createLongCounter("indexUpdateCompleted", "Total number of ops that have completed",
+            f.createIntCounter("indexUpdateCompleted", "Total number of ops that have completed",
                 "operations"),
             f.createLongCounter("indexUpdateTime", "Total amount of time spent doing this op",
                 "nanoseconds"),
@@ -367,28 +371,27 @@ public class CachePerfStats {
 
             f.createIntGauge("getInitialImagesInProgress", getInitialImagesInProgressDesc,
                 "operations"),
-            f.createLongCounter("getInitialImagesCompleted", getInitialImagesCompletedDesc,
+            f.createIntCounter("getInitialImagesCompleted", getInitialImagesCompletedDesc,
                 "operations"),
-            f.createLongCounter("deltaGetInitialImagesCompleted",
-                deltaGetInitialImagesCompletedDesc,
+            f.createIntCounter("deltaGetInitialImagesCompleted", deltaGetInitialImagesCompletedDesc,
                 "operations"),
             f.createLongCounter("getInitialImageTime", getInitialImageTimeDesc, "nanoseconds"),
             f.createIntCounter("getInitialImageKeysReceived", getInitialImageKeysReceivedDesc,
                 "keys"),
             f.createIntGauge("regions", regionsDesc, "regions"),
             f.createIntGauge("partitionedRegions", partitionedRegionsDesc, "partitionedRegions"),
-            f.createLongCounter("destroys", destroysDesc, "operations"),
-            f.createLongCounter("updates", updatesDesc, "operations"),
+            f.createIntCounter("destroys", destroysDesc, "operations"),
+            f.createIntCounter("updates", updatesDesc, "operations"),
             f.createLongCounter("updateTime", updateTimeDesc, "nanoseconds"),
-            f.createLongCounter("invalidates", invalidatesDesc, "operations"),
-            f.createLongCounter("gets", getsDesc, "operations"),
-            f.createLongCounter("misses", missesDesc, "operations"),
-            f.createLongCounter("creates", createsDesc, "operations"),
-            f.createLongCounter("puts", putsDesc, "operations"),
+            f.createIntCounter("invalidates", invalidatesDesc, "operations"),
+            f.createIntCounter("gets", getsDesc, "operations"),
+            f.createIntCounter("misses", missesDesc, "operations"),
+            f.createIntCounter("creates", createsDesc, "operations"),
+            f.createIntCounter("puts", putsDesc, "operations"),
             f.createLongCounter("putTime", putTimeDesc, "nanoseconds", false),
-            f.createLongCounter("putalls", putallsDesc, "operations"),
+            f.createIntCounter("putalls", putallsDesc, "operations"),
             f.createLongCounter("putallTime", putallTimeDesc, "nanoseconds", false),
-            f.createLongCounter("removeAlls", removeAllsDesc, "operations"),
+            f.createIntCounter("removeAlls", removeAllsDesc, "operations"),
             f.createLongCounter("removeAllTime", removeAllTimeDesc, "nanoseconds", false),
             f.createLongCounter("getTime", getTimeDesc, "nanoseconds", false),
             f.createIntGauge("eventQueueSize", eventQueueSizeDesc, "messages"),
@@ -396,7 +399,7 @@ public class CachePerfStats {
             f.createLongCounter("eventQueueThrottleTime", eventQueueThrottleTimeDesc, "nanoseconds",
                 false),
             f.createIntGauge("eventThreads", eventThreadsDesc, "threads"),
-            f.createLongCounter("queryExecutions", queryExecutionsDesc, "operations"),
+            f.createIntCounter("queryExecutions", queryExecutionsDesc, "operations"),
             f.createLongCounter("queryExecutionTime", queryExecutionTimeDesc, "nanoseconds"),
             f.createIntCounter("queryResultsHashCollisions", queryResultsHashCollisionsDesc,
                 "operations"),
@@ -405,18 +408,18 @@ public class CachePerfStats {
             f.createLongCounter("partitionedRegionQueryRetries",
                 partitionedRegionOQLQueryRetriesDesc, "retries"),
 
-            f.createLongCounter("txCommits", txCommitsDesc, "commits"),
-            f.createLongCounter("txCommitChanges", txCommitChangesDesc, "changes"),
+            f.createIntCounter("txCommits", txCommitsDesc, "commits"),
+            f.createIntCounter("txCommitChanges", txCommitChangesDesc, "changes"),
             f.createLongCounter("txCommitTime", txCommitTimeDesc, "nanoseconds", false),
             f.createLongCounter("txSuccessLifeTime", txSuccessLifeTimeDesc, "nanoseconds", false),
 
-            f.createLongCounter("txFailures", txFailuresDesc, "failures"),
-            f.createLongCounter("txFailureChanges", txFailureChangesDesc, "changes"),
+            f.createIntCounter("txFailures", txFailuresDesc, "failures"),
+            f.createIntCounter("txFailureChanges", txFailureChangesDesc, "changes"),
             f.createLongCounter("txFailureTime", txFailureTimeDesc, "nanoseconds", false),
             f.createLongCounter("txFailedLifeTime", txFailedLifeTimeDesc, "nanoseconds", false),
 
-            f.createLongCounter("txRollbacks", txRollbacksDesc, "rollbacks"),
-            f.createLongCounter("txRollbackChanges", txRollbackChangesDesc, "changes"),
+            f.createIntCounter("txRollbacks", txRollbacksDesc, "rollbacks"),
+            f.createIntCounter("txRollbackChanges", txRollbackChangesDesc, "changes"),
             f.createLongCounter("txRollbackTime", txRollbackTimeDesc, "nanoseconds", false),
             f.createLongCounter("txRollbackLifeTime", txRollbackLifeTimeDesc, "nanoseconds", false),
             f.createLongCounter("txConflictCheckTime", txConflictCheckTimeDesc, "nanoseconds",
@@ -439,10 +442,10 @@ public class CachePerfStats {
                 "entries"),
             f.createLongCounter("eventsQueued",
                 "Number of events attached to " + "other events for callback invocation", "events"),
-            f.createLongCounter("retries",
+            f.createIntCounter("retries",
                 "Number of times a concurrent destroy followed by a create has caused an entry operation to need to retry.",
                 "operations"),
-            f.createLongCounter("clears", clearsDesc, "operations"),
+            f.createIntCounter("clears", clearsDesc, "operations"),
             f.createIntGauge("diskTasksWaiting",
                 "Current number of disk tasks (oplog compactions, asynchronous recoveries, etc) that are waiting for a thread to run the operation",
                 "operations"),
@@ -452,22 +455,22 @@ public class CachePerfStats {
             f.createLongGauge("replicatedTombstonesSize", tombstoneOverhead1Desc, "bytes"),
             f.createLongGauge("nonReplicatedTombstonesSize", tombstoneOverhead2Desc, "bytes"),
             f.createIntCounter("clearTimeouts", clearTimeoutsDesc, "timeouts"),
-            f.createLongGauge("evictorJobsStarted", "Number of evictor jobs started", "jobs"),
-            f.createLongGauge("evictorJobsCompleted", "Number of evictor jobs completed", "jobs"),
+            f.createIntGauge("evictorJobsStarted", "Number of evictor jobs started", "jobs"),
+            f.createIntGauge("evictorJobsCompleted", "Number of evictor jobs completed", "jobs"),
             f.createIntGauge("evictorQueueSize",
                 "Number of jobs waiting to be picked up by evictor threads", "jobs"),
             f.createLongCounter("evictWorkTime",
                 "Total time spent doing eviction work in background threads", "nanoseconds", false),
             f.createLongCounter("metaDataRefreshCount", metaDataRefreshCountDesc,
                 "refreshes", false),
-            f.createLongCounter("deltaUpdates", deltaUpdatesDesc, "operations"),
+            f.createIntCounter("deltaUpdates", deltaUpdatesDesc, "operations"),
             f.createLongCounter("deltaUpdatesTime", deltaUpdatesTimeDesc, "nanoseconds", false),
-            f.createLongCounter("deltaFailedUpdates", deltaFailedUpdatesDesc, "operations"),
-            f.createLongCounter("deltasPrepared", deltasPreparedDesc, "operations"),
+            f.createIntCounter("deltaFailedUpdates", deltaFailedUpdatesDesc, "operations"),
+            f.createIntCounter("deltasPrepared", deltasPreparedDesc, "operations"),
             f.createLongCounter("deltasPreparedTime", deltasPreparedTimeDesc, "nanoseconds", false),
-            f.createLongCounter("deltasSent", deltasSentDesc, "operations"),
-            f.createLongCounter("deltaFullValuesSent", deltaFullValuesSentDesc, "operations"),
-            f.createLongCounter("deltaFullValuesRequested", deltaFullValuesRequestedDesc,
+            f.createIntCounter("deltasSent", deltasSentDesc, "operations"),
+            f.createIntCounter("deltaFullValuesSent", deltaFullValuesSentDesc, "operations"),
+            f.createIntCounter("deltaFullValuesRequested", deltaFullValuesRequestedDesc,
                 "operations"),
 
             f.createLongCounter("importedEntries", importedEntriesCountDesc, "entries"),
@@ -668,32 +671,32 @@ public class CachePerfStats {
     return clock.getTime();
   }
 
-  public long getLoadsCompleted() {
-    return stats.getLong(loadsCompletedId);
+  public int getLoadsCompleted() {
+    return stats.getInt(loadsCompletedId);
   }
 
   public long getLoadTime() {
     return stats.getLong(loadTimeId);
   }
 
-  public long getNetloadsCompleted() {
-    return stats.getLong(netloadsCompletedId);
+  public int getNetloadsCompleted() {
+    return stats.getInt(netloadsCompletedId);
   }
 
-  public long getNetsearchesCompleted() {
-    return stats.getLong(netsearchesCompletedId);
+  public int getNetsearchesCompleted() {
+    return stats.getInt(netsearchesCompletedId);
   }
 
   public long getNetsearchTime() {
     return stats.getLong(netsearchTimeId);
   }
 
-  public long getGetInitialImagesCompleted() {
-    return stats.getLong(getInitialImagesCompletedId);
+  public int getGetInitialImagesCompleted() {
+    return stats.getInt(getInitialImagesCompletedId);
   }
 
-  long getDeltaGetInitialImagesCompleted() {
-    return stats.getLong(deltaGetInitialImagesCompletedId);
+  int getDeltaGetInitialImagesCompleted() {
+    return stats.getInt(deltaGetInitialImagesCompletedId);
   }
 
   public int getGetInitialImageKeysReceived() {
@@ -704,48 +707,48 @@ public class CachePerfStats {
     return stats.getInt(regionsId);
   }
 
-  public long getDestroys() {
-    return stats.getLong(destroysId);
+  public int getDestroys() {
+    return stats.getInt(destroysId);
   }
 
-  public long getCreates() {
-    return stats.getLong(createsId);
+  public int getCreates() {
+    return stats.getInt(createsId);
   }
 
-  public long getPuts() {
-    return stats.getLong(putsId);
+  public int getPuts() {
+    return stats.getInt(putsId);
   }
 
   public long getPutTime() {
     return stats.getLong(putTimeId);
   }
 
-  public long getPutAlls() {
-    return stats.getLong(putallsId);
+  public int getPutAlls() {
+    return stats.getInt(putallsId);
   }
 
-  long getRemoveAlls() {
-    return stats.getLong(removeAllsId);
+  int getRemoveAlls() {
+    return stats.getInt(removeAllsId);
   }
 
-  public long getUpdates() {
-    return stats.getLong(updatesId);
+  public int getUpdates() {
+    return stats.getInt(updatesId);
   }
 
-  public long getInvalidates() {
-    return stats.getLong(invalidatesId);
+  public int getInvalidates() {
+    return stats.getInt(invalidatesId);
   }
 
-  public long getGets() {
-    return stats.getLong(getsId);
+  public int getGets() {
+    return stats.getInt(getsId);
   }
 
   public long getGetTime() {
     return stats.getLong(getTimeId);
   }
 
-  public long getMisses() {
-    return stats.getLong(missesId);
+  public int getMisses() {
+    return stats.getInt(missesId);
   }
 
   public int getReliableQueuedOps() {
@@ -808,36 +811,36 @@ public class CachePerfStats {
     stats.incLong(eventsQueuedId, inc);
   }
 
-  long getDeltaUpdates() {
-    return stats.getLong(deltaUpdatesId);
+  int getDeltaUpdates() {
+    return stats.getInt(deltaUpdatesId);
   }
 
   long getDeltaUpdatesTime() {
     return stats.getLong(deltaUpdatesTimeId);
   }
 
-  public long getDeltaFailedUpdates() {
-    return stats.getLong(deltaFailedUpdatesId);
+  public int getDeltaFailedUpdates() {
+    return stats.getInt(deltaFailedUpdatesId);
   }
 
-  long getDeltasPrepared() {
-    return stats.getLong(deltasPreparedId);
+  int getDeltasPrepared() {
+    return stats.getInt(deltasPreparedId);
   }
 
   long getDeltasPreparedTime() {
     return stats.getLong(deltasPreparedTimeId);
   }
 
-  public long getDeltasSent() {
-    return stats.getLong(deltasSentId);
+  public int getDeltasSent() {
+    return stats.getInt(deltasSentId);
   }
 
-  public long getDeltaFullValuesSent() {
-    return stats.getLong(deltaFullValuesSentId);
+  public int getDeltaFullValuesSent() {
+    return stats.getInt(deltaFullValuesSentId);
   }
 
-  long getDeltaFullValuesRequested() {
-    return stats.getLong(deltaFullValuesRequestedId);
+  int getDeltaFullValuesRequested() {
+    return stats.getInt(deltaFullValuesRequestedId);
   }
 
   public long getTotalCompressionTime() {
@@ -905,7 +908,7 @@ public class CachePerfStats {
     long ts = NanoTimer.getTime(); // don't use getStatTime so always enabled
     stats.incLong(loadTimeId, ts - start);
     stats.incInt(loadsInProgressId, -1);
-    stats.incLong(loadsCompletedId, 1);
+    stats.incInt(loadsCompletedId, 1);
   }
 
   /**
@@ -924,7 +927,7 @@ public class CachePerfStats {
       stats.incLong(netloadTimeId, getClockTime() - start);
     }
     stats.incInt(netloadsInProgressId, -1);
-    stats.incLong(netloadsCompletedId, 1);
+    stats.incInt(netloadsCompletedId, 1);
   }
 
   /**
@@ -944,7 +947,7 @@ public class CachePerfStats {
     long ts = NanoTimer.getTime(); // don't use getStatTime so always enabled
     stats.incLong(netsearchTimeId, ts - start);
     stats.incInt(netsearchesInProgressId, -1);
-    stats.incLong(netsearchesCompletedId, 1);
+    stats.incInt(netsearchesCompletedId, 1);
   }
 
   /**
@@ -963,11 +966,11 @@ public class CachePerfStats {
       stats.incLong(cacheWriterCallTimeId, getClockTime() - start);
     }
     stats.incInt(cacheWriterCallsInProgressId, -1);
-    stats.incLong(cacheWriterCallsCompletedId, 1);
+    stats.incInt(cacheWriterCallsCompletedId, 1);
   }
 
-  long getCacheWriterCallsCompleted() {
-    return stats.getLong(cacheWriterCallsCompletedId);
+  int getCacheWriterCallsCompleted() {
+    return stats.getInt(cacheWriterCallsCompletedId);
   }
 
   /**
@@ -988,11 +991,11 @@ public class CachePerfStats {
       stats.incLong(cacheListenerCallTimeId, getClockTime() - start);
     }
     stats.incInt(cacheListenerCallsInProgressId, -1);
-    stats.incLong(cacheListenerCallsCompletedId, 1);
+    stats.incInt(cacheListenerCallsCompletedId, 1);
   }
 
-  long getCacheListenerCallsCompleted() {
-    return stats.getLong(cacheListenerCallsCompletedId);
+  int getCacheListenerCallsCompleted() {
+    return stats.getInt(cacheListenerCallsCompletedId);
   }
 
   /**
@@ -1011,7 +1014,7 @@ public class CachePerfStats {
       stats.incLong(getInitialImageTimeId, getClockTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
-    stats.incLong(getInitialImagesCompletedId, 1);
+    stats.incInt(getInitialImagesCompletedId, 1);
   }
 
   /**
@@ -1025,7 +1028,7 @@ public class CachePerfStats {
   }
 
   void incDeltaGIICompleted() {
-    stats.incLong(deltaGetInitialImagesCompletedId, 1);
+    stats.incInt(deltaGetInitialImagesCompletedId, 1);
   }
 
   public void incGetInitialImageKeysReceived() {
@@ -1041,11 +1044,11 @@ public class CachePerfStats {
     long ts = getClockTime();
     stats.incLong(indexUpdateTimeId, ts - start);
     stats.incInt(indexUpdateInProgressId, -1);
-    stats.incLong(indexUpdateCompletedId, 1);
+    stats.incInt(indexUpdateCompletedId, 1);
   }
 
-  long getIndexUpdateCompleted() {
-    return stats.getLong(indexUpdateCompletedId);
+  int getIndexUpdateCompleted() {
+    return stats.getInt(indexUpdateCompletedId);
   }
 
   long startIndexInitialization() {
@@ -1073,15 +1076,15 @@ public class CachePerfStats {
   }
 
   public void incDestroys() {
-    stats.incLong(destroysId, 1);
+    stats.incInt(destroysId, 1);
   }
 
   public void incCreates() {
-    stats.incLong(createsId, 1);
+    stats.incInt(createsId, 1);
   }
 
   public void incInvalidates() {
-    stats.incLong(invalidatesId, 1);
+    stats.incInt(invalidatesId, 1);
   }
 
   /**
@@ -1099,9 +1102,9 @@ public class CachePerfStats {
       long delta = getClockTime() - start;
       stats.incLong(getTimeId, delta);
     }
-    stats.incLong(getsId, 1);
+    stats.incInt(getsId, 1);
     if (miss) {
-      stats.incLong(missesId, 1);
+      stats.incInt(missesId, 1);
     }
   }
 
@@ -1112,13 +1115,13 @@ public class CachePerfStats {
   public long endPut(long start, boolean isUpdate) {
     long total = 0;
     if (isUpdate) {
-      stats.incLong(updatesId, 1);
+      stats.incInt(updatesId, 1);
       if (enableClockStats) {
         total = getClockTime() - start;
         stats.incLong(updateTimeId, total);
       }
     } else {
-      stats.incLong(putsId, 1);
+      stats.incInt(putsId, 1);
       if (enableClockStats) {
         total = getClockTime() - start;
         stats.incLong(putTimeId, total);
@@ -1128,26 +1131,26 @@ public class CachePerfStats {
   }
 
   public void endPutAll(long start) {
-    stats.incLong(putallsId, 1);
+    stats.incInt(putallsId, 1);
     if (enableClockStats)
       stats.incLong(putallTimeId, getClockTime() - start);
   }
 
   public void endRemoveAll(long start) {
-    stats.incLong(removeAllsId, 1);
+    stats.incInt(removeAllsId, 1);
     if (enableClockStats)
       stats.incLong(removeAllTimeId, getClockTime() - start);
   }
 
   public void endQueryExecution(long executionTime) {
-    stats.incLong(queryExecutionsId, 1);
+    stats.incInt(queryExecutionsId, 1);
     if (enableClockStats) {
       stats.incLong(queryExecutionTimeId, executionTime);
     }
   }
 
-  public long getQueryExecutions() {
-    return stats.getLong(queryExecutionsId);
+  public int getQueryExecutions() {
+    return stats.getInt(queryExecutionsId);
   }
 
   public void endQueryResultsHashCollisionProbe(long start) {
@@ -1160,12 +1163,12 @@ public class CachePerfStats {
     stats.incInt(queryResultsHashCollisionsId, 1);
   }
 
-  public long getTxCommits() {
-    return stats.getLong(txCommitsId);
+  public int getTxCommits() {
+    return stats.getInt(txCommitsId);
   }
 
-  public long getTxCommitChanges() {
-    return stats.getLong(txCommitChangesId);
+  public int getTxCommitChanges() {
+    return stats.getInt(txCommitChangesId);
   }
 
   public long getTxCommitTime() {
@@ -1176,12 +1179,12 @@ public class CachePerfStats {
     return stats.getLong(txSuccessLifeTimeId);
   }
 
-  public long getTxFailures() {
-    return stats.getLong(txFailuresId);
+  public int getTxFailures() {
+    return stats.getInt(txFailuresId);
   }
 
-  public long getTxFailureChanges() {
-    return stats.getLong(txFailureChangesId);
+  public int getTxFailureChanges() {
+    return stats.getInt(txFailureChangesId);
   }
 
   public long getTxFailureTime() {
@@ -1192,12 +1195,12 @@ public class CachePerfStats {
     return stats.getLong(txFailedLifeTimeId);
   }
 
-  public long getTxRollbacks() {
-    return stats.getLong(txRollbacksId);
+  public int getTxRollbacks() {
+    return stats.getInt(txRollbacksId);
   }
 
-  public long getTxRollbackChanges() {
-    return stats.getLong(txRollbackChangesId);
+  public int getTxRollbackChanges() {
+    return stats.getInt(txRollbackChangesId);
   }
 
   public long getTxRollbackTime() {
@@ -1213,54 +1216,54 @@ public class CachePerfStats {
   }
 
   public void txSuccess(long opTime, long txLifeTime, int txChanges) {
-    stats.incLong(txCommitsId, 1);
-    stats.incLong(txCommitChangesId, txChanges);
+    stats.incInt(txCommitsId, 1);
+    stats.incInt(txCommitChangesId, txChanges);
     stats.incLong(txCommitTimeId, opTime);
     stats.incLong(txSuccessLifeTimeId, txLifeTime);
   }
 
   public void txFailure(long opTime, long txLifeTime, int txChanges) {
-    stats.incLong(txFailuresId, 1);
-    stats.incLong(txFailureChangesId, txChanges);
+    stats.incInt(txFailuresId, 1);
+    stats.incInt(txFailureChangesId, txChanges);
     stats.incLong(txFailureTimeId, opTime);
     stats.incLong(txFailedLifeTimeId, txLifeTime);
   }
 
   public void txRollback(long opTime, long txLifeTime, int txChanges) {
-    stats.incLong(txRollbacksId, 1);
-    stats.incLong(txRollbackChangesId, txChanges);
+    stats.incInt(txRollbacksId, 1);
+    stats.incInt(txRollbackChangesId, txChanges);
     stats.incLong(txRollbackTimeId, opTime);
     stats.incLong(txRollbackLifeTimeId, txLifeTime);
   }
 
   void endDeltaUpdate(long start) {
-    stats.incLong(deltaUpdatesId, 1);
+    stats.incInt(deltaUpdatesId, 1);
     if (enableClockStats) {
       stats.incLong(deltaUpdatesTimeId, getClockTime() - start);
     }
   }
 
   public void incDeltaFailedUpdates() {
-    stats.incLong(deltaFailedUpdatesId, 1);
+    stats.incInt(deltaFailedUpdatesId, 1);
   }
 
   public void endDeltaPrepared(long start) {
-    stats.incLong(deltasPreparedId, 1);
+    stats.incInt(deltasPreparedId, 1);
     if (enableClockStats) {
       stats.incLong(deltasPreparedTimeId, getClockTime() - start);
     }
   }
 
   public void incDeltasSent() {
-    stats.incLong(deltasSentId, 1);
+    stats.incInt(deltasSentId, 1);
   }
 
   public void incDeltaFullValuesSent() {
-    stats.incLong(deltaFullValuesSentId, 1);
+    stats.incInt(deltaFullValuesSentId, 1);
   }
 
   public void incDeltaFullValuesRequested() {
-    stats.incLong(deltaFullValuesRequestedId, 1);
+    stats.incInt(deltaFullValuesRequestedId, 1);
   }
 
   /**
@@ -1311,11 +1314,11 @@ public class CachePerfStats {
   }
 
   public void incRetries() {
-    stats.incLong(retriesId, 1);
+    stats.incInt(retriesId, 1);
   }
 
-  public long getRetries() {
-    return stats.getLong(retriesId);
+  public int getRetries() {
+    return stats.getInt(retriesId);
   }
 
   public void incDiskTasksWaiting() {
@@ -1335,19 +1338,19 @@ public class CachePerfStats {
   }
 
   public void incEvictorJobsStarted() {
-    stats.incLong(evictorJobsStartedId, 1);
+    stats.incInt(evictorJobsStartedId, 1);
   }
 
-  long getEvictorJobsStarted() {
-    return stats.getLong(evictorJobsStartedId);
+  int getEvictorJobsStarted() {
+    return stats.getInt(evictorJobsStartedId);
   }
 
   public void incEvictorJobsCompleted() {
-    stats.incLong(evictorJobsCompletedId, 1);
+    stats.incInt(evictorJobsCompletedId, 1);
   }
 
-  long getEvictorJobsCompleted() {
-    return stats.getLong(evictorJobsCompletedId);
+  int getEvictorJobsCompleted() {
+    return stats.getInt(evictorJobsCompletedId);
   }
 
   public void incEvictorQueueSize(int delta) {
@@ -1387,12 +1390,12 @@ public class CachePerfStats {
     };
   }
 
-  public long getClearCount() {
-    return stats.getLong(clearsId);
+  public int getClearCount() {
+    return stats.getInt(clearsId);
   }
 
   public void incClearCount() {
-    stats.incLong(clearsId, 1);
+    stats.incInt(clearsId, 1);
   }
 
   public long getConflatedEventsCount() {

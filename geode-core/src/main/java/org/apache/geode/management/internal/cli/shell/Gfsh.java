@@ -43,6 +43,8 @@ import org.springframework.shell.core.JLineShell;
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ShellStatus.Status;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.Banner;
@@ -129,9 +131,12 @@ public class Gfsh extends JLineShell {
   private static final int DEFAULT_HEIGHT = 100;
   private static final Object INSTANCE_LOCK = new Object();
 
+  @MutableForTesting
   protected static PrintStream gfshout = System.out;
+  @MutableForTesting
   protected static PrintStream gfsherr = System.err;
   protected static final ThreadLocal<Gfsh> gfshThreadLocal = new ThreadLocal<>();
+  @MakeNotStatic
   private static Gfsh instance;
   // This flag is used to restrict column trimming to table only types
   private static final ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<>();

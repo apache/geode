@@ -34,12 +34,15 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.StringTokenizer;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 /**
  * This class provides build and version information about GemFire. It gathers this information from
  * the resource property file for this class.
  */
 public class GemFireVersion {
   /** The singleton instance */
+  @MakeImmutable
   private static VersionDescription description;
 
   private GemFireVersion() {}

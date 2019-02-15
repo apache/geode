@@ -31,6 +31,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.util.IOUtils;
@@ -157,6 +158,7 @@ public class StartVsdCommand extends OfflineGfshCommand {
 
   protected static class StatisticsArchiveFileFilter implements FileFilter {
 
+    @Immutable
     protected static final StatisticsArchiveFileFilter INSTANCE = new StatisticsArchiveFileFilter();
 
     @Override
@@ -168,6 +170,7 @@ public class StartVsdCommand extends OfflineGfshCommand {
   protected static class StatisticsArchiveFileAndDirectoryFilter
       extends StatisticsArchiveFileFilter {
 
+    @Immutable
     protected static final StatisticsArchiveFileAndDirectoryFilter INSTANCE =
         new StatisticsArchiveFileAndDirectoryFilter();
 
