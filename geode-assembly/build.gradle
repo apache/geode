@@ -24,6 +24,9 @@ evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
 apply from: "${project.projectDir}/../gradle/publish.gradle"
+// This subproject's 'publication' is not a jar and should not be constrained to match versions
+// in the geode-all-bom.
+project.ext.set('constrainVersionInBom', false)
 
 // disable artifact generation for this project
 jar.enabled = false
