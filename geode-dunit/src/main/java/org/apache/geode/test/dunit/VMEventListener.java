@@ -24,7 +24,9 @@ public interface VMEventListener {
    *
    * @see VM#getVM(int)
    */
-  void afterCreateVM(VM vm);
+  default void afterCreateVM(VM vm) {
+    // nothing
+  }
 
   /**
    * Invoked before bouncing a dunit VM.
@@ -32,7 +34,9 @@ public interface VMEventListener {
    * @see VM#bounce()
    * @see VM#bounceForcibly()
    */
-  void beforeBounceVM(VM vm);
+  default void beforeBounceVM(VM vm) {
+    // nothing
+  }
 
   /**
    * Invoked after bouncing a dunit VM.
@@ -40,5 +44,7 @@ public interface VMEventListener {
    * @see VM#bounce()
    * @see VM#bounceForcibly()
    */
-  void afterBounceVM(VM vm);
+  default void afterBounceVM(VM vm) {
+    // nothing
+  }
 }
