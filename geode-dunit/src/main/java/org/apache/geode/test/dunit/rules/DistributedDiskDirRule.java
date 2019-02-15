@@ -240,11 +240,6 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
     }
 
     @Override
-    public void beforeBounceVM(VM vm) {
-      // nothing
-    }
-
-    @Override
     public void afterBounceVM(VM vm) {
       DistributedDiskDirRule.this.afterBounceVM(vm);
     }
