@@ -45,8 +45,8 @@ public class ManagementControllerAdvice {
   @ExceptionHandler(EntityExistsException.class)
   public ResponseEntity<ClusterManagementResult> entityExists(final Exception e) {
     // no need to log the error stack. User only needs to know the message.
-    return new ResponseEntity<>(new ClusterManagementResult(true, e.getMessage()),
-        HttpStatus.OK);
+    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+        HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler({AuthenticationFailedException.class, AuthenticationException.class})
