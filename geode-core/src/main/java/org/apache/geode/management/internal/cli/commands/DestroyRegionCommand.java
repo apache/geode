@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -95,19 +96,25 @@ public class DestroyRegionCommand extends InternalGfshCommand {
     if (ccService == null) {
       return;
     }
-    CacheConfig cacheConfig = ccService.getCacheConfig(null);
-    if (cacheConfig == null) {
-      return;
-    }
-    RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
-    if (regionConfig == null) {
-      return;
-    }
-    CacheElement element =
-        CacheElement.findElement(regionConfig.getCustomRegionElements(), "jdbc-mapping");
-    if (element != null) {
-      throw new IllegalStateException("Cannot destroy region \"" + regionName
-          + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
+
+    Set<String> groupNames = new HashSet<String>();
+    groupNames.addAll(ccService.getGroups());
+    groupNames.add("cluster");
+    for(String groupName : groupNames) {
+      CacheConfig cacheConfig = ccService.getCacheConfig(groupName);
+      if (cacheConfig == null) {
+        return;
+      }
+      RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+      if (regionConfig == null) {
+        return;
+      }
+      CacheElement element =
+          CacheElement.findElement(regionConfig.getCustomRegionElements(), "jdbc-mapping");
+      if (element != null) {
+        throw new IllegalStateException("Cannot destroy region \"" + regionName
+            + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
+      }
     }
   }
 }
