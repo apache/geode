@@ -192,7 +192,10 @@ public class TypeRegistry {
   public PdxType defineType(PdxType newType) {
     Integer existingId = this.typeToId.get(newType);
     if (existingId != null) {
-      return this.idToType.get(existingId);
+      PdxType existingType = this.idToType.get(existingId);
+      if (existingType != null) {
+        return existingType;
+      }
     }
 
     int id = this.distributedTypeRegistry.defineType(newType);
@@ -543,5 +546,19 @@ public class TypeRegistry {
 
   public void setPdxReadSerializedOverride(boolean overridePdxReadSerialized) {
     pdxReadSerializedOverride.set(overridePdxReadSerialized);
+  }
+
+  // accessors for unit test
+
+  Map<Integer, PdxType> getIdToType() {
+    return idToType;
+  }
+
+  Map<PdxType, Integer> getTypeToId() {
+    return typeToId;
+  }
+
+  Map<Class<?>, PdxType> getLocalTypeIds() {
+    return localTypeIds;
   }
 }
