@@ -70,16 +70,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   @Override
   public ClusterManagementResult create(CacheElement config, String group) {
+    final ClusterManagementResultFactory cmrFactory = new ClusterManagementResultFactory();
+
     if (group == null) {
       group = "cluster";
     }
 
     if (persistenceService == null) {
-      return new ClusterManagementResult(false,
-          "Cluster configuration service needs to be enabled");
+      return cmrFactory.setPersistenceStatusNA("Cluster configuration service needs to be enabled")
+          .createResult();
     }
 
-    ClusterManagementResult result = new ClusterManagementResult();
     ConfigurationMutator configurationMutator = mutators.get(config.getClass());
 
     ConfigurationValidator validator = validators.get(config.getClass());
@@ -87,21 +88,21 @@ public class LocatorClusterManagementService implements ClusterManagementService
       try {
         validator.validate(config);
       } catch (IllegalArgumentException e) {
-        return new ClusterManagementResult(false, e.getMessage());
+        return cmrFactory.setPersistenceStatus(false, e.getMessage()).createResult();
       }
     }
+
     // exit early if config element already exists in cache config
     if (configurationMutator.exists(config, persistenceService.getCacheConfig(group, true))) {
-      result =
-          new ClusterManagementResult(Status.Result.NO_OP,
-              "cache element " + config.getId() + " already exists.");
-      return result;
+      return cmrFactory.setPersistenceStatus(Status.Result.NO_OP,
+          "cache element " + config.getId() + " already exists.").createResult();
     }
 
     // execute function on all members
     Set<DistributedMember> targetedMembers = findMembers(null, null);
     if (targetedMembers.size() == 0) {
-      return new ClusterManagementResult(false, "no members found to create cache element");
+      return cmrFactory.setPersistenceStatus(false,
+          "no members found to create cache element").createResult();
     }
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
@@ -109,35 +110,33 @@ public class LocatorClusterManagementService implements ClusterManagementService
         Arrays.asList(config, UpdateCacheFunction.CacheElementOperation.ADD),
         targetedMembers);
     for (CliFunctionResult functionResult : functionResults) {
-      result.addMemberStatus(functionResult.getMemberIdOrName(),
+      cmrFactory.addMemberStatus(functionResult.getMemberIdOrName(),
           functionResult.isSuccessful(),
           functionResult.getStatusMessage());
     }
 
-    if (!result.isSuccessfullyAppliedOnMembers()) {
-      result.setClusterConfigPersisted(false, "Failed to apply the update on all members.");
-      return result;
+    if (!cmrFactory.isSuccessfullyAppliedOnMembers()) {
+      return cmrFactory.setPersistenceStatus(false, "Failed to apply the update on all members.")
+          .createResult();
     }
 
     // persist configuration in cache config
     String finalGroup = group;
 
-    // CMR needs to be final to be used in the lambda expression
-    ClusterManagementResult finalResult = result;
     persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
       try {
         configurationMutator.add(config, cacheConfigForGroup);
-        finalResult.setClusterConfigPersisted(true,
+        cmrFactory.setPersistenceStatus(true,
             "successfully persisted config for " + finalGroup);
       } catch (Exception e) {
         String message = "failed to update cluster config for " + finalGroup;
         logger.error(message, e);
-        finalResult.setClusterConfigPersisted(false, message);
+        cmrFactory.setPersistenceStatus(false, message);
         return null;
       }
       return cacheConfigForGroup;
     });
-    return finalResult;
+    return cmrFactory.createResult();
   }
 
   @Override

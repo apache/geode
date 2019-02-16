@@ -18,70 +18,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ClusterManagementResult {
-  private Map<String, Status> memberStatuses = new HashMap<>();
+  private final Map<String, Status> memberStatuses;
 
-  private Status persistenceStatus = new Status(Status.Result.NOT_APPLICABLE, null);
+  private final Status persistenceStatus;
 
-  private boolean successfullyAppliedOnMembers = false;
+  private final boolean successfullyAppliedOnMembers;
 
-  private boolean successfullyPersisted = false;
+  private final boolean successfullyPersisted;
 
-  private boolean successful = false;
+  private final boolean successful;
 
-  public ClusterManagementResult() {
-    generateSuccessStatus();
+  // Required for deserialization
+  private ClusterManagementResult() {
+    memberStatuses = new HashMap<>();
+    persistenceStatus = new Status(Status.Result.NOT_APPLICABLE, "");
+    successful = false;
+    successfullyPersisted = false;
+    successfullyAppliedOnMembers = false;
   }
 
-  public ClusterManagementResult(boolean success, String message) {
-    this.persistenceStatus = new Status(success, message);
+  protected ClusterManagementResult(Map<String, Status> memberStatuses, Status persistenceStatus,
+      boolean successful, boolean successfullyAppliedOnMembers, boolean sucessfullyPersisted) {
 
-    generateSuccessStatus();
-  }
-
-  public ClusterManagementResult(Status.Result status, String message) {
-    this.persistenceStatus = new Status(status, message);
-
-    generateSuccessStatus();
-  }
-
-  private void generateSuccessStatus() {
-    if (persistenceStatus.status == Status.Result.NO_OP) {
-      successfullyAppliedOnMembers = true;
-    } else if (memberStatuses.isEmpty()) {
-      successfullyAppliedOnMembers = false;
-    } else {
-      successfullyAppliedOnMembers =
-          memberStatuses.values().stream().allMatch(x -> x.status == Status.Result.SUCCESS);
-    }
-
-    if (persistenceStatus.status == Status.Result.NO_OP) {
-      successfullyPersisted = true;
-    } else {
-      successfullyPersisted = persistenceStatus.status == Status.Result.SUCCESS;
-    }
-
-    if (persistenceStatus.status == Status.Result.NO_OP) {
-      successful = true;
-    } else {
-      successful =
-          (persistenceStatus.status == Status.Result.NOT_APPLICABLE || isSuccessfullyPersisted())
-              && isSuccessfullyAppliedOnMembers();
-    }
-  }
-
-  public void addMemberStatus(String member, Status.Result result, String message) {
-    this.memberStatuses.put(member, new Status(result, message));
-    generateSuccessStatus();
-  }
-
-  public void addMemberStatus(String member, boolean success, String message) {
-    this.memberStatuses.put(member, new Status(success, message));
-    generateSuccessStatus();
-  }
-
-  public void setClusterConfigPersisted(boolean success, String message) {
-    this.persistenceStatus = new Status(success, message);
-    generateSuccessStatus();
+    this.memberStatuses = memberStatuses;
+    this.persistenceStatus = persistenceStatus;
+    this.successfullyAppliedOnMembers = successfullyAppliedOnMembers;
+    this.successfullyPersisted = sucessfullyPersisted;
+    this.successful = successful;
   }
 
   public Map<String, Status> getMemberStatuses() {

@@ -38,6 +38,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
 import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.internal.api.ClusterManagementResultFactory;
 
 @Configuration
 @EnableWebSecurity
@@ -82,7 +83,8 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
           response.setContentType(MediaType.APPLICATION_JSON_UTF8.getType());
           ClusterManagementResult result =
-              new ClusterManagementResult(false, authException.getMessage());
+              new ClusterManagementResultFactory()
+                  .setPersistenceStatus(false, authException.getMessage()).createResult();
           objectMapper.writeValue(response.getWriter(), result);
         }
       });
