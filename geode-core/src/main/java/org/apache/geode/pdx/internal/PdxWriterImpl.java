@@ -954,7 +954,13 @@ public class PdxWriterImpl implements PdxWriter {
     if (pt == null) {
       pt = this.existingType;
     }
-    return new PdxInstanceImpl(pt, new PdxInputStream(bb), len);
+    bb = bb.slice();
+
+    ByteBuffer bbCopy = ByteBuffer.allocate(bb.capacity());
+    bb.rewind();
+    bbCopy.put(bb);
+    bbCopy.flip();
+    return new PdxInstanceImpl(pt, new PdxInputStream(bbCopy), len);
   }
 
   public static boolean isPdx(byte[] valueBytes) {
