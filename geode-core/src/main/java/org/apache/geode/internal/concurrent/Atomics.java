@@ -22,8 +22,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.statistics.StatisticsTypeImpl;
-import org.apache.geode.internal.stats50.Atomic50StatisticsImpl;
+import org.apache.geode.internal.statistics.StripedStatisticsImpl;
 
 public class Atomics {
   private Atomics() {}
@@ -39,10 +38,10 @@ public class Atomics {
   public static Statistics createAtomicStatistics(StatisticsType type, String textId, long nId,
       long uId, StatisticsManager mgr) {
     Statistics result = null;
-    if (((StatisticsTypeImpl) type).getDoubleStatCount() == 0 && !STRIPED_STATS_DISABLED) {
-      result = new Atomic50StatisticsImpl(type, textId, nId, uId, mgr);
-    } else {
+    if (STRIPED_STATS_DISABLED) {
       result = new LocalStatisticsImpl(type, textId, nId, uId, true, 0, mgr);
+    } else {
+      result = new StripedStatisticsImpl(type, textId, nId, uId);
     }
     return result;
   }
