@@ -412,10 +412,10 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
 
         // replace with null oldvalue matches invalidated entry
         pr.putIfAbsent("otherKeyForNull", null);
-        int puts = ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getPuts();
+        long puts = ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getPuts();
         boolean success = pr.replace("otherKeyForNull", null, "no longer invalid");
         assertTrue(success);
-        int newputs = ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getPuts();
+        long newputs = ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getPuts();
         assertEquals("stats not updated properly or replace malfunctioned", newputs, puts + 1);
 
       }
