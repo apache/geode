@@ -44,13 +44,8 @@ public class RegionManagementController extends AbstractManagementController {
     Status.Result requestStatus = result.getPersistenceStatus().getStatus();
     if (requestStatus == Status.Result.NO_OP) {
       httpStatus = HttpStatus.OK;
-    } else if (result.isSuccessful()) {
-      httpStatus = HttpStatus.CREATED;
     } else {
-      boolean condition = !result.isSuccessfullyAppliedOnMembers()
-          && (result.getPersistenceStatus().getStatus() == Status.Result.NOT_APPLICABLE);
-      httpStatus = (condition
-          ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+      httpStatus = result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
     return new ResponseEntity<>(result, httpStatus);
