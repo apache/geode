@@ -86,7 +86,7 @@ public class CachePerfStatsTest {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     Clock clock = mock(Clock.class);
 
-    statistics = spy(new StripedStatisticsImpl(statisticsType, TEXT_ID, 1, 1));
+    statistics = spy(new StripedStatisticsImpl(statisticsType, TEXT_ID, 1, 1, statisticsManager));
 
     when(clock.getTime()).thenReturn(CLOCK_TIME);
     when(statisticsFactory.createAtomicStatistics(eq(statisticsType), eq(TEXT_ID)))

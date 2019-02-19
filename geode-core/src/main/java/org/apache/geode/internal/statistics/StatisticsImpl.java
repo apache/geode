@@ -71,6 +71,9 @@ public abstract class StatisticsImpl implements Statistics {
   /** Uniquely identifies this instance */
   private long uniqueId;
 
+  /** The StatisticsFactory that created this instance */
+  private final StatisticsManager statisticsManager;
+
   /**
    * Suppliers of int sample values to be sampled every sample-interval
    */
@@ -113,12 +116,13 @@ public abstract class StatisticsImpl implements Statistics {
    *        only
    */
   public StatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
-      int osStatFlags) {
+      int osStatFlags, StatisticsManager statisticsManager) {
     this.type = (StatisticsTypeImpl) type;
     this.textId = textId;
     this.numericId = numericId;
     this.uniqueId = uniqueId;
     this.osStatFlags = osStatFlags;
+    this.statisticsManager = statisticsManager;
     closed = false;
   }
 
@@ -144,6 +148,9 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public void close() {
+    if (this.statisticsManager != null) {
+      statisticsManager.destroyStatistics(this);
+    }
     this.closed = true;
   }
 

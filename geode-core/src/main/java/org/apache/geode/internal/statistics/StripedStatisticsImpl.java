@@ -32,8 +32,8 @@ public class StripedStatisticsImpl extends StatisticsImpl {
   private final DoubleAdder[] doubleAdders;
 
   public StripedStatisticsImpl(StatisticsType type, String textId, long numericId,
-      long uniqueId) {
-    super(type, textId, numericId, uniqueId, 0);
+      long uniqueId, StatisticsManager statisticsManager) {
+    super(type, textId, numericId, uniqueId, 0, statisticsManager);
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
 
@@ -46,7 +46,6 @@ public class StripedStatisticsImpl extends StatisticsImpl {
         Stream.generate(DoubleAdder::new).limit(realType.getDoubleStatCount())
             .toArray(DoubleAdder[]::new);
   }
-
 
   @Override
   public boolean isAtomic() {

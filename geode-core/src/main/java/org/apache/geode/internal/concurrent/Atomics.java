@@ -41,7 +41,7 @@ public class Atomics {
     if (STRIPED_STATS_DISABLED) {
       result = new LocalStatisticsImpl(type, textId, nId, uId, true, 0, mgr);
     } else {
-      result = new StripedStatisticsImpl(type, textId, nId, uId);
+      result = new StripedStatisticsImpl(type, textId, nId, uId, mgr);
     }
     return result;
   }
