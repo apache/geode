@@ -97,7 +97,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getInvalidates() {
+  public long getInvalidates() {
     return 0;
   }
 

@@ -646,7 +646,7 @@ public class ProxyJUnitTest {
     // int puts = getStats().getPuts();
     // int updates = getStats().getUpdates();
     int destroys = getStats().getDestroys();
-    int invalidates = getStats().getInvalidates();
+    long invalidates = getStats().getInvalidates();
     int gets = getStats().getGets();
     int misses = getStats().getMisses();
 
@@ -840,7 +840,7 @@ public class ProxyJUnitTest {
     // int puts = getStats().getPuts();
     // int updates = getStats().getUpdates();
     int destroys = getStats().getDestroys();
-    // int invalidates = getStats().getInvalidates();
+    // long invalidates = getStats().getInvalidates();
     int gets = getStats().getGets();
     int misses = getStats().getMisses();
     ExpectedEntryEvent expee = new ExpectedEntryEvent();
@@ -932,7 +932,7 @@ public class ProxyJUnitTest {
     // int puts = getStats().getPuts();
     // int updates = getStats().getUpdates();
     int destroys = getStats().getDestroys();
-    int invalidates = getStats().getInvalidates();
+    long invalidates = getStats().getInvalidates();
     // int gets = getStats().getGets();
     // int misses = getStats().getMisses();
     ExpectedEntryEvent expee = new ExpectedEntryEvent();

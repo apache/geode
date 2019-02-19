@@ -1256,7 +1256,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       } catch (Exception e) {
         fail("testInvalidate(): Invalidate throws exception other than EntryNotFoundException");
       }
-      assertEquals(num + 1,
+      assertEquals((long)num + 1,
           ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getInvalidates());
 
     }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -729,7 +730,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     Region region = cache.getRegion(REGION_NAME);
     EventCountingCacheListener cacheListener =
         (EventCountingCacheListener) region.getAttributes().getCacheListener();
-    assertEquals(0/* expected */, cacheListener.getInvalidates()/* actual */);
+    assertEquals(0L/* expected */, cacheListener.getInvalidates()/* actual */);
   }
 
   private static void verifyCountsAndClear(int count1, int count2) {
@@ -1108,7 +1109,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
     private AtomicInteger creates = new AtomicInteger();
     private AtomicInteger updates = new AtomicInteger();
-    private AtomicInteger invalidates = new AtomicInteger();
+    private AtomicLong invalidates = new AtomicLong();
 
     private int expectedCreates;
 
@@ -1159,7 +1160,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
       this.invalidates.incrementAndGet();
     }
 
-    private int getInvalidates() {
+    private long getInvalidates() {
       return this.invalidates.get();
     }
 

@@ -383,7 +383,7 @@ public class CachePerfStats {
             f.createIntCounter("destroys", destroysDesc, "operations"),
             f.createIntCounter("updates", updatesDesc, "operations"),
             f.createLongCounter("updateTime", updateTimeDesc, "nanoseconds"),
-            f.createIntCounter("invalidates", invalidatesDesc, "operations"),
+            f.createLongCounter("invalidates", invalidatesDesc, "operations"),
             f.createIntCounter("gets", getsDesc, "operations"),
             f.createIntCounter("misses", missesDesc, "operations"),
             f.createIntCounter("creates", createsDesc, "operations"),
@@ -735,8 +735,8 @@ public class CachePerfStats {
     return stats.getInt(updatesId);
   }
 
-  public int getInvalidates() {
-    return stats.getInt(invalidatesId);
+  public long getInvalidates() {
+    return stats.getLong(invalidatesId);
   }
 
   public int getGets() {
@@ -1084,7 +1084,7 @@ public class CachePerfStats {
   }
 
   public void incInvalidates() {
-    stats.incInt(invalidatesId, 1);
+    stats.incLong(invalidatesId, 1L);
   }
 
   /**
