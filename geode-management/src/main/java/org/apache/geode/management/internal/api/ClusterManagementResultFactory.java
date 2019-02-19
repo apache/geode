@@ -30,8 +30,8 @@ public class ClusterManagementResultFactory {
     boolean successful = false;
 
 
-    return new ClusterManagementResult(memberStatuses, persistenceStatus, successful,
-        successfullyAppliedOnMembers, successfullyPersisted);
+    return new ClusterManagementResult(memberStatuses, persistenceStatus, isSuccessful(),
+        isSuccessfullyAppliedOnMembers(), isSuccessfullyPersisted());
   }
 
   public ClusterManagementResultFactory addMemberStatus(String member, boolean success,
