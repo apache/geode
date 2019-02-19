@@ -24,7 +24,7 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
 
-  compile(project(':geode-core'))
+  compileOnly(project(':geode-core'))
 
   compileOnly('javax.servlet:javax.servlet-api')
 
@@ -75,6 +75,7 @@ dependencies {
   integrationTestCompile('org.springframework:spring-test')
   integrationTestCompile('org.springframework.security:spring-security-test')
 
+  integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
