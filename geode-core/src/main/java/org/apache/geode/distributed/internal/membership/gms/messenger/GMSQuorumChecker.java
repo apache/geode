@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
@@ -55,6 +56,7 @@ public class GMSQuorumChecker implements QuorumChecker {
   private JGAddress myAddress;
   private final long partitionThreshold;
   private Set<DistributedMember> oldDistributedMemberIdentifiers;
+  private ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
 
   public GMSQuorumChecker(NetView jgView, int partitionThreshold, JChannel channel,
       Set<DistributedMember> oldDistributedMemberIdentifiers) {
@@ -125,7 +127,7 @@ public class GMSQuorumChecker implements QuorumChecker {
 
   @Override
   public MembershipInformation getMembershipInfo() {
-    return new MembershipInformation(channel, oldDistributedMemberIdentifiers);
+    return new MembershipInformation(channel, oldDistributedMemberIdentifiers, messageQueue);
   }
 
   private boolean calculateQuorum() {
@@ -219,7 +221,13 @@ public class GMSQuorumChecker implements QuorumChecker {
         }
       } else if (pingPonger.isPongMessage(msgBytes)) {
         pongReceived(msg.getSrc());
+      } else {
+        queueMessage(msg);
       }
+    }
+
+    private void queueMessage(Message msg) {
+      messageQueue.add(msg);
     }
 
     @Override

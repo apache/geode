@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -730,7 +731,11 @@ public class CacheServerLauncher {
         // system.isReconnecting());
         boolean reconnected = false;
         if (system.isReconnecting()) {
-          reconnected = system.waitUntilReconnected(-1, TimeUnit.SECONDS);
+          try {
+            reconnected = system.waitUntilReconnected(-1, TimeUnit.SECONDS);
+          } catch (CancelException e) {
+            // reconnect failed
+          }
           if (reconnected) {
             system = (InternalDistributedSystem) system.getReconnectedSystem();
             cache = system.getCache();
