@@ -954,13 +954,20 @@ public class PdxWriterImpl implements PdxWriter {
     if (pt == null) {
       pt = this.existingType;
     }
-    bb = bb.slice();
+    return new PdxInstanceImpl(pt, new PdxInputStream(copyRemainingBytes(bb)), len);
+  }
 
-    ByteBuffer bbCopy = ByteBuffer.allocate(bb.capacity());
-    bb.rewind();
-    bbCopy.put(bb);
-    bbCopy.flip();
-    return new PdxInstanceImpl(pt, new PdxInputStream(bbCopy), len);
+  /**
+   * Copies the remaining bytes in source
+   * (that is, from its current position to its limit)
+   * into a new heap ByteBuffer that is returned.
+   */
+  static ByteBuffer copyRemainingBytes(ByteBuffer source) {
+    ByteBuffer slice = source.slice();
+    ByteBuffer result = ByteBuffer.allocate(slice.capacity());
+    result.put(slice);
+    result.flip();
+    return result;
   }
 
   public static boolean isPdx(byte[] valueBytes) {
