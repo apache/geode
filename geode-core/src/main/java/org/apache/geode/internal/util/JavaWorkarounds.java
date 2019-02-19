@@ -19,14 +19,26 @@ import java.util.function.Function;
 
 public class JavaWorkarounds {
 
+  public static final boolean postJava8 = calcIfJDKIsPost8();
+
+  private static boolean calcIfJDKIsPost8() {
+    String version = System.getProperty("java.version");
+    return !version.matches("1\\.[0-8]\\.");
+  }
+
   // This is a workaround for computeIfAbsent not being concurrent in pre Java 9
   // https://bugs.openjdk.java.net/browse/JDK-8161372
   public static <K, V> V computeIfAbsent(Map<K, V> map, K key,
       Function<? super K, ? extends V> mappingFunction) {
-    V existingValue = map.get(key);
-    if (existingValue == null) {
+    if (postJava8) {
       return map.computeIfAbsent(key, mappingFunction);
     }
-    return existingValue;
+    else {
+      V existingValue = map.get(key);
+      if (existingValue == null) {
+        return map.computeIfAbsent(key, mappingFunction);
+      }
+      return existingValue;
+    }
   }
 }
