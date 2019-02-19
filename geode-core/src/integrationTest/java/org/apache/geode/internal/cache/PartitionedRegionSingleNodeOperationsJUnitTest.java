@@ -200,7 +200,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
     for (int num = 0; num < 3; num++) {
       pr.put(new Integer(num), val);
-      final int initialDestroyCount = getDestroyCount(pr);
+      final long initialDestroyCount = getDestroyCount(pr);
       pr.destroy(new Integer(num));
       assertEquals(initialDestroyCount + 1, getDestroyCount(pr));
     }
@@ -228,7 +228,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     }
   }
 
-  private int getDestroyCount(PartitionedRegion pr) {
+  private long getDestroyCount(PartitionedRegion pr) {
     return ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getDestroys();
   }
 
@@ -1256,7 +1256,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
       } catch (Exception e) {
         fail("testInvalidate(): Invalidate throws exception other than EntryNotFoundException");
       }
-      assertEquals((long)num + 1,
+      assertEquals((long) num + 1,
           ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getInvalidates());
 
     }

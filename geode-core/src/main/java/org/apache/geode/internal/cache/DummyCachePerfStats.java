@@ -72,8 +72,8 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getDestroys() {
-    return 0;
+  public long getDestroys() {
+    return 0L;
   }
 
   @Override
@@ -98,7 +98,7 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public long getInvalidates() {
-    return 0;
+    return 0L;
   }
 
   @Override

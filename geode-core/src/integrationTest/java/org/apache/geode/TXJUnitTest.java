@@ -4832,7 +4832,7 @@ public class TXJUnitTest {
     CachePerfStats cacheStats = this.cache.getCachePerfStats();
     // quick sanity check to make sure perf stats work non-tx
     int creates;
-    int destroys;
+    long destroys;
     int puts;
     long invalidates;
 
