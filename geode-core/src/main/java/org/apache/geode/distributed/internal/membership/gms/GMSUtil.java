@@ -128,25 +128,4 @@ public class GMSUtil {
     return sb.toString();
   }
 
-
-  /**
-   * Formats the bytes in a buffer into hex octets, 50 per line
-   */
-  public static String formatBytes(byte[] buf, int startIndex, int length) {
-    StringBuilder w = new StringBuilder(20000);
-    int count = 0;
-    for (int i = startIndex; i < length; i++, count++) {
-      String s = Integer.toHexString(buf[i] & 0xff);
-      if (s.length() == 1) {
-        w.append('0');
-      }
-      w.append(s).append(' ');
-      if ((count % 50) == 49) {
-        w.append("\n");
-      }
-    }
-    return w.toString();
-  }
-
-
 }

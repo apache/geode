@@ -51,6 +51,11 @@ public interface TcpHandler {
       InternalConfigurationPersistenceService sharedConfig);
 
   /**
+   * Informs the handler that restart has completed
+   */
+  default void restartCompleted(DistributedSystem ds) {}
+
+  /**
    * Initialize the handler with the TcpServer. Called before the TcpServer starts accepting
    * connections.
    */

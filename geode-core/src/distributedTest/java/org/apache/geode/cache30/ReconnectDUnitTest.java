@@ -15,6 +15,8 @@
 package org.apache.geode.cache30;
 
 import static java.lang.System.out;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.DataPolicy.REPLICATE;
 import static org.apache.geode.cache.LossAction.RECONNECT;
@@ -37,9 +39,11 @@ import static org.apache.geode.distributed.Locator.getLocator;
 import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembershipManager;
 import static org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator.generate;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.ThreadUtils.join;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -63,6 +67,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -80,6 +85,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ReconnectListener;
@@ -401,7 +407,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             System.out.println("ds.isReconnecting() = " + ds.isReconnecting());
             boolean failure = true;
             try {
-              ds.waitUntilReconnected(60, SECONDS);
+              ds.waitUntilReconnected(getTimeout().getValueInMS(), MILLISECONDS);
               savedSystem = ds.getReconnectedSystem();
               locator = (InternalLocator) getLocator();
               assertTrue("Expected system to be restarted", ds.getReconnectedSystem() != null);
@@ -480,15 +486,14 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   /** this will throw an exception if location services aren't running */
   private void ensureLocationServiceRunning(VM vm) {
-    vm.invoke(new SerializableRunnable("ensureLocationServiceRunning") {
-      @Override
-      public void run() {
+    vm.invoke("ensureLocationServiceRunning", () -> {
+      await().untilAsserted(() -> {
         InternalLocator intloc = (InternalLocator) locator;
         ServerLocator serverLocator = intloc.getServerLocatorAdvisee();
         // the initialization flag in the locator's ControllerAdvisor will
         // be set if a handshake has been performed
         assertTrue(serverLocator.getDistributionAdvisor().isInitialized());
-      }
+      });
     });
   }
 
@@ -511,7 +516,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for ds to begin reconnecting";
               }
             });
-            long waitTime = 120;
+            long waitTime = 600;
             System.out.println("VM" + VM.getCurrentVMNum() + " waiting up to "
                 + waitTime + " seconds for reconnect to complete");
             try {
@@ -1070,7 +1075,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         ReconnectDUnitTest.savedCache = (GemFireCacheImpl) getCache();
         Region myRegion = createRegion("myRegion", createAtts());
         myRegion.put("MyKey", "MyValue");
-        myRegion.getAttributesMutator().addCacheListener(new CacheKillingListener());
+        myRegion.getAttributesMutator()
+            .addCacheListener(new CacheListenerTriggeringForcedDisconnect());
       }
     };
 
@@ -1098,7 +1104,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         });
         out.println("entering reconnect wait for " + cache);
         try {
-          cache.waitUntilReconnected(20, SECONDS);
+          cache.waitUntilReconnected(5, MINUTES);
         } catch (InterruptedException e) {
           fail("interrupted");
         }
@@ -1155,11 +1161,10 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         return "waiting for cache to begin reconnecting";
       }
     });
-    try {
-      cache.waitUntilReconnected(20, SECONDS);
-    } catch (InterruptedException e) {
-      fail("interrupted");
-    }
+    assertThatThrownBy(() -> cache.waitUntilReconnected(getTimeout().getValueInMS(), MILLISECONDS))
+        .isInstanceOf(CacheClosedException.class)
+        .hasMessageContaining("Cache could not be recreated")
+        .hasCauseExactlyInstanceOf(DistributedSystemDisconnectedException.class);
     assertTrue(cache.getInternalDistributedSystem().isReconnectCancelled());
     assertNull(cache.getReconnectedCache());
   }
@@ -1290,7 +1295,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
-              return msys.isReconnecting();
+              return msys.isReconnecting() || msys.getReconnectedSystem() != null;
             }
 
             @Override
@@ -1323,10 +1328,12 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * CacheKillingListener crashes the distributed system when it is invoked for the first time.
+   * CacheListenerTriggeringForcedDisconnect crashes the distributed system when it is invoked for
+   * the first time.
    * After that it ignores any notifications.
    */
-  public static class CacheKillingListener extends CacheListenerAdapter implements Declarable {
+  public static class CacheListenerTriggeringForcedDisconnect extends CacheListenerAdapter
+      implements Declarable {
     public static int crashCount = 0;
 
     @Override

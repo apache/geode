@@ -180,6 +180,14 @@ public class Services {
     }
   }
 
+  public void setLocalAddress(InternalDistributedMember address) {
+    this.auth.setLocalAddress(address);
+    this.messenger.setLocalAddress(address);
+    this.joinLeave.setLocalAddress(address);
+    this.healthMon.setLocalAddress(address);
+    this.manager.setLocalAddress(address);
+  }
+
   public void emergencyClose() {
     if (this.stopping) {
       return;

@@ -150,6 +150,12 @@ public interface MembershipManager {
 
 
   /**
+   * informs the membership manager that a reconnect has been completed
+   */
+  public void setReconnectCompleted(boolean reconnectCompleted);
+
+
+  /**
    * Determine whether GCS shutdown has commenced
    *
    * @return true if it is shutting down

@@ -264,6 +264,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     int locatorsContacted = 0;
     boolean hasContactedAJoinedLocator;
     NetView view;
+    int lastFindCoordinatorInViewId = -1000;
     final Set<FindCoordinatorResponse> responses = new HashSet<>();
     public int responsesExpected;
 
@@ -459,8 +460,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       throw new GemFireSecurityException(failReason);
     }
 
-    // there is no way we can rech here right now
-    throw new RuntimeException("Join Request Failed with response " + joinResponse[0]);
+    throw new RuntimeException("Join Request Failed with response " + response);
   }
 
   private JoinResponseMessage waitForJoinResponse() throws InterruptedException {
@@ -476,29 +476,31 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
       response = joinResponse[0];
 
-      if (response != null && response.getCurrentView() != null && !isJoined) {
-        // reset joinResponse[0]
-        joinResponse[0] = null;
-        // we got view here that means either we have to wait for
-        NetView v = response.getCurrentView();
-        InternalDistributedMember coord = v.getCoordinator();
-        if (searchState.alreadyTried.contains(coord)) {
-          searchState.view = response.getCurrentView();
-          // we already sent join request to it..so lets wait some more time here
-          // assuming we got this response immediately, so wait for same timeout here..
-          long timeout = Math.max(services.getConfig().getMemberTimeout(),
-              services.getConfig().getJoinTimeout() / 5);
-          joinResponse.wait(timeout);
-          response = joinResponse[0];
-        } else {
-          // try on this coordinator
-          searchState.view = response.getCurrentView();
-          response = null;
+      if (services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().length() > 0) {
+        if (response != null && response.getCurrentView() != null && !isJoined) {
+          // reset joinResponse[0]
+          joinResponse[0] = null;
+          // we got view here that means either we have to wait for
+          NetView v = response.getCurrentView();
+          InternalDistributedMember coord = v.getCoordinator();
+          if (searchState.alreadyTried.contains(coord)) {
+            searchState.view = response.getCurrentView();
+            // we already sent join request to it..so lets wait some more time here
+            // assuming we got this response immediately, so wait for same timeout here..
+            long timeout = Math.max(services.getConfig().getMemberTimeout(),
+                services.getConfig().getJoinTimeout() / 5);
+            joinResponse.wait(timeout);
+            response = joinResponse[0];
+          } else {
+            // try on this coordinator
+            searchState.view = response.getCurrentView();
+            response = null;
+          }
+          searchState.view = v;
         }
-        searchState.view = v;
-      }
-      if (isJoined) {
-        return null;
+        if (isJoined) {
+          return null;
+        }
       }
     }
     return response;
@@ -616,7 +618,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           services.getHealthMonitor().getMembersFailingAvailabilityCheck();
       check.removeAll(suspectMembers);
       logger.info(
-          "View with removed and left members removed is {}\nremoved members: {}\nleft members: {}\nsuspect members: {}",
+          "View with removed and left members removed is {}; removed members: {}; left members: {}; suspect members: {}",
           check, removedMembers, leftMembers, suspectMembers);
       if (check.getCoordinator().equals(localAddress)) {
         synchronized (viewInstallationLock) {
@@ -995,6 +997,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   }
 
   private void processViewMessage(final InstallViewMessage m) {
+    logger.debug("processing membership view message {}", m);
 
     NetView view = m.getView();
 
@@ -1016,12 +1019,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
 
     boolean viewContainsMyNewAddress = false;
-    if (!this.isJoined) {
+    if (!this.isJoined && !m.isPreparing()) {
       // if we're still waiting for a join response and we're in this view we
       // should install the view so join() can finish its work
       for (InternalDistributedMember mbr : view.getMembers()) {
-        if (localAddress.equals(mbr)
-            && !services.getMessenger().isOldMembershipIdentifier(mbr)) {
+        if (localAddress.equals(mbr)) {
           viewContainsMyNewAddress = true;
           break;
         }
@@ -1030,12 +1032,24 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     if (m.isPreparing()) {
       if (this.preparedView != null && this.preparedView.getViewId() >= view.getViewId()) {
-        services.getMessenger()
-            .send(new ViewAckMessage(view.getViewId(), m.getSender(), this.preparedView));
+        if (this.preparedView.getViewId() == view.getViewId() &&
+            this.preparedView.getCreator().equals(view.getCreator())) {
+          // this can happen if we received two prepares during auto-reconnect
+        } else {
+          services.getMessenger()
+              .send(new ViewAckMessage(view.getViewId(), m.getSender(), this.preparedView));
+        }
       } else {
         this.preparedView = view;
-        if (viewContainsMyNewAddress) {
-          installView(view); // this will notifyAll the joinResponse
+        // complete filling in the member ID of this node, if possible
+        for (InternalDistributedMember mbr : view.getMembers()) {
+          if (this.localAddress.equals(mbr)) {
+            this.birthViewId = mbr.getVmViewId();
+            this.localAddress.setVmViewId(this.birthViewId);
+            GMSMember me = (GMSMember) this.localAddress.getNetMember();
+            me.setBirthViewId(birthViewId);
+            break;
+          }
         }
         ackView(m);
       }
@@ -1096,12 +1110,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     assert this.localAddress != null;
 
-    // If we've already tried to bootstrap from locators that
-    // haven't joined the system (e.g., a collocated locator)
-    // then jump to using the membership view to try to find
-    // the coordinator
     if (!state.hasContactedAJoinedLocator && state.registrants.size() >= locators.size()
-        && state.view != null) {
+        && state.view != null && state.viewId > state.lastFindCoordinatorInViewId) {
+      state.lastFindCoordinatorInViewId = state.viewId;
+      logger.info("using findCoordinatorFromView");
       return findCoordinatorFromView();
     }
 
@@ -1163,7 +1175,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               // the QuorumChecker would have contacted a quorum of live nodes and one of
               // them should already be the coordinator, or should become the coordinator soon
               boolean isMyOldAddress =
-                  services.getConfig().isReconnecting() && localAddress.equals(responseCoordinator);
+                  services.getConfig().isReconnecting() && localAddress.equals(responseCoordinator)
+                      && responseCoordinator.getVmViewId() >= 0;
               if (!isMyOldAddress) {
                 possibleCoordinators.add(response.getCoordinator());
               }
@@ -1224,6 +1237,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         }
       }
     }
+    logger.info("findCoordinator chose {} out of these possible coordinators: {}",
+        state.possibleCoordinator, possibleCoordinators);
     return true;
   }
 
@@ -1348,9 +1363,12 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         // 2. Member which was coordinator but just now some other member became coordinator
         // 3. we got message with secret key, but still view is coming and that will inform the
         // joining thread
-        if (rsp.getRejectionMessage() != null || rsp.getCurrentView() != null) {
+        if (rsp.getRejectionMessage() != null) {
           joinResponse[0] = rsp;
           joinResponse.notifyAll();
+        } else if (rsp.getCurrentView() != null) {
+          // ignore - we get to join when we receive a view. Joining earlier may
+          // confuse other members if we've reused an old address
         } else {
           // we got secret key lets add it
           services.getMessenger().setClusterSecretKey(rsp.getSecretPk());
@@ -1646,8 +1664,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   public void start() {}
 
   @Override
-  public void started() {
-    this.localAddress = services.getMessenger().getMemberID();
+  public void started() {}
+
+  public void setLocalAddress(InternalDistributedMember address) {
+    this.localAddress = address;
     GMSMember mbr = (GMSMember) this.localAddress.getNetMember();
 
     if (services.getConfig().areLocatorsPreferredAsCoordinators()) {

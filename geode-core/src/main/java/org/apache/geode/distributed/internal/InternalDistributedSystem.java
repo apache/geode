@@ -61,7 +61,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -93,6 +92,7 @@ import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.InternalFunctionService;
 import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
+import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigListener;
@@ -1271,7 +1271,7 @@ public class InternalDistributedSystem extends DistributedSystem
     boolean isForcedDisconnect = dm.getRootCause() instanceof ForcedDisconnectException;
     boolean rejoined = false;
     this.reconnected = false;
-    if (isForcedDisconnect) {
+    if (isForcedDisconnect && !this.isReconnectingDS) {
       this.forcedDisconnect = true;
       resetReconnectAttemptCounter();
       rejoined = tryReconnect(true, reason, GemFireCacheImpl.getInstance());
@@ -2326,6 +2326,11 @@ public class InternalDistributedSystem extends DistributedSystem
   private volatile boolean reconnected = false;
 
   /**
+   * If reconnect fails due to an exception it will be in this field
+   */
+  private Exception reconnectException;
+
+  /**
    * Boolean indicating that this member has been shunned by other members or a network partition
    * has occurred
    */
@@ -2655,20 +2660,19 @@ public class InternalDistributedSystem extends DistributedSystem
             logger.warn("Exception occurred while trying to connect the system during reconnect",
                 e);
             attemptingToReconnect = false;
+            reconnectException = e;
             return;
           }
           logger.warn("Caught SystemConnectException in reconnect", e);
           continue;
         } catch (GemFireConfigException e) {
-          if (isDebugEnabled) {
-            logger.debug("Attempt to reconnect failed with GemFireConfigException");
-          }
           logger.warn("Caught GemFireConfigException in reconnect", e);
           continue;
-        } catch (Exception ee) {
+        } catch (Exception e) {
           logger.warn("Exception occurred while trying to connect the system during reconnect",
-              ee);
+              e);
           attemptingToReconnect = false;
+          reconnectException = e;
           return;
         } finally {
           if (this.locatorDMTypeForced) {
@@ -2683,41 +2687,47 @@ public class InternalDistributedSystem extends DistributedSystem
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
           if (newDM.getDMType() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
-            try {
-              CacheConfig config = new CacheConfig();
-              if (cacheXML != null) {
-                config.setCacheXMLDescription(cacheXML);
-              }
-              cache = GemFireCacheImpl.create(this.reconnectDS, config);
-
-              if (!cache.isClosed()) {
-                createAndStartCacheServers(cacheServerCreation, cache);
-                if (cache.getCachePerfStats().getReliableRegionsMissing() == 0) {
-                  reconnectAttemptCounter = 0;
+            boolean retry;
+            do {
+              retry = false;
+              try {
+                CacheConfig config = new CacheConfig();
+                if (cacheXML != null) {
+                  config.setCacheXMLDescription(cacheXML);
                 }
-              }
+                cache = GemFireCacheImpl.create(this.reconnectDS, config);
 
-            } catch (CacheXmlException e) {
-              logger.warn("Exception occurred while trying to create the cache during reconnect",
-                  e);
-              reconnectDS.disconnect();
-              reconnectDS = null;
-              reconnectCancelled = true;
-              break;
-            } catch (CancelException ignor) {
-              // If this reconnect is for required-roles the algorithm is recursive and we
-              // shouldn't retry at this level
-              if (!forcedDisconnect) {
+                if (!cache.isClosed()) {
+                  createAndStartCacheServers(cacheServerCreation, cache);
+                  if (cache.getCachePerfStats().getReliableRegionsMissing() == 0) {
+                    reconnectAttemptCounter = 0;
+                  }
+                }
+
+              } catch (GemFireConfigException e) {
+                if (e.getCause() instanceof ClusterConfigurationNotAvailableException) {
+                  retry = true;
+                  logger.info("Reconnected to the cluster but the cluster configuration service "
+                      + "isn't available - will retry creating the cache");
+                  try {
+                    Thread.sleep(5000);
+                  } catch (InterruptedException e1) {
+                    reconnectCancelled = true;
+                    reconnectException = e;
+                    break;
+                  }
+                }
+              } catch (Exception e) {
+                // We need to give up because we'll probably get the same exception in
+                // the next attempt to build the cache.
+                logger.warn(
+                    "Exception occurred while trying to create the cache during reconnect.  Auto-reconnect is terminating.",
+                    e);
+                reconnectCancelled = true;
+                reconnectException = e;
                 break;
               }
-              logger.warn("Exception occurred while trying to create the cache during reconnect",
-                  ignor);
-              reconnectDS.disconnect();
-              reconnectDS = null;
-            } catch (Exception e) {
-              logger.warn("Exception occurred while trying to create the cache during reconnect",
-                  e);
-            }
+            } while (retry);
           }
         }
 
@@ -2728,6 +2738,8 @@ public class InternalDistributedSystem extends DistributedSystem
           } catch (InterruptedException e) {
             logger.info("Reconnect thread has been interrupted - exiting");
             Thread.currentThread().interrupt();
+            reconnectCancelled = true;
+            reconnectException = e;
             return;
           }
         }
@@ -2756,6 +2768,11 @@ public class InternalDistributedSystem extends DistributedSystem
         System.getProperties().remove(InternalLocator.INHIBIT_DM_BANNER);
       } else {
         System.setProperty(InternalLocator.INHIBIT_DM_BANNER, inhibitBanner);
+      }
+      dm.getMembershipManager().setReconnectCompleted(true);
+      InternalDistributedSystem newds = reconnectDS;
+      if (newds != null) {
+        newds.getDM().getMembershipManager().setReconnectCompleted(true);
       }
       if (quorumChecker != null) {
         mbrMgr.releaseQuorumChecker(quorumChecker, reconnectDS);
@@ -2941,6 +2958,10 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       }
 
+      if (reconnectException != null) {
+        throw new DistributedSystemDisconnectedException(
+            "Reconnect attempts terminated due to exception", reconnectException);
+      }
       InternalDistributedSystem recon = this.reconnectDS;
       return !attemptingToReconnect && recon != null && recon.isConnected();
     }

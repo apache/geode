@@ -290,10 +290,12 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
       this.loadSnapshot = new LocatorLoadSnapshot();
       this.ds = (InternalDistributedSystem) ds;
       this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but
-                                                                      // allows field to be final
-      if (ds.isConnected()) {
-        this.advisor.handshake(); // GEODE-1393: need to get server information during restart
-      }
+    }
+  }
+
+  public void restartCompleted(DistributedSystem ds) {
+    if (ds.isConnected()) {
+      this.advisor.handshake(); // GEODE-1393: need to get server information during restart
     }
   }
 
