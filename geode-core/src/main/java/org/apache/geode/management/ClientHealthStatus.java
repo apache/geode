@@ -65,7 +65,7 @@ public class ClientHealthStatus {
    * Represents number of cache listners calls completed. IntCounter, "Total number of times a cache
    * listener call has completed." Java: CachePerfStats.cacheListenerCallsCompleted
    */
-  private int numOfCacheListenerCalls;
+  private long numOfCacheListenerCalls;
 
   /**
    * Represents total number of active threads in the client VM. IntCounter, "Current number of live
@@ -143,7 +143,7 @@ public class ClientHealthStatus {
   /**
    * Returns the number of times a cache listener call has completed.
    */
-  public int getNumOfCacheListenerCalls() {
+  public long getNumOfCacheListenerCalls() {
     return numOfCacheListenerCalls;
   }
 
@@ -207,7 +207,7 @@ public class ClientHealthStatus {
   /**
    * Sets the number of times a cache listener call has completed.
    */
-  public void setNumOfCacheListenerCalls(int numOfCacheListenerCalls) {
+  public void setNumOfCacheListenerCalls(long numOfCacheListenerCalls) {
     this.numOfCacheListenerCalls = numOfCacheListenerCalls;
   }
 

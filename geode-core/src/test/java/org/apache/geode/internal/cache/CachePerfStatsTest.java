@@ -104,9 +104,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getPutsDelegatesToStatistics() {
-    statistics.incInt(putsId, Integer.MAX_VALUE);
+    statistics.incLong(putsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getPuts()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getPuts()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -117,15 +117,15 @@ public class CachePerfStatsTest {
   public void endPutIncrementsPuts() {
     cachePerfStats.endPut(0, false);
 
-    assertThat(statistics.getInt(putsId)).isEqualTo(1);
+    assertThat(statistics.getLong(putsId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code puts} currently wraps to negative from max integer value.
+   * Characterization test: {@code puts} currently wraps to negative from max long value.
    */
   @Test
-  public void putsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(putsId, Integer.MAX_VALUE);
+  public void putsWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(putsId, Long.MAX_VALUE);
 
     cachePerfStats.endPut(0, false);
 
@@ -134,9 +134,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getGetsDelegatesToStatistics() {
-    statistics.incInt(getsId, Integer.MAX_VALUE);
+    statistics.incLong(getsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getGets()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getGets()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -147,15 +147,15 @@ public class CachePerfStatsTest {
   public void endGetIncrementsGets() {
     cachePerfStats.endGet(0, false);
 
-    assertThat(statistics.getInt(getsId)).isEqualTo(1);
+    assertThat(statistics.getLong(getsId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code gets} currently wraps to negative from max integer value.
+   * Characterization test: {@code gets} currently wraps to negative from max long value.
    */
   @Test
-  public void getsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(getsId, Integer.MAX_VALUE);
+  public void getsWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(getsId, Long.MAX_VALUE);
 
     cachePerfStats.endGet(0, false);
 
@@ -228,24 +228,24 @@ public class CachePerfStatsTest {
 
   @Test
   public void getCreatesDelegatesToStatistics() {
-    statistics.incInt(createsId, Integer.MAX_VALUE);
+    statistics.incLong(createsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getCreates()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getCreates()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incCreatesIncrementsDestroys() {
     cachePerfStats.incCreates();
 
-    assertThat(statistics.getInt(createsId)).isEqualTo(1);
+    assertThat(statistics.getLong(createsId)).isEqualTo(1);
   }
 
   /**
-   * Characterization test: {@code creates} currently wraps to negative from max integer value.
+   * Characterization test: {@code creates} currently wraps to negative from max long value.
    */
   @Test
-  public void createsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(createsId, Integer.MAX_VALUE);
+  public void createsWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(createsId, Long.MAX_VALUE);
 
     cachePerfStats.incCreates();
 
@@ -314,9 +314,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getUpdatesDelegatesToStatistics() {
-    statistics.incInt(updatesId, Integer.MAX_VALUE);
+    statistics.incLong(updatesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getUpdates()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getUpdates()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -327,15 +327,15 @@ public class CachePerfStatsTest {
   public void endPutIncrementsUpdates() {
     cachePerfStats.endPut(0, true);
 
-    assertThat(statistics.getInt(updatesId)).isEqualTo(1);
+    assertThat(statistics.getLong(updatesId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code updates} currently wraps to negative from max integer value.
+   * Characterization test: {@code updates} currently wraps to negative from max long value.
    */
   @Test
-  public void updatesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(updatesId, Integer.MAX_VALUE);
+  public void updatesWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(updatesId, Long.MAX_VALUE);
 
     cachePerfStats.endPut(0, true);
 
@@ -370,9 +370,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getMissesDelegatesToStatistics() {
-    statistics.incInt(missesId, Integer.MAX_VALUE);
+    statistics.incLong(missesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getMisses()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getMisses()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -383,15 +383,15 @@ public class CachePerfStatsTest {
   public void endGetIncrementsMisses() {
     cachePerfStats.endGet(0, true);
 
-    assertThat(statistics.getInt(missesId)).isEqualTo(1);
+    assertThat(statistics.getLong(missesId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code misses} currently wraps to negative from max integer value.
+   * Characterization test: {@code misses} currently wraps to negative from max long value.
    */
   @Test
-  public void missesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(missesId, Integer.MAX_VALUE);
+  public void missesWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(missesId, Long.MAX_VALUE);
 
     cachePerfStats.endGet(0, true);
 
@@ -452,9 +452,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getLoadsCompletedDelegatesToStatistics() {
-    statistics.incInt(loadsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(loadsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getLoadsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getLoadsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -465,15 +465,15 @@ public class CachePerfStatsTest {
   public void endLoadIncrementsMisses() {
     cachePerfStats.endLoad(0);
 
-    assertThat(statistics.getInt(loadsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(loadsCompletedId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code loads} currently wraps to negative from max integer value.
+   * Characterization test: {@code loads} currently wraps to negative from max long value.
    */
   @Test
-  public void loadsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(loadsCompletedId, Integer.MAX_VALUE);
+  public void loadsCompletedWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(loadsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endLoad(0);
 
@@ -482,9 +482,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getNetloadsCompletedDelegatesToStatistics() {
-    statistics.incInt(netloadsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(netloadsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getNetloadsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getNetloadsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -495,7 +495,7 @@ public class CachePerfStatsTest {
   public void endNetloadIncrementsNetloadsCompleted() {
     cachePerfStats.endNetload(0);
 
-    assertThat(statistics.getInt(netloadsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(netloadsCompletedId)).isEqualTo(1L);
   }
 
   /**
@@ -504,7 +504,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void netloadsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(netloadsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(netloadsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endNetload(0);
 
@@ -513,9 +513,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getNetsearchesCompletedDelegatesToStatistics() {
-    statistics.incInt(netsearchesCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(netsearchesCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getNetsearchesCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getNetsearchesCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -526,16 +526,16 @@ public class CachePerfStatsTest {
   public void endLoadIncrementsNetsearchesCompleted() {
     cachePerfStats.endNetsearch(0);
 
-    assertThat(statistics.getInt(netsearchesCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(netsearchesCompletedId)).isEqualTo(1);
   }
 
   /**
    * Characterization test: {@code netsearchesCompleted} currently wraps to negative from max
-   * integer value.
+   * long value.
    */
   @Test
-  public void netsearchesCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(netsearchesCompletedId, Integer.MAX_VALUE);
+  public void netsearchesCompletedWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(netsearchesCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endNetsearch(0);
 
@@ -544,9 +544,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getCacheWriterCallsCompletedDelegatesToStatistics() {
-    statistics.incInt(cacheWriterCallsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(cacheWriterCallsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getCacheWriterCallsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getCacheWriterCallsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -557,7 +557,7 @@ public class CachePerfStatsTest {
   public void endCacheWriterCallIncrementsCacheWriterCallsCompleted() {
     cachePerfStats.endCacheWriterCall(0);
 
-    assertThat(statistics.getInt(cacheWriterCallsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(cacheWriterCallsCompletedId)).isEqualTo(1L);
   }
 
   /**
@@ -566,7 +566,7 @@ public class CachePerfStatsTest {
    */
   @Test
   public void cacheWriterCallsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(cacheWriterCallsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(cacheWriterCallsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endCacheWriterCall(0);
 
@@ -575,9 +575,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getCacheListenerCallsCompletedDelegatesToStatistics() {
-    statistics.incInt(cacheListenerCallsCompletedId, Integer.MAX_VALUE);
+    statistics.incLong(cacheListenerCallsCompletedId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getCacheListenerCallsCompleted()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getCacheListenerCallsCompleted()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -588,16 +588,16 @@ public class CachePerfStatsTest {
   public void endCacheWriterCallIncrementsCacheListenerCallsCompleted() {
     cachePerfStats.endCacheListenerCall(0);
 
-    assertThat(statistics.getInt(cacheListenerCallsCompletedId)).isEqualTo(1);
+    assertThat(statistics.getLong(cacheListenerCallsCompletedId)).isEqualTo(1L);
   }
 
   /**
    * Characterization test: {@code cacheListenerCallsCompleted} currently wraps to negative from max
-   * integer value.
+   * long value.
    */
   @Test
-  public void cacheListenerCallsCompletedWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(cacheListenerCallsCompletedId, Integer.MAX_VALUE);
+  public void cacheListenerCallsCompletedWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(cacheListenerCallsCompletedId, Long.MAX_VALUE);
 
     cachePerfStats.endCacheListenerCall(0);
 
@@ -785,9 +785,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getTxCommitChangesDelegatesToStatistics() {
-    statistics.incInt(txCommitChangesId, Integer.MAX_VALUE);
+    statistics.incLong(txCommitChangesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getTxCommitChanges()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getTxCommitChanges()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -796,20 +796,20 @@ public class CachePerfStatsTest {
    */
   @Test
   public void txSuccessIncrementsTxCommitChanges() {
-    cachePerfStats.txSuccess(1, 1, 1);
+    cachePerfStats.txSuccess(1, 1, 1L);
 
-    assertThat(statistics.getInt(txCommitChangesId)).isEqualTo(1);
+    assertThat(statistics.getLong(txCommitChangesId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code txCommitChanges} currently wraps to negative from max integer
+   * Characterization test: {@code txCommitChanges} currently wraps to negative from max long
    * value.
    */
   @Test
-  public void txCommitChangesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(txCommitChangesId, Integer.MAX_VALUE);
+  public void txCommitChangesWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(txCommitChangesId, Long.MAX_VALUE);
 
-    cachePerfStats.txSuccess(1, 1, 1);
+    cachePerfStats.txSuccess(1, 1, 1L);
 
     assertThat(cachePerfStats.getTxCommitChanges()).isNegative();
   }
@@ -847,9 +847,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getTxRollbackChangesDelegatesToStatistics() {
-    statistics.incInt(txRollbackChangesId, Integer.MAX_VALUE);
+    statistics.incLong(txRollbackChangesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getTxRollbackChanges()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getTxRollbackChanges()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -860,16 +860,16 @@ public class CachePerfStatsTest {
   public void txRollbackIncrementsTxRollbackChanges() {
     cachePerfStats.txRollback(1, 1, 1);
 
-    assertThat(statistics.getInt(txRollbackChangesId)).isEqualTo(1);
+    assertThat(statistics.getLong(txRollbackChangesId)).isEqualTo(1);
   }
 
   /**
-   * Characterization test: {@code txRollbackChanges} currently wraps to negative from max integer
+   * Characterization test: {@code txRollbackChanges} currently wraps to negative from max long
    * value.
    */
   @Test
-  public void txRollbackChangesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(txRollbackChangesId, Integer.MAX_VALUE);
+  public void txRollbackChangesWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(txRollbackChangesId, Long.MAX_VALUE);
 
     cachePerfStats.txRollback(1, 1, 1);
 

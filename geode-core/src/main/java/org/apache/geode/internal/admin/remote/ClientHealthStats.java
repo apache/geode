@@ -60,7 +60,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    * Represents number of cache listners calls completed. IntCounter, "Total number of times a cache
    * listener call has completed." Java: CachePerfStats.cacheListenerCallsCompleted
    */
-  protected int numOfCacheListenerCalls;
+  protected long numOfCacheListenerCalls;
 
   /**
    * Represents total number of active threads in the client VM. IntCounter, "Current number of live
@@ -156,7 +156,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @return total number of cache listener calls completed.
    */
-  public int getNumOfCacheListenerCalls() {
+  public long getNumOfCacheListenerCalls() {
     return numOfCacheListenerCalls;
   }
 
@@ -165,7 +165,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @param numOfCacheListenerCalls total number of cache listener calls completed.
    */
-  public void setNumOfCacheListenerCalls(int numOfCacheListenerCalls) {
+  public void setNumOfCacheListenerCalls(long numOfCacheListenerCalls) {
     this.numOfCacheListenerCalls = numOfCacheListenerCalls;
   }
 
@@ -226,7 +226,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writePrimitiveInt(numOfGets, out);
     DataSerializer.writePrimitiveInt(numOfPuts, out);
     DataSerializer.writePrimitiveInt(numOfMisses, out);
-    DataSerializer.writePrimitiveInt(numOfCacheListenerCalls, out);
+    DataSerializer.writePrimitiveLong(numOfCacheListenerCalls, out);
     DataSerializer.writePrimitiveInt(numOfThreads, out);
     DataSerializer.writePrimitiveInt(cpus, out);
     DataSerializer.writePrimitiveLong(processCpuTime, out);
@@ -238,7 +238,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writePrimitiveInt(numOfGets, out);
     DataSerializer.writePrimitiveInt(numOfPuts, out);
     DataSerializer.writePrimitiveInt(numOfMisses, out);
-    DataSerializer.writePrimitiveInt(numOfCacheListenerCalls, out);
+    DataSerializer.writePrimitiveLong(numOfCacheListenerCalls, out);
     DataSerializer.writePrimitiveInt(numOfThreads, out);
     DataSerializer.writePrimitiveInt(cpus, out);
     DataSerializer.writePrimitiveLong(processCpuTime, out);

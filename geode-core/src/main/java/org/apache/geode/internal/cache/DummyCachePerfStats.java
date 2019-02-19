@@ -32,8 +32,8 @@ public class DummyCachePerfStats extends CachePerfStats {
   // //////////////////// Accessing Stats //////////////////////
 
   @Override
-  public int getLoadsCompleted() {
-    return 0;
+  public long getLoadsCompleted() {
+    return 0L;
   }
 
   @Override
@@ -42,13 +42,13 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getNetloadsCompleted() {
-    return 0;
+  public long getNetloadsCompleted() {
+    return 0L;
   }
 
   @Override
-  public int getNetsearchesCompleted() {
-    return 0;
+  public long getNetsearchesCompleted() {
+    return 0L;
   }
 
   @Override
@@ -77,13 +77,13 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getCreates() {
-    return 0;
+  public long getCreates() {
+    return 0L;
   }
 
   @Override
-  public int getPuts() {
-    return 0;
+  public long getPuts() {
+    return 0L;
   }
 
   @Override
@@ -92,8 +92,8 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getUpdates() {
-    return 0;
+  public long getUpdates() {
+    return 0L;
   }
 
   @Override
@@ -102,13 +102,13 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getGets() {
-    return 0;
+  public long getGets() {
+    return 0L;
   }
 
   @Override
-  public int getMisses() {
-    return 0;
+  public long getMisses() {
+    return 0L;
   }
 
   @Override
@@ -262,7 +262,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getTxCommitChanges() {
+  public long getTxCommitChanges() {
     return 0;
   }
 
@@ -302,8 +302,8 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getTxRollbackChanges() {
-    return 0;
+  public long getTxRollbackChanges() {
+    return 0L;
   }
 
   @Override
@@ -320,7 +320,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   public void incTxConflictCheckTime(long delta) {}
 
   @Override
-  public void txSuccess(long opTime, long txLifeTime, int txChanges) {}
+  public void txSuccess(long opTime, long txLifeTime, long txChanges) {}
 
   @Override
   public void txFailure(long opTime, long txLifeTime, int txChanges) {}

@@ -197,13 +197,13 @@ public class ClientStatsManager {
     int gets = -1;
     int puts = -1;
     int misses = -1;
-    int cacheListenerCalls = -1;
+    long cacheListenerCalls = -1;
 
     if (cachePerfStats != null) {
       gets = cachePerfStats.getInt("gets");
       puts = cachePerfStats.getInt("puts");
       misses = cachePerfStats.getInt("misses");
-      cacheListenerCalls = cachePerfStats.getInt("cacheListenerCallsCompleted");
+      cacheListenerCalls = cachePerfStats.getLong("cacheListenerCallsCompleted");
     }
 
     long processCpuTime = -1;
