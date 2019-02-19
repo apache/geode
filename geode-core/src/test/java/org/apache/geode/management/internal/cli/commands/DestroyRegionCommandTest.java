@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -165,7 +166,7 @@ public class DestroyRegionCommandTest {
   }
 
   private void setupJDBCMappingOnRegion(String regionName) {
-    doReturn(cacheConfig).when(ccService).getCacheConfig(null);
+    doReturn(cacheConfig).when(ccService).getCacheConfig("cluster");
     doReturn(regionConfigList).when(cacheConfig).getRegions();
     doReturn(regionName).when(regionConfig).getName();
     doReturn(regionName).when(regionConfig).getId();
@@ -187,6 +188,17 @@ public class DestroyRegionCommandTest {
     command.checkForJDBCMapping("regionName");
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void checkForJDBCMappingWithRegionNameThrowsIllegalStateExceptionForGroup() {
+    Set<String> groups = new HashSet<String>();
+    groups.add("Group1");
+    doReturn(groups).when(ccService).getGroups();
+    setupJDBCMappingOnRegion("regionName");
+    doReturn(cacheConfig).when(ccService).getCacheConfig("Group1");
+
+    command.checkForJDBCMapping("regionName");
+  }
+
   @Test
   public void checkForJDBCMappingWithNoClusterConfigDoesNotThrowException() {
     setupJDBCMappingOnRegion("regionName");
@@ -198,7 +210,7 @@ public class DestroyRegionCommandTest {
   @Test
   public void checkForJDBCMappingWithNoCacheConfigDoesNotThrowException() {
     setupJDBCMappingOnRegion("regionName");
-    doReturn(null).when(ccService).getCacheConfig(null);
+    doReturn(null).when(ccService).getCacheConfig("cluster");
 
     command.checkForJDBCMapping("regionName");
   }
