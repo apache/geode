@@ -89,7 +89,8 @@ public class TableMetaDataManagerTest {
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
     verify(connection).getMetaData();
-    verify(databaseMetaData).getTables("", "", "%", null);
+    verify(databaseMetaData).getTables(TableMetaDataManager.DEFAULT_CATALOG,
+        TableMetaDataManager.DEFAULT_SCHEMA, "%", null);
   }
 
   @Test
@@ -106,7 +107,7 @@ public class TableMetaDataManagerTest {
 
     assertThat(data.getKeyColumnNames()).isEqualTo(Arrays.asList(KEY_COLUMN, KEY_COLUMN2));
     verify(connection).getMetaData();
-    verify(databaseMetaData).getTables("", "PUBLIC", "%", null);
+    verify(databaseMetaData).getTables(TableMetaDataManager.DEFAULT_CATALOG, "PUBLIC", "%", null);
   }
 
   @Test
@@ -467,21 +468,23 @@ public class TableMetaDataManagerTest {
   }
 
   @Test
-  public void getCatalogNameFromMetaDataGivenNullCatalogReturnsEmptyString() throws SQLException {
+  public void getCatalogNameFromMetaDataGivenNullCatalogReturnsDefaultCatalog()
+      throws SQLException {
     when(regionMapping.getCatalog()).thenReturn(null);
 
     String result = tableMetaDataManager.getCatalogNameFromMetaData(null, regionMapping);
 
-    assertThat(result).isEqualTo("");
+    assertThat(result).isEqualTo(TableMetaDataManager.DEFAULT_CATALOG);
   }
 
   @Test
-  public void getCatalogNameFromMetaDataGivenEmptyCatalogReturnsEmptyString() throws SQLException {
+  public void getCatalogNameFromMetaDataGivenEmptyCatalogReturnsDefaultCatalog()
+      throws SQLException {
     when(regionMapping.getCatalog()).thenReturn("");
 
     String result = tableMetaDataManager.getCatalogNameFromMetaData(null, regionMapping);
 
-    assertThat(result).isEqualTo("");
+    assertThat(result).isEqualTo(TableMetaDataManager.DEFAULT_CATALOG);
   }
 
   @Test
@@ -500,23 +503,23 @@ public class TableMetaDataManagerTest {
   }
 
   @Test
-  public void getSchemaNameFromMetaDataGivenNullSchemaReturnsEmptyString() throws SQLException {
+  public void getSchemaNameFromMetaDataGivenNullSchemaReturnsDefaultSchema() throws SQLException {
     when(regionMapping.getSchema()).thenReturn(null);
 
     String result =
         tableMetaDataManager.getSchemaNameFromMetaData(databaseMetaData, regionMapping, null);
 
-    assertThat(result).isEqualTo("");
+    assertThat(result).isEqualTo(TableMetaDataManager.DEFAULT_SCHEMA);
   }
 
   @Test
-  public void getSchemaNameFromMetaDataGivenEmptySchemaReturnsEmptyString() throws SQLException {
+  public void getSchemaNameFromMetaDataGivenEmptySchemaReturnsDefaultSchema() throws SQLException {
     when(regionMapping.getSchema()).thenReturn("");
 
     String result =
         tableMetaDataManager.getSchemaNameFromMetaData(databaseMetaData, regionMapping, null);
 
-    assertThat(result).isEqualTo("");
+    assertThat(result).isEqualTo(TableMetaDataManager.DEFAULT_SCHEMA);
   }
 
   @Test

@@ -37,8 +37,8 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
  * remembered so that it does not need to be recomputed for the same table name.
  */
 public class TableMetaDataManager {
-  private static final String DEFAULT_CATALOG = "";
-  private static final String DEFAULT_SCHEMA = "";
+  public static final String DEFAULT_CATALOG = null;
+  public static final String DEFAULT_SCHEMA = null;
   private final ConcurrentMap<String, TableMetaDataView> tableToMetaDataMap =
       new ConcurrentHashMap<>();
 
