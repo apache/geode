@@ -238,6 +238,9 @@ public class ListMappingCommandDUnitTest implements Serializable {
     server4 = startupRule.startServerVM(4, TEST_GROUP1 + "," + TEST_GROUP2, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat(
+        "create data-source --name=connection --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
     // create 4 regions
     gfsh.executeAndAssertThat(
         "create region --name=" + regionName + " --type=REPLICATE")
@@ -253,70 +256,75 @@ public class ListMappingCommandDUnitTest implements Serializable {
             + TEST_GROUP2 + " --type=REPLICATE")
         .statusIsSuccess();
 
-    // create 4 mappings
-    String mapping =
-        "create jdbc-mapping --region=" + regionName + " --data-source=connection "
-            + "--table=myTable --pdx-name=" + IdAndName.class.getName();
-    gfsh.executeAndAssertThat(mapping).statusIsSuccess();
-    mapping =
-        "create jdbc-mapping --region=" + GROUP1_REGION + " --groups=" + TEST_GROUP1
-            + " --data-source=connection " + "--table=myTable --schema=mySchema --pdx-name="
-            + IdAndName.class.getName();
-    gfsh.executeAndAssertThat(mapping).statusIsSuccess();
-    mapping =
-        "create jdbc-mapping --region=" + GROUP2_REGION + " --groups=" + TEST_GROUP2
-            + " --data-source=connection " + "--table=myTable --schema=mySchema --pdx-name="
-            + IdAndName.class.getName();
-    gfsh.executeAndAssertThat(mapping).statusIsSuccess();
-    mapping =
-        "create jdbc-mapping --region=" + GROUP1_GROUP2_REGION + " --groups=" + TEST_GROUP1 + ","
-            + TEST_GROUP2 + " --data-source=connection "
-            + "--table=myTable --schema=mySchema --pdx-name=" + IdAndName.class.getName();
-    gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+    createTable();
+    try {
+      // create 4 mappings
+      String mapping =
+          "create jdbc-mapping --region=" + regionName + " --data-source=connection "
+              + "--table=myTable --schema=mySchema --pdx-name=" + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+      mapping =
+          "create jdbc-mapping --region=" + GROUP1_REGION + " --groups=" + TEST_GROUP1
+              + " --data-source=connection " + "--table=myTable --schema=mySchema --pdx-name="
+              + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+      mapping =
+          "create jdbc-mapping --region=" + GROUP2_REGION + " --groups=" + TEST_GROUP2
+              + " --data-source=connection " + "--table=myTable --schema=mySchema --pdx-name="
+              + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+      mapping =
+          "create jdbc-mapping --region=" + GROUP1_GROUP2_REGION + " --groups=" + TEST_GROUP1 + ","
+              + TEST_GROUP2 + " --data-source=connection "
+              + "--table=myTable --schema=mySchema --pdx-name=" + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
-    {
-      CommandStringBuilder csb =
-          new CommandStringBuilder(LIST_MAPPING);
-      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+      {
+        CommandStringBuilder csb =
+            new CommandStringBuilder(LIST_MAPPING);
+        CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-      commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
-      commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
-    }
+        commandResultAssert.statusIsSuccess();
+        commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+        commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
+      }
 
-    {
-      CommandStringBuilder csb =
-          new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
-      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+      {
+        CommandStringBuilder csb =
+            new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
+        CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-      commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 2);
-      commandResultAssert
-          .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP1_REGION, GROUP1_GROUP2_REGION);
-    }
+        commandResultAssert.statusIsSuccess();
+        commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 2);
+        commandResultAssert
+            .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP1_REGION, GROUP1_GROUP2_REGION);
+      }
 
-    {
-      CommandStringBuilder csb =
-          new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP2);
-      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+      {
+        CommandStringBuilder csb =
+            new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP2);
+        CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-      commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 2);
-      commandResultAssert
-          .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP2_REGION, GROUP1_GROUP2_REGION);
-    }
+        commandResultAssert.statusIsSuccess();
+        commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 2);
+        commandResultAssert
+            .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP2_REGION, GROUP1_GROUP2_REGION);
+      }
 
-    {
-      CommandStringBuilder csb =
-          new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1 + "," + TEST_GROUP2);
-      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-      commandResultAssert.statusIsSuccess();
-      // There will be 4 items: testRegion1 for testGroup1, testRegion2 for testGroup2,
-      // group1Group2Region for testGroup1, group1Group2Region for testGroup2
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 4);
-      commandResultAssert
-          .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP1_REGION, GROUP2_REGION,
-              GROUP1_GROUP2_REGION);
+      {
+        CommandStringBuilder csb =
+            new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1 + "," + TEST_GROUP2);
+        CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+        commandResultAssert.statusIsSuccess();
+        // There will be 4 items: testRegion1 for testGroup1, testRegion2 for testGroup2,
+        // group1Group2Region for testGroup1, group1Group2Region for testGroup2
+        commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 4);
+        commandResultAssert
+            .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP1_REGION, GROUP2_REGION,
+                GROUP1_GROUP2_REGION);
+      }
+    } finally {
+      dropTable();
     }
   }
 
