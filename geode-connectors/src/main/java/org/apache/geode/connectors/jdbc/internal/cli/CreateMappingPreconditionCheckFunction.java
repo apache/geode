@@ -40,8 +40,12 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.PdxField;
+import org.apache.geode.pdx.internal.PdxOutputStream;
 import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 @Experimental
@@ -49,18 +53,26 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
 
   private transient DataSourceFactory dataSourceFactory;
   private transient ClassFactory classFactory;
+  private transient ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory;
+  private transient PdxWriterFactory pdxWriterFactory;
   private transient TableMetaDataManager tableMetaDataManager;
 
   CreateMappingPreconditionCheckFunction(DataSourceFactory factory, ClassFactory classFactory,
+      ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory,
+      PdxWriterFactory pdxWriterFactory,
       TableMetaDataManager manager) {
     this.dataSourceFactory = factory;
     this.classFactory = classFactory;
+    this.reflectionBasedAutoSerializerFactory = reflectionBasedAutoSerializerFactory;
+    this.pdxWriterFactory = pdxWriterFactory;
     this.tableMetaDataManager = manager;
   }
 
   CreateMappingPreconditionCheckFunction() {
     this(dataSourceName -> JNDIInvoker.getDataSource(dataSourceName),
         className -> Class.forName(className),
+        className -> new ReflectionBasedAutoSerializer(className),
+        (typeRegistry, object) -> new PdxWriterImpl(typeRegistry, object, new PdxOutputStream()),
         new TableMetaDataManager());
   }
 
@@ -68,6 +80,10 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
   private void readObject(ObjectInputStream stream) {
     this.dataSourceFactory = dataSourceName -> JNDIInvoker.getDataSource(dataSourceName);
     this.classFactory = className -> Class.forName(className);
+    this.reflectionBasedAutoSerializerFactory =
+        className -> new ReflectionBasedAutoSerializer(className);
+    this.pdxWriterFactory =
+        (typeRegistry, object) -> new PdxWriterImpl(typeRegistry, object, new PdxOutputStream());
     this.tableMetaDataManager = new TableMetaDataManager();
   }
 
@@ -172,22 +188,28 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
    */
   private PdxType generatePdxTypeForClass(InternalCache cache, TypeRegistry typeRegistry,
       Class<?> clazz) {
+    Object object = createInstance(clazz);
     if (PdxSerializable.class.isAssignableFrom(clazz)) {
-      Object object = createInstance(clazz);
       try {
         cache.registerPdxMetaData(object);
       } catch (SerializationException ex) {
         throw new JdbcConnectorException(
             "Could not generate a PdxType for the class " + clazz.getName() + " because: " + ex);
       }
-      // serialization will leave the type in the registry
-      return typeRegistry.getExistingTypeForClass(clazz);
+    } else {
+      String className = clazz.getName();
+      ReflectionBasedAutoSerializer serializer =
+          this.reflectionBasedAutoSerializerFactory.create(className);
+      PdxWriter writer = this.pdxWriterFactory.create(typeRegistry, object);
+      boolean result = serializer.toData(object, writer);
+      if (!result) {
+        throw new JdbcConnectorException(
+            "Could not generate a PdxType using the ReflectionBasedAutoSerializer for the class  "
+                + clazz.getName() + ". Check the server log for details.");
+      }
     }
-    // TODO
-    // Otherwise use the ReflectionBasedAutoSerializer to generate
-    // a PdxType for the class.
-    throw new JdbcConnectorException(
-        "Could not generate a PdxType for the class " + clazz.getName());
+    // serialization will leave the type in the registry
+    return typeRegistry.getExistingTypeForClass(clazz);
   }
 
   private Object createInstance(Class<?> clazz) {
@@ -213,5 +235,11 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
 
   public interface ClassFactory {
     public Class loadClass(String className) throws ClassNotFoundException;
+  }
+  public interface ReflectionBasedAutoSerializerFactory {
+    public ReflectionBasedAutoSerializer create(String className);
+  }
+  public interface PdxWriterFactory {
+    public PdxWriter create(TypeRegistry typeRegistry, Object object);
   }
 }
