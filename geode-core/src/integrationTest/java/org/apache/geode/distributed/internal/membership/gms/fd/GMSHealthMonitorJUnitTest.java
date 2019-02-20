@@ -785,6 +785,42 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
+  public void testTcpCheckMemberTriesUntilTimeout() throws Exception {
+    ServerSocket mySocket = new ServerSocket(0);
+    Thread serverThread = new Thread() {
+      public void run() {
+        long giveupTime = System.currentTimeMillis() + 5000;
+        while (System.currentTimeMillis() < giveupTime) {
+          try {
+            Socket acceptedSocket = mySocket.accept();
+            try {
+              Thread.sleep(200);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+              return;
+            }
+            acceptedSocket.close();
+          } catch (IOException e) {
+            if (!mySocket.isClosed()) {
+              System.err.println("Test failed with unexpected IOException");
+              e.printStackTrace(System.err);
+            }
+            return;
+          }
+        }
+      }
+    };
+    serverThread.setDaemon(true);
+    serverThread.start();
+    InternalDistributedMember otherMember =
+        createInternalDistributedMember(Version.CURRENT_ORDINAL, 0, 1, 1);
+    long startTime = System.currentTimeMillis();
+    gmsHealthMonitor.doTCPCheckMember(otherMember, mySocket.getLocalPort());
+    mySocket.close();
+    assertThat(System.currentTimeMillis()).isGreaterThanOrEqualTo(startTime + 1000);
+  }
+
+  @Test
   public void testDoTCPCheckMemberWithOkStatus() throws Exception {
     executeTestDoTCPCheck(GMSHealthMonitor.OK, true);
   }
