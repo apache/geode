@@ -42,8 +42,6 @@ public class StatUtils {
    */
   public static void compareStatArchiveFiles(final File expectedStatArchiveFile,
       final File actualStatArchiveFile) throws IOException {
-    System.out.println(actualStatArchiveFile);
-    System.out.println(expectedStatArchiveFile);
     assertThat(expectedStatArchiveFile).exists();
     assertThat(actualStatArchiveFile.length()).isEqualTo(expectedStatArchiveFile.length());
 
