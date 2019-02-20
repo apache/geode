@@ -43,6 +43,7 @@ import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
@@ -97,9 +98,9 @@ public abstract class JdbcLoaderIntegrationTest {
 
   protected List<FieldMapping> getEmployeeTableFieldMappings() {
     List<FieldMapping> fieldMappings = Arrays.asList(
-        new FieldMapping("", "", "id", JDBCType.VARCHAR.name(), false),
-        new FieldMapping("", "", "name", JDBCType.VARCHAR.name(), true),
-        new FieldMapping("", "", "age", JDBCType.INTEGER.name(), true));
+        new FieldMapping("id", FieldType.STRING.name(), "id", JDBCType.VARCHAR.name(), false),
+        new FieldMapping("name", FieldType.STRING.name(), "name", JDBCType.VARCHAR.name(), true),
+        new FieldMapping("age", FieldType.INT.name(), "age", JDBCType.INTEGER.name(), true));
     return fieldMappings;
   }
 
