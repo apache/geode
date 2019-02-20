@@ -541,7 +541,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       } catch (IOException e) {
         // this is expected if it is a connection-timeout or other failure
         // to connect
-      } catch (IllegalStateException e) {
+      } catch (IllegalStateException | GemFireConfigException e) {
         if (!isStopping) {
           logger.trace("Unexpected exception", e);
         }
@@ -555,7 +555,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           // expected
         }
       }
-    } while (!passed && System.nanoTime() < giveupTime);
+    } while (!passed && !this.isShutdown() && System.nanoTime() < giveupTime);
     return passed;
   }
 
