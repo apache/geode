@@ -55,7 +55,9 @@ public class NioPlainEngine implements NioFilter {
       Buffers.BufferType bufferType, DMStats stats) {
     ByteBuffer buffer = wrappedBuffer;
 
-    if (buffer.capacity() > amount) {
+    if (buffer == null) {
+      buffer = Buffers.acquireBuffer(bufferType, amount, stats);
+    } else if (buffer.capacity() > amount) {
       // we already have a buffer that's big enough
       if (buffer.capacity() - lastProcessedPosition < amount) {
         buffer.limit(lastReadPosition);

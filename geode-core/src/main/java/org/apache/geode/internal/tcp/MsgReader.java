@@ -46,14 +46,9 @@ public class MsgReader {
 
 
 
-  MsgReader(Connection conn, NioFilter nioFilter, ByteBuffer peerNetData, Version version) {
+  MsgReader(Connection conn, NioFilter nioFilter, Version version) {
     this.conn = conn;
     this.ioFilter = nioFilter;
-    this.peerNetData = peerNetData;
-    if (conn.getConduit().useSSL()) {
-      ByteBuffer buffer = ioFilter.getUnwrappedBuffer(peerNetData);
-      buffer.position(0).limit(0);
-    }
     this.byteBufferInputStream =
         version == null ? new ByteBufferInputStream() : new VersionedByteBufferInputStream(version);
   }
@@ -132,6 +127,12 @@ public class MsgReader {
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
         Buffers.BufferType.TRACKED_RECEIVER, getStats());
     return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData, getStats());
+  }
+
+  public void close() {
+    if (peerNetData != null) {
+      Buffers.releaseReceiveBuffer(peerNetData, getStats());
+    }
   }
 
 
