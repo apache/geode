@@ -384,8 +384,8 @@ public class CachePerfStats {
             f.createIntCounter("updates", updatesDesc, "operations"),
             f.createLongCounter("updateTime", updateTimeDesc, "nanoseconds"),
             f.createIntCounter("invalidates", invalidatesDesc, "operations"),
-            f.createIntCounter("gets", getsDesc, "operations"),
-            f.createIntCounter("misses", missesDesc, "operations"),
+            f.createLongCounter("gets", getsDesc, "operations"),
+            f.createLongCounter("misses", missesDesc, "operations"),
             f.createIntCounter("creates", createsDesc, "operations"),
             f.createIntCounter("puts", putsDesc, "operations"),
             f.createLongCounter("putTime", putTimeDesc, "nanoseconds", false),
@@ -739,16 +739,16 @@ public class CachePerfStats {
     return stats.getInt(invalidatesId);
   }
 
-  public int getGets() {
-    return stats.getInt(getsId);
+  public long getGets() {
+    return stats.getLong(getsId);
   }
 
   public long getGetTime() {
     return stats.getLong(getTimeId);
   }
 
-  public int getMisses() {
-    return stats.getInt(missesId);
+  public long getMisses() {
+    return stats.getLong(missesId);
   }
 
   public int getReliableQueuedOps() {
@@ -1102,9 +1102,9 @@ public class CachePerfStats {
       long delta = getClockTime() - start;
       stats.incLong(getTimeId, delta);
     }
-    stats.incInt(getsId, 1);
+    stats.incLong(getsId, 1L);
     if (miss) {
-      stats.incInt(missesId, 1);
+      stats.incLong(missesId, 1L);
     }
   }
 

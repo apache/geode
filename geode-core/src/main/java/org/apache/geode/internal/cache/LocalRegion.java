@@ -11300,9 +11300,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (enableClockStats) {
         this.stats.incLong(getTimeId, getStatTime() - start);
       }
-      this.stats.incInt(getsId, 1);
+      this.stats.incLong(getsId, 1L);
       if (miss) {
-        this.stats.incInt(missesId, 1);
+        this.stats.incLong(missesId, 1L);
       }
       this.cachePerfStats.endGet(start, miss);
     }

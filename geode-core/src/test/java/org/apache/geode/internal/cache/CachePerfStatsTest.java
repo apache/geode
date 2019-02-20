@@ -133,9 +133,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getGetsDelegatesToStatistics() {
-    statistics.incInt(getsId, Integer.MAX_VALUE);
+    statistics.incLong(getsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getGets()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getGets()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -146,15 +146,15 @@ public class CachePerfStatsTest {
   public void endGetIncrementsGets() {
     cachePerfStats.endGet(0, false);
 
-    assertThat(statistics.getInt(getsId)).isEqualTo(1);
+    assertThat(statistics.getLong(getsId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code gets} currently wraps to negative from max integer value.
+   * Characterization test: {@code gets} currently wraps to negative from max long value.
    */
   @Test
-  public void getsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(getsId, Integer.MAX_VALUE);
+  public void getsWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(getsId, Long.MAX_VALUE);
 
     cachePerfStats.endGet(0, false);
 
@@ -369,9 +369,9 @@ public class CachePerfStatsTest {
 
   @Test
   public void getMissesDelegatesToStatistics() {
-    statistics.incInt(missesId, Integer.MAX_VALUE);
+    statistics.incLong(missesId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getMisses()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getMisses()).isEqualTo(Long.MAX_VALUE);
   }
 
   /**
@@ -382,15 +382,15 @@ public class CachePerfStatsTest {
   public void endGetIncrementsMisses() {
     cachePerfStats.endGet(0, true);
 
-    assertThat(statistics.getInt(missesId)).isEqualTo(1);
+    assertThat(statistics.getLong(missesId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code misses} currently wraps to negative from max integer value.
+   * Characterization test: {@code misses} currently wraps to negative from max long value.
    */
   @Test
-  public void missesWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(missesId, Integer.MAX_VALUE);
+  public void missesWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(missesId, Long.MAX_VALUE);
 
     cachePerfStats.endGet(0, true);
 

@@ -45,7 +45,7 @@ public class ClientHealthStatus {
    * "numOfGets", IntCounter, "The total number of times a successful get has been done on this
    * cache." Java: CachePerfStats.gets Native: Not yet Defined
    */
-  private int numOfGets;
+  private long numOfGets;
 
   /**
    * "numOfPuts", IntCounter, "The total number of times an entry is added or replaced in this cache
@@ -59,7 +59,7 @@ public class ClientHealthStatus {
    * Represents number of cache misses in this client. IntCounter, "Total number of times a get on
    * the cache did not find a value already in local memory." Java: CachePerfStats.misses
    */
-  private int numOfMisses;
+  private long numOfMisses;
 
   /**
    * Represents number of cache listners calls completed. IntCounter, "Total number of times a cache
@@ -119,7 +119,7 @@ public class ClientHealthStatus {
   /**
    * Returns the number of times a successful get operation has occurred.
    */
-  public int getNumOfGets() {
+  public long getNumOfGets() {
     return numOfGets;
   }
 
@@ -136,7 +136,7 @@ public class ClientHealthStatus {
   /**
    * Returns the number of times a cache miss has occurred.
    */
-  public int getNumOfMisses() {
+  public long getNumOfMisses() {
     return numOfMisses;
   }
 
@@ -185,7 +185,7 @@ public class ClientHealthStatus {
   /**
    * Sets the number of times a successful get operation has occurred.
    */
-  public void setNumOfGets(int numOfGets) {
+  public void setNumOfGets(long numOfGets) {
     this.numOfGets = numOfGets;
   }
 
@@ -200,7 +200,7 @@ public class ClientHealthStatus {
   /**
    * Sets the number of times a cache miss has occurred.
    */
-  public void setNumOfMisses(int numOfMisses) {
+  public void setNumOfMisses(long numOfMisses) {
     this.numOfMisses = numOfMisses;
   }
 

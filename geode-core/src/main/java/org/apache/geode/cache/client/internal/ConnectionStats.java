@@ -462,10 +462,10 @@ public class ConnectionStats implements MessageStats {
                */
               ///////////////////////////////////////////////////////////////////////
               f.createIntGauge("getsInProgress", "Current number of gets being executed", "gets"),
-              f.createIntCounter("gets", "Total number of gets completed successfully", "gets"),
-              f.createIntCounter("getFailures", "Total number of get attempts that have failed",
+              f.createLongCounter("gets", "Total number of gets completed successfully", "gets"),
+              f.createLongCounter("getFailures", "Total number of get attempts that have failed",
                   "gets"),
-              f.createIntCounter("getTimeouts", "Total number of get attempts that have timed out",
+              f.createLongCounter("getTimeouts", "Total number of get attempts that have timed out",
                   "gets"),
               f.createLongCounter("getTime",
                   "Total amount of time, in nanoseconds spent doing gets", "nanoseconds"),
@@ -1776,7 +1776,7 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGetId = getId;
     }
-    this.stats.incInt(endGetId, 1);
+    this.stats.incLong(endGetId, 1L);
     this.stats.incLong(getDurationId, duration);
   }
 

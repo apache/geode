@@ -102,13 +102,13 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getGets() {
-    return 0;
+  public long getGets() {
+    return 0L;
   }
 
   @Override
-  public int getMisses() {
-    return 0;
+  public long getMisses() {
+    return 0L;
   }
 
   @Override

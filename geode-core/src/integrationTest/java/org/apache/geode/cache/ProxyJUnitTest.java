@@ -643,12 +643,10 @@ public class ProxyJUnitTest {
     expee.r = r;
     expee.key = "key";
     int creates = getStats().getCreates();
-    // int puts = getStats().getPuts();
-    // int updates = getStats().getUpdates();
     int destroys = getStats().getDestroys();
     int invalidates = getStats().getInvalidates();
-    int gets = getStats().getGets();
-    int misses = getStats().getMisses();
+    long gets = getStats().getGets();
+    long misses = getStats().getMisses();
 
     r.put("key", "value", cbArg);
     expee.op = Operation.CREATE;
@@ -837,12 +835,9 @@ public class ProxyJUnitTest {
     checkCL(expre);
 
     int creates = getStats().getCreates();
-    // int puts = getStats().getPuts();
-    // int updates = getStats().getUpdates();
     int destroys = getStats().getDestroys();
-    // int invalidates = getStats().getInvalidates();
-    int gets = getStats().getGets();
-    int misses = getStats().getMisses();
+    long gets = getStats().getGets();
+    long misses = getStats().getMisses();
     ExpectedEntryEvent expee = new ExpectedEntryEvent();
     expee.r = r;
     expee.key = "key";
@@ -929,12 +924,8 @@ public class ProxyJUnitTest {
     checkCL(expre);
 
     int creates = getStats().getCreates();
-    // int puts = getStats().getPuts();
-    // int updates = getStats().getUpdates();
     int destroys = getStats().getDestroys();
     int invalidates = getStats().getInvalidates();
-    // int gets = getStats().getGets();
-    // int misses = getStats().getMisses();
     ExpectedEntryEvent expee = new ExpectedEntryEvent();
     expee.r = r;
     expee.key = "key";
