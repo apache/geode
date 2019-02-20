@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -29,8 +30,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
@@ -82,6 +87,41 @@ public class JdbcClusterConfigDistributedTest {
     });
   }
 
+
+  public static class IdAndName implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("myId", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("myId");
+      this.name = reader.readString("name");
+    }
+  }
+
   @Test
   public void recreateCacheFromClusterConfig() throws Exception {
     gfsh.connectAndVerify(locator);
@@ -90,7 +130,8 @@ public class JdbcClusterConfigDistributedTest {
     setupDatabase();
     try {
       gfsh.executeAndAssertThat(
-          "create jdbc-mapping --region=regionName --data-source=myDataSource --table=testTable --pdx-name=myPdxClass --schema=mySchema")
+          "create jdbc-mapping --region=regionName --data-source=myDataSource --table=testTable --pdx-name="
+              + IdAndName.class.getName() + " --schema=mySchema")
           .statusIsSuccess();
 
       server.invoke(() -> {
@@ -117,7 +158,13 @@ public class JdbcClusterConfigDistributedTest {
     assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
     assertThat(regionMapping.getDataSourceName()).isEqualTo("myDataSource");
     assertThat(regionMapping.getTableName()).isEqualTo("testTable");
-    assertThat(regionMapping.getPdxName()).isEqualTo("myPdxClass");
+    assertThat(regionMapping.getPdxName()).isEqualTo(IdAndName.class.getName());
+    List<FieldMapping> fieldMappings = regionMapping.getFieldMappings();
+    assertThat(fieldMappings).hasSize(2);
+    assertThat(fieldMappings.get(0))
+        .isEqualTo(new FieldMapping("myId", "STRING", "MYID", "VARCHAR", false));
+    assertThat(fieldMappings.get(1))
+        .isEqualTo(new FieldMapping("name", "STRING", "NAME", "VARCHAR", true));
   }
 
 }
