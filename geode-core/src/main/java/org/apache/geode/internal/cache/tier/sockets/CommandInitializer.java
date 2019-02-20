@@ -339,6 +339,7 @@ public class CommandInitializer {
         ExecuteRegionFunctionGeode18.getCommand());
     ALL_COMMANDS.put(Version.GEODE_180, geode18Commands);
     ALL_COMMANDS.put(Version.GEODE_190, geode18Commands);
+    ALL_COMMANDS.put(Version.GEODE_1100, geode18Commands);
   }
 
   public static Map<Integer, Command> getCommands(Version version) {

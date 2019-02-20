@@ -175,7 +175,7 @@ resources:
   source:
     bucket: ((version-bucket))
     driver: gcs
-    initial_version: 1.8.0
+    initial_version: 1.10.0
     json_key: ((!concourse-gcp-key))
     key: ((pipeline-prefix))((geode-build-branch))/version
 
