@@ -59,7 +59,7 @@ public class HttpService {
 
   public static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
   public static final String CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM =
-      "org.apache.geode.sslConfig";
+      "org.apache.geode.cluster.management.service";
 
   private List<WebAppContext> webApps = new ArrayList<>();
 
