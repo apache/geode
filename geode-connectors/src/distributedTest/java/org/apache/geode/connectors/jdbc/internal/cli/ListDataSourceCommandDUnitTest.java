@@ -27,6 +27,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -88,6 +91,40 @@ public class ListDataSourceCommandDUnitTest {
     });
   }
 
+  public static class IdAndName implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("id", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("id");
+      this.name = reader.readString("name");
+    }
+  }
+
   @Test
   public void listDataSourceUsedByRegionsHasCorrectOutput() {
     gfsh.executeAndAssertThat(
@@ -97,10 +134,12 @@ public class ListDataSourceCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=region2 --type=PARTITION").statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx --schema=app")
+        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name="
+            + IdAndName.class.getName() + " --schema=app")
         .statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx --schema=app")
+        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name="
+            + IdAndName.class.getName() + " --schema=app")
         .statusIsSuccess();
 
     CommandResultAssert result = gfsh.executeAndAssertThat("list data-source");
