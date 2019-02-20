@@ -679,7 +679,6 @@ javadoc/org/apache/geode/management/ServerLoadData.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
 javadoc/org/apache/geode/management/api/RestfulEndpoint.html
-javadoc/org/apache/geode/management/api/SmartClusterManagementServiceProviderFactory.html
 javadoc/org/apache/geode/management/api/Status.html
 javadoc/org/apache/geode/management/api/package-frame.html
 javadoc/org/apache/geode/management/api/package-summary.html
