@@ -324,22 +324,22 @@ public class CommandInitializer {
     commands.put(MessageType.QUERY_WITH_PARAMETERS, QueryWithParametersGeode10.getCommand());
     commands.put(MessageType.QUERY, QueryGeode10.getCommand());
 
-    ALL_COMMANDS.put(Version.GEODE_110, commands);
-    ALL_COMMANDS.put(Version.GEODE_111, commands);
-    ALL_COMMANDS.put(Version.GEODE_120, commands);
-    ALL_COMMANDS.put(Version.GEODE_130, commands);
-    ALL_COMMANDS.put(Version.GEODE_140, commands);
-    ALL_COMMANDS.put(Version.GEODE_150, commands);
-    ALL_COMMANDS.put(Version.GEODE_160, commands);
-    ALL_COMMANDS.put(Version.GEODE_170, commands);
+    ALL_COMMANDS.put(Version.GEODE_1_1_0, commands);
+    ALL_COMMANDS.put(Version.GEODE_1_1_1, commands);
+    ALL_COMMANDS.put(Version.GEODE_1_2_0, commands);
+    ALL_COMMANDS.put(Version.GEODE_1_3_0, commands);
+    ALL_COMMANDS.put(Version.GEODE_1_4_0, commands);
+    ALL_COMMANDS.put(Version.GEODE_1_5_0, commands);
+    ALL_COMMANDS.put(Version.GEODE_1_6_0, commands);
+    ALL_COMMANDS.put(Version.GEODE_1_7_0, commands);
 
     Map<Integer, Command> geode18Commands = new HashMap<Integer, Command>();
-    geode18Commands.putAll(ALL_COMMANDS.get(Version.GEODE_170));
+    geode18Commands.putAll(ALL_COMMANDS.get(Version.GEODE_1_7_0));
     geode18Commands.put(MessageType.EXECUTE_REGION_FUNCTION,
         ExecuteRegionFunctionGeode18.getCommand());
-    ALL_COMMANDS.put(Version.GEODE_180, geode18Commands);
-    ALL_COMMANDS.put(Version.GEODE_190, geode18Commands);
-    ALL_COMMANDS.put(Version.GEODE_1100, geode18Commands);
+    ALL_COMMANDS.put(Version.GEODE_1_8_0, geode18Commands);
+    ALL_COMMANDS.put(Version.GEODE_1_9_0, geode18Commands);
+    ALL_COMMANDS.put(Version.GEODE_1_10_0, geode18Commands);
   }
 
   public static Map<Integer, Command> getCommands(Version version) {

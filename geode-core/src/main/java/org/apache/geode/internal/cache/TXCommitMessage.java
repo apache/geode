@@ -931,7 +931,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   private boolean hasFlagsField(final Version version) {
-    return version.compareTo(Version.GEODE_170) >= 0;
+    return version.compareTo(Version.GEODE_1_7_0) >= 0;
   }
 
   private boolean useShadowKey() {
