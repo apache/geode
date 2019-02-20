@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +61,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -82,11 +82,11 @@ import org.apache.geode.internal.alerting.AlertLevel;
 import org.apache.geode.internal.alerting.AlertMessaging;
 import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.alerting.AlertingSession;
-import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.InternalFunctionService;
@@ -136,18 +136,21 @@ public class InternalDistributedSystem extends DistributedSystem
    * True if the user is allowed lock when memory resources appear to be overcommitted.
    */
   private static final boolean ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT");
+      Boolean.getBoolean(GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT");
   private static final Logger logger = LogService.getLogger();
 
   private static final String DISABLE_MANAGEMENT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "disableManagement";
+      GEMFIRE_PREFIX + "disableManagement";
+
+  public static final String ALLOW_MULTIPLE_SYSTEMS_PROPERTY =
+      GEMFIRE_PREFIX + "ALLOW_MULTIPLE_SYSTEMS";
 
   /**
    * Feature flag to enable multiple caches within a JVM.
    */
   @MutableForTesting
   public static boolean ALLOW_MULTIPLE_SYSTEMS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ALLOW_MULTIPLE_SYSTEMS");
+      Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY);
 
   /**
    * If auto-reconnect is going on this will hold a reference to it
@@ -195,7 +198,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * Otherwise, create a new InternalDistributedSystem with the given properties, or connect to an
    * existing one with the same properties.
    */
-  public static DistributedSystem connectInternal(Properties config,
+  public static InternalDistributedSystem connectInternal(Properties config,
       SecurityConfig securityConfig) {
     if (config == null) {
       config = new Properties();
@@ -209,7 +212,8 @@ public class InternalDistributedSystem extends DistributedSystem
       if (ClusterDistributionManager.isDedicatedAdminVM()) {
         // For a dedicated admin VM, check to see if there is already
         // a connect that will suit our purposes.
-        DistributedSystem existingSystem = getConnection(config);
+        InternalDistributedSystem existingSystem =
+            (InternalDistributedSystem) getConnection(config);
         if (existingSystem != null) {
           return existingSystem;
         }
@@ -352,12 +356,12 @@ public class InternalDistributedSystem extends DistributedSystem
    * 38407
    */
   public static final String DISABLE_SHUTDOWN_HOOK_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "disableShutdownHook";
+      GEMFIRE_PREFIX + "disableShutdownHook";
 
   /**
    * A property to append to existing log-file instead of truncating it.
    */
-  public static final String APPEND_TO_LOG_FILE = DistributionConfig.GEMFIRE_PREFIX + "append-log";
+  public static final String APPEND_TO_LOG_FILE = GEMFIRE_PREFIX + "append-log";
 
   //////////////////// Configuration Fields ////////////////////
 
@@ -367,7 +371,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private final DistributionConfig originalConfig;
 
   private final boolean statsDisabled =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
+      Boolean.getBoolean(GEMFIRE_PREFIX + "statsDisabled");
 
   /**
    * The config object to which most configuration work is delegated
@@ -452,21 +456,39 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * creates a non-functional instance for testing
+   * Creates a non-functional instance for testing.
    *
-   * @param nonDefault - non-default distributed system properties
+   * @param distributionManager the distribution manager for the test instance
+   * @param properties properties to configure the test instance
    */
-  public static InternalDistributedSystem newInstanceForTesting(DistributionManager dm,
-      Properties nonDefault) {
-    InternalDistributedSystem sys = new InternalDistributedSystem(nonDefault);
-    sys.config = new RuntimeDistributionConfigImpl(sys);
-    sys.dm = dm;
-    sys.isConnected = true;
-    return sys;
+  public static InternalDistributedSystem newInstanceForTesting(
+      DistributionManager distributionManager, Properties properties) {
+    DistributionConfig config = new DistributionConfigImpl(properties);
+    StatisticsManagerFactory statisticsManagerFactory = defaultStatisticsManagerFactory();
+
+    return newInstanceForTesting(
+        distributionManager, properties, statisticsManagerFactory);
   }
 
-  public static InternalDistributedSystem newInstanceForTesting(StatisticsManagerFactory factory) {
-    return new InternalDistributedSystem(new Properties(), factory);
+  /**
+   * Creates a non-functional instance for testing.
+   *
+   * @param distributionManager the distribution manager for the test instance
+   * @param properties properties to configure the test instance
+   * @param statisticsManagerFactory the statistics manager factory for the test instance
+   */
+  static InternalDistributedSystem newInstanceForTesting(DistributionManager distributionManager,
+      Properties properties, StatisticsManagerFactory statisticsManagerFactory) {
+    ConnectionConfigImpl connectionConfig = new ConnectionConfigImpl(properties);
+
+    InternalDistributedSystem internalDistributedSystem =
+        new InternalDistributedSystem(connectionConfig, statisticsManagerFactory);
+
+    internalDistributedSystem.config = new RuntimeDistributionConfigImpl(internalDistributedSystem);
+    internalDistributedSystem.dm = distributionManager;
+    internalDistributedSystem.isConnected = true;
+
+    return internalDistributedSystem;
   }
 
   public static boolean removeSystem(InternalDistributedSystem oldSystem) {
@@ -573,20 +595,40 @@ public class InternalDistributedSystem extends DistributedSystem
     reconnectAttemptCounter = 0;
   }
 
-  private InternalDistributedSystem(Properties properties) {
-    this(properties, defaultStatisticsManagerFactory());
+  /**
+   * Creates a new {@code InternalDistributedSystem} with the given configuration properties.
+   * Does all of the magic of finding the "default" values of properties.
+   * <p>
+   * See {@link #connect} for a list of exceptions that may be thrown.
+   *
+   * @param configurationProperties properties to configure the connection
+   */
+  private InternalDistributedSystem(Properties configurationProperties) {
+    this(new ConnectionConfigImpl(configurationProperties));
   }
 
   /**
-   * Creates a new <code>InternalDistributedSystem</code> with the given configuration properties.
-   * Does all of the magic of finding the "default" values of properties. See
-   * {@link DistributedSystem#connect} for a list of exceptions that may be thrown.
+   * Creates a new {@code InternalDistributedSystem} with the given configuration.
+   * <p>
+   * See {@link #connect} for a list of exceptions that may be thrown.
    *
-   * @param nonDefault The non-default configuration properties specified by the caller
-   *
-   * @see DistributedSystem#connect
+   * @param config the configuration for the connection
    */
-  private InternalDistributedSystem(Properties nonDefault,
+  private InternalDistributedSystem(ConnectionConfig config) {
+    this(config, defaultStatisticsManagerFactory());
+    isReconnectingDS = config.isReconnecting();
+    quorumChecker = config.quorumChecker();
+  }
+
+  /**
+   * Creates a new {@code InternalDistributedSystem} with the given configuration.
+   * <p>
+   * See {@link #connect} for a list of exceptions that may be thrown.
+   *
+   * @param config the configuration for the connection
+   * @param statisticsManagerFactory creates the statistics manager for this member
+   */
+  private InternalDistributedSystem(ConnectionConfig config,
       StatisticsManagerFactory statisticsManagerFactory) {
     alertingSession = AlertingSession.create();
     alertingService = new AlertingService();
@@ -597,24 +639,7 @@ public class InternalDistributedSystem extends DistributedSystem
     // "precious" thread
     DSFIDFactory.registerTypes();
 
-    Object o = nonDefault.remove(DistributionConfig.DS_RECONNECTING_NAME);
-    if (o instanceof Boolean) {
-      this.isReconnectingDS = (Boolean) o;
-    } else {
-      this.isReconnectingDS = false;
-    }
-
-    o = nonDefault.remove(DistributionConfig.DS_QUORUM_CHECKER_NAME);
-    if (o instanceof QuorumChecker) {
-      this.quorumChecker = (QuorumChecker) o;
-    }
-
-    o = nonDefault.remove(DistributionConfig.DS_CONFIG_NAME);
-    if (o instanceof DistributionConfigImpl) {
-      this.originalConfig = (DistributionConfigImpl) o;
-    } else {
-      this.originalConfig = new DistributionConfigImpl(nonDefault);
-    }
+    originalConfig = config.distributionConfig();
 
     ((DistributionConfigImpl) this.originalConfig).checkForDisallowedDefaults(); // throws
                                                                                  // IllegalStateEx
@@ -2446,8 +2471,7 @@ public class InternalDistributedSystem extends DistributedSystem
     if (this.isReconnectingDS && forcedDisconnect) {
       return false;
     }
-    synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a
-                                        // cache
+    synchronized (InternalCacheBuilder.class) {
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
         synchronized (this.reconnectLock) {
@@ -2702,11 +2726,9 @@ public class InternalDistributedSystem extends DistributedSystem
             do {
               retry = false;
               try {
-                CacheConfig config = new CacheConfig();
-                if (cacheXML != null) {
-                  config.setCacheXMLDescription(cacheXML);
-                }
-                cache = GemFireCacheImpl.create(this.reconnectDS, config);
+                cache = new InternalCacheBuilder()
+                    .setCacheXMLDescription(cacheXML)
+                    .create(reconnectDS);
 
                 if (!cache.isClosed()) {
                   createAndStartCacheServers(cacheServerCreation, cache);
@@ -3029,5 +3051,4 @@ public class InternalDistributedSystem extends DistributedSystem
       }
     };
   }
-
 }

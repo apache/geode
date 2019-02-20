@@ -2380,6 +2380,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public void initialize() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
   public URL getCacheXmlURL() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
@@ -2423,6 +2428,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  public void throwCacheExistsException() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

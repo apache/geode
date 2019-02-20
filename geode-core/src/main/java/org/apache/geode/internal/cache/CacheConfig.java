@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.client.internal.InternalClientCache;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
@@ -169,7 +169,7 @@ public class CacheConfig {
     this.cacheServerCreation = servers;
   }
 
-  public void validateCacheConfig(InternalClientCache cacheInstance) {
+  public void validateCacheConfig(GemFireCache cacheInstance) {
     // To fix bug 44961 only validate our attributes against the existing cache
     // if they have been explicitly set by the set.
     // So all the following "ifs" check that "*UserSet" is true.
