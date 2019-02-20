@@ -32,16 +32,16 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -50,7 +50,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category({JDBCConnectorTest.class})
-@RunWith(JUnitParamsRunner.class)
 public class DescribeMappingCommandDUnitTest implements Serializable {
 
   private static final String TEST_REGION = "testRegion";
@@ -115,9 +114,77 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     });
   }
 
+  public static class IdAndName implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("myid", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("myid");
+      this.name = reader.readString("name");
+    }
+  }
+
+  public static class IdAndName2 implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName2() {
+      // nothing
+    }
+
+    IdAndName2(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("myid2", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("myid2");
+      this.name = reader.readString("name");
+    }
+  }
+
   @Test
-  @Parameters({TEST_REGION, "/" + TEST_REGION})
-  public void describesExistingSynchronousMapping(String regionName) throws Exception {
+  public void describesExistingSynchronousMapping() throws Exception {
+    String regionName = "/" + TEST_REGION;
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
@@ -131,7 +198,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(TABLE_NAME, "testTable");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
     csb.addOption(SYNCHRONOUS_NAME, "true");
     csb.addOption(ID_NAME, "myId");
 
@@ -148,14 +215,14 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
         convertRegionPathToName(regionName));
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, IdAndName.class.getName());
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "true");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
   }
 
   @Test
-  @Parameters({TEST_REGION, "/" + TEST_REGION})
-  public void describesExistingSynchronousMappingWithGroups(String regionName) throws Exception {
+  public void describesExistingSynchronousMappingWithGroups() throws Exception {
+    String regionName = TEST_REGION;
     String groupName = "group1";
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, groupName, locator.getPort());
@@ -172,7 +239,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(TABLE_NAME, "testTable");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
     csb.addOption(SYNCHRONOUS_NAME, "true");
     csb.addOption(ID_NAME, "myId");
 
@@ -189,14 +256,14 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
         convertRegionPathToName(regionName));
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, IdAndName.class.getName());
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "true");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
   }
 
   @Test
-  @Parameters({TEST_REGION, "/" + TEST_REGION})
-  public void describesExistingAsyncMapping(String regionName) throws Exception {
+  public void describesExistingAsyncMapping() throws Exception {
+    String regionName = "/" + TEST_REGION;
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
@@ -210,7 +277,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(REGION_NAME, regionName);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "testTable");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
     csb.addOption(SCHEMA_NAME, "mySchema");
@@ -228,15 +295,15 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, IdAndName.class.getName());
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
   }
 
   @Test
-  @Parameters({TEST_REGION, "/" + TEST_REGION})
-  public void describesExistingAsyncMappingWithGroup(String regionName) throws Exception {
+  public void describesExistingAsyncMappingWithGroup() throws Exception {
+    String regionName = TEST_REGION;
     String groupName = "group1";
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, groupName, locator.getPort());
@@ -253,7 +320,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(GROUP_NAME, groupName);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "testTable");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
     csb.addOption(SCHEMA_NAME, "mySchema");
@@ -272,16 +339,16 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair("Mapping for group", "group1");
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, IdAndName.class.getName());
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
   }
 
   @Test
-  @Parameters({TEST_REGION, "/" + TEST_REGION})
-  public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroups(String regionName)
+  public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroups()
       throws Exception {
+    String regionName = "/" + TEST_REGION;
     String groupName1 = "group1";
     String groupName2 = "group2";
     locator = startupRule.startLocatorVM(0);
@@ -302,7 +369,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(GROUP_NAME, groupName1 + "," + groupName2);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "testTable");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
     csb.addOption(SCHEMA_NAME, "mySchema");
@@ -323,7 +390,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
       commandResultAssert.containsKeyValuePair("Mapping for group", "group2");
       commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
       commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
-      commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+      commandResultAssert.containsKeyValuePair(PDX_NAME, IdAndName.class.getName());
       commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
       commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
       commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
@@ -333,10 +400,9 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
   }
 
   @Test
-  @Parameters({TEST_REGION, "/" + TEST_REGION})
-  public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroupsWithDifferentMappings(
-      String regionName)
+  public void describesExistingAsyncMappingsWithSameRegionOnDifferentGroupsWithDifferentMappings()
       throws Exception {
+    String regionName = TEST_REGION;
     String groupName1 = "group1";
     String groupName2 = "group2";
     locator = startupRule.startLocatorVM(0);
@@ -355,7 +421,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     csb.addOption(GROUP_NAME, groupName1);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "testTable");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
     csb.addOption(SYNCHRONOUS_NAME, "false");
     csb.addOption(ID_NAME, "myId");
     csb.addOption(SCHEMA_NAME, "mySchema");
@@ -376,7 +442,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
       csb.addOption(GROUP_NAME, groupName2);
       csb.addOption(DATA_SOURCE_NAME, "connection2");
       csb.addOption(TABLE_NAME, "testTable2");
-      csb.addOption(PDX_NAME, "myPdxClass2");
+      csb.addOption(PDX_NAME, IdAndName2.class.getName());
       csb.addOption(SYNCHRONOUS_NAME, "false");
       csb.addOption(ID_NAME, "myId2");
       csb.addOption(SCHEMA_NAME, "mySchema2");
@@ -398,7 +464,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair("Mapping for group", "group1");
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable");
-    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, IdAndName.class.getName());
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema");
@@ -415,7 +481,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair("Mapping for group", "group2");
     commandResultAssert.containsKeyValuePair(DATA_SOURCE_NAME, "connection2");
     commandResultAssert.containsKeyValuePair(TABLE_NAME, "testTable2");
-    commandResultAssert.containsKeyValuePair(PDX_NAME, "myPdxClass2");
+    commandResultAssert.containsKeyValuePair(PDX_NAME, IdAndName2.class.getName());
     commandResultAssert.containsKeyValuePair(SYNCHRONOUS_NAME, "false");
     commandResultAssert.containsKeyValuePair(ID_NAME, "myId2");
     commandResultAssert.containsKeyValuePair(SCHEMA_NAME, "mySchema2");
