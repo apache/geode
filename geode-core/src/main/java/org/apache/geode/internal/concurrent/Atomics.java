@@ -17,35 +17,8 @@ package org.apache.geode.internal.concurrent;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.statistics.LocalStatisticsImpl;
-import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.statistics.StatisticsTypeImpl;
-import org.apache.geode.internal.stats50.Atomic50StatisticsImpl;
-
 public class Atomics {
   private Atomics() {}
-
-  /**
-   * Whether per-thread stats are used. Striping is disabled for the IBM JVM due to bug 38226
-   */
-  private static final boolean STRIPED_STATS_DISABLED =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "STRIPED_STATS_DISABLED")
-          || "IBM Corporation".equals(System.getProperty("java.vm.vendor", "unknown"));
-
-
-  public static Statistics createAtomicStatistics(StatisticsType type, String textId, long nId,
-      long uId, StatisticsManager mgr) {
-    Statistics result = null;
-    if (((StatisticsTypeImpl) type).getDoubleStatCount() == 0 && !STRIPED_STATS_DISABLED) {
-      result = new Atomic50StatisticsImpl(type, textId, nId, uId, mgr);
-    } else {
-      result = new LocalStatisticsImpl(type, textId, nId, uId, true, 0, mgr);
-    }
-    return result;
-  }
 
   /**
    * Use it only when threads are doing incremental updates. If updates are random then this method

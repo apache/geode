@@ -27,7 +27,6 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.internal.concurrent.Atomics;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 
@@ -71,6 +70,9 @@ public abstract class StatisticsImpl implements Statistics {
   /** Uniquely identifies this instance */
   private long uniqueId;
 
+  /** The StatisticsFactory that created this instance */
+  private final StatisticsManager statisticsManager;
+
   /**
    * Suppliers of int sample values to be sampled every sample-interval
    */
@@ -99,7 +101,7 @@ public abstract class StatisticsImpl implements Statistics {
    */
   public static Statistics createAtomicNoOS(StatisticsType type, String textId, long numericId,
       long uniqueId, StatisticsManager mgr) {
-    return Atomics.createAtomicStatistics(type, textId, numericId, uniqueId, mgr);
+    return new StripedStatisticsImpl(type, textId, numericId, uniqueId, mgr);
   }
 
   /**
@@ -113,12 +115,13 @@ public abstract class StatisticsImpl implements Statistics {
    *        only
    */
   public StatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
-      int osStatFlags) {
+      int osStatFlags, StatisticsManager statisticsManager) {
     this.type = (StatisticsTypeImpl) type;
     this.textId = textId;
     this.numericId = numericId;
     this.uniqueId = uniqueId;
     this.osStatFlags = osStatFlags;
+    this.statisticsManager = statisticsManager;
     closed = false;
   }
 
@@ -144,6 +147,9 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public void close() {
+    if (this.statisticsManager != null) {
+      statisticsManager.destroyStatistics(this);
+    }
     this.closed = true;
   }
 
