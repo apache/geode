@@ -19,26 +19,16 @@ import java.util.function.Function;
 
 public class JavaWorkarounds {
 
-  public static final boolean postJava8 = calcIfJDKIsPost8();
-
-  private static boolean calcIfJDKIsPost8() {
-    String version = System.getProperty("java.version");
-    return !version.matches("1\\.[0-8]\\.");
-  }
 
   // This is a workaround for computeIfAbsent which unnecessarily takes out a write lock in the case
-  // where the entry for the key exists already.  This only affects pre Java 9 jdks
+  // where the entry for the key exists already. This only affects pre Java 9 jdks
   // https://bugs.openjdk.java.net/browse/JDK-8161372
   public static <K, V> V computeIfAbsent(Map<K, V> map, K key,
-      Function<? super K, ? extends V> mappingFunction) {
-    if (postJava8) {
+                                         Function<? super K, ? extends V> mappingFunction) {
+    V existingValue = map.get(key);
+    if (existingValue == null) {
       return map.computeIfAbsent(key, mappingFunction);
-    } else {
-      V existingValue = map.get(key);
-      if (existingValue == null) {
-        return map.computeIfAbsent(key, mappingFunction);
-      }
-      return existingValue;
     }
+    return existingValue;
   }
 }
