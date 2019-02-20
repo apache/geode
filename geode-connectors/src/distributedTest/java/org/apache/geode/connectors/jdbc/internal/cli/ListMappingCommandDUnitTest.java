@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.LIST_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.LIST_OF_MAPPINGS;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -29,12 +28,11 @@ import javax.sql.DataSource;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
-import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -77,6 +75,8 @@ public class ListMappingCommandDUnitTest implements Serializable {
 
   private void executeSql(String sql) {
     for (MemberVM server : Arrays.asList(server1, server2, server3, server4)) {
+      if (server == null)
+        continue;
       server.invoke(() -> {
         try {
           DataSource ds = JNDIInvoker.getDataSource("connection");
@@ -88,6 +88,40 @@ public class ListMappingCommandDUnitTest implements Serializable {
           throw new RuntimeException(e);
         }
       });
+    }
+  }
+
+  public static class IdAndName implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("id", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("id");
+      this.name = reader.readString("name");
     }
   }
 
@@ -105,7 +139,8 @@ public class ListMappingCommandDUnitTest implements Serializable {
     createTable();
     try {
       String mapping = "create jdbc-mapping --region=" + regionName + " --data-source=connection "
-          + "--table=myTable --pdx-name=myPdxClass --schema=mySchema";
+          + "--table=myTable --pdx-name="
+          + IdAndName.class.getName() + " --schema=mySchema";
       gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
       CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
@@ -124,25 +159,33 @@ public class ListMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server1 = startupRule.startServerVM(1, TEST_GROUP1, locator.getPort());
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat(
+        "create data-source --name=connection --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
+    createTable();
+    try {
+      String mapping = "create jdbc-mapping --region=" + regionName + " --data-source=connection "
+          + "--table=myTable --schema=mySchema --pdx-name=" + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
-    String mapping = "create jdbc-mapping --region=" + regionName + " --data-source=connection "
-        + "--table=myTable --pdx-name=myPdxClass";
-    gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+      CommandStringBuilder csb =
+          new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
+      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+      commandResultAssert.statusIsError();
+      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
 
-    commandResultAssert.statusIsError();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
+      csb = new CommandStringBuilder(LIST_MAPPING);
+      commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    csb = new CommandStringBuilder(LIST_MAPPING);
-    commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
-    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
+      commandResultAssert.statusIsSuccess();
+      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+      commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
+    } finally {
+      dropTable();
+    }
   }
 
 
@@ -152,31 +195,38 @@ public class ListMappingCommandDUnitTest implements Serializable {
     server1 = startupRule.startServerVM(1, TEST_GROUP1, locator.getPort());
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat(
+        "create data-source --name=connection --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
         "create region --name=" + regionName + " --groups=" + TEST_GROUP1 + " --type=REPLICATE")
         .statusIsSuccess();
+    createTable();
+    try {
+      String mapping =
+          "create jdbc-mapping --region=" + regionName + " --groups=" + TEST_GROUP1
+              + " --data-source=connection " + "--table=myTable --schema=mySchema --pdx-name="
+              + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
-    String mapping =
-        "create jdbc-mapping --region=" + regionName + " --groups=" + TEST_GROUP1
-            + " --data-source=connection " + "--table=myTable --pdx-name=myPdxClass";
-    gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+      CommandStringBuilder csbd = new CommandStringBuilder(
+          "describe jdbc-mapping --region=" + regionName + " --groups=" + TEST_GROUP1);
+      gfsh.executeAndAssertThat(csbd.toString());
 
-    CommandStringBuilder csbd = new CommandStringBuilder(
-        "describe jdbc-mapping --region=" + regionName + " --groups=" + TEST_GROUP1);
-    gfsh.executeAndAssertThat(csbd.toString());
+      CommandStringBuilder csb =
+          new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
+      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+      commandResultAssert.statusIsSuccess();
+      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+      commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
 
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
-    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
-
-    csb = new CommandStringBuilder(LIST_MAPPING);
-    commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-    commandResultAssert.statusIsError();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
-
-
+      csb = new CommandStringBuilder(LIST_MAPPING);
+      commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+      commandResultAssert.statusIsSuccess();
+      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
+    } finally {
+      dropTable();
+    }
   }
 
   @Test
@@ -206,19 +256,22 @@ public class ListMappingCommandDUnitTest implements Serializable {
     // create 4 mappings
     String mapping =
         "create jdbc-mapping --region=" + regionName + " --data-source=connection "
-            + "--table=myTable --pdx-name=myPdxClass";
+            + "--table=myTable --pdx-name=" + IdAndName.class.getName();
     gfsh.executeAndAssertThat(mapping).statusIsSuccess();
     mapping =
         "create jdbc-mapping --region=" + GROUP1_REGION + " --groups=" + TEST_GROUP1
-            + " --data-source=connection " + "--table=myTable --pdx-name=myPdxClass";
+            + " --data-source=connection " + "--table=myTable --schema=mySchema --pdx-name="
+            + IdAndName.class.getName();
     gfsh.executeAndAssertThat(mapping).statusIsSuccess();
     mapping =
         "create jdbc-mapping --region=" + GROUP2_REGION + " --groups=" + TEST_GROUP2
-            + " --data-source=connection " + "--table=myTable --pdx-name=myPdxClass";
+            + " --data-source=connection " + "--table=myTable --schema=mySchema --pdx-name="
+            + IdAndName.class.getName();
     gfsh.executeAndAssertThat(mapping).statusIsSuccess();
     mapping =
         "create jdbc-mapping --region=" + GROUP1_GROUP2_REGION + " --groups=" + TEST_GROUP1 + ","
-            + TEST_GROUP2 + " --data-source=connection " + "--table=myTable --pdx-name=myPdxClass";
+            + TEST_GROUP2 + " --data-source=connection "
+            + "--table=myTable --schema=mySchema --pdx-name=" + IdAndName.class.getName();
     gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
     {
@@ -280,16 +333,5 @@ public class ListMappingCommandDUnitTest implements Serializable {
     CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
     commandResultAssert.statusIsSuccess();
     commandResultAssert.containsOutput("No JDBC mappings found");
-  }
-
-  private void createNRegionMappings(int N) throws RegionMappingExistsException {
-    InternalCache cache = ClusterStartupRule.getCache();
-    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
-    for (int i = 1; i <= N; i++) {
-      String name = regionName + "-" + i;
-      service.createRegionMapping(
-          new RegionMapping(name, "x.y.MyPdxClass", "table", "connection", null, null, null));
-      assertThat(service.getMappingForRegion(name)).isNotNull();
-    }
   }
 }
