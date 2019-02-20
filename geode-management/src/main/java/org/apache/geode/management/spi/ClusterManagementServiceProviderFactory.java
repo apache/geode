@@ -35,13 +35,13 @@ public interface ClusterManagementServiceProviderFactory {
   List<String> supportedContexts();
 
   /**
-   * Create a {@code ClusterManagementService} instance. Throws an {@code IllegalArgumentException}
+   * Create a {@code ClusterManagementService} instance. Throws an {@code IllegalStateException}
    * if the instance cannot be created. This method would typically be used by an implementation
    * that is able to infer the correct Cluster Management endpoint URL to use.
    *
    * @return an instance of the {@code ClusterManagementService}
    */
-  ClusterManagementService create() throws IllegalArgumentException;
+  ClusterManagementService create() throws IllegalStateException;
 
   /**
    * Create a {@code ClusterManagementService} that will use the given URL.

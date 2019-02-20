@@ -17,13 +17,28 @@ package org.apache.geode.management.internal.api;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.springframework.http.client.ClientHttpRequestFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.internal.ClusterManagementClient;
+import org.apache.geode.management.internal.cli.domain.MemberInformation;
+import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
+import org.apache.geode.management.spi.BasicClusterManagementProviderFactory;
 import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
 
 /**
@@ -32,8 +47,13 @@ import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
  * address of the {@code ClusterManagementService} when using the {@code create()} call. Otherwise
  * an explicit can also be used.
  */
-public class SmartClusterManagementServiceProviderFactory implements
-    ClusterManagementServiceProviderFactory {
+public class SmartClusterManagementServiceProviderFactory extends
+    BasicClusterManagementProviderFactory {
+
+  private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =
+      new GetMemberInformationFunction();
+
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public List<String> supportedContexts() {
@@ -42,39 +62,65 @@ public class SmartClusterManagementServiceProviderFactory implements
   }
 
   @Override
-  public ClusterManagementService create() {
+  public ClusterManagementService create() throws IllegalStateException {
     if (InternalLocator.getLocator() != null) {
       return InternalLocator.getLocator().getClusterManagementService();
     }
 
-    throw new IllegalStateException(
-        "This method is only implemented on locators or clients for now.");
+    // throw new IllegalStateException("This method is only implemented on locators for now.");
 
-    // try {
-    // Cache cache = CacheFactory.getAnyInstance();
-    // if (cache != null && cache.isServer()) {
-    // return getService(ClusterManagementContext.FOR_SERVER);
-    // }
-    //
-    // ClientCache clientCache = ClientCacheFactory.getAnyInstance();
-    // if (clientCache != null) {
-    // return getService(ClusterManagementContext.FOR_CLIENT);
-    // }
-    // } catch (CacheClosedException e) {
-    // throw new InvalidContextException("ClusterManagementService.create() " +
-    // "must be executed on one of locator, server or client cache VMs");
-    // }
+    Cache cache = CacheFactory.getAnyInstance();
+    if (cache != null && cache.isServer()) {
+      GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
 
+      Set<InternalDistributedMember> locatorsWithClusterConfig =
+          cacheImpl.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration()
+              .keySet();
+      String serviceAddress = getHttpServiceAddress(locatorsWithClusterConfig);
+
+      return new ClusterManagementClient(serviceAddress);
+    }
+
+    ClientCache clientCache = ClientCacheFactory.getAnyInstance();
+    if (clientCache != null) {
+      throw new IllegalStateException(
+          "Under construction. To retrieve an instance of ClusterManagementService from a Geode client, please use either create(clusterUrl) or create(requestFactory) methods");
+    }
+    // } catch( CacheClosedException e) {
+    throw new IllegalStateException("ClusterManagementService.create() " +
+        "must be executed on one of locator, server or client cache VMs");
   }
 
-  @Override
-  public ClusterManagementService create(String clusterUrl) {
-    throw new NotImplementedException("Pardon our dust. Under construction");
-  }
+  private String getHttpServiceAddress(Set<InternalDistributedMember> locators) {
+    for (InternalDistributedMember locator : locators) {
 
-  @Override
-  public ClusterManagementService create(ClientHttpRequestFactory requestFactory) {
-    throw new NotImplementedException("Pardon our dust. Under construction");
-  }
+      try {
+        ResultCollector resultCollector =
+            FunctionService.onMember(locator).execute(MEMBER_INFORMATION_FUNCTION);
+        List<MemberInformation> memberInformation =
+            (List<MemberInformation>) resultCollector.getResult();
+        // Is this even possible?
+        if (memberInformation.isEmpty()) {
+          continue;
+        }
 
+        // What address to use
+        String host;
+        if (StringUtils.isNotBlank(memberInformation.get(0).getHttpServiceBindAddress())) {
+          host = memberInformation.get(0).getHttpServiceBindAddress();
+        } else if (StringUtils.isNotBlank(memberInformation.get(0).getServerBindAddress())) {
+          host = memberInformation.get(0).getServerBindAddress();
+        } else {
+          host = memberInformation.get(0).getHost();
+        }
+
+        return String.format("http://%s:%d", host, memberInformation.get(0).getHttpServicePort());
+      } catch (FunctionException e) {
+        logger.warn("Unable to execute GetMemberInformationFunction on " + locator.getId());
+        throw new IllegalStateException(e);
+      }
+    }
+
+    throw new IllegalStateException("Unable to determine ClusterManagementService endpoint");
+  }
 }

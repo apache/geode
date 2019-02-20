@@ -61,11 +61,4 @@ public interface ClusterManagementService {
    */
   ClusterManagementResult update(CacheElement config, String group);
 
-  /**
-   * Return the context which was used when creating this instance of {@code
-   * ClusterManagementService}.
-   *
-   * @return the name of the context
-   */
-  String getContext();
 }

@@ -65,11 +65,6 @@ public class DescribeMemberCommand extends InternalGfshCommand {
         CompositeResultData crd = ResultBuilder.createCompositeResultData();
 
         MemberInformation memberInformation = (MemberInformation) obj;
-        memberInformation.setName(memberToBeDescribed.getName());
-        memberInformation.setId(memberToBeDescribed.getId());
-        memberInformation.setHost(memberToBeDescribed.getHost());
-        memberInformation.setProcessId("" + memberToBeDescribed.getProcessId());
-
         CompositeResultData.SectionResultData section = crd.addSection();
         section.addData("Name", memberInformation.getName());
         section.addData("Id", memberInformation.getId());

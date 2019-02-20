@@ -86,17 +86,20 @@ public class ClusterManagementServiceProvider {
       try {
         factory = getFactory(context);
         try {
-          return factory.create();
+          ClusterManagementService cms = factory.create();
+          return cms;
         } catch (IllegalStateException ex) {
-          // ignored
+          ex.printStackTrace();
         }
       } catch (IllegalArgumentException iex) {
-        // ignored
+        iex.printStackTrace();
+      } catch (Exception iex) {
+        iex.printStackTrace();
       }
     }
 
     throw new IllegalStateException(
-        "Unable to get ClusterManagementService using any of the known contexts");
+        "Unable to get ClusterManagementService using any of the default contexts");
   }
 
   public static ClusterManagementService getService(String clusterUrl) {

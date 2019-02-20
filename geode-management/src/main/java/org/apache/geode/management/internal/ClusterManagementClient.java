@@ -27,7 +27,6 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.management.client.RestTemplateResponseErrorHandler;
 
 /**
@@ -90,9 +89,8 @@ public class ClusterManagementClient implements ClusterManagementService {
     throw new NotImplementedException();
   }
 
-  @Override
-  public String getContext() {
-    return ClusterManagementServiceProvider.JAVA_CLIENT_CONTEXT;
+  public RestTemplate getRestTemplate() {
+    return restTemplate;
   }
 
   private String getEndpoint(CacheElement config) {
