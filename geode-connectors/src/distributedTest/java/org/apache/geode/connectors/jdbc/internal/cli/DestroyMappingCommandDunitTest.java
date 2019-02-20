@@ -21,6 +21,7 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAM
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -49,6 +50,9 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
@@ -125,6 +129,40 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     executeSql("drop table myuser." + TEST_REGION);
   }
 
+  public static class IdAndName implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("id", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("id");
+      this.name = reader.readString("name");
+    }
+  }
+
   private void executeSql(String sql) {
     for (MemberVM server : Arrays.asList(server1, server2, server3, server4)) {
       server.invoke(() -> {
@@ -145,7 +183,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, TEST_REGION);
     csb.addOption(DATA_SOURCE_NAME, "myDataSource");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
     csb.addOption(SCHEMA_NAME, "myuser");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -155,7 +193,7 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, TEST_REGION);
     csb.addOption(DATA_SOURCE_NAME, "myDataSource");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
     csb.addOption(SCHEMA_NAME, "myuser");
     csb.addOption(SYNCHRONOUS_NAME, "true");
 
@@ -165,8 +203,10 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   private void setupMappingWithServerGroup(String groups, String regionName, boolean isSync) {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING + " --groups=" + groups);
     csb.addOption(REGION_NAME, regionName);
+    csb.addOption(TABLE_NAME, TEST_REGION);
     csb.addOption(DATA_SOURCE_NAME, "myDataSource");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
+    csb.addOption(SCHEMA_NAME, "myuser");
     csb.addOption(SYNCHRONOUS_NAME, Boolean.toString(isSync));
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
