@@ -36,6 +36,7 @@ import org.apache.geode.admin.SystemMember;
 import org.apache.geode.admin.SystemMemberCache;
 import org.apache.geode.admin.SystemMemberCacheEvent;
 import org.apache.geode.admin.SystemMemberRegionEvent;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
@@ -201,7 +202,8 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   class Helper {
     private static final Logger logger = LogService.getLogger();
 
-    private static AtomicInteger notificationSequenceNumber = new AtomicInteger();
+    @MakeNotStatic
+    private static final AtomicInteger notificationSequenceNumber = new AtomicInteger();
 
     public static int setAndReturnRefreshInterval(SystemMemberJmx member, int refreshInterval) {
       int ret = refreshInterval;

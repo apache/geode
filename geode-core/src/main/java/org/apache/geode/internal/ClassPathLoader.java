@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectionUtils;
@@ -69,6 +70,7 @@ public class ClassPathLoader {
   static final String EXCLUDE_TCCL_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
 
+  @MakeNotStatic
   private static volatile ClassPathLoader latest;
 
   private volatile URLClassLoader classLoaderForDeployedJars;

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Version;
 
 /**
@@ -29,5 +30,6 @@ public interface ConnectionProxy {
    *
    * @since GemFire 5.7
    */
+  @Immutable
   Version VERSION = Version.CURRENT;
 }

@@ -74,7 +74,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     factory.createSubregion(parentRegion, regionName);
   }
 
-  private RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
+  RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
     RegionFactory factory = cache.createRegionFactory();
 
     factory.setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().name()));
@@ -125,7 +125,8 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
     if (regionAttributes.getPartitionAttributes() != null) {
       factory.setPartitionAttributes(
-          PartitionAttributesImpl.fromConfig(regionAttributes.getPartitionAttributes(), cache));
+          convertToRegionFactoryPartitionAttributes(regionAttributes.getPartitionAttributes(),
+              cache));
     }
 
     if (regionAttributes.getEntryIdleTime() != null) {
@@ -227,6 +228,60 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
       factory.setMulticastEnabled(regionAttributes.isMulticastEnabled());
     }
     return factory;
+  }
+
+  PartitionAttributesImpl convertToRegionFactoryPartitionAttributes(
+      RegionAttributesType.PartitionAttributes configAttributes, Cache cache) {
+    PartitionAttributesImpl partitionAttributes = new PartitionAttributesImpl();
+    if (configAttributes == null) {
+      return null;
+    }
+
+    if (configAttributes.getRedundantCopies() != null) {
+      partitionAttributes
+          .setRedundantCopies(Integer.valueOf(configAttributes.getRedundantCopies()));
+    }
+
+    if (configAttributes.getTotalMaxMemory() != null) {
+      partitionAttributes.setTotalMaxMemory(Integer.valueOf(configAttributes.getTotalMaxMemory()));
+    }
+
+    if (configAttributes.getTotalNumBuckets() != null) {
+      partitionAttributes
+          .setTotalNumBuckets(Integer.valueOf(configAttributes.getTotalNumBuckets()));
+    }
+
+    if (configAttributes.getLocalMaxMemory() != null) {
+      partitionAttributes.setLocalMaxMemory(Integer.valueOf(configAttributes.getLocalMaxMemory()));
+    }
+
+    if (configAttributes.getColocatedWith() != null) {
+      partitionAttributes.setColocatedWith(configAttributes.getColocatedWith());
+    }
+
+    if (configAttributes.getPartitionResolver() != null) {
+      partitionAttributes.setPartitionResolver(
+          DeclarableTypeInstantiator.newInstance(configAttributes.getPartitionResolver(), cache));
+    }
+
+    if (configAttributes.getRecoveryDelay() != null) {
+      partitionAttributes.setRecoveryDelay(Long.valueOf(configAttributes.getRecoveryDelay()));
+    }
+
+    if (configAttributes.getStartupRecoveryDelay() != null) {
+      partitionAttributes
+          .setStartupRecoveryDelay(Long.valueOf(configAttributes.getStartupRecoveryDelay()));
+    }
+
+    if (configAttributes.getPartitionListeners() != null) {
+      List<DeclarableType> configListeners = configAttributes.getPartitionListeners();
+      for (int i = 0; i < configListeners.size(); i++) {
+        partitionAttributes.addPartitionListener(
+            DeclarableTypeInstantiator.newInstance(configListeners.get(i), cache));
+      }
+    }
+
+    return partitionAttributes;
   }
 
   @Override

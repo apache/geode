@@ -53,7 +53,7 @@ import org.apache.geode.security.ResourcePermission;
  */
 public class UserFunctionExecution implements InternalFunction<Object[]> {
   private static final long serialVersionUID = 1L;
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   public static final String ID = UserFunctionExecution.class.getName();
 
   @Override

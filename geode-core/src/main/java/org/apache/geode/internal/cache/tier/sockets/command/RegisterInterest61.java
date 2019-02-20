@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
@@ -45,12 +46,13 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class RegisterInterest61 extends BaseCommand {
 
+  @Immutable
   private static final RegisterInterest61 singleton = new RegisterInterest61();
 
   /**
    * A debug flag used for testing vMotion during CQ registration
    */
-  public static boolean VMOTION_DURING_REGISTER_INTEREST_FLAG = false;
+  public static final boolean VMOTION_DURING_REGISTER_INTEREST_FLAG = false;
 
   public static Command getCommand() {
     return singleton;

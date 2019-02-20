@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.util;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.EventID;
 
@@ -26,8 +28,9 @@ import org.apache.geode.internal.cache.EventID;
  */
 public class Breadcrumbs {
 
-  private static ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>();
+  private static final ThreadLocal<EventID> EventIDs = new ThreadLocal<EventID>();
 
+  @MutableForTesting
   public static boolean ENABLED =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enable-breadcrumbs");
 
@@ -44,15 +47,16 @@ public class Breadcrumbs {
   }
 
   /** crumb with the highest ordinal, for initialization of delimiter strings */
-  private static CrumbType Crumbiest = CrumbType.PROBLEM;
+  @Immutable
+  private static final CrumbType Crumbiest = CrumbType.PROBLEM;
 
-  private static String[] crumbLabels = new String[] {"rcv", "evt", "snd", "oops"};
+  private static final String[] crumbLabels = new String[] {"rcv", "evt", "snd", "oops"};
 
   /** strings that start a particular breadcrumb */
-  private static String[] crumbStarts = new String[Crumbiest.ordinal() + 1];
+  private static final String[] crumbStarts = new String[Crumbiest.ordinal() + 1];
 
   /** strings the terminate a particular breadcrumb */
-  private static String[] crumbEnds = new String[Crumbiest.ordinal() + 1];
+  private static final String[] crumbEnds = new String[Crumbiest.ordinal() + 1];
 
 
   static {

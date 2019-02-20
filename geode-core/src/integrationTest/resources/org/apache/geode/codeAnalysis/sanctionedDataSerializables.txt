@@ -895,9 +895,11 @@ org/apache/geode/internal/cache/DestroyOperation$DestroyWithContextMessage,2
 fromData,14
 toData,14
 
-org/apache/geode/internal/cache/DestroyPartitionedRegionMessage,2
-fromData,76
-toData,77
+org/apache/geode/internal/cache/DestroyPartitionedRegionMessage,4
+fromData,17
+fromDataPre_GEODE_1_9_0_0,76
+toData,14
+toDataPre_GEODE_1_9_0_0,77
 
 org/apache/geode/internal/cache/DestroyRegionOperation$DestroyRegionMessage,2
 fromData,41
@@ -1056,8 +1058,8 @@ fromData,26
 toData,22
 
 org/apache/geode/internal/cache/HARegion$HARegionAdvisor$HAProfile,2
-fromData,47
-toData,45
+fromData,43
+toData,41
 
 org/apache/geode/internal/cache/InitialImageFlowControl$FlowControlPermitMessage,2
 fromData,16
@@ -1115,9 +1117,11 @@ org/apache/geode/internal/cache/InvalidateOperation$InvalidateWithContextMessage
 fromData,14
 toData,14
 
-org/apache/geode/internal/cache/InvalidatePartitionedRegionMessage,2
-fromData,14
+org/apache/geode/internal/cache/InvalidatePartitionedRegionMessage,4
+fromData,17
+fromDataPre_GEODE_1_9_0_0,14
 toData,14
+toDataPre_GEODE_1_9_0_0,14
 
 org/apache/geode/internal/cache/InvalidateRegionOperation$InvalidateRegionMessage,2
 fromData,17

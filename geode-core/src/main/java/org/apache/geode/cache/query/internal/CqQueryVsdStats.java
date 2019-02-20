@@ -19,6 +19,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.query.CqEvent;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
@@ -30,6 +31,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  */
 public class CqQueryVsdStats {
   /** The <code>StatisticsType</code> of the statistics */
+  @Immutable
   private static final StatisticsType _type;
 
   /** Name of the created CQs statistic */

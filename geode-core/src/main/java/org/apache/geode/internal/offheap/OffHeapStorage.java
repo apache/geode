@@ -21,6 +21,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -40,6 +41,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
       DistributionConfig.GEMFIRE_PREFIX + "offheap.stayConnectedOnOutOfOffHeapMemory";
 
   // statistics type
+  @Immutable
   private static final StatisticsType statsType;
   private static final String statsTypeName = "OffHeapMemoryStats";
   private static final String statsTypeDescription = "Statistics about off-heap memory storage.";

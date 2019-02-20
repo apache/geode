@@ -32,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -60,6 +61,7 @@ public class HttpOperationInvoker implements OperationInvoker {
 
   protected static final long DEFAULT_INITIAL_DELAY = TimeUnit.SECONDS.toMillis(1);
   protected static final long DEFAULT_PERIOD = TimeUnit.MILLISECONDS.toMillis(2000);
+  @Immutable
   protected static final TimeUnit DEFAULT_TIME_UNIT = TimeUnit.MILLISECONDS;
   protected static final String CMD_QUERY_PARAMETER = "cmd";
   protected static final String COMMANDS_URI = "/management/commands";

@@ -18,7 +18,10 @@ import static org.apache.geode.test.dunit.VM.getAllVMs;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.hamcrest.Matcher;
@@ -53,10 +56,11 @@ import org.apache.geode.test.dunit.VM;
  * For a more thorough example, please see
  * {@code org.apache.geode.cache.ReplicateCacheListenerDistributedTest} in the tests of geode-core.
  */
-@SuppressWarnings("serial,unused")
 public class SharedErrorCollector extends AbstractDistributedRule {
 
-  private static volatile ProtectedErrorCollector errorCollector;
+  private static volatile VisibleErrorCollector errorCollector;
+
+  private final Map<Integer, List<Throwable>> beforeBounceErrors = new HashMap<>();
 
   public SharedErrorCollector() {
     // nothing
@@ -64,16 +68,15 @@ public class SharedErrorCollector extends AbstractDistributedRule {
 
   @Override
   protected void before() {
-    invoker().invokeInEveryVMAndController(() -> errorCollector = new ProtectedErrorCollector());
+    invoker().invokeInEveryVMAndController(() -> invokeBefore());
   }
 
   @Override
   protected void after() throws Throwable {
-    ProtectedErrorCollector allErrors = errorCollector;
+    VisibleErrorCollector allErrors = errorCollector;
     try {
       for (VM vm : getAllVMs()) {
-        List<Throwable> remoteFailures = new ArrayList<>();
-        remoteFailures.addAll(vm.invoke(() -> errorCollector.errors()));
+        List<Throwable> remoteFailures = new ArrayList<>(vm.invoke(() -> errorCollector.errors()));
         for (Throwable t : remoteFailures) {
           allErrors.addError(t);
         }
@@ -82,6 +85,25 @@ public class SharedErrorCollector extends AbstractDistributedRule {
     } finally {
       allErrors.verify();
     }
+  }
+
+  @Override
+  protected void afterCreateVM(VM vm) {
+    vm.invoke(() -> invokeBefore());
+  }
+
+  @Override
+  protected void beforeBounceVM(VM vm) {
+    beforeBounceErrors.put(vm.getId(), vm.invoke(() -> errorCollector.errors()));
+  }
+
+  @Override
+  protected void afterBounceVM(VM vm) {
+    List<Throwable> beforeBounceErrorsForVM = beforeBounceErrors.remove(vm.getId());
+    vm.invoke(() -> {
+      invokeBefore();
+      errorCollector.addErrors(beforeBounceErrorsForVM);
+    });
   }
 
   /**
@@ -112,31 +134,43 @@ public class SharedErrorCollector extends AbstractDistributedRule {
     return errorCollector.checkSucceeds(callable);
   }
 
+  private void invokeBefore() {
+    errorCollector = new VisibleErrorCollector();
+  }
+
   /**
-   * Uses reflection to acquire access to the {@code List} of {@code Throwable}s in
-   * {@link ErrorCollector}.
+   * Increases visibility of {@link #verify()} to public and uses reflection to acquire access to
+   * the {@code List} of {@code Throwable}s in {@link ErrorCollector}.
    */
-  private static class ProtectedErrorCollector extends ErrorCollector {
+  private static class VisibleErrorCollector extends ErrorCollector {
 
-    private final List<Throwable> protectedErrors;
+    private final List<Throwable> visibleErrors;
 
-    ProtectedErrorCollector() {
-      try {
-        Field superErrors = ErrorCollector.class.getDeclaredField("errors");
-        superErrors.setAccessible(true);
-        protectedErrors = (List<Throwable>) superErrors.get(this);
-      } catch (IllegalAccessException | NoSuchFieldException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    List<Throwable> errors() {
-      return protectedErrors;
+    private VisibleErrorCollector() {
+      visibleErrors = getErrorsReference();
     }
 
     @Override
     public void verify() throws Throwable {
       super.verify();
+    }
+
+    List<Throwable> errors() {
+      return visibleErrors;
+    }
+
+    void addErrors(Collection<Throwable> errors) {
+      visibleErrors.addAll(errors);
+    }
+
+    private List<Throwable> getErrorsReference() {
+      try {
+        Field superErrors = ErrorCollector.class.getDeclaredField("errors");
+        superErrors.setAccessible(true);
+        return (List<Throwable>) superErrors.get(this);
+      } catch (IllegalAccessException | NoSuchFieldException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 }

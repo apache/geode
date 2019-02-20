@@ -46,6 +46,8 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;
@@ -97,6 +99,7 @@ public abstract class ServerConnection implements Runnable {
    * When true requires some formerly credential-less messages to carry credentials. See GEODE-3249
    * and ServerConnection.isInternalMessage()
    */
+  @MutableForTesting
   public static boolean allowInternalMessagesWithoutCredentials =
       !(Boolean.getBoolean(DISALLOW_INTERNAL_MESSAGES_WITHOUT_CREDENTIALS_NAME));
 
@@ -109,6 +112,7 @@ public abstract class ServerConnection implements Runnable {
   private final ServerSideHandshakeFactory handshakeFactory = new ServerSideHandshakeFactory();
 
   // The key is the size of each ByteBuffer. The value is a queue of byte buffers all of that size.
+  @MakeNotStatic
   private static final ConcurrentHashMap<Integer, LinkedBlockingQueue<ByteBuffer>> commBufferMap =
       new ConcurrentHashMap<>(4, 0.75f, 1);
   private ServerConnectionCollection serverConnectionCollection;
@@ -219,7 +223,8 @@ public abstract class ServerConnection implements Runnable {
   private long processingMessageStartTime = -1;
   private Object processingMessageLock = new Object();
 
-  private static ConcurrentHashMap<ClientProxyMembershipID, ClientUserAuths> proxyIdVsClientUserAuths =
+  @MakeNotStatic
+  private static final ConcurrentHashMap<ClientProxyMembershipID, ClientUserAuths> proxyIdVsClientUserAuths =
       new ConcurrentHashMap<>();
 
 
@@ -240,6 +245,7 @@ public abstract class ServerConnection implements Runnable {
   /**
    * A debug flag used for testing Backward compatibility
    */
+  @MutableForTesting
   private static boolean TEST_VERSION_AFTER_HANDSHAKE_FLAG = false;
 
   /**
@@ -1263,6 +1269,7 @@ public abstract class ServerConnection implements Runnable {
     c.configureBlocking(true);
   }
 
+  @MutableForTesting
   private static boolean forceClientCrashEvent = false;
 
   public static void setForceClientCrashEvent(boolean value) {

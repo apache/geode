@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
@@ -124,7 +125,8 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     protected TOperation op;
     protected EventID eventID;
 
-    private static Version[] serializationVersions = null; // new Version[]{ };
+    @Immutable
+    private static final Version[] serializationVersions = null; // new Version[]{ };
 
     /**
      * for deserialization

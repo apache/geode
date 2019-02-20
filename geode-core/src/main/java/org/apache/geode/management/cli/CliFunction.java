@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
  * this class has to return a CliFunctionResult.
  */
 public abstract class CliFunction<T> implements InternalFunction<T> {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public final void execute(FunctionContext<T> context) {

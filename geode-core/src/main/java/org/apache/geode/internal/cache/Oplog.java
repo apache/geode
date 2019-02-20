@@ -58,6 +58,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DiskAccessException;
@@ -3620,7 +3621,8 @@ public class Oplog implements CompactableOplog, Flushable {
     }
   }
 
-  private static byte[] TOMBSTONE_BYTES;
+  @Immutable
+  private static final byte[] TOMBSTONE_BYTES;
   static {
     try {
       TOMBSTONE_BYTES = BlobHelper.serializeToBlob(Token.TOMBSTONE);

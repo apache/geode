@@ -22,6 +22,7 @@ import javax.management.Notification;
 import javax.management.ObjectName;
 
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -43,6 +44,7 @@ import org.apache.geode.management.internal.SystemManagementService;
  */
 public class MBeanAggregator implements ProxyListener {
 
+  @MakeNotStatic
   private static final List<Class> distributedMBeanList = new ArrayList<>();
 
 

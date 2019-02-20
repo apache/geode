@@ -38,6 +38,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -90,7 +91,6 @@ import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -213,8 +213,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(SECURITY_PEER_AUTH_INIT, "org.apache.geode.distributed.AuthInitializer.create");
     properties.put(SECURITY_PEER_AUTHENTICATOR,
         "org.apache.geode.distributed.MyAuthenticator.create");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(USE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
     system = getConnectedDistributedSystem(properties);
     assertThat(system.getDistributedMember().getVmKind())
@@ -255,7 +253,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
       DistributedLockService serviceNamed =
           DistributedLockService.getServiceNamed("test service");
       serviceNamed.lock("foo3", 0, 0);
-      GeodeAwaitility.await()
+      await()
           .until(serviceNamed::isLockGrantor);
       assertThat(serviceNamed.isLockGrantor()).isTrue();
     });
@@ -391,6 +389,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, logger.getLevel().name());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.put(USE_CLUSTER_CONFIGURATION, "false");
     properties.put(SSL_CIPHERS, "any");
     properties.put(SSL_PROTOCOLS, "any");
     properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
@@ -450,6 +449,8 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
     properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.put(USE_CLUSTER_CONFIGURATION, "false");
+    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
 
     final String locators = hostname + "[" + port1 + "]";
@@ -681,7 +682,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
       logger.info("waiting for my distributed system to disconnect due to partition detection");
 
-      GeodeAwaitility.await().until(() -> !system.isConnected());
+      await().until(() -> !system.isConnected());
 
       if (system.isConnected()) {
         fail(
@@ -779,7 +780,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
       // stop the locator normally. This should also be okay
       locator.stop();
 
-      GeodeAwaitility.await()
+      await()
           .until(() -> {
             assertThat(Locator.getLocator()).describedAs("locator is not stopped").isNull();
             return true;
@@ -846,7 +847,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(DISABLE_AUTO_RECONNECT, "true");
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     addDSProps(properties);
 
@@ -1027,37 +1027,37 @@ public class LocatorDUnitTest implements java.io.Serializable {
         loc.stop();
       });
 
-      GeodeAwaitility.await().until(testRunnerLocatorDS::isConnected);
+      await().until(testRunnerLocatorDS::isConnected);
 
       waitUntilTheSystemIsConnected(memberThatWillBeShutdownVM, memberVM);
 
       // disconnect the first vm and demonstrate that the non-lead vm and the
       // locator notice the failure and continue to run
       memberThatWillBeShutdownVM.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      GeodeAwaitility.await().until(
+      await().until(
           () -> memberThatWillBeShutdownVM.invoke(() -> !LocatorDUnitTest.isSystemConnected()));
-      GeodeAwaitility.await().until(() -> memberVM.invoke(LocatorDUnitTest::isSystemConnected));
+      await().until(() -> memberVM.invoke(LocatorDUnitTest::isSystemConnected));
 
       assertThat(memberVM.invoke(LocatorDUnitTest::isSystemConnected))
           .describedAs("Distributed system should not have disconnected").isTrue();
 
-      GeodeAwaitility.await("waiting for the old coordinator to drop out").until(
+      await("waiting for the old coordinator to drop out").until(
           () -> MembershipManagerHelper.getCoordinator(testRunnerLocatorDS) != oldCoordinator);
 
-      GeodeAwaitility.await().until(() -> {
+      await().until(() -> {
         DistributedMember survivingDistributedMember = testRunnerLocatorDS.getDistributedMember();
         DistributedMember coordinator = MembershipManagerHelper.getCoordinator(testRunnerLocatorDS);
         assertThat(survivingDistributedMember).isEqualTo(coordinator);
         return true;
       });
 
-      GeodeAwaitility.await("Waiting for the old leader to drop out")
+      await("Waiting for the old leader to drop out")
           .pollInterval(1, TimeUnit.SECONDS).until(() -> {
             DistributedMember leader = MembershipManagerHelper.getLeadMember(testRunnerLocatorDS);
             return leader != oldLeader;
           });
 
-      GeodeAwaitility.await().until(() -> {
+      await().until(() -> {
         assertThat(distributedMember)
             .isEqualTo(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS));
         return true;
@@ -1164,7 +1164,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
       // now ensure that one of the remaining members became the coordinator
 
-      GeodeAwaitility.await()
+      await()
           .until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
@@ -1212,7 +1212,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
       final Properties props = new Properties();
       props.setProperty(LOCATORS, locators);
       props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-      props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
 
       addDSProps(props);
       vm1.invoke(() -> {
@@ -1232,7 +1231,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
       vm0.invoke(LocatorDUnitTest::stopLocator);
 
       // now ensure that one of the remaining members became the coordinator
-      GeodeAwaitility.await()
+      await()
           .until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
@@ -1249,7 +1248,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
       final DistributedMember tempCoord = newCoord;
 
-      GeodeAwaitility.await()
+      await()
           .until(() -> !tempCoord.equals(MembershipManagerHelper.getCoordinator(system)));
 
       system.disconnect();
@@ -1284,7 +1283,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
 
     final Properties dsProps = getBasicProperties(locators);
-    dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(dsProps);
 
     startLocator(vm0, dsProps, port1);
@@ -1308,7 +1306,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
         addDSProps(props);
         system = getConnectedDistributedSystem(props);
 
-        GeodeAwaitility.await().until(() -> system.getDM().getViewMembers().size() >= 3);
+        await().until(() -> system.getDM().getViewMembers().size() >= 3);
 
         // three applications plus
         assertThat(system.getDM().getViewMembers().size()).isEqualTo(5);
@@ -1328,7 +1326,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
 
   private void waitUntilLocatorBecomesCoordinator() {
-    GeodeAwaitility.await().until(() -> system != null && system.isConnected() &&
+    await().until(() -> system != null && system.isConnected() &&
         getCoordinator()
             .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE);
   }
@@ -1369,7 +1367,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     final Properties dsProps = getBasicProperties(locators);
     dsProps.setProperty(LOG_LEVEL, logger.getLevel().name());
     dsProps.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    dsProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     addDSProps(dsProps);
     startLocator(vm0, dsProps, port1);
@@ -1388,7 +1385,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
       system = getConnectedDistributedSystem(dsProps);
 
-      GeodeAwaitility.await().until(() -> system.getDM().getViewMembers().size() == 6);
+      await().until(() -> system.getDM().getViewMembers().size() == 6);
 
       // three applications plus
       assertThat(system.getDM().getViewMembers().size()).isEqualTo(6);
@@ -1397,7 +1394,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
       vm1.invoke(LocatorDUnitTest::stopLocator);
       vm2.invoke(LocatorDUnitTest::stopLocator);
 
-      GeodeAwaitility.await()
+      await()
           .until(() -> system.getDM().getMembershipManager().getView().size() <= 3);
 
       final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
@@ -1414,7 +1411,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
       startLocator(vm1, dsProps, port2);
       startLocator(vm2, dsProps, port3);
 
-      GeodeAwaitility.await()
+      await()
           .until(() -> !getCoordinator().equals(currentCoordinator)
               && system.getDM().getAllHostedLocators().size() == 2);
 
@@ -1461,6 +1458,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
   public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
     IgnoredException.addIgnoredException("ForcedDisconnectException");
     IgnoredException.addIgnoredException("Possible loss of quorum");
+    IgnoredException.addIgnoredException("java.lang.Exception: Message id is");
 
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
@@ -1480,6 +1478,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
     final Properties dsProps = getBasicProperties(locators);
     dsProps.setProperty(LOG_LEVEL, logger.getLevel().name());
     dsProps.setProperty(DISABLE_AUTO_RECONNECT, "true");
+    dsProps.setProperty(MEMBER_TIMEOUT, "2000");
 
     addDSProps(dsProps);
     startLocator(vm0, dsProps, port1);
@@ -1494,7 +1493,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
       vm4.invoke(() -> {
         getConnectedDistributedSystem(dsProps);
 
-        GeodeAwaitility.await()
+        await()
             .until(() -> system.getDM().getViewMembers()
                 .size() == 5);
         return true;
@@ -1507,7 +1506,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
       SerializableRunnable waitForDisconnect = new SerializableRunnable("waitForDisconnect") {
         @Override
         public void run() {
-          GeodeAwaitility.await()
+          await()
               .until(() -> system == null);
         }
       };
@@ -1674,7 +1673,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     VM vm = VM.getVM(0);
     final Properties properties =
         getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
-    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(properties);
     if (stateFile.exists()) {
       assertThat(stateFile.delete()).isTrue();
@@ -1742,10 +1740,14 @@ public class LocatorDUnitTest implements java.io.Serializable {
   }
 
   // for child classes
-  protected void addDSProps(Properties p) {}
+  protected void addDSProps(Properties p) {
+    p.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.put(USE_CLUSTER_CONFIGURATION, "false");
+  }
 
   protected static InternalDistributedSystem getConnectedDistributedSystem(Properties properties) {
     if (system == null || !system.isConnected()) {
+      properties.put(NAME, "vm" + VM.getCurrentVMNum());
       system = (InternalDistributedSystem) DistributedSystem.connect(properties);
     }
     return system;
@@ -1806,7 +1808,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
   private void waitForMemberToBecomeLeadMemberOfDistributedSystem(final DistributedMember member,
       final DistributedSystem sys) {
-    GeodeAwaitility.await().until(() -> {
+    await().until(() -> {
       DistributedMember lead = MembershipManagerHelper.getLeadMember(sys);
       if (member != null) {
         return member.equals(lead);
@@ -1841,7 +1843,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     Properties locProps = new Properties();
     locProps.setProperty(MCAST_PORT, "0");
     locProps.setProperty(MEMBER_TIMEOUT, "1000");
-    locProps.put(ENABLE_CLUSTER_CONFIGURATION, "false");
     addDSProps(locProps);
 
     startLocator(vm, locProps, port);
@@ -1853,8 +1854,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
       Properties locProps1 = new Properties();
       locProps1.put(MCAST_PORT, "0");
       locProps1.put(LOG_LEVEL, logger.getLevel().name());
-      locProps1.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-      locProps1.put(USE_CLUSTER_CONFIGURATION, "false");
       addDSProps(locProps1);
 
       startLocator(vm0, locProps1, port);
@@ -1908,7 +1907,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
   private void waitUntilTheSystemIsConnected(VM vm2, VM locatorVM) {
 
-    GeodeAwaitility.await().until(() -> {
+    await().until(() -> {
       assertThat(isSystemConnected())
           .describedAs("Distributed system should not have disconnected")
           .isTrue();

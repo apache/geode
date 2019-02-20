@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.query.Struct;
 
@@ -70,20 +71,26 @@ public class Coder {
    */
   public static final byte SIMPLE_STRING_ID = 43; // '+'
   public static final String CRLF = "\r\n";
+  @MakeImmutable
   public static final byte[] CRLFar = stringToBytes(CRLF); // {13, 10} == {'\r', '\n'}
 
   /**
    * byte array of a nil response
    */
+  @MakeImmutable
   public static final byte[] bNIL = stringToBytes("$-1\r\n"); // {'$', '-', '1', '\r', '\n'};
 
   /**
    * byte array of an empty string
    */
+  @MakeImmutable
   public static final byte[] bEMPTY_ARRAY = stringToBytes("*0\r\n"); // {'*', '0', '\r', '\n'};
 
+  @MakeImmutable
   public static final byte[] err = stringToBytes("ERR ");
+  @MakeImmutable
   public static final byte[] noAuth = stringToBytes("NOAUTH ");
+  @MakeImmutable
   public static final byte[] wrongType = stringToBytes("WRONGTYPE ");
 
   /**
@@ -91,6 +98,7 @@ public class Coder {
    */
   public static final String CHARSET = "UTF-8";
 
+  @MakeImmutable
   protected static final DecimalFormat decimalFormatter = new DecimalFormat("#");
 
   static {

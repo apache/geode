@@ -25,24 +25,33 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 
 public class InvalidatePartitionedRegionMessage extends PartitionMessage {
 
   private Object callbackArg;
 
+  @Override
+  public EventID getEventID() {
+    return eventID;
+  }
+
+  private EventID eventID;
+
   public InvalidatePartitionedRegionMessage() {}
 
   public InvalidatePartitionedRegionMessage(Set recipients, Object callbackArg, PartitionedRegion r,
-      ReplyProcessor21 processor) {
+      ReplyProcessor21 processor, EventID eventID) {
     super(recipients, r.getPRId(), processor);
     this.callbackArg = callbackArg;
+    this.eventID = eventID;
   }
 
   public static ReplyProcessor21 send(Set recipients, PartitionedRegion r, RegionEventImpl event) {
     ReplyProcessor21 response = new ReplyProcessor21(r.getSystem(), recipients);
     InvalidatePartitionedRegionMessage msg = new InvalidatePartitionedRegionMessage(recipients,
-        event.getCallbackArgument(), r, response);
+        event.getCallbackArgument(), r, response, event.getEventId());
     msg.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getSystem().getDistributionManager().putOutgoing(msg);
     return response;
@@ -62,7 +71,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
       throws CacheException, QueryException, ForceReattemptException, InterruptedException {
 
     RegionEventImpl event = new RegionEventImpl(pr, Operation.REGION_INVALIDATE, this.callbackArg,
-        !dm.getId().equals(getSender()), getSender());
+        !dm.getId().equals(getSender()), getSender(), getEventID());
     pr.basicInvalidateRegion(event);
     return true;
   }
@@ -77,6 +86,11 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
     return INVALIDATE_PARTITIONED_REGION_MESSAGE;
   }
 
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
+    this.callbackArg = DataSerializer.readObject(in);
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -84,8 +98,13 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
    */
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    this.callbackArg = DataSerializer.readObject(in);
+    fromDataPre_GEODE_1_9_0_0(in);
+    this.eventID = DataSerializer.readObject(in);
+  }
+
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out) throws IOException {
+    super.toData(out);
+    DataSerializer.writeObject(this.callbackArg, out);
   }
 
   /*
@@ -95,7 +114,12 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
    */
   @Override
   public void toData(DataOutput out) throws IOException {
-    super.toData(out);
-    DataSerializer.writeObject(this.callbackArg, out);
+    toDataPre_GEODE_1_9_0_0(out);
+    DataSerializer.writeObject(this.eventID, out);
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_190};
   }
 }

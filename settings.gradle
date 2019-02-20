@@ -59,6 +59,7 @@ include 'extensions:session-testing-war'
 include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
+include 'static-analysis:pmd'
 
 ['1.0.0-incubating',
  '1.1.0',

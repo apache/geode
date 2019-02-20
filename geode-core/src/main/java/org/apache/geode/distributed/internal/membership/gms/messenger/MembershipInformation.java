@@ -14,9 +14,11 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
+import java.util.Queue;
 import java.util.Set;
 
 import org.jgroups.JChannel;
+import org.jgroups.Message;
 
 import org.apache.geode.distributed.DistributedMember;
 
@@ -27,12 +29,15 @@ import org.apache.geode.distributed.DistributedMember;
 public class MembershipInformation {
   private final JChannel channel;
   private final Set<DistributedMember> membershipIdentifiers;
+  private final Queue<Message> queuedMessages;
 
   protected MembershipInformation(JChannel channel,
-      Set<DistributedMember> oldMembershipIdentifiers) {
+      Set<DistributedMember> oldMembershipIdentifiers,
+      Queue<Message> queuedMessages) {
 
     this.channel = channel;
     this.membershipIdentifiers = oldMembershipIdentifiers;
+    this.queuedMessages = queuedMessages;
   }
 
   public JChannel getChannel() {
@@ -41,5 +46,9 @@ public class MembershipInformation {
 
   public Set<DistributedMember> getMembershipIdentifiers() {
     return membershipIdentifiers;
+  }
+
+  public Queue<Message> getQueuedMessages() {
+    return this.queuedMessages;
   }
 }

@@ -29,6 +29,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -100,6 +101,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
         .until(() -> cache.getReconnectedCache() != null);
 
     Cache newCache = cache.getReconnectedCache();
+    system = (InternalDistributedSystem) cache.getDistributedSystem();
     CacheServer server = newCache.getCacheServers().iterator().next();
     assertEquals(ServerLauncherParameters.INSTANCE.getPort().intValue(), server.getPort());
     assertEquals(20, server.getMaxConnections()); // this setting is in the XML file

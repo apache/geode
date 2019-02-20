@@ -53,6 +53,9 @@ import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheException;
@@ -251,10 +254,12 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 public class PartitionedRegion extends LocalRegion
     implements CacheDistributionAdvisee, QueryExecutor {
 
+  @Immutable
   public static final Random RANDOM =
       new Random(Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PartitionedRegionRandomSeed",
           NanoTimer.getTime()));
 
+  @MakeNotStatic
   private static final AtomicInteger SERIAL_NUMBER_GENERATOR = new AtomicInteger();
 
   /**
@@ -285,12 +290,13 @@ public class PartitionedRegion extends LocalRegion
   /**
    * A debug flag used for testing calculation of starting bucket id
    */
+  @MutableForTesting
   public static boolean BEFORE_CALCULATE_STARTING_BUCKET_FLAG = false;
 
   /**
    * Thread specific random number
    */
-  private static ThreadLocal threadRandom = new ThreadLocal() {
+  private static final ThreadLocal threadRandom = new ThreadLocal() {
     @Override
     protected Object initialValue() {
       int i = RANDOM.nextInt();
@@ -383,6 +389,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Maps each PR to a prId. This prId will uniquely identify the PR.
    */
+  @MakeNotStatic
   private static final PRIdMap prIdToPR = new PRIdMap();
 
   /**
@@ -569,7 +576,8 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  private static DisconnectListener dsPRIdCleanUpListener = new DisconnectListener() {
+  @Immutable
+  private static final DisconnectListener dsPRIdCleanUpListener = new DisconnectListener() {
     @Override
     public String toString() {
       return "Shutdown listener for PartitionedRegion";

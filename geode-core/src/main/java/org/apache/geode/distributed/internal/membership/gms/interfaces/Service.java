@@ -78,4 +78,5 @@ public interface Service {
       String reason);
 
 
+  default void setLocalAddress(InternalDistributedMember address) {}
 }

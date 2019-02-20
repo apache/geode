@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheWriterException;
@@ -92,8 +93,10 @@ public class PartitionedRegionHelper {
 
   public static final int DEFAULT_TOTAL_WAIT_RETRY_ITERATION = 60 * 60 * 1000; // milliseconds
 
+  @Immutable
   public static final DataPolicy DEFAULT_DATA_POLICY = DataPolicy.PARTITION;
 
+  @Immutable
   public static final Set ALLOWED_DATA_POLICIES;
 
   static final Object dlockMonitor = new Object();
@@ -764,7 +767,7 @@ public class PartitionedRegionHelper {
   }
 
 
-  public static String TWO_SEPARATORS = Region.SEPARATOR + Region.SEPARATOR;
+  public static final String TWO_SEPARATORS = Region.SEPARATOR + Region.SEPARATOR;
 
   public static String unescapePRPath(String escapedPath) {
     String path = escapedPath.replace('_', Region.SEPARATOR_CHAR);

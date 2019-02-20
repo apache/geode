@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.entries;
 
 import java.util.UUID;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.InlineKeyHelper;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -28,6 +29,7 @@ public abstract class VMThinLRURegionEntryOffHeap extends VMThinLRURegionEntry
     super(context, value);
   }
 
+  @Immutable
   private static final VMThinLRURegionEntryOffHeapFactory factory =
       new VMThinLRURegionEntryOffHeapFactory();
 

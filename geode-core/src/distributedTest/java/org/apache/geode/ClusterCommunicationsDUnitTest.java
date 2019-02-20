@@ -30,6 +30,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.DataSerializableFixedID.SERIAL_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
@@ -216,7 +217,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
       // System.setProperty("javax.net.debug", "all");
       Properties props = getDistributedSystemProperties();
       // locator must restart with the same port so that it reconnects to the server
-      await().atMost(15, TimeUnit.SECONDS)
+      await().atMost(getTimeout().getValueInMS(), TimeUnit.MILLISECONDS)
           .until(() -> Locator.startLocatorAndDS(locatorPort, new File(""), props) != null);
       assertThat(Locator.getLocator().getDistributedSystem().getAllOtherMembers().size())
           .isGreaterThan(0);

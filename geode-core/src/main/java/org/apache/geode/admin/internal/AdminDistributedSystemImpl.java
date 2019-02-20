@@ -64,6 +64,7 @@ import org.apache.geode.admin.SystemMember;
 import org.apache.geode.admin.SystemMemberCacheListener;
 import org.apache.geode.admin.SystemMembershipEvent;
 import org.apache.geode.admin.SystemMembershipListener;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.FutureCancelledException;
@@ -177,6 +178,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    *
    * @guarded.By CONNECTION_SYNC
    */
+  @MakeNotStatic
   private static volatile AdminDistributedSystemImpl thisAdminDS;
 
   /**

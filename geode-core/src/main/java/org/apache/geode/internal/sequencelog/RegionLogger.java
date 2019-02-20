@@ -16,6 +16,7 @@ package org.apache.geode.internal.sequencelog;
 
 import java.util.regex.Pattern;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
@@ -25,6 +26,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
  */
 public class RegionLogger {
 
+  @Immutable
   private static final SequenceLogger GRAPH_LOGGER = SequenceLoggerImpl.getInstance();
 
   /**

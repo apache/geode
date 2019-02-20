@@ -27,6 +27,7 @@ import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
@@ -54,7 +55,7 @@ public class DestroyMappingFunction extends CliFunction<String> {
   }
 
   private void cleanupRegionAndQueue(Cache cache, String regionName) {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
 
     Region<?, ?> region = cache.getRegion(regionName);
     if (region != null) {

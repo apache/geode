@@ -81,6 +81,9 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -145,6 +148,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * Maps Class names to their DataSerializer. This is used to find a DataSerializer during
    * serialization.
    */
+  @MakeNotStatic
   private static final Map<String, DataSerializer> classesToSerializers = new ConcurrentHashMap<>();
   /**
    * This list contains classes that Geode's classes subclass, such as antlr AST classes which are
@@ -202,23 +206,28 @@ public abstract class InternalDataSerializer extends DataSerializer {
   /**
    * Change this constant to be the last one in SERIALIZATION_VERSION
    */
+  @Immutable
   private static final SERIALIZATION_VERSION latestVersion = SERIALIZATION_VERSION.v662;
+  @Immutable
   private static final SERIALIZATION_VERSION serializationVersion = calculateSerializationVersion();
   /**
    * Maps the id of a serializer to its {@code DataSerializer}.
    */
+  @MakeNotStatic
   private static final ConcurrentMap/* <Integer, DataSerializer|Marker> */ idsToSerializers =
       new ConcurrentHashMap();
   /**
    * Contains the classnames of the data serializers (and not the supported classes) not yet loaded
    * into the vm as keys and their corresponding holder instances as values.
    */
+  @MakeNotStatic
   private static final ConcurrentHashMap<String, SerializerAttributesHolder> dsClassesToHolders =
       new ConcurrentHashMap<>();
   /**
    * Contains the id of the data serializers not yet loaded into the vm as keys and their
    * corresponding holder instances as values.
    */
+  @MakeNotStatic
   private static final ConcurrentHashMap<Integer, SerializerAttributesHolder> idsToHolders =
       new ConcurrentHashMap<>();
   /**
@@ -226,6 +235,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * SerializerAttributesHolder instances as values. This applies only to the data serializers which
    * have not been loaded into the vm.
    */
+  @MakeNotStatic
   private static final ConcurrentHashMap<String, SerializerAttributesHolder> supportedClassesToHolders =
       new ConcurrentHashMap<>();
   private static final Object listenersSync = new Object();
@@ -233,6 +243,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static final byte TIME_UNIT_MICROSECONDS = -2;
   private static final byte TIME_UNIT_MILLISECONDS = -3;
   private static final byte TIME_UNIT_SECONDS = -4;
+  @MakeNotStatic
   private static final ConcurrentMap dsfidToClassMap =
       logger.isTraceEnabled(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE) ? new ConcurrentHashMap()
           : null;
@@ -249,6 +260,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   // Variable Length long encoded as long in next 8 bytes
   private static final byte LONG_VL = 127;
   private static final int MAX_BYTE_VL = 125;
+  @MakeNotStatic
   private static final CopyOnWriteHashMap<String, WeakReference<Class<?>>> classCache =
       LOAD_CLASS_EACH_TIME ? null : new CopyOnWriteHashMap<>();
   private static final Object cacheAccessLock = new Object();
@@ -262,20 +274,25 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static final String PRE_GEODE_190_SERVER_CQIMPL =
       "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
 
-  private static InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
+  @Immutable
+  private static final InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
   /**
    * A deserialization filter for ObjectInputStreams
    */
+  @MakeNotStatic
   private static InputStreamFilter serializationFilter = defaultSerializationFilter;
   /**
    * support for old GemFire clients and WAN sites - needed to enable moving from GemFire to Geode
    */
+  @MakeNotStatic
   private static OldClientSupportService oldClientSupportService;
   /**
    * {@code RegistrationListener}s that receive callbacks when {@code DataSerializer}s and {@code
    * Instantiator}s are registered. Note: copy-on-write access used for this set
    */
+  @MakeNotStatic
   private static volatile Set listeners = new HashSet();
+  @MakeNotStatic
   private static DataSerializer dvddeserializer;
 
   static {
@@ -3554,6 +3571,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
      * Number of milliseconds to wait. Also used by InternalInstantiator. Note that some tests set
      * this to a small amount to speed up failures. Made public for unit test access.
      */
+    @MutableForTesting
     public static int WAIT_MS = Integer.getInteger(
         DistributionConfig.GEMFIRE_PREFIX + "InternalDataSerializer.WAIT_MS", 60 * 1000);
 
@@ -3635,6 +3653,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     /**
      * The versions in which this message was modified
      */
+    @Immutable
     private static final Version[] dsfidVersions = new Version[] {};
     /**
      * The eventId of the {@code DataSerializer} that was registered

@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.execute.Function;
@@ -42,6 +43,7 @@ public class ListJndiBindingCommand extends GfshCommand {
   public static final String LIST_JNDIBINDING = "list jndi-binding";
   private static final String LIST_JNDIBINDING__HELP =
       "List all jndi bindings, active and configured. An active binding is one that is bound to the server's jndi context (and also listed in the cluster config). A configured binding is one that is listed in the cluster config, but may not be active on the servers.";
+  @Immutable
   private static final Function LIST_BINDING_FUNCTION = new ListJndiBindingFunction();
 
   @CliCommand(value = LIST_JNDIBINDING, help = LIST_JNDIBINDING__HELP)

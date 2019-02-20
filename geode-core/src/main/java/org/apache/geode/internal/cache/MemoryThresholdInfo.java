@@ -17,11 +17,13 @@ package org.apache.geode.internal.cache;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 
 public class MemoryThresholdInfo {
   private final boolean memoryThresholdReached;
   private final Set<DistributedMember> membersThatReachedThreshold;
+  @Immutable
   private static final MemoryThresholdInfo NOT_REACHED = new MemoryThresholdInfo(false,
       Collections.EMPTY_SET);
 

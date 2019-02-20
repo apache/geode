@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -116,14 +117,17 @@ public interface DiskEntry extends RegionEntry {
   /**
    * Used as the entry value if it was invalidated.
    */
+  @Immutable
   byte[] INVALID_BYTES = new byte[0];
   /**
    * Used as the entry value if it was locally invalidated.
    */
+  @Immutable
   byte[] LOCAL_INVALID_BYTES = new byte[0];
   /**
    * Used as the entry value if it was tombstone.
    */
+  @Immutable
   byte[] TOMBSTONE_BYTES = new byte[0];
 
   /**
@@ -478,9 +482,12 @@ public interface DiskEntry extends RegionEntry {
       }
     }
 
+    @Immutable
     private static final ValueWrapper INVALID_VW = new ByteArrayValueWrapper(true, INVALID_BYTES);
+    @Immutable
     private static final ValueWrapper LOCAL_INVALID_VW =
         new ByteArrayValueWrapper(true, LOCAL_INVALID_BYTES);
+    @Immutable
     private static final ValueWrapper TOMBSTONE_VW =
         new ByteArrayValueWrapper(true, TOMBSTONE_BYTES);
 

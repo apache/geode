@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
@@ -37,6 +38,7 @@ public class BytesAndBitsForCompactor {
   private byte userBits = 0;
   // length of the data present in the byte array
   private int validLength;
+  @Immutable
   private static final byte[] INIT_FOR_WRAPPER = new byte[0];
   // boolean indicating if the object can be reused.
   // Typically if the data stores the reference of a value byte [] directly

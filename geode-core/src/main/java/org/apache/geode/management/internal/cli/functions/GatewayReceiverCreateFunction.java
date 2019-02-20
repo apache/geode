@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.functions;
 import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -43,7 +44,8 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
 
   private static final String ID = GatewayReceiverCreateFunction.class.getName();
 
-  public static GatewayReceiverCreateFunction INSTANCE = new GatewayReceiverCreateFunction();
+  @Immutable
+  public static final GatewayReceiverCreateFunction INSTANCE = new GatewayReceiverCreateFunction();
 
   @Override
   public void execute(FunctionContext context) {

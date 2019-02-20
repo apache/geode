@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.lang3.SerializationException;
 import org.jgroups.Address;
@@ -877,7 +878,8 @@ public class JGroupsMessengerJUnitTest {
     initMocks(false);
     JChannel channel = messenger.myChannel;
     services.getConfig().getTransport().setOldDSMembershipInfo(new MembershipInformation(channel,
-        Collections.singleton(new InternalDistributedMember("localhost", 10000))));
+        Collections.singleton(new InternalDistributedMember("localhost", 10000)),
+        new ConcurrentLinkedQueue<>()));
     JGroupsMessenger newMessenger = new JGroupsMessenger();
     newMessenger.init(services);
     newMessenger.start();

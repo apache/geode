@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -88,6 +89,7 @@ public class DistributionAdvisor {
   /**
    * Incrementing serial number used to identify order of resource creation
    */
+  @MakeNotStatic
   private static final AtomicInteger serialNumberSequencer = new AtomicInteger(START_SERIAL_NUMBER);
 
   /**

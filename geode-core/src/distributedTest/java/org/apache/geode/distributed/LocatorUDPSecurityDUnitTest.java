@@ -33,8 +33,16 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
+
+  @Override
+  @Test
+  public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
+    super.testMultipleLocatorsRestartingAtSameTimeWithMissingServers();
+  }
+
   @Override
   protected void addDSProps(Properties p) {
+    super.addDSProps(p);
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");
   }
 

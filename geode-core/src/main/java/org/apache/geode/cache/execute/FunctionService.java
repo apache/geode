@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.ClientCache;
@@ -39,6 +40,7 @@ import org.apache.geode.internal.cache.execute.InternalFunctionExecutionServiceI
  */
 public class FunctionService {
 
+  @MakeNotStatic("The FunctionService requires a cache. We need to have an instance per cache.")
   private static final FunctionService INSTANCE =
       new FunctionService(new InternalFunctionExecutionServiceImpl());
 

@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
@@ -72,8 +73,10 @@ public class QueryMonitor {
 
   private final ScheduledThreadPoolExecutor executor;
 
+  @MakeNotStatic
   private static volatile MemoryState memoryState = MemoryStateImpl.HEAP_AVAILABLE;
 
+  @MakeNotStatic
   private static volatile long memoryUsedBytes = 0;
 
   /**

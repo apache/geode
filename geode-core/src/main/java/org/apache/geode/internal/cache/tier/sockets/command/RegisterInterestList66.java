@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.operations.RegisterInterestOperationContext;
@@ -45,6 +46,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class RegisterInterestList66 extends BaseCommand {
 
+  @Immutable
   private static final RegisterInterestList66 singleton = new RegisterInterestList66();
 
   public static Command getCommand() {

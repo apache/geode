@@ -32,7 +32,7 @@ import org.apache.geode.connectors.jdbc.internal.cli.CreateDataSourceCommand;
 public class PoolPropertyConverter
     implements Converter<CreateDataSourceCommand.PoolProperty> {
 
-  private static ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = new ObjectMapper();
   static {
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
   }

@@ -43,6 +43,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
@@ -122,14 +123,16 @@ public class MemberMBeanBridge {
   /**
    * Static reference to the Platform MBean server
    */
-  public static MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+  @Immutable
+  public static final MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
 
   /**
    * Factor converting bytes to MBØØ
    */
   private static final long MBFactor = 1024 * 1024;
 
-  private static TimeUnit nanoSeconds = TimeUnit.NANOSECONDS;
+  @Immutable
+  private static final TimeUnit nanoSeconds = TimeUnit.NANOSECONDS;
 
   /** Cache Instance **/
   private InternalCache cache;

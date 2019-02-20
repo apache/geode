@@ -19,6 +19,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.util.IOUtils;
 
 /**
@@ -40,6 +41,7 @@ public class GfshConfig {
   private static final int MAX_HISTORY_SIZE = 500;
 
   public static final String DEFAULT_INIT_FILE_NAME = ".gfsh2rc";
+  @Immutable
   private static final Level DEFAULT_LOGLEVEL = Level.OFF;
   private static final int DEFAULT_LOGFILE_SIZE_LIMIT = 1024 * 1024 * 10;
   private static final int DEFAULT_LOGFILE_DISK_USAGE = 1024 * 1024 * 10;

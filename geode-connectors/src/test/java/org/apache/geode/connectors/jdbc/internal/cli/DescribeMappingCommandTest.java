@@ -38,6 +38,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -216,9 +217,9 @@ public class DescribeMappingCommandTest {
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
     when(clusterConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(asyncEventQueue.getId())
-        .thenReturn(CreateMappingCommand.createAsyncEventQueueName("region2"))
-        .thenReturn(CreateMappingCommand.createAsyncEventQueueName("region1"))
-        .thenReturn(CreateMappingCommand.createAsyncEventQueueName("region3"));
+        .thenReturn(MappingCommandUtils.createAsyncEventQueueName("region2"))
+        .thenReturn(MappingCommandUtils.createAsyncEventQueueName("region1"))
+        .thenReturn(MappingCommandUtils.createAsyncEventQueueName("region3"));
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,

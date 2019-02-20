@@ -24,6 +24,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
  * A MembershipManager is responsible for reporting a MemberView, as well as having explicit
@@ -146,6 +147,12 @@ public interface MembershipManager {
    *
    */
   void setShutdown();
+
+
+  /**
+   * informs the membership manager that a reconnect has been completed
+   */
+  public void setReconnectCompleted(boolean reconnectCompleted);
 
 
   /**
@@ -330,8 +337,10 @@ public interface MembershipManager {
    * you're all done using the quorum checker.
    *
    * @param checker the QuorumChecker instance
+   * @param distributedSystem the current distributed system
    */
-  void releaseQuorumChecker(QuorumChecker checker);
+  void releaseQuorumChecker(QuorumChecker checker,
+      InternalDistributedSystem distributedSystem);
 
   /**
    * return the coordinator for the view.

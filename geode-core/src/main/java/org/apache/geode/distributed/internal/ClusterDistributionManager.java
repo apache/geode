@@ -53,6 +53,7 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -251,13 +252,16 @@ public class ClusterDistributionManager implements DistributionManager {
 
 
   /** Is this node running an AdminDistributedSystem? */
+  @MakeNotStatic
   private static volatile boolean isDedicatedAdminVM = false;
 
-  private static ThreadLocal<Boolean> isStartupThread = new ThreadLocal<>();
+  @MakeNotStatic
+  private static final ThreadLocal<Boolean> isStartupThread = new ThreadLocal<>();
 
   /**
    * Identifier for function execution threads and any of their children
    */
+  @MakeNotStatic()
   private static final InheritableThreadLocal<Boolean> isFunctionExecutionThread =
       new InheritableThreadLocal<Boolean>() {
         @Override
@@ -599,7 +603,7 @@ public class ClusterDistributionManager implements DistributionManager {
         Object[] logArgs = new Object[] {distributionManager.getDistributionManagerId(), transport,
             Integer.valueOf(distributionManager.getOtherDistributionManagerIds().size()),
             distributionManager.getOtherDistributionManagerIds(),
-            (logger.isInfoEnabled(LogMarker.DM_MARKER) ? " (VERBOSE, took " + delta + " ms)" : ""),
+            (logger.isInfoEnabled(LogMarker.DM_MARKER) ? " (took " + delta + " ms)" : ""),
             ((distributionManager.getDMType() == ADMIN_ONLY_DM_TYPE) ? " (admin only)"
                 : (distributionManager.getDMType() == LOCATOR_DM_TYPE) ? " (locator)" : "")};
         logger.info(LogMarker.DM_MARKER,
@@ -775,7 +779,7 @@ public class ClusterDistributionManager implements DistributionManager {
       long start = System.currentTimeMillis();
 
       DMListener l = new DMListener(this);
-      membershipManager = MemberFactory.newMembershipManager(l, system.getConfig(), transport,
+      membershipManager = MemberFactory.newMembershipManager(l, system, transport,
           stats, system.getSecurityService());
 
       sb.append(System.currentTimeMillis() - start);

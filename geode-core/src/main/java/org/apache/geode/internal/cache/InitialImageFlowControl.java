@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -49,6 +50,7 @@ import org.apache.geode.internal.logging.LogService;
 public class InitialImageFlowControl implements MembershipListener {
   private static final Logger logger = LogService.getLogger();
 
+  @MakeNotStatic
   private static final ProcessorKeeper21 keeper = new ProcessorKeeper21(false);
   private int id;
   private int maxPermits = InitialImageOperation.CHUNK_PERMITS;

@@ -35,6 +35,8 @@ import java.util.concurrent.TimeoutException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.QueryException;
@@ -72,6 +74,7 @@ public class PRQueryProcessor {
       getInteger(DistributionConfig.GEMFIRE_PREFIX + "PRQueryProcessor.numThreads", 1);
 
   /* For Test purpose */
+  @MutableForTesting
   public static int TEST_NUM_THREADS = 0;
 
   private PartitionedRegionDataStore _prds;
@@ -298,6 +301,7 @@ public class PRQueryProcessor {
    */
   static class PRQueryExecutor {
 
+    @MakeNotStatic
     private static ExecutorService execService = null;
 
     /**

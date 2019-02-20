@@ -35,6 +35,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
@@ -111,6 +112,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   private volatile boolean authorative = false;
   /** remoteLoadInProgress is volatile to make sure response threads see the current value */
   private volatile boolean remoteLoadInProgress = false;
+  @MakeNotStatic
   private static final ProcessorKeeper21 processorKeeper = new ProcessorKeeper21(false);
   // private static Set availableAcceptHelperSet = new HashSet();
   /** The members that haven't replied yet */

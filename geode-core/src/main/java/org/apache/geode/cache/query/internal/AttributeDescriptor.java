@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -51,6 +52,7 @@ public class AttributeDescriptor {
   private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
   private final TypeRegistry _pdxRegistry;
   /** cache for remembering the correct Member for a class and attribute */
+  @MakeNotStatic
   private static final ConcurrentMap<List, Member> _localCache = new ConcurrentHashMap();
 
 

@@ -21,7 +21,6 @@ import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductStringProperty;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
@@ -29,14 +28,32 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runner.Description;
 
-@SuppressWarnings("unused")
+/**
+ * JUnit Rule that overrides the default DiskDirs directory. Internally, TemporaryFolder and
+ * TestName are used by this rule to define the directory locations and names.
+ *
+ * <p>
+ * Using DiskDirRule will produce a unique DiskDir such as:
+ *
+ * <pre>
+ * /var/folders/28/m__9dv1906n60kmz7t71wm680000gn/T/junit2791461987256197453/org.apache.geode.test.junit.rules.DiskDirRuleIntegrationTest_diskDirPathContainsTestClassName-diskDirs
+ * </pre>
+ *
+ * <p>
+ * Example of test using DiskDirRule:
+ *
+ * <pre>
+ * public class PersistentRegionIntegrationTest {
+ *
+ *   {@literal @}Rule
+ *   public DiskDirRule diskDirRule = new DiskDirRule();
+ * </pre>
+ */
 public class DiskDirRule extends DescribedExternalResource {
 
   protected static final String BEFORE = "before";
   protected static final String AFTER = "after";
   protected static final String STARTING = "starting";
-
-  protected final boolean initializeHelperRules;
 
   private final TemporaryFolder temporaryFolder;
   private final TestName testName;
@@ -44,30 +61,19 @@ public class DiskDirRule extends DescribedExternalResource {
   private String originalValue;
 
   public DiskDirRule() {
-    this(new Builder());
+    this(new TemporaryFolder(), new TestName());
   }
 
-  public DiskDirRule(TemporaryFolder temporaryFolder) {
-    this(new Builder().temporaryFolder(temporaryFolder));
-  }
-
-  public DiskDirRule(TestName testName) {
-    this(new Builder().testName(testName));
-  }
-
-  public DiskDirRule(TemporaryFolder temporaryFolder, TestName testName) {
-    this(new Builder().temporaryFolder(temporaryFolder).testName(testName));
-  }
-
-  public DiskDirRule(Builder builder) {
-    this(builder.initializeHelperRules, builder.temporaryFolder, builder.testName);
-  }
-
-  protected DiskDirRule(boolean initializeHelperRules, TemporaryFolder temporaryFolder,
-      TestName testName) {
-    this.initializeHelperRules = initializeHelperRules;
+  protected DiskDirRule(TemporaryFolder temporaryFolder, TestName testName) {
     this.temporaryFolder = temporaryFolder;
     this.testName = testName;
+  }
+
+  /**
+   * Returns the current default disk dirs value.
+   */
+  public File getDiskDir() {
+    return new File(System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
   }
 
   @Override
@@ -75,28 +81,11 @@ public class DiskDirRule extends DescribedExternalResource {
     Optional<String> value = getProductStringProperty(DEFAULT_DISK_DIRS_PROPERTY);
     value.ifPresent(s -> originalValue = s);
 
-    if (initializeHelperRules) {
-      initializeHelperRules(description);
-    }
+    initializeHelperRules(description);
 
-    File diskDir =
-        temporaryFolder.newFolder(getDiskDirName(getDiskDirName(description.getClassName())));
+    File diskDir = temporaryFolder.newFolder(getDiskDirName(description.getClassName()));
 
     System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, diskDir.getAbsolutePath());
-  }
-
-  protected void initializeHelperRules(Description description) throws Exception {
-    if (temporaryFolder != null) {
-      Method method = TemporaryFolder.class.getDeclaredMethod(BEFORE);
-      method.setAccessible(true);
-      method.invoke(temporaryFolder);
-    }
-
-    if (testName != null) {
-      Method method = TestName.class.getDeclaredMethod(STARTING, Description.class);
-      method.setAccessible(true);
-      method.invoke(testName, description);
-    }
   }
 
   @Override
@@ -108,70 +97,25 @@ public class DiskDirRule extends DescribedExternalResource {
     }
   }
 
-  protected String getDiskDirName(String testClass) {
-    return testClass + "_" + testName.getMethodName() + "-diskDirs";
-  }
-
   protected String getTestClassName(Description description) {
     return description.getTestClass().getSimpleName();
   }
 
-  protected void invokeTemporaryFolderBefore(TemporaryFolder temporaryFolder) {
+  private String getDiskDirName(String testClass) {
+    return testClass + "_" + testName.getMethodName() + "-diskDirs";
+  }
+
+  private void initializeHelperRules(Description description) throws Exception {
     if (temporaryFolder != null) {
-      invoke(TemporaryFolder.class, temporaryFolder, BEFORE);
-    }
-  }
-
-  protected void invokeTestNameBefore(TestName testName) {
-    if (testName != null) {
-      invoke(TestName.class, testName, BEFORE);
-    }
-  }
-
-  protected <V> V invoke(Class<?> targetClass, Object targetInstance, String methodName) {
-    try {
-      Method method = targetClass.getDeclaredMethod(methodName);
+      Method method = TemporaryFolder.class.getDeclaredMethod(BEFORE);
       method.setAccessible(true);
-      return (V) method.invoke(targetInstance);
-    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-      throw new Error(e);
-    }
-  }
-
-  /**
-   * Builds an instance of DiskDirRule
-   */
-  public static class Builder {
-    private boolean initializeHelperRules = true;
-    private TemporaryFolder temporaryFolder = new TemporaryFolder();
-    private TestName testName = new TestName();
-
-    public Builder() {
-      // nothing
+      method.invoke(temporaryFolder);
     }
 
-    /**
-     * Specify false to disable initializing TemporaryFolder and TestName during DiskDirRule
-     * initialization. If this is enabled then do NOT annotate these helper rules in the test or
-     * combine them with RuleChain or RuleList. Default value is true.
-     */
-    public Builder initializeHelperRules(boolean value) {
-      initializeHelperRules = value;
-      return this;
-    }
-
-    public Builder temporaryFolder(TemporaryFolder temporaryFolder) {
-      this.temporaryFolder = temporaryFolder;
-      return this;
-    }
-
-    public Builder testName(TestName testName) {
-      this.testName = testName;
-      return this;
-    }
-
-    public DiskDirRule build() {
-      return new DiskDirRule(this);
+    if (testName != null) {
+      Method method = TestName.class.getDeclaredMethod(STARTING, Description.class);
+      method.setAccessible(true);
+      method.invoke(testName, description);
     }
   }
 }

@@ -22,10 +22,12 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.ExpirationAction;
 
 public class ExpirationActionConverter implements Converter<ExpirationAction> {
-  private static ExpirationAction[] actions = {ExpirationAction.INVALIDATE,
+  @Immutable
+  private static final ExpirationAction[] actions = {ExpirationAction.INVALIDATE,
       ExpirationAction.LOCAL_INVALIDATE, ExpirationAction.DESTROY, ExpirationAction.LOCAL_DESTROY};
 
   @Override

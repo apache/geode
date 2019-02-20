@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -745,6 +746,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     }
   }
 
+  @MutableForTesting
   public static boolean TESTHOOK_TRACKREADS = false;
 
   public Object getObject() throws IOException, ClassNotFoundException {

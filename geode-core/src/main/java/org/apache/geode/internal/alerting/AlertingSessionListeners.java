@@ -17,12 +17,15 @@ package org.apache.geode.internal.alerting;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 /**
  * Manages a collection of registered {@code AlertingSessionListener}s and forwards
  * {@code AlertingSession} lifecycle callbacks to each listener.
  */
 public class AlertingSessionListeners {
 
+  @MakeNotStatic
   private static final AlertingSessionListeners INSTANCE = new AlertingSessionListeners();
 
   public static AlertingSessionListeners get() {

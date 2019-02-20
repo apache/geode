@@ -129,7 +129,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   /* package scope */
   static final String DEFAULT_STARTUP_LOG_FILE = "start_agent.log";
 
-  private static String OBFUSCATED_STRING = "********";
+  private static final String OBFUSCATED_STRING = "********";
 
   ////////////////////// Static Methods //////////////////////
 

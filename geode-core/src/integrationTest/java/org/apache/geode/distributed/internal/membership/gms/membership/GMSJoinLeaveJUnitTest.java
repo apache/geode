@@ -165,6 +165,7 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.init(services);
     gmsJoinLeave.start();
     gmsJoinLeave.started();
+    gmsJoinLeave.setLocalAddress(gmsJoinLeaveMemberId);
   }
 
   @After
@@ -330,13 +331,6 @@ public class GMSJoinLeaveJUnitTest {
     Assert.assertEquals(null, joinResponse[0]);
 
     jrm = new JoinResponseMessage("rejected...", 0);
-    gmsJoinLeave.processMessage(jrm);
-    // this should log..
-    Assert.assertEquals(jrm, joinResponse[0]);
-
-    gmsJoinLeave.setJoinResponseMessage(null);
-
-    jrm = new JoinResponseMessage(mockMembers[0], new NetView(), 0);
     gmsJoinLeave.processMessage(jrm);
     // this should log..
     Assert.assertEquals(jrm, joinResponse[0]);
@@ -622,7 +616,7 @@ public class GMSJoinLeaveJUnitTest {
     previousMemberId.setVmViewId(0);
     NetView view = new NetView(mockMembers[0], 1,
         createMemberList(mockMembers[0], previousMemberId, mockMembers[1]));
-    InstallViewMessage viewMessage = new InstallViewMessage(view, 0, true);
+    InstallViewMessage viewMessage = new InstallViewMessage(view, 0, false);
     viewMessage.setSender(mockMembers[0]);
     gmsJoinLeave.processMessage(viewMessage);
     assertEquals(0, gmsJoinLeaveMemberId.getVmViewId());
@@ -632,29 +626,6 @@ public class GMSJoinLeaveJUnitTest {
     msg.setSender(mockMembers[0]);
     gmsJoinLeave.processMessage(msg);
     verify(manager).forceDisconnect("removing for test");
-  }
-
-  @Test
-  public void testViewWithOldIDNotAcceptedAsJoinResponse() throws Exception {
-    initMocks();
-    when(messenger.isOldMembershipIdentifier(any(DistributedMember.class)))
-        .thenReturn(Boolean.TRUE);
-    List<InternalDistributedMember> mbrs = new LinkedList<>();
-    Set<InternalDistributedMember> shutdowns = new HashSet<>();
-    Set<InternalDistributedMember> crashes = new HashSet<>();
-    mbrs.add(mockMembers[0]);
-    mbrs.add(mockMembers[1]);
-    mbrs.add(mockMembers[2]);
-    InternalDistributedMember oldId = new InternalDistributedMember(
-        gmsJoinLeaveMemberId.getInetAddress(), gmsJoinLeaveMemberId.getPort());
-    oldId.setVmViewId(0);
-    mbrs.add(oldId);
-
-    // prepare the view
-    NetView netView = new NetView(mockMembers[0], 1, mbrs, shutdowns, crashes);
-    gmsJoinLeave.processMessage(new InstallViewMessage(netView, null, true));
-    assertEquals(-1, gmsJoinLeaveMemberId.getVmViewId());
-    verify(messenger).isOldMembershipIdentifier(isA(DistributedMember.class));
   }
 
   @Test

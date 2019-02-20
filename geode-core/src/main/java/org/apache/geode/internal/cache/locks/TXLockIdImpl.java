@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -35,6 +36,7 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
   private InternalDistributedMember memberId;
 
   /** Increments for each txLockId that is generated in this vm */
+  @MakeNotStatic
   private static int txCount = 0;
 
   /** Unique identifier within this member's vm */

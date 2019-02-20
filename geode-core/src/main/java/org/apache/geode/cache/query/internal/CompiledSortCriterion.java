@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -258,7 +259,8 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
   static class ProjectionField extends AbstractCompiledValue {
 
-    private static ProjectionField singleton = new ProjectionField();
+    @MakeImmutable("AbstractCompiledValue has setters")
+    private static final ProjectionField singleton = new ProjectionField();
 
     private ProjectionField() {}
 

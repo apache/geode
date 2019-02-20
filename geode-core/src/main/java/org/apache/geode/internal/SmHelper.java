@@ -21,6 +21,8 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
 
 /**
  * This class defines general native utils.
@@ -101,10 +103,12 @@ public class SmHelper {
   private static native String _getSystemId();
 
   /** Cache of class -> has zero-arg constructor */
-  private static Map zeroArgConstructorCache = new HashMap();
+  @MakeNotStatic
+  private static final Map zeroArgConstructorCache = new HashMap();
 
   /** Cache of class -> has public zero-arg constructor */
-  private static Map publicConstructorCache = new HashMap();
+  @MakeNotStatic
+  private static final Map publicConstructorCache = new HashMap();
 
   /**
    * Allocates a new JOM instance of <code>c</code> and invokes the zero-argument constructor of

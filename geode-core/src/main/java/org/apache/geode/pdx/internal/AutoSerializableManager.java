@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.CopyOnWriteHashSet;
@@ -652,6 +653,7 @@ public class AutoSerializableManager {
 
   // unsafe will be null if the Unsafe class is not available or SAFE was requested.
   // We attempt to use Unsafe by default for best performance.
+  @Immutable
   private static final UnsafeWrapper unsafe;
   static {
     UnsafeWrapper tmp = null;

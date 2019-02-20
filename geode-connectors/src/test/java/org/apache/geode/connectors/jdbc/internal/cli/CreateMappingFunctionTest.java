@@ -43,6 +43,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -199,7 +200,7 @@ public class CreateMappingFunctionTest {
 
   @Test
   public void executeAlterRegionAsyncEventQueue() throws Exception {
-    String queueName = CreateMappingCommand.createAsyncEventQueueName(REGION_NAME);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(REGION_NAME);
     function.executeFunction(context);
 
     verify(service, times(1)).createRegionMapping(regionMapping);

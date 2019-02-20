@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
@@ -56,6 +57,7 @@ public class ColocationHelper {
    * Whether to ignore missing parallel queues on restart if they are not attached to the region.
    * See bug 50120. Mutable for tests.
    */
+  @MutableForTesting
   public static boolean IGNORE_UNRECOVERED_QUEUE =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "IGNORE_UNRECOVERED_QUEUE");
 

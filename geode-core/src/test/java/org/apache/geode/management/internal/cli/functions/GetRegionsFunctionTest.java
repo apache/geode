@@ -12,73 +12,104 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.mockito.Mock;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 
 public class GetRegionsFunctionTest {
 
-  private enum STATE {
-    INITIAL, BLOCKING, FINISHED
-  };
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
-  private static GetRegionsFunctionTest.STATE lockingThreadState =
-      GetRegionsFunctionTest.STATE.INITIAL;
-  private static AtomicBoolean lockAquired = new AtomicBoolean(false);
-  private static AtomicBoolean functionExecuted = new AtomicBoolean(false);
+  @Mock
+  private RegionAttributes regionAttributes;
 
-  private GetRegionsFunction getRegionsFunction;
+  @Mock
+  private LocalRegion region;
+
+  @Mock
+  private GemFireCacheImpl cache;
+
+  @Mock
+  private InternalResourceManager internalResourceManager;
+
+  @Mock
   private FunctionContext functionContext;
+
+  private final TestResultSender testResultSender = new TestResultSender();
+  private final Set<Region<?, ?>> regions = new HashSet<>();
+  private final Set<Region<?, ?>> subregions = new HashSet<>();
+  private final GetRegionsFunction getRegionsFunction = new GetRegionsFunction();
 
   @Before
   public void before() {
-    getRegionsFunction = new GetRegionsFunction();
-    functionContext = mock(FunctionContext.class);
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled", "true");
+
+    initMocks(this);
+
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getDistributedSystem()).thenReturn(mock(InternalDistributedSystem.class));
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+    when(functionContext.getResultSender()).thenReturn(testResultSender);
+    when(functionContext.getCache()).thenReturn(cache);
   }
 
   @Test
-  public void doNotUseCacheFacotryToGetCache() throws Exception {
-    // start a thread that would hold on to the CacheFactory's class lock
-    new Thread(() -> {
-      synchronized (CacheFactory.class) {
-        lockAquired.set(true);
-        lockingThreadState = GetRegionsFunctionTest.STATE.BLOCKING;
-        try {
-          await().untilTrue(functionExecuted);
-        } catch (ConditionTimeoutException e) {
-          e.printStackTrace();
-          lockingThreadState = GetRegionsFunctionTest.STATE.FINISHED;
-        }
-      }
-    }).start();
-
-    // wait till the blocking thread aquired the lock on CacheFactory
-    await().untilTrue(lockAquired);
-    when(functionContext.getCache()).thenReturn(mock(Cache.class));
-    when(functionContext.getResultSender()).thenReturn(mock(ResultSender.class));
-
-    // execute a function that would get the cache, make sure that's not waiting on the lock
-    // of CacheFactory
+  public void testExecuteWithoutRegions() {
     getRegionsFunction.execute(functionContext);
-    assertThat(lockingThreadState).isEqualTo(lockingThreadState.BLOCKING);
-
-
-    // this will make the awaitility call in the thread return
-    functionExecuted.set(true);
   }
+
+  @Test
+  public void testExecuteWithRegions() {
+    when(cache.rootRegions()).thenReturn(regions);
+    when(region.getFullPath()).thenReturn("/MyRegion");
+
+    when(region.getParentRegion()).thenReturn(null);
+    when(region.subregions(true)).thenReturn(subregions);
+    when(region.subregions(false)).thenReturn(subregions);
+    when(region.getAttributes()).thenReturn(regionAttributes);
+    when(regionAttributes.getDataPolicy()).thenReturn(mock(DataPolicy.class));
+    when(regionAttributes.getScope()).thenReturn(mock(Scope.class));
+    regions.add(region);
+    getRegionsFunction.execute(functionContext);
+  }
+
+  private static class TestResultSender implements ResultSender {
+
+    @Override
+    public void lastResult(final Object lastResult) {}
+
+    @Override
+    public void sendResult(final Object oneResult) {}
+
+    @Override
+    public void sendException(final Throwable t) {
+      throw new RuntimeException(t);
+    }
+  }
+
 }

@@ -21,7 +21,6 @@ import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,7 +31,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.JavaVersion;
-import org.junit.rules.ExternalResource;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -53,6 +53,7 @@ import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -66,7 +67,7 @@ import org.apache.geode.test.version.VersionManager;
  * If you use this Rule in any test that uses more than the default of 4 VMs in DUnit, then
  * you must specify the total number of VMs via the {@link #ClusterStartupRule(int)} constructor.
  */
-public class ClusterStartupRule extends ExternalResource implements Serializable {
+public class ClusterStartupRule implements SerializableTestRule {
   /**
    * This is only available in each Locator/Server VM, not in the controller (test) VM.
    */
@@ -134,7 +135,21 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   @Override
-  protected void before() throws Throwable {
+  public Statement apply(Statement base, Description description) {
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        before(description);
+        try {
+          base.evaluate();
+        } finally {
+          after(description);
+        }
+      }
+    };
+  }
+
+  private void before(Description description) throws Throwable {
     if (isJavaVersionAtLeast(JavaVersion.JAVA_11)) {
       // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
@@ -143,12 +158,11 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }
-    restoreSystemProperties.before();
+    restoreSystemProperties.beforeDistributedTest(description);
     occupiedVMs = new HashMap<>();
   }
 
-  @Override
-  protected void after() {
+  private void after(Description description) throws Throwable {
 
     MemberStarterRule.disconnectDSIfAny();
 
@@ -166,7 +180,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     Arrays.stream(getWorkingDirRoot().listFiles()).filter(File::isFile)
         .forEach(FileUtils::deleteQuietly);
 
-    restoreSystemProperties.after();
+    restoreSystemProperties.afterDistributedTest(description);
 
     // close suspect string at the end of tear down
     // any background thread can fill the dunit_suspect.log

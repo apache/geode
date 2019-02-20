@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -57,6 +58,7 @@ public class NetView implements DataSerializableFixedID {
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
   private final Object membersLock = new Object();
+  @Immutable
   public static final Random RANDOM = new Random();
 
 
@@ -512,23 +514,35 @@ public class NetView implements DataSerializableFixedID {
     InternalDistributedMember lead = getLeadMember();
 
     StringBuilder sb = new StringBuilder(200);
-    sb.append("View[").append(creator).append('|').append(viewId).append("]\nmembers: [");
+    sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
+    boolean first = true;
     for (InternalDistributedMember mbr : this.members) {
-      sb.append("\n").append(mbr);
+      if (!first)
+        sb.append(", ");
+      sb.append(mbr);
       if (mbr == lead) {
         sb.append("{lead}");
       }
+      first = false;
     }
     if (!this.shutdownMembers.isEmpty()) {
-      sb.append("]\nshutdown: [");
+      sb.append("]  shutdown: [");
+      first = true;
       for (InternalDistributedMember mbr : this.shutdownMembers) {
-        sb.append("\n").append(mbr);
+        if (!first)
+          sb.append(", ");
+        sb.append(mbr);
+        first = false;
       }
     }
     if (!this.crashedMembers.isEmpty()) {
-      sb.append("]\ncrashed: [");
+      sb.append("]  crashed: [");
+      first = true;
       for (InternalDistributedMember mbr : this.crashedMembers) {
-        sb.append("\n").append(mbr);
+        if (!first)
+          sb.append(", ");
+        sb.append(mbr);
+        first = false;
       }
     }
     // sb.append("] fd ports: [");

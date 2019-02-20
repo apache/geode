@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -46,9 +47,11 @@ import org.apache.geode.internal.VersionedDataSerializable;
  */
 public class FilterRoutingInfo implements VersionedDataSerializable {
 
-  private static boolean OLD_MEMBERS_OPTIMIZED = Boolean.getBoolean("optimized-cq-serialization");
+  private static final boolean OLD_MEMBERS_OPTIMIZED =
+      Boolean.getBoolean("optimized-cq-serialization");
 
-  private static Version[] serializationVersions = new Version[] {Version.GFE_71};
+  @Immutable
+  private static final Version[] serializationVersions = new Version[] {Version.GFE_71};
 
   /** Set to true if any peer members has any filters. */
   private boolean memberWithFilterInfoExists = false;
@@ -359,7 +362,8 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       this.cqs = null;
     }
 
-    private static Version[] serializationVersions = new Version[] {Version.GFE_80};
+    @Immutable
+    private static final Version[] serializationVersions = new Version[] {Version.GFE_80};
 
     @Override
     public Version[] getSerializationVersions() {

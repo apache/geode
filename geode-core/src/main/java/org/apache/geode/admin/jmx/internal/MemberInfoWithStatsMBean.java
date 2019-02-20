@@ -62,6 +62,7 @@ import org.apache.geode.admin.StatisticResource;
 import org.apache.geode.admin.SystemMember;
 import org.apache.geode.admin.SystemMemberCacheServer;
 import org.apache.geode.admin.jmx.Agent;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -1232,7 +1233,8 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
   private static final Logger logger = LogService.getLogger();
 
   /* sequence generator for notifications from GemFireTypesWrapper MBean */
-  private static AtomicLong notificationSequenceNumber = new AtomicLong();
+  @MakeNotStatic
+  private static final AtomicLong notificationSequenceNumber = new AtomicLong();
 
   /* reference to the MBeanServer instance */
   private MBeanServer mBeanServer;

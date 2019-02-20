@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
@@ -42,10 +44,12 @@ import org.apache.geode.pdx.internal.PdxString;
  */
 
 public class TypeUtils implements OQLLexerTokenTypes {
-  protected static List<Class> _numericPrimitiveClasses = Arrays.asList(
+  @MakeImmutable("Arrays.asList is a mutable list")
+  protected static final List<Class> _numericPrimitiveClasses = Arrays.asList(
       new Class[] {Byte.TYPE, Short.TYPE, Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE});
 
-  protected static List<Class> _numericWrapperClasses = Arrays.asList(
+  @MakeImmutable("Arrays.asList is a mutable list")
+  protected static final List<Class> _numericWrapperClasses = Arrays.asList(
       new Class[] {Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class});
 
   /**
@@ -150,6 +154,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
   /* Common Types */
   /** ObjectType for Object.class */
+  @Immutable
   public static final ObjectType OBJECT_TYPE = new ObjectTypeImpl(Object.class);
 
   /** prevent instantiation */

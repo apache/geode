@@ -19,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.ResourceException;
@@ -50,6 +51,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class PutAll70 extends BaseCommand {
 
+  @Immutable
   private static final PutAll70 singleton = new PutAll70();
 
   public static Command getCommand() {

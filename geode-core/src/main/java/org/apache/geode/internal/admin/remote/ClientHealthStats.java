@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 
@@ -91,6 +92,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   private HashMap<String, String> poolStats = new HashMap<String, String>();
 
   /** The versions in which this message was modified */
+  @Immutable
   private static final Version[] dsfidVersions = new Version[] {Version.GFE_80};
 
   public ClientHealthStats() {}

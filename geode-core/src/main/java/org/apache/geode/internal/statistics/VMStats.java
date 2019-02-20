@@ -19,11 +19,13 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Statistics related to a Java VM. Currently they all come from {@link java.lang.Runtime}.
  */
 public class VMStats implements VMStatsContract {
+  @Immutable
   private static final StatisticsType vmType;
   private static final int cpusId;
   private static final int freeMemoryId;

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.memcached.KeyWrapper;
@@ -52,13 +53,15 @@ public class GetCommand extends AbstractCommand {
   private static final String VALUE = "VALUE";
   private static final String W_SPACE = " ";
   private static final String RN = "\r\n";
+  @MakeImmutable
   private static final ByteBuffer RN_BUF = asciiCharset.encode(RN);
+  @MakeImmutable
   private static final ByteBuffer END_BUF = asciiCharset.encode(Reply.END.toString());
 
   /**
    * buffer used to compose one line of reply
    */
-  private static ThreadLocal<CharBuffer> lineBuffer = new ThreadLocal<CharBuffer>();
+  private static final ThreadLocal<CharBuffer> lineBuffer = new ThreadLocal<CharBuffer>();
 
   /**
    * defaults to the default send buffer size on socket
@@ -69,7 +72,7 @@ public class GetCommand extends AbstractCommand {
   /**
    * buffer for sending get replies, one per thread
    */
-  private static ThreadLocal<ByteBuffer> replyBuffer = new ThreadLocal<ByteBuffer>();
+  private static final ThreadLocal<ByteBuffer> replyBuffer = new ThreadLocal<ByteBuffer>();
 
   private static final int EXTRAS_LENGTH = 4;
 

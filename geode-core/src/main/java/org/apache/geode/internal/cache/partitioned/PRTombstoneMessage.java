@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -55,7 +56,8 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
 
   private static final Logger logger = LogService.getLogger();
 
-  private static Version[] serializationVersions = null;
+  @Immutable
+  private static final Version[] serializationVersions = null;
 
   private Set<Object> keys;
   private EventID eventID;

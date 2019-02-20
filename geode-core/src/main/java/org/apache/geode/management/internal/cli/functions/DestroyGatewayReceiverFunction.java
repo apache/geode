@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -32,7 +33,9 @@ public class DestroyGatewayReceiverFunction extends CliFunction {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1490927519860899562L;
   private static final String ID = DestroyGatewayReceiverFunction.class.getName();
-  public static DestroyGatewayReceiverFunction INSTANCE = new DestroyGatewayReceiverFunction();
+  @Immutable
+  public static final DestroyGatewayReceiverFunction INSTANCE =
+      new DestroyGatewayReceiverFunction();
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext context) {

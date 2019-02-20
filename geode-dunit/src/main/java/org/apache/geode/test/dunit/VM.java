@@ -24,6 +24,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
@@ -33,6 +34,7 @@ import org.apache.geode.test.dunit.internal.MethodInvokerResult;
 import org.apache.geode.test.dunit.internal.ProcessHolder;
 import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.internal.StandAloneDUnitEnv;
+import org.apache.geode.test.dunit.internal.VMEventNotifier;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -64,7 +66,7 @@ public class VM implements Serializable {
 
   private transient volatile ProcessHolder processHolder;
 
-  private transient ChildVMLauncher childVMLauncher;
+  private final transient ChildVMLauncher childVMLauncher;
 
   /**
    * Returns the {@code VM} identity. For {@link StandAloneDUnitEnv} the number returned is a
@@ -151,6 +153,45 @@ public class VM implements Serializable {
    */
   public static VM[] toArray(VM... vms) {
     return vms;
+  }
+
+  /**
+   * Returns an array of all provided VMs.
+   */
+  public static VM[] toArray(List<VM> vmList) {
+    return vmList.toArray(new VM[0]);
+  }
+
+  /**
+   * Returns an array of all provided VMs.
+   */
+  public static VM[] toArray(List<VM> vmList, VM... vms) {
+    return ArrayUtils.addAll(vmList.toArray(new VM[0]), vms);
+  }
+
+  /**
+   * Returns an array of all provided VMs.
+   */
+  public static VM[] toArray(VM[] vmArray, VM... vms) {
+    return ArrayUtils.addAll(vmArray, vms);
+  }
+
+  /**
+   * Registers a {@link VMEventListener}.
+   */
+  public static void addVMEventListener(final VMEventListener listener) {
+    getVMEventNotifier().addVMEventListener(listener);
+  }
+
+  /**
+   * Deregisters a {@link VMEventListener}.
+   */
+  public static void removeVMEventListener(final VMEventListener listener) {
+    getVMEventNotifier().removeVMEventListener(listener);
+  }
+
+  private static VMEventNotifier getVMEventNotifier() {
+    return Host.getHost(0).getVMEventNotifier();
   }
 
   /**
@@ -480,6 +521,8 @@ public class VM implements Serializable {
     checkAvailability(getClass().getName(), "bounceVM");
 
     logger.info("Bouncing {} old pid is {}", id, getPid());
+    getVMEventNotifier().notifyBeforeBounceVM(this);
+
     available = false;
     try {
       if (force) {
@@ -501,7 +544,10 @@ public class VM implements Serializable {
       version = targetVersion;
       client = childVMLauncher.getStub(id);
       available = true;
+
       logger.info("Bounced {} new pid is {}", id, getPid());
+      getVMEventNotifier().notifyAfterBounceVM(this);
+
     } catch (InterruptedException | IOException | NotBoundException e) {
       throw new Error("Unable to restart VM " + id, e);
     }

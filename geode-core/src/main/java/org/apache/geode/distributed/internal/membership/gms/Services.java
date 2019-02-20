@@ -20,9 +20,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -36,12 +37,10 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
-import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
@@ -52,9 +51,6 @@ public class Services {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static InternalLogWriter staticLogWriter;
-  private static InternalLogWriter staticSecurityLogWriter;
-
   private final Manager manager;
   private final JoinLeave joinLeave;
   private final HealthMonitor healthMon;
@@ -64,6 +60,7 @@ public class Services {
   private final DMStats stats;
   private final Stopper cancelCriterion;
   private final SecurityService securityService;
+  private final InternalDistributedSystem distributedSystem;
 
   private volatile boolean stopping;
   private volatile boolean stopped;
@@ -71,8 +68,8 @@ public class Services {
 
   private Locator locator;
 
-  private InternalLogWriter logWriter;
-  private InternalLogWriter securityLogWriter;
+  private LogWriter logWriter;
+  private LogWriter securityLogWriter;
 
   private final Timer timer = new Timer("Geode Membership Timer", true);
 
@@ -107,28 +104,27 @@ public class Services {
     this.messenger = null;
     this.securityService = SecurityServiceFactory.create();
     this.auth = null;
+    this.distributedSystem = null;
   }
 
-  public Services(DistributedMembershipListener listener, DistributionConfig config,
+  public Services(DistributedMembershipListener listener,
+      InternalDistributedSystem system,
       RemoteTransportConfig transport, DMStats stats, SecurityService securityService) {
+    this.distributedSystem = system;
     this.cancelCriterion = new Stopper();
     this.stats = stats;
-    this.config = new ServiceConfig(transport, config);
+    this.config = new ServiceConfig(transport, system.getConfig());
     this.manager = new GMSMembershipManager(listener);
     this.joinLeave = new GMSJoinLeave();
     this.healthMon = new GMSHealthMonitor();
+    this.logWriter = distributedSystem.getLogWriter();
     this.messenger = new JGroupsMessenger();
+    this.securityLogWriter = distributedSystem.getSecurityLogWriter();
     this.securityService = securityService;
     this.auth = new GMSAuthenticator();
   }
 
   protected void init() {
-    // InternalDistributedSystem establishes this log writer at boot time
-    // TODO fix this so that IDS doesn't know about Services
-    this.securityLogWriter = staticSecurityLogWriter;
-    staticSecurityLogWriter = null;
-    this.logWriter = staticLogWriter;
-    staticLogWriter = null;
     this.auth.init(this);
     this.messenger.init(this);
     this.manager.init(this);
@@ -182,6 +178,14 @@ public class Services {
       stop();
       throw e;
     }
+  }
+
+  public void setLocalAddress(InternalDistributedMember address) {
+    this.auth.setLocalAddress(address);
+    this.messenger.setLocalAddress(address);
+    this.joinLeave.setLocalAddress(address);
+    this.healthMon.setLocalAddress(address);
+    this.manager.setLocalAddress(address);
   }
 
   public void emergencyClose() {
@@ -249,23 +253,29 @@ public class Services {
     }
   }
 
-  public static void setLogWriter(InternalLogWriter writer) {
-    staticLogWriter = writer;
-  }
-
-  public static void setSecurityLogWriter(InternalLogWriter securityWriter) {
-    staticSecurityLogWriter = securityWriter;
+  public InternalDistributedSystem getDistributedSystem() {
+    return this.distributedSystem;
   }
 
   public SecurityService getSecurityService() {
     return this.securityService;
   }
 
-  public InternalLogWriter getLogWriter() {
+  /**
+   * returns the DistributedSystem's log writer
+   *
+   * @deprecated use a log4j-based LogService
+   */
+  public LogWriter getLogWriter() {
     return this.logWriter;
   }
 
-  public InternalLogWriter getSecurityLogWriter() {
+  /**
+   * returns the DistributedSystem's security log writer
+   *
+   * @deprecated use a log4j-based LogService
+   */
+  public LogWriter getSecurityLogWriter() {
     return this.securityLogWriter;
   }
 
@@ -358,13 +368,6 @@ public class Services {
 
   public boolean isAutoReconnectEnabled() {
     return !getConfig().getDistributionConfig().getDisableAutoReconnect();
-  }
-
-  public byte[] getPublicKey(InternalDistributedMember mbr) {
-    if (this.locator != null) {
-      return ((GMSLocator) this.locator).getPublicKey(mbr);
-    }
-    return null;
   }
 
   public class Stopper extends CancelCriterion {

@@ -112,7 +112,7 @@ public class CreateIndexCommandDUnitTest {
       InternalConfigurationPersistenceService configurationService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       assertThat(configurationService.getConfiguration("cluster").getCacheXmlContent())
-          .contains("<region name=\"regionB\">");
+          .contains("<region name=\"regionB\"");
     });
 
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=regionB")
@@ -122,7 +122,7 @@ public class CreateIndexCommandDUnitTest {
       InternalConfigurationPersistenceService configurationService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       assertThat(configurationService.getConfiguration("cluster").getCacheXmlContent())
-          .contains("<region name=\"regionB\">").contains("<index").contains("expression=\"id\" ")
+          .contains("<region name=\"regionB\"").contains("<index").contains("expression=\"id\" ")
           .contains("from-clause=\"/regionB\"").contains("name=\"myIndex\"")
           .contains("type=\"range\"");
     });

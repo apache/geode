@@ -45,6 +45,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -105,6 +106,12 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * was created.
    */
   private boolean wasReconnectingSystem;
+
+  /**
+   * This indicates that the DistributedSystem using this membership manager performed
+   * a successful auto-reconnect. This may include successful recreation of a Cache
+   */
+  private boolean reconnectCompleted;
 
   /**
    * A quorum checker is created during reconnect and is held here so it is available to the UDP
@@ -1416,12 +1423,14 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * @see SystemFailure#loadEmergencyClasses() /** break any potential circularity in
    *      {@link #loadEmergencyClasses()}
    */
+  @MakeNotStatic
   private static volatile boolean emergencyClassesLoaded = false;
 
   /**
    * inhibits logging of ForcedDisconnectException to keep dunit logs clean while testing this
    * feature
    */
+  @MakeNotStatic
   private static volatile boolean inhibitForceDisconnectLogging;
 
   /**
@@ -1785,7 +1794,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    */
   @Override
   public boolean isReconnectingDS() {
-    return !this.hasJoined && this.wasReconnectingSystem;
+    return this.wasReconnectingSystem && !this.reconnectCompleted;
   }
 
   @Override
@@ -1803,9 +1812,9 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   }
 
   @Override
-  public void releaseQuorumChecker(QuorumChecker checker) {
+  public void releaseQuorumChecker(QuorumChecker checker,
+      InternalDistributedSystem system) {
     checker.suspend();
-    InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
     if (system == null || !system.isConnected()) {
       checker.close();
     }
@@ -2180,6 +2189,17 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     this.tcpDisabled = false;
   }
 
+  @Override
+  public void setReconnectCompleted(boolean reconnectCompleted) {
+    this.reconnectCompleted = reconnectCompleted;
+  }
+
+  @Override
+  public boolean isReconnectCompleted() {
+    return reconnectCompleted;
+  }
+
+
   /*
    * non-thread-owned serial channels and high priority channels are not included
    */
@@ -2543,10 +2563,16 @@ public class GMSMembershipManager implements MembershipManager, Manager {
           shutdownCause);
     }
 
+    if (this.isReconnectingDS()) {
+      logger.info("Reconnecting system failed to connect");
+      uncleanShutdown(reason,
+          new ForcedDisconnectException("reconnecting system failed to connect"));
+      return;
+    }
+
     if (!services.getConfig().getDistributionConfig().getDisableAutoReconnect()) {
       saveCacheXmlForReconnect();
     }
-
 
     Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
       // stop server locators immediately since they may not have correct

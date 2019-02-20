@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
@@ -48,7 +49,9 @@ public class ModelCommandResult implements CommandResult {
   private ResultModel result;
   private List<String> commandOutput;
   private int commandOutputIndex;
+  @MakeImmutable
   private static final Map<String, List<String>> EMPTY_TABLE_MAP = new LinkedHashMap<>();
+  @MakeImmutable
   private static final List<String> EMPTY_LIST = new ArrayList<>();
 
   public ModelCommandResult(ResultModel result) {

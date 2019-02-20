@@ -108,7 +108,7 @@ public class GMSAuthenticator implements Authenticator {
       return null;
     }
 
-    InternalLogWriter securityLogWriter = this.services.getSecurityLogWriter();
+    InternalLogWriter securityLogWriter = (InternalLogWriter) this.services.getSecurityLogWriter();
 
     if (credentials == null) {
       securityLogWriter.warning(String.format("Failed to find credentials from [%s]", member));
@@ -190,8 +190,9 @@ public class GMSAuthenticator implements Authenticator {
    */
   Properties getCredentials(DistributedMember member, Properties secProps) {
     String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT);
-    return Handshake.getCredentials(authMethod, secProps, member, true, services.getLogWriter(),
-        services.getSecurityLogWriter());
+    return Handshake.getCredentials(authMethod, secProps, member, true,
+        (InternalLogWriter) services.getLogWriter(),
+        (InternalLogWriter) services.getSecurityLogWriter());
   }
 
   /**

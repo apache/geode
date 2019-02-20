@@ -27,33 +27,46 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceConstants;
 
 public class UserInputProperty {
-  public static UserInputProperty USERNAME =
+  @Immutable
+  public static final UserInputProperty USERNAME =
       new UserInputProperty(ResourceConstants.USER_NAME, "user", false);
-  public static UserInputProperty PASSWORD =
+  @Immutable
+  public static final UserInputProperty PASSWORD =
       new UserInputProperty(ResourceConstants.PASSWORD, "password", "", true);
-  public static UserInputProperty KEYSTORE =
+  @Immutable
+  public static final UserInputProperty KEYSTORE =
       new UserInputProperty(SSL_KEYSTORE, "key-store", "", false);
-  public static UserInputProperty KEYSTORE_PASSWORD =
+  @Immutable
+  public static final UserInputProperty KEYSTORE_PASSWORD =
       new UserInputProperty(SSL_KEYSTORE_PASSWORD, "key-store-password", "", true);
-  public static UserInputProperty KEYSTORE_TYPE =
+  @Immutable
+  public static final UserInputProperty KEYSTORE_TYPE =
       new UserInputProperty(SSL_KEYSTORE_TYPE, "key-store-type", "JKS", false);
-  public static UserInputProperty TRUSTSTORE =
+  @Immutable
+  public static final UserInputProperty TRUSTSTORE =
       new UserInputProperty(SSL_TRUSTSTORE, "trust-store", "", false);
-  public static UserInputProperty TRUSTSTORE_PASSWORD =
+  @Immutable
+  public static final UserInputProperty TRUSTSTORE_PASSWORD =
       new UserInputProperty(SSL_TRUSTSTORE_PASSWORD, "trust-store-password", "", true);
-  public static UserInputProperty TRUSTSTORE_TYPE =
+  @Immutable
+  public static final UserInputProperty TRUSTSTORE_TYPE =
       new UserInputProperty(SSL_TRUSTSTORE_TYPE, "trust-store-type", "JKS", false);
-  public static UserInputProperty CIPHERS = new UserInputProperty(SSL_CIPHERS, "ssl-ciphers",
+  @Immutable
+  public static final UserInputProperty CIPHERS = new UserInputProperty(SSL_CIPHERS, "ssl-ciphers",
       DistributionConfig.DEFAULT_SSL_CIPHERS, false);
-  public static UserInputProperty PROTOCOL = new UserInputProperty(SSL_PROTOCOLS, "ssl-protocols",
-      DistributionConfig.DEFAULT_SSL_PROTOCOLS, false);
-  public static UserInputProperty COMPONENT = new UserInputProperty(SSL_ENABLED_COMPONENTS,
+  @Immutable
+  public static final UserInputProperty PROTOCOL =
+      new UserInputProperty(SSL_PROTOCOLS, "ssl-protocols",
+          DistributionConfig.DEFAULT_SSL_PROTOCOLS, false);
+  @Immutable
+  public static final UserInputProperty COMPONENT = new UserInputProperty(SSL_ENABLED_COMPONENTS,
       "ssl-enabled-components", SecurableCommunicationChannel.ALL.getConstant(), false);
 
   private final String key;

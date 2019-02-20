@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.admin.internal.GemFireHealthEvaluator;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.HealthListenerMessage;
 import org.apache.geode.internal.logging.LogService;
@@ -47,6 +48,7 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
   private final Thread t;
   private volatile boolean stopRequested = false;
 
+  @MakeNotStatic
   private static int idCtr = 0;
 
   /********** Constructors *********/

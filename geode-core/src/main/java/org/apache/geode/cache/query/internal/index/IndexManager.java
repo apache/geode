@@ -37,6 +37,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.Index;
@@ -107,15 +109,16 @@ public class IndexManager {
   private final int INDEX_MAINTENANCE_BUFFER =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "AsynchIndexMaintenanceThreshold", -1);
 
-  public static boolean JOIN_OPTIMIZATION =
+  public static final boolean JOIN_OPTIMIZATION =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "index.DisableJoinOptimization");
 
-  // Added for test purposes only.
+  @MutableForTesting
   public static boolean INPLACE_OBJECT_MODIFICATION_FOR_TEST = false;
 
-  // Added for testing only
+  @MutableForTesting
   public static boolean IS_TEST_LDM = false;
 
+  @MutableForTesting
   public static boolean IS_TEST_EXPANSION = false;
 
 
@@ -135,7 +138,7 @@ public class IndexManager {
   public static final boolean RANGEINDEX_ONLY = Boolean.valueOf(
       System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "index.RANGEINDEX_ONLY", "false"));
 
-  /** For test purpose only */
+  @MutableForTesting
   public static boolean TEST_RANGEINDEX_ONLY = false;
   public static final String INDEX_ELEMARRAY_THRESHOLD_PROP = "index_elemarray_threshold";
   public static final String INDEX_ELEMARRAY_SIZE_PROP = "index_elemarray_size";
@@ -143,11 +146,14 @@ public class IndexManager {
       Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_THRESHOLD_PROP, "100"));
   public static final int INDEX_ELEMARRAY_SIZE =
       Integer.parseInt(System.getProperty(INDEX_ELEMARRAY_SIZE_PROP, "5"));
+  @MakeNotStatic
   public static final AtomicLong SAFE_QUERY_TIME = new AtomicLong(0);
+  @MutableForTesting
   public static boolean ENABLE_UPDATE_IN_PROGRESS_INDEX_CALCULATION = true;
   /** The NULL constant */
   public static final Object NULL = new NullToken();
 
+  @MutableForTesting
   public static TestHook testHook;
 
   // private int numCreatorsInWaiting = 0;

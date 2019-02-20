@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 
 
 /**
@@ -500,6 +501,20 @@ public class RegionAttributesType implements Serializable {
   }
 
   /**
+   * update the region time to live using timeout, action or expiry. If all three are null, there
+   * would be no update to the existing value
+   *
+   * @param timeout could be null
+   * @param action could be null
+   * @param expiry could be null
+   */
+  public void updateRegionTimeToLive(Integer timeout,
+      ExpirationAction action, ClassName expiry) {
+    regionTimeToLive = ExpirationAttributesType.combine(regionTimeToLive,
+        ExpirationAttributesType.generate(timeout, action, expiry));
+  }
+
+  /**
    * Gets the value of the regionIdleTime property.
    *
    * possible object is
@@ -520,6 +535,21 @@ public class RegionAttributesType implements Serializable {
   public void setRegionIdleTime(ExpirationAttributesType value) {
     this.regionIdleTime = value;
   }
+
+  /**
+   * update the region idle time using timeout, action or expiry. If all three are null, there
+   * would be no update to the existing value
+   *
+   * @param timeout could be null
+   * @param action could be null
+   * @param expiry could be null
+   */
+  public void updateRegionIdleTime(Integer timeout,
+      ExpirationAction action, ClassName expiry) {
+    regionIdleTime = ExpirationAttributesType.combine(regionIdleTime,
+        ExpirationAttributesType.generate(timeout, action, expiry));
+  }
+
 
   /**
    * Gets the value of the entryTimeToLive property.
@@ -544,6 +574,20 @@ public class RegionAttributesType implements Serializable {
   }
 
   /**
+   * update the entry time to live using timeout, action or expiry. If all three are null, there
+   * would be no update to the existing value
+   *
+   * @param timeout could be null
+   * @param action could be null
+   * @param expiry could be null
+   */
+  public void updateEntryTimeToLive(Integer timeout,
+      ExpirationAction action, ClassName expiry) {
+    entryTimeToLive = ExpirationAttributesType.combine(entryTimeToLive,
+        ExpirationAttributesType.generate(timeout, action, expiry));
+  }
+
+  /**
    * Gets the value of the entryIdleTime property.
    *
    * possible object is
@@ -563,6 +607,20 @@ public class RegionAttributesType implements Serializable {
    */
   public void setEntryIdleTime(ExpirationAttributesType value) {
     this.entryIdleTime = value;
+  }
+
+  /**
+   * update the entry idle time using timeout, action or expiry. If all three are null, there
+   * would be no update to the existing value
+   *
+   * @param timeout could be null
+   * @param action could be null
+   * @param expiry could be null
+   */
+  public void updateEntryIdleTime(Integer timeout,
+      ExpirationAction action, ClassName expiry) {
+    entryIdleTime = ExpirationAttributesType.combine(entryIdleTime,
+        ExpirationAttributesType.generate(timeout, action, expiry));
   }
 
   /**
@@ -1724,6 +1782,48 @@ public class RegionAttributesType implements Serializable {
       }
     }
 
+    public static ExpirationAttributesType generate(Integer timeout,
+        ExpirationAction action, ClassName expiry) {
+      if (timeout == null && action == null && expiry == null) {
+        return null;
+      }
+      if (expiry != null) {
+        return new ExpirationAttributesType(timeout, action,
+            expiry.getClassName(), expiry.getInitProperties());
+      } else {
+        return new ExpirationAttributesType(timeout, action, null, null);
+      }
+    }
+
+    // this is a helper method to combine the existing with the delta ExpirationAttributesType
+    public static ExpirationAttributesType combine(ExpirationAttributesType existing,
+        ExpirationAttributesType delta) {
+      if (delta == null) {
+        return existing;
+      }
+
+      if (existing == null) {
+        existing = new ExpirationAttributesType();
+        existing.setAction(ExpirationAction.INVALIDATE.toXmlString());
+        existing.setTimeout("0");
+      }
+
+      if (delta.getTimeout() != null) {
+        existing.setTimeout(delta.getTimeout());
+      }
+      if (delta.getAction() != null) {
+        existing.setAction(delta.getAction());
+      }
+      if (delta.getCustomExpiry() != null) {
+        if (delta.getCustomExpiry().equals(DeclarableType.EMPTY)) {
+          existing.setCustomExpiry(null);
+        } else {
+          existing.setCustomExpiry(delta.getCustomExpiry());
+        }
+      }
+      return existing;
+    }
+
     /**
      * @return true if timeout or action is specified
      */
@@ -1949,15 +2049,39 @@ public class RegionAttributesType implements Serializable {
     @XmlElement(name = "lru-memory-size", namespace = "http://geode.apache.org/schema/cache")
     protected RegionAttributesType.EvictionAttributes.LruMemorySize lruMemorySize;
 
-    public String toStringRep() {
-      return "lru-entry-count: " +
-          this.lruEntryCount.getMaximum() + ", " +
-          this.lruEntryCount.getAction().toString() + ", " +
-          "\nlru-heap-percentage: " +
-          this.lruHeapPercentage.getAction().toString() +
-          "\nlru-memory-size: " +
-          this.lruMemorySize.getMaximum() +
-          this.lruMemorySize.getAction().toString();
+    public static EvictionAttributes generate(String evictionAction,
+        Integer maxMemory, Integer maxEntryCount,
+        String objectSizer) {
+      if (evictionAction == null && maxMemory == null && maxEntryCount == null
+          && objectSizer == null) {
+        return null;
+      }
+
+      RegionAttributesType.EvictionAttributes evictionAttributes =
+          new RegionAttributesType.EvictionAttributes();
+      EnumActionDestroyOverflow action = EnumActionDestroyOverflow.fromValue(evictionAction);
+
+      if (maxMemory == null && maxEntryCount == null) {
+        LruHeapPercentage heapPercentage =
+            new LruHeapPercentage();
+        heapPercentage.setAction(action);
+        heapPercentage.setClassName(objectSizer);
+        evictionAttributes.setLruHeapPercentage(heapPercentage);
+      } else if (maxMemory != null) {
+        LruMemorySize memorySize =
+            new LruMemorySize();
+        memorySize.setAction(action);
+        memorySize.setClassName(objectSizer);
+        memorySize.setMaximum(maxMemory.toString());
+        evictionAttributes.setLruMemorySize(memorySize);
+      } else {
+        LruEntryCount entryCount =
+            new LruEntryCount();
+        entryCount.setAction(action);
+        entryCount.setMaximum(maxEntryCount.toString());
+        evictionAttributes.setLruEntryCount(entryCount);
+      }
+      return evictionAttributes;
     }
 
     /**
@@ -2488,6 +2612,96 @@ public class RegionAttributesType implements Serializable {
     protected String totalNumBuckets;
     @XmlAttribute(name = "colocated-with")
     protected String colocatedWith;
+
+    public static PartitionAttributes generate(String partitionResolver,
+        List<String> partitionListeners, Integer localMaxMemory,
+        Long recoveryDelay, Integer redundantCopies,
+        Long startupRecoveryDelay, Long totalMaxMemory,
+        Integer totalNumBuckets, String colocatedWith) {
+      if (partitionResolver == null &&
+          (partitionListeners == null || partitionListeners.isEmpty()) &&
+          localMaxMemory == null &&
+          recoveryDelay == null &&
+          redundantCopies == null &&
+          startupRecoveryDelay == null &&
+          totalMaxMemory == null &&
+          totalNumBuckets == null &&
+          colocatedWith == null) {
+        return null;
+      }
+
+      RegionAttributesType.PartitionAttributes partitionAttributes =
+          new RegionAttributesType.PartitionAttributes();
+      partitionAttributes.setColocatedWith(colocatedWith);
+      partitionAttributes.setLocalMaxMemory(Objects.toString(localMaxMemory, null));
+      partitionAttributes.setTotalMaxMemory(Objects.toString(totalMaxMemory, null));
+      partitionAttributes.setRecoveryDelay(Objects.toString(recoveryDelay, null));
+      partitionAttributes.setRedundantCopies(Objects.toString(redundantCopies, null));
+      partitionAttributes.setStartupRecoveryDelay(Objects.toString(startupRecoveryDelay, null));
+      partitionAttributes.setTotalNumBuckets(Objects.toString(totalNumBuckets, null));
+      if (partitionResolver != null) {
+        partitionAttributes.setPartitionResolver(new DeclarableType(partitionResolver));
+      }
+
+      if (partitionListeners != null) {
+        partitionListeners.stream().map(DeclarableType::new)
+            .forEach(partitionAttributes.getPartitionListeners()::add);
+      }
+      return partitionAttributes;
+    }
+
+    public static PartitionAttributes combine(PartitionAttributes existing,
+        PartitionAttributes delta) {
+      if (existing == null) {
+        return delta;
+      }
+      if (delta == null) {
+        return existing;
+      }
+
+      if (delta.getRedundantCopies() != null) {
+        existing.setRedundantCopies(delta.getRedundantCopies());
+      }
+
+      if (delta.getPartitionListeners() != null) {
+        existing.getPartitionListeners().clear();
+        existing.getPartitionListeners().addAll(delta.getPartitionListeners());
+      }
+
+      if (delta.getColocatedWith() != null) {
+        existing.setColocatedWith(delta.getColocatedWith());
+      }
+
+      if (delta.getLocalMaxMemory() != null) {
+        existing.setLocalMaxMemory(delta.getLocalMaxMemory());
+      }
+
+      if (delta.getPartitionResolver() != null) {
+        existing.setPartitionResolver(delta.getPartitionResolver());
+      }
+
+      if (delta.getRecoveryDelay() != null) {
+        existing.setRecoveryDelay(delta.getRecoveryDelay());
+      }
+
+      if (delta.getStartupRecoveryDelay() != null) {
+        existing.setStartupRecoveryDelay(delta.getStartupRecoveryDelay());
+      }
+
+      if (delta.getTotalMaxMemory() != null) {
+        existing.setTotalMaxMemory(delta.getTotalMaxMemory());
+      }
+
+      if (delta.getTotalNumBuckets() != null) {
+        existing.setTotalNumBuckets(delta.getTotalNumBuckets());
+      }
+
+      if (delta.getFixedPartitionAttributes() != null) {
+        existing.getFixedPartitionAttributes().clear();
+        existing.getFixedPartitionAttributes().addAll(delta.getFixedPartitionAttributes());
+      }
+      return existing;
+    }
 
     /**
      * Gets the value of the partitionResolver property.

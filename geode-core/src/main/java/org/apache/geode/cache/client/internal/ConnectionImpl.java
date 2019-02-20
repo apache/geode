@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionOpImpl;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
@@ -58,12 +59,13 @@ public class ConnectionImpl implements Connection {
   private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
 
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * Test hook to simulate a client crashing. If true, we will not notify the server when we close
    * the connection.
    */
+  @MutableForTesting
   private static boolean TEST_DURABLE_CLIENT_CRASH = false;
 
   private Socket theSocket;

@@ -71,6 +71,8 @@ import org.apache.geode.UncreatedSystemException;
 import org.apache.geode.UnstartedSystemException;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -1712,45 +1714,83 @@ public class SystemAdmin {
   }
 
   // option statics
+  @MakeNotStatic
   private static boolean debug = false;
+  @MakeNotStatic
   private static boolean details = false;
+  @MakeNotStatic
   private static boolean nofilter = false;
+  @MakeNotStatic
   private static boolean persec = false;
+  @MakeNotStatic
   private static boolean persample = false;
+  @MakeNotStatic
   private static boolean prunezeros = false;
+  @MakeNotStatic
   private static boolean quiet = false;
+  @MakeNotStatic
   private static boolean help = false;
+  @MakeNotStatic
   private static boolean monitor = false;
+  @MakeNotStatic
   private static boolean showBuckets = false;
+  @MakeNotStatic
   private static long startTime = -1;
+  @MakeNotStatic
   private static long endTime = -1;
+  @MakeNotStatic
   private static String portOption = null;
+  @MakeNotStatic
   private static String addressOption = "";
+  @MakeNotStatic
   private static String regionOption = null;
+  @MakeNotStatic
   private static long maxOplogSize = -1L;
+  @MakeNotStatic
   private static String lruOption = null;
+  @MakeNotStatic
   private static String lruActionOption = null;
+  @MakeNotStatic
   private static String lruLimitOption = null;
+  @MakeNotStatic
   private static String concurrencyLevelOption = null;
+  @MakeNotStatic
   private static String initialCapacityOption = null;
+  @MakeNotStatic
   private static String loadFactorOption = null;
+  @MakeNotStatic
   private static String compressorClassNameOption = null;
+  @MakeNotStatic
   private static String statisticsEnabledOption = null;
+  @MakeNotStatic
   private static boolean remove = false;
+  @MakeNotStatic
   private static String sysDirName = null;
-  private static ArrayList archiveOption = new ArrayList();
+  @MakeNotStatic
+  private static final ArrayList archiveOption = new ArrayList();
+  @MakeNotStatic
   private static String printStacksOption = null;
+  @MakeNotStatic
   private static String outOption = null;
+  @MakeNotStatic
   private static Properties propertyOption = new Properties();
+  @MakeNotStatic
   private static boolean serverOption = true;
+  @MakeNotStatic
   private static boolean peerOption = true;
+  @MakeNotStatic
   private static String gemfirePropertiesFileOption = null;
-  private static ArrayList xoptions = new ArrayList();
+  @MakeNotStatic
+  private static final ArrayList xoptions = new ArrayList();
+  @MakeNotStatic
   private static String hostnameForClientsOption = null;
+  @MakeNotStatic
   private static String baselineDir = null; // Baseline directory option value for backup command
+  @MakeNotStatic
   private static String outputDir = null;
 
-  private static Map cmdOptionsMap = new HashMap();
+  @MakeImmutable
+  private static final Map cmdOptionsMap = new HashMap();
   static {
     cmdOptionsMap.put("gemfire", new String[] {"--help", "-h", "-help", "-debug", "-q"});
     cmdOptionsMap.put("version", new String[] {});

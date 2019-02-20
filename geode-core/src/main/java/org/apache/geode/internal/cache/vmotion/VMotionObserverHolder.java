@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.vmotion;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.query.internal.Support;
 
 /**
@@ -27,11 +29,13 @@ public class VMotionObserverHolder {
   /**
    * The default 'do-nothing' vMotion observer *
    */
+  @Immutable
   public static final VMotionObserver NO_OBSERVER = new VMotionObserverAdapter();
 
   /**
    * The current observer which will be notified of all query events.
    */
+  @MutableForTesting
   private static VMotionObserver _instance = NO_OBSERVER;
 
   /**

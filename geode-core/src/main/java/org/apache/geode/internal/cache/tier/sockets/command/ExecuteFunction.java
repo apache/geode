@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
@@ -52,6 +53,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class ExecuteFunction extends BaseCommand {
 
+  @Immutable
   private static final ExecuteFunction singleton = new ExecuteFunction();
 
   public static Command getCommand() {

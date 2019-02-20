@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
@@ -50,6 +51,7 @@ import org.apache.geode.internal.logging.LogService;
 public class PoolManagerImpl {
   private static final Logger logger = LogService.getLogger();
 
+  @MakeNotStatic
   private static final PoolManagerImpl impl = new PoolManagerImpl(true);
 
   public static PoolManagerImpl getPMI() {

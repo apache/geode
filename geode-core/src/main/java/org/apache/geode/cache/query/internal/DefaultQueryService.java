@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
@@ -90,16 +91,17 @@ public class DefaultQueryService implements InternalQueryService {
           DistributionConfig.GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"))
       .booleanValue();
 
-  public static boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
+  public static final boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
       .valueOf(System.getProperty(
           DistributionConfig.GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
       .booleanValue();
 
-  public static boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
+  public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
       DistributionConfig.GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
 
 
   /** Test purpose only */
+  @MutableForTesting
   public static boolean TEST_QUERY_HETEROGENEOUS_OBJECTS = false;
 
   private final InternalCache cache;

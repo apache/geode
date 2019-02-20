@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.tcp;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.UniqueIdGenerator;
 
 /**
@@ -32,6 +33,7 @@ public class MsgIdGenerator {
    */
   public static final short NO_MSG_ID = -1;
   private static final short MAX_ID = 32767;
+  @MakeNotStatic("Possibly safe singleton to share?")
   private static final UniqueIdGenerator uigen = new UniqueIdGenerator(MAX_ID);
 
   private MsgIdGenerator() {

@@ -19,13 +19,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -37,6 +38,7 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -45,6 +47,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -117,6 +120,22 @@ public class CreateRegionCommandDUnitTest {
     server2 = lsRule.startServerVM(2, "group2", locator.getPort());
 
     gfsh.connectAndVerify(locator);
+  }
+
+  @Test
+  public void multipleTemplateRegionTypes() throws Exception {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + " --type=REPLICATE --group=group1")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + " --type=REPLICATE_PROXY --group=group2")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("create region --name=failed --template-region=" + regionName)
+        .statusIsError()
+        .hasInfoSection().hasOutput()
+        .contains("Multiple types of template region /multipleTemplateRegionTypes exist.");
   }
 
   @Test
@@ -295,7 +314,7 @@ public class CreateRegionCommandDUnitTest {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --name=" + regionName
         + " --type=REPLICATE --partition-resolver=InvalidPartitionResolver")
-        .containsOutput("\"/" + regionName + "\" is not a Partitioned Region").statusIsError();
+        .containsOutput("can be used only for creating a Partitioned Region").statusIsError();
   }
 
   @Test
@@ -303,8 +322,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --template-region=/TEMPLATE --name=/TEST"
         + TestCacheListener.class.getName())
         .statusIsError()
-        .containsOutput("Specify a valid region path for template-region")
-        .containsOutput("TEMPLATE not found");
+        .containsOutput("Template region /TEMPLATE does not exist");
   }
 
   @Test
@@ -707,12 +725,6 @@ public class CreateRegionCommandDUnitTest {
         .containsOutput("There are no GatewaySenders");
   }
 
-  /**
-   * Ignored this test until we refactor the FetchRegionAttributesFunction to not use
-   * AttributesFactory, and instead use RegionConfig, which we will do as part of implementing
-   * GEODE-6104
-   */
-  @Ignore
   @Test
   public void testCreateRegionFromTemplateWithAsyncEventListeners() {
     String queueId = "queue1";
@@ -742,12 +754,6 @@ public class CreateRegionCommandDUnitTest {
     });
   }
 
-  /**
-   * Ignored this test until we refactor the FetchRegionAttributesFunction to not use
-   * AttributesFactory, and instead use RegionConfig, which we will do as part of implementing
-   * GEODE-6104
-   */
-  @Ignore
   @Test
   public void testCreateRegionFromTemplateWithPartitionResolver() {
     String regionName = testName.getMethodName();
@@ -770,7 +776,34 @@ public class CreateRegionCommandDUnitTest {
               .isNotNull();
       assertThat(((InternalRegion) regionFromTemplate).getPartitionAttributes()
           .getPartitionResolver().getName())
-              .isEqualTo(DummyPartitionResolver.class.getName());
+              .isEqualTo("dummy");
+    });
+  }
+
+  @Test
+  public void createRegionCommandCreateCorrectClusterConfigXml() throws Exception {
+    URL xmlResource =
+        CreateRegionCommandDUnitTest.class.getResource("CreateRegionCommandDUnitTest.xml");
+
+    RegionShortcut[] shortcuts = RegionShortcut.values();
+    for (RegionShortcut shortcut : shortcuts) {
+      gfsh.executeAndAssertThat(
+          "create region --name=" + shortcut.name() + " --type=" + shortcut.name());
+    }
+
+    locator.invoke(() -> {
+      InternalConfigurationPersistenceService persistenceService =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
+      CacheConfig expected = persistenceService.getJaxbService()
+          .unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
+
+      CacheConfig actual = persistenceService.getCacheConfig("cluster");
+
+      for (RegionShortcut shortcut : shortcuts) {
+        assertThat(CacheElement.findElement(actual.getRegions(), shortcut.name()))
+            .isEqualToComparingFieldByFieldRecursively(
+                CacheElement.findElement(expected.getRegions(), shortcut.name()));
+      }
     });
   }
 

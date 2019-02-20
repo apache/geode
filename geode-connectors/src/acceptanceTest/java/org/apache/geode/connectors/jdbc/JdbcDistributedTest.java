@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
@@ -483,7 +483,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       String key = "id1";
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) ClusterStartupRule.getCache()
-          .getAsyncEventQueue(CreateMappingCommand.createAsyncEventQueueName(REGION_NAME))
+          .getAsyncEventQueue(MappingCommandUtils.createAsyncEventQueueName(REGION_NAME))
           .getAsyncEventListener();
 
       region.put(key, pdxEmployee1);
@@ -684,7 +684,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     if (!synchronous) {
       final String alterAsyncQueue =
           "alter async-event-queue --id="
-              + CreateMappingCommand.createAsyncEventQueueName(regionName)
+              + MappingCommandUtils.createAsyncEventQueueName(regionName)
               + " --batch-size=1 --batch-time-interval=0";
       gfsh.executeAndAssertThat(alterAsyncQueue).statusIsSuccess();
     }

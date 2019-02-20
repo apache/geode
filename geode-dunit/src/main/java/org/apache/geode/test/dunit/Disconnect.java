@@ -18,6 +18,7 @@ import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
@@ -48,6 +49,9 @@ public class Disconnect {
     AdminDistributedSystemImpl ads = AdminDistributedSystemImpl.getConnectedInstance();
     if (ads != null) {
       ads.disconnect();
+    }
+    if (Locator.hasLocator()) {
+      Locator.getLocator().stop();
     }
   }
 }

@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  * @since GemFire 7.0
  */
 public class DiskStoreCompacter {
-  public static String STACKTRACE_START = "--------------------------";
+  public static final String STACKTRACE_START = "--------------------------";
 
   public static void main(String[] args) {
     String errorString = null;

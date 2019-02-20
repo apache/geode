@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import java.io.File;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
@@ -89,6 +90,7 @@ public interface DiskStoreFactory {
    * <p>
    * Current value: <code>current directory</code>.
    */
+  @MakeImmutable
   File[] DEFAULT_DISK_DIRS = new File[] {new File(".")};
 
   /**
@@ -103,6 +105,7 @@ public interface DiskStoreFactory {
    * <p>
    * Current value: {@link #DEFAULT_DISK_DIR_SIZE} which is two petabytes each.
    */
+  @MakeImmutable
   int[] DEFAULT_DISK_DIR_SIZES = new int[] {DEFAULT_DISK_DIR_SIZE};
 
   /**

@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apache.geode</groupId>
   <artifactId>geode-cq</artifactId>
-  <version>1.9.0-SNAPSHOT</version>
+  <version>1.10.0-SNAPSHOT</version>
   <name>Apache Geode</name>
   <description>Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing</description>
   <url>http://geode.apache.org</url>
@@ -56,7 +56,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-wan</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>
@@ -106,7 +106,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-core</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>commons-configuration</groupId>
@@ -116,7 +116,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-old-versions</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
@@ -126,7 +126,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-web-management</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.carrotsearch.randomizedtesting</groupId>
@@ -161,7 +161,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-cq</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>javax.annotation</groupId>
@@ -181,7 +181,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-experimental-driver</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
@@ -226,7 +226,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-connectors</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
@@ -251,7 +251,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-junit</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
@@ -271,7 +271,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-rebalancer</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
@@ -306,7 +306,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-old-client-support</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.ldap</groupId>
@@ -371,7 +371,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-web-api</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.mortbay.jetty</groupId>
@@ -386,7 +386,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>2.9.7</version>
+        <version>2.9.8</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
@@ -436,12 +436,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-pulse</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-management</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.mockrunner</groupId>
@@ -501,7 +501,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-dunit</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
@@ -531,12 +531,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>apache-geode</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-protobuf-messages</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.jayway.jsonpath</groupId>
@@ -551,17 +551,17 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-common</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-json</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
-        <version>2.9.7</version>
+        <version>2.9.8</version>
       </dependency>
       <dependency>
         <groupId>mx4j</groupId>
@@ -571,7 +571,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-web</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.github.stefanbirkner</groupId>
@@ -636,7 +636,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-protobuf</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
@@ -676,7 +676,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-lucene</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.apache.shiro</groupId>
@@ -686,7 +686,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.9.7</version>
+        <version>2.9.8</version>
       </dependency>
       <dependency>
         <groupId>com.palantir.docker.compose</groupId>
@@ -741,7 +741,7 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-concurrency-test</artifactId>
-        <version>1.9.0-SNAPSHOT</version>
+        <version>1.10.0-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

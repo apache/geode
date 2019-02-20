@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
@@ -284,20 +285,24 @@ public class TypeRegistry {
     this.unreadDataMap.put(o, ud);
   }
 
+  @MakeNotStatic
   private static final AtomicReference<PdxSerializer> pdxSerializer = new AtomicReference<>(null);
 
+  @MakeNotStatic
   private static final AtomicReference<AutoSerializableManager> asm = new AtomicReference<>(null);
 
   /**
    * To fix bug 45116 we want any attempt to get the PdxSerializer after it has been closed to fail
    * with an exception.
    */
+  @MakeNotStatic
   private static volatile boolean open = false;
 
   /**
    * If the pdxSerializer is ever set to a non-null value then set this to true. It gets reset to
    * false when init() is called. This was added to fix bug 45116.
    */
+  @MakeNotStatic
   private static volatile boolean pdxSerializerWasSet = false;
 
   public static void init() {

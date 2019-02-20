@@ -32,6 +32,8 @@ import javax.management.ObjectName;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
@@ -102,6 +104,7 @@ public class ManagementAdapter {
   private NotificationBroadcasterSupport memberLevelNotifEmitter;
 
   /** The <code>MBeanServer</code> for this application */
+  @MakeNotStatic
   public static final MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
 
   /** MemberMBean instance **/
@@ -109,10 +112,13 @@ public class ManagementAdapter {
 
   private volatile boolean serviceInitialised = false;
 
+  @MakeNotStatic
   private MBeanAggregator aggregator;
 
+  @MakeImmutable
   public static final List<Class> refreshOnInit = new ArrayList<>();
 
+  @MakeImmutable
   public static final List<String> internalLocks = new ArrayList<>();
 
   static {

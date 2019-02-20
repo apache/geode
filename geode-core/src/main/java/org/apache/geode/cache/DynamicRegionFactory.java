@@ -26,6 +26,7 @@ import java.util.TreeMap;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
@@ -149,6 +150,7 @@ public abstract class DynamicRegionFactory {
   private static final long regionCreateSleepMillis =
       Long.getLong("DynamicRegionFactory.msDelay", 250);
 
+  @MakeNotStatic
   private static final DynamicRegionFactory singleInstance = new DynamicRegionFactoryImpl();
 
   InternalCache cache = null;
@@ -156,6 +158,7 @@ public abstract class DynamicRegionFactory {
   private Config config = null;
 
   /** The region listeners registered on this DynamicRegionFactory */
+  @MakeNotStatic
   private static volatile List regionListeners = Collections.emptyList();
 
   private static final Object regionListenerLock = new Object();

@@ -56,6 +56,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -94,6 +95,11 @@ public class CachePerfStatsTest {
 
     CachePerfStats.enableClockStats = true;
     cachePerfStats = new CachePerfStats(statisticsFactory, TEXT_ID, clock);
+  }
+
+  @After
+  public void tearDown() {
+    CachePerfStats.enableClockStats = false;
   }
 
   @Test

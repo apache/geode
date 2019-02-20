@@ -19,6 +19,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.memcached.commands.ClientError;
@@ -41,6 +42,7 @@ public class ConnectionHandler implements Runnable {
 
   private final Protocol protocol;
 
+  @MakeNotStatic
   private static LogWriter logger;
 
   public ConnectionHandler(Socket socket, Cache cache, Protocol protocol) {

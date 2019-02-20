@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -168,6 +169,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   public static final int DEFAULT_MESSAGE_SYNC_INTERVAL = 1;
 
+  @MakeImmutable("This never appears to be set")
   private static volatile int messageSyncInterval = DEFAULT_MESSAGE_SYNC_INTERVAL;
 
   private BatchRemovalThread removalThread = null;

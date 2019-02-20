@@ -41,6 +41,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.locator.SerializationHelper;
 import org.apache.geode.cache.partition.PartitionListener;
@@ -125,6 +126,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    *
    * @see #getPreferredNode()
    */
+  @Immutable
   private static final Random myRand = new Random();
 
   /**

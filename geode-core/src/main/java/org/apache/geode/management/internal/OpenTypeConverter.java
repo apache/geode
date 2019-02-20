@@ -61,6 +61,8 @@ import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.TabularType;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.management.ManagementException;
 
 /**
@@ -93,14 +95,17 @@ public abstract class OpenTypeConverter {
   private static class ConverterMap extends WeakHashMap<Type, WeakReference<OpenTypeConverter>> {
   }
 
+  @MakeNotStatic
   private static final ConverterMap converterMap = new ConverterMap();
 
+  @MakeNotStatic
   private static final Map<Type, Type> inProgress = OpenTypeUtil.newIdentityHashMap();
 
   /**
    * Following List simply serves to keep a reference to predefined OpenConverters so they don't get
    * garbage collected.
    */
+  @MakeNotStatic
   private static final List<OpenTypeConverter> preDefinedConverters = OpenTypeUtil.newList();
 
   protected OpenTypeConverter(Type targetType, OpenType openType, Class openClass) {
@@ -326,8 +331,10 @@ public abstract class OpenTypeConverter {
     }
   }
 
+  @Immutable
   protected static final String[] keyArray = {"key"};
 
+  @Immutable
   protected static final String[] keyValueArray = {"key", "value"};
 
   private static OpenTypeConverter makeTabularConverter(Type objType, boolean sortedMap,

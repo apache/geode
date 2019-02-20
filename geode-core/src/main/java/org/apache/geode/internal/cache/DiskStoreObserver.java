@@ -15,12 +15,15 @@
 package org.apache.geode.internal.cache;
 
 
+import org.apache.geode.annotations.internal.MutableForTesting;
+
 /**
  * For testing purposes only, observers events in the disk store.
  *
  */
 public abstract class DiskStoreObserver {
 
+  @MutableForTesting
   private static DiskStoreObserver INSTANCE = null;
 
   public static void setInstance(DiskStoreObserver observer) {

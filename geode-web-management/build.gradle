@@ -18,9 +18,26 @@ apply plugin: 'war'
 apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
+configurations {
+  commonTestCompile
+}
+
+sourceSets {
+  integrationTest {
+    resources {
+      srcDir "${projectDir}/src/main/webapp"
+    }
+  }
+
+  commonTest {
+    java {
+      srcDir "${projectDir}/src/commonTest/java"
+    }
+    compileClasspath = configurations.commonTestCompile
+  }
+}
 
 dependencies {
-
   compileOnly(project(':geode-core'))
 
   compileOnly('javax.servlet:javax.servlet-api')
@@ -62,6 +79,15 @@ dependencies {
     exclude module: 'spring-beans'
   }
 
+  commonTestCompile(project(':geode-core'))
+  commonTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  commonTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  commonTestCompile('org.springframework:spring-test')
+  commonTestCompile('org.springframework:spring-webmvc')
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -69,7 +95,11 @@ dependencies {
   testCompile(project(':geode-core'))
   testCompile('javax.servlet:javax.servlet-api')
 
+  integrationTestCompile(sourceSets.commonTest.output)
+
+  integrationTestCompile(project(':geode-core'))
   integrationTestCompile('org.springframework:spring-test')
+  integrationTestCompile('org.springframework:spring-webmvc')
   integrationTestCompile('org.springframework.security:spring-security-test')
 
   integrationTestCompile(project(':geode-junit')) {
@@ -78,13 +108,21 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-}
+  integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
+    exclude module: 'slf4j-api'
+  }
+    
+  distributedTestCompile(sourceSets.commonTest.output)
+  
+  distributedTestCompile('org.springframework:spring-test')
+  distributedTestCompile('org.springframework:spring-webmvc')
+  distributedTestCompile('org.springframework.security:spring-security-test')
 
-sourceSets {
-  integrationTest {
-    resources {
-      srcDir "${projectDir}/src/main/webapp"
-    }
+  distributedTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  distributedTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
   }
 }
 

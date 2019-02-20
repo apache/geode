@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -26,6 +27,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class UpdateClientNotification extends BaseCommand {
 
+  @Immutable
   private static final UpdateClientNotification singleton = new UpdateClientNotification();
 
   public static Command getCommand() {

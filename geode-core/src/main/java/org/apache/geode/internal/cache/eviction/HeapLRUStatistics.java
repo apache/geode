@@ -19,9 +19,11 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class HeapLRUStatistics implements EvictionStats {
+  @Immutable
   private static final StatisticsType statType;
   private static final int counterId;
   private static final int evictionsId;

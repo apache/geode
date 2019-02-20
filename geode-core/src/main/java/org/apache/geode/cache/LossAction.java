@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeImmutable;
+
 
 /**
  * Specifies how access to the region is affected when one or more required roles are lost. A role
@@ -29,6 +32,7 @@ import java.util.List;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Immutable
 public class LossAction implements Serializable {
   private static final long serialVersionUID = -832035480397447797L;
 
@@ -42,6 +46,7 @@ public class LossAction implements Serializable {
    * region is allowed, including {@linkplain Region#close close} and
    * {@linkplain Region#localDestroyRegion() localDestroyRegion}.
    */
+  @Immutable
   public static final LossAction NO_ACCESS = new LossAction("NO_ACCESS");
 
   /**
@@ -50,11 +55,13 @@ public class LossAction implements Serializable {
    * roles are absent. Reads which result in a netSearch behave normally, while any attempt to
    * invoke a netLoad is not allowed.
    */
+  @Immutable
   public static final LossAction LIMITED_ACCESS = new LossAction("LIMITED_ACCESS");
 
   /**
    * Access to the region is unaffected when required roles are missing.
    */
+  @Immutable
   public static final LossAction FULL_ACCESS = new LossAction("FULL_ACCESS");
 
   /**
@@ -62,6 +69,7 @@ public class LossAction implements Serializable {
    * disconnect from the DistributedSystem and then reconnect. Attempting to use any existing
    * references to the regions or cache will throw a {@link CacheClosedException}.
    */
+  @Immutable
   public static final LossAction RECONNECT = new LossAction("RECONNECT");
 
   /** The name of this mirror type. */
@@ -71,12 +79,15 @@ public class LossAction implements Serializable {
   /** byte used as ordinal to represent this Scope */
   public final byte ordinal = nextOrdinal++;
 
+  @MakeImmutable
   private static byte nextOrdinal = 0;
 
+  @Immutable
   private static final LossAction[] PRIVATE_VALUES =
       {NO_ACCESS, LIMITED_ACCESS, FULL_ACCESS, RECONNECT};
 
   /** List of all LossAction values */
+  @Immutable
   public static final List VALUES = Collections.unmodifiableList(Arrays.asList(PRIVATE_VALUES));
 
   private Object readResolve() throws ObjectStreamException {

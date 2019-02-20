@@ -36,7 +36,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.api.ClusterManagementResult;
 
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   private String responseBody;
   private String logMessage;
 

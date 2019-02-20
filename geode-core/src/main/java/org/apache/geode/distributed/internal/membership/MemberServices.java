@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal.membership;
 import java.net.InetAddress;
 
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -75,7 +75,9 @@ public interface MemberServices {
    * @return a MembershipManager
    */
   MembershipManager newMembershipManager(DistributedMembershipListener listener,
-      DistributionConfig config, RemoteTransportConfig transport, DMStats stats,
+      InternalDistributedSystem system,
+      RemoteTransportConfig transport,
+      DMStats stats,
       SecurityService securityService);
 
 

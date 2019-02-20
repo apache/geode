@@ -34,6 +34,7 @@ import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
@@ -79,13 +80,6 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private static final String CREATE_MAPPING__GROUPS_NAME__HELP =
       "The names of the server groups on which this mapping should be created.";
 
-  public static String createAsyncEventQueueName(String regionPath) {
-    if (regionPath.startsWith("/")) {
-      regionPath = regionPath.substring(1);
-    }
-    return "JDBC#" + regionPath.replace('/', '_');
-  }
-
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -125,8 +119,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
         groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
       }
       for (String group : groups) {
-        CacheConfig cacheConfig = configurationPersistenceService.getCacheConfig(group);
-        RegionConfig regionConfig = checkForRegion(regionName, cacheConfig);
+        CacheConfig cacheConfig =
+            MappingCommandUtils.getCacheConfig(configurationPersistenceService, group);
+        RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, group);
         checkForExistingMapping(regionName, regionConfig);
         checkForCacheLoader(regionName, regionConfig);
         checkForCacheWriter(regionName, synchronous, regionConfig);
@@ -174,13 +169,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return result;
   }
 
-  private RegionConfig checkForRegion(String regionName, CacheConfig cacheConfig)
+  private RegionConfig checkForRegion(String regionName, CacheConfig cacheConfig, String groupName)
       throws PreconditionException {
-    RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
-    if (regionConfig == null) {
-      throw new PreconditionException("A region named " + regionName + " must already exist.");
-    }
-    return regionConfig;
+    return MappingCommandUtils.checkForRegion(regionName, cacheConfig, groupName);
   }
 
   private void checkForExistingMapping(String regionName, RegionConfig regionConfig)
@@ -222,7 +213,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private void checkForAsyncQueue(String regionName, boolean synchronous, CacheConfig cacheConfig)
       throws PreconditionException {
     if (!synchronous) {
-      String queueName = createAsyncEventQueueName(regionName);
+      String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
       AsyncEventQueue asyncEventQueue = cacheConfig.getAsyncEventQueues().stream()
           .filter(queue -> queue.getId().equals(queueName)).findFirst().orElse(null);
       if (asyncEventQueue != null) {
@@ -238,7 +229,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     RegionMapping regionMapping = (RegionMapping) arguments[0];
     boolean synchronous = (Boolean) arguments[1];
     String regionName = regionMapping.getRegionName();
-    String queueName = createAsyncEventQueueName(regionName);
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
     RegionConfig regionConfig = findRegionConfig(cacheConfig, regionName);
     if (regionConfig == null) {
       return false;

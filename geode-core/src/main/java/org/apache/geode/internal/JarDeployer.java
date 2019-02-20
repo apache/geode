@@ -44,12 +44,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.logging.LogService;
 
 public class JarDeployer implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger logger = LogService.getLogger();
   public static final String JAR_PREFIX_FOR_REGEX = "";
+  @MakeNotStatic
   private static final Lock lock = new ReentrantLock();
 
   private final Map<String, DeployedJar> deployedJars = new ConcurrentHashMap<>();

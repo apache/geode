@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
@@ -39,7 +40,8 @@ import org.apache.geode.management.internal.cli.shell.GfshConfig;
  * @since GemFire 7.0
  */
 public class LogWrapper {
-  private static Object INSTANCE_LOCK = new Object();
+  private static final Object INSTANCE_LOCK = new Object();
+  @MakeNotStatic
   private static volatile LogWrapper INSTANCE = null;
 
   private Logger logger;

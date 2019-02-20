@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.offheap;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.DiskId;
@@ -46,6 +47,7 @@ public class OffHeapRegionEntryHelper {
   protected static final long TOMBSTONE_ADDRESS = 8L << 1;
   public static final int MAX_LENGTH_FOR_DATA_AS_ADDRESS = 8;
 
+  @Immutable
   private static final Token[] addrToObj =
       new Token[] {null, Token.INVALID, Token.LOCAL_INVALID, Token.DESTROYED, Token.REMOVED_PHASE1,
           Token.REMOVED_PHASE2, Token.END_OF_STREAM, Token.NOT_AVAILABLE, Token.TOMBSTONE,};
@@ -201,27 +203,27 @@ public class OffHeapRegionEntryHelper {
   /**
    * This bit is set to indicate that this address has data encoded in it.
    */
-  private static long ENCODED_BIT = 1L;
+  private static final long ENCODED_BIT = 1L;
   /**
    * This bit is set to indicate that the encoded data is serialized.
    */
-  static long SERIALIZED_BIT = 2L;
+  static final long SERIALIZED_BIT = 2L;
   /**
    * This bit is set to indicate that the encoded data is compressed.
    */
-  static long COMPRESSED_BIT = 4L;
+  static final long COMPRESSED_BIT = 4L;
   /**
    * This bit is set to indicate that the encoded data is a long whose value fits in 7 bytes.
    */
-  private static long LONG_BIT = 8L;
+  private static final long LONG_BIT = 8L;
   /**
    * size is in the range 0..7 so we only need 3 bits.
    */
-  private static long SIZE_MASK = 0x70L;
+  private static final long SIZE_MASK = 0x70L;
   /**
    * number of bits to shift the size by.
    */
-  private static int SIZE_SHIFT = 4;
+  private static final int SIZE_SHIFT = 4;
   // the msb of this byte is currently unused
 
   /**

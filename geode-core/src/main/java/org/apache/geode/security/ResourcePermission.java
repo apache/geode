@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.permission.WildcardPermission;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 
 /**
@@ -32,19 +33,20 @@ import org.apache.geode.cache.Region;
  * It is passed to the SecurityManager for the implementation to decide whether to grant a user this
  * permission or not.
  */
+@Immutable
 public class ResourcePermission extends WildcardPermission {
 
-  public static String ALL = "*";
-  public static String NULL = "NULL";
+  public static final String ALL = "*";
+  public static final String NULL = "NULL";
 
   /**
    * @deprecated use ALL
    */
-  public static String ALL_REGIONS = "*";
+  public static final String ALL_REGIONS = "*";
   /**
    * @deprecated use All
    */
-  public static String ALL_KEYS = "*";
+  public static final String ALL_KEYS = "*";
 
   public enum Resource {
     ALL, NULL, CLUSTER, DATA;

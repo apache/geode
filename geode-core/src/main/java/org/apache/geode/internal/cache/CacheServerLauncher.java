@@ -35,8 +35,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -68,14 +70,15 @@ import org.apache.geode.internal.util.JavaCommandBuilder;
 public class CacheServerLauncher {
 
   /** Is this VM a dedicated Cache Server? This value is used mainly by the admin API. */
+  @MakeNotStatic("Maybe this should be immutable instead, if this whole JVM is supposed to be a dedicated server?")
   public static boolean isDedicatedCacheServer =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "isDedicatedServer");
 
-  public static boolean ASSIGN_BUCKETS = Boolean.getBoolean(
+  public static final boolean ASSIGN_BUCKETS = Boolean.getBoolean(
       DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.assignBucketsToPartitions");
 
   // default is to exit if property not defined
-  public static boolean DONT_EXIT_AFTER_LAUNCH = Boolean
+  public static final boolean DONT_EXIT_AFTER_LAUNCH = Boolean
       .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "CacheServerLauncher.dontExitAfterLaunch");
 
   /** Should the launch command be printed? */
@@ -728,7 +731,11 @@ public class CacheServerLauncher {
         // system.isReconnecting());
         boolean reconnected = false;
         if (system.isReconnecting()) {
-          reconnected = system.waitUntilReconnected(-1, TimeUnit.SECONDS);
+          try {
+            reconnected = system.waitUntilReconnected(-1, TimeUnit.SECONDS);
+          } catch (CancelException e) {
+            // reconnect failed
+          }
           if (reconnected) {
             system = (InternalDistributedSystem) system.getReconnectedSystem();
             cache = system.getCache();

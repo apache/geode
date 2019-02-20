@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 
 /**
@@ -34,7 +35,9 @@ import org.apache.geode.internal.CopyOnWriteHashSet;
  */
 public class DependencyMonitorManager {
 
-  private static Set<DependencyMonitor> monitors = new CopyOnWriteHashSet<DependencyMonitor>();
+  @MakeNotStatic
+  private static final Set<DependencyMonitor> monitors =
+      new CopyOnWriteHashSet<DependencyMonitor>();
 
   static {
     // The DLockDependencyMonitor won't get loaded unless we add it here.

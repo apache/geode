@@ -42,6 +42,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.DateFormatter;
@@ -51,6 +52,7 @@ import org.apache.geode.internal.logging.DateFormatter;
  */
 public class StatArchiveReader implements StatArchiveFormat, AutoCloseable {
 
+  @MakeImmutable("Number formats are not thread safe")
   protected static final NumberFormat nf = NumberFormat.getNumberInstance();
   static {
     nf.setMaximumFractionDigits(2);

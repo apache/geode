@@ -110,4 +110,10 @@ public interface Manager extends Service, MessageHandler {
    */
   boolean isReconnectingDS();
 
+  /**
+   * If this.isReconnectingDS() then this method will inform whether the reconnect
+   * has completed
+   */
+  boolean isReconnectCompleted();
+
 }

@@ -41,6 +41,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -101,18 +103,22 @@ public class TcpServer {
   // GossipServer.
   public static final int OLDGOSSIPVERSION = 1001;
 
+  @MakeImmutable
   private static final Map<Integer, Short> GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap<>();
 
   // For test purpose only
+  @MutableForTesting
   public static boolean isTesting = false;
   // Non-final field for testing to avoid any security holes in system.
+  @MutableForTesting
   public static int TESTVERSION = GOSSIPVERSION;
+  @MutableForTesting
   public static int OLDTESTVERSION = OLDGOSSIPVERSION;
 
   public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
-  private static int MAX_POOL_SIZE =
+  private static final int MAX_POOL_SIZE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
-  private static int POOL_IDLE_TIMEOUT = 60 * 1000;
+  private static final int POOL_IDLE_TIMEOUT = 60 * 1000;
 
   private static final Logger log = LogService.getLogger();
 
@@ -197,6 +203,10 @@ public class TcpServer {
     log.info("TcpServer@" + System.identityHashCode(this)
         + " restarting: completed.  Server thread=" + this.serverThread + '@'
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
+  }
+
+  public void restartCompleted(InternalDistributedSystem ds) {
+    this.handler.restartCompleted(ds);
   }
 
   public void start() throws IOException {

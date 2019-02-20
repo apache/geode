@@ -34,6 +34,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.InvalidVersionException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -83,10 +84,13 @@ public abstract class DistributedCacheOperation {
 
   private static final Logger logger = LogService.getLogger();
 
+  @MutableForTesting
   public static double LOSS_SIMULATION_RATIO = 0; // test hook
 
+  @MutableForTesting
   public static Random LOSS_SIMULATION_GENERATOR;
 
+  @MutableForTesting
   public static long SLOW_DISTRIBUTION_MS = 0; // test hook
 
   // constants used in subclasses and distribution messages
@@ -150,6 +154,7 @@ public abstract class DistributedCacheOperation {
 
   public static final short DESERIALIZATION_POLICY_MASK = (short) (DESERIALIZATION_POLICY_END - 1);
 
+  @MutableForTesting
   public static boolean testSendingOldValues;
 
   protected InternalCacheEvent event;
@@ -160,6 +165,7 @@ public abstract class DistributedCacheOperation {
 
   protected Set originalRecipients;
 
+  @MutableForTesting
   static Runnable internalBeforePutOutgoing;
 
   public static String deserializationPolicyToString(byte policy) {
@@ -240,6 +246,7 @@ public abstract class DistributedCacheOperation {
     return true;
   }
 
+  @MutableForTesting
   public static volatile DelayedAction test_InvalidVersionAction;
 
   /**

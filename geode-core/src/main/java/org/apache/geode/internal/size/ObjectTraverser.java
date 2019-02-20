@@ -23,12 +23,16 @@ import java.util.Map;
 
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 
 
 public class ObjectTraverser {
+  @MakeNotStatic
   private static final Map<Class, FieldSet> FIELD_CACHE =
       new CopyOnWriteWeakHashMap<Class, FieldSet>();
+  @Immutable
   private static final FieldSet NON_PRIMATIVE_ARRAY = new FieldSet(null, null);
 
   /**

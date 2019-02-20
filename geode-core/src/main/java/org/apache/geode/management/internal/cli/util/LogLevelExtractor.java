@@ -23,16 +23,18 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Level;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 
 /**
  * this will extract convert the deprecated InternalLogWriter's level into log4j level as well.
  */
 public class LogLevelExtractor {
-  private static Pattern LOG_PATTERN =
+  private static final Pattern LOG_PATTERN =
       Pattern.compile("^\\[(\\S*)\\s+([\\d\\/]+)\\s+([\\d:\\.]+)\\s+(\\S+)");
 
-  private static DateTimeFormatter LOG_TIMESTAMP_FORMATTER =
+  @Immutable
+  private static final DateTimeFormatter LOG_TIMESTAMP_FORMATTER =
       DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS zzz");
   private static final String SPACE = " ";
 

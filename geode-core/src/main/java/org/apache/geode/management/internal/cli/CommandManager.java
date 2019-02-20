@@ -34,6 +34,7 @@ import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
@@ -254,7 +255,8 @@ public class CommandManager {
   }
 
   /** Skip some of the Converters from Spring Shell for our customization */
-  private static List<Class> SHL_CONVERTERS_TOSKIP = new ArrayList();
+  @MakeImmutable
+  private static final List<Class> SHL_CONVERTERS_TOSKIP = new ArrayList();
   static {
     // skip springs SimpleFileConverter to use our own FilePathConverter
     SHL_CONVERTERS_TOSKIP.add(SimpleFileConverter.class);

@@ -18,6 +18,7 @@ package org.apache.geode.internal.cache;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSCODE;
@@ -33,8 +34,10 @@ import org.apache.geode.pdx.PdxInstance;
  *
  */
 public class CachedDeserializableFactory {
-  public static boolean PREFER_DESERIALIZED =
+  public static final boolean PREFER_DESERIALIZED =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PREFER_SERIALIZED");
+
+  @MutableForTesting
   public static boolean STORE_ALL_VALUE_FORMS =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "STORE_ALL_VALUE_FORMS");
 

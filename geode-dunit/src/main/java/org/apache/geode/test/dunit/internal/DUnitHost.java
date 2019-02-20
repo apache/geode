@@ -28,13 +28,15 @@ class DUnitHost extends Host {
   private static final long serialVersionUID = -8034165624503666383L;
 
   private final transient VM debuggingVM;
+  private final transient ProcessManager processManager;
+  private final transient VMEventNotifier vmEventNotifier;
 
-  private transient ProcessManager processManager;
-
-  public DUnitHost(String hostName, ProcessManager processManager) throws RemoteException {
-    super(hostName);
+  DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier)
+      throws RemoteException {
+    super(hostName, vmEventNotifier);
     this.debuggingVM = new VM(this, -1, new RemoteDUnitVM(), null, null);
     this.processManager = processManager;
+    this.vmEventNotifier = vmEventNotifier;
   }
 
   public void init(Registry registry, int numVMs)

@@ -31,6 +31,8 @@ import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.distributed.DistributedMember;
@@ -104,6 +106,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
   /** Retrieves an InetAddress given the provided hostname */
+  @MutableForTesting
   private static HostnameResolver hostnameResolver =
       (location) -> InetAddress.getByName(location.getHostName());
 
@@ -115,6 +118,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   private transient Version versionObj = Version.CURRENT;
 
   /** The versions in which this message was modified */
+  @Immutable
   private static final Version[] dsfidVersions = new Version[] {Version.GFE_71, Version.GFE_90};
 
   private void defaultToCurrentHost() {

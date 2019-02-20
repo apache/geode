@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.persistence.query.mock;
 
 import java.util.Comparator;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntryEventImpl;
 
@@ -29,7 +30,9 @@ import org.apache.geode.internal.cache.EntryEventImpl;
  */
 public class ByteComparator implements Comparator<Object> {
 
+  @Immutable
   public static final byte[] MIN_BYTES = new byte[0];
+  @Immutable
   public static final byte[] MAX_BYTES = new byte[0];
 
   @Override

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.tier.Command;
@@ -24,6 +25,7 @@ import org.apache.geode.internal.cache.tier.Command;
  */
 public class ExecuteRegionFunctionGeode18 extends ExecuteRegionFunction66 {
 
+  @Immutable
   private static final ExecuteRegionFunctionGeode18 singleton = new ExecuteRegionFunctionGeode18();
 
   public static Command getCommand() {

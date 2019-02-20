@@ -20,10 +20,12 @@ import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_D
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductStringProperty;
 import static org.apache.geode.test.dunit.Host.getHost;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 
 import java.io.File;
+import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.util.Optional;
 
 import org.junit.rules.TemporaryFolder;
@@ -31,6 +33,7 @@ import org.junit.rules.TestName;
 import org.junit.runner.Description;
 
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.VMEventListener;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.junit.rules.DiskDirRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -43,14 +46,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
  * rule to define the directory locations and names.
  *
  * <p>
- * You may either pass in instances of SerializableTemporaryFolder and SerializableTestName from
- * the test or the DistributedDiskDirRule will create its own instances. Either way, it will invoke
- * SerializableTemporaryFolder.before and SerializableTestName.starting(Description). If the test
- * provides its own instances of these rules defined, please do not annotate these instances with
- * {@code @Rule}.
- *
- * <p>
- * Each JVM will have its own default DiskDirs directory in which that JVM will create the default
+ * Each JVM will have its own default DiskDir directory in which that JVM will create the default
  * disk store (if one is created). Each DiskDir name is defined as:
  *
  * <pre>
@@ -61,23 +57,25 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestRule;
  * controller VM (-1) but not the locator VM (-2):
  *
  * <pre>
- * /var/folders/28/m__9dv1906n60kmz7t71wm680000gn/T/junit1766147044000254810
- *     VM-1-PRAccessorWithOverflowRegressionTest_testPROverflow-diskDirs
- *     VM0-PRAccessorWithOverflowRegressionTest_testPROverflow-diskDirs
- *     VM1-PRAccessorWithOverflowRegressionTest_testPROverflow-diskDirs
- *     VM2-PRAccessorWithOverflowRegressionTest_testPROverflow-diskDirs
- *     VM3-PRAccessorWithOverflowRegressionTest_testPROverflow-diskDirs
+ * /var/folders/28/m__9dv1906n60kmz7t71wm680000gn/T/junit7783603075891789189/
+ *     VM-1-DistributedDiskDirRuleDistributedTest_setsDefaultDiskDirsPropertyInEveryVm-diskDirs
+ *     VM0-DistributedDiskDirRuleDistributedTest_setsDefaultDiskDirsPropertyInEveryVm-diskDirs
+ *     VM1-DistributedDiskDirRuleDistributedTest_setsDefaultDiskDirsPropertyInEveryVm-diskDirs
+ *     VM2-DistributedDiskDirRuleDistributedTest_setsDefaultDiskDirsPropertyInEveryVm-diskDirs
+ *     VM3-DistributedDiskDirRuleDistributedTest_setsDefaultDiskDirsPropertyInEveryVm-diskDirs
  * </pre>
  *
  * <p>
  * Example of test using DistributedDiskDirRule:
  *
  * <pre>
- * {@literal @}Category(DistributedTest.class)
- * public class PRAccessorWithOverflowRegressionTest extends CacheTestCase {
+ * public class DistributedDiskDirRuleDistributedTest implements Serializable {
  *
- *     {@literal @}Rule
- *     public DistributedDiskDirRule diskDirsRule = new DistributedDiskDirRule();
+ *   {@literal @}Rule
+ *   public DistributedRule distributedRule = new DistributedRule();
+ *
+ *   {@literal @}Rule
+ *   public DistributedDiskDirRule distributedDiskDirRule = new DistributedDiskDirRule();
  * </pre>
  */
 @SuppressWarnings("serial,unused")
@@ -88,43 +86,31 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
   private final SerializableTemporaryFolder temporaryFolder;
   private final SerializableTestName testName;
   private final RemoteInvoker invoker;
+  private final VMEventListener vmEventListener;
 
-  private volatile int beforeVmCount;
+  private String testClassName;
 
   public DistributedDiskDirRule() {
-    this(new Builder());
+    this(new SerializableTemporaryFolder(), new SerializableTestName());
   }
 
-  public DistributedDiskDirRule(SerializableTemporaryFolder temporaryFolder) {
-    this(new Builder().temporaryFolder(temporaryFolder));
-  }
-
-  public DistributedDiskDirRule(SerializableTestName testName) {
-    this(new Builder().testName(testName));
-  }
-
-  public DistributedDiskDirRule(SerializableTemporaryFolder temporaryFolder,
+  private DistributedDiskDirRule(SerializableTemporaryFolder temporaryFolder,
       SerializableTestName testName) {
-    this(new Builder().temporaryFolder(temporaryFolder).testName(testName));
+    this(temporaryFolder, testName, new RemoteInvoker());
   }
 
-  public DistributedDiskDirRule(Builder builder) {
-    this(builder, new RemoteInvoker());
-  }
-
-  protected DistributedDiskDirRule(Builder builder, RemoteInvoker invoker) {
-    this(builder.initializeHelperRules, builder.temporaryFolder, builder.testName, invoker);
-  }
-
-  protected DistributedDiskDirRule(boolean initializeHelperRules,
-      SerializableTemporaryFolder temporaryFolder, SerializableTestName testName,
-      RemoteInvoker invoker) {
-    super(initializeHelperRules, null, null);
+  private DistributedDiskDirRule(SerializableTemporaryFolder temporaryFolder,
+      SerializableTestName testName, RemoteInvoker invoker) {
+    super(null, null);
     this.temporaryFolder = temporaryFolder;
     this.testName = testName;
     this.invoker = invoker;
+    vmEventListener = new InternalVMEventListener();
   }
 
+  /**
+   * Returns the current default disk dirs value for the specified VM.
+   */
   public File getDiskDirFor(VM vm) {
     return new File(vm.invoke(() -> System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY)));
   }
@@ -132,17 +118,26 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
   @Override
   protected void before(Description description) throws Exception {
     DUnitLauncher.launchIfNeeded();
-    beforeVmCount = getVMCount();
+    VM.addVMEventListener(vmEventListener);
 
-    if (initializeHelperRules) {
-      initializeHelperRules(description);
-    }
+    initializeHelperRules(description);
 
-    invoker.invokeInEveryVMAndController(() -> doBefore(this, description));
+    testClassName = getTestClassName(description);
+    invoker.invokeInEveryVMAndController(() -> doBefore(this));
   }
 
   @Override
-  protected void initializeHelperRules(Description description) throws Exception {
+  protected void after(Description description) {
+    VM.removeVMEventListener(vmEventListener);
+    invoker.invokeInEveryVMAndController(() -> doAfter());
+  }
+
+  private String getDiskDirName(String testClass) {
+    return "VM" + getCurrentVMNum() + "-" + testClass + "_" + testName.getMethodName()
+        + "-diskDirs";
+  }
+
+  private void initializeHelperRules(Description description) throws Exception {
     if (temporaryFolder != null) {
       Method method = TemporaryFolder.class.getDeclaredMethod(BEFORE);
       method.setAccessible(true);
@@ -156,27 +151,24 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
     }
   }
 
-  @Override
-  protected void after(Description description) {
-    assertThat(getVMCount()).isEqualTo(beforeVmCount);
-
-    invoker.invokeInEveryVMAndController(() -> doAfter());
+  private void afterCreateVM(VM vm) {
+    vm.invoke(() -> doBefore(this));
   }
 
-  @Override
-  protected String getDiskDirName(String testClass) {
-    return "VM" + VM.getCurrentVMNum() + "-" + testClass + "_" + testName.getMethodName()
-        + "-diskDirs";
+  private void afterBounceVM(VM vm) {
+    vm.invoke(() -> doBefore(this));
   }
 
-  private void doBefore(DistributedDiskDirRule diskDirRule, Description description)
-      throws Exception {
+  private void doBefore(DistributedDiskDirRule diskDirRule) throws Exception {
     data = new DistributedDiskDirRuleData(diskDirRule);
 
     Optional<String> value = getProductStringProperty(DEFAULT_DISK_DIRS_PROPERTY);
     value.ifPresent(s -> data.setOriginalValue(s));
 
-    File diskDir = data.temporaryFolder().newFolder(getDiskDirName(getTestClassName(description)));
+    File diskDir = new File(data.temporaryFolder().getRoot(), getDiskDirName(testClassName));
+    if (!diskDir.exists()) {
+      Files.createDirectory(diskDir.toPath());
+    }
 
     System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, diskDir.getAbsolutePath());
   }
@@ -184,7 +176,7 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
   private void doAfter() {
     if (data == null) {
       throw new Error("Failed to invoke " + getClass().getSimpleName() + ".before in VM-"
-          + VM.getCurrentVMNum() + ". Rule does not support VM.bounce().");
+          + getCurrentVMNum() + ". Rule does not support VM.bounce().");
     }
     if (data.originalValue() == null) {
       System.clearProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
@@ -238,39 +230,18 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
   }
 
   /**
-   * Builds an instance of DistributedDiskDirRule
+   * VMEventListener for DistributedDiskDirRule.
    */
-  public static class Builder {
-    private boolean initializeHelperRules = true;
-    private SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-    private SerializableTestName testName = new SerializableTestName();
+  private class InternalVMEventListener implements VMEventListener, Serializable {
 
-    public Builder() {
-      // nothing
+    @Override
+    public void afterCreateVM(VM vm) {
+      DistributedDiskDirRule.this.afterCreateVM(vm);
     }
 
-    /**
-     * Specify false to disable initializing SerializableTemporaryFolder and SerializableTestName
-     * during DistributedDiskDirRule initialization. If this is enabled then do NOT annotate these
-     * helper rules in the test or combine them with RuleChain or RuleList. Default value is true.
-     */
-    public Builder initializeHelperRules(boolean value) {
-      initializeHelperRules = value;
-      return this;
-    }
-
-    public Builder temporaryFolder(SerializableTemporaryFolder temporaryFolder) {
-      this.temporaryFolder = temporaryFolder;
-      return this;
-    }
-
-    public Builder testName(SerializableTestName testName) {
-      this.testName = testName;
-      return this;
-    }
-
-    public DistributedDiskDirRule build() {
-      return new DistributedDiskDirRule(this);
+    @Override
+    public void afterBounceVM(VM vm) {
+      DistributedDiskDirRule.this.afterBounceVM(vm);
     }
   }
 }

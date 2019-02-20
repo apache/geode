@@ -21,6 +21,8 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.Buffers;
@@ -36,11 +38,13 @@ import org.apache.geode.internal.util.Breadcrumbs;
 public class DistributionStats implements DMStats {
   private static final Logger logger = LogService.getLogger();
 
+  @MakeNotStatic
   public static boolean enableClockStats = false;
 
 
   ////////////////// Statistic "Id" Fields //////////////////
 
+  @Immutable
   private static final StatisticsType type;
   private static final int sentMessagesId;
   private static final int sentCommitMessagesId;
