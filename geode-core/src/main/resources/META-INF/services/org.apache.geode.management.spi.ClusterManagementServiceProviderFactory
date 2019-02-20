@@ -14,4 +14,4 @@
 #
 
 
-org.apache.geode.management.api.SmartClusterManagementServiceProviderFactory
+org.apache.geode.management.internal.api.SmartClusterManagementServiceProviderFactory

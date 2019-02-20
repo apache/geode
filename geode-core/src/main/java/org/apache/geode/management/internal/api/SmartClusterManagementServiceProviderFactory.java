@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.api;
+package org.apache.geode.management.internal.api;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,9 +22,16 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
 
+/**
+ * An implementation of {@link ClusterManagementServiceProviderFactory} which can be used in any
+ * context where Geode is running (client, server or locator). It will attempt to determine the
+ * address of the {@code ClusterManagementService} when using the {@code create()} call. Otherwise
+ * an explicit can also be used.
+ */
 public class SmartClusterManagementServiceProviderFactory implements
     ClusterManagementServiceProviderFactory {
 
@@ -40,7 +47,8 @@ public class SmartClusterManagementServiceProviderFactory implements
       return InternalLocator.getLocator().getClusterManagementService();
     }
 
-    throw new IllegalStateException("This method is only implemented on locators for now.");
+    throw new IllegalStateException(
+        "This method is only implemented on locators or clients for now.");
 
     // try {
     // Cache cache = CacheFactory.getAnyInstance();
