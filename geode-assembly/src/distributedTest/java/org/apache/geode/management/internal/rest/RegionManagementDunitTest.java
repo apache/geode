@@ -87,6 +87,7 @@ public class RegionManagementDunitTest {
 
     assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
     // make sure region is created
@@ -97,10 +98,11 @@ public class RegionManagementDunitTest {
 
     // create the same region 2nd time
     result = restClient.doPostAndAssert("/regions", json)
-        .hasStatusCode(409)
+        .hasStatusCode(200)
         .getClusterManagementResult();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
+    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isSuccessful()).isTrue();
   }
 
   @Test
@@ -112,7 +114,7 @@ public class RegionManagementDunitTest {
         .hasStatusCode(500)
         .getClusterManagementResult();
 
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessfullyPersisted()).isFalse();
   }
 

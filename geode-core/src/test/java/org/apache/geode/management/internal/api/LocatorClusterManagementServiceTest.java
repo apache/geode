@@ -90,7 +90,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(Collections.emptySet()).when(service).findMembers(any(), any());
     result = service.create(regionConfig, "cluster");
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.getPersistenceStatus().getMessage())
         .contains("no members found to create cache element");
   }

@@ -49,7 +49,7 @@ public class DisabledClusterConfigTest {
             .getClusterManagementResult();
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.isSuccessfullyPersisted()).isFalse();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.getPersistenceStatus().getMessage())
         .isEqualTo("Cluster configuration service needs to be enabled");
   }
