@@ -26,14 +26,14 @@ public class JavaWorkarounds {
     return !version.matches("1\\.[0-8]\\.");
   }
 
-  // This is a workaround for computeIfAbsent not being concurrent in pre Java 9
+  // This is a workaround for computeIfAbsent which unnecessarily takes out a write lock in the case
+  // where the entry for the key exists already.  This only affects pre Java 9 jdks
   // https://bugs.openjdk.java.net/browse/JDK-8161372
   public static <K, V> V computeIfAbsent(Map<K, V> map, K key,
       Function<? super K, ? extends V> mappingFunction) {
     if (postJava8) {
       return map.computeIfAbsent(key, mappingFunction);
-    }
-    else {
+    } else {
       V existingValue = map.get(key);
       if (existingValue == null) {
         return map.computeIfAbsent(key, mappingFunction);
