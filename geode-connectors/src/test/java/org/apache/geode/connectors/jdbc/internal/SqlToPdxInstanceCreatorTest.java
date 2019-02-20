@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,7 +21,6 @@ import static org.mockito.Mockito.when;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Map;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -32,14 +30,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.connectors.jdbc.internal.SqlToPdxInstance.PdxFieldInfo;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
-import org.apache.geode.pdx.internal.TypeRegistry;
 
 @RunWith(JUnitParamsRunner.class)
 public class SqlToPdxInstanceCreatorTest {
@@ -83,29 +79,6 @@ public class SqlToPdxInstanceCreatorTest {
 
     verifyPdxFactoryWrite(factory, fieldType);
     verify(factory).create();
-  }
-
-  @Test
-  public void pdxFieldGeneratedFromColumnNameAndTypeGivenNoPdxNameAndNoTypeInRegistry()
-      throws Exception {
-    PdxInstanceFactory factory = setupPdxInstanceFactory(null);
-    when(columnMapping.getJdbcType()).thenReturn(JDBCType.VARCHAR.name());
-    when(columnMapping.getPdxName()).thenReturn("");
-    when(columnMapping.getPdxType()).thenReturn("");
-    TypeRegistry typeRegistry = mock(TypeRegistry.class);
-    when(cache.getPdxRegistry()).thenReturn(typeRegistry);
-
-    SqlToPdxInstance result = createSqlToPdxInstance();
-
-    verify(factory).writeString(COLUMN_NAME_1, null);
-    verify(factory).create();
-    assertThat(result).isNotNull();
-    assertThat(result.getPdxTemplate()).isSameAs(pdxTemplate);
-    Map<String, PdxFieldInfo> map = result.getColumnToPdxFieldMap();
-    assertThat(map).hasSize(1);
-    assertThat(map).containsKey(COLUMN_NAME_1);
-    assertThat(map.get(COLUMN_NAME_1).getName()).isEqualTo(COLUMN_NAME_1);
-    assertThat(map.get(COLUMN_NAME_1).getType()).isEqualTo(FieldType.STRING);
   }
 
   private SqlToPdxInstance createSqlToPdxInstance() throws SQLException {
