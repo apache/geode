@@ -82,8 +82,8 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getPuts() {
-    return 0;
+  public long getPuts() {
+    return 0L;
   }
 
   @Override
@@ -92,7 +92,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getUpdates() {
+  public long getUpdates() {
     return 0;
   }
 

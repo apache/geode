@@ -470,10 +470,10 @@ public class ConnectionStats implements MessageStats {
               f.createLongCounter("getTime",
                   "Total amount of time, in nanoseconds spent doing gets", "nanoseconds"),
               f.createIntGauge("putsInProgress", "Current number of puts being executed", "puts"),
-              f.createIntCounter("puts", "Total number of puts completed successfully", "puts"),
-              f.createIntCounter("putFailures", "Total number of put attempts that have failed",
+              f.createLongCounter("puts", "Total number of puts completed successfully", "puts"),
+              f.createLongCounter("putFailures", "Total number of put attempts that have failed",
                   "puts"),
-              f.createIntCounter("putTimeouts", "Total number of put attempts that have timed out",
+              f.createLongCounter("putTimeouts", "Total number of put attempts that have timed out",
                   "puts"),
               f.createLongCounter("putTime",
                   "Total amount of time, in nanoseconds spent doing puts", "nanoseconds"),
@@ -1842,7 +1842,7 @@ public class ConnectionStats implements MessageStats {
     } else {
       endPutId = putId;
     }
-    this.stats.incInt(endPutId, 1);
+    this.stats.incLong(endPutId, 1L);
     this.stats.incLong(putDurationId, duration);
   }
 

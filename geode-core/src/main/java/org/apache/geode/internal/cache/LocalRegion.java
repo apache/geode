@@ -11315,13 +11315,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     public long endPut(long start, boolean isUpdate) {
       long total = 0;
       if (isUpdate) {
-        this.stats.incInt(updatesId, 1);
+        this.stats.incLong(updatesId, 1L);
         if (enableClockStats) {
           total = getStatTime() - start;
           this.stats.incLong(updateTimeId, total);
         }
       } else {
-        this.stats.incInt(putsId, 1);
+        this.stats.incLong(putsId, 1L);
         if (enableClockStats) {
           total = getStatTime() - start;
           this.stats.incLong(putTimeId, total);

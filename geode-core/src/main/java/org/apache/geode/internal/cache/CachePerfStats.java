@@ -381,13 +381,13 @@ public class CachePerfStats {
             f.createIntGauge("regions", regionsDesc, "regions"),
             f.createIntGauge("partitionedRegions", partitionedRegionsDesc, "partitionedRegions"),
             f.createIntCounter("destroys", destroysDesc, "operations"),
-            f.createIntCounter("updates", updatesDesc, "operations"),
+            f.createLongCounter("updates", updatesDesc, "operations"),
             f.createLongCounter("updateTime", updateTimeDesc, "nanoseconds"),
             f.createIntCounter("invalidates", invalidatesDesc, "operations"),
             f.createLongCounter("gets", getsDesc, "operations"),
             f.createLongCounter("misses", missesDesc, "operations"),
             f.createIntCounter("creates", createsDesc, "operations"),
-            f.createIntCounter("puts", putsDesc, "operations"),
+            f.createLongCounter("puts", putsDesc, "operations"),
             f.createLongCounter("putTime", putTimeDesc, "nanoseconds", false),
             f.createIntCounter("putalls", putallsDesc, "operations"),
             f.createLongCounter("putallTime", putallTimeDesc, "nanoseconds", false),
@@ -715,8 +715,8 @@ public class CachePerfStats {
     return stats.getInt(createsId);
   }
 
-  public int getPuts() {
-    return stats.getInt(putsId);
+  public long getPuts() {
+    return stats.getLong(putsId);
   }
 
   public long getPutTime() {
@@ -731,8 +731,8 @@ public class CachePerfStats {
     return stats.getInt(removeAllsId);
   }
 
-  public int getUpdates() {
-    return stats.getInt(updatesId);
+  public long getUpdates() {
+    return stats.getLong(updatesId);
   }
 
   public int getInvalidates() {
@@ -1115,13 +1115,13 @@ public class CachePerfStats {
   public long endPut(long start, boolean isUpdate) {
     long total = 0;
     if (isUpdate) {
-      stats.incInt(updatesId, 1);
+      stats.incLong(updatesId, 1L);
       if (enableClockStats) {
         total = getClockTime() - start;
         stats.incLong(updateTimeId, total);
       }
     } else {
-      stats.incInt(putsId, 1);
+      stats.incLong(putsId, 1L);
       if (enableClockStats) {
         total = getClockTime() - start;
         stats.incLong(putTimeId, total);

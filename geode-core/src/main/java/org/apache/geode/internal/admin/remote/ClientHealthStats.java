@@ -48,7 +48,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    * or netloading a value). Note that this only counts puts done explicitly on this cache. It does
    * not count updates pushed from other caches." Java: CachePerfStats.puts Native: Not yet Defined
    */
-  protected int numOfPuts;
+  protected long numOfPuts;
 
   /**
    * Represents number of cache misses in this client. IntCounter, "Total number of times a get on
@@ -120,7 +120,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @return Total number of put requests completed.
    */
-  public int getNumOfPuts() {
+  public long getNumOfPuts() {
     return numOfPuts;
   }
 
@@ -129,7 +129,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
    *
    * @param numOfPuts Total number of put requests to be set.
    */
-  public void setNumOfPuts(int numOfPuts) {
+  public void setNumOfPuts(long numOfPuts) {
     this.numOfPuts = numOfPuts;
   }
 
@@ -224,7 +224,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writePrimitiveLong(numOfGets, out);
-    DataSerializer.writePrimitiveInt(numOfPuts, out);
+    DataSerializer.writePrimitiveLong(numOfPuts, out);
     DataSerializer.writePrimitiveLong(numOfMisses, out);
     DataSerializer.writePrimitiveInt(numOfCacheListenerCalls, out);
     DataSerializer.writePrimitiveInt(numOfThreads, out);
@@ -236,7 +236,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
 
   public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
     DataSerializer.writePrimitiveInt((int) numOfGets, out);
-    DataSerializer.writePrimitiveInt(numOfPuts, out);
+    DataSerializer.writePrimitiveInt((int) numOfPuts, out);
     DataSerializer.writePrimitiveInt((int) numOfMisses, out);
     DataSerializer.writePrimitiveInt(numOfCacheListenerCalls, out);
     DataSerializer.writePrimitiveInt(numOfThreads, out);
@@ -253,7 +253,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveLong(in);
-    this.numOfPuts = DataSerializer.readPrimitiveInt(in);
+    this.numOfPuts = DataSerializer.readPrimitiveLong(in);
     this.numOfMisses = DataSerializer.readPrimitiveLong(in);
     this.numOfCacheListenerCalls = DataSerializer.readPrimitiveInt(in);
     this.numOfThreads = DataSerializer.readPrimitiveInt(in);

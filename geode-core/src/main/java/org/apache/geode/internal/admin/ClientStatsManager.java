@@ -195,13 +195,13 @@ public class ClientStatsManager {
     ClientHealthStats stats = new ClientHealthStats();
 
     long gets = -1;
-    int puts = -1;
+    long puts = -1;
     long misses = -1;
     int cacheListenerCalls = -1;
 
     if (cachePerfStats != null) {
       gets = cachePerfStats.getLong("gets");
-      puts = cachePerfStats.getInt("puts");
+      puts = cachePerfStats.getLong("puts");
       misses = cachePerfStats.getLong("misses");
       cacheListenerCalls = cachePerfStats.getInt("cacheListenerCallsCompleted");
     }
