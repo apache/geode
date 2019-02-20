@@ -32,6 +32,9 @@ import org.junit.Test;
 
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -96,6 +99,40 @@ public class DescribeDataSourceCommandDUnitTest {
     });
   }
 
+  public static class IdAndName implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("myId", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("myId");
+      this.name = reader.readString("name");
+    }
+  }
+
   @Test
   public void describeDataSourceUsedByRegionsListsTheRegionsInOutput() {
     gfsh.executeAndAssertThat(
@@ -106,9 +143,11 @@ public class DescribeDataSourceCommandDUnitTest {
     setupDatabase();
     try {
       gfsh.executeAndAssertThat(
-          "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx --schema=mySchema");
+          "create jdbc-mapping --region=region1 --data-source=simple --pdx-name="
+              + IdAndName.class.getName() + " --schema=mySchema");
       gfsh.executeAndAssertThat(
-          "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx --schema=mySchema");
+          "create jdbc-mapping --region=region2 --data-source=simple --pdx-name="
+              + IdAndName.class.getName() + " --schema=mySchema");
 
       CommandResultAssert result = gfsh.executeAndAssertThat("describe data-source --name=simple");
 
