@@ -70,8 +70,6 @@
 
         "write-output '>>>>>>>>>> Modify sshd config to comment use of administrators authorized key file <<<<<<<<<<'",
         "(Get-Content C:\\ProgramData\\ssh\\sshd_config) -replace '(Match Group administrators)', '#$1' -replace '(\\s*AuthorizedKeysFile.*)', '#$1' |  Out-File C:\\ProgramData\\ssh\\sshd_config -encoding UTF8",
-        "write-output '>>>>>>>>>> Modify sshd config to comment use of administrators authorized key file <<<<<<<<<<'",
-
         "write-output '>>>>>>>>>> Adding openjdk docker image <<<<<<<<<<'",
         "docker pull openjdk:8u181-jdk-windowsservercore-1709",
         "write-output '>>>>>>>>>> Removing unused docker images <<<<<<<<<<'",
