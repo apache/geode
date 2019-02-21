@@ -32,5 +32,10 @@ public interface ConfigurationValidator<T extends CacheElement> {
    */
   void validate(T config) throws IllegalArgumentException;
 
+  /**
+   * check to see if this configuration already exists
+   *
+   * @return true if this config already exists in the persisted cache configuration
+   */
   boolean exists(T config, CacheConfig persistedConfig);
 }
