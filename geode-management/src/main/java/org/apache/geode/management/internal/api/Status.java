@@ -15,32 +15,23 @@
 package org.apache.geode.management.internal.api;
 
 public class Status {
-  enum Result {
-    SUCCESS, FAILURE, NOT_APPLICABLE
-  }
-
-  Result status;
+  boolean success;
   String message;
 
   // needed for json deserialization
   public Status() {}
 
-  public Status(Result status, String message) {
-    this.status = status;
-    this.message = message;
-  }
-
   public Status(boolean success, String message) {
-    this.status = success ? Result.SUCCESS : Result.FAILURE;
+    this.success = success;
     this.message = message;
   }
 
-  public Result getStatus() {
-    return status;
+  public boolean isSuccess() {
+    return success;
   }
 
-  public void setStatus(Result status) {
-    this.status = status;
+  public void setSuccess(boolean success) {
+    this.success = success;
   }
 
   public String getMessage() {
