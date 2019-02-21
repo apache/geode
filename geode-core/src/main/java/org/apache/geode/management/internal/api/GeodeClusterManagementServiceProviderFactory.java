@@ -38,8 +38,8 @@ import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.management.internal.ClusterManagementClient;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
-import org.apache.geode.management.spi.BasicClusterManagementProviderFactory;
 import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
+import org.apache.geode.management.spi.JavaClientClusterManagementProviderFactory;
 
 /**
  * An implementation of {@link ClusterManagementServiceProviderFactory} which can be used in any
@@ -47,8 +47,8 @@ import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
  * address of the {@code ClusterManagementService} when using the {@code create()} call. Otherwise
  * an explicit can also be used.
  */
-public class SmartClusterManagementServiceProviderFactory extends
-    BasicClusterManagementProviderFactory {
+public class GeodeClusterManagementServiceProviderFactory extends
+    JavaClientClusterManagementProviderFactory {
 
   @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =

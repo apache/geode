@@ -14,4 +14,4 @@
 #
 
 
-org.apache.geode.management.spi.BasicClusterManagementProviderFactory
+org.apache.geode.management.spi.JavaClientClusterManagementProviderFactory

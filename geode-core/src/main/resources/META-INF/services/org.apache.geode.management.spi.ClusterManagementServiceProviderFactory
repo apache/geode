@@ -13,4 +13,4 @@
 # the License.
 #
 
-org.apache.geode.management.internal.api.SmartClusterManagementServiceProviderFactory
+org.apache.geode.management.internal.api.GeodeClusterManagementServiceProviderFactory

@@ -27,7 +27,7 @@ import org.apache.geode.management.internal.ClusterManagementClient;
  * inferred from the implied runtime context but needs to be specifically configured using a given
  * URL or {@code ClientHttpRequestFactory}.
  */
-public class BasicClusterManagementProviderFactory
+public class JavaClientClusterManagementProviderFactory
     implements ClusterManagementServiceProviderFactory {
 
   @Override
