@@ -93,9 +93,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
       }
     }
 
+
     // exit early if config element already exists in cache config
     CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-    if (configurationMutator.exists(config, currentPersistedConfig)) {
+    if (validator.exists(config, currentPersistedConfig)) {
       throw new EntityExistsException("cache element " + config.getId() + " already exists.");
     }
 

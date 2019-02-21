@@ -31,8 +31,6 @@ import org.apache.geode.cache.configuration.CacheElement;
 public interface ConfigurationMutator<T extends CacheElement> {
   void add(T config, CacheConfig existing);
 
-  boolean exists(T config, CacheConfig existing);
-
   void update(T config, CacheConfig existing);
 
   void delete(T config, CacheConfig existing);

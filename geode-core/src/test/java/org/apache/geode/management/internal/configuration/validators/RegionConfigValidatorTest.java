@@ -52,9 +52,26 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
-  public void noName() throws Exception {
+  public void noName() {
     assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining("Name of the region has to be specified");
+  }
+
+  @Test
+  public void invalidName1() {
+    config.setName("__test");
+    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining("Region names may not begin with a double-underscore");
+  }
+
+  @Test
+  public void invalidName2() {
+    config.setName("a!&b");
+    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Region names may only be alphanumeric and may contain hyphens or underscores");
   }
 }
