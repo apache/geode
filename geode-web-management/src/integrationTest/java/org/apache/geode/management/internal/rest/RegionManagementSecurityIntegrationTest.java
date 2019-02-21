@@ -73,7 +73,7 @@ public class RegionManagementSecurityIntegrationTest {
         .with(POST_PROCESSOR)
         .content(json))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.persistenceStatus.status", is("FAILURE")))
+        .andExpect(jsonPath("$.persistenceStatus.success", is(false)))
         .andExpect(jsonPath("$.persistenceStatus.message",
             is("user not authorized for DATA:MANAGE")));
   }
@@ -84,7 +84,7 @@ public class RegionManagementSecurityIntegrationTest {
         .with(POST_PROCESSOR)
         .content(json))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.persistenceStatus.status", is("FAILURE")))
+        .andExpect(jsonPath("$.persistenceStatus.success", is(false)))
         .andExpect(jsonPath("$.persistenceStatus.message",
             is("Full authentication is required to access this resource")));
   }
@@ -96,7 +96,7 @@ public class RegionManagementSecurityIntegrationTest {
         .with(POST_PROCESSOR)
         .content(json))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.persistenceStatus.status", is("FAILURE")))
+        .andExpect(jsonPath("$.persistenceStatus.success", is(false)))
         .andExpect(jsonPath("$.persistenceStatus.message",
             is("Authentication error. Please check your credentials.")));
   }
@@ -108,7 +108,7 @@ public class RegionManagementSecurityIntegrationTest {
         .with(POST_PROCESSOR)
         .content(json))
         .andExpect(status().isInternalServerError())
-        .andExpect(jsonPath("$.persistenceStatus.status", is("FAILURE")))
+        .andExpect(jsonPath("$.persistenceStatus.success", is(false)))
         .andExpect(jsonPath("$.persistenceStatus.message",
             is("no members found to create cache element")));
   }

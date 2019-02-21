@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class ClusterManagementResult {
   private Map<String, Status> memberStatuses = new HashMap<>();
 
-  private Status persistenceStatus = new Status(Status.Result.NOT_APPLICABLE, null);
+  private Status persistenceStatus = new Status();
 
   public ClusterManagementResult() {}
 
@@ -31,15 +31,11 @@ public class ClusterManagementResult {
     this.persistenceStatus = new Status(success, message);
   }
 
-  public void addMemberStatus(String member, Status.Result result, String message) {
-    this.memberStatuses.put(member, new Status(result, message));
-  }
-
   public void addMemberStatus(String member, boolean success, String message) {
     this.memberStatuses.put(member, new Status(success, message));
   }
 
-  public void setClusterConfigPersisted(boolean success, String message) {
+  public void setPersistenceStatus(boolean success, String message) {
     this.persistenceStatus = new Status(success, message);
   }
 
@@ -53,27 +49,17 @@ public class ClusterManagementResult {
 
   @JsonIgnore
   public boolean isSuccessfullyAppliedOnMembers() {
-    if (memberStatuses.isEmpty()) {
-      return false;
-    }
-    return memberStatuses.values().stream().allMatch(x -> x.status == Status.Result.SUCCESS);
+    return memberStatuses.values().stream().allMatch(x -> x.success);
   }
 
   @JsonIgnore
   public boolean isSuccessfullyPersisted() {
-    return persistenceStatus.status == Status.Result.SUCCESS;
+    return persistenceStatus.isSuccess();
   }
 
-  /**
-   * - true if operation is successful on all distributed members,
-   * and configuration persistence is either not applicable (in case cluster config is disabled)
-   * or configuration persistence is applicable and successful
-   * - false otherwise
-   */
   @JsonIgnore
   public boolean isSuccessful() {
-    return (persistenceStatus.status == Status.Result.NOT_APPLICABLE || isSuccessfullyPersisted())
-        && isSuccessfullyAppliedOnMembers();
+    return isSuccessfullyPersisted() && isSuccessfullyAppliedOnMembers();
   }
 
 }

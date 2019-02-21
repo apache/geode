@@ -26,12 +26,12 @@ import org.apache.geode.management.internal.cli.domain.RegionInformation;
 /**
  * Function that retrieves regions hosted on every member
  */
-public class GetRegionsFunction implements InternalFunction {
+public class GetRegionsFunction implements InternalFunction<Void> {
 
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext functionContext) {
+  public void execute(FunctionContext<Void> functionContext) {
     try {
       Cache cache = functionContext.getCache();
       Set<Region<?, ?>> regions = cache.rootRegions(); // should never return a null
@@ -45,7 +45,8 @@ public class GetRegionsFunction implements InternalFunction {
           RegionInformation regInfo = new RegionInformation(region, true);
           regionInformationSet.add(regInfo);
         }
-        functionContext.getResultSender().lastResult(regionInformationSet.toArray());
+        functionContext.getResultSender()
+            .lastResult(regionInformationSet.toArray(new RegionInformation[0]));
       }
     } catch (Exception e) {
       functionContext.getResultSender().sendException(e);

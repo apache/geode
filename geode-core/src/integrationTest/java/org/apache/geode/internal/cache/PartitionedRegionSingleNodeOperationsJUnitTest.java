@@ -30,6 +30,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -72,6 +73,11 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
   @Before
   public void setUp() throws Exception {
     logWriter = PartitionedRegionTestHelper.getLogger();
+  }
+
+  @After
+  public void tearDown() {
+    PartitionedRegionTestHelper.closeCache();
   }
 
   /**
