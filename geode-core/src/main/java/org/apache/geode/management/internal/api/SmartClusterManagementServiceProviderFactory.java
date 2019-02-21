@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCache;
@@ -50,6 +51,7 @@ import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
 public class SmartClusterManagementServiceProviderFactory extends
     BasicClusterManagementProviderFactory {
 
+  @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =
       new GetMemberInformationFunction();
 
