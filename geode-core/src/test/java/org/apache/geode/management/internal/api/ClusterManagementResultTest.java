@@ -34,7 +34,7 @@ public class ClusterManagementResultTest {
   public void failsWhenNotAppliedOnAllMembers() {
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", false, "msg-2");
-    result.setClusterConfigPersisted(true, "message");
+    result.setPersistenceStatus(true, "message");
     assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
     assertThat(result.isSuccessful()).isFalse();
   }
@@ -43,7 +43,7 @@ public class ClusterManagementResultTest {
   public void successfulOnlyWhenResultIsSuccessfulOnAllMembers() {
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", true, "msg-2");
-    result.setClusterConfigPersisted(true, "message");
+    result.setPersistenceStatus(true, "message");
     assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
   }
@@ -58,19 +58,19 @@ public class ClusterManagementResultTest {
 
   @Test
   public void failsWhenNotPersisted() {
-    result.setClusterConfigPersisted(false, "msg-1");
+    result.setPersistenceStatus(false, "msg-1");
     assertThat(result.isSuccessfullyPersisted()).isFalse();
     assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
   public void whenNoMembersExists() {
-    result.setClusterConfigPersisted(false, "msg-1");
+    result.setPersistenceStatus(false, "msg-1");
     assertThat(result.isSuccessfullyPersisted()).isFalse();
     assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessful()).isFalse();
 
-    result.setClusterConfigPersisted(true, "msg-1");
+    result.setPersistenceStatus(true, "msg-1");
     assertThat(result.isSuccessfullyPersisted()).isTrue();
     assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
     assertThat(result.isSuccessful()).isTrue();

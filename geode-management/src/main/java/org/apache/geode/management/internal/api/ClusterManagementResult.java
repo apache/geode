@@ -35,7 +35,7 @@ public class ClusterManagementResult {
     this.memberStatuses.put(member, new Status(success, message));
   }
 
-  public void setClusterConfigPersisted(boolean success, String message) {
+  public void setPersistenceStatus(boolean success, String message) {
     this.persistenceStatus = new Status(success, message);
   }
 
