@@ -11476,7 +11476,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void incClearCount() {
-      this.stats.incInt(clearsId, 1);
+      this.stats.incLong(clearsId, 1L);
       this.cachePerfStats.incClearCount();
     }
 

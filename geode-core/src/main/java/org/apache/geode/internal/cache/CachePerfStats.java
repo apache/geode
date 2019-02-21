@@ -445,7 +445,7 @@ public class CachePerfStats {
             f.createIntCounter("retries",
                 "Number of times a concurrent destroy followed by a create has caused an entry operation to need to retry.",
                 "operations"),
-            f.createIntCounter("clears", clearsDesc, "operations"),
+            f.createLongCounter("clears", clearsDesc, "operations"),
             f.createIntGauge("diskTasksWaiting",
                 "Current number of disk tasks (oplog compactions, asynchronous recoveries, etc) that are waiting for a thread to run the operation",
                 "operations"),
@@ -1390,12 +1390,12 @@ public class CachePerfStats {
     };
   }
 
-  public int getClearCount() {
-    return stats.getInt(clearsId);
+  public long getClearCount() {
+    return stats.getLong(clearsId);
   }
 
   public void incClearCount() {
-    stats.incInt(clearsId, 1);
+    stats.incLong(clearsId, 1L);
   }
 
   public long getConflatedEventsCount() {

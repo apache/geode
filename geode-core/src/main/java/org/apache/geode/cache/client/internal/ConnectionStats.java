@@ -499,11 +499,12 @@ public class ConnectionStats implements MessageStats {
                   "Total amount of time, in nanoseconds spent doing destroyRegions", "nanoseconds"),
               f.createIntGauge("clearsInProgress", "Current number of clears being executed",
                   "clears"),
-              f.createIntCounter("clears", "Total number of clears completed successfully",
+              f.createLongCounter("clears", "Total number of clears completed successfully",
                   "clears"),
-              f.createIntCounter("clearFailures", "Total number of clear attempts that have failed",
+              f.createLongCounter("clearFailures",
+                  "Total number of clear attempts that have failed",
                   "clears"),
-              f.createIntCounter("clearTimeouts",
+              f.createLongCounter("clearTimeouts",
                   "Total number of clear attempts that have timed out", "clears"),
               f.createLongCounter("clearTime",
                   "Total amount of time, in nanoseconds spent doing clears", "nanoseconds"),
@@ -2024,7 +2025,7 @@ public class ConnectionStats implements MessageStats {
     } else {
       endClearId = clearId;
     }
-    this.stats.incInt(endClearId, 1);
+    this.stats.incLong(endClearId, 1L);
     this.stats.incLong(clearDurationId, duration);
   }
 

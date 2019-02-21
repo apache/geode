@@ -425,24 +425,24 @@ public class CachePerfStatsTest {
 
   @Test
   public void getClearsDelegatesToStatistics() {
-    statistics.incInt(clearsId, Integer.MAX_VALUE);
+    statistics.incLong(clearsId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getClearCount()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getClearCount()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incClearCountIncrementsClears() {
     cachePerfStats.incClearCount();
 
-    assertThat(statistics.getInt(clearsId)).isEqualTo(1);
+    assertThat(statistics.getLong(clearsId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code clears} currently wraps to negative from max integer value.
+   * Characterization test: {@code clears} currently wraps to negative from max long value.
    */
   @Test
-  public void clearsWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(clearsId, Integer.MAX_VALUE);
+  public void clearsWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(clearsId, Long.MAX_VALUE);
 
     cachePerfStats.incClearCount();
 
