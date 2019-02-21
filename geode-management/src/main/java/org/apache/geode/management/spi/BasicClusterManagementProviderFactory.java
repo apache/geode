@@ -15,9 +15,6 @@
 
 package org.apache.geode.management.spi;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.management.api.ClusterManagementService;
@@ -34,8 +31,8 @@ public class BasicClusterManagementProviderFactory
     implements ClusterManagementServiceProviderFactory {
 
   @Override
-  public List<String> supportedContexts() {
-    return Arrays.asList(ClusterManagementServiceProvider.JAVA_CLIENT_CONTEXT);
+  public String getContext() {
+    return ClusterManagementServiceProvider.JAVA_CLIENT_CONTEXT;
   }
 
   @Override

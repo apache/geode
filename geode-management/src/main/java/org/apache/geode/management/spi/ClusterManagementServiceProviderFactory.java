@@ -15,8 +15,6 @@
 
 package org.apache.geode.management.spi;
 
-import java.util.List;
-
 import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.management.api.ClusterManagementService;
@@ -32,7 +30,7 @@ public interface ClusterManagementServiceProviderFactory {
    *
    * @return a list of names of supported contexts of this factory
    */
-  List<String> supportedContexts();
+  String getContext();
 
   /**
    * Create a {@code ClusterManagementService} instance. Throws an {@code IllegalStateException}

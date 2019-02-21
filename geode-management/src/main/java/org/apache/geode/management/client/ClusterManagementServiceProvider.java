@@ -44,19 +44,9 @@ import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
  * Java client - i.e. an app that is not running in the context of a Geode client or server. This
  * context is available when using the <i>geode-management</i> module.
  * </li>
- * <li>{@code GEODE_CLIENT_CONTEXT} ("geode-client") - would be used to retrieve a CMS instance
- * from a JVM where a {@code ClientCache} exists. This context is available when using the
- * <i>geode-core</i> module.
- * </li>
- * <li>
- * {@code LOCATOR_CONTEXT} ("locator") - would be used to retrieve a CMS instance from a JVM which
- * is hosting a locator. This context should typically only be used for internal Geode code and is
- * not particularly relevant to client or user applications.
- * </li>
- * <li>
- * {@code SERVER_CONTEXT} ("server") - would be used to retrieve a CMS instance from a JVM where a
- * {@code Cache} exists. This would be either a server or locator. This context is available when
- * using the <i>geode-core</i> module.
+ * <li>{@code GEODE_CONTEXT} ("geode") - would be used to retrieve a CMS instance
+ * from a JVM where either a {@code Cache} or {@code ClientCache} exists. This context is available
+ * when using the <i>geode-core</i> module.
  * </li>
  * </ul>
  * If the URL of the Cluster Management Service is known, the {@code getService(url)} method can be
@@ -65,37 +55,31 @@ import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
  * getService(requestFactory)}.
  * <p/>
  * Finally, the simplest way to create a CMS instance is simply to call {@code getService()}. This
- * method
- * will attempt to infer the context and use an appropriate service provider to create a CMS
+ * method will attempt to infer the context and use an appropriate service provider to create a CMS
  * instance.
  */
 @Experimental
 public class ClusterManagementServiceProvider {
 
   public static final String JAVA_CLIENT_CONTEXT = "java-client";
-  public static final String GEODE_CLIENT_CONTEXT = "geode-client";
-  public static final String LOCATOR_CONTEXT = "locator";
-  public static final String SERVER_CONTEXT = "server";
+  public static final String GEODE_CONTEXT = "geode";
 
   private static List<ClusterManagementServiceProviderFactory> providerFactories = null;
 
   public static ClusterManagementService getService() {
-    for (String context : new String[] {SERVER_CONTEXT, GEODE_CLIENT_CONTEXT,
-        JAVA_CLIENT_CONTEXT}) {
-      ClusterManagementServiceProviderFactory factory;
+    ClusterManagementServiceProviderFactory factory;
+    try {
+      factory = getFactory(GEODE_CONTEXT);
       try {
-        factory = getFactory(context);
-        try {
-          ClusterManagementService cms = factory.create();
-          return cms;
-        } catch (IllegalStateException ex) {
-          ex.printStackTrace();
-        }
-      } catch (IllegalArgumentException iex) {
-        iex.printStackTrace();
-      } catch (Exception iex) {
-        iex.printStackTrace();
+        ClusterManagementService cms = factory.create();
+        return cms;
+      } catch (IllegalStateException ex) {
+        // Ignored
       }
+    } catch (IllegalArgumentException iex) {
+      // Ig
+    } catch (Exception iex) {
+      iex.printStackTrace();
     }
 
     throw new IllegalStateException(
@@ -116,7 +100,7 @@ public class ClusterManagementServiceProvider {
     }
 
     ClusterManagementServiceProviderFactory factory = providerFactories.stream()
-        .filter(x -> x.supportedContexts().contains(context))
+        .filter(x -> x.getContext().equalsIgnoreCase(context))
         .findFirst()
         .orElseThrow(
             () -> new IllegalArgumentException("Did not find provider for context: " + context));

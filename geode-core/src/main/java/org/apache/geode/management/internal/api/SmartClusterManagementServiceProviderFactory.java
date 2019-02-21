@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.api;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -58,9 +57,8 @@ public class SmartClusterManagementServiceProviderFactory extends
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public List<String> supportedContexts() {
-    return Arrays.asList(ClusterManagementServiceProvider.GEODE_CLIENT_CONTEXT,
-        ClusterManagementServiceProvider.SERVER_CONTEXT);
+  public String getContext() {
+    return ClusterManagementServiceProvider.GEODE_CONTEXT;
   }
 
   @Override
@@ -68,8 +66,6 @@ public class SmartClusterManagementServiceProviderFactory extends
     if (InternalLocator.getLocator() != null) {
       return InternalLocator.getLocator().getClusterManagementService();
     }
-
-    // throw new IllegalStateException("This method is only implemented on locators for now.");
 
     Cache cache = CacheFactory.getAnyInstance();
     if (cache != null && cache.isServer()) {
