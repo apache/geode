@@ -108,7 +108,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     logger.info("<ExpectedException action=add>" + expectedExceptions + "</ExpectedException>");
     try {
       pr.put(new Integer(1), val);
-      fail("testPut()- Expected PartitionedRegionException not thrown for localMaxMemory = 0");
+      fail("testPut()- The expected PartitionedRegionException was not thrown for localMaxMemory = 0");
     } catch (PartitionedRegionStorageException ex) {
       if (logWriter.fineEnabled()) {
         logWriter.fine(
