@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
@@ -29,5 +31,10 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     if (config.getType() == null) {
       config.setType(DEFAULT_REGION_TYPE);
     }
+  }
+
+  @Override
+  public boolean exists(RegionConfig config, CacheConfig existing) {
+    return CacheElement.exists(existing.getRegions(), config.getId());
   }
 }
