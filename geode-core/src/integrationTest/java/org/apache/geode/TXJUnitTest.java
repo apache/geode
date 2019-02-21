@@ -4834,7 +4834,7 @@ public class TXJUnitTest {
     long creates;
     long destroys;
     long puts;
-    int invalidates;
+    long invalidates;
 
     creates = cacheStats.getCreates();
     destroys = cacheStats.getDestroys();

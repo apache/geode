@@ -207,7 +207,7 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     LocalRegion lr = (LocalRegion) region;
     // Wait for region to evict/expire events.
     await()
-        .untilAsserted(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+        .untilAsserted(() -> assertEquals(2L, lr.getCachePerfStats().getInvalidates()));
     // The AQListner should get expected events.
     await()
         .untilAsserted(() -> assertEquals(2, events.size()));
@@ -226,7 +226,7 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     LocalRegion lr = (LocalRegion) region;
     // Wait for region to evict/expire events.
     await()
-        .untilAsserted(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+        .untilAsserted(() -> assertEquals(2L, lr.getCachePerfStats().getInvalidates()));
     // The AQListner should get expected events.
     await()
         .untilAsserted(() -> assertEquals(2, events.size()));
@@ -376,7 +376,7 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     // Wait for region to evict/expire events.
     LocalRegion lr = (LocalRegion) region;
     await()
-        .untilAsserted(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+        .untilAsserted(() -> assertEquals(2L, lr.getCachePerfStats().getInvalidates()));
 
     // The AQListner should get expected events.
     await()
@@ -397,7 +397,7 @@ public class AsyncEventQueueEvictionAndExpirationJUnitTest {
     // Wait for region to evict/expire events.
     LocalRegion lr = (LocalRegion) region;
     await()
-        .untilAsserted(() -> assertEquals(2, lr.getCachePerfStats().getInvalidates()));
+        .untilAsserted(() -> assertEquals(2L, lr.getCachePerfStats().getInvalidates()));
 
     // The AQListner should get expected events.
     await()

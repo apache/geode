@@ -600,11 +600,11 @@ public class ConnectionStats implements MessageStats {
 
               f.createIntGauge("invalidatesInProgress",
                   "Current number of invalidates being executed", "invalidates"),
-              f.createIntCounter("invalidates",
+              f.createLongCounter("invalidates",
                   "Total number of invalidates completed successfully", "invalidates"),
-              f.createIntCounter("invalidateFailures",
+              f.createLongCounter("invalidateFailures",
                   "Total number of invalidate attempts that have failed", "invalidates"),
-              f.createIntCounter("invalidateTimeouts",
+              f.createLongCounter("invalidateTimeouts",
                   "Total number of invalidate attempts that have timed out", "invalidates"),
               f.createLongCounter("invalidateTime",
                   "Total amount of time, in nanoseconds spent doing invalidates", "nanoseconds"),
@@ -3599,7 +3599,7 @@ public class ConnectionStats implements MessageStats {
     } else {
       endInvalidateId = invalidateId;
     }
-    this.stats.incInt(endInvalidateId, 1);
+    this.stats.incLong(endInvalidateId, 1L);
     this.stats.incLong(invalidateDurationId, duration);
   }
 

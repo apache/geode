@@ -11264,7 +11264,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void incInvalidates() {
-      this.stats.incInt(invalidatesId, 1);
+      this.stats.incLong(invalidatesId, 1L);
       this.cachePerfStats.incInvalidates();
     }
 

@@ -644,7 +644,7 @@ public class ProxyJUnitTest {
     expee.key = "key";
     long creates = getStats().getCreates();
     long destroys = getStats().getDestroys();
-    int invalidates = getStats().getInvalidates();
+    long invalidates = getStats().getInvalidates();
     long gets = getStats().getGets();
     long misses = getStats().getMisses();
 
@@ -925,7 +925,7 @@ public class ProxyJUnitTest {
 
     long creates = getStats().getCreates();
     long destroys = getStats().getDestroys();
-    int invalidates = getStats().getInvalidates();
+    long invalidates = getStats().getInvalidates();
     ExpectedEntryEvent expee = new ExpectedEntryEvent();
     expee.r = r;
     expee.key = "key";
