@@ -1679,7 +1679,7 @@ public class WANTestBase extends DistributedTestCase {
   public static GatewaySenderFactory configureGateway(DiskStoreFactory dsf, File[] dirs1,
       String dsName, boolean isParallel, Integer maxMemory, Integer batchSize, boolean isConflation,
       boolean isPersistent, GatewayEventFilter filter, boolean isManualStart, int numDispatchers,
-      OrderPolicy policy) {
+      OrderPolicy policy, int socketBufferSize) {
 
     InternalGatewaySenderFactory gateway =
         (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
@@ -1691,6 +1691,7 @@ public class WANTestBase extends DistributedTestCase {
     gateway.setDispatcherThreads(numDispatchers);
     gateway.setOrderPolicy(policy);
     gateway.setLocatorDiscoveryCallback(new MyLocatorCallback());
+    gateway.setSocketBufferSize(socketBufferSize);
     if (filter != null) {
       eventFilter = filter;
       gateway.addGatewayEventFilter(filter);
@@ -1717,7 +1718,8 @@ public class WANTestBase extends DistributedTestCase {
       File[] dirs1 = new File[] {persistentDirectory};
       GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, isParallel, maxMemory,
           batchSize, isConflation, isPersistent, filter, isManualStart,
-          numDispatcherThreadsForTheRun, GatewaySender.DEFAULT_ORDER_POLICY);
+          numDispatcherThreadsForTheRun, GatewaySender.DEFAULT_ORDER_POLICY,
+          GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE);
       gateway.create(dsName, remoteDsId);
 
     } finally {
@@ -1729,6 +1731,16 @@ public class WANTestBase extends DistributedTestCase {
       boolean isParallel, Integer maxMemory, Integer batchSize, boolean isConflation,
       boolean isPersistent, GatewayEventFilter filter, boolean isManualStart, int numDispatchers,
       OrderPolicy orderPolicy) {
+    createSenderWithMultipleDispatchers(dsName, remoteDsId,
+        isParallel, maxMemory, batchSize, isConflation,
+        isPersistent, filter, isManualStart, numDispatchers,
+        orderPolicy, GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE);
+  }
+
+  public static void createSenderWithMultipleDispatchers(String dsName, int remoteDsId,
+      boolean isParallel, Integer maxMemory, Integer batchSize, boolean isConflation,
+      boolean isPersistent, GatewayEventFilter filter, boolean isManualStart, int numDispatchers,
+      OrderPolicy orderPolicy, int socketBufferSize) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
       File persistentDirectory =
@@ -1738,7 +1750,7 @@ public class WANTestBase extends DistributedTestCase {
       File[] dirs1 = new File[] {persistentDirectory};
       GatewaySenderFactory gateway =
           configureGateway(dsf, dirs1, dsName, isParallel, maxMemory, batchSize, isConflation,
-              isPersistent, filter, isManualStart, numDispatchers, orderPolicy);
+              isPersistent, filter, isManualStart, numDispatchers, orderPolicy, socketBufferSize);
       gateway.create(dsName, remoteDsId);
 
     } finally {
@@ -1770,7 +1782,8 @@ public class WANTestBase extends DistributedTestCase {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File[] dirs1 = new File[] {persistentDirectory};
     GatewaySenderFactory gateway = configureGateway(dsf, dirs1, dsName, isParallel, maxMemory,
-        batchSize, isConflation, isPersistent, filter, isManualStart, concurrencyLevel, policy);
+        batchSize, isConflation, isPersistent, filter, isManualStart, concurrencyLevel, policy,
+        GatewaySender.DEFAULT_SOCKET_BUFFER_SIZE);
     gateway.create(dsName, remoteDsId);
   }
 
