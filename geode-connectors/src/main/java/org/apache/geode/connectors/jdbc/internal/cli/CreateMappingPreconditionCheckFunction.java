@@ -39,7 +39,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.PdxField;
@@ -184,19 +183,14 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
    * @param cache used to generate pdx type
    * @param clazz the class to generate a PdxType for
    * @return the generated PdxType
-   * @throws JdbcException if a PdxType can not be generated
+   * @throws JdbcConnectorException if a PdxType can not be generated
    */
   private PdxType generatePdxTypeForClass(InternalCache cache, TypeRegistry typeRegistry,
       Class<?> clazz) {
     Object object = createInstance(clazz);
-    if (PdxSerializable.class.isAssignableFrom(clazz)) {
-      try {
-        cache.registerPdxMetaData(object);
-      } catch (SerializationException ex) {
-        throw new JdbcConnectorException(
-            "Could not generate a PdxType for the class " + clazz.getName() + " because: " + ex);
-      }
-    } else {
+    try {
+      cache.registerPdxMetaData(object);
+    } catch (SerializationException ex) {
       String className = clazz.getName();
       ReflectionBasedAutoSerializer serializer =
           this.reflectionBasedAutoSerializerFactory.create(className);
@@ -205,7 +199,8 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
       if (!result) {
         throw new JdbcConnectorException(
             "Could not generate a PdxType using the ReflectionBasedAutoSerializer for the class  "
-                + clazz.getName() + ". Check the server log for details.");
+                + clazz.getName() + " after failing to register pdx metadata due to "
+                + ex.getMessage() + ". Check the server log for details.");
       }
     }
     // serialization will leave the type in the registry

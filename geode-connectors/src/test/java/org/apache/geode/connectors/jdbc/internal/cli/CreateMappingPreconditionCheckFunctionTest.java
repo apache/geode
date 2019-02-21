@@ -55,8 +55,6 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.FieldType;
-import org.apache.geode.pdx.PdxReader;
-import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.PdxField;
@@ -84,18 +82,11 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
   private CreateMappingPreconditionCheckFunction function;
 
-  public static class NonPdxDummy {
+  public static class PdxClassDummy {
+
   }
 
-  public static class PdxClassDummy implements PdxSerializable {
-    @Override
-    public void toData(PdxWriter writer) {}
-
-    @Override
-    public void fromData(PdxReader reader) {}
-  }
-
-  public static class PdxClassDummyNoZeroArg extends PdxClassDummy {
+  public static class PdxClassDummyNoZeroArg {
     public PdxClassDummyNoZeroArg(int arg) {}
   }
 
@@ -318,8 +309,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
     when(pdxType.getFieldCount()).thenReturn(1);
     when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
-    when(classFactory.loadClass(PDX_CLASS_NAME)).thenReturn(NonPdxDummy.class);
-    when(typeRegistry.getExistingTypeForClass(NonPdxDummy.class)).thenReturn(null)
+    when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
     ReflectionBasedAutoSerializer reflectionedBasedAutoSerializer =
         mock(ReflectionBasedAutoSerializer.class);
@@ -327,17 +317,20 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(true);
     ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory =
         mock(ReflectionBasedAutoSerializerFactory.class);
-    when(reflectionBasedAutoSerializerFactory.create(NonPdxDummy.class.getName()))
+    when(reflectionBasedAutoSerializerFactory.create(PdxClassDummy.class.getName()))
         .thenReturn(reflectionedBasedAutoSerializer);
     PdxWriterFactory pdxWriterFactory = mock(PdxWriterFactory.class);
     when(pdxWriterFactory.create(same(typeRegistry), any())).thenReturn(pdxWriter);
     function = new CreateMappingPreconditionCheckFunction(dataSourceFactory, classFactory,
         reflectionBasedAutoSerializerFactory, pdxWriterFactory,
         tableMetaDataManager);
+    SerializationException ex = new SerializationException("test");
+    doThrow(ex).when(cache).registerPdxMetaData(any());
 
     CliFunctionResult result = function.executeFunction(context);
 
     assertThat(result.isSuccessful()).isTrue();
+    verify(reflectionBasedAutoSerializerFactory).create(PdxClassDummy.class.getName());
     Object[] outputs = (Object[]) result.getResultObject();
     ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
     assertThat(fieldsMappings).hasSize(1);
@@ -348,43 +341,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
 
   @Test
-  public void executeFunctionThrowsGivenNonPdxUsesAndReflectionBasedAutoSerializerThatReturnsFalse()
-      throws Exception {
-    Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
-    when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
-    when(tableMetaDataView.isColumnNullable("col1")).thenReturn(false);
-    when(tableMetaDataView.getColumnDataType("col1")).thenReturn(JDBCType.DATE);
-    PdxField pdxField1 = mock(PdxField.class);
-    when(pdxField1.getFieldName()).thenReturn("COL1");
-    when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
-    when(pdxType.getFieldCount()).thenReturn(1);
-    when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
-    when(classFactory.loadClass(PDX_CLASS_NAME)).thenReturn(NonPdxDummy.class);
-    when(typeRegistry.getExistingTypeForClass(NonPdxDummy.class)).thenReturn(null)
-        .thenReturn(pdxType);
-    ReflectionBasedAutoSerializer reflectionedBasedAutoSerializer =
-        mock(ReflectionBasedAutoSerializer.class);
-    PdxWriter pdxWriter = mock(PdxWriter.class);
-    when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(false);
-    ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory =
-        mock(ReflectionBasedAutoSerializerFactory.class);
-    when(reflectionBasedAutoSerializerFactory.create(NonPdxDummy.class.getName()))
-        .thenReturn(reflectionedBasedAutoSerializer);
-    PdxWriterFactory pdxWriterFactory = mock(PdxWriterFactory.class);
-    when(pdxWriterFactory.create(same(typeRegistry), any())).thenReturn(pdxWriter);
-    function = new CreateMappingPreconditionCheckFunction(dataSourceFactory, classFactory,
-        reflectionBasedAutoSerializerFactory, pdxWriterFactory,
-        tableMetaDataManager);
-
-    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
-
-    assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
-        .hasMessage(
-            "Could not generate a PdxType using the ReflectionBasedAutoSerializer for the class  org.apache.geode.connectors.jdbc.internal.cli.CreateMappingPreconditionCheckFunctionTest$NonPdxDummy. Check the server log for details.");
-  }
-
-  @Test
-  public void executeFunctionThrowsGivenPdxSerializableAndRegisterThatThrows()
+  public void executeFunctionThrowsGivenPdxRegistrationFailsAndReflectionBasedAutoSerializerThatReturnsFalse()
       throws Exception {
     Set<String> columnNames = new LinkedHashSet<>(Arrays.asList("col1"));
     when(tableMetaDataView.getColumnNames()).thenReturn(columnNames);
@@ -397,14 +354,28 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
+    ReflectionBasedAutoSerializer reflectionedBasedAutoSerializer =
+        mock(ReflectionBasedAutoSerializer.class);
+    PdxWriter pdxWriter = mock(PdxWriter.class);
+    when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(false);
+    ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory =
+        mock(ReflectionBasedAutoSerializerFactory.class);
+    when(reflectionBasedAutoSerializerFactory.create(PdxClassDummy.class.getName()))
+        .thenReturn(reflectionedBasedAutoSerializer);
+    PdxWriterFactory pdxWriterFactory = mock(PdxWriterFactory.class);
+    when(pdxWriterFactory.create(same(typeRegistry), any())).thenReturn(pdxWriter);
     SerializationException ex = new SerializationException("test");
     doThrow(ex).when(cache).registerPdxMetaData(any());
+
+    function = new CreateMappingPreconditionCheckFunction(dataSourceFactory, classFactory,
+        reflectionBasedAutoSerializerFactory, pdxWriterFactory,
+        tableMetaDataManager);
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
 
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
         .hasMessage(
-            "Could not generate a PdxType for the class org.apache.geode.connectors.jdbc.internal.cli.CreateMappingPreconditionCheckFunctionTest$PdxClassDummy because: org.apache.geode.SerializationException: test");
+            "Could not generate a PdxType using the ReflectionBasedAutoSerializer for the class  org.apache.geode.connectors.jdbc.internal.cli.CreateMappingPreconditionCheckFunctionTest$PdxClassDummy after failing to register pdx metadata due to test. Check the server log for details.");
   }
 
   @Test
