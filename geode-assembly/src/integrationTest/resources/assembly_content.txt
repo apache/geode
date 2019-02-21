@@ -719,8 +719,8 @@ javadoc/org/apache/geode/management/membership/package-tree.html
 javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html
-javadoc/org/apache/geode/management/spi/BasicClusterManagementProviderFactory.html
 javadoc/org/apache/geode/management/spi/ClusterManagementServiceProviderFactory.html
+javadoc/org/apache/geode/management/spi/JavaClientClusterManagementProviderFactory.html
 javadoc/org/apache/geode/management/spi/package-frame.html
 javadoc/org/apache/geode/management/spi/package-summary.html
 javadoc/org/apache/geode/management/spi/package-tree.html
