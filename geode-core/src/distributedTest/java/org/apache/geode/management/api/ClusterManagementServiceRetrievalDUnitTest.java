@@ -17,7 +17,6 @@ package org.apache.geode.management.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.springframework.web.util.AbstractUriTemplateHandler;
@@ -47,7 +46,7 @@ public class ClusterManagementServiceRetrievalDUnitTest {
           (ClusterManagementClient) ClusterManagementServiceProvider.getService();
       assertThat(
           ((AbstractUriTemplateHandler) cms.getRestTemplate().getUriTemplateHandler()).getBaseUrl())
-          .isEqualTo(url);
+              .isEqualTo(url);
     });
   }
 
