@@ -54,35 +54,47 @@ public class StripedStatisticsImpl extends StatisticsImpl {
 
   @Override
   protected void _setInt(int offset, int value) {
-    intAdders[offset].reset();
-    intAdders[offset].add(value);
+    synchronized (intAdders[offset]) {
+      intAdders[offset].reset();
+      intAdders[offset].add(value);
+    }
   }
 
   @Override
   protected void _setLong(int offset, long value) {
-    longAdders[offset].reset();
-    longAdders[offset].add(value);
+    synchronized (longAdders[offset]) {
+      longAdders[offset].reset();
+      longAdders[offset].add(value);
+    }
   }
 
   @Override
   protected void _setDouble(int offset, double value) {
-    doubleAdders[offset].reset();
-    doubleAdders[offset].add(value);
+    synchronized (doubleAdders[offset]) {
+      doubleAdders[offset].reset();
+      doubleAdders[offset].add(value);
+    }
   }
 
   @Override
   protected int _getInt(int offset) {
-    return intAdders[offset].intValue();
+    synchronized (intAdders[offset]) {
+      return intAdders[offset].intValue();
+    }
   }
 
   @Override
   protected long _getLong(int offset) {
-    return longAdders[offset].sum();
+    synchronized (longAdders[offset]) {
+      return longAdders[offset].sum();
+    }
   }
 
   @Override
   protected double _getDouble(int offset) {
-    return doubleAdders[offset].sum();
+    synchronized (doubleAdders[offset]) {
+      return doubleAdders[offset].sum();
+    }
   }
 
   @Override
