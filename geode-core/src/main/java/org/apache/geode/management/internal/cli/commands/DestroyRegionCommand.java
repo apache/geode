@@ -102,18 +102,16 @@ public class DestroyRegionCommand extends InternalGfshCommand {
     groupNames.add("cluster");
     for (String groupName : groupNames) {
       CacheConfig cacheConfig = ccService.getCacheConfig(groupName);
-      if (cacheConfig == null) {
-        return;
-      }
-      RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
-      if (regionConfig == null) {
-        return;
-      }
-      CacheElement element =
-          CacheElement.findElement(regionConfig.getCustomRegionElements(), "jdbc-mapping");
-      if (element != null) {
-        throw new IllegalStateException("Cannot destroy region \"" + regionName
-            + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
+      if (cacheConfig != null) {
+        RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+        if (regionConfig != null) {
+          CacheElement element =
+              CacheElement.findElement(regionConfig.getCustomRegionElements(), "jdbc-mapping");
+          if (element != null) {
+            throw new IllegalStateException("Cannot destroy region \"" + regionName
+                + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
+          }
+        }
       }
     }
   }
