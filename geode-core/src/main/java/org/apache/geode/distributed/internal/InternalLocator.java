@@ -39,7 +39,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -198,7 +197,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private final LoggingSession loggingSession;
 
   private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
-  private WebAppContext managementWebapp;
 
   public boolean isSharedConfigurationEnabled() {
     return this.config.getEnableClusterConfiguration();
@@ -867,15 +865,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
       if (this.server.isAlive()) {
         logger.fatal("Could not stop {} in 60 seconds", this);
-      }
-    }
-
-    // stop the managementwebapp
-    if (managementWebapp != null) {
-      try {
-        managementWebapp.stop();
-      } catch (Exception e) {
-        logger.error("unable to stop the management webapp.", e);
       }
     }
 
