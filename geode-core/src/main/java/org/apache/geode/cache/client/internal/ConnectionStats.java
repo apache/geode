@@ -479,11 +479,11 @@ public class ConnectionStats implements MessageStats {
                   "Total amount of time, in nanoseconds spent doing puts", "nanoseconds"),
               f.createIntGauge("destroysInProgress", "Current number of destroys being executed",
                   "destroys"),
-              f.createIntCounter("destroys", "Total number of destroys completed successfully",
+              f.createLongCounter("destroys", "Total number of destroys completed successfully",
                   "destroys"),
-              f.createIntCounter("destroyFailures",
+              f.createLongCounter("destroyFailures",
                   "Total number of destroy attempts that have failed", "destroys"),
-              f.createIntCounter("destroyTimeouts",
+              f.createLongCounter("destroyTimeouts",
                   "Total number of destroy attempts that have timed out", "destroys"),
               f.createLongCounter("destroyTime",
                   "Total amount of time, in nanoseconds spent doing destroys", "nanoseconds"),
@@ -1908,7 +1908,7 @@ public class ConnectionStats implements MessageStats {
     } else {
       endDestroyId = destroyId;
     }
-    this.stats.incInt(endDestroyId, 1);
+    this.stats.incLong(endDestroyId, 1);
     this.stats.incLong(destroyDurationId, duration);
   }
 

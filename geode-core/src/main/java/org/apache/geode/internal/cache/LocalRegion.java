@@ -11252,7 +11252,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void incDestroys() {
-      this.stats.incInt(destroysId, 1);
+      this.stats.incLong(destroysId, 1L);
       this.cachePerfStats.incDestroys();
     }
 

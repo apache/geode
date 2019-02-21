@@ -422,7 +422,8 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
         assertTrue(success);
 
         Number newputs = getNumPuts(stats);
-        assertEquals("stats not updated properly or replace malfunctioned", newputs.longValue(), puts.longValue() + 1);
+        assertEquals("stats not updated properly or replace malfunctioned", newputs.longValue(),
+            puts.longValue() + 1);
 
       }
 

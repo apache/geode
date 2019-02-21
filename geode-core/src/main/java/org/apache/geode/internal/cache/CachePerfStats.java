@@ -380,7 +380,7 @@ public class CachePerfStats {
                 "keys"),
             f.createIntGauge("regions", regionsDesc, "regions"),
             f.createIntGauge("partitionedRegions", partitionedRegionsDesc, "partitionedRegions"),
-            f.createIntCounter("destroys", destroysDesc, "operations"),
+            f.createLongCounter("destroys", destroysDesc, "operations"),
             f.createLongCounter("updates", updatesDesc, "operations"),
             f.createLongCounter("updateTime", updateTimeDesc, "nanoseconds"),
             f.createIntCounter("invalidates", invalidatesDesc, "operations"),
@@ -707,8 +707,8 @@ public class CachePerfStats {
     return stats.getInt(regionsId);
   }
 
-  public int getDestroys() {
-    return stats.getInt(destroysId);
+  public long getDestroys() {
+    return stats.getLong(destroysId);
   }
 
   public long getCreates() {
@@ -1076,7 +1076,7 @@ public class CachePerfStats {
   }
 
   public void incDestroys() {
-    stats.incInt(destroysId, 1);
+    stats.incLong(destroysId, 1L);
   }
 
   public void incCreates() {

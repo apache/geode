@@ -201,24 +201,24 @@ public class CachePerfStatsTest {
 
   @Test
   public void getDestroysDelegatesToStatistics() {
-    statistics.incInt(destroysId, Integer.MAX_VALUE);
+    statistics.incLong(destroysId, Long.MAX_VALUE);
 
-    assertThat(cachePerfStats.getDestroys()).isEqualTo(Integer.MAX_VALUE);
+    assertThat(cachePerfStats.getDestroys()).isEqualTo(Long.MAX_VALUE);
   }
 
   @Test
   public void incDestroysIncrementsDestroys() {
     cachePerfStats.incDestroys();
 
-    assertThat(statistics.getInt(destroysId)).isEqualTo(1);
+    assertThat(statistics.getLong(destroysId)).isEqualTo(1L);
   }
 
   /**
-   * Characterization test: {@code destroys} currently wraps to negative from max integer value.
+   * Characterization test: {@code destroys} currently wraps to negative from max long value.
    */
   @Test
-  public void destroysWrapsFromMaxIntegerToNegativeValue() {
-    statistics.incInt(destroysId, Integer.MAX_VALUE);
+  public void destroysWrapsFromMaxLongToNegativeValue() {
+    statistics.incLong(destroysId, Long.MAX_VALUE);
 
     cachePerfStats.incDestroys();
 
