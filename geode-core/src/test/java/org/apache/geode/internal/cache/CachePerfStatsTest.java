@@ -65,7 +65,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.cache.CachePerfStats.Clock;
 import org.apache.geode.internal.statistics.StatisticsManager;
-import org.apache.geode.internal.stats50.Atomic50StatisticsImpl;
+import org.apache.geode.internal.statistics.StripedStatisticsImpl;
 
 /**
  * Unit tests for {@link CachePerfStats}.
@@ -86,8 +86,7 @@ public class CachePerfStatsTest {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     Clock clock = mock(Clock.class);
 
-    statistics = spy(new Atomic50StatisticsImpl(statisticsType, TEXT_ID, 1, 1,
-        statisticsManager));
+    statistics = spy(new StripedStatisticsImpl(statisticsType, TEXT_ID, 1, 1, statisticsManager));
 
     when(clock.getTime()).thenReturn(CLOCK_TIME);
     when(statisticsFactory.createAtomicStatistics(eq(statisticsType), eq(TEXT_ID)))
@@ -110,8 +109,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code puts} is to invoke
-   * {@code endPut}.
+   * Characterization test: Note that the only way to increment {@code puts} is to invoke {@code
+   * endPut}.
    */
   @Test
   public void endPutIncrementsPuts() {
@@ -140,8 +139,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code gets} is to invoke
-   * {@code endGet}.
+   * Characterization test: Note that the only way to increment {@code gets} is to invoke {@code
+   * endGet}.
    */
   @Test
   public void endGetIncrementsGets() {
@@ -171,8 +170,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code putTime} is to invoke
-   * {@code endPut}.
+   * Characterization test: Note that the only way to increment {@code putTime} is to invoke {@code
+   * endPut}.
    */
   @Test
   public void endPutIncrementsPutTime() {
@@ -190,8 +189,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code getTime} is to invoke
-   * {@code endGet}.
+   * Characterization test: Note that the only way to increment {@code getTime} is to invoke {@code
+   * endGet}.
    */
   @Test
   public void endGetIncrementsGetTime() {
@@ -260,8 +259,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code putalls} is to invoke
-   * {@code endPutAll}.
+   * Characterization test: Note that the only way to increment {@code putalls} is to invoke {@code
+   * endPutAll}.
    */
   @Test
   public void endPutAllIncrementsDestroys() {
@@ -320,8 +319,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code updates} is to invoke
-   * {@code endPut}.
+   * Characterization test: Note that the only way to increment {@code updates} is to invoke {@code
+   * endPut}.
    */
   @Test
   public void endPutIncrementsUpdates() {
@@ -376,8 +375,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code misses} is to invoke
-   * {@code endGet}.
+   * Characterization test: Note that the only way to increment {@code misses} is to invoke {@code
+   * endGet}.
    */
   @Test
   public void endGetIncrementsMisses() {
@@ -612,8 +611,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code getInitialImagesCompleted}
-   * is to invoke {@code endGetInitialImage}.
+   * Characterization test: Note that the only way to increment {@code getInitialImagesCompleted} is
+   * to invoke {@code endGetInitialImage}.
    */
   @Test
   public void endCacheWriterCallIncrementsGetInitialImagesCompleted() {
@@ -969,8 +968,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code deltaUpdates} is to
-   * invoke {@code endDeltaUpdate}.
+   * Characterization test: Note that the only way to increment {@code deltaUpdates} is to invoke
+   * {@code endDeltaUpdate}.
    */
   @Test
   public void endDeltaUpdateIncrementsDeltaUpdates() {
@@ -1007,8 +1006,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: {@code deltaFailedUpdates} currently wraps to negative from max
-   * integer value.
+   * Characterization test: {@code deltaFailedUpdates} currently wraps to negative from max integer
+   * value.
    */
   @Test
   public void deltaFailedUpdatesWrapsFromMaxIntegerToNegativeValue() {
@@ -1027,8 +1026,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: Note that the only way to increment {@code deltasPrepared} is to
-   * invoke {@code endDeltaPrepared}.
+   * Characterization test: Note that the only way to increment {@code deltasPrepared} is to invoke
+   * {@code endDeltaPrepared}.
    */
   @Test
   public void endDeltaPreparedIncrementsDeltasPrepared() {
@@ -1038,8 +1037,8 @@ public class CachePerfStatsTest {
   }
 
   /**
-   * Characterization test: {@code deltasPrepared} currently wraps to negative from max
-   * integer value.
+   * Characterization test: {@code deltasPrepared} currently wraps to negative from max integer
+   * value.
    */
   @Test
   public void deltasPreparedWrapsFromMaxIntegerToNegativeValue() {

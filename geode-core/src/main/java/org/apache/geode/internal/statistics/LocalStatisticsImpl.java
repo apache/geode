@@ -52,9 +52,6 @@ public class LocalStatisticsImpl extends StatisticsImpl {
    */
   private final transient Object[] doubleLocks;
 
-  /** The StatisticsFactory that created this instance */
-  private final StatisticsManager statisticsManager;
-
   /////////////////////// Constructors ///////////////////////
 
   /**
@@ -72,10 +69,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
    */
   public LocalStatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
       boolean atomicIncrements, int osStatFlags, StatisticsManager statisticsManager) {
-    super(type, textId, numericId, uniqueId,
-        osStatFlags);
-
-    this.statisticsManager = statisticsManager;
+    super(type, textId, numericId, uniqueId, osStatFlags, statisticsManager);
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
     int intCount = realType.getIntStatCount();
@@ -151,14 +145,6 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   @Override
   public boolean isAtomic() {
     return intLocks != null || longLocks != null || doubleLocks != null;
-  }
-
-  @Override
-  public void close() {
-    super.close();
-    if (this.statisticsManager != null) {
-      statisticsManager.destroyStatistics(this);
-    }
   }
 
   //////////////////////// store() Methods ///////////////////////
