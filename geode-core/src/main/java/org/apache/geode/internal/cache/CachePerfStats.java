@@ -63,8 +63,8 @@ public class CachePerfStats {
   static final int createsId;
   static final int putsId;
   protected static final int putTimeId;
-  static final int putallsId;
-  static final int putallTimeId;
+  static final int putAllsId;
+  static final int putAllTimeId;
   static final int removeAllsId;
   private static final int removeAllTimeId;
   protected static final int updatesId;
@@ -386,7 +386,7 @@ public class CachePerfStats {
             f.createIntCounter("invalidates", invalidatesDesc, "operations"),
             f.createLongCounter("gets", getsDesc, "operations"),
             f.createLongCounter("misses", missesDesc, "operations"),
-            f.createIntCounter("creates", createsDesc, "operations"),
+            f.createLongCounter("creates", createsDesc, "operations"),
             f.createLongCounter("puts", putsDesc, "operations"),
             f.createLongCounter("putTime", putTimeDesc, "nanoseconds", false),
             f.createIntCounter("putalls", putallsDesc, "operations"),
@@ -528,8 +528,8 @@ public class CachePerfStats {
     createsId = type.nameToId("creates");
     putsId = type.nameToId("puts");
     putTimeId = type.nameToId("putTime");
-    putallsId = type.nameToId("putalls");
-    putallTimeId = type.nameToId("putallTime");
+    putAllsId = type.nameToId("putalls");
+    putAllTimeId = type.nameToId("putallTime");
     removeAllsId = type.nameToId("removeAlls");
     removeAllTimeId = type.nameToId("removeAllTime");
     updatesId = type.nameToId("updates");
@@ -711,8 +711,8 @@ public class CachePerfStats {
     return stats.getInt(destroysId);
   }
 
-  public int getCreates() {
-    return stats.getInt(createsId);
+  public long getCreates() {
+    return stats.getLong(createsId);
   }
 
   public long getPuts() {
@@ -724,7 +724,7 @@ public class CachePerfStats {
   }
 
   public int getPutAlls() {
-    return stats.getInt(putallsId);
+    return stats.getInt(putAllsId);
   }
 
   int getRemoveAlls() {
@@ -1080,7 +1080,7 @@ public class CachePerfStats {
   }
 
   public void incCreates() {
-    stats.incInt(createsId, 1);
+    stats.incLong(createsId, 1L);
   }
 
   public void incInvalidates() {
@@ -1131,9 +1131,9 @@ public class CachePerfStats {
   }
 
   public void endPutAll(long start) {
-    stats.incInt(putallsId, 1);
+    stats.incInt(putAllsId, 1);
     if (enableClockStats)
-      stats.incLong(putallTimeId, getClockTime() - start);
+      stats.incLong(putAllTimeId, getClockTime() - start);
   }
 
   public void endRemoveAll(long start) {

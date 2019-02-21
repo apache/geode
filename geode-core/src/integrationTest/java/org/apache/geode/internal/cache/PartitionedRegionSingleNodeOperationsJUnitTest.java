@@ -238,7 +238,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     return ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getDestroys();
   }
 
-  private int getCreateCount(PartitionedRegion pr) {
+  private long getCreateCount(PartitionedRegion pr) {
     return ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getCreates();
   }
 
@@ -1081,7 +1081,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     final String expectedExceptions = EntryExistsException.class.getName();
     for (int num = 0; num < 3; num++) {
       key++;
-      final int initialCreates = getCreateCount(pr);
+      final long initialCreates = getCreateCount(pr);
       pr.create(new Integer(key), val + num);
       assertEquals(initialCreates + 1, getCreateCount(pr));
       final Object getObj1 = pr.get(new Integer(key));

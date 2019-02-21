@@ -77,7 +77,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public int getCreates() {
+  public long getCreates() {
     return 0;
   }
 

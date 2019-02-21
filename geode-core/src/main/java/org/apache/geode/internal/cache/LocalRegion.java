@@ -11258,7 +11258,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void incCreates() {
-      this.stats.incInt(createsId, 1);
+      this.stats.incLong(createsId, 1L);
       this.cachePerfStats.incCreates();
     }
 
@@ -11333,9 +11333,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public void endPutAll(long start) {
-      this.stats.incInt(putallsId, 1);
+      this.stats.incInt(putAllsId, 1);
       if (enableClockStats) {
-        this.stats.incLong(putallTimeId, getStatTime() - start);
+        this.stats.incLong(putAllTimeId, getStatTime() - start);
       }
       this.cachePerfStats.endPutAll(start);
     }
