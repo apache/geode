@@ -332,9 +332,16 @@ public class JGroupsMessenger implements Messenger {
         members.add(new UUID(0, 0));// TODO open a JGroups JIRA for GEODE-3034
         View jgv = new View(vid, members);
         this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
-        UUID logicalAddress = (UUID) myChannel.getAddress();
-        if (logicalAddress instanceof JGAddress) {
-          ((JGAddress) logicalAddress).setVmViewId(-1);
+        // attempt to establish a new UUID in the jgroups channel so the member address will be
+        // different
+        try {
+          Method setAddressMethod = JChannel.class.getDeclaredMethod("setAddress");
+          setAddressMethod.setAccessible(true);
+          setAddressMethod.invoke(myChannel);
+        } catch (SecurityException | NoSuchMethodException e) {
+          logger.warn("Unable to establish a new JGroups address.  "
+              + "My address will be exactly the same as last time. Exception={}",
+              e.getMessage());
         }
         reconnecting = true;
       } else {
@@ -364,7 +371,7 @@ public class JGroupsMessenger implements Messenger {
       jgroupsReceiver = new JGroupsReceiver();
       myChannel.setReceiver(jgroupsReceiver);
       if (!reconnecting) {
-        myChannel.connect("AG"); // apache g***** (whatever we end up calling it)
+        myChannel.connect("AG"); // Apache Geode
       }
     } catch (Exception e) {
       myChannel.close();
@@ -556,7 +563,7 @@ public class JGroupsMessenger implements Messenger {
     gmsMember.setMemberWeight((byte) (services.getConfig().getMemberWeight() & 0xff));
     gmsMember.setNetworkPartitionDetectionEnabled(
         services.getConfig().getDistributionConfig().getEnableNetworkPartitionDetection());
-
+    logger.info("Established local address {}", localAddress);
     services.setLocalAddress(localAddress);
   }
 
