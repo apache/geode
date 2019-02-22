@@ -75,6 +75,7 @@ protobuf-java
 ra.jar
 rmiio
 scala-library
+scala-reflect
 shiro-cache
 shiro-config-core
 shiro-config-ogdl
