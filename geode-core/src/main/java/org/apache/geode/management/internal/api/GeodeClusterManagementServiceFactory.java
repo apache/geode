@@ -36,10 +36,10 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.management.internal.ClusterManagementClient;
+import org.apache.geode.management.internal.ClusterManagementServiceFactory;
 import org.apache.geode.management.internal.JavaClientClusterManagementFactory;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
-import org.apache.geode.management.spi.ClusterManagementServiceFactory;
 
 /**
  * An implementation of {@link ClusterManagementServiceFactory} which can be used in any

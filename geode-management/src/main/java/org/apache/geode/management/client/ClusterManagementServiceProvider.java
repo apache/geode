@@ -23,7 +23,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.spi.ClusterManagementServiceFactory;
+import org.apache.geode.management.internal.ClusterManagementServiceFactory;
 
 /**
  * Top-level entry point for client interaction with the {@link ClusterManagementService}. A user

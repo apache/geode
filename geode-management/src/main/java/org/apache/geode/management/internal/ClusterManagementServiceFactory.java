@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.spi;
+package org.apache.geode.management.internal;
 
 import org.springframework.http.client.ClientHttpRequestFactory;
 

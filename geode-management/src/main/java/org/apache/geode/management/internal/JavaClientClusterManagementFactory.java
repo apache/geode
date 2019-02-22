@@ -19,7 +19,6 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
-import org.apache.geode.management.spi.ClusterManagementServiceFactory;
 
 /**
  * A Service Provider factory which will be used to create {@link ClusterManagementService}
