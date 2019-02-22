@@ -91,7 +91,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(Collections.emptySet()).when(service).findMembers(any(), any());
     result = service.create(regionConfig, "cluster");
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
     assertThat(result.getPersistenceStatus().getMessage())
         .contains("no members found to create cache element");
   }
@@ -110,8 +110,8 @@ public class LocatorClusterManagementServiceTest {
     regionConfig.setName("test");
     result = service.create(regionConfig, "cluster");
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isRealizedOnAllOrNone()).isFalse();
+    assertThat(result.isPersisted()).isFalse();
     assertThat(result.getPersistenceStatus().getMessage())
         .contains("Failed to apply the update on all members");
   }

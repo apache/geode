@@ -117,7 +117,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
             functionResult.isSuccessful(),
             functionResult.getStatusMessage()));
 
-    if (!result.isSuccessfullyAppliedOnMembers()) {
+    if (!result.isRealizedOnAllOrNone()) {
       result.setPersistenceStatus(false, "Failed to apply the update on all members.");
       return result;
     }

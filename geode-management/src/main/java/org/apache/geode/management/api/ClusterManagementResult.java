@@ -48,18 +48,18 @@ public class ClusterManagementResult {
   }
 
   @JsonIgnore
-  public boolean isSuccessfullyAppliedOnMembers() {
+  public boolean isRealizedOnAllOrNone() {
     return memberStatuses.values().stream().allMatch(x -> x.success);
   }
 
   @JsonIgnore
-  public boolean isSuccessfullyPersisted() {
+  public boolean isPersisted() {
     return persistenceStatus.isSuccess();
   }
 
   @JsonIgnore
   public boolean isSuccessful() {
-    return isSuccessfullyPersisted() && isSuccessfullyAppliedOnMembers();
+    return isPersisted() && isRealizedOnAllOrNone();
   }
 
 }
