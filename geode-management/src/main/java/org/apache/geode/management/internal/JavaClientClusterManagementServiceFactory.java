@@ -43,11 +43,11 @@ public class JavaClientClusterManagementServiceFactory
 
   @Override
   public ClusterManagementService create(String clusterUrl) {
-    return new ClusterManagementClient(clusterUrl);
+    return new ClientClusterManagementService(clusterUrl);
   }
 
   @Override
   public ClusterManagementService create(ClientHttpRequestFactory requestFactory) {
-    return new ClusterManagementClient(requestFactory);
+    return new ClientClusterManagementService(requestFactory);
   }
 }

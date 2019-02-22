@@ -44,7 +44,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
-public class ClusterManagementClientDUnitTest {
+public class ClientClusterManagementServiceDUnitTest {
   private static final ResponseErrorHandler ERROR_HANDLER = new RestTemplateResponseErrorHandler();
 
   @Autowired

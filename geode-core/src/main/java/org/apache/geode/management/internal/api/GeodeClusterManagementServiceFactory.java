@@ -35,7 +35,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
-import org.apache.geode.management.internal.ClusterManagementClient;
+import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.management.internal.ClusterManagementServiceFactory;
 import org.apache.geode.management.internal.JavaClientClusterManagementServiceFactory;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
@@ -76,7 +76,7 @@ public class GeodeClusterManagementServiceFactory extends
               .keySet();
       String serviceAddress = getHttpServiceAddress(locatorsWithClusterConfig);
 
-      return new ClusterManagementClient(serviceAddress);
+      return new ClientClusterManagementService(serviceAddress);
     }
 
     ClientCache clientCache = ClientCacheFactory.getAnyInstance();
