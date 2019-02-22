@@ -67,6 +67,12 @@ public class ManagementControllerAdvice {
         HttpStatus.BAD_REQUEST);
   }
 
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ClusterManagementResult> badRequest(final IllegalArgumentException e) {
+    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+        HttpStatus.BAD_REQUEST);
+  }
+
   @ExceptionHandler(InstanceNotFoundException.class)
   public ResponseEntity<ClusterManagementResult> notFound(final InstanceNotFoundException e) {
     return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
