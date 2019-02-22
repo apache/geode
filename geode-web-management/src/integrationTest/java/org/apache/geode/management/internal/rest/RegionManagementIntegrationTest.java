@@ -44,8 +44,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 @WebAppConfiguration
 public class RegionManagementIntegrationTest {
 
-  static RequestPostProcessor POST_PROCESSOR =
-      new StandardRequestPostProcessor();
+  static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
 
   @Autowired
   private WebApplicationContext webApplicationContext;

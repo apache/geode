@@ -272,7 +272,6 @@ public class ClusterConfigurationLoader {
       throws ClusterConfigurationNotAvailableException, UnknownHostException {
 
     Set<String> groups = getGroups(groupList);
-    GetClusterConfigurationFunction function = new GetClusterConfigurationFunction();
 
     ConfigurationResponse response = null;
 

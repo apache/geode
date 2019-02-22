@@ -15,37 +15,19 @@
 
 package org.apache.geode.management.internal.rest;
 
-import org.springframework.test.context.web.GenericXmlWebContextLoader;
-import org.springframework.test.context.web.WebMergedContextConfiguration;
-import org.springframework.web.context.support.GenericWebApplicationContext;
-
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-/**
- * This is quite horrible. In particular we're trying to link the lifecycle of the
- * LocatorStarterRule and Spring's application context. The locator is injected into the
- * ServletContext so that it can be retrieved and cleaned up in the LocatorCleanupEventListener.
- * There has to be a better way...
- */
-class PlainLocatorContextLoader extends GenericXmlWebContextLoader {
+public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
 
-  private LocatorStarterRule locator = new LocatorStarterRule()
-      .withAutoStart();
+  private final LocatorStarterRule locator;
 
-  @Override
-  protected void loadBeanDefinitions(GenericWebApplicationContext context,
-      WebMergedContextConfiguration webMergedConfig) {
-
-    locator.before();
-
-    super.loadBeanDefinitions(context, webMergedConfig);
-    context.getServletContext().setAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-        locator.getCache().getSecurityService());
-    context.getServletContext().setAttribute(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-        locator.getLocator().getClusterManagementService());
-
-    context.getServletContext().setAttribute("locator", locator);
+  public PlainLocatorContextLoader() {
+    locator = new LocatorStarterRule()
+        .withAutoStart();
   }
 
+  @Override
+  public LocatorStarterRule getLocator() {
+    return locator;
+  }
 }

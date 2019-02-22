@@ -25,9 +25,11 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheClientStatus;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -41,7 +43,8 @@ import org.apache.geode.management.internal.cli.domain.MemberInformation;
  */
 
 public class GetMemberInformationFunction implements InternalFunction {
-  private static final long serialVersionUID = 1L;
+
+  private static final long serialVersionUID = 1404642539058875565L;
 
   @Override
   public String getId() {
@@ -73,19 +76,29 @@ public class GetMemberInformationFunction implements InternalFunction {
 
       InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
       DistributionConfig config = system.getConfig();
-      String serverBindAddress = config.getServerBindAddress();
-      MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+      DistributedMember member =
+          CliUtil.getDistributedMemberByNameOrId(functionContext.getMemberName(),
+              (InternalCache) functionContext.getCache());
 
       MemberInformation memberInfo = new MemberInformation();
+
+      memberInfo.setName(member.getName());
+      memberInfo.setId(member.getId());
+      memberInfo.setHost(member.getHost());
+      memberInfo.setProcessId("" + member.getProcessId());
+
       memberInfo.setGroups(config.getGroups());
       memberInfo.setLogFilePath(config.getLogFile().getCanonicalPath());
       memberInfo.setStatArchiveFilePath(config.getStatisticArchiveFile().getCanonicalPath());
       memberInfo.setWorkingDirPath(System.getProperty("user.dir"));
       memberInfo.setCacheXmlFilePath(config.getCacheXmlFile().getCanonicalPath());
       memberInfo.setLocators(config.getLocators());
-      memberInfo.setServerBindAddress(serverBindAddress);
+      memberInfo.setServerBindAddress(config.getServerBindAddress());
       memberInfo.setOffHeapMemorySize(config.getOffHeapMemorySize());
+      memberInfo.setHttpServicePort(config.getHttpServicePort());
+      memberInfo.setHttpServiceBindAddress(config.getHttpServiceBindAddress());
 
+      MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
       MemoryUsage memUsage = memoryMXBean.getHeapMemoryUsage();
       memberInfo.setHeapUsage(Long.toString(bytesToMeg(memUsage.getUsed())));
       memberInfo.setMaxHeapSize(Long.toString(bytesToMeg(memUsage.getMax())));

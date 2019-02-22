@@ -13,24 +13,9 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest;
+package org.apache.geode.management.api;
 
-import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
+public interface RestfulEndpoint {
 
-public class LocatorWithSecurityManagerContextLoader extends BaseLocatorContextLoader {
-
-  private final LocatorStarterRule locator;
-
-  public LocatorWithSecurityManagerContextLoader() {
-    locator = new LocatorStarterRule()
-        .withSecurityManager(SimpleTestSecurityManager.class)
-        .withAutoStart();
-  }
-
-  @Override
-  public LocatorStarterRule getLocator() {
-    return locator;
-  }
-
+  String getEndpoint();
 }

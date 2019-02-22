@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
@@ -50,7 +50,7 @@ public class ManagementControllerAdvice {
   }
 
   @ExceptionHandler({AuthenticationFailedException.class, AuthenticationException.class})
-  public ResponseEntity<ClusterManagementResult> unauthorized(AuthenticationFailedException e) {
+  public ResponseEntity<ClusterManagementResult> unauthorized(Exception e) {
     return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
         HttpStatus.UNAUTHORIZED);
   }

@@ -676,6 +676,13 @@ javadoc/org/apache/geode/management/PersistentMemberDetails.html
 javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
+javadoc/org/apache/geode/management/api/ClusterManagementResult.html
+javadoc/org/apache/geode/management/api/ClusterManagementService.html
+javadoc/org/apache/geode/management/api/RestfulEndpoint.html
+javadoc/org/apache/geode/management/api/Status.html
+javadoc/org/apache/geode/management/api/package-frame.html
+javadoc/org/apache/geode/management/api/package-summary.html
+javadoc/org/apache/geode/management/api/package-tree.html
 javadoc/org/apache/geode/management/cli/CliFunction.html
 javadoc/org/apache/geode/management/cli/CliMetaData.AvailabilityMetadata.html
 javadoc/org/apache/geode/management/cli/CliMetaData.html
@@ -693,6 +700,11 @@ javadoc/org/apache/geode/management/cli/UpdateAllConfigurationGroupsMarker.html
 javadoc/org/apache/geode/management/cli/package-frame.html
 javadoc/org/apache/geode/management/cli/package-summary.html
 javadoc/org/apache/geode/management/cli/package-tree.html
+javadoc/org/apache/geode/management/client/ClusterManagementServiceProvider.html
+javadoc/org/apache/geode/management/client/RestTemplateResponseErrorHandler.html
+javadoc/org/apache/geode/management/client/package-frame.html
+javadoc/org/apache/geode/management/client/package-summary.html
+javadoc/org/apache/geode/management/client/package-tree.html
 javadoc/org/apache/geode/management/membership/ClientMembership.html
 javadoc/org/apache/geode/management/membership/ClientMembershipEvent.html
 javadoc/org/apache/geode/management/membership/ClientMembershipListener.html
@@ -707,6 +719,11 @@ javadoc/org/apache/geode/management/membership/package-tree.html
 javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html
+javadoc/org/apache/geode/management/spi/ClusterManagementServiceProviderFactory.html
+javadoc/org/apache/geode/management/spi/JavaClientClusterManagementProviderFactory.html
+javadoc/org/apache/geode/management/spi/package-frame.html
+javadoc/org/apache/geode/management/spi/package-summary.html
+javadoc/org/apache/geode/management/spi/package-tree.html
 javadoc/org/apache/geode/memcached/GemFireMemcachedServer.Protocol.html
 javadoc/org/apache/geode/memcached/GemFireMemcachedServer.html
 javadoc/org/apache/geode/memcached/package-frame.html

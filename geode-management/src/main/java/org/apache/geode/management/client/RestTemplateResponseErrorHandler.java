@@ -12,33 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.api;
 
-public class Status {
-  boolean success;
-  String message;
+package org.apache.geode.management.client;
 
-  // needed for json deserialization
-  public Status() {}
+import java.io.IOException;
 
-  public Status(boolean success, String message) {
-    this.success = success;
-    this.message = message;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.web.client.ResponseErrorHandler;
+
+public class RestTemplateResponseErrorHandler implements ResponseErrorHandler {
+  @Override
+  public boolean hasError(ClientHttpResponse response) throws IOException {
+    // All errors should be handled by the server and be returned as part of the
+    // ResponseEntity<ClusterManagementResult>.
+    return false;
   }
 
-  public boolean isSuccess() {
-    return success;
-  }
-
-  public void setSuccess(boolean success) {
-    this.success = success;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
+  @Override
+  public void handleError(ClientHttpResponse response) throws IOException {
+    // this should not be necessary
   }
 }
