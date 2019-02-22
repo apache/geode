@@ -451,6 +451,7 @@ org/apache/geode/internal/process/ConnectionFailedException,true,562263645283675
 org/apache/geode/internal/process/FileAlreadyExistsException,true,5471082555536094256
 org/apache/geode/internal/process/MBeanInvocationFailedException,true,7991096466859690801
 org/apache/geode/internal/process/PidUnavailableException,true,-1660269538268828059
+org/apache/geode/internal/process/UncheckedPidUnavailableException,true,-4896120572252598765
 org/apache/geode/internal/process/signal/Signal,false,description:java/lang/String,name:java/lang/String,number:int,type:org/apache/geode/internal/process/signal/SignalType
 org/apache/geode/internal/process/signal/SignalEvent,false,signal:org/apache/geode/internal/process/signal/Signal
 org/apache/geode/internal/process/signal/SignalType,false,description:java/lang/String
