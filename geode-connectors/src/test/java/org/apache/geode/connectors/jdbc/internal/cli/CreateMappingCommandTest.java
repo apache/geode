@@ -41,6 +41,7 @@ import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -63,6 +64,10 @@ public class CreateMappingCommandTest {
   private String group1Name;
   private String group2Name;
   private Set<InternalDistributedMember> members;
+  private CliFunctionResult preconditionCheckResults;
+  private ArrayList<FieldMapping> fieldMappings = new ArrayList<>();
+
+  private Object[] preconditionOutput = new Object[] {null, fieldMappings, null};
   private List<CliFunctionResult> results;
   private CliFunctionResult successFunctionResult;
   private RegionMapping mapping;
@@ -89,10 +94,14 @@ public class CreateMappingCommandTest {
     results = new ArrayList<>();
     successFunctionResult = mock(CliFunctionResult.class);
     when(successFunctionResult.isSuccessful()).thenReturn(true);
-
+    preconditionCheckResults = mock(CliFunctionResult.class);
+    when(preconditionCheckResults.isSuccessful()).thenReturn(true);
+    when(preconditionCheckResults.getResultObject()).thenReturn(preconditionOutput);
+    doReturn(preconditionCheckResults).when(createRegionMappingCommand)
+        .executeFunctionAndGetFunctionResult(any(), any(), any());
     doReturn(results).when(createRegionMappingCommand).executeAndGetFunctionResult(any(), any(),
         any());
-    doReturn(members).when(createRegionMappingCommand).findMembersForRegion(regionName);
+    doReturn(members).when(createRegionMappingCommand).findMembers(any(), any());
 
     mapping = mock(RegionMapping.class);
     when(mapping.getRegionName()).thenReturn(regionName);
@@ -183,7 +192,63 @@ public class CreateMappingCommandTest {
     assertThat(regionMapping.getIds()).isEqualTo(ids);
     assertThat(regionMapping.getCatalog()).isEqualTo(catalog);
     assertThat(regionMapping.getSchema()).isEqualTo(schema);
+    assertThat(regionMapping.getFieldMappings()).isEmpty();
     assertThat(synchronous).isFalse();
+  }
+
+  @Test
+  public void createsMappingReturnsCorrectFieldMappings() {
+    setupRequiredPreconditions();
+    results.add(successFunctionResult);
+    String ids = "ids";
+    String catalog = "catalog";
+    String schema = "schema";
+    this.fieldMappings.add(new FieldMapping("pdx1", "pdx1type", "jdbc1", "jdbc1type", false));
+    this.fieldMappings.add(new FieldMapping("pdx2", "pdx2type", "jdbc2", "jdbc2type", false));
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass, false, ids, catalog, schema, null);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    Object[] results = (Object[]) result.getConfigObject();
+    RegionMapping regionMapping = (RegionMapping) results[0];
+    assertThat(regionMapping.getFieldMappings()).isEqualTo(this.fieldMappings);
+  }
+
+  @Test
+  public void createsMappingReturnsRegionMappingWithComputedIds() {
+    setupRequiredPreconditions();
+    results.add(successFunctionResult);
+    String ids = "does not matter";
+    String catalog = "catalog";
+    String schema = "schema";
+    String computedIds = "id1,id2";
+    preconditionOutput[0] = computedIds;
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass, false, ids, catalog, schema, null);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    Object[] results = (Object[]) result.getConfigObject();
+    RegionMapping regionMapping = (RegionMapping) results[0];
+    assertThat(regionMapping.getIds()).isEqualTo(computedIds);
+  }
+
+  @Test
+  public void createsMappingReturnsErrorIfPreconditionCheckErrors() {
+    setupRequiredPreconditions();
+    results.add(successFunctionResult);
+    String ids = "ids";
+    String catalog = "catalog";
+    String schema = "schema";
+    when(preconditionCheckResults.isSuccessful()).thenReturn(false);
+    when(preconditionCheckResults.getStatusMessage()).thenReturn("precondition check failed");
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass, false, ids, catalog, schema, null);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
+    assertThat(result.toString()).contains("precondition check failed");
   }
 
   @Test

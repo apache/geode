@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +32,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.JdbcAsyncWriter;
 import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.connectors.util.internal.MappingConstants;
@@ -127,6 +129,24 @@ public class CreateMappingCommand extends SingleGfshCommand {
       }
     } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
+    }
+
+    CliFunctionResult preconditionCheckResult =
+        executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(), mapping,
+            targetMembers.iterator().next());
+    if (preconditionCheckResult.isSuccessful()) {
+      Object[] preconditionOutput = (Object[]) preconditionCheckResult.getResultObject();
+      String computedIds = (String) preconditionOutput[0];
+      if (computedIds != null) {
+        mapping.setIds(computedIds);
+      }
+      ArrayList<FieldMapping> fieldMappings = (ArrayList<FieldMapping>) preconditionOutput[1];
+      for (FieldMapping fieldMapping : fieldMappings) {
+        mapping.addFieldMapping(fieldMapping);
+      }
+    } else {
+      String message = preconditionCheckResult.getStatusMessage();
+      return ResultModel.createError(message);
     }
 
     // action

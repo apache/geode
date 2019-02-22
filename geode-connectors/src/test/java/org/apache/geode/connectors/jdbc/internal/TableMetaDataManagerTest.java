@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -345,9 +346,9 @@ public class TableMetaDataManagerTest {
 
     TableMetaDataView data =
         tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
-    int dataType = data.getColumnDataType("unknownColumn");
+    JDBCType dataType = data.getColumnDataType("unknownColumn");
 
-    assertThat(dataType).isEqualTo(0);
+    assertThat(dataType).isEqualTo(JDBCType.NULL);
   }
 
   @Test
@@ -365,11 +366,11 @@ public class TableMetaDataManagerTest {
 
     TableMetaDataView data =
         tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
-    int dataType1 = data.getColumnDataType(columnName1);
-    int dataType2 = data.getColumnDataType(columnName2);
+    JDBCType dataType1 = data.getColumnDataType(columnName1);
+    JDBCType dataType2 = data.getColumnDataType(columnName2);
 
-    assertThat(dataType1).isEqualTo(columnDataType1);
-    assertThat(dataType2).isEqualTo(columnDataType2);
+    assertThat(dataType1.getVendorTypeNumber()).isEqualTo(columnDataType1);
+    assertThat(dataType2.getVendorTypeNumber()).isEqualTo(columnDataType2);
     verify(primaryKeysResultSet).close();
     verify(columnResultSet).close();
   }

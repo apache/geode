@@ -42,6 +42,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 import org.apache.geode.pdx.FieldType;
@@ -236,7 +237,9 @@ public class AutoSerializableManager {
     }
     String className = clazz.getName();
     if (isExcluded(className)) {
-      return false;
+      if (!PdxSerializerObject.class.isAssignableFrom(clazz)) {
+        return false;
+      }
     }
 
     for (Pattern p : classPatterns) {

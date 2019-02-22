@@ -16,11 +16,16 @@ package org.apache.geode.connectors.jdbc;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.ClassRule;
 
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
 import org.apache.geode.test.junit.rules.MySqlConnectionRule;
 
@@ -51,6 +56,31 @@ public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
         + "along bigint, " + "afloat float, " + "adouble float, " + "astring varchar(10), "
         + "adate datetime, " + "anobject varchar(20), " + "abytearray blob(100), "
         + "achar char(1))");
+  }
+
+  @Override
+  protected List<FieldMapping> getSupportedPdxFieldsTableFieldMappings() {
+    List<FieldMapping> fieldMappings = Arrays.asList(
+        new FieldMapping("id", FieldType.STRING.name(), "id", JDBCType.VARCHAR.name(), false),
+        new FieldMapping("aboolean", FieldType.BOOLEAN.name(), "aboolean", JDBCType.SMALLINT.name(),
+            true),
+        new FieldMapping("aByte", FieldType.BYTE.name(), "abyte", JDBCType.SMALLINT.name(), true),
+        new FieldMapping("ASHORT", FieldType.SHORT.name(), "ashort", JDBCType.SMALLINT.name(),
+            true),
+        new FieldMapping("anint", FieldType.INT.name(), "anint", JDBCType.INTEGER.name(), true),
+        new FieldMapping("along", FieldType.LONG.name(), "along", JDBCType.BIGINT.name(), true),
+        new FieldMapping("afloat", FieldType.FLOAT.name(), "afloat", JDBCType.FLOAT.name(), true),
+        new FieldMapping("adouble", FieldType.DOUBLE.name(), "adouble", JDBCType.FLOAT.name(),
+            true),
+        new FieldMapping("astring", FieldType.STRING.name(), "astring", JDBCType.VARCHAR.name(),
+            true),
+        new FieldMapping("adate", FieldType.DATE.name(), "adate", JDBCType.TIMESTAMP.name(), true),
+        new FieldMapping("anobject", FieldType.OBJECT.name(), "anobject", JDBCType.VARCHAR.name(),
+            true),
+        new FieldMapping("abytearray", FieldType.BYTE_ARRAY.name(), "abytearray",
+            JDBCType.BLOB.name(), true),
+        new FieldMapping("achar", FieldType.CHAR.name(), "achar", JDBCType.CHAR.name(), true));
+    return fieldMappings;
   }
 
   @Override

@@ -79,7 +79,7 @@ public class JdbcWriter<K, V> extends AbstractJdbcCallback implements CacheWrite
     if (eventCanBeIgnored(event.getOperation())) {
       return;
     }
-    checkInitialized((InternalCache) event.getRegion().getRegionService());
+    checkInitialized(event.getRegion());
     totalEvents.add(1);
     try {
       getSqlHandler().write(event.getRegion(), event.getOperation(), event.getKey(),

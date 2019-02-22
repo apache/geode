@@ -19,9 +19,12 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
 
 import org.awaitility.core.ThrowingRunnable;
 import org.junit.After;
@@ -35,6 +38,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
@@ -73,7 +77,11 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   }
 
   private void setupRegion(String ids) throws RegionMappingExistsException {
-    employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME, ids);
+    List<FieldMapping> fieldMappings = Arrays.asList(
+        new FieldMapping("", "", "id", JDBCType.VARCHAR.name(), false),
+        new FieldMapping("", "", "name", JDBCType.VARCHAR.name(), true),
+        new FieldMapping("", "", "age", JDBCType.INTEGER.name(), true));
+    employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME, ids, fieldMappings);
   }
 
   @After
@@ -315,12 +323,12 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     assertThat(resultSet.getObject("age")).isEqualTo(employee.getAge());
   }
 
-  private Region<Object, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName, String ids)
+  private Region<Object, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName, String ids,
+      List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
-    jdbcWriter = new JdbcAsyncWriter(createSqlHandler(ids), cache);
+    jdbcWriter = new JdbcAsyncWriter(createSqlHandler(regionName, ids, fieldMappings), cache);
     cache.createAsyncEventQueueFactory().setBatchSize(1).setBatchTimeInterval(1)
         .create("jdbcAsyncQueue", jdbcWriter);
-
     RegionFactory<Object, PdxInstance> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.addAsyncEventQueueId("jdbcAsyncQueue");
     return regionFactory.create(regionName);
@@ -333,10 +341,11 @@ public abstract class JdbcAsyncWriterIntegrationTest {
     assertThat(size).isEqualTo(expected);
   }
 
-  private SqlHandler createSqlHandler(String ids)
+  private SqlHandler createSqlHandler(String regionName, String ids,
+      List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
-    return new SqlHandler(new TableMetaDataManager(),
-        TestConfigService.getTestConfigService(ids),
+    return new SqlHandler(cache, regionName, new TableMetaDataManager(),
+        TestConfigService.getTestConfigService(ids, fieldMappings),
         testDataSourceFactory);
   }
 

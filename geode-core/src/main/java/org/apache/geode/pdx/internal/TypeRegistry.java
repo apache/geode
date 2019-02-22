@@ -153,7 +153,8 @@ public class TypeRegistry {
   }
 
   public PdxType getExistingTypeForClass(Class<?> aClass) {
-    return this.localTypeIds.get(aClass);
+    PdxType result = this.localTypeIds.get(aClass);
+    return result;
   }
 
   /**

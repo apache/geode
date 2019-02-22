@@ -19,12 +19,21 @@ import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingComman
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 
+import javax.sql.DataSource;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,7 +48,11 @@ import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
@@ -94,13 +107,84 @@ public class DestroyMappingCommandDunitTest implements Serializable {
         "create region --name=" + GROUP1_GROUP2_REGION + " --groups=" + TEST_GROUP1 + ","
             + TEST_GROUP2 + " --type=PARTITION")
         .statusIsSuccess();
+    setupDatabase();
+  }
+
+  @After
+  public void after() throws Exception {
+    teardownDatabase();
+  }
+
+  private void setupDatabase() {
+    gfsh.executeAndAssertThat(
+        "create data-source --name=myDataSource"
+            + " --username=myuser --password=mypass --pooled=false"
+            + " --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
+    executeSql(
+        "create table myuser." + TEST_REGION + " (id varchar(10) primary key, name varchar(10))");
+  }
+
+  private void teardownDatabase() {
+    executeSql("drop table myuser." + TEST_REGION);
+  }
+
+  public static class IdAndName implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("id", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("id");
+      this.name = reader.readString("name");
+    }
+  }
+
+  private void executeSql(String sql) {
+    for (MemberVM server : Arrays.asList(server1, server2, server3, server4)) {
+      server.invoke(() -> {
+        try {
+          DataSource ds = JNDIInvoker.getDataSource("myDataSource");
+          Connection conn = ds.getConnection();
+          Statement sm = conn.createStatement();
+          sm.execute(sql);
+          sm.close();
+        } catch (SQLException e) {
+          throw new RuntimeException(e);
+        }
+      });
+    }
   }
 
   private void setupAsyncMapping() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, TEST_REGION);
     csb.addOption(DATA_SOURCE_NAME, "myDataSource");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
+    csb.addOption(SCHEMA_NAME, "myuser");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
   }
@@ -109,7 +193,8 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, TEST_REGION);
     csb.addOption(DATA_SOURCE_NAME, "myDataSource");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
+    csb.addOption(SCHEMA_NAME, "myuser");
     csb.addOption(SYNCHRONOUS_NAME, "true");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -118,8 +203,10 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   private void setupMappingWithServerGroup(String groups, String regionName, boolean isSync) {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING + " --groups=" + groups);
     csb.addOption(REGION_NAME, regionName);
+    csb.addOption(TABLE_NAME, TEST_REGION);
     csb.addOption(DATA_SOURCE_NAME, "myDataSource");
-    csb.addOption(PDX_NAME, "myPdxClass");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
+    csb.addOption(SCHEMA_NAME, "myuser");
     csb.addOption(SYNCHRONOUS_NAME, Boolean.toString(isSync));
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
