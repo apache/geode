@@ -24,7 +24,7 @@ public class JavaWorkarounds {
   // where the entry for the key exists already. This only affects pre Java 9 jdks
   // https://bugs.openjdk.java.net/browse/JDK-8161372
   public static <K, V> V computeIfAbsent(Map<K, V> map, K key,
-                                         Function<? super K, ? extends V> mappingFunction) {
+      Function<? super K, ? extends V> mappingFunction) {
     V existingValue = map.get(key);
     if (existingValue == null) {
       return map.computeIfAbsent(key, mappingFunction);
