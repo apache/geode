@@ -409,7 +409,7 @@ public class ConcurrencyRuleTest {
 
     retVal.set(false); // reset in case it has already been used
 
-    concurrencyRule.setTimeout(Duration.ofSeconds(3));
+    concurrencyRule.setTimeout(Duration.ofSeconds(60));
     concurrencyRule.add(callWithEventuallyCorrectRetVal).repeatUntilValue(expectedVal);
     concurrencyRule.add(() -> {
       Thread.sleep(500);
