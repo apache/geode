@@ -946,28 +946,16 @@ public class PdxWriterImpl implements PdxWriter {
   }
 
   PdxInstance makePdxInstance() {
-    ByteBuffer bb = this.os.toByteBuffer();
-    bb.get(); // skip PDX DSCODE
-    int len = bb.getInt();
-    bb.getInt(); // skip PDX type
+    final int DSCODE_SIZE = 1;
+    final int LENGTH_SIZE = 4;
+    final int PDX_TYPE_SIZE = 4;
+    final int BYTES_TO_SKIP = DSCODE_SIZE + LENGTH_SIZE + PDX_TYPE_SIZE;
+    ByteBuffer bb = this.os.toByteBuffer(BYTES_TO_SKIP);
     PdxType pt = this.newType;
     if (pt == null) {
       pt = this.existingType;
     }
-    return new PdxInstanceImpl(pt, new PdxInputStream(copyRemainingBytes(bb)), len);
-  }
-
-  /**
-   * Copies the remaining bytes in source
-   * (that is, from its current position to its limit)
-   * into a new heap ByteBuffer that is returned.
-   */
-  static ByteBuffer copyRemainingBytes(ByteBuffer source) {
-    ByteBuffer slice = source.slice();
-    ByteBuffer result = ByteBuffer.allocate(slice.capacity());
-    result.put(slice);
-    result.flip();
-    return result;
+    return new PdxInstanceImpl(pt, new PdxInputStream(bb), bb.limit());
   }
 
   public static boolean isPdx(byte[] valueBytes) {
