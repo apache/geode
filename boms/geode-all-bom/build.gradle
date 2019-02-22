@@ -21,17 +21,6 @@ plugins {
   id 'maven-publish'
 }
 
-// Published subprojects mark themselves via the 'constrainVersionInBom' external property.
-// To correctly publish the constraint that Geode module versions must match, we must wait
-// for all subprojects to be evaluated to guarantee correct visibility of this property.
-// We exclude from this list any project in the :boms project path.
-rootProject.subprojects
-    .findAll { p -> !project(':boms').allprojects.contains(p) }
-    .each { p ->
-  logger.debug "Imposing evaluation constraint: ${project}.evaluationDependsOn ${p.path}"
-  project.evaluationDependsOn p.path
-}
-
 apply from: "${project.projectDir}/../../gradle/publish.gradle"
 
 
