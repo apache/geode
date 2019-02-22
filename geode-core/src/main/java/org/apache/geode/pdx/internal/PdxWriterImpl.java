@@ -533,7 +533,8 @@ public class PdxWriterImpl implements PdxWriter {
           // We created a new type that had unreadData.
           // In this case we don't define a local type
           // but we do set the serialized type.
-          typeId = this.tr.defineType(newType);
+          this.newType = this.tr.defineType(newType);
+          typeId = this.newType.getTypeId();
           this.unreadData.setSerializedType(newType);
         } else {
           this.newType = this.tr.defineLocalType(this.pdx, newType);
@@ -945,15 +946,16 @@ public class PdxWriterImpl implements PdxWriter {
   }
 
   PdxInstance makePdxInstance() {
-    ByteBuffer bb = this.os.toByteBuffer();
-    bb.get(); // skip PDX DSCODE
-    int len = bb.getInt();
-    bb.getInt(); // skip PDX type
+    final int DSCODE_SIZE = 1;
+    final int LENGTH_SIZE = 4;
+    final int PDX_TYPE_SIZE = 4;
+    final int BYTES_TO_SKIP = DSCODE_SIZE + LENGTH_SIZE + PDX_TYPE_SIZE;
+    ByteBuffer bb = this.os.toByteBuffer(BYTES_TO_SKIP);
     PdxType pt = this.newType;
     if (pt == null) {
       pt = this.existingType;
     }
-    return new PdxInstanceImpl(pt, new PdxInputStream(bb), len);
+    return new PdxInstanceImpl(pt, new PdxInputStream(bb), bb.limit());
   }
 
   public static boolean isPdx(byte[] valueBytes) {

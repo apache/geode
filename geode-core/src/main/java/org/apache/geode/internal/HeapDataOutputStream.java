@@ -70,6 +70,7 @@ public class HeapDataOutputStream extends OutputStream
   private Version version;
   private boolean doNotCopy;
 
+  static final int SMALLEST_CHUNK_SIZE = 32;
   private static final int INITIAL_CAPACITY = 1024;
 
   public HeapDataOutputStream(Version version) {
@@ -102,8 +103,8 @@ public class HeapDataOutputStream extends OutputStream
    *        instead referenced.
    */
   public HeapDataOutputStream(int allocSize, Version version, boolean doNotCopy) {
-    if (allocSize < 32) {
-      this.MIN_CHUNK_SIZE = 32;
+    if (allocSize < SMALLEST_CHUNK_SIZE) {
+      this.MIN_CHUNK_SIZE = SMALLEST_CHUNK_SIZE;
     } else {
       this.MIN_CHUNK_SIZE = allocSize;
     }
@@ -340,19 +341,32 @@ public class HeapDataOutputStream extends OutputStream
     if (this.chunks != null) {
       final int size = size();
       ByteBuffer newBuffer = ByteBuffer.allocate(size);
-      int newBufPos = 0;
       for (ByteBuffer bb : this.chunks) {
         newBuffer.put(bb);
-        newBufPos += bb.position();
-        newBuffer.position(newBufPos); // works around JRockit 1.4.2.04 bug
       }
       this.chunks = null;
       newBuffer.put(this.buffer);
-      newBufPos += this.buffer.position();
-      newBuffer.position(newBufPos); // works around JRockit 1.4.2.04 bug
       this.buffer = newBuffer;
       this.buffer.flip(); // now ready for reading
     }
+  }
+
+  private void consolidateChunks(int startPosition) {
+    assert startPosition < SMALLEST_CHUNK_SIZE;
+    final int size = size() - startPosition;
+    ByteBuffer newBuffer = ByteBuffer.allocate(size);
+    if (this.chunks != null) {
+      this.chunks.getFirst().position(startPosition);
+      for (ByteBuffer bb : this.chunks) {
+        newBuffer.put(bb);
+      }
+      this.chunks = null;
+    } else {
+      this.buffer.position(startPosition);
+    }
+    newBuffer.put(this.buffer);
+    newBuffer.flip(); // now ready for reading
+    this.buffer = newBuffer;
   }
 
   /**
@@ -425,12 +439,24 @@ public class HeapDataOutputStream extends OutputStream
   }
 
   /**
-   * gets the contents of this stream as s ByteBuffer, ready for reading. The stream should not be
+   * gets the contents of this stream as a ByteBuffer, ready for reading. The stream should not be
    * written to past this point until it has been reset.
    */
   public ByteBuffer toByteBuffer() {
     finishWriting();
     consolidateChunks();
+    return this.buffer;
+  }
+
+  /**
+   * gets the contents of this stream as a ByteBuffer, ready for reading. The stream should not be
+   * written to past this point until it has been reset.
+   *
+   * @param startPosition the position of the first byte to copy into the returned buffer.
+   */
+  public ByteBuffer toByteBuffer(int startPosition) {
+    finishWriting();
+    consolidateChunks(startPosition);
     return this.buffer;
   }
 
