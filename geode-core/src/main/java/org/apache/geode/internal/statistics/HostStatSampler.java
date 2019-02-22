@@ -19,6 +19,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntSupplier;
 
 import org.apache.logging.log4j.Logger;
 
@@ -34,6 +35,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.process.UncheckedPidUnavailableException;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
@@ -88,12 +91,10 @@ public abstract class HostStatSampler
   private final StoppableCountDownLatch statSamplerInitializedLatch;
 
   private final CancelCriterion stopper;
-
   private final CallbackSampler callbackSampler;
-
   private final NanoTimer timer;
-
   private final LogFile logFile;
+  private final IntSupplier pidSupplier;
 
   protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats) {
     this(stopper, samplerStats, new NanoTimer());
@@ -111,6 +112,11 @@ public abstract class HostStatSampler
 
   protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats, NanoTimer timer,
       LogFile logFile) {
+    this(stopper, samplerStats, timer, logFile, ProcessUtils::identifyPidAsUnchecked);
+  }
+
+  HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats, NanoTimer timer,
+      LogFile logFile, IntSupplier pidSupplier) {
     this.stopper = stopper;
     this.statSamplerInitializedLatch = new StoppableCountDownLatch(this.stopper, 1);
     this.samplerStats = samplerStats;
@@ -118,6 +124,7 @@ public abstract class HostStatSampler
     this.callbackSampler = new CallbackSampler(stopper, samplerStats);
     this.timer = timer;
     this.logFile = logFile;
+    this.pidSupplier = pidSupplier;
   }
 
   public StatSamplerStats getStatSamplerStats() {
@@ -448,6 +455,18 @@ public abstract class HostStatSampler
     // do nothing by default
   }
 
+  protected long getSpecialStatsId() {
+    try {
+      int pid = pidSupplier.getAsInt();
+      if (pid > 0) {
+        return pid;
+      }
+    } catch (UncheckedPidUnavailableException ignored) {
+      // ignore and fall through
+    }
+    return getSystemId();
+  }
+
   protected boolean fileSizeLimitInKB() {
     return this.fileSizeLimitInKB;
   }
@@ -469,7 +488,7 @@ public abstract class HostStatSampler
    */
   private synchronized void initSpecialStats() {
     // add a vm resource
-    long id = getSystemId();
+    long id = getSpecialStatsId();
     this.vmStats = VMStatsContractFactory.create(getStatisticsManager(), id);
     initProcessStats(id);
   }

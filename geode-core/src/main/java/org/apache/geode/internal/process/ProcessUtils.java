@@ -52,13 +52,28 @@ public class ProcessUtils {
   }
 
   /**
+   * Returns the pid for this process without throwing a checked exception.
+   *
+   * @throws UncheckedPidUnavailableException if parsing the pid from the name of the RuntimeMXBean
+   *         fails
+   *
+   * @see java.lang.management.RuntimeMXBean#getName()
+   */
+  public static int identifyPidAsUnchecked() throws UncheckedPidUnavailableException {
+    try {
+      return identifyPid();
+    } catch (PidUnavailableException e) {
+      throw new UncheckedPidUnavailableException(e);
+    }
+  }
+
+  /**
    * Returns the pid for this process using the specified name from RuntimeMXBean.
    *
    * @throws PidUnavailableException if parsing the pid from the RuntimeMXBean name fails
    */
   public static int identifyPid(final String name) throws PidUnavailableException {
     notEmpty(name, "Invalid name '" + name + "' specified");
-
 
     try {
       final int index = name.indexOf('@');
