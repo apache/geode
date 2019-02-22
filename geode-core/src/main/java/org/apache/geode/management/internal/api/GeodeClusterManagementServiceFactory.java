@@ -37,7 +37,7 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.management.internal.ClusterManagementClient;
 import org.apache.geode.management.internal.ClusterManagementServiceFactory;
-import org.apache.geode.management.internal.JavaClientClusterManagementFactory;
+import org.apache.geode.management.internal.JavaClientClusterManagementServiceFactory;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 
@@ -48,7 +48,7 @@ import org.apache.geode.management.internal.cli.functions.GetMemberInformationFu
  * an explicit can also be used.
  */
 public class GeodeClusterManagementServiceFactory extends
-    JavaClientClusterManagementFactory {
+    JavaClientClusterManagementServiceFactory {
 
   @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =

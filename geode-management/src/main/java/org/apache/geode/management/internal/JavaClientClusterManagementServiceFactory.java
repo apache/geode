@@ -21,12 +21,12 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
 
 /**
- * A Service Provider factory which will be used to create {@link ClusterManagementService}
+ * A Service factory which will be used to create {@link ClusterManagementService}
  * instances from pure Java code - i.e. the Cluster Management endpoint URL <b>cannot</b> be
  * inferred from the implied runtime context but needs to be specifically configured using a given
  * URL or {@code ClientHttpRequestFactory}.
  */
-public class JavaClientClusterManagementFactory
+public class JavaClientClusterManagementServiceFactory
     implements ClusterManagementServiceFactory {
 
   @Override

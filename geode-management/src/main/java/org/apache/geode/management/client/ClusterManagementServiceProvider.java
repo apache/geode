@@ -80,7 +80,7 @@ public class ClusterManagementServiceProvider {
 
   private static synchronized ClusterManagementServiceFactory getServiceFactory(String context) {
     if (serviceFactories == null) {
-      loadClusterManagementServiceProviderFactories();
+      loadClusterManagementServiceFactories();
     }
     ClusterManagementServiceFactory factory = serviceFactories.get(context);
     if (factory == null) {
@@ -89,7 +89,7 @@ public class ClusterManagementServiceProvider {
     return factory;
   }
 
-  private static void loadClusterManagementServiceProviderFactories() {
+  private static void loadClusterManagementServiceFactories() {
     serviceFactories = new HashMap<>();
 
     for (ClusterManagementServiceFactory factory : ServiceLoader

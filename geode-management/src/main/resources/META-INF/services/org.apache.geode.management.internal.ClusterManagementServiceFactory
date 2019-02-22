@@ -14,4 +14,4 @@
 #
 
 
-org.apache.geode.management.internal.JavaClientClusterManagementFactory
+org.apache.geode.management.internal.JavaClientClusterManagementServiceFactory
