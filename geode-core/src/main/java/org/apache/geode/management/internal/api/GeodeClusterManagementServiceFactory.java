@@ -35,20 +35,20 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
-import org.apache.geode.management.internal.ClusterManagementClient;
+import org.apache.geode.management.internal.ClientClusterManagementService;
+import org.apache.geode.management.internal.ClusterManagementServiceFactory;
+import org.apache.geode.management.internal.JavaClientClusterManagementServiceFactory;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
-import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
-import org.apache.geode.management.spi.JavaClientClusterManagementProviderFactory;
 
 /**
- * An implementation of {@link ClusterManagementServiceProviderFactory} which can be used in any
+ * An implementation of {@link ClusterManagementServiceFactory} which can be used in any
  * context where Geode is running (client, server or locator). It will attempt to determine the
  * address of the {@code ClusterManagementService} when using the {@code create()} call. Otherwise
  * an explicit can also be used.
  */
-public class GeodeClusterManagementServiceProviderFactory extends
-    JavaClientClusterManagementProviderFactory {
+public class GeodeClusterManagementServiceFactory extends
+    JavaClientClusterManagementServiceFactory {
 
   @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =
@@ -76,7 +76,7 @@ public class GeodeClusterManagementServiceProviderFactory extends
               .keySet();
       String serviceAddress = getHttpServiceAddress(locatorsWithClusterConfig);
 
-      return new ClusterManagementClient(serviceAddress);
+      return new ClientClusterManagementService(serviceAddress);
     }
 
     ClientCache clientCache = ClientCacheFactory.getAnyInstance();

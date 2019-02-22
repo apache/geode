@@ -13,22 +13,21 @@
  * the License.
  */
 
-package org.apache.geode.management.spi;
+package org.apache.geode.management.internal;
 
 import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
-import org.apache.geode.management.internal.ClusterManagementClient;
 
 /**
- * A Service Provider factory which will be used to create {@link ClusterManagementService}
+ * A Service factory which will be used to create {@link ClusterManagementService}
  * instances from pure Java code - i.e. the Cluster Management endpoint URL <b>cannot</b> be
  * inferred from the implied runtime context but needs to be specifically configured using a given
  * URL or {@code ClientHttpRequestFactory}.
  */
-public class JavaClientClusterManagementProviderFactory
-    implements ClusterManagementServiceProviderFactory {
+public class JavaClientClusterManagementServiceFactory
+    implements ClusterManagementServiceFactory {
 
   @Override
   public String getContext() {
@@ -44,11 +43,11 @@ public class JavaClientClusterManagementProviderFactory
 
   @Override
   public ClusterManagementService create(String clusterUrl) {
-    return new ClusterManagementClient(clusterUrl);
+    return new ClientClusterManagementService(clusterUrl);
   }
 
   @Override
   public ClusterManagementService create(ClientHttpRequestFactory requestFactory) {
-    return new ClusterManagementClient(requestFactory);
+    return new ClientClusterManagementService(requestFactory);
   }
 }

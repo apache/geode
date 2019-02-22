@@ -34,6 +34,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.internal.RestTemplateResponseErrorHandler;
 import org.apache.geode.management.internal.rest.BaseLocatorContextLoader;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -43,7 +44,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
-public class ClusterManagementClientDUnitTest {
+public class ClientClusterManagementServiceDUnitTest {
   private static final ResponseErrorHandler ERROR_HANDLER = new RestTemplateResponseErrorHandler();
 
   @Autowired
