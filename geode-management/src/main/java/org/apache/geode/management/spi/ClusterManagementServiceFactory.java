@@ -23,12 +23,10 @@ import org.apache.geode.management.api.ClusterManagementService;
  * A Server Provider interface which should be implemented to create instances of {@link
  * ClusterManagementService} for a given context.
  */
-public interface ClusterManagementServiceProviderFactory {
+public interface ClusterManagementServiceFactory {
 
   /**
-   * Returns a list of the contexts which this provider supports.
-   *
-   * @return a list of names of supported contexts of this factory
+   * Returns the context of the factory
    */
   String getContext();
 

@@ -27,7 +27,6 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.client.RestTemplateResponseErrorHandler;
 
 /**
  * Implementation of {@link ClusterManagementService} interface which represents the cluster

@@ -34,6 +34,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.internal.RestTemplateResponseErrorHandler;
 import org.apache.geode.management.internal.rest.BaseLocatorContextLoader;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;

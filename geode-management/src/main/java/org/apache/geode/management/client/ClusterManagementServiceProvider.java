@@ -15,23 +15,23 @@
 
 package org.apache.geode.management.client;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.spi.ClusterManagementServiceProviderFactory;
+import org.apache.geode.management.spi.ClusterManagementServiceFactory;
 
 /**
  * Top-level entry point for client interaction with the {@link ClusterManagementService}. A user
  * can create an instance of the {@code ClusterManagementService} (CMS for short) in several ways,
  * each providing various level of control or expediency.
  * <p/>
- * Calling {@code getFactory(context)} will return an explicit instance of {@link
- * ClusterManagementServiceProviderFactory}. Methods on this factory can then be called to create or
+ * Calling {@code getServiceFactory(context)} will return an explicit instance of {@link
+ * ClusterManagementServiceFactory}. Methods on this factory can then be called to create or
  * retrieve instances of a CMS. New {@link ClusterManagementServiceProvider}s can be written if
  * specific customization or parameterization is required.
  * <p/>
@@ -64,56 +64,37 @@ public class ClusterManagementServiceProvider {
   public static final String JAVA_CLIENT_CONTEXT = "java-client";
   public static final String GEODE_CONTEXT = "geode";
 
-  private static List<ClusterManagementServiceProviderFactory> providerFactories = null;
+  private static Map<String, ClusterManagementServiceFactory> serviceFactories = null;
 
   public static ClusterManagementService getService() {
-    ClusterManagementServiceProviderFactory factory;
-    try {
-      factory = getFactory(GEODE_CONTEXT);
-      try {
-        ClusterManagementService cms = factory.create();
-        return cms;
-      } catch (IllegalStateException ex) {
-        // Ignored
-      }
-    } catch (IllegalArgumentException iex) {
-      // Ig
-    } catch (Exception iex) {
-      iex.printStackTrace();
-    }
-
-    throw new IllegalStateException(
-        "Unable to get ClusterManagementService using any of the default contexts");
+    return getServiceFactory(GEODE_CONTEXT).create();
   }
 
   public static ClusterManagementService getService(String clusterUrl) {
-    return getFactory(JAVA_CLIENT_CONTEXT).create(clusterUrl);
+    return getServiceFactory(JAVA_CLIENT_CONTEXT).create(clusterUrl);
   }
 
   public static ClusterManagementService getService(ClientHttpRequestFactory requestFactory) {
-    return getFactory(JAVA_CLIENT_CONTEXT).create(requestFactory);
+    return getServiceFactory(JAVA_CLIENT_CONTEXT).create(requestFactory);
   }
 
-  public static synchronized ClusterManagementServiceProviderFactory getFactory(String context) {
-    if (providerFactories == null) {
+  private static synchronized ClusterManagementServiceFactory getServiceFactory(String context) {
+    if (serviceFactories == null) {
       loadClusterManagementServiceProviderFactories();
     }
-
-    ClusterManagementServiceProviderFactory factory = providerFactories.stream()
-        .filter(x -> x.getContext().equalsIgnoreCase(context))
-        .findFirst()
-        .orElseThrow(
-            () -> new IllegalArgumentException("Did not find provider for context: " + context));
-
+    ClusterManagementServiceFactory factory = serviceFactories.get(context);
+    if (factory == null) {
+      throw new IllegalArgumentException("Did not find provider for context: " + context);
+    }
     return factory;
   }
 
   private static void loadClusterManagementServiceProviderFactories() {
-    providerFactories = new ArrayList<>();
+    serviceFactories = new HashMap<>();
 
-    for (ClusterManagementServiceProviderFactory factory : ServiceLoader
-        .load(ClusterManagementServiceProviderFactory.class)) {
-      providerFactories.add(factory);
+    for (ClusterManagementServiceFactory factory : ServiceLoader
+        .load(ClusterManagementServiceFactory.class)) {
+      serviceFactories.put(factory.getContext(), factory);
     }
   }
 }

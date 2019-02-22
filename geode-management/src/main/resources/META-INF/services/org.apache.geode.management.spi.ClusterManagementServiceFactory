@@ -13,4 +13,5 @@
 # the License.
 #
 
-org.apache.geode.management.internal.api.GeodeClusterManagementServiceProviderFactory
+
+org.apache.geode.management.internal.JavaClientClusterManagementFactory

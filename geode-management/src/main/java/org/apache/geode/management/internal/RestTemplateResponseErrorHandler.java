@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.client;
+package org.apache.geode.management.internal;
 
 import java.io.IOException;
 
