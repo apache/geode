@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -130,7 +131,7 @@ public class GMSHealthMonitorJUnitTest {
     nonDefault.put(MCAST_TTL, "0");
     nonDefault.put(LOG_FILE, "");
     nonDefault.put(LOG_LEVEL, "fine");
-    nonDefault.put(MEMBER_TIMEOUT, "2000");
+    nonDefault.put(MEMBER_TIMEOUT, "" + memberTimeout);
     nonDefault.put(LOCATORS, "localhost[10344]");
     DistributionManager dm = mock(DistributionManager.class);
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
@@ -782,6 +783,44 @@ public class GMSHealthMonitorJUnitTest {
     when(smm.getSender()).thenThrow(err);
     when(smm.getDSFID()).thenCallRealMethod();
     gmsHealthMonitor.processMessage(smm);
+  }
+
+  @Test
+  public void testTcpCheckMemberTriesUntilTimeout() throws Exception {
+    ServerSocket mySocket = new ServerSocket(0);
+    Thread serverThread = new Thread() {
+      public void run() {
+        long giveupTime = System.currentTimeMillis() + (5 * memberTimeout);
+        while (System.currentTimeMillis() < giveupTime) {
+          try {
+            Socket acceptedSocket = mySocket.accept();
+            try {
+              Thread.sleep(200);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+              return;
+            }
+            acceptedSocket.close();
+          } catch (IOException e) {
+            if (!mySocket.isClosed()) {
+              System.err.println("Test failed with unexpected IOException");
+              e.printStackTrace(System.err);
+            }
+            return;
+          }
+        }
+      }
+    };
+    serverThread.setDaemon(true);
+    serverThread.start();
+    InternalDistributedMember otherMember =
+        createInternalDistributedMember(Version.CURRENT_ORDINAL, 0, 1, 1);
+    long startTime = System.currentTimeMillis();
+    gmsHealthMonitor.doTCPCheckMember(otherMember, mySocket.getLocalPort());
+    mySocket.close();
+    serverThread.interrupt();
+    serverThread.join(getTimeout().getValueInMS());
+    assertThat(System.currentTimeMillis()).isGreaterThanOrEqualTo(startTime + memberTimeout);
   }
 
   @Test

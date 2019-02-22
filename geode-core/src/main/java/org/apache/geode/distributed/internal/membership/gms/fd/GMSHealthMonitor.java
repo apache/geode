@@ -513,33 +513,50 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    */
   boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
     Socket clientSocket = null;
-    try {
-      logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember,
-          suspectMember.getInetAddress(), port);
-      clientSocket =
-          SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)
-              .connect(suspectMember.getInetAddress(), port, (int) memberTimeout,
-                  new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
-      clientSocket.setTcpNoDelay(true);
-      return doTCPCheckMember(suspectMember, clientSocket);
-    } catch (IOException e) {
-      // this is expected if it is a connection-timeout or other failure
-      // to connect
-    } catch (IllegalStateException e) {
-      if (!isStopping) {
-        logger.trace("Unexpected exception", e);
-      }
-    } finally {
-      try {
-        if (clientSocket != null) {
-          clientSocket.setSoLinger(true, 0); // abort the connection
-          clientSocket.close();
+    // make sure we try to check on the member for the contracted memberTimeout period
+    // in case a timed socket.connect() returns immediately
+    long giveupTime = System.nanoTime() + TimeUnit.NANOSECONDS.convert(
+        services.getConfig().getMemberTimeout(), TimeUnit.MILLISECONDS);
+    boolean passed = false;
+    int iteration = 0;
+    do {
+      iteration++;
+      if (iteration > 1) {
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return false;
         }
-      } catch (IOException e) {
-        // expected
       }
-    }
-    return false;
+      try {
+        logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember,
+            suspectMember.getInetAddress(), port);
+        clientSocket =
+            SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)
+                .connect(suspectMember.getInetAddress(), port, (int) memberTimeout,
+                    new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
+        clientSocket.setTcpNoDelay(true);
+        passed = doTCPCheckMember(suspectMember, clientSocket);
+      } catch (IOException e) {
+        // this is expected if it is a connection-timeout or other failure
+        // to connect
+      } catch (IllegalStateException | GemFireConfigException e) {
+        if (!isStopping) {
+          logger.trace("Unexpected exception", e);
+        }
+      } finally {
+        try {
+          if (clientSocket != null) {
+            clientSocket.setSoLinger(true, 0); // abort the connection
+            clientSocket.close();
+          }
+        } catch (IOException e) {
+          // expected
+        }
+      }
+    } while (!passed && !this.isShutdown() && System.nanoTime() < giveupTime);
+    return passed;
   }
 
   // Package protected for testing purposes

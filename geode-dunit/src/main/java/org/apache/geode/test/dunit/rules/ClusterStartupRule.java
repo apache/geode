@@ -267,7 +267,7 @@ public class ClusterStartupRule implements SerializableTestRule {
       SerializableFunction<ServerStarterRule> ruleOperator) {
     final String defaultName = "server-" + index;
     VM serverVM = getVM(index, version);
-    Server server = serverVM.invoke(() -> {
+    Server server = serverVM.invoke("startServerVM", () -> {
       memberStarter = new ServerStarterRule();
       ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
       if (logFile) {
