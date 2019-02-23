@@ -29,7 +29,7 @@ import org.apache.geode.StatisticsType;
  * Care should be taken to not call any of the set methods on counters or {@link
  * IllegalArgumentException} will be thrown.
  */
-public final class FastStatisticsImpl extends StatisticsImpl {
+public class FastStatisticsImpl extends StatisticsImpl {
 
   private interface LongMeter {
     void set(long value);
