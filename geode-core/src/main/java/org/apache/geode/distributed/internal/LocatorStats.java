@@ -106,7 +106,7 @@ public class LocatorStats {
   /**
    * Called when the DS comes online so we can hookup the stats
    */
-  public void hookupStats(StatisticsFactory f, String name) {
+  void hookupStats(StatisticsFactory f, String name) {
     if (this._stats == null) {
       this._stats = f.createAtomicStatistics(type, name);
       setLocatorCount(known_locators.get());
@@ -118,7 +118,7 @@ public class LocatorStats {
   }
 
 
-  public void setServerCount(int sc) {
+  void setServerCount(int sc) {
     if (this._stats == null) {
       this.endpoints_known.set(sc);
     } else {
@@ -126,7 +126,7 @@ public class LocatorStats {
     }
   }
 
-  public void setLocatorCount(int lc) {
+  void setLocatorCount(int lc) {
     if (this._stats == null) {
       this.known_locators.set(lc);
     } else {
@@ -166,31 +166,31 @@ public class LocatorStats {
 
 
 
-  public void setLocatorRequests(long rl) {
+  private void setLocatorRequests(long rl) {
     if (this._stats == null) {
       this.requests_to_locator.set(rl);
     } else {
-      this._stats.setLong(_REQUESTS_TO_LOCATOR, rl);
+      this._stats.incLong(_REQUESTS_TO_LOCATOR, rl);
     }
   }
 
-  public void setLocatorResponses(long rl) {
+  private void setLocatorResponses(long rl) {
     if (this._stats == null) {
       this.responses_from_locator.set(rl);
     } else {
-      this._stats.setLong(_RESPONSES_FROM_LOCATOR, rl);
+      this._stats.incLong(_RESPONSES_FROM_LOCATOR, rl);
     }
   }
 
-  public void setServerLoadUpdates(long v) {
+  private void setServerLoadUpdates(long v) {
     if (this._stats == null) {
       this.serverLoadUpdates.set(v);
     } else {
-      this._stats.setLong(_SERVER_LOAD_UPDATES, v);
+      this._stats.incLong(_SERVER_LOAD_UPDATES, v);
     }
   }
 
-  public void incServerLoadUpdates() {
+  void incServerLoadUpdates() {
     if (this._stats == null) {
       this.serverLoadUpdates.incrementAndGet();
     } else {
@@ -198,7 +198,7 @@ public class LocatorStats {
     }
   }
 
-  public void incRequestInProgress(int threads) {
+  void incRequestInProgress(int threads) {
     if (this._stats != null) {
       this._stats.incInt(_REQUESTS_IN_PROGRESS, threads);
     } else {
