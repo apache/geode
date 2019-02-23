@@ -101,7 +101,7 @@ public abstract class StatisticsImpl implements Statistics {
    */
   public static Statistics createAtomicNoOS(StatisticsType type, String textId, long numericId,
       long uniqueId, StatisticsManager mgr) {
-    return new StripedStatisticsImpl(type, textId, numericId, uniqueId, mgr);
+    return new FastStatisticsImpl(type, textId, numericId, uniqueId, mgr);
   }
 
   /**
@@ -161,7 +161,7 @@ public abstract class StatisticsImpl implements Statistics {
   @Override
   public abstract boolean isAtomic();
 
-  private boolean isOpen() { // fix for bug 29973
+  private boolean isOpen() {
     return !this.closed;
   }
 
