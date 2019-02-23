@@ -479,8 +479,6 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     };
     GeodeAwaitility.await().untilAsserted(ev);
 
-    // assertIndexDetailsEquals("destroys", 2, counterDestroy);
-    // assertTrue("updates", 20000 >= counterUpdate);
     ev = new WaitCriterion() {
       @Override
       public boolean done() {

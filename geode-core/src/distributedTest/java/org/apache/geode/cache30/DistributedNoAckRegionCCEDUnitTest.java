@@ -334,13 +334,13 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
           public void run() {
             CCRegion.put(invalidationKey, "initialValue");
 
-            int invalidationCount = CCRegion.getCachePerfStats().getInvalidates();
+            long invalidationCount = CCRegion.getCachePerfStats().getInvalidates();
             CCRegion.invalidate(invalidationKey);
             CCRegion.invalidate(invalidationKey);
             assertEquals(invalidationCount + 1, CCRegion.getCachePerfStats().getInvalidates());
 
             // also test destroy() while we're at it. It should throw an exception
-            int destroyCount = CCRegion.getCachePerfStats().getDestroys();
+            long destroyCount = CCRegion.getCachePerfStats().getDestroys();
             CCRegion.destroy(invalidationKey);
             try {
               CCRegion.destroy(invalidationKey);
