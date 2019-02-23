@@ -415,11 +415,11 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
 
   private void setDefragmentationTime(long value) {
-    stats.setLong(defragmentationTimeId, value);
+    stats.incLong(defragmentationTimeId, value);
   }
 
   private void setDefragmentations(int value) {
-    this.stats.setInt(defragmentationId, value);
+    this.stats.incInt(defragmentationId, value);
   }
 
   private void setDefragmentationsInProgress(int value) {
@@ -427,7 +427,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
 
   private void setReads(long value) {
-    this.stats.setLong(readsId, value);
+    this.stats.incLong(readsId, value);
   }
 
   private void setObjects(int value) {

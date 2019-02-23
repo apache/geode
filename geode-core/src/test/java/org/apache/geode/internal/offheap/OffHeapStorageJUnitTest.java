@@ -241,19 +241,6 @@ public class OffHeapStorageJUnitTest {
       stats.incObjects(100);
       stats.incUsedMemory(100);
       stats.setFragmentation(100);
-      OffHeapStorage ohs = (OffHeapStorage) stats;
-      ohs.initialize(new NullOffHeapMemoryStats());
-      assertEquals(0, stats.getFreeMemory());
-      assertEquals(0, stats.getMaxMemory());
-      assertEquals(0, stats.getUsedMemory());
-      assertEquals(0, stats.getDefragmentations());
-      assertEquals(0, stats.getDefragmentationsInProgress());
-      assertEquals(0, stats.getDefragmentationTime());
-      assertEquals(0, stats.getFragmentation());
-      assertEquals(0, stats.getFragments());
-      assertEquals(0, stats.getLargestFragment());
-      assertEquals(0, stats.getObjects());
-      assertEquals(0, stats.getReads());
 
       OutOfOffHeapMemoryException ex = null;
       try {
