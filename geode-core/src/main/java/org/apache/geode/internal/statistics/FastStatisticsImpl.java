@@ -57,7 +57,7 @@ public class FastStatisticsImpl extends StatisticsImpl {
 
     @Override
     public void add(final long delta) {
-      value.addAndGet(delta);
+      value.getAndAdd(delta);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class FastStatisticsImpl extends StatisticsImpl {
 
     @Override
     public void add(final double delta) {
-      value.updateAndGet(
+      value.getAndUpdate(
           current -> Double.doubleToLongBits(Double.longBitsToDouble(current) + delta));
     }
 
