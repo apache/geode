@@ -163,7 +163,7 @@ public class CqQueryVsdStats {
    * Set the "cqInitialResultsTime" stat.
    */
   public void setCqInitialResultsTime(long time) {
-    this._stats.setLong(_cqInitialResultsTimeId, time);
+    this._stats.incLong(_cqInitialResultsTimeId, time);
   }
 
   /**
