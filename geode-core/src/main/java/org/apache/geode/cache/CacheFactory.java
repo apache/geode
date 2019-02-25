@@ -19,6 +19,7 @@ import java.util.Properties;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.CacheFactoryStatics;
 import org.apache.geode.internal.cache.InternalCacheFactory;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
@@ -30,8 +31,7 @@ import org.apache.geode.security.SecurityManager;
 /**
  * Factory class used to create the singleton {@link Cache cache} and connect to the GemFire
  * singleton {@link DistributedSystem distributed system}. If the application wants to connect to
- * GemFire as a client it should use {@link org.apache.geode.cache.client.ClientCacheFactory}
- * instead.
+ * GemFire as a client it should use {@link ClientCacheFactory} instead.
  * <p>
  * Once the factory has been configured using its {@link #set(String, String)} method you produce a
  * {@link Cache} by calling the {@link #create()} method.

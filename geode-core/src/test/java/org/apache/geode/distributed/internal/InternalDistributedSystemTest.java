@@ -39,6 +39,9 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsManagerFactory;
 
+/**
+ * Unit tests for {@link InternalDistributedSystem}.
+ */
 public class InternalDistributedSystemTest {
 
   private static final String STATISTIC_NAME = "statistic-name";
@@ -60,7 +63,7 @@ public class InternalDistributedSystemTest {
   private InternalDistributedSystem internalDistributedSystem;
 
   @Before
-  public void setup() {
+  public void setUp() {
     initMocks(this);
     when(statisticsManagerFactory.create(any(), anyLong(), anyBoolean()))
         .thenReturn(statisticsManager);

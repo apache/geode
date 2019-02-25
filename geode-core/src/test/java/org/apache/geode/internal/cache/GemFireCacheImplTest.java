@@ -29,7 +29,6 @@ import java.io.NotSerializableException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Test;
@@ -46,19 +45,22 @@ import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.fake.Fakes;
 
+/**
+ * Unit tests for {@link GemFireCacheImpl}.
+ */
 public class GemFireCacheImplTest {
 
-  private GemFireCacheImpl cache;
+  private GemFireCacheImpl gemFireCacheImpl;
 
   @After
   public void tearDown() {
-    if (cache != null) {
-      cache.close();
+    if (gemFireCacheImpl != null) {
+      gemFireCacheImpl.close();
     }
   }
 
   @Test
-  public void shouldBeMockable() throws Exception {
+  public void canBeMocked() {
     GemFireCacheImpl mockGemFireCacheImpl = mock(GemFireCacheImpl.class);
     InternalResourceManager mockInternalResourceManager = mock(InternalResourceManager.class);
 
@@ -70,183 +72,197 @@ public class GemFireCacheImplTest {
 
   @Test
   public void checkPurgeCCPTimer() {
-    SystemTimer ccpTimer = mock(SystemTimer.class);
+    SystemTimer cacheClientProxyTimer = mock(SystemTimer.class);
 
-    GemFireCacheImpl gfc = createGemFireCacheWithTypeRegistry();
-    try {
-      gfc.setCCPTimer(ccpTimer);
-      for (int i = 1; i < GemFireCacheImpl.PURGE_INTERVAL; i++) {
-        gfc.purgeCCPTimer();
-        verify(ccpTimer, times(0)).timerPurge();
-      }
-      gfc.purgeCCPTimer();
-      verify(ccpTimer, times(1)).timerPurge();
-      for (int i = 1; i < GemFireCacheImpl.PURGE_INTERVAL; i++) {
-        gfc.purgeCCPTimer();
-        verify(ccpTimer, times(1)).timerPurge();
-      }
-      gfc.purgeCCPTimer();
-      verify(ccpTimer, times(2)).timerPurge();
-    } finally {
-      gfc.close();
+    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+
+    gemFireCacheImpl.setCCPTimer(cacheClientProxyTimer);
+    for (int i = 1; i < GemFireCacheImpl.PURGE_INTERVAL; i++) {
+      gemFireCacheImpl.purgeCCPTimer();
+      verify(cacheClientProxyTimer, times(0)).timerPurge();
     }
+    gemFireCacheImpl.purgeCCPTimer();
+    verify(cacheClientProxyTimer, times(1)).timerPurge();
+    for (int i = 1; i < GemFireCacheImpl.PURGE_INTERVAL; i++) {
+      gemFireCacheImpl.purgeCCPTimer();
+      verify(cacheClientProxyTimer, times(1)).timerPurge();
+    }
+    gemFireCacheImpl.purgeCCPTimer();
+    verify(cacheClientProxyTimer, times(2)).timerPurge();
   }
 
   @Test
   public void checkEvictorsClosed() {
-    HeapEvictor he = mock(HeapEvictor.class);
-    OffHeapEvictor ohe = mock(OffHeapEvictor.class);
+    HeapEvictor heapEvictor = mock(HeapEvictor.class);
+    OffHeapEvictor offHeapEvictor = mock(OffHeapEvictor.class);
 
-    GemFireCacheImpl gfc = createGemFireCacheWithTypeRegistry();
-    try {
-      gfc.setHeapEvictor(he);
-      gfc.setOffHeapEvictor(ohe);
-    } finally {
-      gfc.close();
-    }
-    verify(he, times(1)).close();
-    verify(ohe, times(1)).close();
+    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+
+    gemFireCacheImpl.setHeapEvictor(heapEvictor);
+    gemFireCacheImpl.setOffHeapEvictor(offHeapEvictor);
+    gemFireCacheImpl.close();
+
+    verify(heapEvictor).close();
+    verify(offHeapEvictor).close();
   }
 
   @Test
   public void registerPdxMetaDataThrowsIfInstanceNotSerializable() {
-    GemFireCacheImpl gfc = createGemFireCacheWithTypeRegistry();
-    try {
-      assertThatThrownBy(() -> gfc.registerPdxMetaData(new Object()))
-          .isInstanceOf(SerializationException.class).hasMessage("Serialization failed")
-          .hasCauseInstanceOf(NotSerializableException.class);
-    } finally {
-      gfc.close();
-    }
+    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+
+    assertThatThrownBy(() -> gemFireCacheImpl.registerPdxMetaData(new Object()))
+        .isInstanceOf(SerializationException.class).hasMessage("Serialization failed")
+        .hasCauseInstanceOf(NotSerializableException.class);
   }
 
   @Test
   public void registerPdxMetaDataThrowsIfInstanceIsNotPDX() {
-    GemFireCacheImpl gfc = createGemFireCacheWithTypeRegistry();
-    try {
-      assertThatThrownBy(() -> gfc.registerPdxMetaData("string"))
-          .isInstanceOf(SerializationException.class)
-          .hasMessage("The instance is not PDX serializable");
-    } finally {
-      gfc.close();
-    }
+    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+
+    assertThatThrownBy(() -> gemFireCacheImpl.registerPdxMetaData("string"))
+        .isInstanceOf(SerializationException.class)
+        .hasMessage("The instance is not PDX serializable");
   }
 
   @Test
   public void checkThatAsyncEventListenersUseAllThreadsInPool() {
-    GemFireCacheImpl gfc = createGemFireCacheWithTypeRegistry();
-    try {
-      ThreadPoolExecutor executor = (ThreadPoolExecutor) gfc.getEventThreadPool();
-      assertEquals(0, executor.getCompletedTaskCount());
-      assertEquals(0, executor.getActiveCount());
-      int MAX_THREADS = GemFireCacheImpl.EVENT_THREAD_LIMIT;
-      final CountDownLatch cdl = new CountDownLatch(MAX_THREADS);
-      for (int i = 1; i <= MAX_THREADS; i++) {
-        executor.execute(() -> {
-          cdl.countDown();
-          try {
-            cdl.await();
-          } catch (InterruptedException e) {
-          }
-        });
-      }
-      await().timeout(90, TimeUnit.SECONDS)
-          .untilAsserted(() -> assertEquals(MAX_THREADS, executor.getCompletedTaskCount()));
-    } finally {
-      gfc.close();
+    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+
+    ThreadPoolExecutor eventThreadPoolExecutor =
+        (ThreadPoolExecutor) gemFireCacheImpl.getEventThreadPool();
+    assertEquals(0, eventThreadPoolExecutor.getCompletedTaskCount());
+    assertEquals(0, eventThreadPoolExecutor.getActiveCount());
+
+    int MAX_THREADS = GemFireCacheImpl.EVENT_THREAD_LIMIT;
+    final CountDownLatch threadLatch = new CountDownLatch(MAX_THREADS);
+    for (int i = 1; i <= MAX_THREADS; i++) {
+      eventThreadPoolExecutor.execute(() -> {
+        threadLatch.countDown();
+        try {
+          threadLatch.await();
+        } catch (InterruptedException e) {
+        }
+      });
     }
+
+    await().untilAsserted(
+        () -> assertThat(eventThreadPoolExecutor.getCompletedTaskCount()).isEqualTo(MAX_THREADS));
   }
 
   @Test
   public void getCacheClosedExceptionWithNoReasonOrCauseGivesExceptionWithoutEither() {
-    cache = createGemFireCacheImpl();
-    CacheClosedException e = cache.getCacheClosedException(null, null);
-    assertThat(e.getCause()).isNull();
-    assertThat(e.getMessage()).isNull();
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    CacheClosedException cacheClosedException =
+        gemFireCacheImpl.getCacheClosedException(null, null);
+
+    assertThat(cacheClosedException.getCause()).isNull();
+    assertThat(cacheClosedException.getMessage()).isNull();
   }
 
   @Test
   public void getCacheClosedExceptionWithNoCauseGivesExceptionWithReason() {
-    cache = createGemFireCacheImpl();
-    CacheClosedException e = cache.getCacheClosedException("message", null);
-    assertThat(e.getCause()).isNull();
-    assertThat(e.getMessage()).isEqualTo("message");
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    CacheClosedException cacheClosedException = gemFireCacheImpl
+        .getCacheClosedException("message", null);
+
+    assertThat(cacheClosedException.getCause()).isNull();
+    assertThat(cacheClosedException.getMessage()).isEqualTo("message");
   }
 
   @Test
   public void getCacheClosedExceptionReturnsExceptionWithProvidedCauseAndReason() {
-    cache = createGemFireCacheImpl();
+    gemFireCacheImpl = createGemFireCacheImpl();
     Throwable cause = new Throwable();
-    CacheClosedException e = cache.getCacheClosedException("message", cause);
-    assertThat(e.getCause()).isEqualTo(cause);
-    assertThat(e.getMessage()).isEqualTo("message");
+
+    CacheClosedException cacheClosedException = gemFireCacheImpl
+        .getCacheClosedException("message", cause);
+
+    assertThat(cacheClosedException.getCause()).isEqualTo(cause);
+    assertThat(cacheClosedException.getMessage()).isEqualTo("message");
   }
 
   @Test
   public void getCacheClosedExceptionWhenCauseGivenButDisconnectExceptionExistsPrefersCause() {
-    cache = createGemFireCacheImpl();
-    cache.disconnectCause = new Throwable("disconnectCause");
+    gemFireCacheImpl = createGemFireCacheImpl();
+    gemFireCacheImpl.disconnectCause = new Throwable("disconnectCause");
     Throwable cause = new Throwable();
-    CacheClosedException e = cache.getCacheClosedException("message", cause);
-    assertThat(e.getCause()).isEqualTo(cause);
-    assertThat(e.getMessage()).isEqualTo("message");
+
+    CacheClosedException cacheClosedException = gemFireCacheImpl
+        .getCacheClosedException("message", cause);
+
+    assertThat(cacheClosedException.getCause()).isEqualTo(cause);
+    assertThat(cacheClosedException.getMessage()).isEqualTo("message");
   }
 
   @Test
   public void getCacheClosedExceptionWhenNoCauseGivenProvidesDisconnectExceptionIfExists() {
-    cache = createGemFireCacheImpl();
+    gemFireCacheImpl = createGemFireCacheImpl();
     Throwable disconnectCause = new Throwable("disconnectCause");
-    cache.disconnectCause = disconnectCause;
-    CacheClosedException e = cache.getCacheClosedException("message", null);
-    assertThat(e.getCause()).isEqualTo(disconnectCause);
-    assertThat(e.getMessage()).isEqualTo("message");
+    gemFireCacheImpl.disconnectCause = disconnectCause;
+
+    CacheClosedException cacheClosedException = gemFireCacheImpl
+        .getCacheClosedException("message", null);
+
+    assertThat(cacheClosedException.getCause()).isEqualTo(disconnectCause);
+    assertThat(cacheClosedException.getMessage()).isEqualTo("message");
   }
 
   @Test
   public void getCacheClosedExceptionReturnsExceptionWithProvidedReason() {
-    cache = createGemFireCacheImpl();
-    CacheClosedException e = cache.getCacheClosedException("message");
-    assertThat(e.getMessage()).isEqualTo("message");
-    assertThat(e.getCause()).isNull();
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    CacheClosedException cacheClosedException = gemFireCacheImpl.getCacheClosedException("message");
+
+    assertThat(cacheClosedException.getMessage()).isEqualTo("message");
+    assertThat(cacheClosedException.getCause()).isNull();
   }
 
   @Test
   public void getCacheClosedExceptionReturnsExceptionWithNoMessageWhenReasonNotGiven() {
-    cache = createGemFireCacheImpl();
-    CacheClosedException e = cache.getCacheClosedException(null);
-    assertThat(e.getMessage()).isEqualTo(null);
-    assertThat(e.getCause()).isNull();
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    CacheClosedException cacheClosedException = gemFireCacheImpl.getCacheClosedException(null);
+
+    assertThat(cacheClosedException.getMessage()).isEqualTo(null);
+    assertThat(cacheClosedException.getCause()).isNull();
   }
 
   @Test
   public void getCacheClosedExceptionReturnsExceptionWithDisconnectCause() {
-    cache = createGemFireCacheImpl();
+    gemFireCacheImpl = createGemFireCacheImpl();
     Throwable disconnectCause = new Throwable("disconnectCause");
-    cache.disconnectCause = disconnectCause;
-    CacheClosedException e = cache.getCacheClosedException("message");
-    assertThat(e.getMessage()).isEqualTo("message");
-    assertThat(e.getCause()).isEqualTo(disconnectCause);
+    gemFireCacheImpl.disconnectCause = disconnectCause;
+
+    CacheClosedException cacheClosedException = gemFireCacheImpl.getCacheClosedException("message");
+
+    assertThat(cacheClosedException.getMessage()).isEqualTo("message");
+    assertThat(cacheClosedException.getCause()).isEqualTo(disconnectCause);
   }
 
   @Test
   public void removeGatewayReceiverShouldRemoveFromReceiversList() {
     GatewayReceiver receiver = mock(GatewayReceiver.class);
+    gemFireCacheImpl = createGemFireCacheImpl();
+    gemFireCacheImpl.addGatewayReceiver(receiver);
+    assertEquals(1, gemFireCacheImpl.getGatewayReceivers().size());
 
-    cache = createGemFireCacheImpl();
-    cache.addGatewayReceiver(receiver);
-    assertEquals(1, cache.getGatewayReceivers().size());
-    cache.removeGatewayReceiver(receiver);
-    assertEquals(0, cache.getGatewayReceivers().size());
+    gemFireCacheImpl.removeGatewayReceiver(receiver);
+
+    assertEquals(0, gemFireCacheImpl.getGatewayReceivers().size());
   }
 
 
   @Test
   public void removeFromCacheServerShouldRemoveFromCacheServersList() {
-    cache = createGemFireCacheImpl();
-    CacheServer cacheServer = cache.addCacheServer(false);
-    assertEquals(1, cache.getCacheServers().size());
-    cache.removeCacheServer(cacheServer);
-    assertEquals(0, cache.getCacheServers().size());
+    gemFireCacheImpl = createGemFireCacheImpl();
+    CacheServer cacheServer = gemFireCacheImpl.addCacheServer(false);
+    assertEquals(1, gemFireCacheImpl.getCacheServers().size());
+
+    gemFireCacheImpl.removeCacheServer(cacheServer);
+
+    assertEquals(0, gemFireCacheImpl.getCacheServers().size());
   }
 
   @Test
@@ -303,20 +319,20 @@ public class GemFireCacheImplTest {
 
   @Test
   public void clientCacheWouldNotRequestClusterConfig() {
-    // we will need to set the value to true so that we can use a mock cache
+    // we will need to set the value to true so that we can use a mock gemFireCacheImpl
     boolean oldValue = InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
     InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = true;
 
     InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
-    cache = mock(GemFireCacheImpl.class);
-    when(internalDistributedSystem.getCache()).thenReturn(cache);
+    gemFireCacheImpl = mock(GemFireCacheImpl.class);
+    when(internalDistributedSystem.getCache()).thenReturn(gemFireCacheImpl);
 
     new InternalCacheFactory()
         .setIsClient(true)
         .create(internalDistributedSystem);
 
-    verify(cache, times(0)).requestSharedConfiguration();
-    verify(cache, times(0)).applyJarAndXmlFromClusterConfig();
+    verify(gemFireCacheImpl, times(0)).requestSharedConfiguration();
+    verify(gemFireCacheImpl, times(0)).applyJarAndXmlFromClusterConfig();
 
     // reset it back to the old value
     InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = oldValue;

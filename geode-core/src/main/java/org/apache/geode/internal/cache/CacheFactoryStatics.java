@@ -12,35 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache;
+package org.apache.geode.internal.cache;
 
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheExistsException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.cache.GatewayException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalCacheFactory;
-import org.apache.geode.internal.cache.LocalRegion;
 
-class CacheFactoryStatics {
+/**
+ * Implementation of static methods in {@link CacheFactory} including factory create methods and
+ * singleton getters.
+ */
+public class CacheFactoryStatics {
 
   /**
-   * Creates a new cache that uses the specified {@code system}.
-   * <p>
-   * The {@code system} can specify a
-   * <A href="../distributed/DistributedSystem.html#cache-xml-file">"cache-xml-file"</a> property
-   * which will cause this creation to also create the regions, objects, and attributes declared in
-   * the file. The contents of the file must comply with the {@code "doc-files/cache8_0.dtd">} file.
-   * Note that when parsing the XML file {@link Declarable} classes are loaded using the current
-   * thread's {@linkplain Thread#getContextClassLoader context class loader}.
-   *
-   * @param system a {@code DistributedSystem} obtained by calling
-   *        {@link DistributedSystem#connect}.
-   *
-   * @return a {@code Cache} that uses the specified {@code system} for distribution.
-   *
    * @throws IllegalArgumentException If {@code system} is not {@link DistributedSystem#isConnected
    *         connected}.
    * @throws CacheExistsException If an open cache already exists.
@@ -52,10 +47,10 @@ class CacheFactoryStatics {
    * @throws GatewayException If a {@code GatewayException} is thrown while initializing the cache.
    * @throws RegionExistsException If the declarative caching XML file describes a region that
    *         already exists (including the root region).
-   * @deprecated as of 6.5 use {@link #CacheFactory(Properties)} instead.
+   * @deprecated as of 6.5 use {@link CacheFactory#CacheFactory(Properties)} instead.
    */
   @Deprecated
-  static Cache create(DistributedSystem system) throws CacheExistsException,
+  public static Cache create(DistributedSystem system) throws CacheExistsException,
       TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
     return new InternalCacheFactory()
         .setIsExistingOk(false)
@@ -63,46 +58,25 @@ class CacheFactoryStatics {
   }
 
   /**
-   * Gets the instance of {@link Cache} produced by an earlier call to {@link #create()}.
-   *
-   * @param system the {@code DistributedSystem} the cache was created with.
-   * @return the {@link Cache} associated with the specified system.
    * @throws CacheClosedException if a cache has not been created or the created one is
    *         {@link Cache#isClosed closed}
    */
-  static Cache getInstance(DistributedSystem system) {
+  public static Cache getInstance(DistributedSystem system) {
     return basicGetInstance(system, false);
   }
 
   /**
-   * Gets the instance of {@link Cache} produced by an earlier call to {@link #create()} even if it
-   * has been closed.
-   *
-   * @param system the {@code DistributedSystem} the cache was created with.
-   * @return the {@link Cache} associated with the specified system.
    * @throws CacheClosedException if a cache has not been created
-   * @since GemFire 3.5
    */
-  static Cache getInstanceCloseOk(DistributedSystem system) {
+  public static Cache getInstanceCloseOk(DistributedSystem system) {
     return basicGetInstance(system, true);
   }
 
   /**
-   * Gets an arbitrary open instance of {@link Cache} produced by an earlier call to
-   * {@link #create()}.
-   *
-   * <p>
-   * WARNING: To avoid risk of deadlock, do not invoke getAnyInstance() from within any
-   * CacheCallback including CacheListener, CacheLoader, CacheWriter, TransactionListener,
-   * TransactionWriter. Instead use EntryEvent.getRegion().getCache(),
-   * RegionEvent.getRegion().getCache(), LoaderHelper.getRegion().getCache(), or
-   * TransactionEvent.getCache().
-   * </p>
-   *
    * @throws CacheClosedException if a cache has not been created or the only created one is
    *         {@link Cache#isClosed closed}
    */
-  static Cache getAnyInstance() {
+  public static Cache getAnyInstance() {
     synchronized (InternalCacheFactory.class) {
       InternalCache instance = GemFireCacheImpl.getInstance();
       if (instance == null) {
@@ -113,15 +87,6 @@ class CacheFactoryStatics {
         return instance;
       }
     }
-  }
-
-  /**
-   * Returns the version of the cache implementation.
-   *
-   * @return the version of the cache implementation as a {@code String}
-   */
-  static String getVersion() {
-    return GemFireVersion.getGemFireVersion();
   }
 
   private static Cache basicGetInstance(DistributedSystem system, boolean closeOk) {
