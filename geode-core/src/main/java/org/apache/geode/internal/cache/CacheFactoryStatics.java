@@ -97,7 +97,7 @@ public class CacheFactoryStatics {
       // 33471
       return basicGetInstancePart2(system, closeOk);
     } else {
-      synchronized (CacheFactory.class) {
+      synchronized (InternalCacheFactory.class) {
         return basicGetInstancePart2(system, closeOk);
       }
     }

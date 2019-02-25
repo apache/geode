@@ -61,7 +61,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -2462,8 +2461,7 @@ public class InternalDistributedSystem extends DistributedSystem
     if (this.isReconnectingDS && forcedDisconnect) {
       return false;
     }
-    synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a
-                                        // cache
+    synchronized (InternalCacheFactory.class) {
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
         synchronized (this.reconnectLock) {
