@@ -128,6 +128,7 @@ tests:
   GRADLE_TASK: :geode-assembly:acceptanceTest
   execute_test_timeout: 6h
   PARALLEL_DUNIT: "false"
+  PARALLEL_GRADLE: "false"
 - name: "WindowsGfshDistributed"
   CPUS: "16"
   RAM: "64"
@@ -146,6 +147,7 @@ tests:
   GRADLE_TASK: integrationTest
   execute_test_timeout: 6h
   PARALLEL_DUNIT: "false"
+  PARALLEL_GRADLE: "false"
 - name: "WindowsUnit"
   CPUS: "16"
   RAM: "64"
