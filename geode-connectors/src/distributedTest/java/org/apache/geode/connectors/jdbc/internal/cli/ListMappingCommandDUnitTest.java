@@ -208,10 +208,6 @@ public class ListMappingCommandDUnitTest implements Serializable {
               + IdAndName.class.getName();
       gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
-      CommandStringBuilder csbd = new CommandStringBuilder(
-          "describe jdbc-mapping --region=" + regionName + " --groups=" + TEST_GROUP1);
-      gfsh.executeAndAssertThat(csbd.toString());
-
       CommandStringBuilder csb =
           new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
       CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
@@ -331,15 +327,80 @@ public class ListMappingCommandDUnitTest implements Serializable {
   @Test
   public void reportsNoRegionMappingsFound() throws Exception {
     locator = startupRule.startLocatorVM(0);
-    server1 = startupRule.startServerVM(1, locator.getPort());
+    server1 = startupRule.startServerVM(1, TEST_GROUP1, locator.getPort());
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+    gfsh.executeAndAssertThat(
+        "create data-source --name=connection --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + " --groups=" + TEST_GROUP1 + " --type=REPLICATE")
+        .statusIsSuccess();
+    createTable();
+    try {
+      String mapping =
+          "create jdbc-mapping --region=" + regionName + " --groups=" + TEST_GROUP1
+              + " --data-source=connection --schema=mySchema --table=myTable --pdx-name="
+              + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
 
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
+      CommandStringBuilder csb =
+          new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
+      CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.containsOutput("No JDBC mappings found");
+      commandResultAssert.statusIsSuccess();
+      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+      commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
+
+      csb = new CommandStringBuilder(LIST_MAPPING);
+      commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+      commandResultAssert.statusIsSuccess();
+      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
+    } finally {
+      dropTable();
+    }
+  }
+
+  @Test
+  public void testDestroyRegionFailsWithExistingJdbcMapping() throws Exception {
+    locator = startupRule.startLocatorVM(0);
+    server1 = startupRule.startServerVM(1, TEST_GROUP1, locator.getPort());
+    server2 = startupRule.startServerVM(2, TEST_GROUP2, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat(
+        "create data-source --name=connection --url=\"jdbc:derby:memory:newDB;create=true\"")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + GROUP1_REGION + " --groups=" + TEST_GROUP1 + " --type=REPLICATE")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + GROUP2_REGION + " --groups=" + TEST_GROUP2 + " --type=REPLICATE")
+        .statusIsSuccess();
+    createTable();
+    try {
+      String mapping =
+          "create jdbc-mapping --region=" + GROUP1_REGION + " --groups=" + TEST_GROUP1
+              + " --data-source=connection --schema=mySchema --table=myTable --pdx-name="
+              + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+
+      mapping =
+          "create jdbc-mapping --region=" + GROUP2_REGION + " --groups=" + TEST_GROUP2
+              + " --data-source=connection --schema=mySchema --table=myTable --pdx-name="
+              + IdAndName.class.getName();
+      gfsh.executeAndAssertThat(mapping).statusIsSuccess();
+
+      CommandStringBuilder csb = new CommandStringBuilder("destroy region --name=" + GROUP1_REGION);
+      gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+          .containsOutput("Cannot destroy region \"" + GROUP1_REGION
+              + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
+
+      csb = new CommandStringBuilder("destroy region --name=" + GROUP2_REGION);
+      gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+          .containsOutput("Cannot destroy region \"" + GROUP2_REGION
+              + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");
+    } finally {
+      dropTable();
+    }
   }
 }
