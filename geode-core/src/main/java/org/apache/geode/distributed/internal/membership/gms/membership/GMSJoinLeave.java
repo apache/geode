@@ -2330,8 +2330,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             }
           } // synchronized
           if (requests != null && !requests.isEmpty()) {
-            logger.info("View Creator is processing {} requests for the next membership view",
-                requests.size());
+            logger.info("View Creator is processing {} requests for the next membership view ({})",
+                requests.size(), requests);
             try {
               createAndSendView(requests);
               if (shutdown) {
@@ -2441,14 +2441,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             JoinRequestMessage jmsg = (JoinRequestMessage) msg;
             mbr = jmsg.getMemberID();
             int port = jmsg.getFailureDetectionPort();
-            // see if an old member ID is being reused. If
-            // so we'll remove it from the new view
-            for (InternalDistributedMember m : oldMembers) {
-              if (mbr.compareTo(m, false) == 0) {
-                oldIDs.add(m);
-                break;
-              }
-            }
             if (!joinReqs.contains(mbr)) {
               joinReqs.add(mbr);
               joinPorts.put(mbr, port);
