@@ -18,7 +18,10 @@
 
 repositories {
   mavenCentral()
-  maven { url "http://geode-maven.s3-website-us-west-2.amazonaws.com" }
+  flatDir {
+    // We have a custom-modified version of the docker-java library.
+    dirs 'src/main/resources/docker-java-repo-dir'
+  }
 }
 
 dependencies {

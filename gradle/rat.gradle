@@ -75,6 +75,8 @@ rat {
     '**/*.rej',
     '**/*.orig',
     '**/*.MF',
+    '**/*.md5',
+    '**/*.sha1',
 
     // binary files
     '**/*.cer',
