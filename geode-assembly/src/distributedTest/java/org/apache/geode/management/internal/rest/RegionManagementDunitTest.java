@@ -65,8 +65,8 @@ public class RegionManagementDunitTest {
             .hasStatusCode(201)
             .getClusterManagementResult();
 
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
     // make sure region is created
@@ -101,8 +101,8 @@ public class RegionManagementDunitTest {
     // .hasStatusCode(201)
     // .getClusterManagementResult();
     //
-    // assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    // assertThat(result.isSuccessfullyPersisted()).isTrue();
+    // assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    // assertThat(result.isPersisted()).isTrue();
     // assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
     //
     // // make sure region is created
@@ -123,8 +123,8 @@ public class RegionManagementDunitTest {
         .hasStatusCode(201)
         .getClusterManagementResult();
 
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
@@ -138,8 +138,8 @@ public class RegionManagementDunitTest {
     result = restClient.doPostAndAssert("/regions", json)
         .hasStatusCode(200)
         .getClusterManagementResult();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
   }
 
@@ -152,8 +152,8 @@ public class RegionManagementDunitTest {
         .hasStatusCode(500)
         .getClusterManagementResult();
 
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isFalse();
   }
 
   private static void verifyRegionPersisted(String regionName, String type) {
