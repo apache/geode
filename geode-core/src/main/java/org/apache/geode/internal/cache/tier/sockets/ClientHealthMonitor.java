@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.util.JavaWorkarounds;
 
 /**
  * Class <code>ClientHealthMonitor</code> is a server-side singleton that monitors the health of
@@ -658,7 +659,8 @@ public class ClientHealthMonitor {
   }
 
   public ServerConnectionCollection getProxyIdCollection(ClientProxyMembershipID proxyID) {
-    return proxyIdConnections.computeIfAbsent(proxyID, key -> new ServerConnectionCollection());
+    return JavaWorkarounds.computeIfAbsent(proxyIdConnections, proxyID,
+        key -> new ServerConnectionCollection());
   }
 
   public Map<ClientProxyMembershipID, MutableInt> getCleanupProxyIdTable() {
