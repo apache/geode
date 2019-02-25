@@ -55,8 +55,6 @@ public class InternalCacheFactory {
 
   private static final boolean IS_EXISTING_OK_DEFAULT = true;
   private static final boolean IS_CLIENT_DEFAULT = false;
-  private static final PoolFactory POOL_FACTORY_DEFAULT = null;
-  private static final TypeRegistry TYPE_FACTORY_DEFAULT = null;
 
   private final Properties configProperties;
   private final CacheConfig cacheConfig;
@@ -76,8 +74,8 @@ public class InternalCacheFactory {
    */
   private boolean useAsyncEventListeners = Boolean.getBoolean(USE_ASYNC_EVENT_LISTENERS_PROPERTY);
 
-  private PoolFactory poolFactory = POOL_FACTORY_DEFAULT;
-  private TypeRegistry typeRegistry = TYPE_FACTORY_DEFAULT;
+  private PoolFactory poolFactory;
+  private TypeRegistry typeRegistry;
 
   /**
    * Creates a cache factory with default configuration properties.
@@ -93,7 +91,7 @@ public class InternalCacheFactory {
    * @param configProperties the configuration properties to initialize the factory with.
    */
   public InternalCacheFactory(Properties configProperties) {
-    this(configProperties, new CacheConfig());
+    this(configProperties == null ? new Properties() : configProperties, new CacheConfig());
   }
 
   /**
