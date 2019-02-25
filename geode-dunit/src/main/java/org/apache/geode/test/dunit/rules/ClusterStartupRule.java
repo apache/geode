@@ -74,6 +74,8 @@ public class ClusterStartupRule implements SerializableTestRule {
   public static MemberStarterRule<?> memberStarter;
   public static ClientCacheRule clientCacheRule;
 
+  private boolean skipLocalDistributedSystemCleanup;
+
   public static InternalCache getCache() {
     if (memberStarter == null) {
       return null;
@@ -164,7 +166,9 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   private void after(Description description) throws Throwable {
 
-    MemberStarterRule.disconnectDSIfAny();
+    if (!skipLocalDistributedSystemCleanup) {
+      MemberStarterRule.disconnectDSIfAny();
+    }
 
     // stop all the members in the order of clients, servers and locators
     List<VMProvider> vms = new ArrayList<>();
@@ -186,6 +190,19 @@ public class ClusterStartupRule implements SerializableTestRule {
     // any background thread can fill the dunit_suspect.log
     // after its been truncated if we do it before closing cache
     DUnitLauncher.closeAndCheckForSuspects();
+  }
+
+  public boolean isSkipLocalDistributedSystemCleanup() {
+    return skipLocalDistributedSystemCleanup;
+  }
+
+  /**
+   * In some weird situations you may not want to do local DS cleanup as that lifecyle is deferred
+   * elsewhere - see {@code LocatorCleanupEventListener} and any test that uses {@code
+   * PlainLocatorContextLoader} or {@code LocatorWithSecurityManagerContextLoader}
+   */
+  public void setSkipLocalDistributedSystemCleanup(boolean skipLocalDistributedSystemCleanup) {
+    this.skipLocalDistributedSystemCleanup = skipLocalDistributedSystemCleanup;
   }
 
   public MemberVM startLocatorVM(int index, int... locatorPort) {
@@ -250,7 +267,7 @@ public class ClusterStartupRule implements SerializableTestRule {
       SerializableFunction<ServerStarterRule> ruleOperator) {
     final String defaultName = "server-" + index;
     VM serverVM = getVM(index, version);
-    Server server = serverVM.invoke(() -> {
+    Server server = serverVM.invoke("startServerVM", () -> {
       memberStarter = new ServerStarterRule();
       ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
       if (logFile) {
@@ -326,8 +343,8 @@ public class ClusterStartupRule implements SerializableTestRule {
   /**
    * gracefully stop the member/client inside this vm
    *
-   * if this vm is a server/locator, it stops them and cleans the working dir
-   * if this vm is a client, it closes the client cache.
+   * if this vm is a server/locator, it stops them and cleans the working dir if this vm is a
+   * client, it closes the client cache.
    *
    * @param index vm index
    */

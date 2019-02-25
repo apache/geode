@@ -15,6 +15,9 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_MEMBER;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Map;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -22,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JMXTest;
@@ -58,14 +62,44 @@ public class DescribeMembersCommandDUnitTest {
   @Test
   public void describeLocator() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=locator-0").statusIsSuccess()
-        .containsOutput("locator-0").doesNotContainOutput("server-1");
+    CommandResult result = gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=locator-0")
+        .statusIsSuccess()
+        .getCommandResult();
+
+    Map<String, String> memberInfo = result.getMapFromSection("0");
+    assertThat(memberInfo.get("Name")).isEqualTo("locator-0");
+    assertThat(memberInfo.get("Id")).contains("locator-0");
+    assertThat(memberInfo.get("Host")).as("Host").isNotBlank();
+    assertThat(memberInfo.get("PID")).as("PID").isNotBlank();
+    assertThat(memberInfo.get("Used Heap")).as("Used Heap").isNotBlank();
+    assertThat(memberInfo.get("Max Heap")).as("Max Heap").isNotBlank();
+    assertThat(memberInfo.get("Working Dir")).as("Working Dir").isNotBlank();
+    assertThat(memberInfo.get("Log file")).as("Log File").isNotBlank();
+    assertThat(memberInfo.get("Locators")).as("Locators").isNotBlank();
   }
 
   @Test
   public void describeServer() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=server-1").statusIsSuccess()
-        .doesNotContainOutput("locator-0").containsOutput("server-1");
+    CommandResult result = gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=server-1")
+        .statusIsSuccess()
+        .getCommandResult();
+
+    Map<String, String> memberInfo = result.getMapFromSection("0");
+    assertThat(memberInfo.get("Name")).isEqualTo("server-1");
+    assertThat(memberInfo.get("Id")).contains("server-1");
+    assertThat(memberInfo.get("Host")).as("Host").isNotBlank();
+    assertThat(memberInfo.get("PID")).as("PID").isNotBlank();
+    assertThat(memberInfo.get("Used Heap")).as("Used Heap").isNotBlank();
+    assertThat(memberInfo.get("Max Heap")).as("Max Heap").isNotBlank();
+    assertThat(memberInfo.get("Working Dir")).as("Working Dir").isNotBlank();
+    assertThat(memberInfo.get("Log file")).as("Log File").isNotBlank();
+    assertThat(memberInfo.get("Locators")).as("Locators").isNotBlank();
+
+    Map<String, String> cacheServerInfo = result.getMapFromSection("1");
+    assertThat(cacheServerInfo.get("Server Bind")).as("Server Bind").isBlank();
+    assertThat(cacheServerInfo.get("Server Port")).as("Server Port").isNotBlank();
+    assertThat(cacheServerInfo.get("Running")).as("Running").isEqualTo("true");
+    assertThat(cacheServerInfo.get("Client Connections")).as("Client Connections").isEqualTo("0");
   }
 }

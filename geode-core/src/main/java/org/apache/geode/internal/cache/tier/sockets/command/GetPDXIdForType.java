@@ -61,7 +61,8 @@ public class GetPDXIdForType extends BaseCommand {
     try {
       InternalCache cache = serverConnection.getCache();
       TypeRegistry registry = cache.getPdxRegistry();
-      pdxId = registry.defineType(type);
+      PdxType pdxType = registry.defineType(type);
+      pdxId = pdxType.getTypeId();
     } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

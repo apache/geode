@@ -15,33 +15,22 @@
 
 package org.apache.geode.management.internal.rest;
 
-import org.springframework.test.context.web.GenericXmlWebContextLoader;
-import org.springframework.test.context.web.WebMergedContextConfiguration;
-import org.springframework.web.context.support.GenericWebApplicationContext;
-
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-class LocatorWithSecurityManagerContextLoader extends GenericXmlWebContextLoader {
+public class LocatorWithSecurityManagerContextLoader extends BaseLocatorContextLoader {
 
-  private LocatorStarterRule locator = new LocatorStarterRule()
-      .withSecurityManager(SimpleTestSecurityManager.class)
-      .withAutoStart();
+  private final LocatorStarterRule locator;
+
+  public LocatorWithSecurityManagerContextLoader() {
+    locator = new LocatorStarterRule()
+        .withSecurityManager(SimpleTestSecurityManager.class)
+        .withAutoStart();
+  }
 
   @Override
-  protected void loadBeanDefinitions(GenericWebApplicationContext context,
-      WebMergedContextConfiguration webMergedConfig) {
-
-    locator.before();
-
-    super.loadBeanDefinitions(context, webMergedConfig);
-    context.getServletContext().setAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-        locator.getCache().getSecurityService());
-    context.getServletContext().setAttribute(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-        locator.getLocator().getClusterManagementService());
-
-    context.getServletContext().setAttribute("locator", locator);
+  public LocatorStarterRule getLocator() {
+    return locator;
   }
 
 }

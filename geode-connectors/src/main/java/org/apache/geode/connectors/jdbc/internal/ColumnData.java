@@ -19,9 +19,9 @@ import java.sql.JDBCType;
 class ColumnData {
   private final String columnName;
   private final Object value;
-  private final int dataType;
+  private final JDBCType dataType;
 
-  ColumnData(String columnName, Object value, int dataType) {
+  ColumnData(String columnName, Object value, JDBCType dataType) {
     this.columnName = columnName;
     this.value = value;
     this.dataType = dataType;
@@ -35,13 +35,13 @@ class ColumnData {
     return value;
   }
 
-  int getDataType() {
+  JDBCType getDataType() {
     return dataType;
   }
 
   @Override
   public String toString() {
     return "ColumnData [columnName=" + columnName + ", value=" + value + ", dataType="
-        + JDBCType.valueOf(dataType) + "]";
+        + dataType + "]";
   }
 }

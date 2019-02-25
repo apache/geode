@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.api;
+package org.apache.geode.management.api;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,18 +48,18 @@ public class ClusterManagementResult {
   }
 
   @JsonIgnore
-  public boolean isSuccessfullyAppliedOnMembers() {
+  public boolean isRealizedOnAllOrNone() {
     return memberStatuses.values().stream().allMatch(x -> x.success);
   }
 
   @JsonIgnore
-  public boolean isSuccessfullyPersisted() {
+  public boolean isPersisted() {
     return persistenceStatus.isSuccess();
   }
 
   @JsonIgnore
   public boolean isSuccessful() {
-    return isSuccessfullyPersisted() && isSuccessfullyAppliedOnMembers();
+    return isPersisted() && isRealizedOnAllOrNone();
   }
 
 }

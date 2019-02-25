@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Region;
 
-class RegionNameValidation {
+public class RegionNameValidation {
 
   private static final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
 
@@ -29,7 +29,7 @@ class RegionNameValidation {
     return NAME_PATTERN;
   }
 
-  static void validate(String name) {
+  public static void validate(String name) {
     validate(name, new InternalRegionArguments());
   }
 

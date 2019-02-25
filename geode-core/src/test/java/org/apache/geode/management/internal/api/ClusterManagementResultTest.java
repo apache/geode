@@ -22,6 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.api.ClusterManagementResult;
+
 public class ClusterManagementResultTest {
   private ClusterManagementResult result;
 
@@ -35,7 +37,7 @@ public class ClusterManagementResultTest {
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", false, "msg-2");
     result.setPersistenceStatus(true, "message");
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isFalse();
+    assertThat(result.isRealizedOnAllOrNone()).isFalse();
     assertThat(result.isSuccessful()).isFalse();
   }
 
@@ -44,14 +46,14 @@ public class ClusterManagementResultTest {
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", true, "msg-2");
     result.setPersistenceStatus(true, "message");
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
   }
 
   @Test
   public void emptyMemberStatus() {
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isFalse();
     assertThat(result.isSuccessful()).isFalse();
   }
 
@@ -59,20 +61,20 @@ public class ClusterManagementResultTest {
   @Test
   public void failsWhenNotPersisted() {
     result.setPersistenceStatus(false, "msg-1");
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isPersisted()).isFalse();
     assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
   public void whenNoMembersExists() {
     result.setPersistenceStatus(false, "msg-1");
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
+    assertThat(result.isPersisted()).isFalse();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
     assertThat(result.isSuccessful()).isFalse();
 
     result.setPersistenceStatus(true, "msg-1");
-    assertThat(result.isSuccessfullyPersisted()).isTrue();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
+    assertThat(result.isPersisted()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
   }
 }

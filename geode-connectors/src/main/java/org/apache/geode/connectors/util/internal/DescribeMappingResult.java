@@ -15,11 +15,16 @@
 package org.apache.geode.connectors.util.internal;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 
 public class DescribeMappingResult {
   private final Map<String, String> attributeMap;
   private String groupName;
+  private List<FieldMapping> fieldMappings;
+
 
   public DescribeMappingResult() {
     this.attributeMap = new LinkedHashMap<>();
@@ -39,5 +44,13 @@ public class DescribeMappingResult {
 
   public void setGroupName(String group) {
     groupName = group;
+  }
+
+  public List<FieldMapping> getFieldMappings() {
+    return fieldMappings;
+  }
+
+  public void setFieldMappings(List<FieldMapping> fieldMappings) {
+    this.fieldMappings = fieldMappings;
   }
 }

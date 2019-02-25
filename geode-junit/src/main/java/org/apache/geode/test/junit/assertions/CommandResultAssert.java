@@ -73,7 +73,7 @@ public class CommandResultAssert
    * </pre>
    */
   public CommandResultAssert containsKeyValuePair(String key, String value) {
-    assertThat(actual.getOutput()).containsPattern(key + "\\s+: " + value);
+    assertThat(actual.getOutput()).containsPattern("\\Q" + key + "\\E\\s+: \\Q" + value + "\\E");
 
     return this;
   }

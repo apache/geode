@@ -21,9 +21,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.Arrays;
 import java.util.List;
 
@@ -190,9 +190,29 @@ public abstract class TableMetaDataManagerIntegrationTest {
     createTable();
     TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
 
-    int nameDataType = metaData.getColumnDataType("name");
+    JDBCType nameDataType = metaData.getColumnDataType("name");
 
-    assertThat(nameDataType).isEqualTo(Types.VARCHAR);
+    assertThat(nameDataType).isEqualTo(JDBCType.VARCHAR);
+  }
+
+  @Test
+  public void validateIsColumnNullableForName() throws SQLException {
+    createTable();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
+
+    boolean nullable = metaData.isColumnNullable("name");
+
+    assertThat(nullable).isTrue();
+  }
+
+  @Test
+  public void validateIsColumnNullableForId() throws SQLException {
+    createTable();
+    TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
+
+    boolean nullable = metaData.isColumnNullable("id");
+
+    assertThat(nullable).isFalse();
   }
 
   @Test
@@ -200,9 +220,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
     createTable();
     TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
 
-    int nameDataType = metaData.getColumnDataType("id");
+    JDBCType nameDataType = metaData.getColumnDataType("id");
 
-    assertThat(nameDataType).isEqualTo(Types.VARCHAR);
+    assertThat(nameDataType).isEqualTo(JDBCType.VARCHAR);
   }
 
   @Test
@@ -210,9 +230,9 @@ public abstract class TableMetaDataManagerIntegrationTest {
     createTable();
     TableMetaDataView metaData = manager.getTableMetaDataView(connection, regionMapping);
 
-    int nameDataType = metaData.getColumnDataType("age");
+    JDBCType nameDataType = metaData.getColumnDataType("age");
 
-    assertThat(nameDataType).isEqualTo(Types.INTEGER);
+    assertThat(nameDataType).isEqualTo(JDBCType.INTEGER);
   }
 
 }

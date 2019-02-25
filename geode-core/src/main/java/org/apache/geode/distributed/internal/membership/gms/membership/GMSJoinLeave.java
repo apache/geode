@@ -1036,6 +1036,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             this.preparedView.getCreator().equals(view.getCreator())) {
           // this can happen if we received two prepares during auto-reconnect
         } else {
+          // send the conflicting view to the creator of this new view
           services.getMessenger()
               .send(new ViewAckMessage(view.getViewId(), m.getSender(), this.preparedView));
         }

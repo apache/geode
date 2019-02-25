@@ -1424,4 +1424,18 @@ public class PdxInstanceFactoryJUnitTest {
 
     assertThat(jsonPdxInstance.isDeserializable()).isTrue();
   }
+
+  @Test
+  public void twoPdxInstancesWithTheSameClassAndFieldsHaveTheSamePdxType() {
+    PdxInstanceFactory factory = cache.createPdxInstanceFactory("className");
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstanceImpl instance1 = (PdxInstanceImpl) factory.create();
+    factory = cache.createPdxInstanceFactory("className");
+    factory.writeString("fieldOne", "valueOne");
+    factory.writeString("fieldTwo", "valueTwo");
+    PdxInstanceImpl instance2 = (PdxInstanceImpl) factory.create();
+
+    assertThat(instance1.getPdxType()).isSameAs(instance2.getPdxType());
+  }
 }

@@ -18,8 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -27,12 +25,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 
 import javax.sql.DataSource;
@@ -49,9 +47,12 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
 
@@ -78,6 +79,7 @@ public class SqlHandlerTest {
   private RegionMapping regionMapping;
   private PdxInstanceImpl value;
   private Object key;
+  private final String fieldName = "fieldName";
 
   @SuppressWarnings("unchecked")
   @Before
@@ -86,6 +88,10 @@ public class SqlHandlerTest {
     region = mock(Region.class);
     when(region.getName()).thenReturn(REGION_NAME);
     cache = mock(InternalCache.class);
+    PdxInstance pdxInstance = mock(PdxInstance.class);
+    PdxInstanceFactory pdxInstanceFactory = mock(PdxInstanceFactory.class);
+    when(pdxInstanceFactory.create()).thenReturn(pdxInstance);
+    when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
     connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
     tableMetaDataManager = mock(TableMetaDataManager.class);
@@ -98,22 +104,34 @@ public class SqlHandlerTest {
     connectorService = mock(JdbcConnectorService.class);
     dataSourceFactory = mock(DataSourceFactory.class);
     when(dataSourceFactory.getDataSource(DATA_SOURCE_NAME)).thenReturn(dataSource);
-    handler = new SqlHandler(tableMetaDataManager, connectorService, dataSourceFactory);
     key = "key";
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
+    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
 
     regionMapping = mock(RegionMapping.class);
     when(regionMapping.getDataSourceName()).thenReturn(DATA_SOURCE_NAME);
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
     when(regionMapping.getIds()).thenReturn(IDS);
+    FieldMapping fieldMapping = mock(FieldMapping.class);
+    when(fieldMapping.getJdbcName()).thenReturn(fieldName);
+    when(fieldMapping.getJdbcType()).thenReturn(JDBCType.VARCHAR.name());
+    when(fieldMapping.getPdxName()).thenReturn(fieldName);
+    when(fieldMapping.getPdxType()).thenReturn(FieldType.OBJECT.name());
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping));
     when(connectorService.getMappingForRegion(REGION_NAME)).thenReturn(regionMapping);
 
     when(dataSource.getConnection()).thenReturn(this.connection);
 
     statement = mock(PreparedStatement.class);
     when(this.connection.prepareStatement(any())).thenReturn(statement);
+    createSqlHandler();
+  }
+
+  private void createSqlHandler() {
+    handler = new SqlHandler(cache, REGION_NAME, tableMetaDataManager, connectorService,
+        dataSourceFactory);
   }
 
   @Test
@@ -122,29 +140,24 @@ public class SqlHandlerTest {
     handler.read(region, null);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
-  public void readThrowsIfNoMapping() throws Exception {
-    Region region = mock(Region.class);
-    when(region.getName()).thenReturn("myRegionName");
+  public void constructorThrowsIfNoMapping() throws Exception {
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
-        "JDBC mapping for region myRegionName not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
-    handler.read(region, new Object());
+        "JDBC mapping for region regionWithNoMapping not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
+
+    new SqlHandler(cache, "regionWithNoMapping", tableMetaDataManager, connectorService,
+        dataSourceFactory);
   }
 
   @Test
-  public void readThrowsIfNoConnectionConfig() throws Exception {
-    @SuppressWarnings("unchecked")
-    Region<Object, Object> region2 = mock(Region.class);
-    when(region2.getName()).thenReturn("region2");
-    RegionMapping regionMapping2 = mock(RegionMapping.class);
-    when(regionMapping2.getDataSourceName()).thenReturn("bogus data source name");
-    when(regionMapping2.getRegionName()).thenReturn("region2");
-    when(connectorService.getMappingForRegion("region2")).thenReturn(regionMapping2);
-
+  public void constructorThrowsIfNoConnectionConfig() throws Exception {
+    when(regionMapping.getDataSourceName()).thenReturn("bogus data source name");
     thrown.expect(JdbcConnectorException.class);
-    handler.read(region2, new Object());
+    thrown.expectMessage(
+        "JDBC data-source named \"bogus data source name\" not found. Create it with gfsh 'create data-source --pooled --name=bogus data source name'.");
+
+    new SqlHandler(cache, REGION_NAME, tableMetaDataManager, connectorService, dataSourceFactory);
   }
 
   @Test
@@ -173,10 +186,7 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithCharField() throws Exception {
-    String fieldName = "fieldName";
     Object fieldValue = 'S';
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
@@ -190,10 +200,8 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithDateField() throws Exception {
-    String fieldName = "fieldName";
     Object fieldValue = new Date();
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.NULL);
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
@@ -207,13 +215,10 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithDateFieldWithDateTypeFromMetaData() throws Exception {
-    String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Date(fieldValue.getTime());
-    int dataType = Types.DATE;
+    JDBCType dataType = JDBCType.DATE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
@@ -227,13 +232,10 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithDateFieldWithTimeTypeFromMetaData() throws Exception {
-    String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Time(fieldValue.getTime());
-    int dataType = Types.TIME;
+    JDBCType dataType = JDBCType.TIME;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
@@ -247,13 +249,10 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithDateFieldWithTimeWithTimezoneTypeFromMetaData() throws Exception {
-    String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Time(fieldValue.getTime());
-    int dataType = Types.TIME_WITH_TIMEZONE;
+    JDBCType dataType = JDBCType.TIME_WITH_TIMEZONE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
@@ -267,13 +266,10 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithDateFieldWithTimestampTypeFromMetaData() throws Exception {
-    String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Timestamp(fieldValue.getTime());
-    int dataType = Types.TIMESTAMP;
+    JDBCType dataType = JDBCType.TIMESTAMP;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
@@ -287,13 +283,10 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithDateFieldWithTimestampWithTimezoneTypeFromMetaData() throws Exception {
-    String fieldName = "fieldName";
     Date fieldValue = new Date();
     Object expectedValueWritten = new java.sql.Timestamp(fieldValue.getTime());
-    int dataType = Types.TIMESTAMP_WITH_TIMEZONE;
+    JDBCType dataType = JDBCType.TIMESTAMP_WITH_TIMEZONE;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
@@ -307,10 +300,7 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithNonCharField() throws Exception {
-    String fieldName = "fieldName";
     int fieldValue = 100;
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
@@ -324,37 +314,31 @@ public class SqlHandlerTest {
 
   @Test
   public void writeWithNullField() throws Exception {
-    String fieldName = "fieldName";
     Object fieldValue = null;
-    int dataType = 0;
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
+    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.NULL);
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
     Object createKey = "createKey";
     handler.write(region, Operation.CREATE, createKey, value);
 
-    verify(statement).setNull(1, dataType);
+    verify(statement).setNull(1, JDBCType.NULL.getVendorTypeNumber());
     verify(statement).setObject(2, createKey);
     verify(statement).close();
   }
 
   @Test
   public void writeWithNullFieldWithDataTypeFromMetaData() throws Exception {
-    String fieldName = "fieldName";
     Object fieldValue = null;
-    int dataType = 79;
+    JDBCType dataType = JDBCType.VARCHAR;
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(dataType);
-    when(regionMapping.getColumnNameForField(eq(fieldName), any())).thenReturn(fieldName);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(fieldName));
     when(value.getField(fieldName)).thenReturn(fieldValue);
 
     when(statement.executeUpdate()).thenReturn(1);
     Object createKey = "createKey";
     handler.write(region, Operation.CREATE, createKey, value);
 
-    verify(statement).setNull(1, dataType);
+    verify(statement).setNull(1, dataType.getVendorTypeNumber());
     verify(statement).setObject(2, createKey);
     verify(statement).close();
   }
@@ -362,8 +346,11 @@ public class SqlHandlerTest {
   @Test
   public void insertActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
     Object createKey = "createKey";
+
     handler.write(region, Operation.CREATE, createKey, value);
+
     verify(statement).setObject(1, createKey);
     verify(statement).executeUpdate();
     verify(statement).close();
@@ -380,8 +367,15 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn("fieldOne");
+    when(fieldMapping1.getPdxName()).thenReturn("fieldOne");
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
+    when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    createSqlHandler();
 
     handler.write(region, Operation.CREATE, compositeKey, value);
 
@@ -396,7 +390,10 @@ public class SqlHandlerTest {
   public void updateActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
     Object updateKey = "updateKey";
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
+
     handler.write(region, Operation.UPDATE, updateKey, value);
+
     verify(statement).setObject(1, updateKey);
     verify(statement).executeUpdate();
     verify(statement).close();
@@ -413,8 +410,15 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn("fieldOne");
+    when(fieldMapping1.getPdxName()).thenReturn("fieldOne");
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
+    when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    createSqlHandler();
 
     handler.write(region, Operation.UPDATE, compositeKey, value);
 
@@ -446,8 +450,14 @@ public class SqlHandlerTest {
     when(destroyKey.getField("fieldOne")).thenReturn(destroyKeyFieldValueOne);
     when(destroyKey.getField("fieldTwo")).thenReturn(destroyKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn("fieldOne");
+    when(fieldMapping1.getPdxName()).thenReturn("fieldOne");
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
+    when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
 
     handler.write(region, Operation.DESTROY, destroyKey, value);
 
@@ -484,19 +494,23 @@ public class SqlHandlerTest {
   @Test
   public void preparedStatementClearedAfterExecution() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
+
     handler.write(region, Operation.CREATE, new Object(), value);
+
     verify(statement).close();
   }
 
   @Test
   public void whenInsertFailsUpdateSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(0);
-
     PreparedStatement updateStatement = mock(PreparedStatement.class);
     when(updateStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(updateStatement);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
 
     handler.write(region, Operation.CREATE, new Object(), value);
+
     verify(statement).executeUpdate();
     verify(updateStatement).executeUpdate();
     verify(statement).close();
@@ -506,13 +520,14 @@ public class SqlHandlerTest {
   @Test
   public void whenUpdateFailsInsertSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(0);
-
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
-
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
     Object putKey = "putKey";
+
     handler.write(region, Operation.UPDATE, putKey, value);
+
     verify(statement).executeUpdate();
     verify(insertStatement).executeUpdate();
     verify(statement).executeUpdate();
@@ -526,12 +541,13 @@ public class SqlHandlerTest {
   @Test
   public void whenInsertFailsWithExceptionUpdateSucceeds() throws Exception {
     when(statement.executeUpdate()).thenThrow(SQLException.class);
-
     PreparedStatement updateStatement = mock(PreparedStatement.class);
     when(updateStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(updateStatement);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
 
     handler.write(region, Operation.CREATE, new Object(), value);
+
     verify(statement).executeUpdate();
     verify(updateStatement).executeUpdate();
     verify(statement).close();
@@ -541,12 +557,13 @@ public class SqlHandlerTest {
   @Test
   public void whenUpdateFailsWithExceptionInsertSucceeds() throws Exception {
     when(statement.executeUpdate()).thenThrow(SQLException.class);
-
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
 
     handler.write(region, Operation.UPDATE, new Object(), value);
+
     verify(statement).executeUpdate();
     verify(insertStatement).executeUpdate();
     verify(statement).close();
@@ -556,13 +573,14 @@ public class SqlHandlerTest {
   @Test
   public void whenBothInsertAndUpdateFailExceptionIsThrown() throws Exception {
     when(statement.executeUpdate()).thenThrow(SQLException.class);
-
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenThrow(SQLException.class);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
-
+    when(value.getFieldNames()).thenReturn(Collections.emptyList());
     thrown.expect(SQLException.class);
+
     handler.write(region, Operation.UPDATE, new Object(), value);
+
     verify(statement).close();
     verify(insertStatement).close();
   }
@@ -576,7 +594,7 @@ public class SqlHandlerTest {
   @Test
   public void returnsCorrectColumnForGet() throws Exception {
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.GET);
+        handler.getEntryColumnData(tableMetaDataView, key, value, Operation.GET);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
@@ -595,12 +613,17 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn("fieldOne");
+    when(fieldMapping1.getPdxName()).thenReturn("fieldOne");
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
+    when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
 
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
-            Operation.GET);
+        handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.GET);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
@@ -617,14 +640,19 @@ public class SqlHandlerTest {
     when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne"));
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn("fieldOne");
+    when(fieldMapping1.getPdxName()).thenReturn("fieldOne");
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
+    when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
         "The key \"" + compositeKey + "\" should have 2 fields but has 1 fields.");
 
-    handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
-        Operation.GET);
+    handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.GET);
   }
 
   @Test
@@ -637,14 +665,24 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwoWrong")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn("fieldOne");
+    when(fieldMapping1.getPdxName()).thenReturn("fieldOne");
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
+    when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
+    FieldMapping fieldMapping3 = mock(FieldMapping.class);
+    String nonKeyColumn = "fieldTwoWrong";
+    when(fieldMapping3.getJdbcName()).thenReturn(nonKeyColumn);
+    when(fieldMapping3.getPdxName()).thenReturn(nonKeyColumn);
+    when(regionMapping.getFieldMappings())
+        .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
+    createSqlHandler();
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("The key \"" + compositeKey
         + "\" has the field \"fieldTwoWrong\" which does not match any of the key columns: [fieldOne, fieldTwo]");
 
-    handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
-        Operation.GET);
+    handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.GET);
   }
 
   @Test
@@ -659,12 +697,18 @@ public class SqlHandlerTest {
 
   private void testGetEntryColumnDataForCreateOrUpdate(Operation operation) {
     String nonKeyColumn = "otherColumn";
-    when(regionMapping.getColumnNameForField(eq(KEY_COLUMN), any())).thenReturn(KEY_COLUMN);
-    when(regionMapping.getColumnNameForField(eq(nonKeyColumn), any())).thenReturn(nonKeyColumn);
     when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn);
+    when(fieldMapping2.getPdxName()).thenReturn(nonKeyColumn);
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
 
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, operation);
+        handler.getEntryColumnData(tableMetaDataView, key, value, operation);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
@@ -673,6 +717,100 @@ public class SqlHandlerTest {
     assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
     assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
         .isEqualTo(KEY_COLUMN);
+  }
+
+  @Test
+  public void getEntryColumnDataReturnsCorrectColumnNameWhenPdxNameIsEmpty() {
+    String nonKeyColumn = "otherColumn";
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn);
+    when(fieldMapping2.getPdxName()).thenReturn("");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
+
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
+        .isEqualTo(nonKeyColumn);
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo(KEY_COLUMN);
+  }
+
+  @Test
+  public void getEntryColumnDataReturnsCorrectColumnNameWhenPdxNameIsEmptyAndJdbcNameMatchesInexactly() {
+    String nonKeyColumn = "otherColumn";
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase());
+    when(fieldMapping2.getPdxName()).thenReturn("");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
+
+    EntryColumnData entryColumnData =
+        handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+
+    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+    assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
+        .isEqualTo(nonKeyColumn.toUpperCase());
+    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+        .isEqualTo(KEY_COLUMN);
+  }
+
+  @Test
+  public void getEntryColumnDataThrowsWhenPdxNameIsEmptyAndJdbcNameMatchesInexactlyMultipleTimes() {
+    String nonKeyColumn = "otherColumn";
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase());
+    when(fieldMapping2.getPdxName()).thenReturn("");
+    FieldMapping fieldMapping3 = mock(FieldMapping.class);
+    when(fieldMapping3.getJdbcName()).thenReturn(nonKeyColumn.toLowerCase());
+    when(fieldMapping3.getPdxName()).thenReturn("");
+    when(regionMapping.getFieldMappings())
+        .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
+    createSqlHandler();
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("Multiple columns matched the pdx field \"" + nonKeyColumn + "\".");
+
+    handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+  }
+
+  @Test
+  public void getEntryColumnDataThrowsWhenPdxNameIsEmptyAndJdbcNameDoesNotMatch() {
+    String nonKeyColumn = "otherColumn";
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase() + "noMatch");
+    when(fieldMapping2.getPdxName()).thenReturn("");
+    FieldMapping fieldMapping3 = mock(FieldMapping.class);
+    when(fieldMapping3.getJdbcName()).thenReturn("noMatch" + nonKeyColumn.toLowerCase());
+    when(fieldMapping3.getPdxName()).thenReturn("");
+    when(regionMapping.getFieldMappings())
+        .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
+    createSqlHandler();
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("No column matched the pdx field \"" + nonKeyColumn + "\".");
+
+    handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
   }
 
   @Test
@@ -694,15 +832,23 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn("fieldOne");
+    when(fieldMapping1.getPdxName()).thenReturn("fieldOne");
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
+    when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
+    FieldMapping fieldMapping3 = mock(FieldMapping.class);
     String nonKeyColumn = "otherColumn";
-    when(regionMapping.getColumnNameForField(eq(nonKeyColumn), any())).thenReturn(nonKeyColumn);
+    when(fieldMapping3.getJdbcName()).thenReturn(nonKeyColumn);
+    when(fieldMapping3.getPdxName()).thenReturn(nonKeyColumn);
+    when(regionMapping.getFieldMappings())
+        .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
+    createSqlHandler();
     when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo", nonKeyColumn));
 
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
-            operation);
+        handler.getEntryColumnData(tableMetaDataView, compositeKey, value, operation);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
@@ -725,12 +871,17 @@ public class SqlHandlerTest {
     when(compositeKey.getField("fieldOne")).thenReturn(compositeKeyFieldValueOne);
     when(compositeKey.getField("fieldTwo")).thenReturn(compositeKeyFieldValueTwo);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
-    when(regionMapping.getColumnNameForField("fieldOne", tableMetaDataView)).thenReturn("fieldOne");
-    when(regionMapping.getColumnNameForField("fieldTwo", tableMetaDataView)).thenReturn("fieldTwo");
+    FieldMapping fieldMapping1 = mock(FieldMapping.class);
+    when(fieldMapping1.getJdbcName()).thenReturn("fieldOne");
+    when(fieldMapping1.getPdxName()).thenReturn("fieldOne");
+    FieldMapping fieldMapping2 = mock(FieldMapping.class);
+    when(fieldMapping2.getJdbcName()).thenReturn("fieldTwo");
+    when(fieldMapping2.getPdxName()).thenReturn("fieldTwo");
+    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    createSqlHandler();
 
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, compositeKey, value,
-            Operation.DESTROY);
+        handler.getEntryColumnData(tableMetaDataView, compositeKey, value, Operation.DESTROY);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
@@ -748,7 +899,7 @@ public class SqlHandlerTest {
   @Test
   public void returnsCorrectColumnForDestroy() throws Exception {
     EntryColumnData entryColumnData =
-        handler.getEntryColumnData(tableMetaDataView, regionMapping, key, value, Operation.DESTROY);
+        handler.getEntryColumnData(tableMetaDataView, key, value, Operation.DESTROY);
 
     assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
     assertThat(entryColumnData.getEntryValueColumnData()).isEmpty();
@@ -765,8 +916,7 @@ public class SqlHandlerTest {
     thrown.expectMessage(
         "The key \"123\" of class \"java.lang.Integer\" must be a PdxInstance because multiple columns are configured as ids.");
 
-    handler.getEntryColumnData(tableMetaDataView, regionMapping, nonCompositeKey, value,
-        Operation.DESTROY);
+    handler.getEntryColumnData(tableMetaDataView, nonCompositeKey, value, Operation.DESTROY);
   }
 
   @Test
@@ -780,31 +930,14 @@ public class SqlHandlerTest {
         "The key \"" + nonCompositeKey
             + "\" must be a PdxInstance created with PdxInstanceFactory.neverDeserialize");
 
-    handler.getEntryColumnData(tableMetaDataView, regionMapping, nonCompositeKey, value,
-        Operation.DESTROY);
-  }
-
-  private ResultSet getPrimaryKeysMetaData() throws SQLException {
-    DatabaseMetaData metadata = mock(DatabaseMetaData.class);
-    ResultSet resultSet = mock(ResultSet.class);
-    ResultSet primaryKeys = mock(ResultSet.class);
-
-    when(connection.getMetaData()).thenReturn(metadata);
-    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
-    when(metadata.getPrimaryKeys(any(), any(), anyString())).thenReturn(primaryKeys);
-    when(primaryKeys.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
-    when(resultSet.next()).thenReturn(true).thenReturn(false);
-    when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
-
-    return primaryKeys;
+    handler.getEntryColumnData(tableMetaDataView, nonCompositeKey, value, Operation.DESTROY);
   }
 
   @Test
   public void handlesSQLExceptionFromGetConnection() throws Exception {
     doThrow(new SQLException("test exception")).when(dataSource).getConnection();
 
-    assertThatThrownBy(() -> handler.getConnection(DATA_SOURCE_NAME))
+    assertThatThrownBy(() -> handler.getConnection())
         .isInstanceOf(SQLException.class).hasMessage("test exception");
   }
-
 }

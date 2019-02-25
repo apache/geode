@@ -25,6 +25,7 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_N
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -33,6 +34,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
@@ -43,6 +45,7 @@ import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -122,6 +125,7 @@ public class DescribeMappingCommand extends GfshCommand {
     }
     DescribeMappingResult result = new DescribeMappingResult(attributes);
     result.setGroupName(group);
+    result.setFieldMappings(regionMapping.getFieldMappings());
     return result;
   }
 
@@ -134,8 +138,26 @@ public class DescribeMappingCommand extends GfshCommand {
         sectionModel.addData("Mapping for group", result.getGroupName());
       }
       result.getAttributeMap().forEach(sectionModel::addData);
+
+      TabularResultModel fieldMappingTable =
+          resultModel.addTable(RESULT_SECTION_NAME + "Field Mappings" + String.valueOf(i));
+      List<FieldMapping> fieldMappings = result.getFieldMappings();
+
+      fieldMappingTable.setHeader("PDX Field to JDBC Column Mappings");
+      buildFieldMappingTable(fieldMappingTable, fieldMappings);
     }
     return resultModel;
+  }
+
+  private void buildFieldMappingTable(TabularResultModel fieldMappingTable,
+      List<FieldMapping> fieldMappings) {
+    fieldMappingTable.setColumnHeader("PDX Field", "PDX Type", "JDBC Column", "JDBC Type",
+        "Nullable");
+    for (FieldMapping fieldMapping : fieldMappings) {
+      fieldMappingTable.addRow(fieldMapping.getPdxName(), fieldMapping.getPdxType(),
+          fieldMapping.getJdbcName(), fieldMapping.getJdbcType(),
+          Boolean.toString(fieldMapping.isJdbcNullable()));
+    }
   }
 
   private ArrayList<DescribeMappingResult> getMappingsFromRegionConfig(CacheConfig cacheConfig,

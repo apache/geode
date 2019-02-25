@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,7 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
+import org.apache.geode.connectors.jdbc.internal.TableMetaData.ColumnMetaData;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.internal.util.JavaWorkarounds;
 
 /**
  * Given a tableName this manager will determine which column should correspond to the Geode Region
@@ -44,7 +47,7 @@ public class TableMetaDataManager {
 
   public TableMetaDataView getTableMetaDataView(Connection connection,
       RegionMapping regionMapping) {
-    return tableToMetaDataMap.computeIfAbsent(computeTableName(regionMapping),
+    return JavaWorkarounds.computeIfAbsent(tableToMetaDataMap, computeTableName(regionMapping),
         k -> computeTableMetaDataView(connection, k, regionMapping));
   }
 
@@ -71,10 +74,10 @@ public class TableMetaDataManager {
       List<String> keys = getPrimaryKeyColumnNamesFromMetaData(metaData, realCatalogName,
           realSchemaName, realTableName, regionMapping.getIds());
       String quoteString = metaData.getIdentifierQuoteString();
-      Map<String, Integer> dataTypes =
-          getDataTypesFromMetaData(metaData, realCatalogName, realSchemaName, realTableName);
+      Map<String, ColumnMetaData> columnMetaDataMap =
+          createColumnMetaDataMap(metaData, realCatalogName, realSchemaName, realTableName);
       return new TableMetaData(realCatalogName, realSchemaName, realTableName, keys, quoteString,
-          dataTypes);
+          columnMetaDataMap);
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
     }
@@ -174,16 +177,18 @@ public class TableMetaDataManager {
     return keys;
   }
 
-  private Map<String, Integer> getDataTypesFromMetaData(DatabaseMetaData metaData,
+  private Map<String, ColumnMetaData> createColumnMetaDataMap(DatabaseMetaData metaData,
       String catalogFilter,
       String schemaFilter, String tableName) throws SQLException {
-    Map<String, Integer> result = new HashMap<>();
+    Map<String, ColumnMetaData> result = new HashMap<>();
     try (ResultSet columnData =
         metaData.getColumns(catalogFilter, schemaFilter, tableName, "%")) {
       while (columnData.next()) {
         String columnName = columnData.getString("COLUMN_NAME");
         int dataType = columnData.getInt("DATA_TYPE");
-        result.put(columnName, dataType);
+        int nullableCode = columnData.getInt("NULLABLE");
+        boolean nullable = nullableCode != DatabaseMetaData.columnNoNulls;
+        result.put(columnName, new ColumnMetaData(JDBCType.valueOf(dataType), nullable));
       }
     }
     return result;

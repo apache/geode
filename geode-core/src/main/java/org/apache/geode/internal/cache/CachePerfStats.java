@@ -63,8 +63,8 @@ public class CachePerfStats {
   static final int createsId;
   static final int putsId;
   protected static final int putTimeId;
-  static final int putallsId;
-  static final int putallTimeId;
+  static final int putAllsId;
+  static final int putAllTimeId;
   static final int removeAllsId;
   private static final int removeAllTimeId;
   protected static final int updatesId;
@@ -380,14 +380,14 @@ public class CachePerfStats {
                 "keys"),
             f.createIntGauge("regions", regionsDesc, "regions"),
             f.createIntGauge("partitionedRegions", partitionedRegionsDesc, "partitionedRegions"),
-            f.createIntCounter("destroys", destroysDesc, "operations"),
-            f.createIntCounter("updates", updatesDesc, "operations"),
+            f.createLongCounter("destroys", destroysDesc, "operations"),
+            f.createLongCounter("updates", updatesDesc, "operations"),
             f.createLongCounter("updateTime", updateTimeDesc, "nanoseconds"),
-            f.createIntCounter("invalidates", invalidatesDesc, "operations"),
-            f.createIntCounter("gets", getsDesc, "operations"),
-            f.createIntCounter("misses", missesDesc, "operations"),
-            f.createIntCounter("creates", createsDesc, "operations"),
-            f.createIntCounter("puts", putsDesc, "operations"),
+            f.createLongCounter("invalidates", invalidatesDesc, "operations"),
+            f.createLongCounter("gets", getsDesc, "operations"),
+            f.createLongCounter("misses", missesDesc, "operations"),
+            f.createLongCounter("creates", createsDesc, "operations"),
+            f.createLongCounter("puts", putsDesc, "operations"),
             f.createLongCounter("putTime", putTimeDesc, "nanoseconds", false),
             f.createIntCounter("putalls", putallsDesc, "operations"),
             f.createLongCounter("putallTime", putallTimeDesc, "nanoseconds", false),
@@ -445,7 +445,7 @@ public class CachePerfStats {
             f.createIntCounter("retries",
                 "Number of times a concurrent destroy followed by a create has caused an entry operation to need to retry.",
                 "operations"),
-            f.createIntCounter("clears", clearsDesc, "operations"),
+            f.createLongCounter("clears", clearsDesc, "operations"),
             f.createIntGauge("diskTasksWaiting",
                 "Current number of disk tasks (oplog compactions, asynchronous recoveries, etc) that are waiting for a thread to run the operation",
                 "operations"),
@@ -528,8 +528,8 @@ public class CachePerfStats {
     createsId = type.nameToId("creates");
     putsId = type.nameToId("puts");
     putTimeId = type.nameToId("putTime");
-    putallsId = type.nameToId("putalls");
-    putallTimeId = type.nameToId("putallTime");
+    putAllsId = type.nameToId("putalls");
+    putAllTimeId = type.nameToId("putallTime");
     removeAllsId = type.nameToId("removeAlls");
     removeAllTimeId = type.nameToId("removeAllTime");
     updatesId = type.nameToId("updates");
@@ -707,16 +707,16 @@ public class CachePerfStats {
     return stats.getInt(regionsId);
   }
 
-  public int getDestroys() {
-    return stats.getInt(destroysId);
+  public long getDestroys() {
+    return stats.getLong(destroysId);
   }
 
-  public int getCreates() {
-    return stats.getInt(createsId);
+  public long getCreates() {
+    return stats.getLong(createsId);
   }
 
-  public int getPuts() {
-    return stats.getInt(putsId);
+  public long getPuts() {
+    return stats.getLong(putsId);
   }
 
   public long getPutTime() {
@@ -724,31 +724,31 @@ public class CachePerfStats {
   }
 
   public int getPutAlls() {
-    return stats.getInt(putallsId);
+    return stats.getInt(putAllsId);
   }
 
   int getRemoveAlls() {
     return stats.getInt(removeAllsId);
   }
 
-  public int getUpdates() {
-    return stats.getInt(updatesId);
+  public long getUpdates() {
+    return stats.getLong(updatesId);
   }
 
-  public int getInvalidates() {
-    return stats.getInt(invalidatesId);
+  public long getInvalidates() {
+    return stats.getLong(invalidatesId);
   }
 
-  public int getGets() {
-    return stats.getInt(getsId);
+  public long getGets() {
+    return stats.getLong(getsId);
   }
 
   public long getGetTime() {
     return stats.getLong(getTimeId);
   }
 
-  public int getMisses() {
-    return stats.getInt(missesId);
+  public long getMisses() {
+    return stats.getLong(missesId);
   }
 
   public int getReliableQueuedOps() {
@@ -1076,15 +1076,15 @@ public class CachePerfStats {
   }
 
   public void incDestroys() {
-    stats.incInt(destroysId, 1);
+    stats.incLong(destroysId, 1L);
   }
 
   public void incCreates() {
-    stats.incInt(createsId, 1);
+    stats.incLong(createsId, 1L);
   }
 
   public void incInvalidates() {
-    stats.incInt(invalidatesId, 1);
+    stats.incLong(invalidatesId, 1L);
   }
 
   /**
@@ -1102,9 +1102,9 @@ public class CachePerfStats {
       long delta = getClockTime() - start;
       stats.incLong(getTimeId, delta);
     }
-    stats.incInt(getsId, 1);
+    stats.incLong(getsId, 1L);
     if (miss) {
-      stats.incInt(missesId, 1);
+      stats.incLong(missesId, 1L);
     }
   }
 
@@ -1115,13 +1115,13 @@ public class CachePerfStats {
   public long endPut(long start, boolean isUpdate) {
     long total = 0;
     if (isUpdate) {
-      stats.incInt(updatesId, 1);
+      stats.incLong(updatesId, 1L);
       if (enableClockStats) {
         total = getClockTime() - start;
         stats.incLong(updateTimeId, total);
       }
     } else {
-      stats.incInt(putsId, 1);
+      stats.incLong(putsId, 1L);
       if (enableClockStats) {
         total = getClockTime() - start;
         stats.incLong(putTimeId, total);
@@ -1131,9 +1131,9 @@ public class CachePerfStats {
   }
 
   public void endPutAll(long start) {
-    stats.incInt(putallsId, 1);
+    stats.incInt(putAllsId, 1);
     if (enableClockStats)
-      stats.incLong(putallTimeId, getClockTime() - start);
+      stats.incLong(putAllTimeId, getClockTime() - start);
   }
 
   public void endRemoveAll(long start) {
@@ -1390,12 +1390,12 @@ public class CachePerfStats {
     };
   }
 
-  public int getClearCount() {
-    return stats.getInt(clearsId);
+  public long getClearCount() {
+    return stats.getLong(clearsId);
   }
 
   public void incClearCount() {
-    stats.incInt(clearsId, 1);
+    stats.incLong(clearsId, 1L);
   }
 
   public long getConflatedEventsCount() {

@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +44,9 @@ public class SqlStatementFactoryTest {
 
   @Before
   public void setup() {
-    valueColumnData.add(new ColumnData(VALUE_COLUMN_1_NAME, null, 0));
-    valueColumnData.add(new ColumnData(VALUE_COLUMN_2_NAME, null, 0));
-    keyColumnData.add(new ColumnData(KEY_COLUMN_1_NAME, null, 0));
+    valueColumnData.add(new ColumnData(VALUE_COLUMN_1_NAME, null, JDBCType.NULL));
+    valueColumnData.add(new ColumnData(VALUE_COLUMN_2_NAME, null, JDBCType.NULL));
+    keyColumnData.add(new ColumnData(KEY_COLUMN_1_NAME, null, JDBCType.NULL));
     entryColumnData = new EntryColumnData(keyColumnData, valueColumnData);
   }
 
@@ -105,7 +106,7 @@ public class SqlStatementFactoryTest {
 
   @Test
   public void getInsertSqlStringGivenMultipleKeys() throws Exception {
-    keyColumnData.add(new ColumnData(KEY_COLUMN_2_NAME, null, 0));
+    keyColumnData.add(new ColumnData(KEY_COLUMN_2_NAME, null, JDBCType.NULL));
 
     String statement = factory.createInsertSqlString(QUOTED_TABLE_PATH, entryColumnData);
 
@@ -117,7 +118,7 @@ public class SqlStatementFactoryTest {
 
   @Test
   public void getUpdateSqlStringGivenMultipleKeys() throws Exception {
-    keyColumnData.add(new ColumnData(KEY_COLUMN_2_NAME, null, 0));
+    keyColumnData.add(new ColumnData(KEY_COLUMN_2_NAME, null, JDBCType.NULL));
 
     String statement = factory.createUpdateSqlString(QUOTED_TABLE_PATH, entryColumnData);
 
@@ -129,7 +130,7 @@ public class SqlStatementFactoryTest {
 
   @Test
   public void getSelectQueryStringGivenMultipleKeys() throws Exception {
-    keyColumnData.add(new ColumnData(KEY_COLUMN_2_NAME, null, 0));
+    keyColumnData.add(new ColumnData(KEY_COLUMN_2_NAME, null, JDBCType.NULL));
 
     String statement = factory.createSelectQueryString(QUOTED_TABLE_PATH, entryColumnData);
 
@@ -142,7 +143,7 @@ public class SqlStatementFactoryTest {
 
   @Test
   public void getDestroySqlStringGivenMultipleKeys() throws Exception {
-    keyColumnData.add(new ColumnData(KEY_COLUMN_2_NAME, null, 0));
+    keyColumnData.add(new ColumnData(KEY_COLUMN_2_NAME, null, JDBCType.NULL));
 
     String statement = factory.createDestroySqlString(QUOTED_TABLE_PATH, entryColumnData);
 

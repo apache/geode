@@ -35,6 +35,8 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
@@ -86,16 +88,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
-      try {
-        validator.validate(config);
-      } catch (IllegalArgumentException e) {
-        return new ClusterManagementResult(false, e.getMessage());
-      }
+      validator.validate(config);
     }
+
 
     // exit early if config element already exists in cache config
     CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-    if (configurationMutator.exists(config, currentPersistedConfig)) {
+    if (validator.exists(config, currentPersistedConfig)) {
       throw new EntityExistsException("cache element " + config.getId() + " already exists.");
     }
 
@@ -114,7 +113,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
             functionResult.isSuccessful(),
             functionResult.getStatusMessage()));
 
-    if (!result.isSuccessfullyAppliedOnMembers()) {
+    if (!result.isRealizedOnAllOrNone()) {
       result.setPersistenceStatus(false, "Failed to apply the update on all members.");
       return result;
     }

@@ -12,33 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.api;
 
-public class Status {
-  boolean success;
-  String message;
+package org.apache.geode.management.api;
 
-  // needed for json deserialization
-  public Status() {}
+public interface RestfulEndpoint {
 
-  public Status(boolean success, String message) {
-    this.success = success;
-    this.message = message;
-  }
-
-  public boolean isSuccess() {
-    return success;
-  }
-
-  public void setSuccess(boolean success) {
-    this.success = success;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
-  }
+  String getEndpoint();
 }

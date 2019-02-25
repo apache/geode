@@ -19,6 +19,7 @@ import java.util.Stack;
 import org.xml.sax.Attributes;
 
 import org.apache.geode.cache.CacheXmlException;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 
@@ -49,6 +50,28 @@ public enum ElementType {
       RegionCreation regionCreation = (RegionCreation) stack.peek();
       regionCreation.getExtensionPoint().addExtension(new RegionMappingConfiguration(mapping));
     }
+  },
+
+  FIELD_MAPPING("field-mapping") {
+    @Override
+    void startElement(Stack<Object> stack, Attributes attributes) {
+      if (!(stack.peek() instanceof RegionMapping)) {
+        throw new CacheXmlException(
+            "<jdbc:field-mapping> elements must occur within <jdbc:mapping> elements");
+      }
+      RegionMapping mapping = (RegionMapping) stack.peek();
+      String pdxName = attributes.getValue(JdbcConnectorServiceXmlParser.PDX_NAME);
+      String pdxType = attributes.getValue(JdbcConnectorServiceXmlParser.PDX_TYPE);
+      String jdbcName = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_NAME);
+      String jdbcType = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_TYPE);
+      String jdbcNullable = attributes.getValue(JdbcConnectorServiceXmlParser.JDBC_NULLABLE);
+      FieldMapping fieldMapping = new FieldMapping(pdxName, pdxType, jdbcName, jdbcType,
+          Boolean.parseBoolean(jdbcNullable));
+      mapping.addFieldMapping(fieldMapping);
+    }
+
+    @Override
+    void endElement(Stack<Object> stack) {}
   };
 
   private String typeName;

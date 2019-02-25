@@ -15,7 +15,6 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
@@ -140,9 +139,10 @@ public class CreateMappingFunctionTest {
     }).when(service)
         .createRegionMapping(eq(regionMapping));
 
-    assertThatThrownBy(() -> function.createRegionMapping(service, regionMapping))
-        .isInstanceOf(RegionMappingExistsException.class);
+    Throwable throwable =
+        catchThrowable(() -> function.createRegionMapping(service, regionMapping));
 
+    assertThat(throwable).isInstanceOf(RegionMappingExistsException.class);
     verify(service, times(1)).createRegionMapping(regionMapping);
   }
 

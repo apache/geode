@@ -667,10 +667,9 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     createClient(port0, port1, port2, port3);
     putIntoPartitionedRegions();
     getFromPartitionedRegions();
-    Wait.pause(5000);
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
-    assertEquals(4, regionMetaData.size());
+    await().until(() -> regionMetaData.size() == 4);
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
     assertTrue(regionMetaData.containsKey(customerRegion.getFullPath()));
     assertTrue(regionMetaData.containsKey(orderRegion.getFullPath()));

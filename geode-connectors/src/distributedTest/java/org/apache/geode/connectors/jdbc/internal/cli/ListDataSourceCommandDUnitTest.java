@@ -15,12 +15,21 @@
 
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
@@ -47,64 +56,127 @@ public class ListDataSourceCommandDUnitTest {
   @Test
   public void listDataSourceForSimpleDataSource() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\" --username=joe --password=myPassword")
+        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\" --username=joe --password=myPassword")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     CommandResultAssert result = gfsh.executeAndAssertThat("list data-source");
 
     result.statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "simple", "false", "false",
-            "jdbc:derby:newDB;create=true");
+            "jdbc:derby:memory:newDB;create=true");
+  }
+
+
+  private void setupDatabase() {
+    executeSql("create table region1 (id varchar(10) primary key, name varchar(10))");
+    executeSql("create table region2 (id varchar(10) primary key, name varchar(10))");
+  }
+
+  private void teardownDatabase() {
+    executeSql("drop table region1");
+    executeSql("drop table region2");
+  }
+
+  private void executeSql(String sql) {
+    server.invoke(() -> {
+      try {
+        DataSource ds = JNDIInvoker.getDataSource("simple");
+        Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        sm.execute(sql);
+        sm.close();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  public static class IdAndName implements PdxSerializable {
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("id", this.id);
+      writer.writeString("name", this.name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.id = reader.readString("id");
+      this.name = reader.readString("name");
+    }
   }
 
   @Test
   public void listDataSourceUsedByRegionsHasCorrectOutput() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\"")
+        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
+    setupDatabase();
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=region2 --type=PARTITION").statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name=myPdx")
+        "create jdbc-mapping --region=region1 --data-source=simple --pdx-name="
+            + IdAndName.class.getName() + " --schema=app")
         .statusIsSuccess();
     gfsh.executeAndAssertThat(
-        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name=myPdx")
+        "create jdbc-mapping --region=region2 --data-source=simple --pdx-name="
+            + IdAndName.class.getName() + " --schema=app")
         .statusIsSuccess();
 
     CommandResultAssert result = gfsh.executeAndAssertThat("list data-source");
 
+    teardownDatabase();
     result.statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "simple", "false", "true",
-            "jdbc:derby:newDB;create=true");
+            "jdbc:derby:memory:newDB;create=true");
   }
 
   @Test
   public void listDataSourceForPooledDataSource() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
+        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:memory:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     gfsh.executeAndAssertThat("list data-source").statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "pooledDataSource", "true",
             "false",
-            "jdbc:derby:newDB;create=true");
+            "jdbc:derby:memory:newDB;create=true");
   }
 
   @Test
   public void listDataSourceWithMultipleDataSourcesListsAll() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:newDB;create=true\" --username=joe --password=myPassword")
+        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\" --username=joe --password=myPassword")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
     gfsh.executeAndAssertThat(
-        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
+        "create data-source --name=pooledDataSource --pooled --url=\"jdbc:derby:memory:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     gfsh.executeAndAssertThat("list data-source").statusIsSuccess()
         .tableHasRowWithValues("name", "pooled", "in use", "url", "pooledDataSource", "true",
             "false",
-            "jdbc:derby:newDB;create=true")
+            "jdbc:derby:memory:newDB;create=true")
         .tableHasRowWithValues("name", "pooled", "in use", "url", "simple", "false", "false",
-            "jdbc:derby:newDB;create=true");
+            "jdbc:derby:memory:newDB;create=true");
   }
 
   @Test

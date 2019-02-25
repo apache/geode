@@ -108,7 +108,8 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     logger.info("<ExpectedException action=add>" + expectedExceptions + "</ExpectedException>");
     try {
       pr.put(new Integer(1), val);
-      fail("testPut()- Expected PartitionedRegionException not thrown for localMaxMemory = 0");
+      fail(
+          "testPut()- The expected PartitionedRegionException was not thrown for localMaxMemory = 0");
     } catch (PartitionedRegionStorageException ex) {
       if (logWriter.fineEnabled()) {
         logWriter.fine(
@@ -206,7 +207,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
 
     for (int num = 0; num < 3; num++) {
       pr.put(new Integer(num), val);
-      final int initialDestroyCount = getDestroyCount(pr);
+      final long initialDestroyCount = getDestroyCount(pr);
       pr.destroy(new Integer(num));
       assertEquals(initialDestroyCount + 1, getDestroyCount(pr));
     }
@@ -234,11 +235,11 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     }
   }
 
-  private int getDestroyCount(PartitionedRegion pr) {
+  private long getDestroyCount(PartitionedRegion pr) {
     return ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getDestroys();
   }
 
-  private int getCreateCount(PartitionedRegion pr) {
+  private long getCreateCount(PartitionedRegion pr) {
     return ((GemFireCacheImpl) pr.getCache()).getCachePerfStats().getCreates();
   }
 
@@ -1081,7 +1082,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     final String expectedExceptions = EntryExistsException.class.getName();
     for (int num = 0; num < 3; num++) {
       key++;
-      final int initialCreates = getCreateCount(pr);
+      final long initialCreates = getCreateCount(pr);
       pr.create(new Integer(key), val + num);
       assertEquals(initialCreates + 1, getCreateCount(pr));
       final Object getObj1 = pr.get(new Integer(key));

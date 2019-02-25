@@ -316,6 +316,9 @@ public class NioSslEngine implements NioFilter {
   @Override
   public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
       Buffers.BufferType bufferType, DMStats stats) {
+    if (wrappedBuffer == null) {
+      wrappedBuffer = Buffers.acquireBuffer(bufferType, amount, stats);
+    }
     return wrappedBuffer;
   }
 

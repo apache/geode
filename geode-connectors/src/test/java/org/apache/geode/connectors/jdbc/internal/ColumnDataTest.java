@@ -32,7 +32,7 @@ public class ColumnDataTest {
 
   @Before
   public void setup() {
-    value = new ColumnData(COLUMN_NAME, VALUE, DATA_TYPE.getVendorTypeNumber());
+    value = new ColumnData(COLUMN_NAME, VALUE, DATA_TYPE);
   }
 
   @Test
@@ -47,7 +47,7 @@ public class ColumnDataTest {
 
   @Test
   public void hasCorrectDataType() {
-    assertThat(value.getDataType()).isSameAs(DATA_TYPE.getVendorTypeNumber());
+    assertThat(value.getDataType()).isSameAs(DATA_TYPE);
   }
 
   @Test

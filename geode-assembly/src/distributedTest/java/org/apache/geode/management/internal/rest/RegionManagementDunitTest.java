@@ -21,13 +21,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -63,8 +65,8 @@ public class RegionManagementDunitTest {
             .hasStatusCode(201)
             .getClusterManagementResult();
 
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
     // make sure region is created
@@ -78,6 +80,42 @@ public class RegionManagementDunitTest {
   }
 
   @Test
+  public void createsRegionUsingClusterManagementClient() throws Exception {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("customers2");
+    regionConfig.setType("REPLICATE");
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(regionConfig);
+
+    String url = String.format("http://localhost:%d/geode-management/v2/regions",
+        locator.getHttpPort());
+    RestTemplate template = new RestTemplate();
+
+    ResponseEntity<ClusterManagementResult> result =
+        template.postForEntity(url, regionConfig, ClusterManagementResult.class);
+
+    result.getBody();
+
+    // ClusterManagementResult result =
+    // restClient.doPostAndAssert("/regions", json)
+    // .hasStatusCode(201)
+    // .getClusterManagementResult();
+    //
+    // assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    // assertThat(result.isPersisted()).isTrue();
+    // assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+    //
+    // // make sure region is created
+    // server.invoke(() -> verifyRegionCreated("customers", "REPLICATE"));
+    //
+    // // make sure region is persisted
+    // locator.invoke(() -> verifyRegionPersisted("customers", "REPLICATE"));
+    //
+    // // verify that additional server can be started with the cluster configuration
+    // cluster.startServerVM(2, locator.getPort());
+  }
+
+  @Test
   public void createsAPartitionedRegionByDefault() throws Exception {
     String json = "{\"name\": \"orders\"}";
 
@@ -85,8 +123,8 @@ public class RegionManagementDunitTest {
         .hasStatusCode(201)
         .getClusterManagementResult();
 
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
@@ -100,8 +138,8 @@ public class RegionManagementDunitTest {
     result = restClient.doPostAndAssert("/regions", json)
         .hasStatusCode(200)
         .getClusterManagementResult();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isTrue();
     assertThat(result.isSuccessful()).isTrue();
   }
 
@@ -114,8 +152,8 @@ public class RegionManagementDunitTest {
         .hasStatusCode(500)
         .getClusterManagementResult();
 
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isFalse();
   }
 
   private static void verifyRegionPersisted(String regionName, String type) {

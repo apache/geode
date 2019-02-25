@@ -220,6 +220,10 @@ public class PdxOutputStream implements ByteBufferWriter {
     return this.hdos.toByteBuffer();
   }
 
+  public ByteBuffer toByteBuffer(int startPosition) {
+    return this.hdos.toByteBuffer(startPosition);
+  }
+
   public byte[] toByteArray() {
     return this.hdos.toByteArray();
   }

@@ -41,8 +41,9 @@ public class MemberInformation implements Serializable {
   private String cacheXmlFilePath;
   private String host;
   private String processId;
-  private String locatorBindAddress;
   private int locatorPort;
+  private int httpServicePort;
+  private String httpServiceBindAddress;
   private boolean isServer;
   private List<CacheServerInfo> cacheServerList;
   private int clientCount;
@@ -170,20 +171,28 @@ public class MemberInformation implements Serializable {
     this.processId = processId;
   }
 
-  public String getLocatorBindAddress() {
-    return locatorBindAddress;
-  }
-
-  public void setLocatorBindAddress(String locatorBindAddress) {
-    this.locatorBindAddress = locatorBindAddress;
-  }
-
   public int getLocatorPort() {
     return locatorPort;
   }
 
   public void setLocatorPort(int locatorPort) {
     this.locatorPort = locatorPort;
+  }
+
+  public int getHttpServicePort() {
+    return httpServicePort;
+  }
+
+  public void setHttpServicePort(int httpServicePort) {
+    this.httpServicePort = httpServicePort;
+  }
+
+  public String getHttpServiceBindAddress() {
+    return httpServiceBindAddress;
+  }
+
+  public void setHttpServiceBindAddress(String httpServiceBindAddress) {
+    this.httpServiceBindAddress = httpServiceBindAddress;
   }
 
   public boolean isServer() {

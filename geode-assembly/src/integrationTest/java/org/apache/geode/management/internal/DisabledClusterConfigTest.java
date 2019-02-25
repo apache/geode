@@ -22,7 +22,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.management.internal.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
@@ -48,8 +48,8 @@ public class DisabledClusterConfigTest {
             .hasStatusCode(500)
             .getClusterManagementResult();
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.isSuccessfullyPersisted()).isFalse();
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
+    assertThat(result.isPersisted()).isFalse();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
     assertThat(result.getPersistenceStatus().getMessage())
         .isEqualTo("Cluster configuration service needs to be enabled");
   }

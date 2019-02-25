@@ -187,9 +187,8 @@ public class DistributedSystemStatisticsIntegrationTest {
     Statistics stats = setUpLongStatistics(1);
 
     assertThat(stats.getLong(this.statName1)).isEqualTo(0L);
+    assertThat(stats.getInt(this.statName1)).isEqualTo(0);
     assertThatThrownBy(() -> stats.getDouble(this.statName1))
-        .isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.getInt(this.statName1))
         .isExactlyInstanceOf(IllegalArgumentException.class);
 
     stats.setLong(this.statName1, 4L);

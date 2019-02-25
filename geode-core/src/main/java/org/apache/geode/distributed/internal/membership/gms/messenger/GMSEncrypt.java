@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
+import org.apache.geode.internal.util.JavaWorkarounds;
 
 public final class GMSEncrypt {
   // Parameters for the Diffie-Hellman key exchange
@@ -197,7 +198,7 @@ public final class GMSEncrypt {
 
   private GMSEncryptionCipherPool getPeerEncryptor(InternalDistributedMember member)
       throws Exception {
-    return peerEncryptors.computeIfAbsent(member, (mbr) -> {
+    return JavaWorkarounds.computeIfAbsent(peerEncryptors, member, (mbr) -> {
       try {
         return new GMSEncryptionCipherPool(this, generateSecret(lookupKeyByMember(member)));
       } catch (Exception ex) {

@@ -192,6 +192,7 @@ dependencies {
   distributedTestCompile(project(':extensions:session-testing-war'))
   distributedTestCompile(project(':geode-assembly:geode-assembly-test'))
   distributedTestCompile('org.apache.httpcomponents:httpclient')
+  distributedTestCompile('org.springframework:spring-web')
 
   distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'

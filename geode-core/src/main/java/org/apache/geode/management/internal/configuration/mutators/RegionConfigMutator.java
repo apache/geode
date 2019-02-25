@@ -18,7 +18,6 @@
 package org.apache.geode.management.internal.configuration.mutators;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 public class RegionConfigMutator implements ConfigurationMutator<RegionConfig> {
@@ -28,11 +27,6 @@ public class RegionConfigMutator implements ConfigurationMutator<RegionConfig> {
   @Override
   public void add(RegionConfig configElement, CacheConfig existingConfig) {
     existingConfig.getRegions().add(configElement);
-  }
-
-  @Override
-  public boolean exists(RegionConfig config, CacheConfig existing) {
-    return CacheElement.exists(existing.getRegions(), config.getId());
   }
 
   @Override

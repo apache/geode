@@ -39,6 +39,7 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -73,6 +74,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
     vm0 = getVM(0);
     vm1 = getVM(1);
     regionName = getClass().getSimpleName() + "-" + testName.getMethodName();
+    IgnoredException.addIgnoredException("Possible loss of quorum");
   }
 
   @Test

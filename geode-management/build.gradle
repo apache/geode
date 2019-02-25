@@ -23,6 +23,7 @@ dependencies {
   compile('com.fasterxml.jackson.core:jackson-databind')
   compile('com.fasterxml.jackson.core:jackson-core')
   compile('com.fasterxml.jackson.core:jackson-annotations')
+  compile('org.springframework:spring-web')
 
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
