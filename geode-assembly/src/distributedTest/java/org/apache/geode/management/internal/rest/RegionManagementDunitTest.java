@@ -149,7 +149,7 @@ public class RegionManagementDunitTest {
     String json = "{\"type\": \"REPLICATE\"}";
 
     ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
-        .hasStatusCode(500)
+        .hasStatusCode(400)
         .getClusterManagementResult();
 
     assertThat(result.isRealizedOnAllOrNone()).isTrue();
