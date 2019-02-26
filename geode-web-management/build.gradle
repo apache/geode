@@ -28,6 +28,12 @@ sourceSets {
     }
   }
 
+  distributedTest {
+    resources {
+      srcDir "${projectDir}/src/main/webapp"
+    }
+  }
+
   commonTest {
     java {
       srcDir "${projectDir}/src/commonTest/java"
@@ -111,9 +117,9 @@ dependencies {
   integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
   }
-    
+
   distributedTestCompile(sourceSets.commonTest.output)
-  
+
   distributedTestCompile('org.springframework:spring-test')
   distributedTestCompile('org.springframework:spring-webmvc')
   distributedTestCompile('org.springframework.security:spring-security-test')
@@ -124,7 +130,7 @@ dependencies {
   distributedTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-    
+
   distributedTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
   }
