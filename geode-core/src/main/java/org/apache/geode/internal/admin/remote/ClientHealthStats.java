@@ -93,7 +93,8 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
 
   /** The versions in which this message was modified */
   @Immutable
-  private static final Version[] dsfidVersions = new Version[] {Version.GFE_80, Version.GEODE_190};
+  private static final Version[] dsfidVersions =
+      new Version[] {Version.GFE_80, Version.GEODE_1_9_0};
 
   public ClientHealthStats() {}
 
