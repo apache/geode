@@ -115,7 +115,8 @@ public class DestroyMappingCommandTest {
   }
 
   @Test
-  public void destroyMappingGivenARegionNameReturnsTheNameAsTheConfigObject() throws PreconditionException {
+  public void destroyMappingGivenARegionNameReturnsTheNameAsTheConfigObject()
+      throws PreconditionException {
     ConfigurationPersistenceService service = mock(ConfigurationPersistenceService.class);
     doReturn(service).when(destroyRegionMappingCommand).checkForClusterConfiguration();
     when(service.getCacheConfig("cluster")).thenReturn(cacheConfig);
@@ -136,7 +137,8 @@ public class DestroyMappingCommandTest {
   }
 
   @Test
-  public void destroyMappingGivenARegionPathReturnsTheNoSlashRegionNameAsTheConfigObject()  throws PreconditionException {
+  public void destroyMappingGivenARegionPathReturnsTheNoSlashRegionNameAsTheConfigObject()
+      throws PreconditionException {
     ConfigurationPersistenceService service = mock(ConfigurationPersistenceService.class);
     doReturn(service).when(destroyRegionMappingCommand).checkForClusterConfiguration();
     when(service.getCacheConfig("cluster")).thenReturn(cacheConfig);

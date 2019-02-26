@@ -84,27 +84,30 @@ public class DestroyMappingCommand extends SingleGfshCommand {
 
       for (String group : groups) {
         CacheConfig cacheConfig = getCacheConfig(configService, group);
-        if(cacheConfig != null) {
+        if (cacheConfig != null) {
           for (RegionConfig regionConfig : cacheConfig.getRegions()) {
-            if(regionConfig != null && !MappingCommandUtils.getMappingsFromRegionConfig(cacheConfig, regionConfig, group).isEmpty()) {
-                isMappingInClusterConfig = true;
+            if (regionConfig != null && !MappingCommandUtils
+                .getMappingsFromRegionConfig(cacheConfig, regionConfig, group).isEmpty()) {
+              isMappingInClusterConfig = true;
             }
           }
         }
       }
 
-      if(!isMappingInClusterConfig) {
+      if (!isMappingInClusterConfig) {
         return ResultModel.createError("Mapping not found in cluster configuration.");
       }
 
       ResultModel result;
-      if(targetMembers != null) {
+      if (targetMembers != null) {
         List<CliFunctionResult> results =
             executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
         result =
             ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
       } else {
-        result = ResultModel.createInfo("No members found in specified server groups containing a mapping for region \"" + regionName + "\"");
+        result = ResultModel.createInfo(
+            "No members found in specified server groups containing a mapping for region \""
+                + regionName + "\"");
       }
 
       result.setConfigObject(regionName);
