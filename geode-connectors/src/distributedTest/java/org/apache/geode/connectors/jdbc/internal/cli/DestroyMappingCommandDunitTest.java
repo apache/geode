@@ -302,6 +302,12 @@ public class DestroyMappingCommandDunitTest implements Serializable {
   public void destroysMappingForServerGroup() throws Exception {
     setupMappingWithServerGroup(TEST_GROUP1, GROUP1_REGION, true);
     CommandStringBuilder csb =
+        new CommandStringBuilder(DESTROY_MAPPING);
+    csb.addOption(REGION_NAME, GROUP1_REGION);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
+
+    csb =
         new CommandStringBuilder(DESTROY_MAPPING + " --groups=" + TEST_GROUP1);
     csb.addOption(REGION_NAME, GROUP1_REGION);
 

@@ -37,6 +37,7 @@ import org.apache.geode.connectors.jdbc.JdbcLoader;
 import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -71,17 +72,48 @@ public class DestroyMappingCommand extends SingleGfshCommand {
       regionName = regionName.substring(1);
     }
 
-    // input
     Set<DistributedMember> targetMembers = findMembers(groups, null);
 
-    // action
-    List<CliFunctionResult> results =
-        executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
+    try {
+      boolean isMappingInClusterConfig = false;
+      ConfigurationPersistenceService configService = checkForClusterConfiguration();
 
-    ResultModel result =
-        ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
-    result.setConfigObject(regionName);
-    return result;
+      if (groups == null) {
+        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
+      }
+
+      for (String group : groups) {
+        CacheConfig cacheConfig = getCacheConfig(configService, group);
+        if(cacheConfig != null) {
+          for (RegionConfig regionConfig : cacheConfig.getRegions()) {
+            if(regionConfig != null && !MappingCommandUtils.getMappingsFromRegionConfig(cacheConfig, regionConfig, group).isEmpty()) {
+                isMappingInClusterConfig = true;
+            }
+          }
+        }
+      }
+
+      if(!isMappingInClusterConfig) {
+        return ResultModel.createError("Mapping not found in cluster configuration.");
+      }
+
+      ResultModel result;
+      if(targetMembers != null) {
+        List<CliFunctionResult> results =
+            executeAndGetFunctionResult(new DestroyMappingFunction(), regionName, targetMembers);
+        result =
+            ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
+      } else {
+        result = ResultModel.createInfo("No members found in specified server groups containing a mapping for region \"" + regionName + "\"");
+      }
+
+      result.setConfigObject(regionName);
+      return result;
+    } catch (PreconditionException ex) {
+      return ResultModel.createError(ex.getMessage());
+    }
+
+
   }
 
   @Override
@@ -175,6 +207,21 @@ public class DestroyMappingCommand extends SingleGfshCommand {
   private RegionConfig findRegionConfig(CacheConfig cacheConfig, String regionName) {
     return cacheConfig.getRegions().stream()
         .filter(region -> region.getName().equals(regionName)).findFirst().orElse(null);
+  }
+
+  private CacheConfig getCacheConfig(ConfigurationPersistenceService configService, String group)
+      throws PreconditionException {
+    CacheConfig result = configService.getCacheConfig(group);
+    return result;
+  }
+
+  protected ConfigurationPersistenceService checkForClusterConfiguration()
+      throws PreconditionException {
+    ConfigurationPersistenceService result = getConfigurationPersistenceService();
+    if (result == null) {
+      throw new PreconditionException("Cluster Configuration must be enabled.");
+    }
+    return result;
   }
 
   @CliAvailabilityIndicator({DESTROY_MAPPING})
