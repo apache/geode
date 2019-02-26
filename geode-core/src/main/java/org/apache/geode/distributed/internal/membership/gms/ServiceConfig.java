@@ -35,7 +35,7 @@ public class ServiceConfig {
   private final int[] membershipPortRange;
   private final long memberTimeout;
 
-  private final boolean isReconnecting;
+  private boolean isReconnecting;
   private Integer lossThreshold;
   private final Integer memberWeight;
   private boolean networkPartitionDetectionEnabled;
@@ -157,4 +157,7 @@ public class ServiceConfig {
     networkPartitionDetectionEnabled = theConfig.getEnableNetworkPartitionDetection();
   }
 
+  public void setIsReconnecting(boolean b) {
+    this.isReconnecting = false;
+  }
 }

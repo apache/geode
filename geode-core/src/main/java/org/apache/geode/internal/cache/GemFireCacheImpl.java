@@ -2142,6 +2142,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (isClosed()) {
       return;
     }
+
+    // stopReconnecting();
+
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     synchronized (GemFireCacheImpl.class) {

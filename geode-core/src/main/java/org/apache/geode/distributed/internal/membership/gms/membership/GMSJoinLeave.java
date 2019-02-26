@@ -344,6 +344,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             if (attemptToJoin()) {
               return true;
             }
+            if (this.isStopping) {
+              break;
+            }
             if (!state.possibleCoordinator.equals(localAddress)) {
               state.alreadyTried.add(state.possibleCoordinator);
             }
@@ -447,12 +450,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       return isJoined;
     }
 
-    logger.debug("received join response {}", response);
+    logger.info("received join response {}", response);
     joinResponse[0] = null;
     String failReason = response.getRejectionMessage();
     if (failReason != null) {
       if (failReason.contains("Rejecting the attempt of a member using an older version")
-          || failReason.contains("15806")) {
+          || failReason.contains("15806")
+          || failReason.contains("ForcedDisconnectException")) {
         throw new SystemConnectException(failReason);
       } else if (failReason.contains("Failed to find credentials")) {
         throw new AuthenticationRequiredException(failReason);
@@ -1073,7 +1077,19 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
   private void forceDisconnect(String reason) {
     this.isStopping = true;
-    services.getManager().forceDisconnect(reason);
+    if (!isJoined) {
+      logger.fatal("BRUCE: forcedDisconnect invoked.  isReconnecting={} isJoined={}",
+          services.getConfig().isReconnecting(), isJoined);
+      joinResponse[0] =
+          new JoinResponseMessage(
+              "Stopping due to ForcedDisconnectException caused by '" + reason + "'", -1);
+      isJoined = false;
+      synchronized (joinResponse) {
+        joinResponse.notifyAll();
+      }
+    } else {
+      services.getManager().forceDisconnect(reason);
+    }
   }
 
   private void ackView(InstallViewMessage m) {
