@@ -79,7 +79,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
   void createClientCacheAndVerifyPingIntervalIsSet(String host, int port) throws Exception {
     // this functionality was introduced in 1.5. If we let the test run in older
     // clients it will throw a NoSuchMethodError
-    if (Version.CURRENT_ORDINAL >= 80 /* GEODE_150 */) {
+    if (Version.CURRENT_ORDINAL >= 80 /* GEODE_1_5_0 */) {
       super.createClientCacheAndVerifyPingIntervalIsSet(host, port);
     }
   }

@@ -57,6 +57,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
     IgnoredException.addIgnoredException("cluster configuration service not available");
     IgnoredException.addIgnoredException("This thread has been stalled");
+    IgnoredException
+        .addIgnoredException("member unexpectedly shut down shared, unordered connection");
 
     MemberVM locator0 = rule.startLocatorVM(0);
 

@@ -172,7 +172,7 @@ public class CreateGatewaySenderCommandTest {
     InternalDistributedMember currentVersionMember = mock(InternalDistributedMember.class);
     doReturn(Version.CURRENT).when(currentVersionMember).getVersionObject();
     InternalDistributedMember oldVersionMember = mock(InternalDistributedMember.class);
-    doReturn(Version.GEODE_140).when(oldVersionMember).getVersionObject();
+    doReturn(Version.GEODE_1_4_0).when(oldVersionMember).getVersionObject();
     members.add(currentVersionMember);
     members.add(oldVersionMember);
     doReturn(members).when(command).getMembers(any(), any());

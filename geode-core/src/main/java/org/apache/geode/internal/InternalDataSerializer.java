@@ -342,7 +342,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       VersionedDataStream vout = (VersionedDataStream) out;
       Version version = vout.getVersion();
       if (null != version) {
-        if (version.compareTo(Version.GEODE_190) < 0) {
+        if (version.compareTo(Version.GEODE_1_9_0) < 0) {
           if (name.equals(POST_GEODE_190_SERVER_CQIMPL)) {
             return PRE_GEODE_190_SERVER_CQIMPL;
           }

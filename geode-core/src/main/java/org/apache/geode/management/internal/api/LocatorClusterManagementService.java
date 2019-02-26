@@ -88,11 +88,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
-      try {
-        validator.validate(config);
-      } catch (IllegalArgumentException e) {
-        return new ClusterManagementResult(false, e.getMessage());
-      }
+      validator.validate(config);
     }
 
 
@@ -117,7 +113,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
             functionResult.isSuccessful(),
             functionResult.getStatusMessage()));
 
-    if (!result.isSuccessfullyAppliedOnMembers()) {
+    if (!result.isRealizedOnAllOrNone()) {
       result.setPersistenceStatus(false, "Failed to apply the update on all members.");
       return result;
     }

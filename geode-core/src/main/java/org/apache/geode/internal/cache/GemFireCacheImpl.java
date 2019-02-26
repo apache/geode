@@ -4607,7 +4607,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     Iterator memberIterator = otherMembers.iterator();
     while (memberIterator.hasNext()) {
       InternalDistributedMember member = (InternalDistributedMember) memberIterator.next();
-      if (Version.GEODE_150.compareTo(member.getVersionObject()) > 0) {
+      if (Version.GEODE_1_5_0.compareTo(member.getVersionObject()) > 0) {
         memberIterator.remove();
       }
     }

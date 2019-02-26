@@ -80,6 +80,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.JavaWorkarounds;
 
 /**
  * Implements the CqService functionality.
@@ -867,7 +868,8 @@ public class CqServiceImpl implements CqService {
   @Override
   public String constructServerCqName(String cqName, ClientProxyMembershipID clientProxyId) {
     ConcurrentHashMap<ClientProxyMembershipID, String> cache =
-        serverCqNameCache.computeIfAbsent(cqName, key -> new ConcurrentHashMap<>());
+        JavaWorkarounds.computeIfAbsent(serverCqNameCache, cqName,
+            key -> new ConcurrentHashMap<>());
 
     String cName = cache.get(clientProxyId);
     if (null == cName) {

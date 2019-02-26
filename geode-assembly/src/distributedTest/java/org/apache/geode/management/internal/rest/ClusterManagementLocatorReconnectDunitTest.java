@@ -77,8 +77,8 @@ public class ClusterManagementLocatorReconnectDunitTest {
             .hasStatusCode(201)
             .getClusterManagementResult();
 
-    assertThat(result.isSuccessfullyAppliedOnMembers()).isTrue();
-    assertThat(result.isSuccessfullyPersisted()).isTrue();
+    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isPersisted()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
     // make sure region is created

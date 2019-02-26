@@ -40,7 +40,7 @@ public class LatestLastAccessTimeOperation<K> {
     final Set<InternalDistributedMember> recipients =
         this.region.getCacheDistributionAdvisor().adviseNetSearch();
     final DistributionManager dm = this.region.getDistributionManager();
-    dm.retainMembersWithSameOrNewerVersion(recipients, Version.GEODE_140);
+    dm.retainMembersWithSameOrNewerVersion(recipients, Version.GEODE_1_4_0);
     final LatestLastAccessTimeReplyProcessor replyProcessor =
         new LatestLastAccessTimeReplyProcessor(dm, recipients);
     dm.putOutgoing(

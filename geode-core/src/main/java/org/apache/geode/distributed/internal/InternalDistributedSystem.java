@@ -116,6 +116,7 @@ import org.apache.geode.internal.statistics.StatisticsManagerFactory;
 import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
@@ -2006,7 +2007,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private FunctionServiceStats functionServiceStats = null;
 
   public FunctionStats getFunctionStats(String textId) {
-    return functionExecutionStatsMap.computeIfAbsent(textId,
+    return JavaWorkarounds.computeIfAbsent(functionExecutionStatsMap, textId,
         key -> new FunctionStats(this, key));
   }
 
