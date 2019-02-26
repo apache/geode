@@ -35,9 +35,13 @@ sourceSets {
     groovy {
       description "A modified version of the pedjak:gradle-dockerized-test plugin"
       srcDirs += ['src/main/java']
+      resources {
+        sourceSets.dockerJava.resources
+      }
     }
   }
 }
+
 
 dependencies {
   compile ('org.apache.geode:geode-junit:1.3.0') {
@@ -62,6 +66,7 @@ dependencies {
   compile("io.netty:netty-handler:4.1.31.Final")
   compile("io.netty:netty-handler-proxy:4.1.31.Final")
   compile("io.netty:netty-transport-native-epoll:4.1.31.Final")
+  compile("io.netty:netty-transport-native-epoll:4.1.31.Final:linux-x86_64")
   compile("io.netty:netty-transport-native-kqueue:4.1.31.Final")
   compile("org.apache.commons:commons-compress:1.18")
   compile("org.apache.httpcomponents:httpcore:4.4.10")
@@ -85,6 +90,7 @@ dependencies {
   dockerJavaCompile("io.netty:netty-handler:4.1.31.Final")
   dockerJavaCompile("io.netty:netty-handler-proxy:4.1.31.Final")
   dockerJavaCompile("io.netty:netty-transport-native-epoll:4.1.31.Final")
+  dockerJavaCompile("io.netty:netty-transport-native-epoll:4.1.31.Final:linux-x86_64")
   dockerJavaCompile("io.netty:netty-transport-native-kqueue:4.1.31.Final")
   dockerJavaCompile("org.apache.commons:commons-compress:1.18")
   dockerJavaCompile("org.apache.httpcomponents:httpcore:4.4.10")
