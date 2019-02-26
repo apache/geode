@@ -18,7 +18,25 @@
 
 repositories {
   mavenCentral()
-  maven { url "http://geode-maven.s3-website-us-west-2.amazonaws.com" }
+}
+
+sourceSets {
+  dockerJava {
+    description "A modified version of docker-java:docker-java:3.1.2, to satisfy the customized dockerized-test plugin."
+    java {
+      srcDir 'src/dockerJava/java'
+    }
+  }
+
+  main {
+    java {
+      srcDirs = []
+    }
+    groovy {
+      description "A modified version of the pedjak:gradle-dockerized-test plugin"
+      srcDirs += ['src/main/java']
+    }
+  }
 }
 
 dependencies {
@@ -28,20 +46,33 @@ dependencies {
   compile gradleApi()
   compile 'org.apache.commons:commons-lang3:3.3.2'
   compile 'org.apache.maven:maven-artifact:3.3.3'
-  compile 'com.github.docker-java:docker-java:3.1.2-GEODE'
+  compile sourceSets.dockerJava.output
 
   compile 'junit:junit:4.12'
 
-  testAnnotationProcessor this.project
-}
+  dockerJavaCompile("com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.7")
+  dockerJavaCompile("com.google.guava:guava:19.0")
+  dockerJavaCompile("com.kohlschutter.junixsocket:junixsocket-common:2.0.4")
+  dockerJavaCompile("com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4")
+  dockerJavaCompile("commons-codec:commons-codec:1.11")
+  dockerJavaCompile("commons-io:commons-io:2.6")
+  dockerJavaCompile("commons-lang:commons-lang:2.6")
+  dockerJavaCompile("io.netty:netty-codec-http:4.1.31.Final")
+  dockerJavaCompile("io.netty:netty-handler:4.1.31.Final")
+  dockerJavaCompile("io.netty:netty-handler-proxy:4.1.31.Final")
+  dockerJavaCompile("io.netty:netty-transport-native-epoll:4.1.31.Final")
+  dockerJavaCompile("io.netty:netty-transport-native-kqueue:4.1.31.Final")
+  dockerJavaCompile("org.apache.commons:commons-compress:1.18")
+  dockerJavaCompile("org.apache.httpcomponents:httpcore:4.4.10")
+  dockerJavaCompile("org.apache.httpcomponents:httpclient:4.5.6")
+  dockerJavaCompile("org.bouncycastle:bcpkix-jdk15on:1.60")
+  dockerJavaCompile("org.glassfish.jersey.connectors:jersey-apache-connector:2.27")
+  dockerJavaCompile("org.glassfish.jersey.core:jersey-client:2.27")
+  dockerJavaCompile("org.glassfish.jersey.inject:jersey-hk2:2.27")
+  dockerJavaCompile("org.slf4j:slf4j-api:1.7.25")
+  dockerJavaCompile("org.slf4j:jcl-over-slf4j:1.7.25")
 
-sourceSets {
-  main {
-    java {
-      srcDirs = []
-    }
-    groovy {
-      srcDirs += ['src/main/java']
-    }
-  }
+  dockerJavaCompile("com.google.code.findbugs:annotations:3.0.1u2")
+
+  testAnnotationProcessor this.project
 }

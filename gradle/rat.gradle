@@ -47,6 +47,9 @@ rat {
     'geode-examples/gradlew*/**',
     'geode-examples/gradle/wrapper/**',
 
+    // docker-java modified source
+    'buildSrc/src/dockerJava/**',
+
     // IDE
     'etc/eclipse-java-google-style.xml',
     'etc/intellij-java-modified-google-style.xml',
