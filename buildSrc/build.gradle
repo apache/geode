@@ -22,7 +22,6 @@ plugins {
 
 repositories {
   mavenCentral()
-  maven { url "http://geode-maven.s3-website-us-west-2.amazonaws.com" }
 }
 
 dependencies {
@@ -32,7 +31,7 @@ dependencies {
   compile gradleApi()
   compile 'org.apache.commons:commons-lang3:3.3.2'
   compile 'org.apache.maven:maven-artifact:3.3.3'
-  compile 'com.github.docker-java:docker-java:3.1.2-GEODE'
+  compile 'com.github.docker-java:docker-java:3.0.14'
 
   compile 'junit:junit:4.12'
 

@@ -15,12 +15,15 @@
 
 package org.apache.geode.distributed.internal.locks;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +35,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -145,6 +150,9 @@ public class DLockGrantor {
    * Handles special lock-reservation type for transactions.
    */
   private final TXReservationMgr resMgr = new TXReservationMgr(false);
+
+  private final Map<InternalDistributedMember, Long> membersDepartedTime = new LinkedHashMap();
+  private final long departedMemberKeptInMapMilliSeconds = DAYS.toMillis(1);
 
   /**
    * Enforces waiting until this grantor is initialized. Used to block all lock requests until
@@ -498,7 +506,8 @@ public class DLockGrantor {
         }
 
         DLockBatch batch = (DLockBatch) request.getObjectName();
-        this.resMgr.makeReservation((IdentityArrayList) batch.getReqs());
+        checkIfHostDeparted(batch.getOwner());
+        resMgr.makeReservation((IdentityArrayList) batch.getReqs());
         if (isTraceEnabled_DLS) {
           logger.trace(LogMarker.DLS_VERBOSE, "[DLockGrantor.handleLockBatch] granting {}",
               batch.getBatchId());
@@ -509,6 +518,17 @@ public class DLockGrantor {
         request.respondWithTryLockFailed(ex.getMessage());
       } finally {
         releaseDestroyReadLock();
+      }
+    }
+  }
+
+  private void checkIfHostDeparted(InternalDistributedMember owner) {
+    // Already held batchLocks; hold membersDepartedTime lock just for clarity
+    synchronized (membersDepartedTime) {
+      // the transaction host/txLock requester has departed.
+      if (membersDepartedTime.containsKey(owner)) {
+        throw new TransactionDataNodeHasDepartedException(
+            "The transaction host " + owner + " is no longer a member of the cluster.");
       }
     }
   }
@@ -524,6 +544,10 @@ public class DLockGrantor {
   public DLockBatch[] getLockBatches(InternalDistributedMember owner) {
     // Key: Object batchId, Value: DLockBatch batch
     synchronized (this.batchLocks) {
+      // put owner into the map first so that no new threads will handle in-flight requests
+      // from the departed member to lock keys
+      recordMemberDepartedTime(owner);
+
       List batchList = new ArrayList();
       for (Iterator iter = this.batchLocks.values().iterator(); iter.hasNext();) {
         DLockBatch batch = (DLockBatch) iter.next();
@@ -533,6 +557,30 @@ public class DLockGrantor {
       }
       return (DLockBatch[]) batchList.toArray(new DLockBatch[batchList.size()]);
     }
+  }
+
+  void recordMemberDepartedTime(InternalDistributedMember owner) {
+    // Already held batchLocks; hold membersDepartedTime lock just for clarity
+    synchronized (membersDepartedTime) {
+      long currentTime = getCurrentTime();
+      for (Iterator iterator = membersDepartedTime.values().iterator(); iterator.hasNext();) {
+        if ((long) iterator.next() < currentTime - departedMemberKeptInMapMilliSeconds) {
+          iterator.remove();
+        } else {
+          break;
+        }
+      }
+      membersDepartedTime.put(owner, currentTime);
+    }
+  }
+
+  long getCurrentTime() {
+    return System.currentTimeMillis();
+  }
+
+  @VisibleForTesting
+  Map getMembersDepartedTimeRecords() {
+    return membersDepartedTime;
   }
 
   /**
