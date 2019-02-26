@@ -37,7 +37,7 @@ public class DeployWithLargeJarTest {
     String commonLibs = Arrays.stream(libDir.listFiles(x -> x.getName().startsWith("commons")))
         .map(File::getAbsolutePath).collect(Collectors.joining(","));
     GfshExecution execution = GfshScript.of("start locator --name=locator --max-heap=128m",
-        "start server --name=server --max-heap=128m", "sleep --time=1",
+        "start server --name=server --max-heap=128m --server-port=0", "sleep --time=1",
         "deploy --jars=" + commonLibs).execute(gfsh);
   }
 

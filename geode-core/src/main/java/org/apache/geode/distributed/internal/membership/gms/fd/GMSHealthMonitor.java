@@ -1350,7 +1350,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
       if (!failed) {
         if (!isStopping && !initiator.equals(localAddress)
-            && initiator.getVersionObject().compareTo(Version.GEODE_130) >= 0) {
+            && initiator.getVersionObject().compareTo(Version.GEODE_1_3_0) >= 0) {
           // let the sender know that it's okay to monitor this member again
           FinalCheckPassedMessage message = new FinalCheckPassedMessage(initiator, mbr);
           services.getMessenger().send(message);

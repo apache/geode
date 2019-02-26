@@ -71,7 +71,7 @@ public class GatewaySenderEventImpl
 
   // It should use current version. But it was hard-coded to be 0x11, i.e. GEODE_120_ORDINAL,
   // by mistake since 120 to pre-190
-  protected static final short VERSION = Version.GEODE_190.ordinal();
+  protected static final short VERSION = Version.GEODE_1_9_0.ordinal();
 
   protected EnumListenerEvent operation;
 
@@ -720,7 +720,7 @@ public class GatewaySenderEventImpl
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in);
-    if (version >= Version.GEODE_190.ordinal()) {
+    if (version >= Version.GEODE_1_9_0.ordinal()) {
       this.isConcurrencyConflict = DataSerializer.readBoolean(in);
     }
   }
@@ -1181,7 +1181,7 @@ public class GatewaySenderEventImpl
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[] {Version.GEODE_190};
+    return new Version[] {Version.GEODE_1_9_0};
   }
 
   public int getSerializedValueSize() {

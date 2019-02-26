@@ -71,7 +71,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
           (PartitionedRegionFunctionResultSender) context.getResultSender();
       Version clientVersion = resultSender.getClientVersion();
       if (clientVersion != null) { // is a client server connection
-        if (clientVersion.ordinal() < Version.GEODE_160.ordinal()) {
+        if (clientVersion.ordinal() < Version.GEODE_1_6_0.ordinal()) {
           execute(context, true);
           return;
         }
@@ -91,7 +91,7 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
     // Hence the query waits for the repositories to be ready instead of throwing the exception
     if (!remoteMembers.isEmpty()) {
       for (InternalDistributedMember remoteMember : remoteMembers) {
-        if (remoteMember.getVersionObject().ordinal() < Version.GEODE_160.ordinal()) {
+        if (remoteMember.getVersionObject().ordinal() < Version.GEODE_1_6_0.ordinal()) {
           // re-execute but wait till indexing is complete
           execute(ctx, true);
           return;

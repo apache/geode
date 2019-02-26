@@ -213,7 +213,7 @@ public class CacheClientNotifier {
       if (clientVersion.compareTo(Version.GFE_6516) >= 0) {
         DataSerializer.writeHashMap(dsToSupportedClasses, dos);
       }
-      if (clientVersion.compareTo(Version.GEODE_150) >= 0) {
+      if (clientVersion.compareTo(Version.GEODE_1_5_0) >= 0) {
         dos.writeInt(CLIENT_PING_TASK_PERIOD);
       }
     }

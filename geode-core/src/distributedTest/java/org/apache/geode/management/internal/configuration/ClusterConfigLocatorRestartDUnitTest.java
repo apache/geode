@@ -55,6 +55,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
   @Test
   public void serverRestartsAfterLocatorReconnects() throws Exception {
     IgnoredException.addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
+    IgnoredException
+        .addIgnoredException("member unexpectedly shut down shared, unordered connection");
 
     MemberVM locator0 = rule.startLocatorVM(0);
 

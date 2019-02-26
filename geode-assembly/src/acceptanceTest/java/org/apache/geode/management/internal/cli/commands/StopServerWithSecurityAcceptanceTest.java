@@ -105,6 +105,7 @@ public class StopServerWithSecurityAcceptanceTest {
         .addOption("security-properties-file", securityPropertiesFile.getAbsolutePath()).toString();
 
     String startServer = new CommandStringBuilder("start server").addOption("name", "server")
+        .addOption("server-port", "0")
         .addOption("security-properties-file", securityPropertiesFile.getAbsolutePath()).toString();
 
     return GfshScript.of(startLocator, startServer).withName("cluster-setup").execute(gfshRule);

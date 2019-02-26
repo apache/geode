@@ -34,11 +34,11 @@ public class VersionJUnitTest {
     compare(Version.GFE_81, Version.GFE_71);
     compare(Version.GFE_81, Version.GFE_80);
     compare(Version.GFE_82, Version.GFE_81);
-    compare(Version.GEODE_110, Version.GFE_82);
-    compare(Version.GEODE_120, Version.GEODE_111);
-    compare(Version.GEODE_130, Version.GEODE_120);
-    compare(Version.GEODE_140, Version.GEODE_130);
-    compare(Version.GEODE_150, Version.GEODE_140);
+    compare(Version.GEODE_1_1_0, Version.GFE_82);
+    compare(Version.GEODE_1_2_0, Version.GEODE_1_1_1);
+    compare(Version.GEODE_1_3_0, Version.GEODE_1_2_0);
+    compare(Version.GEODE_1_4_0, Version.GEODE_1_3_0);
+    compare(Version.GEODE_1_5_0, Version.GEODE_1_4_0);
   }
 
   private void compare(Version later, Version earlier) {

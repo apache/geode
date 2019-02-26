@@ -145,7 +145,9 @@ public class StatusServerExitCodeAcceptanceTest {
   }
 
   private static String startServerCommand() {
-    return new CommandStringBuilder("start server").addOption("name", serverName).toString();
+    return new CommandStringBuilder("start server")
+        .addOption("server-port", "0")
+        .addOption("name", serverName).toString();
   }
 
   private String statusServerCommandByName() {

@@ -518,7 +518,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     out.writeInt(vmViewId);
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_120) >= 0) {
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_1_2_0) >= 0) {
       out.writeByte(vmKind);
     }
   }
@@ -547,7 +547,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.vmViewId = in.readInt();
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_120) >= 0) {
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_1_2_0) >= 0) {
       this.vmKind = in.readByte();
     }
   }

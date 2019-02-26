@@ -355,7 +355,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
         builder.append(',');
       }
       vm4.invoke(() -> WANTestBase.createSenderWithMultipleDispatchers(senderId, 2, false, 100, 10,
-          false, false, null, false, 1, OrderPolicy.KEY));
+          false, false, null, false, 1, OrderPolicy.KEY, 32768));
     }
 
     // Create region with the sender ids
@@ -390,7 +390,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     for (int i = 0; i < ThreadIdentifier.Bits.GATEWAY_ID.mask() + 1; i++) {
       String senderId = "ln-" + i;
       vm4.invoke(() -> WANTestBase.createSenderWithMultipleDispatchers(senderId, 2, false, 100, 10,
-          false, false, null, false, 1, OrderPolicy.KEY));
+          false, false, null, false, 1, OrderPolicy.KEY, 32768));
     }
 
     // Attempt to create one more sender
@@ -402,7 +402,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
         IgnoredException.addIgnoredException(IllegalStateException.class.getName());
     try {
       createSenderWithMultipleDispatchers("ln-one-too-many", 2, false, 100, 10, false, false, null,
-          false, 1, OrderPolicy.KEY);
+          false, 1, OrderPolicy.KEY, 32768);
       fail("Should not have been able to create gateway sender");
     } catch (IllegalStateException e) {
       /* ignore expected exception */

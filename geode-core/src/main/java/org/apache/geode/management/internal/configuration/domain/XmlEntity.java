@@ -429,7 +429,7 @@ public class XmlEntity implements VersionedDataSerializable {
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[] {Version.GEODE_111};
+    return new Version[] {Version.GEODE_1_1_1};
   }
 
   @Override
