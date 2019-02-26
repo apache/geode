@@ -37,7 +37,8 @@ public class ImportClusterConfigTest extends ClusterConfigTestBase {
   @Test
   public void importWouldNotShutDownServer() {
     GfshExecution startCluster = GfshScript
-        .of("start locator --name=" + locatorName, "start server --name=" + serverNotShutDownName)
+        .of("start locator --name=" + locatorName,
+            "start server --name=" + serverNotShutDownName + " --server-port=0")
         .withName("startCluster").execute(gfsh);
     assertThat(startCluster.getOutputText()).contains(locatorName + " is currently online")
         .contains(serverNotShutDownName + " is currently online");

@@ -33,7 +33,7 @@ public class DestroyIndexIfExistsTest {
   @Test
   public void destroyIndexIfExists() throws Exception {
     GfshExecution execution =
-        GfshScript.of("start locator --name=locator", "start server --name=server",
+        GfshScript.of("start locator --name=locator", "start server --name=server --server-port=0",
             "sleep --time=1", "destroy index --name=i1 --if-exists=true").execute(gfsh);
 
     assertThat(execution.getOutputText()).contains("IGNORED", "Index named \"i1\" not found");
