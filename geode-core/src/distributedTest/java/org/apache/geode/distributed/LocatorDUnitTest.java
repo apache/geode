@@ -136,7 +136,8 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
   private static void expectSystemToContainThisManyMembers(final int expectedMembers) {
     assertThat(system).isNotNull();
-    assertEquals(expectedMembers, system.getDM().getViewMembers().size());
+    await()
+        .untilAsserted(() -> assertEquals(expectedMembers, system.getDM().getViewMembers().size()));
   }
 
   private static boolean isSystemConnected() {
