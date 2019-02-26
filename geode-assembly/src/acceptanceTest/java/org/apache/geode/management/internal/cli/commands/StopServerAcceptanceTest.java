@@ -29,7 +29,7 @@ public class StopServerAcceptanceTest {
 
   @Before
   public void startCluster() {
-    gfshRule.execute("start locator --name=locator", "start server --name=server");
+    gfshRule.execute("start locator --name=locator", "start server --name=server --server-port=0");
   }
 
   @Test
