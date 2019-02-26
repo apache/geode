@@ -50,6 +50,30 @@ dependencies {
 
   compile 'junit:junit:4.12'
 
+
+  compile("com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.7")
+  compile("com.google.guava:guava:19.0")
+  compile("com.kohlschutter.junixsocket:junixsocket-common:2.0.4")
+  compile("com.kohlschutter.junixsocket:junixsocket-native-common:2.0.4")
+  compile("commons-codec:commons-codec:1.11")
+  compile("commons-io:commons-io:2.6")
+  compile("commons-lang:commons-lang:2.6")
+  compile("io.netty:netty-codec-http:4.1.31.Final")
+  compile("io.netty:netty-handler:4.1.31.Final")
+  compile("io.netty:netty-handler-proxy:4.1.31.Final")
+  compile("io.netty:netty-transport-native-epoll:4.1.31.Final")
+  compile("io.netty:netty-transport-native-kqueue:4.1.31.Final")
+  compile("org.apache.commons:commons-compress:1.18")
+  compile("org.apache.httpcomponents:httpcore:4.4.10")
+  compile("org.apache.httpcomponents:httpclient:4.5.6")
+  compile("org.bouncycastle:bcpkix-jdk15on:1.60")
+  compile("org.glassfish.jersey.connectors:jersey-apache-connector:2.27")
+  compile("org.glassfish.jersey.core:jersey-client:2.27")
+  compile("org.glassfish.jersey.inject:jersey-hk2:2.27")
+  compile("org.slf4j:slf4j-api:1.7.25")
+  compile("org.slf4j:jcl-over-slf4j:1.7.25")
+  compile("com.google.code.findbugs:annotations:3.0.1u2")
+
   dockerJavaCompile("com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.7")
   dockerJavaCompile("com.google.guava:guava:19.0")
   dockerJavaCompile("com.kohlschutter.junixsocket:junixsocket-common:2.0.4")
