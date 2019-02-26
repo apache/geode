@@ -189,6 +189,114 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     // do nothing
   }
 
+  /** create a callback event for applying a transactional change to the local cache */
+  @Retained
+  public static EntryEventImpl createCallbackEvent(final InternalRegion internalRegion,
+      Operation op, Object key, Object newValue, TransactionId txId, TXRmtEvent txEvent,
+      EventID eventId, Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey) {
+    DistributedMember originator = null;
+    // txId should not be null even on localOrigin
+    Assert.assertTrue(txId != null);
+    originator = txId.getMemberId();
+
+    InternalRegion eventRegion = internalRegion;
+    if (eventRegion.isUsedForPartitionedRegionBucket()) {
+      eventRegion = internalRegion.getPartitionedRegion();
+    }
+
+    @Retained
+    EntryEventImpl retVal = create(internalRegion, op, key, newValue,
+        aCallbackArgument, txEntryState == null, originator);
+    boolean returnedRetVal = false;
+    try {
+
+
+      if (bridgeContext != null) {
+        retVal.setContext(bridgeContext);
+      }
+
+      if (eventRegion.generateEventID()) {
+        retVal.setEventId(eventId);
+      }
+
+      if (versionTag != null) {
+        retVal.setVersionTag(versionTag);
+      }
+
+      retVal.setTailKey(tailKey);
+
+      FilterInfo localRouting = null;
+      boolean computeFilterInfo = false;
+      if (filterRoutingInfo == null) {
+        computeFilterInfo = true;
+      } else {
+        localRouting = filterRoutingInfo.getLocalFilterInfo();
+        if (localRouting != null) {
+          // routing was computed in this VM but may need to perform local interest processing
+          computeFilterInfo = !filterRoutingInfo.hasLocalInterestBeenComputed();
+        } else {
+          // routing was computed elsewhere and is in the "remote" routing table
+          localRouting = filterRoutingInfo.getFilterInfo(internalRegion.getMyId());
+        }
+        if (localRouting != null) {
+          if (!computeFilterInfo) {
+            retVal.setLocalFilterInfo(localRouting);
+          }
+        } else {
+          computeFilterInfo = true;
+        }
+      }
+      if (EntryEventImpl.logger.isTraceEnabled()) {
+        EntryEventImpl.logger.trace(
+            "createCBEvent filterRouting={} computeFilterInfo={} local routing={}",
+            filterRoutingInfo, computeFilterInfo, localRouting);
+      }
+
+      if (internalRegion.isUsedForPartitionedRegionBucket()) {
+        BucketRegion bucket = (BucketRegion) internalRegion;
+        if (BucketRegion.FORCE_LOCAL_LISTENERS_INVOCATION
+            || bucket.getBucketAdvisor().isPrimary()) {
+          retVal.setInvokePRCallbacks(true);
+        } else {
+          retVal.setInvokePRCallbacks(false);
+        }
+
+        if (computeFilterInfo) {
+          if (bucket.getBucketAdvisor().isPrimary()) {
+            if (EntryEventImpl.logger.isTraceEnabled()) {
+              EntryEventImpl.logger.trace("createCBEvent computing routing for primary bucket");
+            }
+            FilterProfile fp =
+                ((BucketRegion) internalRegion).getPartitionedRegion().getFilterProfile();
+            if (fp != null) {
+              FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(filterRoutingInfo, retVal);
+              if (fri != null) {
+                retVal.setLocalFilterInfo(fri.getLocalFilterInfo());
+              }
+            }
+          }
+        }
+      } else if (computeFilterInfo) { // not a bucket
+        if (EntryEventImpl.logger.isTraceEnabled()) {
+          EntryEventImpl.logger.trace("createCBEvent computing routing for non-bucket");
+        }
+        FilterProfile fp = internalRegion.getFilterProfile();
+        if (fp != null) {
+          retVal.setLocalFilterInfo(fp.getLocalFilterRouting(retVal));
+        }
+      }
+      retVal.setTransactionId(txId);
+      returnedRetVal = true;
+      return retVal;
+    } finally {
+      if (!returnedRetVal) {
+        retVal.release();
+      }
+    }
+  }
+
   /**
    * Reads the contents of this message from the given input.
    */

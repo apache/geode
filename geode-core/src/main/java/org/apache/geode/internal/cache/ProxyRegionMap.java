@@ -34,13 +34,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.cache.eviction.EvictableEntry;
-import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionList;
-import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
@@ -56,7 +52,7 @@ import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntrie
  *
  * @since GemFire 5.0
  */
-class ProxyRegionMap implements RegionMap {
+class ProxyRegionMap extends BaseRegionMap {
 
   protected ProxyRegionMap(LocalRegion owner, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
@@ -186,7 +182,7 @@ class ProxyRegionMap implements RegionMap {
 
     if (event.getOperation().isLocal()) {
       if (this.owner.isInitialized()) {
-        AbstractRegionMap.forceInvalidateEvent(event, this.owner);
+        BaseRegionMap.forceInvalidateEvent(event, this.owner);
       }
       throw new EntryNotFoundException(event.getKey().toString());
     }
@@ -272,13 +268,13 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addDestroy(this.owner, markerEntry, key, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldInvokeCallbacks(this.owner, !inTokenMode)) {
+      if (BaseRegionMap.shouldInvokeCallbacks(this.owner, !inTokenMode)) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner, op, key, null,
+        EntryEventImpl e = EntryEventImpl.createCallbackEvent(this.owner, op, key, null,
             rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
             txEntryState, versionTag, tailKey);
-        AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        BaseRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
     }
@@ -295,14 +291,14 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
+      if (BaseRegionMap.shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner,
+        EntryEventImpl e = EntryEventImpl.createCallbackEvent(this.owner,
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
-        AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        BaseRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
     }
@@ -321,52 +317,20 @@ class ProxyRegionMap implements RegionMap {
       if (event != null) {
         event.addPut(putOperation, this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (AbstractRegionMap.shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
+      if (BaseRegionMap.shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = AbstractRegionMap.createCallbackEvent(this.owner, putOperation, key,
+        EntryEventImpl e = EntryEventImpl.createCallbackEvent(this.owner, putOperation, key,
             newValue, rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo,
             bridgeContext, txEntryState, versionTag, tailKey);
-        AbstractRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        BaseRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
     }
   }
 
-  // LRUMapCallbacks methods
-  @Override
-  public void lruUpdateCallback() {
-    // nothing needed
-  }
-
-  @Override
-  public boolean disableLruUpdateCallback() {
-    // nothing needed
-    return false;
-  }
-
-  @Override
-  public void enableLruUpdateCallback() {
-    // nothing needed
-  }
-
   @Override
   public void decTxRefCount(RegionEntry e) {
-    // nothing needed
-  }
-
-  @Override
-  public boolean lruLimitExceeded(DiskRegionView diskRegionView) {
-    return false;
-  }
-
-  @Override
-  public void lruCloseStats() {
-    // nothing needed
-  }
-
-  @Override
-  public void resetThreadLocals() {
     // nothing needed
   }
 
@@ -794,12 +758,6 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void lruEntryFaultIn(EvictableEntry entry) {
-    // do nothing.
-
-  }
-
-  @Override
   public void copyRecoveredEntries(RegionMap rm) {
     throw new IllegalStateException("copyRecoveredEntries should never be called on proxy");
   }
@@ -851,41 +809,9 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public long getEvictions() {
-    return 0;
-  }
-
-  @Override
-  public void incRecentlyUsed() {
-    // nothing
-  }
-
-  @Override
-  public EvictionController getEvictionController() {
-    return null;
-  }
-
-  @Override
   public int getEntryOverhead() {
     return 0;
   }
-
-  @Override
-  public boolean beginChangeValueForm(EvictableEntry le,
-      CachedDeserializable vmCachedDeserializable, Object v) {
-    return false;
-  }
-
-  @Override
-  public void finishChangeValueForm() {}
-
-  @Override
-  public int centralizedLruUpdateCallback() {
-    return 0;
-  }
-
-  @Override
-  public void updateEvictionCounter() {}
 
   @Override
   public ConcurrentMapWithReusableEntries<Object, Object> getCustomEntryConcurrentHashMap() {
@@ -893,7 +819,5 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void setEntryMap(ConcurrentMapWithReusableEntries<Object, Object> map) {
-
-  }
+  public void setEntryMap(ConcurrentMapWithReusableEntries<Object, Object> map) {}
 }
