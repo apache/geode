@@ -59,6 +59,8 @@ public class ClusterConfigLocatorRestartDUnitTest {
     IgnoredException.addIgnoredException("This thread has been stalled");
     IgnoredException
         .addIgnoredException("member unexpectedly shut down shared, unordered connection");
+    IgnoredException.addIgnoredException("cluster configuration service not available");
+    IgnoredException.addIgnoredException("This thread has been stalled");
 
     MemberVM locator0 = rule.startLocatorVM(0);
 
