@@ -706,7 +706,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private boolean isAnyRemoteMemberVersionLessThanGeode1_7_0(
       Set<InternalDistributedMember> remoteMembers) {
     for (InternalDistributedMember remoteMember : remoteMembers) {
-      if (remoteMember.getVersionObject().ordinal() < Version.GEODE_170.ordinal()) {
+      if (remoteMember.getVersionObject().ordinal() < Version.GEODE_1_7_0.ordinal()) {
         return true;
       }
     }

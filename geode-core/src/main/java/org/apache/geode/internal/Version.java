@@ -200,74 +200,74 @@ public class Version implements Comparable<Version> {
   public static final Version GFE_90 =
       new Version("GFE", "9.0", (byte) 9, (byte) 0, (byte) 0, (byte) 0, GFE_90_ORDINAL);
 
-  // prior to v1.2.0 GEODE_110 was named GFE_91. This was used for both the rel/v1.1.0
+  // prior to v1.2.0 GEODE_1_1_0 was named GFE_91. This was used for both the rel/v1.1.0
   // and rel/v1.1.1 releases
-  private static final byte GEODE_110_ORDINAL = 50;
+  private static final byte GEODE_1_1_0_ORDINAL = 50;
 
   @Immutable
-  public static final Version GEODE_110 =
-      new Version("GEODE", "1.1.0", (byte) 1, (byte) 1, (byte) 0, (byte) 0, GEODE_110_ORDINAL);
+  public static final Version GEODE_1_1_0 =
+      new Version("GEODE", "1.1.0", (byte) 1, (byte) 1, (byte) 0, (byte) 0, GEODE_1_1_0_ORDINAL);
 
   // This ordinal was never used
-  private static final byte GEODE_111_ORDINAL = 55;
+  private static final byte GEODE_1_1_1_ORDINAL = 55;
 
   @Immutable
-  public static final Version GEODE_111 =
-      new Version("GEODE", "1.1.1", (byte) 1, (byte) 1, (byte) 1, (byte) 0, GEODE_111_ORDINAL);
+  public static final Version GEODE_1_1_1 =
+      new Version("GEODE", "1.1.1", (byte) 1, (byte) 1, (byte) 1, (byte) 0, GEODE_1_1_1_ORDINAL);
 
-  private static final byte GEODE_120_ORDINAL = 65;
-
-  @Immutable
-  public static final Version GEODE_120 =
-      new Version("GEODE", "1.2.0", (byte) 1, (byte) 2, (byte) 0, (byte) 0, GEODE_120_ORDINAL);
-
-  private static final byte GEODE_130_ORDINAL = 70;
+  private static final byte GEODE_1_2_0_ORDINAL = 65;
 
   @Immutable
-  public static final Version GEODE_130 =
-      new Version("GEODE", "1.3.0", (byte) 1, (byte) 3, (byte) 0, (byte) 0, GEODE_130_ORDINAL);
+  public static final Version GEODE_1_2_0 =
+      new Version("GEODE", "1.2.0", (byte) 1, (byte) 2, (byte) 0, (byte) 0, GEODE_1_2_0_ORDINAL);
 
-  private static final byte GEODE_140_ORDINAL = 75;
-
-  @Immutable
-  public static final Version GEODE_140 =
-      new Version("GEODE", "1.4.0", (byte) 1, (byte) 4, (byte) 0, (byte) 0, GEODE_140_ORDINAL);
-
-  private static final byte GEODE_150_ORDINAL = 80;
+  private static final byte GEODE_1_3_0_ORDINAL = 70;
 
   @Immutable
-  public static final Version GEODE_150 =
-      new Version("GEODE", "1.5.0", (byte) 1, (byte) 5, (byte) 0, (byte) 0, GEODE_150_ORDINAL);
+  public static final Version GEODE_1_3_0 =
+      new Version("GEODE", "1.3.0", (byte) 1, (byte) 3, (byte) 0, (byte) 0, GEODE_1_3_0_ORDINAL);
 
-  private static final byte GEODE_160_ORDINAL = 85;
-
-  @Immutable
-  public static final Version GEODE_160 =
-      new Version("GEODE", "1.6.0", (byte) 1, (byte) 6, (byte) 0, (byte) 0, GEODE_160_ORDINAL);
-
-  private static final byte GEODE_170_ORDINAL = 90;
+  private static final byte GEODE_1_4_0_ORDINAL = 75;
 
   @Immutable
-  public static final Version GEODE_170 =
-      new Version("GEODE", "1.7.0", (byte) 1, (byte) 7, (byte) 0, (byte) 0, GEODE_170_ORDINAL);
+  public static final Version GEODE_1_4_0 =
+      new Version("GEODE", "1.4.0", (byte) 1, (byte) 4, (byte) 0, (byte) 0, GEODE_1_4_0_ORDINAL);
 
-  private static final byte GEODE_180_ORDINAL = 95;
-
-  @Immutable
-  public static final Version GEODE_180 =
-      new Version("GEODE", "1.8.0", (byte) 1, (byte) 8, (byte) 0, (byte) 0, GEODE_180_ORDINAL);
-
-  private static final byte GEODE_190_ORDINAL = 100;
+  private static final byte GEODE_1_5_0_ORDINAL = 80;
 
   @Immutable
-  public static final Version GEODE_190 =
-      new Version("GEODE", "1.9.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_190_ORDINAL);
+  public static final Version GEODE_1_5_0 =
+      new Version("GEODE", "1.5.0", (byte) 1, (byte) 5, (byte) 0, (byte) 0, GEODE_1_5_0_ORDINAL);
 
-  private static final byte GEODE_1100_ORDINAL = 105;
+  private static final byte GEODE_1_6_0_ORDINAL = 85;
 
   @Immutable
-  public static final Version GEODE_1100 =
-      new Version("GEODE", "1.10.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_1100_ORDINAL);
+  public static final Version GEODE_1_6_0 =
+      new Version("GEODE", "1.6.0", (byte) 1, (byte) 6, (byte) 0, (byte) 0, GEODE_1_6_0_ORDINAL);
+
+  private static final byte GEODE_1_7_0_ORDINAL = 90;
+
+  @Immutable
+  public static final Version GEODE_1_7_0 =
+      new Version("GEODE", "1.7.0", (byte) 1, (byte) 7, (byte) 0, (byte) 0, GEODE_1_7_0_ORDINAL);
+
+  private static final byte GEODE_1_8_0_ORDINAL = 95;
+
+  @Immutable
+  public static final Version GEODE_1_8_0 =
+      new Version("GEODE", "1.8.0", (byte) 1, (byte) 8, (byte) 0, (byte) 0, GEODE_1_8_0_ORDINAL);
+
+  private static final byte GEODE_1_9_0_ORDINAL = 100;
+
+  @Immutable
+  public static final Version GEODE_1_9_0 =
+      new Version("GEODE", "1.9.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_1_9_0_ORDINAL);
+
+  private static final byte GEODE_1_10_0_ORDINAL = 105;
+
+  @Immutable
+  public static final Version GEODE_1_10_0 =
+      new Version("GEODE", "1.10.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_1_10_0_ORDINAL);
 
   /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
 
@@ -276,7 +276,7 @@ public class Version implements Comparable<Version> {
    * HIGHEST_VERSION when changing CURRENT !!!
    */
   @Immutable
-  public static final Version CURRENT = GEODE_1100;
+  public static final Version CURRENT = GEODE_1_10_0;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal

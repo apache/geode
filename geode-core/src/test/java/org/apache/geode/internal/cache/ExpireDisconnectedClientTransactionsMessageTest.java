@@ -49,7 +49,7 @@ public class ExpireDisconnectedClientTransactionsMessageTest {
 
   @Test
   public void processMessageFromServerOfGeode170AndLaterVersionWillExpireDisconnectedClientTransactions() {
-    when(version.compareTo(Version.GEODE_170)).thenReturn(1);
+    when(version.compareTo(Version.GEODE_1_7_0)).thenReturn(1);
 
     message.process(dm);
 
@@ -58,7 +58,7 @@ public class ExpireDisconnectedClientTransactionsMessageTest {
 
   @Test
   public void processMessageFromServerOfPriorGeode170VersionWillRemoveExpiredClientTransactions() {
-    when(version.compareTo(Version.GEODE_170)).thenReturn(-1);
+    when(version.compareTo(Version.GEODE_1_7_0)).thenReturn(-1);
 
     message.process(dm);
 

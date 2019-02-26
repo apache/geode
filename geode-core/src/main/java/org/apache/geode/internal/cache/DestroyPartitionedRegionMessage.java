@@ -216,7 +216,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[] {Version.GEODE_190};
+    return new Version[] {Version.GEODE_1_9_0};
   }
 
 

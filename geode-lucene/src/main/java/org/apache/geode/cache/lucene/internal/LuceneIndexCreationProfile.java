@@ -217,6 +217,6 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, Versione
 
   @Override
   public Version[] getSerializationVersions() {
-    return new Version[] {Version.GEODE_140};
+    return new Version[] {Version.GEODE_1_4_0};
   }
 }
