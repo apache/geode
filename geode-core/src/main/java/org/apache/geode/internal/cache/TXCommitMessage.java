@@ -1074,6 +1074,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   public static class RegionCommit {
+    private final EntryEventFactory entryEventFactory = new EntryEventFactoryImpl();
     /**
      * The region that this commit represents. Valid on both nearside and farside.
      */
@@ -1273,7 +1274,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         // No need to release because it is added to pendingCallbacks and they will be released
         // later
         EntryEventImpl eei =
-            new EntryEventFactoryImpl().createCallbackEvent(this.internalRegion, entryOp.op,
+            entryEventFactory.createCallbackEvent(this.internalRegion, entryOp.op,
                 entryOp.key,
                 entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,
                 entryOp.filterRoutingInfo, this.msg.bridgeContext, null, entryOp.versionTag,
@@ -1353,7 +1354,7 @@ public class TXCommitMessage extends PooledDistributionMessage
          */
         @Released
         EntryEventImpl eei =
-            new EntryEventFactoryImpl().createCallbackEvent(this.internalRegion, entryOp.op,
+            entryEventFactory.createCallbackEvent(this.internalRegion, entryOp.op,
                 entryOp.key,
                 entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,
                 entryOp.filterRoutingInfo, this.msg.bridgeContext, null, entryOp.versionTag,

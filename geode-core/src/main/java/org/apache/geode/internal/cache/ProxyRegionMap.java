@@ -54,6 +54,8 @@ import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntrie
  */
 class ProxyRegionMap extends BaseRegionMap {
 
+  private final EntryEventFactory entryEventFactory = new EntryEventFactoryImpl();
+
   protected ProxyRegionMap(LocalRegion owner, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
     this.owner = owner;
@@ -272,7 +274,7 @@ class ProxyRegionMap extends BaseRegionMap {
         // fix for bug 39526
         @Released
         EntryEventImpl e =
-            new EntryEventFactoryImpl().createCallbackEvent(this.owner, op, key, null,
+            entryEventFactory.createCallbackEvent(this.owner, op, key, null,
                 rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                 txEntryState, versionTag, tailKey);
         switchEventOwnerAndOriginRemote(e, txEntryState == null);
@@ -295,7 +297,7 @@ class ProxyRegionMap extends BaseRegionMap {
       if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = new EntryEventFactoryImpl().createCallbackEvent(this.owner,
+        EntryEventImpl e = entryEventFactory.createCallbackEvent(this.owner,
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
@@ -321,7 +323,7 @@ class ProxyRegionMap extends BaseRegionMap {
       if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = new EntryEventFactoryImpl()
+        EntryEventImpl e = entryEventFactory
             .createCallbackEvent(this.owner, putOperation, key,
                 newValue, rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo,
                 bridgeContext, txEntryState, versionTag, tailKey);
