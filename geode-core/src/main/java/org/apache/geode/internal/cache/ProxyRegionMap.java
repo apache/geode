@@ -271,9 +271,10 @@ class ProxyRegionMap extends BaseRegionMap {
       if (shouldInvokeCallbacks(this.owner, !inTokenMode)) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = EntryEventFactory.createCallbackEvent(this.owner, op, key, null,
-            rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
-            txEntryState, versionTag, tailKey);
+        EntryEventImpl e =
+            new EntryEventFactoryImpl().createCallbackEvent(this.owner, op, key, null,
+                rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+                txEntryState, versionTag, tailKey);
         switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
@@ -294,7 +295,7 @@ class ProxyRegionMap extends BaseRegionMap {
       if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = EntryEventFactory.createCallbackEvent(this.owner,
+        EntryEventImpl e = new EntryEventFactoryImpl().createCallbackEvent(this.owner,
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
@@ -320,9 +321,10 @@ class ProxyRegionMap extends BaseRegionMap {
       if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = EntryEventFactory.createCallbackEvent(this.owner, putOperation, key,
-            newValue, rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo,
-            bridgeContext, txEntryState, versionTag, tailKey);
+        EntryEventImpl e = new EntryEventFactoryImpl()
+            .createCallbackEvent(this.owner, putOperation, key,
+                newValue, rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo,
+                bridgeContext, txEntryState, versionTag, tailKey);
         switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
