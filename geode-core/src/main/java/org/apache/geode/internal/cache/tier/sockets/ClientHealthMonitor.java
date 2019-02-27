@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -60,12 +61,7 @@ public class ClientHealthMonitor {
    *
    * Accesses must be locked by _clientHeartbeatsLock
    */
-  private Map<ClientProxyMembershipID, Long> _clientHeartbeats = Collections.emptyMap();
-
-  /**
-   * An object used to lock the map of known clients
-   */
-  private final Object _clientHeartbeatsLock = new Object();
+  private Map<ClientProxyMembershipID, Long> _clientHeartbeats = new ConcurrentHashMap<>();
 
   /**
    * THe GemFire <code>Cache</code>
@@ -195,25 +191,13 @@ public class ClientHealthMonitor {
    * @param proxyID The id of the client to be registered
    */
   public void registerClient(ClientProxyMembershipID proxyID) {
-    boolean registerClient = false;
-    synchronized (_clientHeartbeatsLock) {
-      Map<ClientProxyMembershipID, Long> oldClientHeartbeats = this._clientHeartbeats;
-      if (!oldClientHeartbeats.containsKey(proxyID)) {
-        Map<ClientProxyMembershipID, Long> newClientHeartbeats = new HashMap<>(oldClientHeartbeats);
-        newClientHeartbeats.put(proxyID, System.currentTimeMillis());
-        this._clientHeartbeats = newClientHeartbeats;
-        registerClient = true;
-      }
+    _clientHeartbeats.put(proxyID, System.currentTimeMillis());
+    if (this.stats != null) {
+      this.stats.incClientRegisterRequests();
     }
-
-    if (registerClient) {
-      if (this.stats != null) {
-        this.stats.incClientRegisterRequests();
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("ClientHealthMonitor: Registering client with member id {}",
-            proxyID);
-      }
+    if (logger.isDebugEnabled()) {
+      logger.debug("ClientHealthMonitor: Registering client with member id {}",
+          proxyID);
     }
   }
 
@@ -224,18 +208,7 @@ public class ClientHealthMonitor {
    */
   private void unregisterClient(ClientProxyMembershipID proxyID, boolean clientDisconnectedCleanly,
       Throwable clientDisconnectException) {
-    boolean unregisterClient = false;
-    synchronized (_clientHeartbeatsLock) {
-      Map<ClientProxyMembershipID, Long> oldClientHeartbeats = this._clientHeartbeats;
-      if (oldClientHeartbeats.containsKey(proxyID)) {
-        unregisterClient = true;
-        Map<ClientProxyMembershipID, Long> newClientHeartbeats = new HashMap<>(oldClientHeartbeats);
-        newClientHeartbeats.remove(proxyID);
-        this._clientHeartbeats = newClientHeartbeats;
-      }
-    }
-
-    if (unregisterClient) {
+    if (_clientHeartbeats.remove(proxyID) != null) {
       if (clientDisconnectedCleanly) {
         if (logger.isDebugEnabled()) {
           logger.debug("ClientHealthMonitor: Unregistering client with member id {}",
@@ -354,15 +327,11 @@ public class ClientHealthMonitor {
     if (this._clientMonitor == null) {
       return;
     }
-    if (logger.isTraceEnabled()) {
-      logger.trace("ClientHealthMonitor: Received ping from client with member id {}", proxyID);
-    }
-    synchronized (_clientHeartbeatsLock) {
-      if (!this._clientHeartbeats.containsKey(proxyID)) {
-        registerClient(proxyID);
-      } else {
-        this._clientHeartbeats.put(proxyID, Long.valueOf(System.currentTimeMillis()));
-      }
+
+    logger.trace("ClientHealthMonitor: Received ping from client with member id {}", proxyID);
+
+    if (_clientHeartbeats.put(proxyID, System.currentTimeMillis()) == null) {
+      registerClient(proxyID);
     }
   }
 
@@ -584,9 +553,7 @@ public class ClientHealthMonitor {
    *         Test hook only.
    */
   Map<ClientProxyMembershipID, Long> getClientHeartbeats() {
-    synchronized (this._clientHeartbeatsLock) {
-      return new HashMap<>(this._clientHeartbeats);
-    }
+    return new HashMap<>(this._clientHeartbeats);
   }
 
   /**
