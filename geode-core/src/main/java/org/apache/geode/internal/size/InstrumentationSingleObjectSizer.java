@@ -21,7 +21,7 @@ import org.apache.geode.annotations.internal.MakeImmutable;
 
 public class InstrumentationSingleObjectSizer implements SingleObjectSizer {
 
-  @MakeImmutable
+  @MakeImmutable("Set in premain and never modified. Not sure if this can be made final")
   private static Instrumentation instrumentation;
 
   public static void premain(String agentArgs, Instrumentation instrumentation) {

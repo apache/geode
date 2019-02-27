@@ -19,7 +19,6 @@ package org.apache.geode.cache;
 import java.io.ObjectStreamException;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 
 /**
  * Enumerated type for region mirroring.
@@ -46,7 +45,7 @@ public class MirrorType implements java.io.Serializable {
    */
   @Deprecated
   @Immutable
-  public static final MirrorType NONE = new MirrorType("NONE", DataPolicy.NORMAL);
+  public static final MirrorType NONE = new MirrorType("NONE", DataPolicy.NORMAL, 0);
 
   /**
    * New entries created in other caches for this region are propagated to this region in this
@@ -56,7 +55,7 @@ public class MirrorType implements java.io.Serializable {
    */
   @Deprecated
   @Immutable
-  public static final MirrorType KEYS = new MirrorType("KEYS", DataPolicy.REPLICATE);
+  public static final MirrorType KEYS = new MirrorType("KEYS", DataPolicy.REPLICATE, 1);
 
   /**
    * New entries created in other caches for this region are propagated to this region in this cache
@@ -66,7 +65,8 @@ public class MirrorType implements java.io.Serializable {
    */
   @Deprecated
   @Immutable
-  public static final MirrorType KEYS_VALUES = new MirrorType("KEYS_VALUES", DataPolicy.REPLICATE);
+  public static final MirrorType KEYS_VALUES = new MirrorType("KEYS_VALUES", DataPolicy.REPLICATE,
+      2);
 
 
   /** The name of this mirror type. */
@@ -79,10 +79,7 @@ public class MirrorType implements java.io.Serializable {
 
   // The 4 declarations below are necessary for serialization
   /** int used as ordinal to represent this Scope */
-  public final int ordinal = nextOrdinal++;
-
-  @MakeImmutable
-  private static int nextOrdinal = 0;
+  public final int ordinal;
 
   @Immutable
   private static final MirrorType[] VALUES = {NONE, KEYS, KEYS_VALUES};
@@ -93,9 +90,10 @@ public class MirrorType implements java.io.Serializable {
 
 
   /** Creates a new instance of MirrorType. */
-  private MirrorType(String name, DataPolicy dataPolicy) {
+  private MirrorType(String name, DataPolicy dataPolicy, int ordinal) {
     this.name = name;
     this.dataPolicy = dataPolicy;
+    this.ordinal = ordinal;
   }
 
   /** Return the MirrorType represented by specified ordinal */

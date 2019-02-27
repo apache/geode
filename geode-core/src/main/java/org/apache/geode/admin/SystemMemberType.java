@@ -16,7 +16,6 @@ package org.apache.geode.admin;
 
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 
 /**
  * Type-safe definition for system members.
@@ -33,15 +32,15 @@ public class SystemMemberType implements java.io.Serializable {
 
   /** GemFire shared-memory manager connected to the distributed system */
   @Immutable
-  public static final SystemMemberType MANAGER = new SystemMemberType("GemFireManager");
+  public static final SystemMemberType MANAGER = new SystemMemberType("GemFireManager", 0);
 
   /** Application connected to the distributed system */
   @Immutable
-  public static final SystemMemberType APPLICATION = new SystemMemberType("Application");
+  public static final SystemMemberType APPLICATION = new SystemMemberType("Application", 1);
 
   /** GemFire Cache VM connected to the distributed system */
   @Immutable
-  public static final SystemMemberType CACHE_VM = new SystemMemberType("CacheVm");
+  public static final SystemMemberType CACHE_VM = new SystemMemberType("CacheVm", 2);
 
   /**
    * GemFire Cache Server connected to the distributed system
@@ -58,10 +57,7 @@ public class SystemMemberType implements java.io.Serializable {
 
   // The 4 declarations below are necessary for serialization
   /** int used as ordinal to represent this Scope */
-  public final int ordinal = nextOrdinal++;
-
-  @MakeImmutable("nextOrdinal is not required, it could be passed into the constructors")
-  private static int nextOrdinal = 0;
+  public final int ordinal;
 
   @Immutable
   private static final SystemMemberType[] VALUES = {MANAGER, APPLICATION, CACHE_VM};
@@ -71,8 +67,9 @@ public class SystemMemberType implements java.io.Serializable {
   }
 
   /** Creates a new instance of SystemMemberType. */
-  private SystemMemberType(String name) {
+  private SystemMemberType(String name, int ordinal) {
     this.name = name;
+    this.ordinal = ordinal;
   }
 
   /** Return the SystemMemberType represented by specified ordinal */

@@ -15,7 +15,8 @@
 package org.apache.geode.management.internal.beans;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ import javax.management.ObjectName;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
@@ -115,20 +116,21 @@ public class ManagementAdapter {
   @MakeNotStatic
   private MBeanAggregator aggregator;
 
-  @MakeImmutable
-  public static final List<Class> refreshOnInit = new ArrayList<>();
+  @Immutable
+  public static final List<Class> refreshOnInit;
 
-  @MakeImmutable
-  public static final List<String> internalLocks = new ArrayList<>();
+  @Immutable
+  public static final List<String> internalLocks;
 
   static {
-    refreshOnInit.add(RegionMXBean.class);
-    refreshOnInit.add(MemberMXBean.class);
+    refreshOnInit =
+        Collections.unmodifiableList(Arrays.asList(RegionMXBean.class, MemberMXBean.class));
 
-    internalLocks.add(DLockService.DTLS); // From reserved lock service name
-    internalLocks.add(DLockService.LTLS); // From reserved lock service name
-    internalLocks.add(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
-    internalLocks.add(PeerTypeRegistration.LOCK_SERVICE_NAME);
+    internalLocks = Collections.unmodifiableList(Arrays.asList(
+        DLockService.DTLS, // From reserved lock service name
+        DLockService.LTLS, // From reserved lock service name
+        PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
+        PeerTypeRegistration.LOCK_SERVICE_NAME));
   }
 
   protected MemberMBeanBridge memberMBeanBridge;

@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -28,6 +28,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.types.ObjectType;
 
 /**
  * This class represents a compiled form of sort criterian present in order by clause
@@ -259,7 +260,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
   static class ProjectionField extends AbstractCompiledValue {
 
-    @MakeImmutable("AbstractCompiledValue has setters")
+    @Immutable
     private static final ProjectionField singleton = new ProjectionField();
 
     private ProjectionField() {}
@@ -277,6 +278,11 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
     public static ProjectionField getProjectionField() {
       return singleton;
+    }
+
+    @Override
+    void setTypecast(ObjectType objectType) {
+      throw new UnsupportedOperationException("Cannot modify singleton ProjectionField");
     }
   }
 }

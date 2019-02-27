@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 
 
 /**
@@ -47,7 +46,7 @@ public class LossAction implements Serializable {
    * {@linkplain Region#localDestroyRegion() localDestroyRegion}.
    */
   @Immutable
-  public static final LossAction NO_ACCESS = new LossAction("NO_ACCESS");
+  public static final LossAction NO_ACCESS = new LossAction("NO_ACCESS", 0);
 
   /**
    * Only local access to the region is allowed when required roles are missing. All distributed
@@ -56,13 +55,13 @@ public class LossAction implements Serializable {
    * invoke a netLoad is not allowed.
    */
   @Immutable
-  public static final LossAction LIMITED_ACCESS = new LossAction("LIMITED_ACCESS");
+  public static final LossAction LIMITED_ACCESS = new LossAction("LIMITED_ACCESS", 1);
 
   /**
    * Access to the region is unaffected when required roles are missing.
    */
   @Immutable
-  public static final LossAction FULL_ACCESS = new LossAction("FULL_ACCESS");
+  public static final LossAction FULL_ACCESS = new LossAction("FULL_ACCESS", 2);
 
   /**
    * Loss of required roles causes the entire cache to be closed. In addition, this process will
@@ -70,17 +69,14 @@ public class LossAction implements Serializable {
    * references to the regions or cache will throw a {@link CacheClosedException}.
    */
   @Immutable
-  public static final LossAction RECONNECT = new LossAction("RECONNECT");
+  public static final LossAction RECONNECT = new LossAction("RECONNECT", 3);
 
   /** The name of this mirror type. */
   private final transient String name;
 
   // The 4 declarations below are necessary for serialization
   /** byte used as ordinal to represent this Scope */
-  public final byte ordinal = nextOrdinal++;
-
-  @MakeImmutable
-  private static byte nextOrdinal = 0;
+  public final byte ordinal;
 
   @Immutable
   private static final LossAction[] PRIVATE_VALUES =
@@ -95,8 +91,9 @@ public class LossAction implements Serializable {
   }
 
   /** Creates a new instance of LossAction. */
-  private LossAction(String name) {
+  private LossAction(String name, int ordinal) {
     this.name = name;
+    this.ordinal = (byte) ordinal;
   }
 
   /** Return the LossAction represented by specified ordinal */

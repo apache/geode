@@ -15,13 +15,14 @@
 package org.apache.geode.internal.logging.log4j;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.logging.LogWriterLevel;
 
 /**
@@ -30,51 +31,56 @@ import org.apache.geode.internal.logging.LogWriterLevel;
  */
 public class LogLevel {
 
-  @MakeImmutable
-  private static final Map<String, Level> ANY_NAME_TO_LEVEL = new HashMap<>();
-  @MakeImmutable
-  private static final Map<String, LogWriterLevel> ANY_NAME_TO_LOGWRITERLEVEL = new HashMap<>();
+  @Immutable
+  private static final Map<String, Level> ANY_NAME_TO_LEVEL;
+  @Immutable
+  private static final Map<String, LogWriterLevel> ANY_NAME_TO_LOGWRITERLEVEL;
 
   static {
+    Map<String, Level> nameToLevel = new HashMap<>();
+    Map<String, LogWriterLevel> nameToLogLevel = new HashMap<>();
     // LogWriterLevel name to LogWriterLevel
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.NONE.name(), LogWriterLevel.NONE);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.SEVERE.name(), LogWriterLevel.SEVERE);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.ERROR.name(), LogWriterLevel.ERROR);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.WARNING.name(), LogWriterLevel.WARNING);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.INFO.name(), LogWriterLevel.INFO);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.CONFIG.name(), LogWriterLevel.CONFIG);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.FINE.name(), LogWriterLevel.FINE);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.FINER.name(), LogWriterLevel.FINER);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.FINEST.name(), LogWriterLevel.FINEST);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(LogWriterLevel.ALL.name(), LogWriterLevel.ALL);
+    nameToLogLevel.put(LogWriterLevel.NONE.name(), LogWriterLevel.NONE);
+    nameToLogLevel.put(LogWriterLevel.SEVERE.name(), LogWriterLevel.SEVERE);
+    nameToLogLevel.put(LogWriterLevel.ERROR.name(), LogWriterLevel.ERROR);
+    nameToLogLevel.put(LogWriterLevel.WARNING.name(), LogWriterLevel.WARNING);
+    nameToLogLevel.put(LogWriterLevel.INFO.name(), LogWriterLevel.INFO);
+    nameToLogLevel.put(LogWriterLevel.CONFIG.name(), LogWriterLevel.CONFIG);
+    nameToLogLevel.put(LogWriterLevel.FINE.name(), LogWriterLevel.FINE);
+    nameToLogLevel.put(LogWriterLevel.FINER.name(), LogWriterLevel.FINER);
+    nameToLogLevel.put(LogWriterLevel.FINEST.name(), LogWriterLevel.FINEST);
+    nameToLogLevel.put(LogWriterLevel.ALL.name(), LogWriterLevel.ALL);
 
     // additional Log4J2 names to LogWriterLevel
-    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.OFF.name(), LogWriterLevel.NONE);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.FATAL.name(), LogWriterLevel.SEVERE);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.WARN.name(), LogWriterLevel.WARNING);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.DEBUG.name(), LogWriterLevel.FINE);
-    ANY_NAME_TO_LOGWRITERLEVEL.put(Level.TRACE.name(), LogWriterLevel.FINEST);
+    nameToLogLevel.put(Level.OFF.name(), LogWriterLevel.NONE);
+    nameToLogLevel.put(Level.FATAL.name(), LogWriterLevel.SEVERE);
+    nameToLogLevel.put(Level.WARN.name(), LogWriterLevel.WARNING);
+    nameToLogLevel.put(Level.DEBUG.name(), LogWriterLevel.FINE);
+    nameToLogLevel.put(Level.TRACE.name(), LogWriterLevel.FINEST);
 
     // put all the log4j levels in the map first
     Arrays.stream(Level.values()).forEach(level -> {
-      ANY_NAME_TO_LEVEL.put(level.name(), level);
+      nameToLevel.put(level.name(), level);
     });
 
     // map all the other logwriter level to log4j levels
-    ANY_NAME_TO_LEVEL.put(LogWriterLevel.SEVERE.name(),
+    nameToLevel.put(LogWriterLevel.SEVERE.name(),
         LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.SEVERE.intLevel())));
-    ANY_NAME_TO_LEVEL.put(LogWriterLevel.WARNING.name(),
+    nameToLevel.put(LogWriterLevel.WARNING.name(),
         LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.WARNING.intLevel())));
-    ANY_NAME_TO_LEVEL.put(LogWriterLevel.CONFIG.name(),
+    nameToLevel.put(LogWriterLevel.CONFIG.name(),
         LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.CONFIG.intLevel())));
-    ANY_NAME_TO_LEVEL.put(LogWriterLevel.FINE.name(),
+    nameToLevel.put(LogWriterLevel.FINE.name(),
         LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.FINE.intLevel())));
-    ANY_NAME_TO_LEVEL.put(LogWriterLevel.FINER.name(),
+    nameToLevel.put(LogWriterLevel.FINER.name(),
         LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.FINER.intLevel())));
-    ANY_NAME_TO_LEVEL.put(LogWriterLevel.FINEST.name(),
+    nameToLevel.put(LogWriterLevel.FINEST.name(),
         LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.FINEST.intLevel())));
-    ANY_NAME_TO_LEVEL.put(LogWriterLevel.NONE.name(),
+    nameToLevel.put(LogWriterLevel.NONE.name(),
         LogWriterLevelConverter.toLevel(LogWriterLevel.find(LogWriterLevel.NONE.intLevel())));
+
+    ANY_NAME_TO_LOGWRITERLEVEL = Collections.unmodifiableMap(nameToLogLevel);
+    ANY_NAME_TO_LEVEL = Collections.unmodifiableMap(nameToLevel);
   }
 
   /**

@@ -20,7 +20,6 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 
 
 /**
@@ -41,21 +40,21 @@ public class Scope implements Serializable {
    * distributed to other caches.
    */
   @Immutable
-  public static final Scope LOCAL = new Scope("LOCAL");
+  public static final Scope LOCAL = new Scope("LOCAL", 0);
 
   /**
    * The region or cached object with this attribute is scoped to the distributed cached system; any
    * distributed operation will return without waiting for the remote acknowledgment.
    */
   @Immutable
-  public static final Scope DISTRIBUTED_NO_ACK = new Scope("DISTRIBUTED_NO_ACK");
+  public static final Scope DISTRIBUTED_NO_ACK = new Scope("DISTRIBUTED_NO_ACK", 1);
 
   /**
    * The region or cached object with this attribute is scoped to the distributed cached system; any
    * distributed operation will not return until all the remote acknowledgments come back.
    */
   @Immutable
-  public static final Scope DISTRIBUTED_ACK = new Scope("DISTRIBUTED_ACK");
+  public static final Scope DISTRIBUTED_ACK = new Scope("DISTRIBUTED_ACK", 2);
 
   /**
    * The region or cached object with this attribute is scoped to the distributed cached system;
@@ -63,17 +62,12 @@ public class Scope implements Serializable {
    * distributed caches.
    */
   @Immutable
-  public static final Scope GLOBAL = new Scope("GLOBAL");
+  public static final Scope GLOBAL = new Scope("GLOBAL", 3);
 
   /** The name of this scope. */
   private final transient String name;
 
-  // The 4 declarations below are necessary for serialization
-  /** int used as ordinal to represent this Scope */
-  public final int ordinal = nextOrdinal++;
-
-  @MakeImmutable
-  private static int nextOrdinal = 0;
+  public final int ordinal;
 
   @Immutable
   private static final Scope[] VALUES = {LOCAL, DISTRIBUTED_NO_ACK, DISTRIBUTED_ACK, GLOBAL};
@@ -93,8 +87,9 @@ public class Scope implements Serializable {
 
 
   /** Creates a new instance of Scope. */
-  private Scope(String name) {
+  private Scope(String name, int ordinal) {
     this.name = name;
+    this.ordinal = ordinal;
   }
 
   /** Return the Scope represented by specified ordinal */

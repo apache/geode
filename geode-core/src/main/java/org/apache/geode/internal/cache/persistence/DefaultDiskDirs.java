@@ -22,12 +22,12 @@ import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductStri
 import java.io.File;
 import java.util.Optional;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 
 public class DefaultDiskDirs {
 
-  @MakeImmutable
-  static final File[] DEFAULT_DISK_DIRS_VALUE = new File[] {new File(".")};
+  @Immutable
+  private static final File[] DEFAULT_DISK_DIRS_VALUE = new File[] {new File(".")};
 
   public static File[] getDefaultDiskDirs() {
     Optional<String> value = getProductStringProperty(DEFAULT_DISK_DIRS_PROPERTY);
@@ -35,7 +35,7 @@ public class DefaultDiskDirs {
       String diskDirs = value.get();
       return new File[] {new File(diskDirs)};
     } else {
-      return DEFAULT_DISK_DIRS_VALUE;
+      return DEFAULT_DISK_DIRS_VALUE.clone();
     }
   }
 }

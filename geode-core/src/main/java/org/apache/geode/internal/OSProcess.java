@@ -39,7 +39,6 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.io.TeePrintStream;
@@ -637,7 +636,7 @@ public class OSProcess {
   // myPid caches result of getProcessId . To provide a stable processId
   // on Linux, where processId may differ per thread, we cache the
   // processId of the reaper thread .
-  @MakeImmutable
+  @MakeNotStatic
   static final int[] myPid = new int[1]; // cache of my processId
 
   @MakeNotStatic

@@ -44,7 +44,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -684,8 +683,8 @@ public class NativeCallsJNAImpl {
       return false;
     }
 
-    @MakeImmutable
-    public static final String[] FallocateFileSystems = {"ext4", "xfs", "btrfs", "ocfs2"};
+    @Immutable
+    private static final String[] FallocateFileSystems = {"ext4", "xfs", "btrfs", "ocfs2"};
 
     @Override
     protected boolean hasFallocate(String path) {

@@ -35,7 +35,7 @@ public class LogWriterImplTest {
 
   @Test
   public void testLevelNames() {
-    String[] levelNames = LogWriterImpl.levelNames;
+    String[] levelNames = LogWriterImpl.levelNames.toArray(new String[0]);
     assertEquals("all", levelNames[0]);
     assertEquals("finest", levelNames[1]);
     assertEquals("finer", levelNames[2]);

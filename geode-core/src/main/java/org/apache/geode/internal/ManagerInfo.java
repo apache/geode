@@ -25,6 +25,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -32,7 +35,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.SystemIsRunningException;
 import org.apache.geode.UncreatedSystemException;
 import org.apache.geode.UnstartedSystemException;
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * Represents the information about the manager that is stored in its SystemAdmin manager VM's main
@@ -157,19 +160,19 @@ public class ManagerInfo implements DataSerializable {
     return this.bindAddress;
   }
 
-  @MakeImmutable
-  static final String[] statusNames =
-      new String[] {"stopped",
+  @Immutable
+  static final List<String> statusNames =
+      Collections.unmodifiableList(Arrays.asList("stopped",
           "stopping",
           "killed",
           "starting",
-          "running"};
+          "running"));
 
   /**
    * Gets the string representation for the given <code>status</code> int code.
    */
   public static String statusToString(int status) {
-    return statusNames[status];
+    return statusNames.get(status);
   }
 
   /**
@@ -179,7 +182,7 @@ public class ManagerInfo implements DataSerializable {
    */
   public static int statusNameToCode(String statusName) {
     for (int i = STOPPED_STATUS_CODE; i <= STARTED_STATUS_CODE; i++) {
-      if (statusNames[i].equalsIgnoreCase(statusName)) {
+      if (statusNames.get(i).equalsIgnoreCase(statusName)) {
         return i;
       }
     }

@@ -21,7 +21,7 @@ import javax.naming.Name;
 import javax.naming.NameParser;
 import javax.naming.NamingException;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 
 /**
  * ContextImpl name parser.
@@ -29,7 +29,7 @@ import org.apache.geode.annotations.internal.MakeImmutable;
  */
 class NameParserImpl implements NameParser {
 
-  @MakeImmutable
+  @Immutable
   private static final Properties syntax = new Properties();
   static {
     syntax.put("jndi.syntax.direction", "left_to_right");
