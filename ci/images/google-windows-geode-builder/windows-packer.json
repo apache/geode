@@ -46,7 +46,7 @@
         "Move-Item \"C:\\Program Files\\OpenJDK\\jdk-11*\" c:\\java11",
         "choco install -y jdk8 -params 'installdir=c:\\\\java8tmp;source=false'",
         "Move-Item \"C:\\java8tmp\" c:\\java8",
-        "choco install -y openssh /SSHServerFeature",
+        "choco install -y openssh --version 7.7.2.1 /SSHServerFeature",
         "refreshenv",
 
         "$a = 10",
