@@ -26,6 +26,9 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRO
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -56,16 +59,21 @@ import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.util.test.TestUtil;
 
 @Category({JDBCConnectorTest.class})
 public class CreateMappingCommandDUnitTest {
@@ -88,6 +96,9 @@ public class CreateMappingCommandDUnitTest {
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   private MemberVM locator;
   private MemberVM server1;
@@ -486,6 +497,111 @@ public class CreateMappingCommandDUnitTest {
     if (!synchronous) {
       validateAsyncEventQueueCreatedInClusterConfig(regionName, groups, isParallel);
     }
+  }
+
+  private static void assertValidResourcePDXMapping(RegionMapping mapping, String tableName) {
+    assertThat(mapping.getDataSourceName()).isEqualTo("connection");
+    assertThat(mapping.getTableName()).isEqualTo(tableName);
+    assertThat(mapping.getPdxName()).isEqualTo("org.apache.geode.internal.ResourcePDX");
+    assertThat(mapping.getIds()).isEqualTo("id");
+    assertThat(mapping.getCatalog()).isNull();
+    assertThat(mapping.getSchema()).isEqualTo("mySchema");
+    List<FieldMapping> fieldMappings = mapping.getFieldMappings();
+    assertThat(fieldMappings).hasSize(3);
+    assertThat(fieldMappings.get(0))
+        .isEqualTo(new FieldMapping("id", "STRING", "ID", "VARCHAR", false));
+    assertThat(fieldMappings.get(1))
+        .isEqualTo(new FieldMapping("name", "STRING", "NAME", "VARCHAR", true));
+    assertThat(fieldMappings.get(2))
+        .isEqualTo(new FieldMapping("age", "INT", "AGE", "INTEGER", true));
+  }
+
+  private static void assertValidResourcePDXMappingOnServer(RegionMapping mapping,
+      String regionName,
+      boolean synchronous, boolean isParallel, String tableName) {
+    assertValidResourcePDXMapping(mapping, tableName);
+    validateRegionAlteredOnServer(regionName, synchronous);
+    if (!synchronous) {
+      validateAsyncEventQueueCreatedOnServer(regionName, isParallel);
+    }
+  }
+
+  private static void assertValidResourcePDXMappingOnLocator(RegionMapping mapping,
+      String regionName,
+      String groups,
+      boolean synchronous, boolean isParallel, String tableName) {
+    assertValidResourcePDXMapping(mapping, tableName);
+    validateRegionAlteredInClusterConfig(regionName, groups, synchronous);
+    if (!synchronous) {
+      validateAsyncEventQueueCreatedInClusterConfig(regionName, groups, isParallel);
+    }
+  }
+
+  private File loadTestResource(String fileName) throws URISyntaxException {
+    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    assertThat(filePath).isNotNull();
+
+    return new File(filePath);
+  }
+
+  private void deployJar() throws URISyntaxException, IOException {
+    JarBuilder jarBuilder = new JarBuilder();
+    File source = loadTestResource(
+        "/org/apache/geode/internal/ResourcePDX.java");
+
+    File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
+    jarBuilder.buildJar(outputJar, source);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEPLOY);
+    csb.addOption(CliStrings.JAR, outputJar.getAbsolutePath());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  @Test
+  public void createMappingWithoutExistingPdxNameFails() {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    IgnoredException.addIgnoredException(ClassNotFoundException.class);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("ClassNotFoundException");
+  }
+
+  @Test
+  public void createMappingWithDeployedPdxClassSucceeds() throws IOException, URISyntaxException {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    IgnoredException.addIgnoredException(ClassNotFoundException.class);
+
+    deployJar();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(region1Name);
+      assertValidResourcePDXMappingOnServer(mapping, region1Name, false, false, "employeeRegion");
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(region1Name, null);
+      assertValidResourcePDXMappingOnLocator(regionMapping, region1Name, null, false, false,
+          "employeeRegion");
+    });
   }
 
   private static void assertValidEmployeeMapping(RegionMapping mapping, String tableName) {

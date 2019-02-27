@@ -35,6 +35,7 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
@@ -69,7 +70,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
 
   CreateMappingPreconditionCheckFunction() {
     this(dataSourceName -> JNDIInvoker.getDataSource(dataSourceName),
-        className -> Class.forName(className),
+        className -> ClassPathLoader.getLatest().forName(className),
         className -> new ReflectionBasedAutoSerializer(className),
         (typeRegistry, object) -> new PdxWriterImpl(typeRegistry, object, new PdxOutputStream()),
         new TableMetaDataManager());
@@ -78,7 +79,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
   // used by java during deserialization
   private void readObject(ObjectInputStream stream) {
     this.dataSourceFactory = dataSourceName -> JNDIInvoker.getDataSource(dataSourceName);
-    this.classFactory = className -> Class.forName(className);
+    this.classFactory = className -> ClassPathLoader.getLatest().forName(className);
     this.reflectionBasedAutoSerializerFactory =
         className -> new ReflectionBasedAutoSerializer(className);
     this.pdxWriterFactory =
