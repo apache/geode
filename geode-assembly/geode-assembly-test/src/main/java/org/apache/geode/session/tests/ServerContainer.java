@@ -27,8 +27,6 @@ import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.InstalledLocalContainer;
@@ -196,14 +194,14 @@ public abstract class ServerContainer {
     config.setProperty(GeneralPropertySet.PORT_OFFSET, "0");
     int jvmJmxPort = portSupplier.getAsInt();
     String jvmArgs = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + jvmJmxPort;
-    if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
-      jvmArgs += " --add-opens java.base/java.lang.module=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.module=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.misc=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.ref=ALL-UNNAMED" +
-          " --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED";
-    }
+    // if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
+    // jvmArgs += " --add-opens java.base/java.lang.module=ALL-UNNAMED" +
+    // " --add-opens java.base/jdk.internal.module=ALL-UNNAMED" +
+    // " --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED" +
+    // " --add-opens java.base/jdk.internal.misc=ALL-UNNAMED" +
+    // " --add-opens java.base/jdk.internal.ref=ALL-UNNAMED" +
+    // " --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED";
+    // }
     config.setProperty(GeneralPropertySet.START_JVMARGS, jvmArgs);
     container.setConfiguration(config);
 
