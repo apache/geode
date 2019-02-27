@@ -1273,7 +1273,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         // No need to release because it is added to pendingCallbacks and they will be released
         // later
         EntryEventImpl eei =
-            EntryEventImpl.createCallbackEvent(this.internalRegion, entryOp.op, entryOp.key,
+            EntryEventFactory.createCallbackEvent(this.internalRegion, entryOp.op, entryOp.key,
                 entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,
                 entryOp.filterRoutingInfo, this.msg.bridgeContext, null, entryOp.versionTag,
                 entryOp.tailKey);
@@ -1352,7 +1352,7 @@ public class TXCommitMessage extends PooledDistributionMessage
          */
         @Released
         EntryEventImpl eei =
-            EntryEventImpl.createCallbackEvent(this.internalRegion, entryOp.op, entryOp.key,
+            EntryEventFactory.createCallbackEvent(this.internalRegion, entryOp.op, entryOp.key,
                 entryOp.value, this.msg.txIdent, txEvent, getEventId(entryOp), entryOp.callbackArg,
                 entryOp.filterRoutingInfo, this.msg.bridgeContext, null, entryOp.versionTag,
                 entryOp.tailKey);

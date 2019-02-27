@@ -182,7 +182,7 @@ class ProxyRegionMap extends BaseRegionMap {
 
     if (event.getOperation().isLocal()) {
       if (this.owner.isInitialized()) {
-        BaseRegionMap.forceInvalidateEvent(event, this.owner);
+        forceInvalidateEvent(event, this.owner);
       }
       throw new EntryNotFoundException(event.getKey().toString());
     }
@@ -268,13 +268,13 @@ class ProxyRegionMap extends BaseRegionMap {
       if (event != null) {
         event.addDestroy(this.owner, markerEntry, key, aCallbackArgument);
       }
-      if (BaseRegionMap.shouldInvokeCallbacks(this.owner, !inTokenMode)) {
+      if (shouldInvokeCallbacks(this.owner, !inTokenMode)) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = EntryEventImpl.createCallbackEvent(this.owner, op, key, null,
+        EntryEventImpl e = EntryEventFactory.createCallbackEvent(this.owner, op, key, null,
             rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
             txEntryState, versionTag, tailKey);
-        BaseRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
     }
@@ -291,14 +291,14 @@ class ProxyRegionMap extends BaseRegionMap {
       if (event != null) {
         event.addInvalidate(this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (BaseRegionMap.shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
+      if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = EntryEventImpl.createCallbackEvent(this.owner,
+        EntryEventImpl e = EntryEventFactory.createCallbackEvent(this.owner,
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
-        BaseRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
     }
@@ -317,13 +317,13 @@ class ProxyRegionMap extends BaseRegionMap {
       if (event != null) {
         event.addPut(putOperation, this.owner, markerEntry, key, newValue, aCallbackArgument);
       }
-      if (BaseRegionMap.shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
+      if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = EntryEventImpl.createCallbackEvent(this.owner, putOperation, key,
+        EntryEventImpl e = EntryEventFactory.createCallbackEvent(this.owner, putOperation, key,
             newValue, rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo,
             bridgeContext, txEntryState, versionTag, tailKey);
-        BaseRegionMap.switchEventOwnerAndOriginRemote(e, txEntryState == null);
+        switchEventOwnerAndOriginRemote(e, txEntryState == null);
         pendingCallbacks.add(e);
       }
     }
