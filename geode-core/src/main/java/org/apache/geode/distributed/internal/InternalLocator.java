@@ -1032,7 +1032,13 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
             setLocator(this);
           }
         }
-        ds.waitUntilReconnected(waitTime, TimeUnit.MILLISECONDS);
+        try {
+          ds.waitUntilReconnected(waitTime, TimeUnit.MILLISECONDS);
+        } catch (CancelException e) {
+          logger.info("Attempt to reconnect failed and further attempts have been terminated");
+          this.stoppedForReconnect = false;
+          return false;
+        }
       }
       InternalDistributedSystem newSystem = (InternalDistributedSystem) ds.getReconnectedSystem();
       if (newSystem != null) {
