@@ -1009,6 +1009,16 @@ public class InternalDistributedSystem extends DistributedSystem
     return this.isConnected;
   }
 
+  /*
+   * This method was introduced so we can deterministically query whether the distributed
+   * system has fully disconnected or not. The isConnected() method will return false if a
+   * disconnection/cancellation is in progress, so it does not provide a reliable way to
+   * query if the distributed system is fully disconnected or not.
+   */
+  public boolean isDisconnected() {
+    return !this.isConnected;
+  }
+
   public StatisticsManager getStatisticsManager() {
     return statisticsManager;
   }
