@@ -33,14 +33,15 @@ publishing {
 
       pom {
         withXml {
-          // For our published bom, we do not want to specify the scope of each.  Or so I'm told.
+          // Dependency constraints publish the scope of those constraints.
+          // We remove these from our published bom, as they should apply at all scopes. 
           asNode().dependencyManagement.dependencies.dependency.each {
             dep -> dep.remove(dep['scope'])
           }
         }
         withXml {
           // Published Geode artifacts are constrained to match the version of this BOM.
-          // As with the evaluationDependsOn block, we exclude any child of the :boms subproject
+          // We exclude any child of the :boms subproject
           def thisNode = asNode()
           project.rootProject.subprojects.each { p ->
             if (p.findProperty('constrainVersionInBom')

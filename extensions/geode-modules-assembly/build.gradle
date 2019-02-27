@@ -25,7 +25,6 @@ configurations {
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
   slf4jDeps 'org.slf4j:slf4j-api:' + DependencyConstraints.get('slf4j-api.version')
   slf4jDeps 'org.slf4j:slf4j-jdk14:' + DependencyConstraints.get('slf4j-api.version')
 }

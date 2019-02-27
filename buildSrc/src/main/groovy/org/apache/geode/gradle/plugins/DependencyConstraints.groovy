@@ -29,10 +29,10 @@ class DependencyConstraints implements Plugin<Project> {
 
   static private Map<String, String> initExternalDependencies() {
     Map<String,String> deps = new HashMap<>()
-// These versions are consumed beyond the scope of source set dependencies.
-
-// These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
-// Some of these are referenced above as well
+    // These versions are consumed beyond the scope of source set dependencies.
+    
+    // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
+    // Some of these are referenced above as well
     deps.put("antlr.version", "2.7.7")
     deps.put("commons-io.version", "2.6")
     deps.put("commons-lang3.version", "3.8.1")
@@ -44,27 +44,28 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("shiro.version", "1.4.0")
     deps.put("slf4j-api.version", "1.7.25")
 
-// These version numbers are used in testing various versions of tomcat and are consumed explicitly
-// in will be called explicitly in the relevant extensions module, and respective configurations
-// in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to place nicely when
-// specifying @zip in a dependency, in the manner in which we consume them in custom configurations.
-// This would possibly be corrected if they were proper source sets.
+    // These version numbers are used in testing various versions of tomcat and are consumed explicitly
+    // in will be called explicitly in the relevant extensions module, and respective configurations
+    // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to place nicely when
+    // specifying @zip in a dependency, in the manner in which we consume them in custom configurations.
+    // This would possibly be corrected if they were proper source sets.
     deps.put("tomcat6.version", "6.0.37")
     deps.put("tomcat7.version", "7.0.90")
     deps.put("tomcat8.version", "8.5.34")
     deps.put("tomcat9.version", "9.0.12")
-// The jetty version is also hard-coded in geode-assembly:test
-// at o.a.g.sessions.tests.GenericAppServerInstall.java
+
+    // The jetty version is also hard-coded in geode-assembly:test
+    // at o.a.g.sessions.tests.GenericAppServerInstall.java
     deps.put("jetty.version", "9.4.12.v20180830")
 
-// These version numbers are consumed by protobuf configurations that are plugin-specific and not
-// part of the typical Gradle dependency configurations.
+    // These version numbers are consumed by protobuf configurations that are plugin-specific and not
+    // part of the typical Gradle dependency configurations.
     deps.put("protoc.version", "3.6.1")
     deps.put("protobuf-gradle-plugin.version", "0.8.6")
     deps.put("protobuf-java.version", "3.6.1")
 
-// These versions are referenced in test.gradle, which is aggressively injected into all projects.
-// This results in brittle behavior compared to dependency-management.gradle"s "opt-in" plugin style.
+    // These versions are referenced in test.gradle, which is aggressively injected into all projects.
+    // This results in brittle behavior compared to dependency-management.gradle"s "opt-in" plugin style.
     deps.put("junit.version", "4.12")
     deps.put("cglib.version", "3.2.9")
     return deps

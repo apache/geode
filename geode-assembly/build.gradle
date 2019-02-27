@@ -103,7 +103,7 @@ repositories {
 }
 
 configurations {
-  gfshDependencies.extendsFrom compile  // extend from compile for version management to apply
+  gfshDependencies
 
   // Configurations used to download and cache web application servers for session module testing
   webServerTomcat6
@@ -137,6 +137,7 @@ task downloadWebServers(type:Copy) {
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
+  gfshDependencies(platform(project(':boms:geode-all-bom')))
 
   archives project(':geode-common')
   archives project(':geode-json')
