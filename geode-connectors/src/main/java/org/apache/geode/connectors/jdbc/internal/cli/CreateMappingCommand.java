@@ -14,10 +14,23 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.commons.io.FileUtils.ONE_MB;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -40,9 +53,19 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.internal.ManagementAgent;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
+import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.result.FileResult;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -79,9 +102,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private static final String CREATE_MAPPING__GROUPS_NAME = "groups";
   private static final String CREATE_MAPPING__GROUPS_NAME__HELP =
       "The names of the server groups on which this mapping should be created.";
+  private static final String CREATE_MAPPING__PDX_CLASS_FILE = MappingConstants.PDX_CLASS_FILE;
+  private static final String CREATE_MAPPING__PDX_CLASS_FILE__HELP =
+      "The file that contains the PDX class. It can be a jar or class file. By default, the PDX class must be on the server's classpath or gfsh deployed.";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
-  @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
+  @CliMetaData(
+      interceptor = "org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand$Interceptor",
+      relatedTopic = {CliStrings.DEFAULT_TOPIC_GEODE})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createMapping(
@@ -93,6 +121,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
       @CliOption(key = CREATE_MAPPING__PDX_NAME, mandatory = true,
           help = CREATE_MAPPING__PDX_NAME__HELP) String pdxName,
+      @CliOption(key = CREATE_MAPPING__PDX_CLASS_FILE,
+          help = CREATE_MAPPING__PDX_CLASS_FILE__HELP) String pdxClassFile,
       @CliOption(key = CREATE_MAPPING__SYNCHRONOUS_NAME,
           help = CREATE_MAPPING__SYNCHRONOUS_NAME__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean synchronous,
@@ -103,9 +133,20 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups) {
+          help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups) throws IOException {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
+    }
+
+    System.out.println("DDDDDD" + pdxClassFile);
+    String tempPdxClassFilePath = null;
+    if (pdxClassFile != null) {
+      List<String> pdxClassFilePaths = CommandExecutionContext.getFilePathFromShell();
+      if (pdxClassFilePaths.size() != 1) {
+        throw new IllegalStateException("Expected only one element in the list returned by getFilePathFromShell, but it returned: " + pdxClassFilePaths);
+      }
+      tempPdxClassFilePath = pdxClassFilePaths.get(0);
+      System.out.println("DDDDDD" + pdxClassFilePaths);
     }
 
     Set<DistributedMember> targetMembers = findMembers(groups, null);
@@ -130,10 +171,19 @@ public class CreateMappingCommand extends SingleGfshCommand {
     } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
     }
+    ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
+    RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
+    String remoteInputStreamName = FilenameUtils.getName(tempPdxClassFilePath);
+    RemoteInputStream remoteInputStream = exporter.export(new SimpleRemoteInputStream(new FileInputStream(tempPdxClassFilePath)));
 
     CliFunctionResult preconditionCheckResult =
-        executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(), mapping,
+        executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(), new Object[] {mapping, remoteInputStreamName, remoteInputStream},
             targetMembers.iterator().next());
+    try {
+      remoteInputStream.close(true);
+    } catch (IOException ex) {
+      // Ignored. the stream may have already been closed.
+    }
     if (preconditionCheckResult.isSuccessful()) {
       Object[] preconditionOutput = (Object[]) preconditionCheckResult.getResultObject();
       String computedIds = (String) preconditionOutput[0];
@@ -315,4 +365,29 @@ public class CreateMappingCommand extends SingleGfshCommand {
     writer.setClassName(JdbcWriter.class.getName());
     attributes.setCacheWriter(writer);
   }
+
+  /**
+   * Interceptor used by gfsh to intercept execution of create jdbc-mapping command at "shell".
+   */
+  public static class Interceptor extends AbstractCliAroundInterceptor {
+
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+      String pdxClassFileName = (String) parseResult.getParamValue(CREATE_MAPPING__PDX_CLASS_FILE);
+
+      if (StringUtils.isBlank(pdxClassFileName)) {
+        return new ModelCommandResult(ResultModel.createInfo(""));
+      }
+
+      FileResult fileResult = new FileResult();
+      File pdxClassFile = new File(pdxClassFileName);
+      if (!pdxClassFile.exists()) {
+        return ResultBuilder.createUserErrorResult(pdxClassFile + " not found.");
+      }
+      fileResult.addFile(pdxClassFile);
+
+      return fileResult;
+    }
+  }
+
 }
