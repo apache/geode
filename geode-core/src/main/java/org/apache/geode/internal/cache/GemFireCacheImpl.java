@@ -2143,8 +2143,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       return;
     }
 
-    if (systemFailureCause == null
+    if (!keepDS && systemFailureCause == null // normal cache close
         && (this.isReconnecting() || this.system.getReconnectedSystem() != null)) {
+      logger.debug(
+          "Cache is shutting down distributed system connection.  "
+              + "isReconnecting={}  reconnectedSystem={} keepAlive={} keepDS={}",
+          this.isReconnecting(), system.getReconnectedSystem(), keepAlive, keepDS);
+
       this.system.stopReconnectingNoDisconnect();
       if (this.system.getReconnectedSystem() != null) {
         this.system.getReconnectedSystem().disconnect();

@@ -2355,8 +2355,6 @@ public class InternalDistributedSystem extends DistributedSystem
   @Override
   public boolean isReconnecting() {
     InternalDistributedSystem rds = this.reconnectDS;
-    logger.info("BRUCE: attemptingToReconnect={} reconnectCancelled={} rds={} isconnected={}",
-        attemptingToReconnect, reconnectCancelled, rds, (rds == null ? "" : rds.isConnected()));
     if (!attemptingToReconnect) {
       return false;
     }
