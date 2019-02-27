@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +24,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.GeodeManagementException;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 /**
@@ -71,10 +71,16 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public ClusterManagementResult create(CacheElement config, String group) {
     String endPoint = getEndpoint(config);
 
-    ResponseEntity<ClusterManagementResult> result = restTemplate.postForEntity(endPoint, config,
-        ClusterManagementResult.class);
+    ClusterManagementResult result = restTemplate.postForEntity(endPoint, config,
+        ClusterManagementResult.class).getBody();
 
-    return result.getBody();
+    String exceptionClass = result.getPersistenceStatus().getExceptionClass();
+
+    if (exceptionClass != null) {
+      throw new GeodeManagementException(exceptionClass,
+          result.getPersistenceStatus().getMessage());
+    }
+    return result;
   }
 
   @Override

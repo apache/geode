@@ -31,8 +31,16 @@ public class ClusterManagementResult {
     this.persistenceStatus = new Status(success, message);
   }
 
+  public ClusterManagementResult(Exception exception) {
+    this.persistenceStatus = new Status(exception);
+  }
+
   public void addMemberStatus(String member, boolean success, String message) {
     this.memberStatuses.put(member, new Status(success, message));
+  }
+
+  public void addMemberStatus(String member, Exception exception) {
+    this.memberStatuses.put(member, new Status(exception));
   }
 
   public void setPersistenceStatus(boolean success, String message) {
