@@ -52,7 +52,6 @@ import joptsimple.OptionSet;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
@@ -97,54 +96,59 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   @Immutable
   private static final Boolean DEFAULT_LOAD_SHARED_CONFIG_FROM_DIR = Boolean.FALSE;
 
-  @MakeImmutable
-  private static final Map<String, String> helpMap = new HashMap<>();
+  @Immutable
+  private static final Map<String, String> helpMap;
 
   static {
-    helpMap.put("launcher",
+    final Map<String, String> help = new HashMap<>();
+    help.put("launcher",
         "A GemFire launcher used to start, stop and determine a Locator's status.");
-    helpMap.put(Command.START.getName(), String.format(
+    help.put(Command.START.getName(), String.format(
         "Starts a Locator running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Locator must be given a member name in the GemFire cluster.  The default bind-address and port may be overridden using the corresponding command-line options.",
         String.valueOf(getDefaultLocatorPort())));
-    helpMap.put(Command.STATUS.getName(),
+    help.put(Command.STATUS.getName(),
         "Displays the status of a Locator given any combination of the bind-address[port], member name/ID, PID, or the directory in which the Locator is running.");
-    helpMap.put(Command.STOP.getName(),
+    help.put(Command.STOP.getName(),
         "Stops a running Locator given a member name/ID, PID, or the directory in which the Locator is running.");
-    helpMap.put(Command.VERSION.getName(),
+    help.put(Command.VERSION.getName(),
         "Displays GemFire product version information.");
-    helpMap.put("bind-address",
+    help.put("bind-address",
         "Specifies the IP address on which to bind, or on which the Locator is bound, listening for client requests.  Defaults to all IP addresses available to the localhost.");
-    helpMap.put("debug", "Displays verbose information during the invocation of the launcher.");
-    helpMap.put("delete-pid-file-on-stop",
+    help.put("debug", "Displays verbose information during the invocation of the launcher.");
+    help.put("delete-pid-file-on-stop",
         "Specifies that this Locator's PID file should be deleted on stop.  The default is to not delete this Locator's PID file until JVM exit if --delete-pid-file-on-stop is not specified.");
-    helpMap.put("dir",
+    help.put("dir",
         "Specifies the working directory where the Locator is running.  Defaults to the current working directory.");
-    helpMap.put("force",
+    help.put("force",
         "Enables any existing Locator PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
-    helpMap.put("help",
+    help.put("help",
         "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
-    helpMap.put("hostname-for-clients",
+    help.put("hostname-for-clients",
         "An option to specify the hostname or IP address to send to clients so they can connect to this Locator. The default is to use the IP address to which the Locator is bound.");
-    helpMap.put("member", "Identifies the Locator by member name or ID in the GemFire cluster.");
-    helpMap.put("pid", "Indicates the OS process ID of the running Locator.");
-    helpMap.put("port", String.format(
+    help.put("member", "Identifies the Locator by member name or ID in the GemFire cluster.");
+    help.put("pid", "Indicates the OS process ID of the running Locator.");
+    help.put("port", String.format(
         "Specifies the port on which the Locator is listening for client requests. Defaults to %s.",
         String.valueOf(getDefaultLocatorPort())));
-    helpMap.put("redirect-output",
+    help.put("redirect-output",
         "An option to cause the Locator to redirect standard out and standard error to the GemFire log file.");
+
+    helpMap = Collections.unmodifiableMap(help);
   }
 
-  @MakeImmutable
-  private static final Map<Command, String> usageMap = new TreeMap<>();
+  @Immutable
+  private static final Map<Command, String> usageMap;
 
   static {
-    usageMap.put(Command.START,
+    Map<Command, String> usage = new TreeMap<>();
+    usage.put(Command.START,
         "start <member-name> [--bind-address=<IP-address>] [--hostname-for-clients=<IP-address>] [--port=<port>] [--dir=<Locator-working-directory>] [--force] [--debug] [--help]");
-    usageMap.put(Command.STATUS,
+    usage.put(Command.STATUS,
         "status [--bind-address=<IP-address>] [--port=<port>] [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Locator-working-directory>] [--debug] [--help]");
-    usageMap.put(Command.STOP,
+    usage.put(Command.STOP,
         "stop [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Locator-working-directory>] [--debug] [--help]");
-    usageMap.put(Command.VERSION, "version");
+    usage.put(Command.VERSION, "version");
+    usageMap = usage;
   }
 
   private static final String DEFAULT_LOCATOR_LOG_EXT = ".log";

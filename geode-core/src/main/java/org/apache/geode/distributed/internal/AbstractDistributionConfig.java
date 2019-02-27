@@ -202,7 +202,6 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidValueException;
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.AbstractConfig;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
@@ -1489,11 +1488,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   }
 
   @Override
-  public String[] getSpecificAttributeNames() {
-    return dcValidAttributeNames;
-  }
-
-  @Override
   protected Map getAttDescMap() {
     return dcAttDescriptions;
   }
@@ -1518,15 +1512,18 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     }
   }
 
-  @MakeImmutable
-  static final Map<String, Method> checkers = new HashMap<>();
+  @Immutable
+  static final Map<String, Method> checkers;
 
   static {
+    Map<String, Method> checkersMap = new HashMap<>();
     for (Method method : AbstractDistributionConfig.class.getDeclaredMethods()) {
       if (method.isAnnotationPresent(ConfigAttributeChecker.class)) {
         ConfigAttributeChecker checker = method.getAnnotation(ConfigAttributeChecker.class);
-        checkers.put(checker.name(), method);
+        checkersMap.put(checker.name(), method);
       }
     }
+
+    checkers = Collections.unmodifiableMap(checkersMap);
   }
 }

@@ -19,7 +19,6 @@ package org.apache.geode.cache;
 import java.io.ObjectStreamException;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 
 /**
  * Enumerated type for region subscription interest policy. The interest policy specifies what data
@@ -34,9 +33,6 @@ import org.apache.geode.annotations.internal.MakeImmutable;
 @Immutable
 public class InterestPolicy implements java.io.Serializable {
   private static final long serialVersionUID = 1567179436331385968L;
-
-  @MakeImmutable
-  private static byte nextOrdinal = 0;
 
   @Immutable
   private static final InterestPolicy[] VALUES = new InterestPolicy[2];
@@ -62,7 +58,7 @@ public class InterestPolicy implements java.io.Serializable {
    * region.
    */
   @Immutable
-  public static final InterestPolicy ALL = new InterestPolicy("ALL");
+  public static final InterestPolicy ALL = new InterestPolicy("ALL", 0);
 
   /**
    * This subscriber is interested in data that is already in its cache. More specifically
@@ -83,7 +79,7 @@ public class InterestPolicy implements java.io.Serializable {
    * affected* key-value pair is in the same process as the listener.
    */
   @Immutable
-  public static final InterestPolicy CACHE_CONTENT = new InterestPolicy("CACHE_CONTENT");
+  public static final InterestPolicy CACHE_CONTENT = new InterestPolicy("CACHE_CONTENT", 1);
 
   /**
    * The interest policy used by default; it is {@link #CACHE_CONTENT}.
@@ -104,9 +100,9 @@ public class InterestPolicy implements java.io.Serializable {
 
 
   /** Creates a new instance of InterestPolicy. */
-  private InterestPolicy(String name) {
+  private InterestPolicy(String name, int ordinal) {
     this.name = name;
-    this.ordinal = nextOrdinal++;
+    this.ordinal = (byte) ordinal;
     VALUES[this.ordinal] = this;
   }
 

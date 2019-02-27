@@ -35,8 +35,8 @@ public class InterestResultPolicyImpl extends InterestResultPolicy
   private static final long serialVersionUID = -7456596794818237831L;
 
   /** Should only be called by static field initialization in InterestResultPolicy */
-  public InterestResultPolicyImpl(String name) {
-    super(name);
+  public InterestResultPolicyImpl(String name, int ordinal) {
+    super(name, ordinal);
   }
 
   @Override

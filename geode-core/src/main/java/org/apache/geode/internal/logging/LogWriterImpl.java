@@ -116,11 +116,11 @@ public abstract class LogWriterImpl implements InternalLogWriter {
 
   public static String allowedLogLevels() {
     StringBuilder sb = new StringBuilder(64);
-    for (int i = 0; i < levelNames.length; i++) {
+    for (int i = 0; i < levelNames.size(); i++) {
       if (i != 0) {
         sb.append('|');
       }
-      sb.append(levelNames[i]);
+      sb.append(levelNames.get(i));
     }
     return sb.toString();
   }

@@ -16,7 +16,6 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import static org.apache.geode.internal.cache.persistence.DefaultDiskDirs.DEFAULT_DISK_DIRS_VALUE;
 import static org.apache.geode.internal.cache.persistence.DefaultDiskDirs.getDefaultDiskDirs;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
@@ -36,7 +35,7 @@ public class DefaultDiskDirsTest {
 
   @Test
   public void getDefaultDiskDirsReturnsTheDefault() throws Exception {
-    assertThat(getDefaultDiskDirs()).isEqualTo(DEFAULT_DISK_DIRS_VALUE);
+    assertThat(getDefaultDiskDirs()).isEqualTo(new File[] {new File(".")});
   }
 
   @Test

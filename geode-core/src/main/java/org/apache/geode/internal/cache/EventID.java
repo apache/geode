@@ -25,6 +25,8 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.Logger;
@@ -32,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -121,10 +122,11 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * An array containing the helper class objects which are used to create optimized byte array for
    * an eventID , which can be sent on the network
    */
-  @MakeImmutable
-  static final AbstractEventIDByteArrayFiller[] fillerArray = new AbstractEventIDByteArrayFiller[] {
-      new ByteEventIDByteArrayFiller(), new ShortEventIDByteArrayFiller(),
-      new IntegerEventIDByteArrayFiller(), new LongEventIDByteArrayFiller()};
+  @Immutable
+  static final List<AbstractEventIDByteArrayFiller> fillerArray =
+      Collections.unmodifiableList(Arrays.asList(
+          new ByteEventIDByteArrayFiller(), new ShortEventIDByteArrayFiller(),
+          new IntegerEventIDByteArrayFiller(), new LongEventIDByteArrayFiller()));
 
   /**
    * Constructor used for creating EventID object at the actual source of creation of Event. The
@@ -628,8 +630,8 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
     int byteBufferLength = 2 + threadIdLength + sequenceIdLength;
     ByteBuffer buffer = ByteBuffer.allocate(byteBufferLength);
-    fillerArray[threadIdIndex].fill(buffer, threadId);
-    fillerArray[sequenceIdIndex].fill(buffer, sequenceId);
+    fillerArray.get(threadIdIndex).fill(buffer, threadId);
+    fillerArray.get(sequenceIdIndex).fill(buffer, sequenceId);
     return buffer.array();
 
   }
@@ -644,7 +646,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    */
   public static long readEventIdPartsFromOptmizedByteArray(ByteBuffer buffer) {
     byte byteType = buffer.get();
-    long id = fillerArray[byteType].read(buffer);
+    long id = fillerArray.get(byteType).read(buffer);
 
     return id;
   }

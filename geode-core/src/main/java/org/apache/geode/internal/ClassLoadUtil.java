@@ -16,14 +16,15 @@
 package org.apache.geode.internal;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 
 public class ClassLoadUtil {
 
-  @MakeImmutable
+  @Immutable
   private static final Map<String, Class> PRIMITIVE_TYPES = primitiveTypes();
 
   private static Map primitiveTypes() {
@@ -37,7 +38,7 @@ public class ClassLoadUtil {
     ptMap.put(float.class.getName(), float.class);
     ptMap.put(double.class.getName(), double.class);
     ptMap.put(void.class.getName(), void.class);
-    return ptMap;
+    return Collections.unmodifiableMap(ptMap);
   }
 
   /**

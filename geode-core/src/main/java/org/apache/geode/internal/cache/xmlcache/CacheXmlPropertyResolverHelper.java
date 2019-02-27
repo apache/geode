@@ -15,12 +15,14 @@
 
 package org.apache.geode.internal.cache.xmlcache;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -40,14 +42,15 @@ public class CacheXmlPropertyResolverHelper {
    * This <code>HashMap </code> contains valid suffixes and prefixes to be parsed by
    * {@link CacheXmlPropertyResolverHelper} like {}, [] or ().
    */
-  @MakeImmutable
-  private static final HashMap<String, String> validSuffixAndPrefixes =
-      new HashMap<String, String>();
+  @Immutable
+  private static final Map<String, String> validSuffixAndPrefixes;
 
   static {
-    validSuffixAndPrefixes.put("}", "{");
-    validSuffixAndPrefixes.put("]", "[");
-    validSuffixAndPrefixes.put(")", "(");
+    Map<String, String> map = new HashMap<>();
+    map.put("}", "{");
+    map.put("]", "[");
+    map.put(")", "(");
+    validSuffixAndPrefixes = Collections.unmodifiableMap(map);
   }
   /* String specifying the suffice for property key prefix */
   private String propertyPrefix = DEFAULT_PROPERTY_STRING_PREFIX;

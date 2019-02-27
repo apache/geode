@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.memcached.commands.AbstractCommand;
 import org.apache.geode.internal.memcached.commands.ClientError;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
@@ -246,17 +245,18 @@ public class RequestReader {
     response.clear();
   }
 
-  @MakeImmutable
-  private static byte[] cleanByteArray;
+  @Immutable
+  private static final byte[] cleanByteArray = createCleanByteArray();
 
-  private byte[] getCleanByteArray() {
-    if (cleanByteArray != null) {
-      return cleanByteArray;
-    }
-    cleanByteArray = new byte[RESPONSE_HEADER_LENGTH];
+  private static byte[] createCleanByteArray() {
+    byte[] cleanByteArray = new byte[RESPONSE_HEADER_LENGTH];
     for (int i = 0; i < cleanByteArray.length; i++) {
       cleanByteArray[i] = 0;
     }
+    return cleanByteArray;
+  }
+
+  private byte[] getCleanByteArray() {
     return cleanByteArray;
   }
 

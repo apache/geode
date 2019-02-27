@@ -17,12 +17,13 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -31,22 +32,24 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class RegionCommandsUtils {
 
-  @MakeImmutable
-  public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS = new TreeSet<>();
+  @Immutable
+  public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS;
 
   static {
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_PERSISTENT);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_OVERFLOW);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_REDUNDANT_OVERFLOW);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_PERSISTENT_OVERFLOW);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.REPLICATE_PERSISTENT);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.REPLICATE_OVERFLOW);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.LOCAL_PERSISTENT);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.LOCAL_OVERFLOW);
-    PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
+    Set<RegionShortcut> shortcuts = new TreeSet<>();
+    shortcuts.add(RegionShortcut.PARTITION_PERSISTENT);
+    shortcuts.add(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT);
+    shortcuts.add(RegionShortcut.PARTITION_OVERFLOW);
+    shortcuts.add(RegionShortcut.PARTITION_REDUNDANT_OVERFLOW);
+    shortcuts.add(RegionShortcut.PARTITION_PERSISTENT_OVERFLOW);
+    shortcuts.add(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW);
+    shortcuts.add(RegionShortcut.REPLICATE_PERSISTENT);
+    shortcuts.add(RegionShortcut.REPLICATE_OVERFLOW);
+    shortcuts.add(RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW);
+    shortcuts.add(RegionShortcut.LOCAL_PERSISTENT);
+    shortcuts.add(RegionShortcut.LOCAL_OVERFLOW);
+    shortcuts.add(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
+    PERSISTENT_OVERFLOW_SHORTCUTS = Collections.unmodifiableSet(shortcuts);
   }
 
   static void validateGroups(InternalCache cache, String[] groups) {

@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DSCODE;
@@ -62,8 +62,8 @@ public class PdxInstanceImpl extends PdxReaderImpl implements InternalPdxInstanc
   private static final boolean USE_STATIC_MAPPER =
       Boolean.getBoolean("PdxInstance.use-static-mapper");
 
-  @MakeImmutable
-  static final ObjectMapper mapper = USE_STATIC_MAPPER ? createObjectMapper() : null;
+  @Immutable
+  private static final ObjectMapper mapper = USE_STATIC_MAPPER ? createObjectMapper() : null;
 
   private static ObjectMapper createObjectMapper() {
     ObjectMapper mapper = new ObjectMapper();

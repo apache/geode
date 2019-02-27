@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
@@ -56,19 +56,19 @@ public class LinuxProcFsStatistics {
       DistributionConfig.GEMFIRE_PREFIX + "statistics.linux.pageSize";
   @MakeNotStatic
   private static CpuStat cpuStatSingleton;
-  @MakeImmutable
-  private static int pageSize;
-  @MakeImmutable
-  private static int sys_cpus;
-  @MakeImmutable
+  @Immutable
+  private static final int pageSize = Integer.getInteger(pageSizeProperty, DEFAULT_PAGESIZE);
+  @Immutable
+  private static final int sys_cpus = Runtime.getRuntime().availableProcessors();
+  @MakeNotStatic
   private static boolean hasProcVmStat;
-  @MakeImmutable
+  @MakeNotStatic
   private static boolean hasDiskStats;
-  @MakeImmutable
+  @MakeNotStatic
   static SpaceTokenizer tokenizer;
 
   /** The number of non-process files in /proc */
-  @MakeImmutable
+  @MakeNotStatic
   private static int nonPidFilesInProc;
 
   /** /proc/stat tokens */
@@ -89,8 +89,6 @@ public class LinuxProcFsStatistics {
 
   public static int init() { // TODO: was package-protected
     nonPidFilesInProc = getNumberOfNonProcessProcFiles();
-    sys_cpus = Runtime.getRuntime().availableProcessors();
-    pageSize = Integer.getInteger(pageSizeProperty, DEFAULT_PAGESIZE);
     cpuStatSingleton = new CpuStat();
     hasProcVmStat = new File("/proc/vmstat").exists();
     hasDiskStats = new File("/proc/diskstats").exists();
