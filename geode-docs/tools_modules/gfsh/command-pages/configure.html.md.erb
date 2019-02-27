@@ -43,7 +43,7 @@ configure pdx [--read-serialized=value] [--ignore-unread-fields=value]
     [--portable-auto-serializable-classes=value(,value)*]
 ```
 
-<a id="topic_jdkdiqbgphqh__table_B25D38C67FA047EB8F00A521573F1375"></a>
+**Parameters, configure pdx:**
 
 | Name                                       | Description | Default |
 |--------------------------------------------|-------------|---------|
@@ -52,8 +52,6 @@ configure pdx [--read-serialized=value] [--ignore-unread-fields=value]
 | <span class="keyword parmname">\\-\\-disk-store</span>              | Named disk store where the PDX type data will be stored. If specified without a value, then "DEFAULT" is used. | none    |
 | <span class="keyword parmname">\\-\\-auto-serializable-classes</span>          | Configures ReflectionBasedAutoSerializer as the PDX serializer for member classes. Specifies patterns to be matched against domain class names to determine whether they should be auto-serialized. Classes are not checked for portability to non-java languages (equivalent to `check-portability=false`). | none    |
 | <span class="keyword parmname">\\-\\-portable-auto-serializable-classes</span> | Configures ReflectionBasedAutoSerializer as the PDX serializer for member classes. Specifies patterns to be matched against domain class names to determine whether they should be serialized. Serialization done by the PDX autoserializer will throw an exception if the object of these classes are not portable to non-Java languages (equivalent to `check-portability=true`). | none    |
-
-<span class="tablecap">Table 1. Configure PDX Parameters</span>
 
 **Example Commands:**
 
