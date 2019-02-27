@@ -2985,6 +2985,14 @@ public class InternalDistributedSystem extends DistributedSystem
     this.attemptingToReconnect = false;
   }
 
+  public void stopReconnectingNoDisconnect() {
+    this.reconnectCancelled = true;
+    synchronized (this.reconnectLock) {
+      this.reconnectLock.notify();
+    }
+    this.attemptingToReconnect = false;
+  }
+
   /**
    * Provides hook for dunit to generate and store a detailed creation stack trace that includes the
    * keys/values of DistributionConfig including security related attributes without introducing
