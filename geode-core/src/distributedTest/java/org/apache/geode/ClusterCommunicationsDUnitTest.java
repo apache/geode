@@ -70,6 +70,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -126,7 +127,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
   @Rule
   public final SerializableTestName testName = new SerializableTestName();
 
-  final String regionName = "clusterTestRegion";
+  private final String regionName = "clusterTestRegion";
 
   public ClusterCommunicationsDUnitTest(RunConfiguration runConfiguration) {
     this.useSSL = runConfiguration.useSSL;
@@ -145,6 +146,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
 
   @Test
   public void createEntryAndVerifyUpdate() {
+    IgnoredException.addIgnoredException("Remote host closed connection during handshake");
     int locatorPort = createLocator(VM.getVM(0));
     for (int i = 1; i <= NUM_SERVERS; i++) {
       createCacheAndRegion(VM.getVM(i), locatorPort);
@@ -186,7 +188,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
       VM.getVM(1).invoke("receive a large direct-reply message", () -> {
         SerialAckedMessageWithBigReply messageWithBigReply = new SerialAckedMessageWithBigReply();
         await().until(() -> {
-          messageWithBigReply.send(Collections.<DistributedMember>singleton(vm2ID));
+          messageWithBigReply.send(Collections.singleton(vm2ID));
           return true;
         });
       });
@@ -228,9 +230,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
     createCacheAndRegion(server2VM, locatorPort);
 
     // roll server1 to the current version
-    server1VM.invoke("stop server1", () -> {
-      cache.close();
-    });
+    server1VM.invoke("stop server1", () -> cache.close());
     server1VM = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 1);
     createCacheAndRegion(server1VM, locatorPort);
 
