@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +139,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
     String remoteInputStreamName = null;
     RemoteInputStream remoteInputStream = null;
     if (pdxClassFile != null) {
-      List<String> pdxClassFilePaths = CommandExecutionContext.getFilePathFromShell();
+      List<String> pdxClassFilePaths = getFilePathFromShell();
       if (pdxClassFilePaths.size() != 1) {
         throw new IllegalStateException(
             "Expected only one element in the list returned by getFilePathFromShell, but it returned: "
@@ -176,7 +177,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
       remoteInputStreamName = FilenameUtils.getName(tempPdxClassFilePath);
       remoteInputStream =
-          exporter.export(new SimpleRemoteInputStream(new FileInputStream(tempPdxClassFilePath)));
+          exporter.export(createSimpleRemoteInputStream(tempPdxClassFilePath));
     }
 
     CliFunctionResult preconditionCheckResult =
@@ -214,6 +215,11 @@ public class CreateMappingCommand extends SingleGfshCommand {
         ResultModel.createMemberStatusResult(results, EXPERIMENTAL, null, false, true);
     result.setConfigObject(arguments);
     return result;
+  }
+
+  SimpleRemoteInputStream createSimpleRemoteInputStream(String tempPdxClassFilePath)
+      throws FileNotFoundException {
+    return new SimpleRemoteInputStream(new FileInputStream(tempPdxClassFilePath));
   }
 
   private ConfigurationPersistenceService checkForClusterConfiguration()
@@ -390,6 +396,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
       if (!pdxClassFile.exists()) {
         return ResultBuilder.createUserErrorResult(pdxClassFile + " not found.");
       }
+      if (!pdxClassFile.isFile()) {
+        return ResultBuilder.createUserErrorResult(pdxClassFile + " is not a file.");
+      }
       String fileExtension = FilenameUtils.getExtension(pdxClassFileName);
       if (!fileExtension.equalsIgnoreCase("jar") && !fileExtension.equalsIgnoreCase("class")) {
         return ResultBuilder
@@ -399,6 +408,11 @@ public class CreateMappingCommand extends SingleGfshCommand {
 
       return fileResult;
     }
+  }
+
+  // For testing purpose
+  List<String> getFilePathFromShell() {
+    return CommandExecutionContext.getFilePathFromShell();
   }
 
 }

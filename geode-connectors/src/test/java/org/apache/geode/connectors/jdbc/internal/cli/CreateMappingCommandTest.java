@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -23,13 +24,18 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -50,6 +56,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.ManagementAgent;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
@@ -217,6 +225,68 @@ public class CreateMappingCommandTest {
     Object[] results = (Object[]) result.getConfigObject();
     RegionMapping regionMapping = (RegionMapping) results[0];
     assertThat(regionMapping.getFieldMappings()).isEqualTo(this.fieldMappings);
+  }
+
+  @Test
+  public void createsMappingWithPdxClassFileReturnsCorrectFieldMappings() throws IOException {
+    RemoteInputStream remoteInputStream = setupPdxClassFile();
+    setupRequiredPreconditions();
+    results.add(successFunctionResult);
+    String ids = "ids";
+    String catalog = "catalog";
+    String schema = "schema";
+    this.fieldMappings.add(new FieldMapping("pdx1", "pdx1type", "jdbc1", "jdbc1type", false));
+    this.fieldMappings.add(new FieldMapping("pdx2", "pdx2type", "jdbc2", "jdbc2type", false));
+
+    ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, null);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    Object[] results = (Object[]) result.getConfigObject();
+    RegionMapping regionMapping = (RegionMapping) results[0];
+    assertThat(regionMapping.getFieldMappings()).isEqualTo(this.fieldMappings);
+    ArgumentCaptor<Object[]> argumentCaptor = ArgumentCaptor.forClass(Object[].class);
+    verify(createRegionMappingCommand).executeFunctionAndGetFunctionResult(any(),
+        argumentCaptor.capture(), any());
+    Object[] args = argumentCaptor.getValue();
+    assertThat(args).hasSize(3);
+    assertThat(args[0]).isEqualTo(regionMapping);
+    assertThat(args[1]).isEqualTo("myPdxClassFilePath");
+    assertThat(args[2]).isSameAs(remoteInputStream);
+  }
+
+  @Test
+  public void createsMappingWithPdxClassFileAndFilePathFromShellIsEmptyListThrowsIllegalStateException()
+      throws IOException {
+    setupPdxClassFile();
+    doReturn(Collections.emptyList()).when(createRegionMappingCommand).getFilePathFromShell();
+    setupRequiredPreconditions();
+    String ids = "ids";
+    String catalog = "catalog";
+    String schema = "schema";
+
+    assertThatThrownBy(() -> createRegionMappingCommand.createMapping(regionName, dataSourceName,
+        tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, null))
+            .isInstanceOf(IllegalStateException.class);
+  }
+
+  private RemoteInputStream setupPdxClassFile() throws FileNotFoundException, RemoteException {
+    pdxClassFile = "myPdxClassFile";
+    String tempPdxClassFilePath = "myPdxClassFilePath";
+    List<String> list = Collections.singletonList(tempPdxClassFilePath);
+    doReturn(list).when(createRegionMappingCommand).getFilePathFromShell();
+    SystemManagementService systemManagementService = mock(SystemManagementService.class);
+    doReturn(systemManagementService).when(createRegionMappingCommand).getManagementService();
+    ManagementAgent managementAgent = mock(ManagementAgent.class);
+    when(systemManagementService.getManagementAgent()).thenReturn(managementAgent);
+    RemoteStreamExporter remoteStreamExporter = mock(RemoteStreamExporter.class);
+    when(managementAgent.getRemoteStreamExporter()).thenReturn(remoteStreamExporter);
+    SimpleRemoteInputStream simpleRemoteInputStream = mock(SimpleRemoteInputStream.class);
+    doReturn(simpleRemoteInputStream).when(createRegionMappingCommand)
+        .createSimpleRemoteInputStream(tempPdxClassFilePath);
+    RemoteInputStream remoteInputStream = mock(RemoteInputStream.class);
+    when(remoteStreamExporter.export(simpleRemoteInputStream)).thenReturn(remoteInputStream);
+    return remoteInputStream;
   }
 
   @Test
