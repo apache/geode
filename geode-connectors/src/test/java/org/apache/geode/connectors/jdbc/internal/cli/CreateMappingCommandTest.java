@@ -84,7 +84,7 @@ public class CreateMappingCommandTest {
     dataSourceName = "connection";
     tableName = "testTable";
     pdxClass = "myPdxClass";
-    pdxClassFile = "myPdxClassFile";
+    pdxClassFile = null;
     group1Name = "group1";
     group2Name = "group2";
     cache = mock(InternalCache.class);

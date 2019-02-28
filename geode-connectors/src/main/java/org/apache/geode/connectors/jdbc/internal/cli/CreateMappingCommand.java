@@ -169,9 +169,11 @@ public class CreateMappingCommand extends SingleGfshCommand {
     } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
     }
-    ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
-    RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
+
     if (pdxClassFile != null) {
+      ManagementAgent agent =
+          ((SystemManagementService) getManagementService()).getManagementAgent();
+      RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
       remoteInputStreamName = FilenameUtils.getName(tempPdxClassFilePath);
       remoteInputStream =
           exporter.export(new SimpleRemoteInputStream(new FileInputStream(tempPdxClassFilePath)));
@@ -181,10 +183,12 @@ public class CreateMappingCommand extends SingleGfshCommand {
         executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(),
             new Object[] {mapping, remoteInputStreamName, remoteInputStream},
             targetMembers.iterator().next());
-    try {
-      remoteInputStream.close(true);
-    } catch (IOException ex) {
-      // Ignored. the stream may have already been closed.
+    if (remoteInputStream != null) {
+      try {
+        remoteInputStream.close(true);
+      } catch (IOException ex) {
+        // Ignored. the stream may have already been closed.
+      }
     }
     if (preconditionCheckResult.isSuccessful()) {
       Object[] preconditionOutput = (Object[]) preconditionCheckResult.getResultObject();
