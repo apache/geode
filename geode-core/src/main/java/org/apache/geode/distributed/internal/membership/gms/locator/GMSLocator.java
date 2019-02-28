@@ -240,10 +240,8 @@ public class GMSLocator implements Locator, NetLocator {
     // at this level we want to return the coordinator known to membership services,
     // which may be more up-to-date than the one known by the membership manager
     if (view == null) {
-      if (services == null) {
-        // we must know this process's identity in order to respond
-        return null;
-      }
+      // we must know this process's identity in order to respond
+      return null;
     }
 
     boolean fromView = false;
