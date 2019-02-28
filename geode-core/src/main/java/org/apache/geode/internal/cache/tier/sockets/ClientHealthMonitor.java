@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +63,7 @@ public class ClientHealthMonitor {
    *
    * Accesses must be locked by _clientHeartbeatsLock
    */
-  private Map<ClientProxyMembershipID, Long> _clientHeartbeats = new ConcurrentHashMap<>();
+  private Map<ClientProxyMembershipID, AtomicLong> _clientHeartbeats = new ConcurrentHashMap<>();
 
   /**
    * THe GemFire <code>Cache</code>
@@ -191,13 +193,18 @@ public class ClientHealthMonitor {
    * @param proxyID The id of the client to be registered
    */
   public void registerClient(ClientProxyMembershipID proxyID) {
-    _clientHeartbeats.put(proxyID, System.currentTimeMillis());
-    if (this.stats != null) {
-      this.stats.incClientRegisterRequests();
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug("ClientHealthMonitor: Registering client with member id {}",
-          proxyID);
+    AtomicLong heartbeat =
+        _clientHeartbeats.putIfAbsent(proxyID, new AtomicLong(System.currentTimeMillis()));
+    if (heartbeat == null) {
+      if (this.stats != null) {
+        this.stats.incClientRegisterRequests();
+      }
+      if (logger.isDebugEnabled()) {
+        logger.debug("ClientHealthMonitor: Registering client with member id {}",
+            proxyID);
+      }
+    } else {
+      heartbeat.set(System.currentTimeMillis());
     }
   }
 
@@ -330,8 +337,11 @@ public class ClientHealthMonitor {
 
     logger.trace("ClientHealthMonitor: Received ping from client with member id {}", proxyID);
 
-    if (_clientHeartbeats.put(proxyID, System.currentTimeMillis()) == null) {
+    AtomicLong heartbeat = _clientHeartbeats.get(proxyID);
+    if (null == heartbeat) {
       registerClient(proxyID);
+    } else {
+      heartbeat.set(System.currentTimeMillis());
     }
   }
 
@@ -553,7 +563,8 @@ public class ClientHealthMonitor {
    *         Test hook only.
    */
   Map<ClientProxyMembershipID, Long> getClientHeartbeats() {
-    return new HashMap<>(this._clientHeartbeats);
+    return this._clientHeartbeats.entrySet().stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get()));
   }
 
   /**
