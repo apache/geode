@@ -101,8 +101,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
     typeRegistry = mock(TypeRegistry.class);
     when(cache.getPdxRegistry()).thenReturn(typeRegistry);
     regionMapping = mock(RegionMapping.class);
-    remoteInputStreamName = "remoteInputStreamName";
-    remoteInputStream = mock(RemoteInputStream.class);
+    remoteInputStreamName = null;
+    remoteInputStream = null;
     Object[] args = new Object[] {regionMapping, remoteInputStreamName, remoteInputStream};
 
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
