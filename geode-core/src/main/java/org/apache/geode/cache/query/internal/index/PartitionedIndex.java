@@ -58,9 +58,9 @@ public class PartitionedIndex extends AbstractIndex {
   private Map<Region, List<Index>> bucketIndexes =
       Collections.synchronizedMap(new HashMap<Region, List<Index>>());
 
-  //An arbitrary bucket index from this PartiionedIndex that is used as a representative
-  //index for the entire PartitionIndex.  Usually used for scoring/sizing of an index when
-  //selecting which index to use
+  // An arbitrary bucket index from this PartiionedIndex that is used as a representative
+  // index for the entire PartitionIndex. Usually used for scoring/sizing of an index when
+  // selecting which index to use
   private volatile Index arbitraryBucketIndex;
   /**
    * Type on index represented by this partitioned index.
