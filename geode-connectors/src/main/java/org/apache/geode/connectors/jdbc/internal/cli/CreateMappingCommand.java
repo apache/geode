@@ -14,13 +14,10 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.commons.io.FileUtils.ONE_MB;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +26,6 @@ import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -58,7 +54,6 @@ import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -104,7 +99,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
       "The names of the server groups on which this mapping should be created.";
   private static final String CREATE_MAPPING__PDX_CLASS_FILE = MappingConstants.PDX_CLASS_FILE;
   private static final String CREATE_MAPPING__PDX_CLASS_FILE__HELP =
-      "The file that contains the PDX class. It can be a jar or class file. By default, the PDX class must be on the server's classpath or gfsh deployed.";
+      "The file that contains the PDX class. It must be a file with the \".jar\" or \".class\" extension. By default, the PDX class must be on the server's classpath or gfsh deployed.";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(
@@ -133,20 +128,23 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups) throws IOException {
+          help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups)
+      throws IOException {
     if (regionName.startsWith("/")) {
       regionName = regionName.substring(1);
     }
 
-    System.out.println("DDDDDD" + pdxClassFile);
     String tempPdxClassFilePath = null;
+    String remoteInputStreamName = null;
+    RemoteInputStream remoteInputStream = null;
     if (pdxClassFile != null) {
       List<String> pdxClassFilePaths = CommandExecutionContext.getFilePathFromShell();
       if (pdxClassFilePaths.size() != 1) {
-        throw new IllegalStateException("Expected only one element in the list returned by getFilePathFromShell, but it returned: " + pdxClassFilePaths);
+        throw new IllegalStateException(
+            "Expected only one element in the list returned by getFilePathFromShell, but it returned: "
+                + pdxClassFilePaths);
       }
       tempPdxClassFilePath = pdxClassFilePaths.get(0);
-      System.out.println("DDDDDD" + pdxClassFilePaths);
     }
 
     Set<DistributedMember> targetMembers = findMembers(groups, null);
@@ -173,11 +171,15 @@ public class CreateMappingCommand extends SingleGfshCommand {
     }
     ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
     RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
-    String remoteInputStreamName = FilenameUtils.getName(tempPdxClassFilePath);
-    RemoteInputStream remoteInputStream = exporter.export(new SimpleRemoteInputStream(new FileInputStream(tempPdxClassFilePath)));
+    if (pdxClassFile != null) {
+      remoteInputStreamName = FilenameUtils.getName(tempPdxClassFilePath);
+      remoteInputStream =
+          exporter.export(new SimpleRemoteInputStream(new FileInputStream(tempPdxClassFilePath)));
+    }
 
     CliFunctionResult preconditionCheckResult =
-        executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(), new Object[] {mapping, remoteInputStreamName, remoteInputStream},
+        executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(),
+            new Object[] {mapping, remoteInputStreamName, remoteInputStream},
             targetMembers.iterator().next());
     try {
       remoteInputStream.close(true);
@@ -383,6 +385,11 @@ public class CreateMappingCommand extends SingleGfshCommand {
       File pdxClassFile = new File(pdxClassFileName);
       if (!pdxClassFile.exists()) {
         return ResultBuilder.createUserErrorResult(pdxClassFile + " not found.");
+      }
+      String fileExtension = FilenameUtils.getExtension(pdxClassFileName);
+      if (!fileExtension.equalsIgnoreCase("jar") && !fileExtension.equalsIgnoreCase("class")) {
+        return ResultBuilder
+            .createUserErrorResult(pdxClassFile + " must end with \".jar\" or \".class\".");
       }
       fileResult.addFile(pdxClassFile);
 

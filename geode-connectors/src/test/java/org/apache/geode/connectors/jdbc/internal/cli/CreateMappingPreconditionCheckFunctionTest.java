@@ -36,6 +36,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +70,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   private static final String MEMBER_NAME = "testMemberName";
 
   private RegionMapping regionMapping;
-  private FunctionContext<RegionMapping> context;
+  private FunctionContext<Object[]> context;
   private ResultSender<Object> resultSender;
   private InternalCache cache;
   private TypeRegistry typeRegistry;
@@ -79,6 +80,8 @@ public class CreateMappingPreconditionCheckFunctionTest {
   private TableMetaDataView tableMetaDataView;
   private DataSource dataSource;
   private PdxType pdxType = mock(PdxType.class);
+  private String remoteInputStreamName;
+  private RemoteInputStream remoteInputStream;
 
   private CreateMappingPreconditionCheckFunction function;
 
@@ -98,6 +101,9 @@ public class CreateMappingPreconditionCheckFunctionTest {
     typeRegistry = mock(TypeRegistry.class);
     when(cache.getPdxRegistry()).thenReturn(typeRegistry);
     regionMapping = mock(RegionMapping.class);
+    remoteInputStreamName = "remoteInputStreamName";
+    remoteInputStream = mock(RemoteInputStream.class);
+    Object[] args = new Object[] {regionMapping, remoteInputStreamName, remoteInputStream};
 
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getPdxName()).thenReturn(PDX_CLASS_NAME);
@@ -105,7 +111,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
-    when(context.getArguments()).thenReturn(regionMapping);
+    when(context.getArguments()).thenReturn(args);
     when(context.getMemberName()).thenReturn(MEMBER_NAME);
 
     dataSourceFactory = mock(DataSourceFactory.class);

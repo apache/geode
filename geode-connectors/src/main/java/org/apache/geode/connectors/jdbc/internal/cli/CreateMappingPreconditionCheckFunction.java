@@ -14,9 +14,18 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -25,6 +34,12 @@ import java.util.List;
 import java.util.Set;
 
 import javax.sql.DataSource;
+
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.Experimental;
@@ -39,6 +54,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
@@ -49,13 +65,14 @@ import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 @Experimental
-public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMapping> {
+public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]> {
 
   private transient DataSourceFactory dataSourceFactory;
   private transient ClassFactory classFactory;
   private transient ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory;
   private transient PdxWriterFactory pdxWriterFactory;
   private transient TableMetaDataManager tableMetaDataManager;
+  private transient File topLevelDir;
 
   CreateMappingPreconditionCheckFunction(DataSourceFactory factory, ClassFactory classFactory,
       ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory,
@@ -88,9 +105,11 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
   }
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext<RegionMapping> context)
-      throws Exception {
-    RegionMapping regionMapping = context.getArguments();
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
+    Object[] args = context.getArguments();
+    RegionMapping regionMapping = (RegionMapping) args[0];
+    String remoteInputStreamName = (String) args[1];
+    RemoteInputStream remoteInputStream = (RemoteInputStream) args[2];
     String dataSourceName = regionMapping.getDataSourceName();
     DataSource dataSource = dataSourceFactory.getDataSource(dataSourceName);
     if (dataSource == null) {
@@ -100,7 +119,8 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
     InternalCache cache = (InternalCache) context.getCache();
     TypeRegistry typeRegistry = cache.getPdxRegistry();
-    PdxType pdxType = getPdxTypeForClass(cache, typeRegistry, regionMapping.getPdxName());
+    PdxType pdxType = getPdxTypeForClass(cache, typeRegistry, regionMapping.getPdxName(),
+        remoteInputStreamName, remoteInputStream);
     try (Connection connection = dataSource.getConnection()) {
       TableMetaDataView tableMetaData =
           tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
@@ -168,8 +188,8 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
   }
 
   private PdxType getPdxTypeForClass(InternalCache cache, TypeRegistry typeRegistry,
-      String className) {
-    Class<?> clazz = loadPdxClass(className);
+      String className, String remoteInputStreamName, RemoteInputStream remoteInputStream) {
+    Class<?> clazz = loadPdxClass(className, remoteInputStreamName, remoteInputStream);
     PdxType result = typeRegistry.getExistingTypeForClass(clazz);
     if (result != null) {
       return result;
@@ -220,13 +240,48 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     }
   }
 
-  private Class<?> loadPdxClass(String className) {
+  private Class<?> loadPdxClass(String className, String remoteInputStreamName,
+      RemoteInputStream remoteInputStream) {
     try {
-      return this.classFactory.loadClass(className);
+      if (remoteInputStream != null) {
+        File file =
+            copyRemoteInputStreamToTempFile(className, remoteInputStreamName, remoteInputStream);
+        try {
+          return URLClassLoader.newInstance(new URL[] {createURL(file)}).loadClass(className);
+        } finally {
+          try {
+            FileUtils.deleteDirectory(this.topLevelDir);
+          } catch (IOException ioe) {
+            // ignore
+          }
+        }
+      } else {
+        return this.classFactory.loadClass(className);
+      }
     } catch (ClassNotFoundException ex) {
       throw new JdbcConnectorException(
           "The pdx class \"" + className + "\" could not be loaded because: " + ex);
     }
+  }
+
+  private URL createURL(File file) {
+    URL url;
+    try {
+      if (isJar(file.getName())) {
+        url = file.toURI().toURL();
+      } else {
+        url = this.topLevelDir.toURI().toURL();
+      }
+    } catch (MalformedURLException e) {
+      throw new JdbcConnectorException(
+          "The pdx class file \"" + file + "\" could not be converted to a URL, because: " + e);
+    }
+    return url;
+  }
+
+  private boolean isJar(String fileName) {
+    String fileExtension = FilenameUtils.getExtension(fileName);
+    return fileExtension.equalsIgnoreCase("jar");
   }
 
   public interface ClassFactory {
@@ -237,5 +292,39 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
   }
   public interface PdxWriterFactory {
     public PdxWriter create(TypeRegistry typeRegistry, Object object);
+  }
+
+  private File copyRemoteInputStreamToTempFile(String className, String remoteInputStreamName,
+      RemoteInputStream remoteInputStream) {
+    try {
+      Path tempDir = FileUploader.createSecuredTempDirectory("pdx-class-dir-");
+      this.topLevelDir = tempDir.toFile();
+      if (!isJar(remoteInputStreamName)) {
+        File packageDir = new File(this.topLevelDir, className.replace(".", "/")).getParentFile();
+        packageDir.mkdirs();
+        tempDir = packageDir.toPath();
+      }
+
+      Path tempPdxClassFile = Paths.get(tempDir.toString(), remoteInputStreamName);
+      FileOutputStream fos = new FileOutputStream(tempPdxClassFile.toString());
+
+      InputStream input = RemoteInputStreamClient.wrap(remoteInputStream);
+
+      IOUtils.copyLarge(input, fos);
+
+      fos.close();
+      input.close();
+
+      return tempPdxClassFile.toFile();
+    } catch (IOException iox) {
+      try {
+        remoteInputStream.close(true);
+      } catch (IOException ex) {
+        // Ignored
+      }
+      throw new JdbcConnectorException(
+          "The pdx class file \"" + remoteInputStreamName
+              + "\" could not be copied to a temporary file, because: " + iox);
+    }
   }
 }

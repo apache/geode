@@ -23,6 +23,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -61,6 +62,7 @@ public class CreateMappingCommandTest {
   private String dataSourceName;
   private String tableName;
   private String pdxClass;
+  private String pdxClassFile;
   private String group1Name;
   private String group2Name;
   private Set<InternalDistributedMember> members;
@@ -82,6 +84,7 @@ public class CreateMappingCommandTest {
     dataSourceName = "connection";
     tableName = "testTable";
     pdxClass = "myPdxClass";
+    pdxClassFile = "myPdxClassFile";
     group1Name = "group1";
     group2Name = "group2";
     cache = mock(InternalCache.class);
@@ -143,7 +146,7 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createsMappingReturnsStatusOKWhenFunctionResultSuccess() {
+  public void createsMappingReturnsStatusOKWhenFunctionResultSuccess() throws IOException {
     setupRequiredPreconditions();
     results.add(successFunctionResult);
     String ids = "ids";
@@ -151,7 +154,7 @@ public class CreateMappingCommandTest {
     String schema = "schema";
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, ids, catalog, schema, null);
+        tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
@@ -169,7 +172,8 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createsMappingReturnsStatusOKWhenFunctionResultSuccessWithGroups() {
+  public void createsMappingReturnsStatusOKWhenFunctionResultSuccessWithGroups()
+      throws IOException {
     setupRequiredPreconditionsForGroup();
     results.add(successFunctionResult);
     String ids = "ids";
@@ -178,7 +182,7 @@ public class CreateMappingCommandTest {
     String[] groups = {group1Name, group2Name};
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, ids, catalog, schema, groups);
+        tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, groups);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
@@ -197,7 +201,7 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createsMappingReturnsCorrectFieldMappings() {
+  public void createsMappingReturnsCorrectFieldMappings() throws IOException {
     setupRequiredPreconditions();
     results.add(successFunctionResult);
     String ids = "ids";
@@ -207,7 +211,7 @@ public class CreateMappingCommandTest {
     this.fieldMappings.add(new FieldMapping("pdx2", "pdx2type", "jdbc2", "jdbc2type", false));
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, ids, catalog, schema, null);
+        tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
@@ -216,7 +220,7 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createsMappingReturnsRegionMappingWithComputedIds() {
+  public void createsMappingReturnsRegionMappingWithComputedIds() throws IOException {
     setupRequiredPreconditions();
     results.add(successFunctionResult);
     String ids = "does not matter";
@@ -226,7 +230,7 @@ public class CreateMappingCommandTest {
     preconditionOutput[0] = computedIds;
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, ids, catalog, schema, null);
+        tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
@@ -235,7 +239,7 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createsMappingReturnsErrorIfPreconditionCheckErrors() {
+  public void createsMappingReturnsErrorIfPreconditionCheckErrors() throws IOException {
     setupRequiredPreconditions();
     results.add(successFunctionResult);
     String ids = "ids";
@@ -245,19 +249,19 @@ public class CreateMappingCommandTest {
     when(preconditionCheckResults.getStatusMessage()).thenReturn("precondition check failed");
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, ids, catalog, schema, null);
+        tableName, pdxClass, pdxClassFile, false, ids, catalog, schema, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("precondition check failed");
   }
 
   @Test
-  public void createsMappingWithRegionPathCreatesMappingWithSlashRemoved() {
+  public void createsMappingWithRegionPathCreatesMappingWithSlashRemoved() throws IOException {
     setupRequiredPreconditions();
     results.add(successFunctionResult);
 
     ResultModel result = createRegionMappingCommand.createMapping("/" + regionName, dataSourceName,
-        tableName, pdxClass, false, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, false, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     Object[] results = (Object[]) result.getConfigObject();
@@ -267,30 +271,31 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createsMappingReturnsStatusERRORWhenFunctionResultIsEmpty() {
+  public void createsMappingReturnsStatusERRORWhenFunctionResultIsEmpty() throws IOException {
     setupRequiredPreconditions();
     results.clear();
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, false, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
   }
 
   @Test
-  public void createsMappingReturnsStatusERRORWhenClusterConfigIsDisabled() {
+  public void createsMappingReturnsStatusERRORWhenClusterConfigIsDisabled() throws IOException {
     results.add(successFunctionResult);
     doReturn(null).when(createRegionMappingCommand).getConfigurationPersistenceService();
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, false, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("Cluster Configuration must be enabled.");
   }
 
   @Test
-  public void createsMappingReturnsStatusERRORWhenClusterConfigDoesNotContainRegion() {
+  public void createsMappingReturnsStatusERRORWhenClusterConfigDoesNotContainRegion()
+      throws IOException {
     results.add(successFunctionResult);
     ConfigurationPersistenceService configurationPersistenceService =
         mock(ConfigurationPersistenceService.class);
@@ -301,7 +306,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getRegions()).thenReturn(Collections.emptyList());
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, false, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString())
@@ -309,7 +314,7 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createsMappingReturnsStatusERRORWhenRegionMappingExists() {
+  public void createsMappingReturnsStatusERRORWhenRegionMappingExists() throws IOException {
     results.add(successFunctionResult);
     ConfigurationPersistenceService configurationPersistenceService =
         mock(ConfigurationPersistenceService.class);
@@ -331,14 +336,15 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getCustomRegionElements()).thenReturn(customList);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, false, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("A JDBC mapping for " + regionName + " already exists.");
   }
 
   @Test
-  public void createsMappingReturnsStatusERRORWhenClusterConfigRegionHasLoader() {
+  public void createsMappingReturnsStatusERRORWhenClusterConfigRegionHasLoader()
+      throws IOException {
     results.add(successFunctionResult);
     ConfigurationPersistenceService configurationPersistenceService =
         mock(ConfigurationPersistenceService.class);
@@ -356,7 +362,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getRegionAttributes()).thenReturn(loaderAttribute);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, false, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("The existing region " + regionName
@@ -364,7 +370,8 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createMappingWithSynchronousReturnsStatusERRORWhenClusterConfigRegionHasWriter() {
+  public void createMappingWithSynchronousReturnsStatusERRORWhenClusterConfigRegionHasWriter()
+      throws IOException {
     results.add(successFunctionResult);
     ConfigurationPersistenceService configurationPersistenceService =
         mock(ConfigurationPersistenceService.class);
@@ -382,7 +389,7 @@ public class CreateMappingCommandTest {
     when(matchingRegion.getRegionAttributes()).thenReturn(writerAttribute);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, true, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, true, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString()).contains("The existing region " + regionName
@@ -390,7 +397,8 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createMappingWithSynchronousReturnsStatusOKWhenAsycnEventQueueAlreadyExists() {
+  public void createMappingWithSynchronousReturnsStatusOKWhenAsycnEventQueueAlreadyExists()
+      throws IOException {
     results.add(successFunctionResult);
     ConfigurationPersistenceService configurationPersistenceService =
         mock(ConfigurationPersistenceService.class);
@@ -412,14 +420,15 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, true, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, true, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
   }
 
 
   @Test
-  public void createsMappingReturnsStatusERRORWhenAsycnEventQueueAlreadyExists() {
+  public void createsMappingReturnsStatusERRORWhenAsycnEventQueueAlreadyExists()
+      throws IOException {
     results.add(successFunctionResult);
     ConfigurationPersistenceService configurationPersistenceService =
         mock(ConfigurationPersistenceService.class);
@@ -441,7 +450,7 @@ public class CreateMappingCommandTest {
     when(cacheConfig.getAsyncEventQueues()).thenReturn(asyncEventQueues);
 
     ResultModel result = createRegionMappingCommand.createMapping(regionName, dataSourceName,
-        tableName, pdxClass, false, null, null, null, null);
+        tableName, pdxClass, pdxClassFile, false, null, null, null, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
     assertThat(result.toString())
