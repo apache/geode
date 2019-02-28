@@ -656,6 +656,44 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
+  public void createMappingWithNonExistingPdxClassFileFails() throws IOException {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(PDX_CLASS_FILE, "NonExistingJarFile.jar");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("NonExistingJarFile.jar not found.");
+  }
+
+  @Test
+  public void createMappingWithInvalidJarPdxClassFileFails() throws IOException {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+    File invalidFile = loadTestResource(
+        "/org/apache/geode/internal/ResourcePDX.java");
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(PDX_CLASS_FILE, invalidFile);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput(invalidFile + " must end with \".jar\" or \".class\".");
+  }
+
+  @Test
   public void createMappingWithPdxClassFileSetToAClassFile()
       throws IOException, URISyntaxException {
     String region1Name = "region1";
