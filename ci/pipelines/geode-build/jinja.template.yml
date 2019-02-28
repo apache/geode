@@ -144,7 +144,7 @@ groups:
   {%- endfor -%}
 {%- endfor %}
 - name: Semver Management
-- jobs:
+  jobs:
   {%- for semverPiece in ['major', 'minor', 'patch'] %}
   - Bump{{ semverPiece.title() }}
   {%- endfor %}
