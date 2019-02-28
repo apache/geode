@@ -199,6 +199,7 @@ resource_types:
 jobs:
 {% for semverPiece in ['major', 'minor', 'patch'] -%}
 - name: Bump{{ semverPiece.title() }}
+  serial: true
   plan:
   - get: geode-build-version
     params: { bump: {{ semverPiece }} }
