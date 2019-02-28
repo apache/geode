@@ -190,6 +190,10 @@ dependencies {
   distributedTestCompile(project(':geode-assembly:geode-assembly-test'))
   distributedTestCompile('org.apache.httpcomponents:httpclient')
   distributedTestCompile('org.springframework:spring-web')
+  distributedTestCompile(project(':geode-management'))
+  distributedTestCompile(project(':geode-web-management'))
+  distributedTestCompile('org.apache.logging.log4j:log4j-core::tests')
+  distributedTestCompile('org.apache.logging.log4j:log4j-core::test-sources')
 
   distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
