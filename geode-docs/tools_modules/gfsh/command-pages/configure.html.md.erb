@@ -22,7 +22,7 @@ limitations under the License.
 <a id="concept_C2DCEE6743304549825C9B62E66DBADF"></a>
 
 
-Configure Portable Data eXchange for all the cache(s) in the cluster.
+Configure Portable Data eXchange (PDX) for all the cache(s) in the cluster.
 
 ## <a id="topic_jdkdiqbgphqh" class="no-quick-link"></a>configure pdx
 
@@ -31,7 +31,8 @@ Configure Portable Data eXchange for all the cache(s) in the cluster.
 Configures <%=vars.product_name%>'s Portable Data eXchange for all the cache(s) in the cluster
 and persists the pdx configuration in the locator with the cluster configuration service.
 
-This command does not affect the running members in the system, so it should be issued before starting any data members.
+For consistent results, PDX should be configured before any servers have started.
+A server that is running at the time PDX is configured will not adopt the new configuration until it has been restarted.
 
 **Availability:** Online.
 
