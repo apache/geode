@@ -69,8 +69,10 @@ public class RegionManagementRestSecurityDUnitTest {
             .hasStatusCode(401)
             .getClusterManagementResult();
 
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
-    assertThat(result.isPersisted()).isFalse();
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusCode())
+        .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+    assertThat(result.getStatusMessage()).contains("authentication is required");
   }
 
   @Test
@@ -80,8 +82,10 @@ public class RegionManagementRestSecurityDUnitTest {
             .hasStatusCode(401)
             .getClusterManagementResult();
 
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
-    assertThat(result.isPersisted()).isFalse();
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusCode())
+        .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+    assertThat(result.getStatusMessage()).contains("Authentication error");
   }
 
   @Test
@@ -91,8 +95,9 @@ public class RegionManagementRestSecurityDUnitTest {
             .hasStatusCode(403)
             .getClusterManagementResult();
 
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
-    assertThat(result.isPersisted()).isFalse();
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
+    assertThat(result.getStatusMessage()).contains("not authorized for DATA:MANAGE");
   }
 
   @Test
@@ -102,8 +107,8 @@ public class RegionManagementRestSecurityDUnitTest {
             .hasStatusCode(201)
             .getClusterManagementResult();
 
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
-    assertThat(result.isPersisted()).isTrue();
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
     // make sure region is created
