@@ -36,7 +36,7 @@ public class GemFireBasicDataSource extends AbstractDataSource {
   private static final long serialVersionUID = -4010116024816908360L;
 
   /** Creates a new instance of BaseDataSource */
-  protected transient Driver driverObject = null;
+  protected transient volatile Driver driverObject = null;
 
   /**
    * Place holder for abstract method isWrapperFor(java.lang.Class) in java.sql.Wrapper required by
@@ -68,7 +68,7 @@ public class GemFireBasicDataSource extends AbstractDataSource {
    */
   public GemFireBasicDataSource(ConfiguredDataSourceProperties configs) throws SQLException {
     super(configs);
-    loadDriver();
+    driverObject = loadDriver();
   }
 
   /**
@@ -83,10 +83,14 @@ public class GemFireBasicDataSource extends AbstractDataSource {
     // connection without username & password
     // we should just return the desired connection
     Connection connection = null;
-    if (driverObject == null) {
+    Driver localDriverRef = driverObject;
+    if (localDriverRef == null) {
       synchronized (this) {
-        if (driverObject == null)
-          loadDriver();
+        localDriverRef = driverObject;
+        if (localDriverRef == null) {
+          localDriverRef = loadDriver();
+          driverObject = localDriverRef;
+        }
       }
     }
 
@@ -128,12 +132,12 @@ public class GemFireBasicDataSource extends AbstractDataSource {
     return getConnection();
   }
 
-  private void loadDriver() throws SQLException {
+  private Driver loadDriver() throws SQLException {
     try {
       if (jdbcDriver != null && jdbcDriver.length() > 0) {
-        loadDriverUsingClassName();
+        return loadDriverUsingClassName();
       } else {
-        loadDriverUsingURL();
+        return loadDriverUsingURL();
       }
     } catch (Exception ex) {
       String msg =
@@ -144,13 +148,13 @@ public class GemFireBasicDataSource extends AbstractDataSource {
     }
   }
 
-  private void loadDriverUsingURL() throws SQLException {
-    driverObject = DriverManager.getDriver(this.url);
+  private Driver loadDriverUsingURL() throws SQLException {
+    return DriverManager.getDriver(this.url);
   }
 
-  private void loadDriverUsingClassName()
+  private Driver loadDriverUsingClassName()
       throws ClassNotFoundException, InstantiationException, IllegalAccessException {
     Class<?> driverClass = ClassPathLoader.getLatest().forName(jdbcDriver);
-    driverObject = (Driver) driverClass.newInstance();
+    return (Driver) driverClass.newInstance();
   }
 }
