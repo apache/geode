@@ -15,9 +15,8 @@
 package org.apache.geode.management.api;
 
 public class Status {
-  boolean success;
+  boolean success = true;
   String message;
-  String exceptionClass;
 
   // needed for json deserialization
   public Status() {}
@@ -25,13 +24,6 @@ public class Status {
   public Status(boolean success, String message) {
     this.success = success;
     this.message = message;
-    this.exceptionClass = null;
-  }
-
-  public Status(Exception exception) {
-    this.success = false;
-    this.message = exception.getMessage();
-    this.exceptionClass = exception.getClass().getName();
   }
 
   public boolean isSuccess() {
@@ -48,13 +40,5 @@ public class Status {
 
   public void setMessage(String message) {
     this.message = message;
-  }
-
-  public String getExceptionClass() {
-    return exceptionClass;
-  }
-
-  public void setExceptionClass(String exceptionClass) {
-    this.exceptionClass = exceptionClass;
   }
 }

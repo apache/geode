@@ -24,7 +24,6 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.GeodeManagementException;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 /**
@@ -71,16 +70,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public ClusterManagementResult create(CacheElement config, String group) {
     String endPoint = getEndpoint(config);
 
-    ClusterManagementResult result = restTemplate.postForEntity(endPoint, config,
-        ClusterManagementResult.class).getBody();
-
-    String exceptionClass = result.getPersistenceStatus().getExceptionClass();
-
-    if (exceptionClass != null) {
-      throw new GeodeManagementException(exceptionClass,
-          result.getPersistenceStatus().getMessage());
-    }
-    return result;
+    // the response status code info is represented by the ClusterManagementResult.errorCode already
+    return restTemplate.postForEntity(endPoint, config, ClusterManagementResult.class).getBody();
   }
 
   @Override

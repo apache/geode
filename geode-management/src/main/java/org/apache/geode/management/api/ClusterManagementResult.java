@@ -21,29 +21,42 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 public class ClusterManagementResult {
+  // this error code should have a one-to-one mapping to the http status code returned
+  // by the controller
+  public enum StatusCode {
+    OK, ERROR, UNAUTHORIZED, UNAUTHENTICATED, ENTITY_EXISTS, ILLEGAL_ARGUMENT
+  }
+
   private Map<String, Status> memberStatuses = new HashMap<>();
 
+  // we will always have statusCode when the object is created
+  private StatusCode statusCode = StatusCode.OK;
   private Status persistenceStatus = new Status();
 
   public ClusterManagementResult() {}
 
   public ClusterManagementResult(boolean success, String message) {
-    this.persistenceStatus = new Status(success, message);
+    setPersistenceStatus(success, message);
   }
 
-  public ClusterManagementResult(Exception exception) {
-    this.persistenceStatus = new Status(exception);
+  public ClusterManagementResult(StatusCode statusCode, String message) {
+    this.statusCode = statusCode;
+    this.persistenceStatus = new Status(statusCode == StatusCode.OK, message);
   }
 
   public void addMemberStatus(String member, boolean success, String message) {
     this.memberStatuses.put(member, new Status(success, message));
-  }
-
-  public void addMemberStatus(String member, Exception exception) {
-    this.memberStatuses.put(member, new Status(exception));
+    // if any member failed, status code will be error
+    if (!success) {
+      statusCode = StatusCode.ERROR;
+    }
   }
 
   public void setPersistenceStatus(boolean success, String message) {
+    // if failed to persist, status code will be error
+    if (!success) {
+      statusCode = StatusCode.ERROR;
+    }
     this.persistenceStatus = new Status(success, message);
   }
 
@@ -56,18 +69,11 @@ public class ClusterManagementResult {
   }
 
   @JsonIgnore
-  public boolean isRealizedOnAllOrNone() {
-    return memberStatuses.values().stream().allMatch(x -> x.success);
-  }
-
-  @JsonIgnore
-  public boolean isPersisted() {
-    return persistenceStatus.isSuccess();
-  }
-
-  @JsonIgnore
   public boolean isSuccessful() {
-    return isPersisted() && isRealizedOnAllOrNone();
+    return statusCode == StatusCode.OK;
   }
 
+  public StatusCode getStatusCode() {
+    return statusCode;
+  }
 }

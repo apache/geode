@@ -48,8 +48,6 @@ public class DisabledClusterConfigTest {
             .hasStatusCode(500)
             .getClusterManagementResult();
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.isPersisted()).isFalse();
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
     assertThat(result.getPersistenceStatus().getMessage())
         .isEqualTo("Cluster configuration service needs to be enabled");
   }
