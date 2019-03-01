@@ -2728,14 +2728,21 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return in.readUTF();
   }
 
+  private static ThreadLocal<byte[]> readStringBytesFromDataInputBuffer =
+      new ThreadLocal<>().withInitial(() -> new byte[100000]);
+
   private static String readStringBytesFromDataInput(DataInput dataInput, int len)
       throws IOException {
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading STRING_BYTES of len={}", len);
     }
-    byte[] buf = new byte[len];
+
+    byte[] buf = readStringBytesFromDataInputBuffer.get();
+    if (buf.length < len) {
+      buf = new byte[len];
+    }
     dataInput.readFully(buf, 0, len);
-    return new String(buf, 0); // intentionally using deprecated constructor
+    return new String(buf, 0, 0, len); // intentionally using deprecated constructor
   }
 
   public static String readString(DataInput in, byte header) throws IOException {
