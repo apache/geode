@@ -43,6 +43,15 @@ dependencies {
   upgradeTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  acceptanceTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  acceptanceTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+
+  acceptanceTestCompile('org.assertj:assertj-core')
+  acceptanceTestCompile('org.awaitility:awaitility')
 
   compile('org.apache.logging.log4j:log4j-api')
 
