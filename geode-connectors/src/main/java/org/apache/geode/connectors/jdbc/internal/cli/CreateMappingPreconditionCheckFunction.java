@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -45,7 +44,6 @@ import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
-import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
@@ -67,42 +65,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 @Experimental
 public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]> {
 
-  private transient DataSourceFactory dataSourceFactory;
-  private transient ClassFactory classFactory;
-  private transient ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory;
-  private transient PdxWriterFactory pdxWriterFactory;
-  private transient TableMetaDataManager tableMetaDataManager;
   private transient File topLevelDir;
-
-  CreateMappingPreconditionCheckFunction(DataSourceFactory factory, ClassFactory classFactory,
-      ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory,
-      PdxWriterFactory pdxWriterFactory,
-      TableMetaDataManager manager) {
-    this.dataSourceFactory = factory;
-    this.classFactory = classFactory;
-    this.reflectionBasedAutoSerializerFactory = reflectionBasedAutoSerializerFactory;
-    this.pdxWriterFactory = pdxWriterFactory;
-    this.tableMetaDataManager = manager;
-  }
-
-  CreateMappingPreconditionCheckFunction() {
-    this(dataSourceName -> JNDIInvoker.getDataSource(dataSourceName),
-        className -> ClassPathLoader.getLatest().forName(className),
-        className -> new ReflectionBasedAutoSerializer(className),
-        (typeRegistry, object) -> new PdxWriterImpl(typeRegistry, object, new PdxOutputStream()),
-        new TableMetaDataManager());
-  }
-
-  // used by java during deserialization
-  private void readObject(ObjectInputStream stream) {
-    this.dataSourceFactory = dataSourceName -> JNDIInvoker.getDataSource(dataSourceName);
-    this.classFactory = className -> ClassPathLoader.getLatest().forName(className);
-    this.reflectionBasedAutoSerializerFactory =
-        className -> new ReflectionBasedAutoSerializer(className);
-    this.pdxWriterFactory =
-        (typeRegistry, object) -> new PdxWriterImpl(typeRegistry, object, new PdxOutputStream());
-    this.tableMetaDataManager = new TableMetaDataManager();
-  }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
@@ -111,7 +74,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
     String remoteInputStreamName = (String) args[1];
     RemoteInputStream remoteInputStream = (RemoteInputStream) args[2];
     String dataSourceName = regionMapping.getDataSourceName();
-    DataSource dataSource = dataSourceFactory.getDataSource(dataSourceName);
+    DataSource dataSource = getDataSource(dataSourceName);
     if (dataSource == null) {
       throw new JdbcConnectorException("JDBC data-source named \"" + dataSourceName
           + "\" not found. Create it with gfsh 'create data-source --pooled --name="
@@ -123,7 +86,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
         remoteInputStreamName, remoteInputStream);
     try (Connection connection = dataSource.getConnection()) {
       TableMetaDataView tableMetaData =
-          tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
+          getTableMetaDataManager().getTableMetaDataView(connection, regionMapping);
       // TODO the table name returned in tableMetaData may be different than
       // the table name specified on the command line at this point.
       // Do we want to update the region mapping to hold the "real" table name
@@ -154,6 +117,31 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
     } catch (SQLException e) {
       throw JdbcConnectorException.createException(e);
     }
+  }
+
+  // unit test mocks this method
+  DataSource getDataSource(String dataSourceName) {
+    return JNDIInvoker.getDataSource(dataSourceName);
+  }
+
+  // unit test mocks this method
+  Class<?> loadClass(String className) throws ClassNotFoundException {
+    return ClassPathLoader.getLatest().forName(className);
+  }
+
+  // unit test mocks this method
+  ReflectionBasedAutoSerializer getReflectionBasedAutoSerializer(String className) {
+    return new ReflectionBasedAutoSerializer(className);
+  }
+
+  // unit test mocks this method
+  PdxWriter createPdxWriter(TypeRegistry typeRegistry, Object object) {
+    return new PdxWriterImpl(typeRegistry, object, new PdxOutputStream());
+  }
+
+  // unit test mocks this method
+  TableMetaDataManager getTableMetaDataManager() {
+    return new TableMetaDataManager();
   }
 
   private FieldMapping createFieldMapping(String jdbcName, String jdbcType, boolean jdbcNullable,
@@ -214,8 +202,8 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
     } catch (SerializationException ex) {
       String className = clazz.getName();
       ReflectionBasedAutoSerializer serializer =
-          this.reflectionBasedAutoSerializerFactory.create(className);
-      PdxWriter writer = this.pdxWriterFactory.create(typeRegistry, object);
+          getReflectionBasedAutoSerializer(className);
+      PdxWriter writer = createPdxWriter(typeRegistry, object);
       boolean result = serializer.toData(object, writer);
       if (!result) {
         throw new JdbcConnectorException(
@@ -256,7 +244,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
           }
         }
       } else {
-        return this.classFactory.loadClass(className);
+        return loadClass(className);
       }
     } catch (ClassNotFoundException ex) {
       throw new JdbcConnectorException(
@@ -265,33 +253,21 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
   }
 
   private URL createURL(File file) {
-    URL url;
     try {
       if (isJar(file.getName())) {
-        url = file.toURI().toURL();
+        return file.toURI().toURL();
       } else {
-        url = this.topLevelDir.toURI().toURL();
+        return this.topLevelDir.toURI().toURL();
       }
     } catch (MalformedURLException e) {
       throw new JdbcConnectorException(
           "The pdx class file \"" + file + "\" could not be converted to a URL, because: " + e);
     }
-    return url;
   }
 
   private boolean isJar(String fileName) {
     String fileExtension = FilenameUtils.getExtension(fileName);
     return fileExtension.equalsIgnoreCase("jar");
-  }
-
-  public interface ClassFactory {
-    public Class loadClass(String className) throws ClassNotFoundException;
-  }
-  public interface ReflectionBasedAutoSerializerFactory {
-    public ReflectionBasedAutoSerializer create(String className);
-  }
-  public interface PdxWriterFactory {
-    public PdxWriter create(TypeRegistry typeRegistry, Object object);
   }
 
   private File copyRemoteInputStreamToTempFile(String className, String remoteInputStreamName,

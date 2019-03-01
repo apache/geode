@@ -17,9 +17,11 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,12 +47,8 @@ import org.apache.geode.SerializationException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.JdbcConnectorException;
-import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataView;
-import org.apache.geode.connectors.jdbc.internal.cli.CreateMappingPreconditionCheckFunction.ClassFactory;
-import org.apache.geode.connectors.jdbc.internal.cli.CreateMappingPreconditionCheckFunction.PdxWriterFactory;
-import org.apache.geode.connectors.jdbc.internal.cli.CreateMappingPreconditionCheckFunction.ReflectionBasedAutoSerializerFactory;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
@@ -74,8 +72,6 @@ public class CreateMappingPreconditionCheckFunctionTest {
   private ResultSender<Object> resultSender;
   private InternalCache cache;
   private TypeRegistry typeRegistry;
-  private DataSourceFactory dataSourceFactory;
-  private ClassFactory classFactory;
   private TableMetaDataManager tableMetaDataManager;
   private TableMetaDataView tableMetaDataView;
   private DataSource dataSource;
@@ -114,21 +110,24 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(context.getArguments()).thenReturn(args);
     when(context.getMemberName()).thenReturn(MEMBER_NAME);
 
-    dataSourceFactory = mock(DataSourceFactory.class);
     dataSource = mock(DataSource.class);
     Connection connection = mock(Connection.class);
     when(dataSource.getConnection()).thenReturn(connection);
-    when(dataSourceFactory.getDataSource(DATA_SOURCE_NAME)).thenReturn(dataSource);
-    classFactory = mock(ClassFactory.class);
-    when(classFactory.loadClass(PDX_CLASS_NAME)).thenReturn(PdxClassDummy.class);
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(pdxType);
     tableMetaDataManager = mock(TableMetaDataManager.class);
     tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
         .thenReturn(tableMetaDataView);
-    function =
-        new CreateMappingPreconditionCheckFunction(dataSourceFactory, classFactory, null, null,
-            tableMetaDataManager);
+    setupFunction();
+  }
+
+  private void setupFunction() throws ClassNotFoundException {
+    function = spy(CreateMappingPreconditionCheckFunction.class);
+    doReturn(dataSource).when(function).getDataSource(DATA_SOURCE_NAME);
+    doReturn(PdxClassDummy.class).when(function).loadClass(PDX_CLASS_NAME);
+    doReturn(null).when(function).getReflectionBasedAutoSerializer(any());
+    doReturn(null).when(function).createPdxWriter(same(typeRegistry), any());
+    doReturn(tableMetaDataManager).when(function).getTableMetaDataManager();
   }
 
   @Test
@@ -143,7 +142,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
   @Test
   public void serializes() {
-    Serializable original = function;
+    Serializable original = new CreateMappingPreconditionCheckFunction();
 
     Object copy = SerializationUtils.clone(original);
 
@@ -153,7 +152,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
   @Test
   public void executeFunctionThrowsIfDataSourceDoesNotExist() throws Exception {
-    when(dataSourceFactory.getDataSource(DATA_SOURCE_NAME)).thenReturn(null);
+    doReturn(null).when(function).getDataSource(DATA_SOURCE_NAME);
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
 
@@ -176,7 +175,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   @Test
   public void executeFunctionThrowsIfClassNotFound() throws ClassNotFoundException {
     ClassNotFoundException ex = new ClassNotFoundException("class not found");
-    when(classFactory.loadClass(PDX_CLASS_NAME)).thenThrow(ex);
+    doThrow(ex).when(function).loadClass(PDX_CLASS_NAME);
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
 
@@ -293,7 +292,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxField1.getFieldType()).thenReturn(FieldType.LONG);
     when(pdxType.getFieldCount()).thenReturn(1);
     when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
-    when(classFactory.loadClass(PDX_CLASS_NAME)).thenReturn(PdxClassDummyNoZeroArg.class);
+    doReturn(PdxClassDummyNoZeroArg.class).when(function).loadClass(PDX_CLASS_NAME);
     when(typeRegistry.getExistingTypeForClass(PdxClassDummyNoZeroArg.class)).thenReturn(null);
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
@@ -321,22 +320,17 @@ public class CreateMappingPreconditionCheckFunctionTest {
         mock(ReflectionBasedAutoSerializer.class);
     PdxWriter pdxWriter = mock(PdxWriter.class);
     when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(true);
-    ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory =
-        mock(ReflectionBasedAutoSerializerFactory.class);
-    when(reflectionBasedAutoSerializerFactory.create(PdxClassDummy.class.getName()))
-        .thenReturn(reflectionedBasedAutoSerializer);
-    PdxWriterFactory pdxWriterFactory = mock(PdxWriterFactory.class);
-    when(pdxWriterFactory.create(same(typeRegistry), any())).thenReturn(pdxWriter);
-    function = new CreateMappingPreconditionCheckFunction(dataSourceFactory, classFactory,
-        reflectionBasedAutoSerializerFactory, pdxWriterFactory,
-        tableMetaDataManager);
+    doReturn(reflectionedBasedAutoSerializer).when(function)
+        .getReflectionBasedAutoSerializer(PdxClassDummy.class.getName());
+    doReturn(pdxWriter).when(function).createPdxWriter(same(typeRegistry), any());
+
     SerializationException ex = new SerializationException("test");
     doThrow(ex).when(cache).registerPdxMetaData(any());
 
     CliFunctionResult result = function.executeFunction(context);
 
     assertThat(result.isSuccessful()).isTrue();
-    verify(reflectionBasedAutoSerializerFactory).create(PdxClassDummy.class.getName());
+    verify(function).getReflectionBasedAutoSerializer(PdxClassDummy.class.getName());
     Object[] outputs = (Object[]) result.getResultObject();
     ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
     assertThat(fieldsMappings).hasSize(1);
@@ -344,7 +338,6 @@ public class CreateMappingPreconditionCheckFunctionTest {
         .isEqualTo(
             new FieldMapping("COL1", FieldType.LONG.name(), "col1", JDBCType.DATE.name(), false));
   }
-
 
   @Test
   public void executeFunctionThrowsGivenPdxRegistrationFailsAndReflectionBasedAutoSerializerThatReturnsFalse()
@@ -364,18 +357,11 @@ public class CreateMappingPreconditionCheckFunctionTest {
         mock(ReflectionBasedAutoSerializer.class);
     PdxWriter pdxWriter = mock(PdxWriter.class);
     when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(false);
-    ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory =
-        mock(ReflectionBasedAutoSerializerFactory.class);
-    when(reflectionBasedAutoSerializerFactory.create(PdxClassDummy.class.getName()))
-        .thenReturn(reflectionedBasedAutoSerializer);
-    PdxWriterFactory pdxWriterFactory = mock(PdxWriterFactory.class);
-    when(pdxWriterFactory.create(same(typeRegistry), any())).thenReturn(pdxWriter);
     SerializationException ex = new SerializationException("test");
     doThrow(ex).when(cache).registerPdxMetaData(any());
-
-    function = new CreateMappingPreconditionCheckFunction(dataSourceFactory, classFactory,
-        reflectionBasedAutoSerializerFactory, pdxWriterFactory,
-        tableMetaDataManager);
+    doReturn(reflectionedBasedAutoSerializer).when(function)
+        .getReflectionBasedAutoSerializer(PdxClassDummy.class.getName());
+    doReturn(pdxWriter).when(function).createPdxWriter(same(typeRegistry), any());
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
 
