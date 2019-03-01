@@ -78,9 +78,9 @@ public class SqlHandler {
 
     System.out.println("Field names in mapping:");
     for(FieldMapping fieldMapping : mapping.getFieldMappings()) {
-      jdbcNames.add(fieldMapping.getJdbcName().toUpperCase());
+      jdbcNames.add(fieldMapping.getJdbcName());
       jdbcTypes.add(fieldMapping.getJdbcType());
-      System.out.println(fieldMapping.getJdbcName().toUpperCase() + " - " + fieldMapping.getJdbcType());
+      System.out.println(fieldMapping.getJdbcName() + " - " + fieldMapping.getJdbcType());
     }
 
     System.out.println("\n");
@@ -92,8 +92,8 @@ public class SqlHandler {
 
     for(String columnName : metaDataView.getColumnNames()) {
       columnTypes.add(metaDataView.getColumnDataType(columnName).getName());
-      columnNames.add(columnName.toUpperCase());
-      System.out.println(columnName.toUpperCase() + " - " + metaDataView.getColumnDataType(columnName).getName());
+      columnNames.add(columnName);
+      System.out.println(columnName + " - " + metaDataView.getColumnDataType(columnName).getName());
     }
 
     if(!jdbcNames.equals(columnNames) || !jdbcTypes.equals(columnTypes)) {
