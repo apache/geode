@@ -21,10 +21,31 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 public class ClusterManagementResult {
-  // this error code should have a one-to-one mapping to the http status code returned
+  // this error code should include a one-to-one mapping to the http status code returned
   // by the controller
   public enum StatusCode {
-    OK, ERROR, UNAUTHORIZED, UNAUTHENTICATED, ENTITY_EXISTS, ILLEGAL_ARGUMENT
+    // configuration failed validation
+    ILLEGAL_ARGUMENT,
+    // user is not authenticated
+    UNAUTHENTICATED,
+    // user is not authorized to do this operation
+    UNAUTHORIZED,
+    // entity you are trying to create already exists
+    ENTITY_EXISTS,
+    // entity you are trying to modify/delete is not found
+    ENTITY_NOT_FOUND,
+    // operation not successful, this includes precondition is not met (either service is not
+    // running
+    // or no servers available, or the configuration encountered some error when trying to be
+    // realized
+    // on one member (configuration is not fully realized on all applicable members).
+    ERROR,
+    // configuration is realized on members, but encountered some error when persisting the
+    // configuration.
+    // the operation is still deemed unsuccessful.
+    FAIL_TO_PERSIST,
+    // operation is successful, configuration is realized and persisted
+    OK
   }
 
   private Map<String, Status> memberStatuses = new HashMap<>();
@@ -58,6 +79,11 @@ public class ClusterManagementResult {
       statusCode = StatusCode.ERROR;
     }
     this.persistenceStatus = new Status(success, message);
+  }
+
+  public void setPersistenceStatus(StatusCode code, String message) {
+    this.statusCode = code;
+    this.persistenceStatus = new Status(code == StatusCode.OK, message);
   }
 
   public Map<String, Status> getMemberStatuses() {

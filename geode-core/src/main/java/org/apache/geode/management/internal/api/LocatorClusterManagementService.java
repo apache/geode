@@ -129,7 +129,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       } catch (Exception e) {
         String message = "failed to update cluster config for " + finalGroup;
         logger.error(message, e);
-        result.setPersistenceStatus(false, message);
+        result.setPersistenceStatus(ClusterManagementResult.StatusCode.FAIL_TO_PERSIST, message);
         return null;
       }
       return cacheConfigForGroup;

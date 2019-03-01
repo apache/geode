@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -48,6 +49,14 @@ public class ManagementControllerAdvice {
         new ClusterManagementResult(ClusterManagementResult.StatusCode.ENTITY_EXISTS,
             e.getMessage()),
         HttpStatus.CONFLICT);
+  }
+
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<ClusterManagementResult> entityNotFound(final Exception e) {
+    return new ResponseEntity<>(
+        new ClusterManagementResult(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND,
+            e.getMessage()),
+        HttpStatus.NOT_FOUND);
   }
 
   @ExceptionHandler({AuthenticationFailedException.class, AuthenticationException.class})
