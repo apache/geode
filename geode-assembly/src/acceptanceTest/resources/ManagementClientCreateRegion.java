@@ -33,7 +33,7 @@ public class ManagementClientTestCreateRegion {
 
     if (!result.isSuccessful()) {
       throw new RuntimeException(
-          "Failure creating region: " + result.getPersistenceStatus().getMessage());
+          "Failure creating region: " + result.getStatusMessage());
     }
 
     System.out.println("Successfully created region: " + regionName);

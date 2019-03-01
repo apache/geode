@@ -21,45 +21,84 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 public class ClusterManagementResult {
+  // this error code should include a one-to-one mapping to the http status code returned
+  // by the controller
+  public enum StatusCode {
+    // configuration failed validation
+    ILLEGAL_ARGUMENT,
+    // user is not authenticated
+    UNAUTHENTICATED,
+    // user is not authorized to do this operation
+    UNAUTHORIZED,
+    // entity you are trying to create already exists
+    ENTITY_EXISTS,
+    // entity you are trying to modify/delete is not found
+    ENTITY_NOT_FOUND,
+    // operation not successful, this includes precondition is not met (either service is not
+    // running
+    // or no servers available, or the configuration encountered some error when trying to be
+    // realized
+    // on one member (configuration is not fully realized on all applicable members).
+    ERROR,
+    // configuration is realized on members, but encountered some error when persisting the
+    // configuration.
+    // the operation is still deemed unsuccessful.
+    FAIL_TO_PERSIST,
+    // operation is successful, configuration is realized and persisted
+    OK
+  }
+
   private Map<String, Status> memberStatuses = new HashMap<>();
 
-  private Status persistenceStatus = new Status();
+  // we will always have statusCode when the object is created
+  private StatusCode statusCode = StatusCode.OK;
+  private String statusMessage;
 
   public ClusterManagementResult() {}
 
   public ClusterManagementResult(boolean success, String message) {
-    this.persistenceStatus = new Status(success, message);
+    setStatus(success, message);
+  }
+
+  public ClusterManagementResult(StatusCode statusCode, String message) {
+    this.statusCode = statusCode;
+    this.statusMessage = message;
   }
 
   public void addMemberStatus(String member, boolean success, String message) {
     this.memberStatuses.put(member, new Status(success, message));
+    // if any member failed, status code will be error
+    if (!success) {
+      statusCode = StatusCode.ERROR;
+    }
   }
 
-  public void setPersistenceStatus(boolean success, String message) {
-    this.persistenceStatus = new Status(success, message);
+  public void setStatus(boolean success, String message) {
+    if (!success) {
+      statusCode = StatusCode.ERROR;
+    }
+    this.statusMessage = message;
+  }
+
+  public void setStatus(StatusCode code, String message) {
+    this.statusCode = code;
+    this.statusMessage = message;
   }
 
   public Map<String, Status> getMemberStatuses() {
     return memberStatuses;
   }
 
-  public Status getPersistenceStatus() {
-    return persistenceStatus;
-  }
-
-  @JsonIgnore
-  public boolean isRealizedOnAllOrNone() {
-    return memberStatuses.values().stream().allMatch(x -> x.success);
-  }
-
-  @JsonIgnore
-  public boolean isPersisted() {
-    return persistenceStatus.isSuccess();
+  public String getStatusMessage() {
+    return statusMessage;
   }
 
   @JsonIgnore
   public boolean isSuccessful() {
-    return isPersisted() && isRealizedOnAllOrNone();
+    return statusCode == StatusCode.OK;
   }
 
+  public StatusCode getStatusCode() {
+    return statusCode;
+  }
 }

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.rest.controllers;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.MalformedObjectNameException;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -28,6 +26,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -38,46 +37,51 @@ public class ManagementControllerAdvice {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ClusterManagementResult> internalError(final Exception e) {
     logger.error(e.getMessage(), e);
-    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+    return new ResponseEntity<>(
+        new ClusterManagementResult(ClusterManagementResult.StatusCode.ERROR,
+            e.getMessage()),
         HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @ExceptionHandler(EntityExistsException.class)
   public ResponseEntity<ClusterManagementResult> entityExists(final Exception e) {
-    // for idempotency, we treat EntityExistsException as OK
-    return new ResponseEntity<>(new ClusterManagementResult(true, e.getMessage()),
-        HttpStatus.OK);
+    return new ResponseEntity<>(
+        new ClusterManagementResult(ClusterManagementResult.StatusCode.ENTITY_EXISTS,
+            e.getMessage()),
+        HttpStatus.CONFLICT);
+  }
+
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<ClusterManagementResult> entityNotFound(final Exception e) {
+    return new ResponseEntity<>(
+        new ClusterManagementResult(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND,
+            e.getMessage()),
+        HttpStatus.NOT_FOUND);
   }
 
   @ExceptionHandler({AuthenticationFailedException.class, AuthenticationException.class})
   public ResponseEntity<ClusterManagementResult> unauthorized(Exception e) {
-    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+    return new ResponseEntity<>(
+        new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHENTICATED,
+            e.getMessage()),
         HttpStatus.UNAUTHORIZED);
   }
 
   @ExceptionHandler({NotAuthorizedException.class, SecurityException.class})
   public ResponseEntity<ClusterManagementResult> forbidden(Exception e) {
-    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+    return new ResponseEntity<>(new ClusterManagementResult(
+        ClusterManagementResult.StatusCode.UNAUTHORIZED, e.getMessage()),
         HttpStatus.FORBIDDEN);
-  }
-
-  @ExceptionHandler(MalformedObjectNameException.class)
-  public ResponseEntity<ClusterManagementResult> badRequest(final MalformedObjectNameException e) {
-    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
-        HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ClusterManagementResult> badRequest(final IllegalArgumentException e) {
-    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
+    return new ResponseEntity<>(
+        new ClusterManagementResult(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT,
+            e.getMessage()),
         HttpStatus.BAD_REQUEST);
   }
 
-  @ExceptionHandler(InstanceNotFoundException.class)
-  public ResponseEntity<ClusterManagementResult> notFound(final InstanceNotFoundException e) {
-    return new ResponseEntity<>(new ClusterManagementResult(false, e.getMessage()),
-        HttpStatus.NOT_FOUND);
-  }
 
   /**
    * Handles an AccessDenied Exception thrown by a REST API web service endpoint, HTTP request
@@ -90,7 +94,9 @@ public class ManagementControllerAdvice {
   @ExceptionHandler(AccessDeniedException.class)
   public ResponseEntity<ClusterManagementResult> handleException(
       final AccessDeniedException cause) {
-    return new ResponseEntity<>(new ClusterManagementResult(false, cause.getMessage()),
+    return new ResponseEntity<>(
+        new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHORIZED,
+            cause.getMessage()),
         HttpStatus.FORBIDDEN);
   }
 
