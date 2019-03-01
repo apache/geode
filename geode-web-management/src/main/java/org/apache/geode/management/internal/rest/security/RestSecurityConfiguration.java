@@ -82,7 +82,8 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
           response.setContentType(MediaType.APPLICATION_JSON_UTF8.getType());
           ClusterManagementResult result =
-              new ClusterManagementResult(false, authException.getMessage());
+              new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHENTICATED,
+                  authException.getMessage());
           objectMapper.writeValue(response.getWriter(), result);
         }
       });
