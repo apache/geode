@@ -16,14 +16,13 @@
  */
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
 
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
   compile('javax.servlet:javax.servlet-api')
 }
 
 war {
     version = ''
 }
-

@@ -17,11 +17,12 @@
 
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
+  compileOnly(platform(project(':boms:geode-all-bom')))
 
   compileOnly(project(':geode-core'))
 
@@ -74,6 +75,7 @@ dependencies {
   integrationTestCompile('org.springframework:spring-test')
   integrationTestCompile('org.springframework.security:spring-security-test')
 
+  integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

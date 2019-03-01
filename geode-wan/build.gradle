@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
   gradleLint.ignore {
     // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
     upgradeTestCompile('xml-apis:xml-apis:1.4.01')

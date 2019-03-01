@@ -15,19 +15,47 @@
  * limitations under the License.
  */
 
-apply plugin: "java"
-apply plugin: "maven-publish"
+plugins {
+  id 'geode-dependency-constraints'
+  id 'java'
+  id 'maven-publish'
+}
 
-jar.enabled = false
-apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../../gradle/publish.gradle"
 
 
 publishing {
   publications {
     maven(MavenPublication) {
+      // publish.gradle injects 'from components.java', as well as some other pom configuration.
       pom.packaging 'pom'
       artifacts = []
+
+      pom {
+        withXml {
+          // Dependency constraints publish the scope of those constraints.
+          // We remove these from our published bom, as they should apply at all scopes. 
+          asNode().dependencyManagement.dependencies.dependency.each {
+            dep -> dep.remove(dep['scope'])
+          }
+        }
+        withXml {
+          // Published Geode artifacts are constrained to match the version of this BOM.
+          // We exclude any child of the :boms subproject
+          def thisNode = asNode()
+          project.rootProject.subprojects.each { p ->
+            if (p.findProperty('constrainVersionInBom')
+                && !project(':boms').allprojects.contains(p)) {
+              def geodeDependency =
+                  thisNode.dependencyManagement.dependencies*.appendNode('dependency')
+               geodeDependency*.appendNode('groupId')*.setValue('org.apache.geode')
+               geodeDependency*.appendNode('artifactId')*.setValue((p.findProperty('artifactName') ?: p.name))
+               geodeDependency*.appendNode('version')*.setValue(p.version.toString())
+            }
+          }
+          thisNode
+        }
+      }
     }
   }
 }
