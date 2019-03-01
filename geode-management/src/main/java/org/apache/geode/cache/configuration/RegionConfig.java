@@ -29,8 +29,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RestfulEndpoint;
 
@@ -360,7 +358,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
    */
   public void setType(String value) {
     this.type = value;
-    if (StringUtils.isNotBlank(value)) {
+    if (value != null && value.length() > 0) {
       setShortcutAttributes();
     }
   }
