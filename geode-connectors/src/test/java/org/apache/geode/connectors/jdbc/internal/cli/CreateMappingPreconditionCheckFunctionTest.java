@@ -490,4 +490,18 @@ public class CreateMappingPreconditionCheckFunctionTest {
     Object[] outputs = (Object[]) result.getResultObject();
     assertThat(outputs[0]).isEqualTo("keyCol1");
   }
+
+  @Test
+  public void executeFunctionThrowsClassNotFoundExceptionGivenDummyRemoteInputStream() {
+    remoteInputStreamName = "remoteInputStreamName";
+    remoteInputStream = mock(RemoteInputStream.class);
+    Object[] args = new Object[] {regionMapping, remoteInputStreamName, remoteInputStream};
+    when(context.getArguments()).thenReturn(args);
+
+    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
+        .hasMessageContaining(
+            "The pdx class \"" + PDX_CLASS_NAME + "\" could not be loaded because: ")
+        .hasMessageContaining("ClassNotFoundException");
+  }
 }
