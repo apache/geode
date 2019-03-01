@@ -58,8 +58,9 @@ public class SqlHandler {
     this.regionMapping = getMappingForRegion(configService, regionName);
     this.dataSource = getDataSource(dataSourceFactory, this.regionMapping.getDataSourceName());
     try {
-      compareTableMetadataWithMapping(tableMetaDataManager, regionMapping);
+      compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, regionName);
     } catch (Exception ex) {
+      System.out.println("Throwing Exception...");
       throw new IllegalStateException("Error comparing mapping with table definition: " + ex. getMessage());
     }
     initializeFieldMappingMaps();
@@ -71,31 +72,32 @@ public class SqlHandler {
         dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
-  private void compareTableMetadataWithMapping(TableMetaDataManager manager, RegionMapping mapping) throws Exception {
+  protected void compareTableMetadataWithMapping(TableMetaDataManager manager, RegionMapping mapping, String regionName) throws Exception {
     Set<String> jdbcNames = new HashSet<>();
     Set<String> jdbcTypes = new HashSet<>();
 
     System.out.println("Field names in mapping:");
     for(FieldMapping fieldMapping : mapping.getFieldMappings()) {
-      jdbcNames.add(fieldMapping.getJdbcName());
+      jdbcNames.add(fieldMapping.getJdbcName().toUpperCase());
       jdbcTypes.add(fieldMapping.getJdbcType());
-      System.out.println(fieldMapping.getJdbcName() + " - " + fieldMapping.getJdbcType());
+      System.out.println(fieldMapping.getJdbcName().toUpperCase() + " - " + fieldMapping.getJdbcType());
     }
 
     System.out.println("\n");
     System.out.println("Column names in mapping:");
 
     TableMetaDataView metaDataView = manager.getTableMetaDataView(getConnection(), mapping);
-    Set<String> columnNames = metaDataView.getColumnNames();
+    Set<String> columnNames = new HashSet<>();
     Set<String> columnTypes = new HashSet<>();
 
-    for(String columnName : columnNames) {
+    for(String columnName : metaDataView.getColumnNames()) {
       columnTypes.add(metaDataView.getColumnDataType(columnName).getName());
-      System.out.println(columnName + " - " + metaDataView.getColumnDataType(columnName).getName());
+      columnNames.add(columnName.toUpperCase());
+      System.out.println(columnName.toUpperCase() + " - " + metaDataView.getColumnDataType(columnName).getName());
     }
 
-    if(!jdbcNames.equals(columnNames) && !jdbcTypes.equals(columnTypes)) {
-      throw new IllegalStateException("Jdbc mapping for (RegionName) does not match table definition");
+    if(!jdbcNames.equals(columnNames) || !jdbcTypes.equals(columnTypes)) {
+      throw new IllegalStateException("Jdbc mapping for \"" + regionName + "\" does not match table definition");
     }
   }
 

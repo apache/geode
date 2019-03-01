@@ -96,6 +96,13 @@ public abstract class JdbcDistributedTest implements Serializable {
         + " (id varchar(10) primary key not null, name varchar(10), age int not null)");
   }
 
+  private void alterTable() throws SQLException {
+    Connection connection = getConnection();
+    Statement statement = connection.createStatement();
+    statement.execute("Alter Table " + TABLE_NAME
+      + " add column new_column varchar(10) not null");
+  }
+
   private void createTableForAllSupportedFields() throws SQLException {
     server = startupRule.startServerVM(1,
         x -> x.withConnectionToLocator(locator.getPort()).withPDXReadSerialized());
@@ -219,6 +226,26 @@ public abstract class JdbcDistributedTest implements Serializable {
       await().untilAsserted(() -> {
         assertThat(asyncWriter.getFailedEvents()).isEqualTo(1);
       });
+    });
+  }
+
+  @Test
+  public void throwsExceptionWhenMappingDoesNotMatchTableDefinition() throws Exception {
+    createTable();
+    createRegionUsingGfsh();
+    createJdbcDataSource();
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
+    alterTable();
+    server.invoke(() -> {
+      PdxInstance pdxEmployee1 =
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+              .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
+
+      String key = "id1";
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      assertThatThrownBy(() -> region.put(key, pdxEmployee1))
+          .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
+              "Error comparing mapping with table definition: Jdbc mapping for \"" + REGION_NAME + "\" does not match table definition");
     });
   }
 
