@@ -38,7 +38,7 @@ public class ClusterManagementResultTest {
   public void failsWhenNotAppliedOnAllMembers() {
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", false, "msg-2");
-    result.setPersistenceStatus(true, "message");
+    result.setStatus(true, "message");
     assertThat(result.isSuccessful()).isFalse();
   }
 
@@ -46,7 +46,7 @@ public class ClusterManagementResultTest {
   public void successfulOnlyWhenResultIsSuccessfulOnAllMembers() {
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", true, "msg-2");
-    result.setPersistenceStatus(true, "message");
+    result.setStatus(true, "message");
     assertThat(result.isSuccessful()).isTrue();
   }
 
@@ -59,19 +59,19 @@ public class ClusterManagementResultTest {
 
   @Test
   public void failsWhenNotPersisted() {
-    result.setPersistenceStatus(false, "msg-1");
+    result.setStatus(false, "msg-1");
     assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
   public void whenNoMembersExists() {
-    result.setPersistenceStatus(false, "msg-1");
+    result.setStatus(false, "msg-1");
     assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
   public void whenNoMemberExists2() {
-    result.setPersistenceStatus(true, "msg-1");
+    result.setStatus(true, "msg-1");
     assertThat(result.isSuccessful()).isTrue();
   }
 
@@ -93,11 +93,11 @@ public class ClusterManagementResultTest {
     assertThat(result.getStatusCode()).isEqualTo(ERROR);
 
     result = new ClusterManagementResult();
-    result.setPersistenceStatus(false, "message");
+    result.setStatus(false, "message");
     assertThat(result.getStatusCode()).isEqualTo(ERROR);
 
     result = new ClusterManagementResult();
-    result.setPersistenceStatus(true, "message");
+    result.setStatus(true, "message");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     result.addMemberStatus("member-1", true, "message-1");
     result.addMemberStatus("member-2", false, "message-2");

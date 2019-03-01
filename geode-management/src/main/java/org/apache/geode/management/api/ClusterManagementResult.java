@@ -52,17 +52,17 @@ public class ClusterManagementResult {
 
   // we will always have statusCode when the object is created
   private StatusCode statusCode = StatusCode.OK;
-  private Status persistenceStatus = new Status();
+  private String statusMessage;
 
   public ClusterManagementResult() {}
 
   public ClusterManagementResult(boolean success, String message) {
-    setPersistenceStatus(success, message);
+    setStatus(success, message);
   }
 
   public ClusterManagementResult(StatusCode statusCode, String message) {
     this.statusCode = statusCode;
-    this.persistenceStatus = new Status(statusCode == StatusCode.OK, message);
+    this.statusMessage = message;
   }
 
   public void addMemberStatus(String member, boolean success, String message) {
@@ -73,25 +73,24 @@ public class ClusterManagementResult {
     }
   }
 
-  public void setPersistenceStatus(boolean success, String message) {
-    // if failed to persist, status code will be error
+  public void setStatus(boolean success, String message) {
     if (!success) {
       statusCode = StatusCode.ERROR;
     }
-    this.persistenceStatus = new Status(success, message);
+    this.statusMessage = message;
   }
 
-  public void setPersistenceStatus(StatusCode code, String message) {
+  public void setStatus(StatusCode code, String message) {
     this.statusCode = code;
-    this.persistenceStatus = new Status(code == StatusCode.OK, message);
+    this.statusMessage = message;
   }
 
   public Map<String, Status> getMemberStatuses() {
     return memberStatuses;
   }
 
-  public Status getPersistenceStatus() {
-    return persistenceStatus;
+  public String getStatusMessage() {
+    return statusMessage;
   }
 
   @JsonIgnore

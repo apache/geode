@@ -15,7 +15,7 @@
 package org.apache.geode.management.api;
 
 public class Status {
-  boolean success = true;
+  boolean success;
   String message;
 
   // needed for json deserialization
