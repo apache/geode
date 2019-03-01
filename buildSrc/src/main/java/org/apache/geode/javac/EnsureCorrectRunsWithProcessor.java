@@ -35,11 +35,12 @@ import javax.tools.Diagnostic;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-
 @SupportedAnnotationTypes("org.junit.runner.RunWith")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class EnsureCorrectRunsWithProcessor extends AbstractProcessor {
+
+  private static final String FACTORY_CANONICAL_NAME = "org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory";
+  private static final String FACTORY_SIMPLE_NAME = "CategoryWithParameterizedRunnerFactory";
 
   private static final String RUNWITH = RunWith.class.getCanonicalName();
 
@@ -122,8 +123,8 @@ public class EnsureCorrectRunsWithProcessor extends AbstractProcessor {
       return false;
     }
 
-    return runnerFactoryValue.equals(CategoryWithParameterizedRunnerFactory.class.getCanonicalName())
-        || runnerFactoryValue.equals(CategoryWithParameterizedRunnerFactory.class.getSimpleName());
+    return runnerFactoryValue.equals(FACTORY_CANONICAL_NAME)
+        || runnerFactoryValue.equals(FACTORY_SIMPLE_NAME);
   }
 
   private void error(Element e, String msg, Object... args) {

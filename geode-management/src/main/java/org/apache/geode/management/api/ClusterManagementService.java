@@ -32,7 +32,6 @@ public interface ClusterManagementService {
    * @param config this holds the configuration attributes of the element to be created on the
    *        cluster
    * @param group the server group to which this config applies
-   * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
   ClusterManagementResult create(CacheElement config, String group);

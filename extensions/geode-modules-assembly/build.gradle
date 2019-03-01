@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import org.apache.geode.gradle.plugins.DependencyConstraints
 import org.apache.tools.ant.filters.ReplaceTokens
 apply plugin: 'maven-publish'
 
@@ -22,12 +23,10 @@ configurations {
   slf4jDeps
 }
 
-apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
-
 
 dependencies {
-  slf4jDeps 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
-  slf4jDeps 'org.slf4j:slf4j-jdk14:' + project.'slf4j-api.version'
+  slf4jDeps 'org.slf4j:slf4j-api:' + DependencyConstraints.get('slf4j-api.version')
+  slf4jDeps 'org.slf4j:slf4j-jdk14:' + DependencyConstraints.get('slf4j-api.version')
 }
 
 jar.enabled = true
@@ -205,17 +204,17 @@ task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar
       include 'modify_war'
 
       filter(ReplaceTokens, tokens:['GEODE_VERSION': version])
-      filter(ReplaceTokens, tokens:['SLF4J_VERSION': project.'slf4j-api.version'])
-      filter(ReplaceTokens, tokens:['LOG4J_VERSION': project.'log4j.version'])
-      filter(ReplaceTokens, tokens:['FASTUTIL_VERSION': project.'fastutil.version'])
-      filter(ReplaceTokens, tokens:['ANTLR_VERSION': project.'antlr.version'])
-      filter(ReplaceTokens, tokens:['TX_VERSION': project.'javax.transaction-api.version'])
-      filter(ReplaceTokens, tokens:['JGROUPS_VERSION': project.'jgroups.version'])
-      filter(ReplaceTokens, tokens:['JETTY_VERSION': project.'jetty.version'])
-      filter(ReplaceTokens, tokens:['SHIRO_VERSION': project.'shiro.version'])
-      filter(ReplaceTokens, tokens:['COMMONS_IO_VERSION': project.'commons-io.version'])
-      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': project.'commons-lang3.version'])
-      filter(ReplaceTokens, tokens:['COMMONS_VALIDATOR_VERSION': project.'commons-validator.version'])
+      filter(ReplaceTokens, tokens:['SLF4J_VERSION': DependencyConstraints.get('slf4j-api.version')])
+      filter(ReplaceTokens, tokens:['LOG4J_VERSION': DependencyConstraints.get('log4j.version')])
+      filter(ReplaceTokens, tokens:['FASTUTIL_VERSION': DependencyConstraints.get('fastutil.version')])
+      filter(ReplaceTokens, tokens:['ANTLR_VERSION': DependencyConstraints.get('antlr.version')])
+      filter(ReplaceTokens, tokens:['TX_VERSION': DependencyConstraints.get('javax.transaction-api.version')])
+      filter(ReplaceTokens, tokens:['JGROUPS_VERSION': DependencyConstraints.get('jgroups.version')])
+      filter(ReplaceTokens, tokens:['JETTY_VERSION': DependencyConstraints.get('jetty.version')])
+      filter(ReplaceTokens, tokens:['SHIRO_VERSION': DependencyConstraints.get('shiro.version')])
+      filter(ReplaceTokens, tokens:['COMMONS_IO_VERSION': DependencyConstraints.get('commons-io.version')])
+      filter(ReplaceTokens, tokens:['COMMONS_LANG_VERSION': DependencyConstraints.get('commons-lang3.version')])
+      filter(ReplaceTokens, tokens:['COMMONS_VALIDATOR_VERSION': DependencyConstraints.get('commons-validator.version')])
     }
   }
 

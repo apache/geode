@@ -17,11 +17,11 @@
 
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
   compileOnly('javax.servlet:javax.servlet-api')
   compileOnly(project(path: ':geode-core', configuration: 'classesOutput'))
 

@@ -71,8 +71,8 @@ public class RegionManagementIntegrationTest {
         .with(POST_PROCESSOR)
         .content(json))
         .andExpect(status().isInternalServerError())
-        .andExpect(jsonPath("$.persistenceStatus.success", is(false)))
-        .andExpect(jsonPath("$.persistenceStatus.message",
+        .andExpect(jsonPath("$.statusCode", is("ERROR")))
+        .andExpect(jsonPath("$.statusMessage",
             is("no members found to create cache element")));
   }
 

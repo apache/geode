@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
@@ -71,10 +70,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public ClusterManagementResult create(CacheElement config, String group) {
     String endPoint = getEndpoint(config);
 
-    ResponseEntity<ClusterManagementResult> result = restTemplate.postForEntity(endPoint, config,
-        ClusterManagementResult.class);
-
-    return result.getBody();
+    // the response status code info is represented by the ClusterManagementResult.errorCode already
+    return restTemplate.postForEntity(endPoint, config, ClusterManagementResult.class).getBody();
   }
 
   @Override

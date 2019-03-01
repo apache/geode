@@ -60,7 +60,7 @@ public class LocatorClusterManagementServiceTest {
     service = new LocatorClusterManagementService(distributionManager, null);
     result = service.create(regionConfig, "cluster");
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getPersistenceStatus().getMessage())
+    assertThat(result.getStatusMessage())
         .contains("Cluster configuration service needs to be enabled");
   }
 
@@ -90,8 +90,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(Collections.emptySet()).when(service).findMembers(any(), any());
     result = service.create(regionConfig, "cluster");
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
-    assertThat(result.getPersistenceStatus().getMessage())
+    assertThat(result.getStatusMessage())
         .contains("no members found to create cache element");
   }
 
@@ -109,9 +108,7 @@ public class LocatorClusterManagementServiceTest {
     regionConfig.setName("test");
     result = service.create(regionConfig, "cluster");
     assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.isRealizedOnAllOrNone()).isFalse();
-    assertThat(result.isPersisted()).isFalse();
-    assertThat(result.getPersistenceStatus().getMessage())
+    assertThat(result.getStatusMessage())
         .contains("Failed to apply the update on all members");
   }
 }

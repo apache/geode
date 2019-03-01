@@ -676,6 +676,7 @@ javadoc/org/apache/geode/management/PersistentMemberDetails.html
 javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
+javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
 javadoc/org/apache/geode/management/api/RestfulEndpoint.html
@@ -889,6 +890,7 @@ lib/commons-validator-1.6.jar
 lib/fastutil-8.2.2.jar
 lib/findbugs-annotations-1.3.9-1.jar
 lib/geo-0.7.1.jar
+lib/geode-all-bom-0.0.0.jar
 lib/geode-common-0.0.0.jar
 lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar

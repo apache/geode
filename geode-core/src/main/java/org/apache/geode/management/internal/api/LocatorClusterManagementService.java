@@ -113,8 +113,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
             functionResult.isSuccessful(),
             functionResult.getStatusMessage()));
 
-    if (!result.isRealizedOnAllOrNone()) {
-      result.setPersistenceStatus(false, "Failed to apply the update on all members.");
+    // if any false result is added to the member list
+    if (result.getStatusCode() != ClusterManagementResult.StatusCode.OK) {
+      result.setStatus(false, "Failed to apply the update on all members.");
       return result;
     }
 
@@ -123,12 +124,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
     persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
       try {
         configurationMutator.add(config, cacheConfigForGroup);
-        result.setPersistenceStatus(true,
+        result.setStatus(true,
             "successfully persisted config for " + finalGroup);
       } catch (Exception e) {
         String message = "failed to update cluster config for " + finalGroup;
         logger.error(message, e);
-        result.setPersistenceStatus(false, message);
+        result.setStatus(ClusterManagementResult.StatusCode.FAIL_TO_PERSIST, message);
         return null;
       }
       return cacheConfigForGroup;
