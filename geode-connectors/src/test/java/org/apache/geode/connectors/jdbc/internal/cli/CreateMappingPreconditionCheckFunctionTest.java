@@ -78,11 +78,11 @@ public class CreateMappingPreconditionCheckFunctionTest {
   private PdxType pdxType = mock(PdxType.class);
   private String remoteInputStreamName;
   private RemoteInputStream remoteInputStream;
+  private final Object[] inputArgs = new Object[3];
 
   private CreateMappingPreconditionCheckFunction function;
 
   public static class PdxClassDummy {
-
   }
 
   public static class PdxClassDummyNoZeroArg {
@@ -99,7 +99,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     regionMapping = mock(RegionMapping.class);
     remoteInputStreamName = null;
     remoteInputStream = null;
-    Object[] args = new Object[] {regionMapping, remoteInputStreamName, remoteInputStream};
+    setupInputArgs();
 
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getPdxName()).thenReturn(PDX_CLASS_NAME);
@@ -107,7 +107,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
-    when(context.getArguments()).thenReturn(args);
+    when(context.getArguments()).thenReturn(inputArgs);
     when(context.getMemberName()).thenReturn(MEMBER_NAME);
 
     dataSource = mock(DataSource.class);
@@ -119,6 +119,12 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(tableMetaDataManager.getTableMetaDataView(connection, regionMapping))
         .thenReturn(tableMetaDataView);
     setupFunction();
+  }
+
+  private void setupInputArgs() {
+    inputArgs[0] = regionMapping;
+    inputArgs[1] = remoteInputStreamName;
+    inputArgs[2] = remoteInputStream;
   }
 
   private void setupFunction() throws ClassNotFoundException {
@@ -481,10 +487,10 @@ public class CreateMappingPreconditionCheckFunctionTest {
   public void executeFunctionThrowsClassNotFoundExceptionGivenDummyRemoteInputStream() {
     remoteInputStreamName = "remoteInputStreamName";
     remoteInputStream = mock(RemoteInputStream.class);
-    Object[] args = new Object[] {regionMapping, remoteInputStreamName, remoteInputStream};
-    when(context.getArguments()).thenReturn(args);
+    setupInputArgs();
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+
     assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
         .hasMessageContaining(
             "The pdx class \"" + PDX_CLASS_NAME + "\" could not be loaded because: ")
