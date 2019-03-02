@@ -76,6 +76,10 @@ dependencies {
 
 ext.moduleName = group + '.cq'
 
+tasks.withType(Test){
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+}
+
 jar {
   inputs.property("moduleName", moduleName)
   manifest {
