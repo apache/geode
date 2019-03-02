@@ -52,7 +52,6 @@ public class PdxToJSON {
 
   public String getJSON() {
     JsonFactory jf = new JsonFactory();
-    // OutputStream os = new ByteArrayOutputStream();
     HeapDataOutputStream hdos = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
@@ -155,7 +154,7 @@ public class PdxToJSON {
 
     jg.writeStartObject();
 
-    Iterator iter = (Iterator) map.entrySet().iterator();
+    Iterator iter = map.entrySet().iterator();
     while (iter.hasNext()) {
       Map.Entry entry = (Map.Entry) iter.next();
 
@@ -227,20 +226,9 @@ public class PdxToJSON {
       jg.writeEndArray();
     } else {
       throw new IllegalStateException(
-          "PdxInstance returns unknwon pdxfield " + pf + " for type " + value);
+          "PdxInstance returns unknown pdxfield " + pf + " for type " + value);
     }
   }
-
-  private <T> void getJSONStringFromArray1(JsonGenerator jg, T[] array, String pf)
-      throws JsonGenerationException, IOException {
-    jg.writeStartArray();
-
-    for (T obj : array) {
-      writeValue(jg, obj, pf);
-    }
-    jg.writeEndArray();
-  }
-
 
   private void getJSONStringFromCollection(JsonGenerator jg, Collection<?> coll, String pf)
       throws JsonGenerationException, IOException {

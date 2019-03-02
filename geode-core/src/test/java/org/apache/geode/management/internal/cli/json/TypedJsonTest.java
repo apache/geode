@@ -19,7 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +41,11 @@ public class TypedJsonTest {
   @Test
   public void canBeMocked() throws Exception {
     TypedJson mockTypedJson = mock(TypedJson.class);
-    Writer writer = null;
     Object value = new Object();
 
-    mockTypedJson.writeVal(writer, value);
+    mockTypedJson.add("key", value);
 
-    verify(mockTypedJson, times(1)).writeVal(writer, value);
+    verify(mockTypedJson, times(1)).add("key", value);
   }
 
   @Test
@@ -57,7 +55,7 @@ public class TypedJsonTest {
     list.add("TWO");
     list.add("THREE");
 
-    TypedJson typedJson = new TypedJson(RESULT, list);
+    TypedJson typedJson = new TypedJson(RESULT, list, 100);
 
     checkResult(typedJson);
   }
@@ -69,7 +67,7 @@ public class TypedJsonTest {
       intArray[i] = i;
     }
 
-    TypedJson typedJson = new TypedJson(RESULT, intArray);
+    TypedJson typedJson = new TypedJson(RESULT, intArray, 100);
 
     checkResult(typedJson);
   }
@@ -81,7 +79,7 @@ public class TypedJsonTest {
       list.add("BIG_COLL_" + i);
     }
 
-    TypedJson typedJson = new TypedJson(RESULT, list);
+    TypedJson typedJson = new TypedJson(RESULT, list, 100);
 
     checkResult(typedJson);
   }
@@ -90,14 +88,14 @@ public class TypedJsonTest {
   public void testEnumContainer() throws Exception {
     EnumContainer enumContainer = new EnumContainer(Currency.DIME);
 
-    TypedJson typedJson = new TypedJson(RESULT, enumContainer);
+    TypedJson typedJson = new TypedJson(RESULT, enumContainer, 100);
 
     checkResult(typedJson);
   }
 
   @Test
   public void testEnum() throws Exception {
-    TypedJson typedJson = new TypedJson(RESULT, Currency.DIME);
+    TypedJson typedJson = new TypedJson(RESULT, Currency.DIME, 100);
 
     checkResult(typedJson);
   }
@@ -110,7 +108,7 @@ public class TypedJsonTest {
     list.add(Currency.QUARTER);
     list.add(Currency.NICKLE);
 
-    TypedJson typedJson = new TypedJson(RESULT, list);
+    TypedJson typedJson = new TypedJson(RESULT, list, 100);
 
     checkResult(typedJson);
   }
@@ -123,7 +121,7 @@ public class TypedJsonTest {
     map.put("3", "THREE");
     map.put("4", "FOUR");
 
-    TypedJson typedJson = new TypedJson(RESULT, map);
+    TypedJson typedJson = new TypedJson(RESULT, map, 100);
 
     checkResult(typedJson);
   }
@@ -132,7 +130,7 @@ public class TypedJsonTest {
   public void testBigDecimal() throws Exception {
     BigDecimal dc = new BigDecimal(20);
 
-    TypedJson typedJson = new TypedJson(RESULT, dc);
+    TypedJson typedJson = new TypedJson(RESULT, dc, 100);
 
     checkResult(typedJson);
   }
@@ -141,14 +139,16 @@ public class TypedJsonTest {
   public void testObjects() throws Exception {
     Object object = new Object();
 
-    TypedJson typedJson = new TypedJson(RESULT, object);
+    TypedJson typedJson = new TypedJson(RESULT, object, 100);
 
     checkResult(typedJson);
   }
 
   private void checkResult(final TypedJson typedJson) throws GfJsonException {
-    GfJsonObject gfJsonObject = new GfJsonObject(typedJson.toString());
-    System.out.println(gfJsonObject);
+    String jsonString = typedJson.toString();
+    System.out.println("typedJson.toString=" + jsonString);
+    GfJsonObject gfJsonObject = new GfJsonObject(jsonString);
+    System.out.println("gfJsonObject=" + gfJsonObject);
     assertThat(gfJsonObject.get(RESULT)).isNotNull();
   }
 

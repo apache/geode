@@ -46,7 +46,7 @@ public class TypedJsonQueryIntegrationTest {
   public void testUserObject() throws Exception {
     Portfolio p = new Portfolio(2);
 
-    TypedJson typedJson = new TypedJson(RESULT, p);
+    TypedJson typedJson = new TypedJson(RESULT, p, 100);
 
     checkResult(typedJson);
   }
@@ -55,7 +55,7 @@ public class TypedJsonQueryIntegrationTest {
   public void testUserObjectArray() throws Exception {
     Portfolio[] portfolios = createPortfoliosAndPositions(2);
 
-    TypedJson typedJson = new TypedJson(RESULT, portfolios);
+    TypedJson typedJson = new TypedJson(RESULT, portfolios, 100);
 
     checkResult(typedJson);
   }
@@ -65,7 +65,7 @@ public class TypedJsonQueryIntegrationTest {
     Portfolio[] portfolios = createPortfoliosAndPositions(1000);
     System.out.println("Size Of port " + ObjectSizer.REFLECTION_SIZE.sizeof(portfolios));
 
-    TypedJson typedJson = new TypedJson(RESULT, portfolios);
+    TypedJson typedJson = new TypedJson(RESULT, portfolios, 100);
     System.out.println("Size Of json " + ObjectSizer.REFLECTION_SIZE.sizeof(typedJson));
 
     checkResult(typedJson);
@@ -75,7 +75,7 @@ public class TypedJsonQueryIntegrationTest {
   public void testQueryLike() throws Exception {
     Portfolio[] portfolios = createPortfoliosAndPositions(2);
 
-    TypedJson typedJson = new TypedJson(RESULT, null);
+    TypedJson typedJson = new TypedJson(RESULT, null, 100);
     typedJson.add("member", "server1");
     // checkResult(typedJson); -- fails
 

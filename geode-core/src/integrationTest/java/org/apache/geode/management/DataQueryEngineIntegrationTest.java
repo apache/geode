@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.DataQueryEngine;
-import org.apache.geode.management.internal.cli.json.TypedJson;
+import org.apache.geode.management.internal.beans.QueryDataFunction;
 import org.apache.geode.management.model.EmptyObject;
 import org.apache.geode.management.model.Item;
 import org.apache.geode.management.model.Order;
@@ -61,7 +61,8 @@ public class DataQueryEngineIntegrationTest {
    * Number of elements to be shown in queryData operation if query results contain collections like
    * Map, List etc.
    */
-  private static final int queryCollectionsDepth = TypedJson.DEFAULT_COLLECTION_ELEMENT_LIMIT;
+  private static final int queryCollectionsDepth =
+      QueryDataFunction.DEFAULT_COLLECTION_ELEMENT_LIMIT;
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule().withNoCacheServer()

@@ -56,6 +56,11 @@ public class QueryDataFunction implements Function, InternalEntity {
 
   private static final Logger logger = LogService.getLogger();
 
+  /**
+   * Limit of collection length to be serialized in JSON format.
+   */
+  public static final int DEFAULT_COLLECTION_ELEMENT_LIMIT = 100;
+
   private static final String MEMBER_KEY = "member";
   private static final String RESULT_KEY = "result";
   private static final String NO_DATA_FOUND = "No Data Found";

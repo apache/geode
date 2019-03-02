@@ -71,7 +71,7 @@ public class TypedJsonPdxIntegrationTest {
     pdxInstanceFactory.writeObject("object", new SerializableObject(2));
     PdxInstance pdxInstance = pdxInstanceFactory.create();
 
-    TypedJson typedJson = new TypedJson(RESULT, pdxInstance);
+    TypedJson typedJson = new TypedJson(RESULT, pdxInstance, 100);
 
     checkResult(typedJson);
   }
@@ -83,7 +83,7 @@ public class TypedJsonPdxIntegrationTest {
     pdxInstanceFactory.writeString("secId", "IBM");
     PdxContainer pdxContainer = new PdxContainer(pdxInstanceFactory.create(), 1);
 
-    TypedJson typedJson = new TypedJson(RESULT, pdxContainer);
+    TypedJson typedJson = new TypedJson(RESULT, pdxContainer, 100);
 
     checkResult(typedJson);
   }
