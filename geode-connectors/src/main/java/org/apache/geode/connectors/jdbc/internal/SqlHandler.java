@@ -26,8 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.management.OperationsException;
 import javax.sql.DataSource;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.Experimental;
@@ -38,6 +39,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
@@ -49,6 +51,7 @@ public class SqlHandler {
   private final Map<String, FieldMapping> pdxToFieldMappings = new HashMap<>();
   private final Map<String, FieldMapping> jdbcToFieldMappings = new HashMap<>();
   private volatile SqlToPdxInstance sqlToPdxInstance;
+  private final Logger logger = LogService.getLogger();
 
   public SqlHandler(InternalCache cache, String regionName,
       TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
@@ -61,7 +64,8 @@ public class SqlHandler {
       compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, regionName);
     } catch (Exception ex) {
       System.out.println("Throwing Exception...");
-      throw new IllegalStateException("Error comparing mapping with table definition: " + ex. getMessage());
+      throw new IllegalStateException(
+          "Error comparing mapping with table definition: " + ex.getMessage());
     }
     initializeFieldMappingMaps();
   }
@@ -72,12 +76,13 @@ public class SqlHandler {
         dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
-  protected void compareTableMetadataWithMapping(TableMetaDataManager manager, RegionMapping mapping, String regionName) throws Exception {
+  protected void compareTableMetadataWithMapping(TableMetaDataManager manager,
+      RegionMapping mapping, String regionName) throws Exception {
     Set<String> jdbcNames = new HashSet<>();
     Set<String> jdbcTypes = new HashSet<>();
 
     System.out.println("Field names in mapping:");
-    for(FieldMapping fieldMapping : mapping.getFieldMappings()) {
+    for (FieldMapping fieldMapping : mapping.getFieldMappings()) {
       jdbcNames.add(fieldMapping.getJdbcName());
       jdbcTypes.add(fieldMapping.getJdbcType());
       System.out.println(fieldMapping.getJdbcName() + " - " + fieldMapping.getJdbcType());
@@ -90,14 +95,35 @@ public class SqlHandler {
     Set<String> columnNames = new HashSet<>();
     Set<String> columnTypes = new HashSet<>();
 
-    for(String columnName : metaDataView.getColumnNames()) {
+    for (String columnName : metaDataView.getColumnNames()) {
       columnTypes.add(metaDataView.getColumnDataType(columnName).getName());
       columnNames.add(columnName);
       System.out.println(columnName + " - " + metaDataView.getColumnDataType(columnName).getName());
     }
 
-    if(!jdbcNames.equals(columnNames) || !jdbcTypes.equals(columnTypes)) {
-      throw new IllegalStateException("Jdbc mapping for \"" + regionName + "\" does not match table definition");
+    if (!jdbcNames.equals(columnNames) || !jdbcTypes.equals(columnTypes)) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Error detected when comparing mapping for region \"" + regionName
+          + "\" with table definition: \n"
+          + "\nDefinition from Field Mappings (" + jdbcNames.size() + " field mappings found):");
+
+      for (FieldMapping fieldMapping : mapping.getFieldMappings()) {
+        sb.append("\n" + fieldMapping.getJdbcName() + " - " + fieldMapping.getJdbcType());
+      }
+
+      sb.append("\n\nDefinition from Table Metadata (" + columnNames.size() + " columns found):");
+
+      for (String name : metaDataView.getColumnNames()) {
+        sb.append("\n" + name + " - " + metaDataView.getColumnDataType(name));
+      }
+
+      sb.append("\n\nDestroy and recreate the JDBC mapping for \"" + regionName
+          + "\" to resolve this error.");
+
+      logger.error(sb.toString());
+
+      throw new IllegalStateException("Jdbc mapping for \"" + regionName
+          + "\" does not match table definition, check logs for more details.");
     }
   }
 

@@ -100,7 +100,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     Connection connection = getConnection();
     Statement statement = connection.createStatement();
     statement.execute("Alter Table " + TABLE_NAME
-      + " add column new_column varchar(10) not null");
+        + " add column new_column varchar(10) not null");
   }
 
   private void createTableForAllSupportedFields() throws SQLException {
@@ -231,6 +231,8 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   @Test
   public void throwsExceptionWhenMappingDoesNotMatchTableDefinition() throws Exception {
+    IgnoredException.addIgnoredException(
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
     createTable();
     createRegionUsingGfsh();
     createJdbcDataSource();
@@ -245,7 +247,8 @@ public abstract class JdbcDistributedTest implements Serializable {
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put(key, pdxEmployee1))
           .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
-              "Error comparing mapping with table definition: Jdbc mapping for \"" + REGION_NAME + "\" does not match table definition");
+              "Error comparing mapping with table definition: Jdbc mapping for \"" + REGION_NAME
+                  + "\" does not match table definition, check logs for more details.");
     });
   }
 

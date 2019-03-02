@@ -66,15 +66,15 @@ public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest
   protected List<FieldMapping> getSupportedPdxFieldsTableFieldMappings() {
     List<FieldMapping> fieldMappings = Arrays.asList(
         new FieldMapping("id", FieldType.STRING.name(), "id", JDBCType.VARCHAR.name(), false),
-        new FieldMapping("aboolean", FieldType.BOOLEAN.name(), "aboolean", JDBCType.SMALLINT.name(),
+        new FieldMapping("aboolean", FieldType.BOOLEAN.name(), "aboolean", JDBCType.BIT.name(),
             true),
         new FieldMapping("aByte", FieldType.BYTE.name(), "abyte", JDBCType.SMALLINT.name(), true),
         new FieldMapping("ASHORT", FieldType.SHORT.name(), "ashort", JDBCType.SMALLINT.name(),
             true),
         new FieldMapping("anint", FieldType.INT.name(), "anint", JDBCType.INTEGER.name(), true),
         new FieldMapping("along", FieldType.LONG.name(), "along", JDBCType.BIGINT.name(), true),
-        new FieldMapping("afloat", FieldType.FLOAT.name(), "afloat", JDBCType.FLOAT.name(), true),
-        new FieldMapping("adouble", FieldType.DOUBLE.name(), "adouble", JDBCType.FLOAT.name(),
+        new FieldMapping("afloat", FieldType.FLOAT.name(), "afloat", JDBCType.DOUBLE.name(), true),
+        new FieldMapping("adouble", FieldType.DOUBLE.name(), "adouble", JDBCType.DOUBLE.name(),
             true),
         new FieldMapping("astring", FieldType.STRING.name(), "astring", JDBCType.VARCHAR.name(),
             true),

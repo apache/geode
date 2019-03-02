@@ -69,8 +69,8 @@ public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
             true),
         new FieldMapping("anint", FieldType.INT.name(), "anint", JDBCType.INTEGER.name(), true),
         new FieldMapping("along", FieldType.LONG.name(), "along", JDBCType.BIGINT.name(), true),
-        new FieldMapping("afloat", FieldType.FLOAT.name(), "afloat", JDBCType.FLOAT.name(), true),
-        new FieldMapping("adouble", FieldType.DOUBLE.name(), "adouble", JDBCType.FLOAT.name(),
+        new FieldMapping("afloat", FieldType.FLOAT.name(), "afloat", JDBCType.REAL.name(), true),
+        new FieldMapping("adouble", FieldType.DOUBLE.name(), "adouble", JDBCType.REAL.name(),
             true),
         new FieldMapping("astring", FieldType.STRING.name(), "astring", JDBCType.VARCHAR.name(),
             true),
@@ -78,7 +78,7 @@ public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
         new FieldMapping("anobject", FieldType.OBJECT.name(), "anobject", JDBCType.VARCHAR.name(),
             true),
         new FieldMapping("abytearray", FieldType.BYTE_ARRAY.name(), "abytearray",
-            JDBCType.BLOB.name(), true),
+            JDBCType.BINARY.name(), true),
         new FieldMapping("achar", FieldType.CHAR.name(), "achar", JDBCType.CHAR.name(), true));
     return fieldMappings;
   }

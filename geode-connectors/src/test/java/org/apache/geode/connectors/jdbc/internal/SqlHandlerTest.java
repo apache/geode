@@ -147,8 +147,9 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void compareTableMetaDataWithMappingThrowsNoExceptionWithMatchingMapping() throws Exception {
-    handler.compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, "regionName");
+  public void compareTableMetaDataWithMappingThrowsNoExceptionWithMatchingMapping()
+      throws Exception {
+    createSqlHandler();
   }
 
   @Test(expected = IllegalStateException.class)
@@ -156,13 +157,15 @@ public class SqlHandlerTest {
     String extraColumn = "extra_column";
     columnNames.add(extraColumn);
     when(tableMetaDataView.getColumnDataType(extraColumn)).thenReturn(JDBCType.VARCHAR);
-    handler.compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, "regionName");
+    createSqlHandler();
+    // handler.compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, "regionName");
   }
 
   @Test(expected = IllegalStateException.class)
   public void compareTableMetaDataWithMappingThrowsExceptionWithRemovedColumn() throws Exception {
     columnNames.remove(fieldName);
-    handler.compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, "regionName");
+    createSqlHandler();
+    // handler.compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, "regionName");
   }
 
   @Test(expected = IllegalStateException.class)
@@ -808,66 +811,67 @@ public class SqlHandlerTest {
         .isEqualTo(KEY_COLUMN);
   }
 
-//  @Test
-//  public void getEntryColumnDataReturnsCorrectColumnNameWhenPdxNameIsEmpty() {
-//    String nonKeyColumn = "otherColumn";
-//    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
-//    FieldMapping fieldMapping1 = mock(FieldMapping.class);
-//    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
-//    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
-//    when(fieldMapping1.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
-//    FieldMapping fieldMapping2 = mock(FieldMapping.class);
-//    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn);
-//    when(fieldMapping2.getPdxName()).thenReturn("");
-//    when(fieldMapping2.getJdbcType()).thenReturn(JDBCType.INTEGER.getName());
-//    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
-//    columnNames.clear();
-//    columnNames.add(KEY_COLUMN);
-//    columnNames.add(nonKeyColumn);
-//    when(tableMetaDataView.getColumnDataType(KEY_COLUMN)).thenReturn(JDBCType.VARCHAR);
-//    when(tableMetaDataView.getColumnDataType(nonKeyColumn)).thenReturn(JDBCType.INTEGER);
-//    createSqlHandler();
-//
-//    EntryColumnData entryColumnData =
-//        handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
-//
-//    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
-//    assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
-//    assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
-//        .isEqualTo(nonKeyColumn);
-//    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
-//    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
-//        .isEqualTo(KEY_COLUMN);
-//  }
+  // @Test
+  // public void getEntryColumnDataReturnsCorrectColumnNameWhenPdxNameIsEmpty() {
+  // String nonKeyColumn = "otherColumn";
+  // when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+  // FieldMapping fieldMapping1 = mock(FieldMapping.class);
+  // when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+  // when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+  // when(fieldMapping1.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
+  // FieldMapping fieldMapping2 = mock(FieldMapping.class);
+  // when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn);
+  // when(fieldMapping2.getPdxName()).thenReturn("");
+  // when(fieldMapping2.getJdbcType()).thenReturn(JDBCType.INTEGER.getName());
+  // when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+  // columnNames.clear();
+  // columnNames.add(KEY_COLUMN);
+  // columnNames.add(nonKeyColumn);
+  // when(tableMetaDataView.getColumnDataType(KEY_COLUMN)).thenReturn(JDBCType.VARCHAR);
+  // when(tableMetaDataView.getColumnDataType(nonKeyColumn)).thenReturn(JDBCType.INTEGER);
+  // createSqlHandler();
+  //
+  // EntryColumnData entryColumnData =
+  // handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+  //
+  // assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+  // assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
+  // assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
+  // .isEqualTo(nonKeyColumn);
+  // assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+  // assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+  // .isEqualTo(KEY_COLUMN);
+  // }
 
-//  @Test
-//  public void getEntryColumnDataReturnsCorrectColumnNameWhenPdxNameIsEmptyAndJdbcNameMatchesInexactly() {
-//    String nonKeyColumn = "otherColumn";
-//    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
-//    columnNames.add(nonKeyColumn);
-//    when(tableMetaDataView.getColumnDataType(nonKeyColumn)).thenReturn(JDBCType.INTEGER);
-//    FieldMapping fieldMapping1 = mock(FieldMapping.class);
-//    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
-//    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
-//    when(fieldMapping1.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
-//    FieldMapping fieldMapping2 = mock(FieldMapping.class);
-//    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase());
-//    when(fieldMapping2.getPdxName()).thenReturn("");
-//    when(fieldMapping2.getJdbcType()).thenReturn(JDBCType.INTEGER.getName());
-//    when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
-//    createSqlHandler();
-//
-//    EntryColumnData entryColumnData =
-//        handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
-//
-//    assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
-//    assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
-//    assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
-//        .isEqualTo(nonKeyColumn.toUpperCase());
-//    assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
-//    assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
-//        .isEqualTo(KEY_COLUMN);
-//  }
+  // @Test
+  // public void
+  // getEntryColumnDataReturnsCorrectColumnNameWhenPdxNameIsEmptyAndJdbcNameMatchesInexactly() {
+  // String nonKeyColumn = "otherColumn";
+  // when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+  // columnNames.add(nonKeyColumn);
+  // when(tableMetaDataView.getColumnDataType(nonKeyColumn)).thenReturn(JDBCType.INTEGER);
+  // FieldMapping fieldMapping1 = mock(FieldMapping.class);
+  // when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+  // when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+  // when(fieldMapping1.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
+  // FieldMapping fieldMapping2 = mock(FieldMapping.class);
+  // when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase());
+  // when(fieldMapping2.getPdxName()).thenReturn("");
+  // when(fieldMapping2.getJdbcType()).thenReturn(JDBCType.INTEGER.getName());
+  // when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+  // createSqlHandler();
+  //
+  // EntryColumnData entryColumnData =
+  // handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+  //
+  // assertThat(entryColumnData.getEntryKeyColumnData()).isNotNull();
+  // assertThat(entryColumnData.getEntryValueColumnData()).hasSize(1);
+  // assertThat(entryColumnData.getEntryValueColumnData().get(0).getColumnName())
+  // .isEqualTo(nonKeyColumn.toUpperCase());
+  // assertThat(entryColumnData.getEntryKeyColumnData()).hasSize(1);
+  // assertThat(entryColumnData.getEntryKeyColumnData().get(0).getColumnName())
+  // .isEqualTo(KEY_COLUMN);
+  // }
 
   @Test
   public void getEntryColumnDataThrowsWhenPdxNameIsEmptyAndJdbcNameMatchesInexactlyMultipleTimes() {
@@ -898,35 +902,35 @@ public class SqlHandlerTest {
     handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
   }
 
-//  @Test
-//  public void getEntryColumnDataThrowsWhenPdxNameIsEmptyAndJdbcNameDoesNotMatch() {
-//    String nonKeyColumn = "otherColumn";
-//    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
-//    FieldMapping fieldMapping1 = mock(FieldMapping.class);
-//    when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
-//    when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
-//    when(fieldMapping1.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
-//    FieldMapping fieldMapping2 = mock(FieldMapping.class);
-//    when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase() + "noMatch");
-//    when(fieldMapping2.getPdxName()).thenReturn("");
-//    when(fieldMapping2.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
-//    FieldMapping fieldMapping3 = mock(FieldMapping.class);
-//    when(fieldMapping3.getJdbcName()).thenReturn("noMatch" + nonKeyColumn.toLowerCase());
-//    when(fieldMapping3.getPdxName()).thenReturn("");
-//    when(fieldMapping3.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
-//    when(regionMapping.getFieldMappings())
-//        .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
-//    columnNames.add("nomatchothercolumn");
-//    columnNames.add("OTHERCOLUMNNOMATCH");
-//    when(tableMetaDataView.getColumnDataType("nomatchothercolumn")).thenReturn(JDBCType.VARCHAR);
-//    when(tableMetaDataView.getColumnDataType("OTHERCOLUMNNOMATCH")).thenReturn(JDBCType.VARCHAR);
-//    createSqlHandler();
-//    thrown.expect(JdbcConnectorException.class);
-//    thrown.expectMessage("No column matched the pdx field \"" + nonKeyColumn + "\".");
-//
-//
-//    handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
-//  }
+  // @Test
+  // public void getEntryColumnDataThrowsWhenPdxNameIsEmptyAndJdbcNameDoesNotMatch() {
+  // String nonKeyColumn = "otherColumn";
+  // when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+  // FieldMapping fieldMapping1 = mock(FieldMapping.class);
+  // when(fieldMapping1.getJdbcName()).thenReturn(KEY_COLUMN);
+  // when(fieldMapping1.getPdxName()).thenReturn(KEY_COLUMN);
+  // when(fieldMapping1.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
+  // FieldMapping fieldMapping2 = mock(FieldMapping.class);
+  // when(fieldMapping2.getJdbcName()).thenReturn(nonKeyColumn.toUpperCase() + "noMatch");
+  // when(fieldMapping2.getPdxName()).thenReturn("");
+  // when(fieldMapping2.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
+  // FieldMapping fieldMapping3 = mock(FieldMapping.class);
+  // when(fieldMapping3.getJdbcName()).thenReturn("noMatch" + nonKeyColumn.toLowerCase());
+  // when(fieldMapping3.getPdxName()).thenReturn("");
+  // when(fieldMapping3.getJdbcType()).thenReturn(JDBCType.VARCHAR.getName());
+  // when(regionMapping.getFieldMappings())
+  // .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
+  // columnNames.add("nomatchothercolumn");
+  // columnNames.add("OTHERCOLUMNNOMATCH");
+  // when(tableMetaDataView.getColumnDataType("nomatchothercolumn")).thenReturn(JDBCType.VARCHAR);
+  // when(tableMetaDataView.getColumnDataType("OTHERCOLUMNNOMATCH")).thenReturn(JDBCType.VARCHAR);
+  // createSqlHandler();
+  // thrown.expect(JdbcConnectorException.class);
+  // thrown.expectMessage("No column matched the pdx field \"" + nonKeyColumn + "\".");
+  //
+  //
+  // handler.getEntryColumnData(tableMetaDataView, key, value, Operation.CREATE);
+  // }
 
   @Test
   public void returnsCorrectColumnsForUpdateWithCompositeKey() throws Exception {
