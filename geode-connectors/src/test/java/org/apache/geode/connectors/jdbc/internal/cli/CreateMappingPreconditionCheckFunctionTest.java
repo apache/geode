@@ -311,13 +311,14 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
+    String domainClassNameInAutoSerializer = "\\Q" + PdxClassDummy.class.getName() + "\\E";
     ReflectionBasedAutoSerializer reflectionedBasedAutoSerializer =
         mock(ReflectionBasedAutoSerializer.class);
     PdxWriter pdxWriter = mock(PdxWriter.class);
     when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(true);
     ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory =
         mock(ReflectionBasedAutoSerializerFactory.class);
-    when(reflectionBasedAutoSerializerFactory.create(PdxClassDummy.class.getName()))
+    when(reflectionBasedAutoSerializerFactory.create(domainClassNameInAutoSerializer))
         .thenReturn(reflectionedBasedAutoSerializer);
     PdxWriterFactory pdxWriterFactory = mock(PdxWriterFactory.class);
     when(pdxWriterFactory.create(same(typeRegistry), any())).thenReturn(pdxWriter);
@@ -330,7 +331,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
     CliFunctionResult result = function.executeFunction(context);
 
     assertThat(result.isSuccessful()).isTrue();
-    verify(reflectionBasedAutoSerializerFactory).create(PdxClassDummy.class.getName());
+    verify(reflectionBasedAutoSerializerFactory).create(domainClassNameInAutoSerializer);
     Object[] outputs = (Object[]) result.getResultObject();
     ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
     assertThat(fieldsMappings).hasSize(1);
@@ -354,13 +355,14 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
+    String domainClassNameInAutoSerializer = "\\Q" + PdxClassDummy.class.getName() + "\\E";
     ReflectionBasedAutoSerializer reflectionedBasedAutoSerializer =
         mock(ReflectionBasedAutoSerializer.class);
     PdxWriter pdxWriter = mock(PdxWriter.class);
     when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(false);
     ReflectionBasedAutoSerializerFactory reflectionBasedAutoSerializerFactory =
         mock(ReflectionBasedAutoSerializerFactory.class);
-    when(reflectionBasedAutoSerializerFactory.create(PdxClassDummy.class.getName()))
+    when(reflectionBasedAutoSerializerFactory.create(domainClassNameInAutoSerializer))
         .thenReturn(reflectionedBasedAutoSerializer);
     PdxWriterFactory pdxWriterFactory = mock(PdxWriterFactory.class);
     when(pdxWriterFactory.create(same(typeRegistry), any())).thenReturn(pdxWriter);
