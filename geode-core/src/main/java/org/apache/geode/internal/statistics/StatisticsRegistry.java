@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -27,21 +28,24 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.internal.process.ProcessUtils;
 
 /**
  * A {@link StatisticsManager} that delegates creation to specified factories and notifies listeners
  * when statistics are created or destroyed.
  */
 public class StatisticsRegistry implements StatisticsManager {
+
   private final StatisticsTypeFactory typeFactory;
   private final AtomicStatisticsFactory atomicStatisticsFactory;
   private final OsStatisticsFactory osStatisticsFactory;
+  private final IntSupplier pidSupplier;
   private final String name;
   private final long startTime;
-
   private final List<Statistics> instances = new CopyOnWriteArrayList<>();
   private final AtomicLong nextUniqueId = new AtomicLong(1);
-  private int modificationCount = 0;
+
+  private int modificationCount;
 
   /**
    * Creates an instance of OS Statistics for this registry.
@@ -75,10 +79,9 @@ public class StatisticsRegistry implements StatisticsManager {
    * @param startTime the time at which the registry was started
    */
   public StatisticsRegistry(String name, long startTime) {
-    this(name, startTime,
-        StatisticsTypeFactoryImpl.singleton(),
-        LocalStatisticsImpl::createNonAtomic,
-        StatisticsImpl::createAtomicNoOS);
+    this(name, startTime, StatisticsTypeFactoryImpl.singleton(),
+        LocalStatisticsImpl::createNonAtomic, StatisticsImpl::createAtomicNoOS,
+        ProcessUtils::identifyPidAsUnchecked);
   }
 
   /**
@@ -90,21 +93,27 @@ public class StatisticsRegistry implements StatisticsManager {
    * @param typeFactory the factory to create {@code StatisticsType}s
    * @param osStatisticsFactory the factory to create OS statistics
    * @param atomicStatisticsFactory the factory to create atomic statistics
+   * @param pidSupplier the IntSupplier to return this pid
    */
-  public StatisticsRegistry(String name, long startTime,
-      StatisticsTypeFactory typeFactory,
-      OsStatisticsFactory osStatisticsFactory,
-      AtomicStatisticsFactory atomicStatisticsFactory) {
+  StatisticsRegistry(String name, long startTime, StatisticsTypeFactory typeFactory,
+      OsStatisticsFactory osStatisticsFactory, AtomicStatisticsFactory atomicStatisticsFactory,
+      IntSupplier pidSupplier) {
     this.name = name;
     this.startTime = startTime;
     this.typeFactory = typeFactory;
     this.osStatisticsFactory = osStatisticsFactory;
     this.atomicStatisticsFactory = atomicStatisticsFactory;
+    this.pidSupplier = pidSupplier;
   }
 
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public int getPid() {
+    return pidSupplier.getAsInt();
   }
 
   @Override

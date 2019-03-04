@@ -41,13 +41,15 @@ import org.apache.geode.internal.statistics.StatisticsImpl.StatisticsLogger;
  */
 public class StatisticsImplTest {
 
+  // arbitrary values for constructing a StatisticsImpl
   private static final String ANY_TEXT_ID = null;
   private static final long ANY_NUMERIC_ID = 0;
   private static final long ANY_UNIQUE_ID = 0;
   private static final int ANY_OS_STAT_FLAGS = 0;
 
-  private StatisticsManager statisticsManager = mock(StatisticsManager.class);
+  private StatisticsManager statisticsManager;
   private StatisticsTypeImpl statisticsType;
+
   private StatisticsImpl statistics;
 
   @Before
@@ -143,6 +145,72 @@ public class StatisticsImplTest {
     Throwable thrown = catchThrowable(() -> statistics.setIntSupplier(23, intSupplier));
 
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void nonEmptyTextId_usesGivenTextId() {
+    String nonEmptyTextId = "non-empty-text-id";
+
+    statistics = new SimpleStatistics(statisticsType, nonEmptyTextId, ANY_NUMERIC_ID, ANY_UNIQUE_ID,
+        ANY_OS_STAT_FLAGS, statisticsManager);
+
+    assertThat(statistics.getTextId()).isEqualTo(nonEmptyTextId);
+  }
+
+  @Test
+  public void nullTextId_usesNameFromStatisticsManager() {
+    String nameFromStatisticsManager = "statistics-manager-name";
+    when(statisticsManager.getName()).thenReturn(nameFromStatisticsManager);
+    String nullTextId = null;
+
+    statistics = new SimpleStatistics(statisticsType, nullTextId, ANY_NUMERIC_ID, ANY_UNIQUE_ID,
+        ANY_OS_STAT_FLAGS, statisticsManager);
+
+    assertThat(statistics.getTextId()).isEqualTo(nameFromStatisticsManager);
+  }
+
+  @Test
+  public void emptyTextId_usesNameFromStatisticsManager() {
+    String nameFromStatisticsManager = "statistics-manager-name";
+    when(statisticsManager.getName()).thenReturn(nameFromStatisticsManager);
+    String emptyTextId = "";
+
+    statistics = new SimpleStatistics(statisticsType, emptyTextId, ANY_NUMERIC_ID, ANY_UNIQUE_ID,
+        ANY_OS_STAT_FLAGS, statisticsManager);
+
+    assertThat(statistics.getTextId()).isEqualTo(nameFromStatisticsManager);
+  }
+
+  @Test
+  public void positiveNumericId_usesGivenNumericId() {
+    int positiveNumericId = 21;
+
+    statistics = new SimpleStatistics(statisticsType, ANY_TEXT_ID, positiveNumericId, ANY_UNIQUE_ID,
+        ANY_OS_STAT_FLAGS, statisticsManager);
+
+    assertThat(statistics.getNumericId()).isEqualTo(positiveNumericId);
+  }
+
+  @Test
+  public void negativeNumericId_usesGivenNumericId() {
+    int negativeNumericId = -21;
+
+    statistics = new SimpleStatistics(statisticsType, ANY_TEXT_ID, negativeNumericId, ANY_UNIQUE_ID,
+        ANY_OS_STAT_FLAGS, statisticsManager);
+
+    assertThat(statistics.getNumericId()).isEqualTo(negativeNumericId);
+  }
+
+  @Test
+  public void zeroNumericId_usesPidFromStatisticsManager() {
+    int pidFromStatisticsManager = 42;
+    when(statisticsManager.getPid()).thenReturn(pidFromStatisticsManager);
+    int zeroNumericId = 0;
+
+    statistics = new SimpleStatistics(statisticsType, ANY_TEXT_ID, zeroNumericId, ANY_UNIQUE_ID,
+        ANY_OS_STAT_FLAGS, statisticsManager);
+
+    assertThat(statistics.getNumericId()).isEqualTo(pidFromStatisticsManager);
   }
 
   private static class SimpleStatistics extends StatisticsImpl {
