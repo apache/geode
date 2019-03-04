@@ -19,7 +19,7 @@ package org.apache.geode.test.dunit.rules;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductStringProperty;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.DEFAULT_VM_COUNT;
 import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 
 import java.io.File;
@@ -85,25 +85,31 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
 
   private final SerializableTemporaryFolder temporaryFolder;
   private final SerializableTestName testName;
+  private final int vmCount;
   private final RemoteInvoker invoker;
   private final VMEventListener vmEventListener;
 
   private String testClassName;
 
   public DistributedDiskDirRule() {
-    this(new SerializableTemporaryFolder(), new SerializableTestName());
+    this(DEFAULT_VM_COUNT, new SerializableTemporaryFolder(), new SerializableTestName());
   }
 
-  private DistributedDiskDirRule(SerializableTemporaryFolder temporaryFolder,
+  public DistributedDiskDirRule(int vmCount) {
+    this(vmCount, new SerializableTemporaryFolder(), new SerializableTestName());
+  }
+
+  private DistributedDiskDirRule(int vmCount, SerializableTemporaryFolder temporaryFolder,
       SerializableTestName testName) {
-    this(temporaryFolder, testName, new RemoteInvoker());
+    this(vmCount, temporaryFolder, testName, new RemoteInvoker());
   }
 
-  private DistributedDiskDirRule(SerializableTemporaryFolder temporaryFolder,
+  private DistributedDiskDirRule(int vmCount, SerializableTemporaryFolder temporaryFolder,
       SerializableTestName testName, RemoteInvoker invoker) {
     super(null, null);
     this.temporaryFolder = temporaryFolder;
     this.testName = testName;
+    this.vmCount = vmCount;
     this.invoker = invoker;
     vmEventListener = new InternalVMEventListener();
   }
@@ -117,7 +123,7 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
 
   @Override
   protected void before(Description description) throws Exception {
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.launchIfNeeded(vmCount);
     VM.addVMEventListener(vmEventListener);
 
     initializeHelperRules(description);
@@ -182,14 +188,6 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
       System.clearProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
     } else {
       System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, data.originalValue());
-    }
-  }
-
-  private int getVMCount() {
-    try {
-      return getHost(0).getVMCount();
-    } catch (IllegalArgumentException e) {
-      throw new IllegalStateException("DUnit VMs have not been launched");
     }
   }
 
