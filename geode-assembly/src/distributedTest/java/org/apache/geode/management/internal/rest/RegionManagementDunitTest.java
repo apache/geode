@@ -143,7 +143,7 @@ public class RegionManagementDunitTest {
     assertThat(result.isSuccessful()).isFalse();
   }
 
-  private static void verifyRegionPersisted(String regionName, String type) {
+  static void verifyRegionPersisted(String regionName, String type) {
     CacheConfig cacheConfig =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService()
             .getCacheConfig("cluster");
@@ -151,7 +151,7 @@ public class RegionManagementDunitTest {
     assertThat(regionConfig.getType()).isEqualTo(type);
   }
 
-  private static void verifyRegionCreated(String regionName, String type) {
+  static void verifyRegionCreated(String regionName, String type) {
     Cache cache = ClusterStartupRule.getCache();
     Region region = cache.getRegion(regionName);
     assertThat(region).isNotNull();
