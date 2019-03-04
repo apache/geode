@@ -139,8 +139,8 @@ public class TypedJsonTest {
   public void testObjects() throws Exception {
     Object object = new Object();
 
-    TypedJson typedJson = new TypedJson(RESULT, object, 100);
-
+    TypedJson typedJson = new TypedJson(100);
+    typedJson.add(RESULT, object);
     checkResult(typedJson);
   }
 

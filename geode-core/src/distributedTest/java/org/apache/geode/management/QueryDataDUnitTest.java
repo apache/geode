@@ -254,7 +254,7 @@ public class QueryDataDUnitTest implements Serializable {
       JSONArray jsonArray1 = jsonArray.getJSONArray(0);
 
       // Get the ObjectValue
-      JSONObject collectionObject = (JSONObject) jsonArray1.get(1);
+      JSONArray collectionObject = (JSONArray) jsonArray1.get(1);
       assertThat(collectionObject.length()).isEqualTo(100);
 
       // Query With Override Values
@@ -284,7 +284,7 @@ public class QueryDataDUnitTest implements Serializable {
       jsonArray1 = jsonArray.getJSONArray(0);
 
       // Get the ObjectValue
-      collectionObject = (JSONObject) jsonArray1.get(1);
+      collectionObject = (JSONArray) jsonArray1.get(1);
       assertThat(collectionObject.length()).isEqualTo(newQueryCollectionDepth);
     });
   }
