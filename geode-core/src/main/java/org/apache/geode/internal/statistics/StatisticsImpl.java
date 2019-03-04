@@ -21,6 +21,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.StatisticDescriptor;
@@ -127,8 +128,8 @@ public abstract class StatisticsImpl implements Statistics {
   StatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
       int osStatFlags, StatisticsManager statisticsManager, StatisticsLogger statisticsLogger) {
     this.type = (StatisticsTypeImpl) type;
-    this.textId = textId;
-    this.numericId = numericId;
+    this.textId = StringUtils.isEmpty(textId) ? statisticsManager.getName() : textId;
+    this.numericId = numericId == 0 ? statisticsManager.getPid() : numericId;
     this.uniqueId = uniqueId;
     this.osStatFlags = osStatFlags;
     this.statisticsManager = statisticsManager;

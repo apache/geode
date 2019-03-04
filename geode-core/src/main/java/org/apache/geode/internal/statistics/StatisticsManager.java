@@ -32,9 +32,14 @@ public interface StatisticsManager extends StatisticsFactory, OsStatisticsFactor
   void destroyStatistics(Statistics s);
 
   /**
-   * Returns a name that can be used to identify the manager
+   * Returns a name that can be used to identify the manager.
    */
   String getName();
+
+  /**
+   * Returns the pid for this process.
+   */
+  int getPid();
 
   /**
    * Returns the start time of this manager.

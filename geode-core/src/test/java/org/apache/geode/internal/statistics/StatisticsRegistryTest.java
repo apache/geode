@@ -15,6 +15,7 @@
 package org.apache.geode.internal.statistics;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -29,6 +30,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -38,8 +40,14 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.internal.statistics.StatisticsRegistry.AtomicStatisticsFactory;
+import org.apache.geode.internal.statistics.StatisticsRegistry.OsStatisticsFactory;
 
+/**
+ * Unit tests for {@link StatisticsRegistry}.
+ */
 public class StatisticsRegistryTest {
+
   // Arbitrary values for factory method parameters
   private static final String DESCRIPTOR_NAME = "a-descriptor-name";
   private static final String DESCRIPTOR_DESCRIPTION = "a-descriptor-description";
@@ -58,24 +66,27 @@ public class StatisticsRegistryTest {
   };
 
   @Mock
-  StatisticsTypeFactory typeFactory;
+  private StatisticsTypeFactory typeFactory;
 
   @Mock
-  StatisticsType type;
+  private StatisticsType type;
 
   @Mock
-  StatisticsRegistry.AtomicStatisticsFactory atomicStatisticsFactory;
+  private AtomicStatisticsFactory atomicStatisticsFactory;
 
   @Mock
-  StatisticsRegistry.OsStatisticsFactory osStatisticsFactory;
+  private OsStatisticsFactory osStatisticsFactory;
+
+  @Mock
+  private IntSupplier pidSupplier;
 
   private StatisticsRegistry registry;
 
   @Before
   public void setup() {
     initMocks(this);
-    registry = new StatisticsRegistry(REGISTRY_NAME, 0,
-        typeFactory, osStatisticsFactory, atomicStatisticsFactory);
+    registry = new StatisticsRegistry(REGISTRY_NAME, 0, typeFactory, osStatisticsFactory,
+        atomicStatisticsFactory, pidSupplier);
   }
 
   @Test
@@ -477,7 +488,6 @@ public class StatisticsRegistryTest {
         .isEqualTo(0);
   }
 
-
   @Test
   public void findStatisticsByUniqueId_returnsStatisticsThatMatchesUniqueId() {
     long soughtId = 44L;
@@ -611,6 +621,32 @@ public class StatisticsRegistryTest {
         statistics(withType(differentType)));
 
     assertThat(registry.findStatisticsByType(soughtType)).isEmpty();
+  }
+
+  @Test
+  public void delegatesGetPidToPidSupplier() {
+    int pidReturnedFromPidSupplier = 42;
+
+    when(pidSupplier.getAsInt())
+        .thenReturn(pidReturnedFromPidSupplier);
+
+    int result = registry.getPid();
+
+    assertThat(result)
+        .isSameAs(pidReturnedFromPidSupplier);
+  }
+
+  @Test
+  public void propagatesPidSupplierExceptionIfPidSupplierThrows() {
+    Throwable thrownFromPidSupplier = new RuntimeException("thrown from pid supplier");
+
+    when(pidSupplier.getAsInt())
+        .thenThrow(thrownFromPidSupplier);
+
+    Throwable thrown = catchThrowable(() -> registry.getPid());
+
+    assertThat(thrown)
+        .isSameAs(thrownFromPidSupplier);
   }
 
   /**
