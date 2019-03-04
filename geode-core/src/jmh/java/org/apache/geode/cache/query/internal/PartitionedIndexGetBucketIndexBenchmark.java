@@ -42,17 +42,17 @@ import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.distributed.DistributedSystem;
 
 /**
- * Test spins up threads that constantly do computeIfAbsent
+ * Test spins up threads that constantly do getBucketIndex
  * The tests will measure throughput
- * The benchmark tests computeIfAbsent in the presence of other threads contending for the same key
+ * The benchmark tests getBucketIndex in the presence of other threads attempting the same operation
  */
 
 @State(Scope.Thread)
 @Fork(1)
 public class PartitionedIndexGetBucketIndexBenchmark {
-
-
-  PartitionedIndex index;
+  
+  private JmhConcurrencyLoadGenerator jmhConcurrencyLoadGenerator;
+  private PartitionedIndex index;
   /*
    * After load is established, how many measurements shall we take?
    */
@@ -61,8 +61,6 @@ public class PartitionedIndexGetBucketIndexBenchmark {
   private static final int TIME_TO_QUIESCE_BEFORE_SAMPLING = 1;
 
   private static final int THREAD_POOL_PROCESSOR_MULTIPLE = 2;
-
-  private ScheduledThreadPoolExecutor loadGenerationExecutorService;
 
   private static boolean testRunning = true;
 
@@ -82,16 +80,13 @@ public class PartitionedIndexGetBucketIndexBenchmark {
     final int numberOfThreads =
         THREAD_POOL_PROCESSOR_MULTIPLE * Runtime.getRuntime().availableProcessors();
 
-    loadGenerationExecutorService =
-        (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
-            numberOfThreads);
+    jmhConcurrencyLoadGenerator = new JmhConcurrencyLoadGenerator(numberOfThreads);
 
-    System.out.println(String.format("Pool has %d threads", numberOfThreads));
-
-    loadGenerationExecutorService.setRemoveOnCancelPolicy(true);
-
-    generateLoad(
-        loadGenerationExecutorService, numberOfThreads);
+    jmhConcurrencyLoadGenerator.generateLoad(0, TimeUnit.MILLISECONDS, () -> {
+      while (PartitionedIndexGetBucketIndexBenchmark.testRunning) {
+        index.getBucketIndex();
+      }
+    });
 
     // allow system to quiesce
     Thread.sleep(TIME_TO_QUIESCE_BEFORE_SAMPLING);
@@ -100,7 +95,7 @@ public class PartitionedIndexGetBucketIndexBenchmark {
   @TearDown(Level.Trial)
   public void trialTeardown() {
     testRunning = false;
-    loadGenerationExecutorService.shutdownNow();
+    jmhConcurrencyLoadGenerator.tearDown();
   }
 
   @Benchmark
@@ -108,18 +103,8 @@ public class PartitionedIndexGetBucketIndexBenchmark {
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.SECONDS)
   // @Warmup we don't warm up because our @Setup warms us up
-  public Object computeIfAbsent() {
+  public Object getBucketIndex() {
     return index.getBucketIndex();
-  }
-
-  private void generateLoad(final ScheduledExecutorService executorService, int numThreads) {
-    for (int i = 0; i < numThreads; i++) {
-      executorService.schedule(() -> {
-        while (testRunning) {
-          index.getBucketIndex();
-        }
-      }, 0, TimeUnit.MILLISECONDS);
-    }
   }
 
 }

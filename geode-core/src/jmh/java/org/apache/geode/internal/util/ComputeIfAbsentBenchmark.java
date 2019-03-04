@@ -34,6 +34,9 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
+import org.apache.geode.cache.query.internal.JmhConcurrencyLoadGenerator;
+import org.apache.geode.cache.query.internal.PartitionedIndexGetBucketIndexBenchmark;
+
 /**
  * Test spins up threads that constantly do computeIfAbsent
  * The tests will measure throughput
@@ -44,6 +47,7 @@ import org.openjdk.jmh.annotations.TearDown;
 @Fork(1)
 public class ComputeIfAbsentBenchmark {
 
+  private JmhConcurrencyLoadGenerator jmhConcurrencyLoadGenerator;
   public Map map = new ConcurrentHashMap();
   /*
    * After load is established, how many measurements shall we take?
@@ -54,8 +58,6 @@ public class ComputeIfAbsentBenchmark {
 
   private static final int THREAD_POOL_PROCESSOR_MULTIPLE = 2;
 
-  private ScheduledThreadPoolExecutor loadGenerationExecutorService;
-
   private static boolean testRunning = true;
 
   @Setup(Level.Trial)
@@ -64,16 +66,14 @@ public class ComputeIfAbsentBenchmark {
     final int numberOfThreads =
         THREAD_POOL_PROCESSOR_MULTIPLE * Runtime.getRuntime().availableProcessors();
 
-    loadGenerationExecutorService =
-        (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(
-            numberOfThreads);
 
-    System.out.println(String.format("Pool has %d threads", numberOfThreads));
+    jmhConcurrencyLoadGenerator = new JmhConcurrencyLoadGenerator(numberOfThreads);
 
-    loadGenerationExecutorService.setRemoveOnCancelPolicy(true);
-
-    generateLoad(
-        loadGenerationExecutorService, numberOfThreads);
+    jmhConcurrencyLoadGenerator.generateLoad(0, TimeUnit.MILLISECONDS, () -> {
+      while (testRunning) {
+        JavaWorkarounds.computeIfAbsent(map, 1, k -> k);
+      }
+    });
 
     // allow system to quiesce
     Thread.sleep(TIME_TO_QUIESCE_BEFORE_SAMPLING);
@@ -82,7 +82,7 @@ public class ComputeIfAbsentBenchmark {
   @TearDown(Level.Trial)
   public void trialTeardown() {
     testRunning = false;
-    loadGenerationExecutorService.shutdownNow();
+    jmhConcurrencyLoadGenerator.tearDown();
   }
 
   @Benchmark
@@ -93,15 +93,4 @@ public class ComputeIfAbsentBenchmark {
   public Object computeIfAbsent() {
     return JavaWorkarounds.computeIfAbsent(map, 1, k -> k);
   }
-
-  private void generateLoad(final ScheduledExecutorService executorService, int numThreads) {
-    for (int i = 0; i < numThreads; i++) {
-      executorService.schedule(() -> {
-        while (testRunning) {
-          JavaWorkarounds.computeIfAbsent(map, 1, k -> k);
-        }
-      }, 0, TimeUnit.MILLISECONDS);
-    }
-  }
-
 }
