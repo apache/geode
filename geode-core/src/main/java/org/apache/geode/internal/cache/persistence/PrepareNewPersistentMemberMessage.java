@@ -105,8 +105,10 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
 
     } catch (RegionDestroyedException e) {
       logger.debug("<RegionDestroyed> {}", this);
+      exception = new ReplyException(e);
     } catch (CancelException e) {
       logger.debug("<CancelException> {}", this);
+      exception = new ReplyException(e);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
@@ -115,7 +117,7 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
       exception = new ReplyException(t);
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
-      ReplyMessage replyMsg = new ReplyMessage();
+      ReplyMessage replyMsg = createReplyMessage();
       replyMsg.setRecipient(getSender());
       replyMsg.setProcessorId(processorId);
       if (exception != null) {
@@ -123,6 +125,10 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
       }
       dm.putOutgoing(replyMsg);
     }
+  }
+
+  ReplyMessage createReplyMessage() {
+    return new ReplyMessage();
   }
 
   @Override
