@@ -25,18 +25,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
 public class SimpleSecurityManagerTest {
-  private SimpleTestSecurityManager manager;
+  private SimpleSecurityManager manager;
   private Properties credentials;
 
   @Before
   public void before() {
-    manager = new SimpleTestSecurityManager();
+    manager = new SimpleSecurityManager();
     credentials = new Properties();
   }
 

@@ -34,8 +34,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -58,7 +58,7 @@ public class PostProcessingIntegrationTest {
     // Create a cache
     CacheFactory cf = new CacheFactory();
     cf.set(ConfigurationProperties.MCAST_PORT, "0");
-    cf.setSecurityManager(new SimpleTestSecurityManager());
+    cf.setSecurityManager(new SimpleSecurityManager());
     cf.set(ConfigurationProperties.SECURITY_POST_PROCESSOR, SpamPostProcessor.class.getName());
     cache = cf.create();
 

@@ -32,10 +32,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -62,7 +62,7 @@ public class ClusterConfigWithSecurityDUnitTest {
   public void before() throws Exception {
     clusterConfigZipPath = buildSecureClusterConfigZip();
     locator0 =
-        lsRule.startLocatorVM(0, x -> x.withSecurityManager(SimpleTestSecurityManager.class));
+        lsRule.startLocatorVM(0, x -> x.withSecurityManager(SimpleSecurityManager.class));
   }
 
   @Test
@@ -80,7 +80,7 @@ public class ClusterConfigWithSecurityDUnitTest {
       InternalConfigurationPersistenceService sc = locator.getConfigurationPersistenceService();
       Properties clusterConfigProps = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(clusterConfigProps.getProperty(SECURITY_MANAGER))
-          .isEqualTo(SimpleTestSecurityManager.class.getName());
+          .isEqualTo(SimpleSecurityManager.class.getName());
       assertThat(locator.getConfig().getSecurityManager()).isNotEmpty();
     });
   }
@@ -104,7 +104,7 @@ public class ClusterConfigWithSecurityDUnitTest {
 
       // the security manager is still the locator's security manager, not the imported one.
       assertThat(properties.getProperty(SECURITY_MANAGER))
-          .isEqualTo(SimpleTestSecurityManager.class.getName());
+          .isEqualTo(SimpleSecurityManager.class.getName());
     });
   }
 
@@ -121,7 +121,7 @@ public class ClusterConfigWithSecurityDUnitTest {
       InternalCache cache = ClusterStartupRule.getCache();
       Properties properties = cache.getDistributedSystem().getSecurityProperties();
       assertThat(properties.getProperty(SECURITY_MANAGER))
-          .isEqualTo(SimpleTestSecurityManager.class.getName());
+          .isEqualTo(SimpleSecurityManager.class.getName());
       assertThat(cache.getSecurityService().isIntegratedSecurity()).isTrue();
     });
   }

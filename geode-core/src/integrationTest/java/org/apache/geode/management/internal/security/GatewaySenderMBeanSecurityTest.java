@@ -28,10 +28,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.GatewaySenderMBean;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
@@ -47,7 +47,7 @@ public class GatewaySenderMBeanSecurityTest {
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName()).withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =

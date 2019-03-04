@@ -30,11 +30,11 @@ import javax.management.QueryExp;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
@@ -43,7 +43,7 @@ public class HttpOperationInvokerSecurityTest {
   @ClassRule
   public static LocatorStarterRule locator =
       new LocatorStarterRule().withHttpService()
-          .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
+          .withSecurityManager(SimpleSecurityManager.class).withAutoStart();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

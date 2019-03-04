@@ -33,13 +33,13 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -69,7 +69,7 @@ public class LocatorConnectionAuthenticationDUnitTest {
       System.setProperty("geode.feature-protobuf-protocol", "true");
       Properties props = new Properties();
       props.setProperty(ConfigurationProperties.SECURITY_MANAGER,
-          SimpleTestSecurityManager.class.getName());
+          SimpleSecurityManager.class.getName());
       locator = Locator.startLocatorAndDS(0, null, props);
       return locator.getPort();
     });
