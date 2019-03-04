@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 
-{% from 'shared/shared_jinja.yml' import alpine_tools_config with context %}
-{% from 'shared/shared_jinja.yml' import pipeline_prefix with context %}
+{% from 'shared_jinja.yml' import alpine_tools_config with context %}
+{% from 'shared_jinja.yml' import pipeline_prefix with context %}
 
 groups:
 - name: main
@@ -264,7 +264,10 @@ jobs:
           GRADLE_TASK_OPTIONS: ""
           MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
+        {% if test.PARALLEL_GRADLE is defined %}
+          # TODO: DO NOT COMMIT THIS CHANGE WITHOUT USING A DEFAULTING TEMPLATE.  Should this default true or false?
           PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
+        {% endif %}
           ARTIFACT_BUCKET: ((artifact-bucket))
           SERVICE_ACCOUNT: ((concourse-gcp-account))
           GRADLE_GLOBAL_ARGS: ((gradle-global-args))

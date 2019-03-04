@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 
-{% from 'shared/shared_jinja.yml' import alpine_tools_config with context %}
-{% from 'shared/shared_jinja.yml' import github_access with context %}
+{% from 'shared_jinja.yml' import alpine_tools_config with context %}
+{% from 'shared_jinja.yml' import github_access with context %}
 
 {% macro common_instance_params(test) -%}
 GCP_PROJECT: ((gcp-project))

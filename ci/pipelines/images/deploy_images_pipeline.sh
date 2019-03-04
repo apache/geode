@@ -46,7 +46,18 @@ echo "Sanitized Geode Branch = ${SANITIZED_GEODE_BRANCH}"
 #echo "Docker image prefix = ${DOCKER_IMAGE_PREFIX}"
 
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
-  python3 ../render.py $(basename ${SCRIPTDIR}) ${GEODE_FORK} ${GEODE_BRANCH} ${UPSTREAM_FORK} ${REPOSITORY_PUBLIC} || exit 1
+
+  cat > repository.yml <<YML
+repository:
+  project: 'geode'
+  fork: ${GEODE_FORK}
+  branch: ${GEODE_BRANCH}
+  upstream_fork: ${UPSTREAM_FORK}
+  public: ${REPOSITORY_PUBLIC}
+YML
+
+  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml || exit 1
+
 popd 2>&1 > /dev/null
 cp ${SCRIPTDIR}/generated-pipeline.yml ${OUTPUT_DIRECTORY}/generated-pipeline.yml
 

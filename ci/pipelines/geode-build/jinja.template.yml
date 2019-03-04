@@ -15,9 +15,9 @@
 # limitations under the License.
 #
 
-{% from 'shared/shared_jinja.yml' import alpine_tools_config with context %}
-{% from 'shared/shared_jinja.yml' import pipeline_prefix with context %}
-{% from 'shared/shared_jinja.yml' import github_access with context %}
+{% from 'shared_jinja.yml' import alpine_tools_config with context %}
+{% from 'shared_jinja.yml' import pipeline_prefix with context %}
+{% from 'shared_jinja.yml' import github_access with context %}
 
 ---
 
@@ -78,7 +78,10 @@ GRADLE_TASK_OPTIONS: {{ test.GRADLE_TASK_OPTIONS }}
 DUNIT_PARALLEL_FORKS: {{ test.DUNIT_PARALLEL_FORKS }}
 MAINTENANCE_VERSION: ((geode-build-branch ))
 PARALLEL_DUNIT: {{ test.PARALLEL_DUNIT }}
-PARALLEL_GRADLE: {{ test.PARALLEL_GRADLE }}
+{% if test.PARALLEL_GRADLE is defined %}
+# TODO: DO NOT COMMIT THIS CHANGE WITHOUT USING A DEFAULTING TEMPLATE.  Should this default true or false?
+PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
+{% endif %}
 ARTIFACT_BUCKET: ((artifact-bucket))
 SERVICE_ACCOUNT: ((concourse-gcp-account))
 GRADLE_GLOBAL_ARGS: ((gradle-global-args))

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-{% from 'shared/shared_jinja.yml' import github_access with context %}
+{% from 'shared_jinja.yml' import github_access with context %}
 ---
 image_resource: &docker-geode-build-image
   type: docker-image

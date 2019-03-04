@@ -57,6 +57,8 @@ java_test_versions:
   version: 11
 
 benchmarks:
+  # TODO What should this 'default' value be?  How is it acquired currently?
+  baseline_branch: "develop"
   baseline_version: "1.8.0"
 
 java_build_version:
