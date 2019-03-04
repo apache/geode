@@ -198,6 +198,7 @@ dependencies {
 
 
   acceptanceTestCompile(project(':geode-core'))
+  acceptanceTestCompile(project(':geode-cq'))
   acceptanceTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
