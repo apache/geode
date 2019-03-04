@@ -26,6 +26,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GetMemberConfigInformationFunction;
@@ -36,7 +37,7 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeConfigCommand extends InternalGfshCommand {
+public class DescribeConfigCommand extends GfshCommand {
   public static final String API_PROPERTIES_SECTION = "api-properties";
   public static final String RUNTIME_PROPERTIES_SECTION = "runtime-properties";
   public static final String FILE_PROPERTIES_SECTION = "file-properties";
