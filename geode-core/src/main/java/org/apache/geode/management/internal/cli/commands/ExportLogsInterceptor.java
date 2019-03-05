@@ -30,8 +30,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
  * after the export logs, will need to copy the tempFile to the desired location and delete the temp
@@ -41,18 +40,18 @@ public class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result preExecution(GfshParseResult parseResult) {
+  public ResultModel preExecution(GfshParseResult parseResult) {
 
     // validates groupId and memberIds not both set
     if (parseResult.getParamValueAsString("group") != null
         && parseResult.getParamValueAsString("member") != null) {
-      return ResultBuilder.createUserErrorResult("Can't specify both group and member.");
+      return ResultModel.createError("Can't specify both group and member.");
     }
 
     // validate log level
     String logLevel = parseResult.getParamValueAsString("log-level");
     if (StringUtils.isBlank(logLevel) || LogLevel.getLevel(logLevel) == null) {
-      return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
+      return ResultModel.createError("Invalid log level: " + logLevel);
     }
 
     // validate start date and end date
@@ -63,7 +62,7 @@ public class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
       LocalDateTime startTime = ExportLogsFunction.parseTime(start);
       LocalDateTime endTime = ExportLogsFunction.parseTime(end);
       if (startTime.isAfter(endTime)) {
-        return ResultBuilder.createUserErrorResult("start-time has to be earlier than end-time.");
+        return ResultModel.createError("start-time has to be earlier than end-time.");
       }
     }
 
@@ -71,17 +70,17 @@ public class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
     boolean onlyLogs = (boolean) parseResult.getParamValue("logs-only");
     boolean onlyStats = (boolean) parseResult.getParamValue("stats-only");
     if (onlyLogs && onlyStats) {
-      return ResultBuilder.createUserErrorResult("logs-only and stats-only can't both be true");
+      return ResultModel.createError("logs-only and stats-only can't both be true");
     }
 
-    return ResultBuilder.createInfoResult("");
+    return ResultModel.createInfo("");
   }
 
   @Override
-  public CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
+  public ResultModel postExecution(GfshParseResult parseResult, ResultModel commandResult,
       Path tempFile) {
-    // in the command over http case, the command result is in the downloaded temp file
     if (tempFile != null) {
+      // in the command over http case, the command result is in the downloaded temp file
       Path dirPath;
       String dirName = parseResult.getParamValueAsString("dir");
       if (StringUtils.isBlank(dirName)) {
@@ -94,16 +93,21 @@ public class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
       try {
         FileUtils.copyFile(tempFile.toFile(), exportedLogFile);
         FileUtils.deleteQuietly(tempFile.toFile());
-        commandResult = (CommandResult) ResultBuilder
-            .createInfoResult("Logs exported to: " + exportedLogFile.getAbsolutePath());
+        return ResultModel.createInfo("Logs exported to: " + exportedLogFile.getAbsolutePath());
       } catch (IOException e) {
         logger.error(e.getMessage(), e);
-        commandResult = ResultBuilder.createGemFireErrorResult(e.getMessage());
+        return ResultModel.createError(e.getMessage());
       }
-    } else if (commandResult.getStatus() == Result.Status.OK) {
-      commandResult = (CommandResult) ResultBuilder.createInfoResult(
-          "Logs exported to the connected member's file system: " + commandResult.nextLine());
     }
-    return commandResult;
+
+    // otherwise if result status is false, return it
+    if (commandResult.getStatus() != Result.Status.OK) {
+      return commandResult;
+    }
+
+    // if there is no downloaded file. File is saved on the locator/manager.
+    return ResultModel.createInfo(
+        "Logs exported to the connected member's file system: "
+            + commandResult.getFileToDownload().toString());
   }
 }

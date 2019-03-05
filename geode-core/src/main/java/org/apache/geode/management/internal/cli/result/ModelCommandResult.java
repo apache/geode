@@ -62,12 +62,12 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public Path getFileToDownload() {
-    return null;
+    return result.getFileToDownload();
   }
 
   @Override
   public boolean hasFileToDownload() {
-    return false;
+    return getFileToDownload() != null;
   }
 
   @Override
@@ -88,8 +88,8 @@ public class ModelCommandResult implements CommandResult {
     commandOutputIndex = 0;
   }
 
-  // ModelCommandResult should not handle saving files. File saving should be done by each
-  // command's postExecutor in the ResultModel
+  // ModelCommandResult should not handle saving files. File contents saved in FileResultModel's
+  // byte[] should be saved by each command's postExecutor in the ResultModel
   @Override
   public boolean hasIncomingFiles() {
     return false;

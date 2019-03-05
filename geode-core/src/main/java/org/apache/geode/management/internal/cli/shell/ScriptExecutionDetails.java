@@ -19,8 +19,10 @@ import java.util.List;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 class ScriptExecutionDetails {
   private final String filePath;
@@ -28,38 +30,38 @@ class ScriptExecutionDetails {
 
   ScriptExecutionDetails(String filePath) {
     this.filePath = filePath;
-    this.commandAndStatusList = new ArrayList<CommandAndStatus>();
+    this.commandAndStatusList = new ArrayList<>();
   }
 
   void addCommandAndStatus(String command, String status) {
     this.commandAndStatusList.add(new CommandAndStatus(command, status));
   }
 
-  Result getResult() {
-    CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-    compositeResultData.setHeader(
+  ResultModel getResult() {
+    ResultModel result = new ResultModel();
+    result.setHeader(
         "************************* Execution Summary ***********************\nScript file: "
             + filePath);
 
     for (int i = 0; i < this.commandAndStatusList.size(); i++) {
       int commandSrNo = i + 1;
-      CompositeResultData.SectionResultData section = compositeResultData.addSection("" + (i + 1));
+      DataResultModel commandDetail = result.addData("command" + commandSrNo);
       CommandAndStatus commandAndStatus = commandAndStatusList.get(i);
-      section.addData("Command-" + String.valueOf(commandSrNo), commandAndStatus.command);
-      section.addData("Status", commandAndStatus.status);
+      commandDetail.addData("Command-" + String.valueOf(commandSrNo), commandAndStatus.command);
+      commandDetail.addData("Status", commandAndStatus.status);
       if (commandAndStatus.status.equals("FAILED")) {
-        compositeResultData.setStatus(Result.Status.ERROR);
+        result.setStatus(Result.Status.ERROR);
       }
       if (i != this.commandAndStatusList.size()) {
-        section.setFooter(Gfsh.LINE_SEPARATOR);
+        result.setFooter(Gfsh.LINE_SEPARATOR);
       }
     }
 
-    return ResultBuilder.buildResult(compositeResultData);
+    return result;
   }
 
-  void logScriptExecutionInfo(LogWrapper logWrapper, Result result) {
-    logWrapper.info(ResultBuilder.resultAsString(result));
+  void logScriptExecutionInfo(LogWrapper logWrapper, ResultModel result) {
+    logWrapper.info(ResultBuilder.resultAsString(new ModelCommandResult(result)));
   }
 
   static class CommandAndStatus {

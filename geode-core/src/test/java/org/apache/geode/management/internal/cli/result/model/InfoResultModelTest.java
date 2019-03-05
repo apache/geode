@@ -15,39 +15,17 @@
 
 package org.apache.geode.management.internal.cli.result.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.junit.Test;
 
+public class InfoResultModelTest {
 
-public class InfoResultModel extends AbstractResultModel {
-
-  private List<String> messages = new ArrayList<>();
-
-  InfoResultModel() {}
-
-  @Override
-  public List<String> getContent() {
-    return messages;
-  }
-
-  public void setContent(List<String> messages) {
-    this.messages = messages;
-  }
-
-  public InfoResultModel addLine(String line) {
-    messages.add(line);
-    return this;
-  }
-
-  public InfoResultModel removeLine(int index) {
-    messages.remove(index);
-    return this;
-  }
-
-  @JsonIgnore
-  public String getStringContent() {
-    return String.join(System.lineSeparator(), messages);
+  @Test
+  public void getStringContent() throws Exception {
+    InfoResultModel info = new InfoResultModel();
+    info.addLine("line1");
+    info.addLine("line2");
+    assertThat(info.getStringContent()).isEqualTo("line1" + System.lineSeparator() + "line2");
   }
 }

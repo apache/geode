@@ -22,15 +22,14 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class ExecuteScriptCommand extends InternalGfshCommand {
+public class ExecuteScriptCommand extends OfflineGfshCommand {
   @CliCommand(value = {CliStrings.RUN}, help = CliStrings.RUN__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result executeScript(
+  public ResultModel executeScript(
       @CliOption(key = CliStrings.RUN__FILE, optionContext = ConverterHint.FILE, mandatory = true,
           help = CliStrings.RUN__FILE__HELP) File file,
       @CliOption(key = {CliStrings.RUN__QUIET}, specifiedDefaultValue = "true",
@@ -38,15 +37,8 @@ public class ExecuteScriptCommand extends InternalGfshCommand {
       @CliOption(key = {CliStrings.RUN__CONTINUEONERROR}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.RUN__CONTINUEONERROR__HELP) boolean continueOnError) {
-    Result result;
-
     Gfsh gfsh = Gfsh.getCurrentInstance();
-    try {
-      result = gfsh.executeScript(file, quiet, continueOnError);
-    } catch (IllegalArgumentException e) {
-      result = ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } // let CommandProcessingException go to the caller
-    return result;
+    return gfsh.executeScript(file, quiet, continueOnError);
   }
 
 }
