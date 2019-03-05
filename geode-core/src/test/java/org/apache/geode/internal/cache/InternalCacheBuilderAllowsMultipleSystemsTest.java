@@ -41,6 +41,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalCacheConstructor;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalDistributedSystemConstructor;
 
+/**
+ * Unit tests for {@link InternalCacheBuilder} when
+ * {@code InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS} is set to true.
+ */
 public class InternalCacheBuilderAllowsMultipleSystemsTest {
 
   private static final int ANY_SYSTEM_ID = 12;
@@ -74,7 +78,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = false;
   }
 
-  @Test // null Properties
+  @Test
   public void create_throwsNullPointerException_ifConfigPropertiesIsNull() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         null, new CacheConfig(),
@@ -87,7 +91,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
 
-  @Test // null CacheConfig
+  @Test
   public void create_throwsNullPointerException_andCacheConfigIsNull() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), null,
@@ -100,7 +104,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
 
-  @Test // scenario 13 - no system/no cache - constructs system
+  @Test
   public void create_constructsSystem_withGivenProperties_ifNoSystemExists() {
     InternalCache constructedCache = constructedCache();
 
@@ -117,7 +121,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     verify(systemConstructor).construct(same(configProperties), any());
   }
 
-  @Test // scenario 13 - no system/no cache - returns constructed cache
+  @Test
   public void create_returnsConstructedCache_ifNoSystemExists() {
     InternalCache constructedCache = constructedCache();
 
@@ -131,7 +135,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(result).isSameAs(constructedCache);
   }
 
-  @Test // scenario 13 - no system/no cache - sets cache on system
+  @Test
   public void create_setsConstructedCache_onConstructedSystem_ifNoSystemExists() {
     InternalDistributedSystem constructedSystem = constructedSystem();
     InternalCache constructedCache = constructedCache();
@@ -146,7 +150,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     verify(constructedSystem).setCache(same(constructedCache));
   }
 
-  @Test // scenario 13 - no system/no cache - sets system on cache
+  @Test
   public void create_setsConstructedSystem_onConstructedCache_ifNoSystemExists() {
     InternalDistributedSystem constructedSystem = constructedSystem();
 
@@ -164,7 +168,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
   }
 
 
-  @Test // scenario 14 - given system/no cache - null system throws
+  @Test
   public void createWithSystem_throwsNullPointerException_ifSystemIsNull() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), new CacheConfig(),
@@ -176,7 +180,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
 
-  @Test // scenario 15 - given system/no cache - returns constructed cache
+  @Test
   public void createWithSystem_returnsConstructedCache_ifSystemCacheDoesNotExist() {
     InternalCache constructedCache = constructedCache();
 
@@ -191,7 +195,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(result).isSameAs(constructedCache);
   }
 
-  @Test // scenario 15 - given system/no cache - sets cache on system
+  @Test
   public void createWithSystem_setsConstructedCache_onGivenSystem_ifSystemCacheDoesNotExist() {
     InternalDistributedSystem givenSystem = givenSystem();
     InternalCache constructedCache = constructedCache();
@@ -207,7 +211,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     verify(givenSystem).setCache(same(constructedCache));
   }
 
-  @Test // scenario 15 - given system/no cache - sets system on cache
+  @Test
   public void createWithSystem_setsGivenSystem_onConstructedCache_ifSystemCacheDoesNotExist() {
     InternalDistributedSystem givenSystem = givenSystem();
 
@@ -225,7 +229,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         anyBoolean(), any());
   }
 
-  @Test // scenario 16 - given system/closed cache - returns constructed cache
+  @Test
   public void createWithSystem_returnsConstructedCache_ifSystemCacheIsClosed() {
     InternalDistributedSystem givenSystem = givenSystemWithCache(CLOSED);
     InternalCache constructedCache = constructedCache();
@@ -241,7 +245,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(result).isSameAs(constructedCache);
   }
 
-  @Test // scenario 16 - given system/closed cache - sets cache on system
+  @Test
   public void createWithSystem_setsConstructedCache_onGivenSystem_ifSystemCacheIsClosed() {
     InternalDistributedSystem givenSystem = givenSystemWithCache(CLOSED);
     InternalCache constructedCache = constructedCache();
@@ -257,7 +261,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     verify(givenSystem).setCache(same(constructedCache));
   }
 
-  @Test // scenario 16 - given system/closed cache - sets system on cache
+  @Test
   public void createWithSystem_setsGivenSystem_onConstructedCache_ifSystemCacheIsClosed() {
     InternalDistributedSystem givenSystem = givenSystemWithCache(CLOSED);
 
@@ -275,7 +279,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         anyBoolean(), any());
   }
 
-  @Test // scenario 17 - given system/open cache - notExistingOk throws
+  @Test
   public void createWithSystem_throwsCacheExistsException_ifSystemCacheIsOpen_butExistingNotOk() {
     InternalDistributedSystem givenSystem = givenSystemWithCache(OPEN);
 
@@ -291,7 +295,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(thrown).isInstanceOf(CacheExistsException.class);
   }
 
-  @Test // scenario 17 - given system/open cache - does not set cache on system
+  @Test
   public void createWithSystem_doesNotSetSystemCache_onGivenSystem__ifSystemCacheIsOpen_butExistingNotOk() {
     InternalDistributedSystem givenSystem = givenSystemWithCache(OPEN);
 
@@ -307,7 +311,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     verify(givenSystem, never()).setCache(any());
   }
 
-  @Test // scenario 18 - given system/open cache - incompatible cache throws
+  @Test
   public void createWithSystem_propagatesCacheConfigException_ifSystemCacheIsOpen_andExistingOk_butCacheIsIncompatible() {
     InternalDistributedSystem givenSystem = givenSystemWithCache(OPEN);
 
@@ -325,7 +329,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(thrown).isSameAs(thrownByCacheConfig);
   }
 
-  @Test // scenario 18 given system/open cache - does not set cache on system
+  @Test
   public void createWithSystem_doesNotSetSystemCache_onGivenSystem_ifSystemCacheIsOpen_andExistingOk_butCacheIsNotCompatible() {
     InternalDistributedSystem givenSystem = givenSystemWithCache(OPEN);
 
@@ -341,7 +345,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     verify(givenSystem, never()).setCache(any());
   }
 
-  @Test // scenario 19 - given system/open cache - returns singleton cache
+  @Test
   public void createWithSystem_returnsSystemCache_ifSystemCacheIsOpen_andExistingOk_andCacheIsCompatible() {
     InternalDistributedSystem givenSystem = givenSystem();
     InternalCache systemCache = systemCache(givenSystem, OPEN);
@@ -358,7 +362,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     assertThat(result).isSameAs(systemCache);
   }
 
-  @Test // scenario 19 - given system/open cache - sets cache on system
+  @Test
   public void createWithSystem_setsSystemCache_onGivenSystem_ifSystemCacheIsOpen_andExistingOk_andCacheIsCompatible() {
     InternalDistributedSystem givenSystem = givenSystem();
     InternalCache systemCache = systemCache(givenSystem, OPEN);

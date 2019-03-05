@@ -26,10 +26,13 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 
+/**
+ * Unit tests for {@link ConnectionConfigImpl}.
+ */
 public class ConnectionConfigImplTest {
 
   @Test
-  public void distributionConfigDoesNotContainDsQuorumCheckerProperty() {
+  public void distributionConfig_doesNotContainDsQuorumCheckerProperty() {
     QuorumChecker quorumChecker = mock(QuorumChecker.class);
     Properties properties = new Properties();
     properties.put(DS_QUORUM_CHECKER_NAME, quorumChecker);
@@ -41,7 +44,7 @@ public class ConnectionConfigImplTest {
   }
 
   @Test
-  public void distributionConfigDoesNotContainDsReconnectingProperty() {
+  public void distributionConfig_doesNotContainDsReconnectingProperty() {
     Properties properties = new Properties();
     properties.put(DS_RECONNECTING_NAME, Boolean.TRUE);
 
@@ -52,7 +55,7 @@ public class ConnectionConfigImplTest {
   }
 
   @Test
-  public void distributionConfigDoesNotContainDsConfigProperty() {
+  public void distributionConfig_doesNotContainDsConfigProperty() {
     Properties properties = new Properties();
     properties.put(DS_CONFIG_NAME, mock(DistributionConfig.class));
 

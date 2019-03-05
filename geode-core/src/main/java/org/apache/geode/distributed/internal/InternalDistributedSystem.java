@@ -463,7 +463,6 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public static InternalDistributedSystem newInstanceForTesting(
       DistributionManager distributionManager, Properties properties) {
-    DistributionConfig config = new DistributionConfigImpl(properties);
     StatisticsManagerFactory statisticsManagerFactory = defaultStatisticsManagerFactory();
 
     return newInstanceForTesting(
