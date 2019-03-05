@@ -28,9 +28,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheFactory;
