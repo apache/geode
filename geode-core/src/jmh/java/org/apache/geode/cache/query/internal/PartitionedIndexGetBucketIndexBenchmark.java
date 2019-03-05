@@ -18,9 +18,6 @@ package org.apache.geode.cache.query.internal;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -50,7 +47,7 @@ import org.apache.geode.distributed.DistributedSystem;
 @State(Scope.Thread)
 @Fork(1)
 public class PartitionedIndexGetBucketIndexBenchmark {
-  
+
   private JmhConcurrencyLoadGenerator jmhConcurrencyLoadGenerator;
   private PartitionedIndex index;
   /*

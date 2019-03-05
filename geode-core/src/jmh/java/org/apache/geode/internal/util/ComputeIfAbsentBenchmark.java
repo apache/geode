@@ -17,9 +17,6 @@ package org.apache.geode.internal.util;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -35,7 +32,6 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
 import org.apache.geode.cache.query.internal.JmhConcurrencyLoadGenerator;
-import org.apache.geode.cache.query.internal.PartitionedIndexGetBucketIndexBenchmark;
 
 /**
  * Test spins up threads that constantly do computeIfAbsent

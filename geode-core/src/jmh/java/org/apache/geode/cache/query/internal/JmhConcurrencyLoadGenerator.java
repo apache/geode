@@ -1,13 +1,13 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class JmhConcurrencyLoadGenerator {
   final ScheduledThreadPoolExecutor loadGenerationExecutorService;
   private final int numThreads;
+
   public JmhConcurrencyLoadGenerator(int numThreads) {
 
     this.numThreads = numThreads;
