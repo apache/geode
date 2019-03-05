@@ -179,10 +179,15 @@ public abstract class AbstractBaseController implements InitializingBean {
   private <T> T casValue(String regionNamePath, String key, String jsonData) {
     try {
       JsonNode jsonObject = objectMapper.readTree(jsonData);
-      String oldValue = jsonObject.get("@old").toString();
-      String newValue = jsonObject.get("@new").toString();
+      JsonNode oldValue = jsonObject.get("@old");
+      JsonNode newValue = jsonObject.get("@new");
 
-      return (T) casValue(regionNamePath, key, convert(oldValue), convert(newValue));
+      if (oldValue == null || newValue == null) {
+        throw new MalformedJsonException("Json doc specified in request body is invalid!");
+      }
+
+      return (T) casValue(regionNamePath, key, convert(oldValue.toString()),
+          convert(newValue.toString()));
 
     } catch (IOException je) {
       throw new MalformedJsonException("Json doc specified in request body is invalid!", je);

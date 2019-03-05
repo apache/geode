@@ -473,7 +473,7 @@ public class RestAccessControllerTest {
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
         .andExpect(
-            jsonPath("$.cause", is("Json doc specified is either not supported or invalid!")));
+            jsonPath("$.cause", is("Json doc specified in request body is invalid!")));
   }
 
   @Test
