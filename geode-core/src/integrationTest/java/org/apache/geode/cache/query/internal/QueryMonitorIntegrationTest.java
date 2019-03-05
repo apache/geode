@@ -14,38 +14,27 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.cache.RegionShortcut.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.Optional;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheRuntimeException;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
@@ -150,7 +139,8 @@ public class QueryMonitorIntegrationTest {
   @Test
   public void monitorQueryThreadThenStopMonitoringNoRemainingCancellationTasksRunning() {
     cache = (InternalCache) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
-    query = (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
+    query =
+        (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
 
     final ScheduledThreadPoolExecutor queryMonitorExecutor = new ScheduledThreadPoolExecutor(1);
 
@@ -171,7 +161,8 @@ public class QueryMonitorIntegrationTest {
       try {
         secondClientQueryThread.join();
       } catch (final InterruptedException ex) {
-        Assert.fail("Unexpected exception while executing query. Details:\n" + ExceptionUtils.getStackTrace(ex));
+        Assert.fail("Unexpected exception while executing query. Details:\n"
+            + ExceptionUtils.getStackTrace(ex));
       }
 
       queryMonitor.stopMonitoringQueryThread(query);
