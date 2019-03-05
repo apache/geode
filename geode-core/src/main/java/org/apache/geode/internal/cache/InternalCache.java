@@ -372,4 +372,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   InternalCacheForClientAccess getCacheForProcessingClientRequests();
 
   HttpService getHttpService();
+
+  void initialize();
+
+  void throwCacheExistsException();
 }

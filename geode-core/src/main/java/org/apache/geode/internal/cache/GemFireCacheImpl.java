@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
 
 import java.io.BufferedReader;
@@ -776,82 +775,17 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return cache;
   }
 
-  public static GemFireCacheImpl createClient(InternalDistributedSystem system, PoolFactory pf,
-      CacheConfig cacheConfig) {
-    return basicCreate(system, true, cacheConfig, pf, true, ASYNC_EVENT_LISTENERS, null);
-  }
-
-  public static GemFireCacheImpl create(InternalDistributedSystem system, CacheConfig cacheConfig) {
-    return basicCreate(system, true, cacheConfig, null, false, ASYNC_EVENT_LISTENERS, null);
-  }
-
-  static GemFireCacheImpl createWithAsyncEventListeners(InternalDistributedSystem system,
-      CacheConfig cacheConfig, TypeRegistry typeRegistry) {
-    return basicCreate(system, true, cacheConfig, null, false, true, typeRegistry);
-  }
-
-  public static Cache create(InternalDistributedSystem system, boolean existingOk,
-      CacheConfig cacheConfig) {
-    return basicCreate(system, existingOk, cacheConfig, null, false, ASYNC_EVENT_LISTENERS, null);
-  }
-
-  private static GemFireCacheImpl basicCreate(InternalDistributedSystem system, boolean existingOk,
-      CacheConfig cacheConfig, PoolFactory pf, boolean isClient, boolean asyncEventListeners,
-      TypeRegistry typeRegistry) throws CacheExistsException, TimeoutException,
-      CacheWriterException, GatewayException, RegionExistsException {
-    try {
-      synchronized (GemFireCacheImpl.class) {
-        GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig, system);
-        if (instance == null) {
-          instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners,
-              typeRegistry);
-          system.setCache(instance);
-          instance.initialize();
-        } else {
-          system.setCache(instance);
-        }
-        return instance;
-      }
-    } catch (CacheXmlException | IllegalArgumentException e) {
-      logger.error(e.getLocalizedMessage()); // TODO: log the full stack trace or not?
-      throw e;
-    } catch (Error | RuntimeException e) {
-      logger.error(e);
-      throw e;
-    }
-  }
-
-  private static GemFireCacheImpl checkExistingCache(boolean existingOk, CacheConfig cacheConfig,
-      InternalDistributedSystem system) {
-    GemFireCacheImpl instance =
-        ALLOW_MULTIPLE_SYSTEMS ? (GemFireCacheImpl) system.getCache() : getInstance();
-
-    if (instance != null && !instance.isClosed()) {
-      if (existingOk) {
-        // Check if cache configuration matches.
-        cacheConfig.validateCacheConfig(instance);
-        return instance;
-      } else {
-        // instance.creationStack argument is for debugging...
-        throw new CacheExistsException(instance,
-            String.format("%s: An open cache already exists.",
-                instance),
-            instance.creationStack);
-      }
-    }
-    return null;
-  }
-
   /**
    * Creates a new instance of GemFireCache and populates it according to the {@code cache.xml}, if
    * appropriate.
    *
    * Currently only unit tests set the typeRegistry parameter to a non-null value
    */
-  private GemFireCacheImpl(boolean isClient, PoolFactory pf, InternalDistributedSystem system,
-      CacheConfig cacheConfig, boolean asyncEventListeners, TypeRegistry typeRegistry) {
+  GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
+      InternalDistributedSystem internalDistributedSystem,
+      CacheConfig cacheConfig, boolean useAsyncEventListeners, TypeRegistry typeRegistry) {
     this.isClient = isClient;
-    this.poolFactory = pf;
+    this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig; // do early for bug 43213
     this.pdxRegistry = typeRegistry;
 
@@ -861,8 +795,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       // start JTA transaction manager within this synchronized block
       // to prevent race with cache close. fixes bug 43987
-      JNDIInvoker.mapTransactions(system);
-      this.system = system;
+      JNDIInvoker.mapTransactions(internalDistributedSystem);
+      this.system = internalDistributedSystem;
       this.dm = this.system.getDistributionManager();
 
       if (!isClient) {
@@ -881,7 +815,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         this.securityService = SecurityServiceFactory.create();
       }
 
-      DistributionConfig systemConfig = system.getConfig();
+      DistributionConfig systemConfig = internalDistributedSystem.getConfig();
       if (!this.isClient && PoolManager.getAll().isEmpty()) {
         // We only support management on members of a distributed system
         // Should do this: if (!getSystem().isLoner()) {
@@ -913,7 +847,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.cqService = CqServiceProvider.create(this);
 
       // Create the CacheStatistics
-      this.cachePerfStats = new CachePerfStats(system);
+      this.cachePerfStats = new CachePerfStats(internalDistributedSystem);
       CachePerfStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
 
       this.transactionManager = new TXManagerImpl(this.cachePerfStats, this);
@@ -923,7 +857,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       this.persistentMemberManager = new PersistentMemberManager();
 
-      if (asyncEventListeners) {
+      if (useAsyncEventListeners) {
         this.eventThreadPool = LoggingExecutors.newThreadPoolWithFixedFeed("Message Event Thread",
             command -> {
               ConnectionTable.threadWantsSharedResources();
@@ -1004,6 +938,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
                 .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB));
       }
     } // synchronized
+  }
+
+  @Override
+  public void throwCacheExistsException() {
+    throw new CacheExistsException(this, String.format("%s: An open cache already exists.", this),
+        creationStack);
   }
 
   @Override
@@ -1206,7 +1146,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Perform initialization, solve the early escaped reference problem by putting publishing
    * references to this instance in this method (vs. the constructor).
    */
-  private void initialize() {
+  @Override
+  public void initialize() {
     for (CacheLifecycleListener listener : cacheLifecycleListeners) {
       listener.cacheCreated(this);
     }

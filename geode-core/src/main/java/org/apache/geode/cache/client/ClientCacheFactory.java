@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -256,7 +257,11 @@ public class ClientCacheFactory {
 
         return instance;
       } else {
-        return GemFireCacheImpl.createClient(system, this.pf, cacheConfig);
+
+        return (InternalClientCache) new InternalCacheBuilder(cacheConfig)
+            .setIsClient(true)
+            .setPoolFactory(pf)
+            .create(system);
       }
     }
   }
