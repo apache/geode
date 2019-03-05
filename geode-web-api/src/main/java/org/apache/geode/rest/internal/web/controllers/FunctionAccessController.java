@@ -25,7 +25,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -254,15 +253,10 @@ public class FunctionAccessController extends AbstractBaseController {
       functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {
-        try {
-          @SuppressWarnings("unchecked")
-          String functionResultAsJson =
-              JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
-          return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
-        } catch (JSONException e) {
-          throw new GemfireRestException(
-              "Could not convert function results into Restful (JSON) format!", e);
-        }
+        @SuppressWarnings("unchecked")
+        String functionResultAsJson =
+            JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
+        return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
       } else {
         throw new GemfireRestException(
             "Function has returned results that could not be converted into Restful (JSON) format!");

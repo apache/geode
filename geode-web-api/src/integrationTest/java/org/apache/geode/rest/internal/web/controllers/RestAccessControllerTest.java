@@ -15,6 +15,7 @@
 package org.apache.geode.rest.internal.web.controllers;
 
 import static org.apache.geode.test.matchers.JsonEquivalence.jsonEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -65,6 +66,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.LoaderHelper;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
@@ -72,6 +74,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.management.internal.RestAgent;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -83,6 +86,7 @@ public class RestAccessControllerTest {
   private static final String BASE_URL = "http://localhost/v1";
 
   private static final String ORDER1_JSON = "order1.json";
+  private static final String ORDER1_ARRAY_JSON = "order1-array.json";
   private static final String ORDER1_NO_TYPE_JSON = "order1-no-type.json";
   private static final String ORDER2_JSON = "order2.json";
   private static final String ORDER2_UPDATED_JSON = "order2-updated.json";
@@ -100,6 +104,9 @@ public class RestAccessControllerTest {
 
   private MockMvc mockMvc;
 
+  private static Region<?, ?> orderRegion;
+  private static Region<?, ?> customerRegion;
+
   @ClassRule
   public static ServerStarterRule rule = new ServerStarterRule()
       .withProperty("log-level", "warn")
@@ -113,6 +120,7 @@ public class RestAccessControllerTest {
   @BeforeClass
   public static void setupCClass() throws Exception {
     loadResource(ORDER1_JSON);
+    loadResource(ORDER1_ARRAY_JSON);
     loadResource(ORDER1_NO_TYPE_JSON);
     loadResource(ORDER2_JSON);
     loadResource(MALFORMED_JSON);
@@ -131,6 +139,9 @@ public class RestAccessControllerTest {
 
     rule.createRegion(RegionShortcut.REPLICATE_PROXY, "empty",
         f -> f.setCacheLoader(new SimpleCacheLoader()).setCacheWriter(new SimpleCacheWriter()));
+
+    customerRegion = rule.getCache().getRegion("customers");
+    orderRegion = rule.getCache().getRegion("orders");
   }
 
   private static void loadResource(String name) throws Exception {
@@ -142,8 +153,8 @@ public class RestAccessControllerTest {
   public void setup() {
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-    rule.getCache().getRegion("customers").clear();
-    rule.getCache().getRegion("orders").clear();
+    customerRegion.clear();
+    orderRegion.clear();
   }
 
   @Test
@@ -159,6 +170,28 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(ORDER1_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isConflict());
+
+    Order order = (Order) ((PdxInstance) orderRegion.get("1")).getObject();
+    assertThat(order).as("order should not be null").isNotNull();
+  }
+
+  @Test
+  @WithMockUser
+  public void postEntryWithJsonArrayOfOrders() throws Exception {
+    mockMvc.perform(post("/v1/orders?key=1")
+        .content(jsonResources.get(ORDER1_ARRAY_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isCreated())
+        .andExpect(header().string("Location", BASE_URL + "/orders/1"));
+
+    mockMvc.perform(post("/v1/orders?key=1")
+        .content(jsonResources.get(ORDER1_ARRAY_JSON))
+        .with(POST_PROCESSOR))
+        .andExpect(status().isConflict());
+
+    List<PdxInstance> entries = (List<PdxInstance>) orderRegion.get("1");
+    Order order = (Order) entries.get(0).getObject();
+    assertThat(order).as("order should not be null").isNotNull();
   }
 
   @Test
@@ -168,7 +201,8 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.cause", is("JSON document specified in the request is incorrect")));
+        .andExpect(
+            jsonPath("$.cause", is("Json doc specified is either not supported or invalid!")));
   }
 
   @Test
@@ -238,7 +272,8 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.cause", is("JSON document specified in the request is incorrect")));
+        .andExpect(
+            jsonPath("$.cause", is("Json doc specified is either not supported or invalid!")));
   }
 
   @Test
@@ -349,7 +384,8 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.cause", is("JSON document specified in the request is incorrect")));
+        .andExpect(
+            jsonPath("$.cause", is("Json doc specified is either not supported or invalid!")));
   }
 
   @Test
@@ -436,7 +472,8 @@ public class RestAccessControllerTest {
         .content(jsonResources.get(MALFORMED_JSON))
         .with(POST_PROCESSOR))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.cause", is("JSON document specified in the request is incorrect")));
+        .andExpect(
+            jsonPath("$.cause", is("Json doc specified is either not supported or invalid!")));
   }
 
   @Test
