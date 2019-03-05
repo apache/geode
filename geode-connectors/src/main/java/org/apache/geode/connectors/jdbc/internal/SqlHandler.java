@@ -21,10 +21,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -51,7 +49,7 @@ public class SqlHandler {
   private final Map<String, FieldMapping> pdxToFieldMappings = new HashMap<>();
   private final Map<String, FieldMapping> jdbcToFieldMappings = new HashMap<>();
   private volatile SqlToPdxInstance sqlToPdxInstance;
-  private final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   public SqlHandler(InternalCache cache, String regionName,
       TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
@@ -60,13 +58,8 @@ public class SqlHandler {
     this.tableMetaDataManager = tableMetaDataManager;
     this.regionMapping = getMappingForRegion(configService, regionName);
     this.dataSource = getDataSource(dataSourceFactory, this.regionMapping.getDataSourceName());
-    try {
-      compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, regionName);
-    } catch (Exception ex) {
-      System.out.println("Throwing Exception...");
-      throw new IllegalStateException(
-          "Error comparing mapping with table definition: " + ex.getMessage());
-    }
+    compareTableMetadataWithMapping(regionName);
+
     initializeFieldMappingMaps();
   }
 
@@ -76,42 +69,44 @@ public class SqlHandler {
         dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
-  protected void compareTableMetadataWithMapping(TableMetaDataManager manager,
-      RegionMapping mapping, String regionName) throws Exception {
-    Set<String> jdbcNames = new HashSet<>();
-    Set<String> jdbcTypes = new HashSet<>();
+  protected void compareTableMetadataWithMapping(String regionName) {
+    TableMetaDataView metaDataView = getTableMetaDataView();
+    boolean foundDifference = false;
 
-    System.out.println("Field names in mapping:");
-    for (FieldMapping fieldMapping : mapping.getFieldMappings()) {
-      jdbcNames.add(fieldMapping.getJdbcName());
-      jdbcTypes.add(fieldMapping.getJdbcType());
-      System.out.println(fieldMapping.getJdbcName() + " - " + fieldMapping.getJdbcType());
+    if (regionMapping.getFieldMappings().size() != metaDataView.getColumnNames().size()) {
+      foundDifference = true;
+    } else {
+      for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
+        String jdbcName = fieldMapping.getJdbcName();
+        if (!metaDataView.getColumnNames().contains(jdbcName)) {
+          foundDifference = true;
+          break;
+        }
+        if (!metaDataView.getColumnDataType(jdbcName).getName()
+            .equals(fieldMapping.getJdbcType())) {
+          foundDifference = true;
+          break;
+        }
+        if (metaDataView.isColumnNullable(jdbcName) != fieldMapping.isJdbcNullable()) {
+          foundDifference = true;
+          break;
+        }
+      }
     }
 
-    System.out.println("\n");
-    System.out.println("Column names in mapping:");
-
-    TableMetaDataView metaDataView = manager.getTableMetaDataView(getConnection(), mapping);
-    Set<String> columnNames = new HashSet<>();
-    Set<String> columnTypes = new HashSet<>();
-
-    for (String columnName : metaDataView.getColumnNames()) {
-      columnTypes.add(metaDataView.getColumnDataType(columnName).getName());
-      columnNames.add(columnName);
-      System.out.println(columnName + " - " + metaDataView.getColumnDataType(columnName).getName());
-    }
-
-    if (!jdbcNames.equals(columnNames) || !jdbcTypes.equals(columnTypes)) {
+    if (foundDifference) {
       StringBuilder sb = new StringBuilder();
       sb.append("Error detected when comparing mapping for region \"" + regionName
           + "\" with table definition: \n"
-          + "\nDefinition from Field Mappings (" + jdbcNames.size() + " field mappings found):");
+          + "\nDefinition from Field Mappings (" + regionMapping.getFieldMappings().size()
+          + " field mappings found):");
 
-      for (FieldMapping fieldMapping : mapping.getFieldMappings()) {
+      for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
         sb.append("\n" + fieldMapping.getJdbcName() + " - " + fieldMapping.getJdbcType());
       }
 
-      sb.append("\n\nDefinition from Table Metadata (" + columnNames.size() + " columns found):");
+      sb.append("\n\nDefinition from Table Metadata (" + metaDataView.getColumnNames().size()
+          + " columns found):");
 
       for (String name : metaDataView.getColumnNames()) {
         sb.append("\n" + name + " - " + metaDataView.getColumnDataType(name));
@@ -122,8 +117,18 @@ public class SqlHandler {
 
       logger.error(sb.toString());
 
-      throw new IllegalStateException("Jdbc mapping for \"" + regionName
+      throw new JdbcConnectorException("Jdbc mapping for \"" + regionName
           + "\" does not match table definition, check logs for more details.");
+    }
+  }
+
+  private TableMetaDataView getTableMetaDataView() {
+    try (Connection connection = getConnection()) {
+      return tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
+    } catch (SQLException ex) {
+      throw JdbcConnectorException
+          .createException("Exception thrown while connecting to datasource \""
+              + regionMapping.getDataSourceName() + "\": ", ex);
     }
   }
 

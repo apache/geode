@@ -147,31 +147,51 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void compareTableMetaDataWithMappingThrowsNoExceptionWithMatchingMapping()
-      throws Exception {
+  public void createSqlHandlerThrowsNoExceptionWithMatchingMapping() {
     createSqlHandler();
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void compareTableMetaDataWithMappingThrowsExceptionWithAddedColumn() throws Exception {
+  @Test(expected = JdbcConnectorException.class)
+  public void createSqlHandlerThrowsExceptionWithAddedColumn() {
     String extraColumn = "extra_column";
     columnNames.add(extraColumn);
     when(tableMetaDataView.getColumnDataType(extraColumn)).thenReturn(JDBCType.VARCHAR);
     createSqlHandler();
-    // handler.compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, "regionName");
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void compareTableMetaDataWithMappingThrowsExceptionWithRemovedColumn() throws Exception {
+  @Test(expected = JdbcConnectorException.class)
+  public void createSqlHandlerThrowsExceptionWithRemovedColumn() {
     columnNames.remove(fieldName);
     createSqlHandler();
-    // handler.compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, "regionName");
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void compareTableMetaDataWithMappingThrowsExceptionWithModifiedColumn() throws Exception {
+  @Test(expected = JdbcConnectorException.class)
+  public void createSqlHandlerThrowsExceptionWithColumnNameChanged() {
+    columnNames.remove(fieldName);
+    columnNames.add(fieldName.toUpperCase());
+    when(tableMetaDataView.getColumnDataType(fieldName.toUpperCase())).thenReturn(JDBCType.VARCHAR);
+    createSqlHandler();
+  }
+
+  @Test(expected = JdbcConnectorException.class)
+  public void createSqlHandlerThrowsExceptionWithModifiedColumn() {
     when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.INTEGER);
-    handler.compareTableMetadataWithMapping(tableMetaDataManager, regionMapping, "regionName");
+    createSqlHandler();
+  }
+
+  @Test(expected = JdbcConnectorException.class)
+  public void createSqlHandlerThrowsExceptionWithModifiedColumnIsNullable() {
+    when(tableMetaDataView.isColumnNullable(fieldName)).thenReturn(true);
+    createSqlHandler();
+  }
+
+  @Test
+  public void createSqlHandlerHandlesSqlExceptionFromGetConnection() throws SQLException {
+    doThrow(new SQLException("test exception")).when(dataSource).getConnection();
+
+    assertThatThrownBy(() -> createSqlHandler())
+        .isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+            "Exception thrown while connecting to datasource \"dataSourceName\": test exception");
   }
 
   @Test
@@ -181,7 +201,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void constructorThrowsIfNoMapping() throws Exception {
+  public void constructorThrowsIfNoMapping() {
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
         "JDBC mapping for region regionWithNoMapping not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
@@ -191,7 +211,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void constructorThrowsIfNoConnectionConfig() throws Exception {
+  public void constructorThrowsIfNoConnectionConfig() {
     when(regionMapping.getDataSourceName()).thenReturn("bogus data source name");
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
@@ -703,7 +723,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void getEntryColumnDataGivenWrongNumberOfCompositeKeyFieldsFails() throws Exception {
+  public void getEntryColumnDataGivenWrongNumberOfCompositeKeyFieldsFails() {
     PdxInstance compositeKey = mock(PdxInstance.class);
     when(compositeKey.isDeserializable()).thenReturn(false);
     when(compositeKey.getFieldNames()).thenReturn(Arrays.asList("fieldOne"));
@@ -731,7 +751,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void getEntryColumnDataGivenWrongFieldNameInCompositeKeyFails() throws Exception {
+  public void getEntryColumnDataGivenWrongFieldNameInCompositeKeyFails() {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance compositeKey = mock(PdxInstance.class);
@@ -771,12 +791,12 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void returnsCorrectColumnsForUpdate() throws Exception {
+  public void returnsCorrectColumnsForUpdate() {
     testGetEntryColumnDataForCreateOrUpdate(Operation.UPDATE);
   }
 
   @Test
-  public void returnsCorrectColumnsForCreate() throws Exception {
+  public void returnsCorrectColumnsForCreate() {
     testGetEntryColumnDataForCreateOrUpdate(Operation.CREATE);
   }
 
@@ -933,12 +953,12 @@ public class SqlHandlerTest {
   // }
 
   @Test
-  public void returnsCorrectColumnsForUpdateWithCompositeKey() throws Exception {
+  public void returnsCorrectColumnsForUpdateWithCompositeKey() {
     testGetEntryColumnDataForCreateOrUpdateWithCompositeKey(Operation.UPDATE);
   }
 
   @Test
-  public void returnsCorrectColumnsForCreateWithCompositeKey() throws Exception {
+  public void returnsCorrectColumnsForCreateWithCompositeKey() {
     testGetEntryColumnDataForCreateOrUpdateWithCompositeKey(Operation.CREATE);
   }
 
@@ -990,7 +1010,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void returnsCorrectColumnForDestroyWithCompositeKey() throws Exception {
+  public void returnsCorrectColumnForDestroyWithCompositeKey() {
     Object compositeKeyFieldValueOne = "fieldValueOne";
     Object compositeKeyFieldValueTwo = "fieldValueTwo";
     PdxInstance compositeKey = mock(PdxInstance.class);
@@ -1032,7 +1052,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void returnsCorrectColumnForDestroy() throws Exception {
+  public void returnsCorrectColumnForDestroy() {
     EntryColumnData entryColumnData =
         handler.getEntryColumnData(tableMetaDataView, key, value, Operation.DESTROY);
 
@@ -1044,7 +1064,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void getEntryColumnDataWhenMultipleIdColumnsGivenNonPdxInstanceFails() throws Exception {
+  public void getEntryColumnDataWhenMultipleIdColumnsGivenNonPdxInstanceFails() {
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
     Object nonCompositeKey = Integer.valueOf(123);
     thrown.expect(JdbcConnectorException.class);

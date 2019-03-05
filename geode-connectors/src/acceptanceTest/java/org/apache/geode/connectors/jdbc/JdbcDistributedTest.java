@@ -246,8 +246,8 @@ public abstract class JdbcDistributedTest implements Serializable {
       String key = "id1";
       Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put(key, pdxEmployee1))
-          .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
-              "Error comparing mapping with table definition: Jdbc mapping for \"" + REGION_NAME
+          .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
+              "Jdbc mapping for \"" + REGION_NAME
                   + "\" does not match table definition, check logs for more details.");
     });
   }
