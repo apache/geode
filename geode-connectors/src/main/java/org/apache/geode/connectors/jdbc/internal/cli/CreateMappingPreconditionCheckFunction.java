@@ -229,7 +229,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
     }
   }
 
-  private Path createTemporaryDirectory(String prefix) {
+  Path createTemporaryDirectory(String prefix) {
     try {
       return createTempDirectory(prefix);
     } catch (IOException ex) {
@@ -240,7 +240,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
 
   }
 
-  private void deleteDirectory(Path tempDir) {
+  void deleteDirectory(Path tempDir) {
     try {
       FileUtils.deleteDirectory(tempDir.toFile());
     } catch (IOException ioe) {
@@ -277,25 +277,18 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
     }
     try {
       Path tempPdxClassFile = Paths.get(tempDir.toString(), remoteInputStreamName);
-      try (FileOutputStream fos = new FileOutputStream(tempPdxClassFile.toString());
-          InputStream input = RemoteInputStreamClient.wrap(remoteInputStream)) {
-        IOUtils.copyLarge(input, fos);
+      try (InputStream input = RemoteInputStreamClient.wrap(remoteInputStream);
+          FileOutputStream output = new FileOutputStream(tempPdxClassFile.toString())) {
+        copyFile(input, output);
       }
       return tempPdxClassFile.toFile();
     } catch (IOException iox) {
-      closeIgnoringException(remoteInputStream);
       throw new JdbcConnectorException(
           "The pdx class file \"" + remoteInputStreamName
               + "\" could not be copied to a temporary file, because: " + iox);
     }
   }
 
-  private void closeIgnoringException(RemoteInputStream remoteInputStream) {
-    try {
-      remoteInputStream.close(true);
-    } catch (IOException ignore) {
-    }
-  }
 
   // unit test mocks this method
   DataSource getDataSource(String dataSourceName) {
@@ -308,7 +301,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
   }
 
   // unit test mocks this method
-  private Class<?> loadClass(String className, URL url) throws ClassNotFoundException {
+  Class<?> loadClass(String className, URL url) throws ClassNotFoundException {
     return URLClassLoader.newInstance(new URL[] {url}).loadClass(className);
   }
 
@@ -330,6 +323,11 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<Object[]
   // unit test mocks this method
   Path createTempDirectory(String prefix) throws IOException {
     return Files.createTempDirectory(prefix);
+  }
+
+  // unit test mocks this method
+  void copyFile(InputStream input, FileOutputStream output) throws IOException {
+    IOUtils.copyLarge(input, output);
   }
 
 }

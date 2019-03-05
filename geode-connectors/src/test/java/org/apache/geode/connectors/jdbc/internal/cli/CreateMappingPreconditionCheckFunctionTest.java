@@ -19,12 +19,15 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -484,10 +487,12 @@ public class CreateMappingPreconditionCheckFunctionTest {
   }
 
   @Test
-  public void executeFunctionThrowsClassNotFoundExceptionGivenDummyRemoteInputStream() {
+  public void executeFunctionThrowsGivenRemoteInputStreamAndLoadClassThatThrowsClassNotFound()
+      throws ClassNotFoundException {
     remoteInputStreamName = "remoteInputStreamName";
     remoteInputStream = mock(RemoteInputStream.class);
     setupInputArgs();
+    doThrow(ClassNotFoundException.class).when(function).loadClass(eq(PDX_CLASS_NAME), any());
 
     Throwable throwable = catchThrowable(() -> function.executeFunction(context));
 
@@ -495,5 +500,78 @@ public class CreateMappingPreconditionCheckFunctionTest {
         .hasMessageContaining(
             "The pdx class \"" + PDX_CLASS_NAME + "\" could not be loaded because: ")
         .hasMessageContaining("ClassNotFoundException");
+    verify(function).createTemporaryDirectory(any());
+    verify(function).deleteDirectory(any());
   }
+
+  @Test
+  public void executeFunctionThrowsGivenRemoteInputStreamAndcreateTempDirectoryException()
+      throws IOException {
+    remoteInputStreamName = "remoteInputStreamName";
+    remoteInputStream = mock(RemoteInputStream.class);
+    setupInputArgs();
+    doThrow(IOException.class).when(function).createTempDirectory(any());
+
+    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
+        .hasMessageContaining(
+            "Could not create a temporary directory with the prefix \"pdx-class-dir-\" because: ")
+        .hasMessageContaining("IOException");
+    verify(function, never()).deleteDirectory(any());
+    verify(remoteInputStream, never()).close(true);
+  }
+
+  @Test
+  public void executeFunctionThrowsGivenRemoteInputStreamAndCopyFileIOException()
+      throws IOException {
+    remoteInputStreamName = "remoteInputStreamName";
+    remoteInputStream = mock(RemoteInputStream.class);
+    setupInputArgs();
+    doThrow(IOException.class).when(function).copyFile(any(), any());
+
+    Throwable throwable = catchThrowable(() -> function.executeFunction(context));
+
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class)
+        .hasMessageContaining(
+            "The pdx class file \"" + remoteInputStreamName
+                + "\" could not be copied to a temporary file, because: ")
+        .hasMessageContaining("IOException");
+    verify(function).createTemporaryDirectory(any());
+    verify(function).deleteDirectory(any());
+    verify(remoteInputStream).close(true);
+  }
+
+  @Test
+  public void executeFunctionReturnsSuccessGivenRemoteInputStreamClassAndPackageName()
+      throws ClassNotFoundException {
+    remoteInputStreamName = "remoteInputStreamName.class";
+    remoteInputStream = mock(RemoteInputStream.class);
+    setupInputArgs();
+    String PDX_CLASS_NAME_WITH_PACKAGE = "foo.bar.MyPdxClassName";
+    when(regionMapping.getPdxName()).thenReturn(PDX_CLASS_NAME_WITH_PACKAGE);
+    doReturn(PdxClassDummy.class).when(function).loadClass(eq(PDX_CLASS_NAME_WITH_PACKAGE), any());
+
+    CliFunctionResult result = function.executeFunction(context);
+
+    assertThat(result.isSuccessful()).isTrue();
+    verify(function).createTemporaryDirectory(any());
+    verify(function).deleteDirectory(any());
+  }
+
+  @Test
+  public void executeFunctionReturnsSuccessGivenRemoteInputStreamJar()
+      throws ClassNotFoundException {
+    remoteInputStreamName = "remoteInputStreamName.jar";
+    remoteInputStream = mock(RemoteInputStream.class);
+    setupInputArgs();
+    doReturn(PdxClassDummy.class).when(function).loadClass(eq(PDX_CLASS_NAME), any());
+
+    CliFunctionResult result = function.executeFunction(context);
+
+    assertThat(result.isSuccessful()).isTrue();
+    verify(function).createTemporaryDirectory(any());
+    verify(function).deleteDirectory(any());
+  }
+
 }
