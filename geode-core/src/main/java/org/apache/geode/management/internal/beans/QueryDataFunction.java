@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.cli.json.TypedJson;
+import org.apache.geode.management.internal.cli.json.QueryResultFormatter;
 
 /**
  * This function is executed on one or multiple members based on the member input to
@@ -118,7 +118,7 @@ public class QueryDataFunction implements Function, InternalEntity {
     queryString = applyLimitClause(queryString, limit, queryResultSetLimit);
 
     try {
-      TypedJson result = new TypedJson(queryCollectionsDepth);
+      QueryResultFormatter result = new QueryResultFormatter(queryCollectionsDepth);
 
       Region region = cache.getRegion(regionName);
 
