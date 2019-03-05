@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -385,40 +384,6 @@ public class ConcurrencyRuleTest {
         .repeatForIterations(expectedIterations);
     assertThatThrownBy(() -> execution.execute(concurrencyRule)).isInstanceOf(AssertionError.class);
     assertThat(this.iterations.get()).isEqualTo(stopIteration);
-  }
-
-  @Test
-  @Parameters({"EXECUTE_IN_SERIES", "EXECUTE_IN_PARALLEL"})
-  public void repeatForDuration(Execution execution) {
-    Duration duration = Duration.ofMillis(200);
-    this.iterations.set(0);
-
-    concurrencyRule.add(callWithRetValAndRepeatCount).repeatForDuration(duration);
-    await("Execution respects given duration").atMost(2000, TimeUnit.MILLISECONDS)
-        .until(() -> {
-          execution.execute(concurrencyRule);
-          return true;
-        });
-    assertThat(iterations.get()).isGreaterThan(1);
-  }
-
-  @Test
-  @Parameters({"EXECUTE_IN_PARALLEL"})
-  public void repeatUntilValue(Execution execution) {
-    boolean expectedVal = true;
-
-    retVal.set(false); // reset in case it has already been used
-
-    concurrencyRule.setTimeout(Duration.ofSeconds(60));
-    concurrencyRule.add(callWithEventuallyCorrectRetVal).repeatUntilValue(expectedVal);
-    concurrencyRule.add(() -> {
-      Thread.sleep(500);
-      retVal.set(true);
-      return null;
-    });
-    execution.execute(concurrencyRule);
-
-    assertThat(invoked.get()).isTrue();
   }
 
   @Test
