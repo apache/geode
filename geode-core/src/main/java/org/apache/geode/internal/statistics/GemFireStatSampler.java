@@ -72,7 +72,8 @@ public class GemFireStatSampler extends HostStatSampler {
 
   public GemFireStatSampler(InternalDistributedSystem internalDistributedSystem, LogFile logFile) {
     this(internalDistributedSystem.getCancelCriterion(),
-        new StatSamplerStats(internalDistributedSystem, internalDistributedSystem.getId()),
+        new StatSamplerStats(internalDistributedSystem,
+            internalDistributedSystem.getStatisticsManager().getPid()),
         logFile,
         internalDistributedSystem.getStatisticsConfig(),
         internalDistributedSystem.getStatisticsManager(),
@@ -275,7 +276,7 @@ public class GemFireStatSampler extends HostStatSampler {
           logger.error(LogMarker.STATISTICS_MARKER,
               "OS statistics failed to initialize properly, some stats may be missing. See bugnote #37160.");
         }
-        HostStatHelper.newSystem(getOsStatisticsFactory());
+        HostStatHelper.newSystem(getOsStatisticsFactory(), id);
         String statName = getStatisticsManager().getName();
         if (statName == null || statName.length() == 0) {
           statName = "javaApp" + getSystemId();
