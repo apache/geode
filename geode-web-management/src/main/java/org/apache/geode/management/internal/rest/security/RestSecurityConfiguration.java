@@ -80,7 +80,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
             throws IOException, ServletException {
           response.addHeader("WWW-Authenticate", "Basic realm=\"GEODE\"");
           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-          response.setContentType(MediaType.APPLICATION_JSON_UTF8.getType());
+          response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
           ClusterManagementResult result =
               new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHENTICATED,
                   authException.getMessage());

@@ -28,11 +28,14 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.CacheClientStatus;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
@@ -87,6 +90,9 @@ public class GetMemberInformationFunction implements InternalFunction {
       memberInfo.setHost(member.getHost());
       memberInfo.setProcessId("" + member.getProcessId());
 
+      SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(config,
+          SecurableCommunicationChannel.WEB);
+      memberInfo.setSsl(sslConfig.isEnabled());
       memberInfo.setGroups(config.getGroups());
       memberInfo.setLogFilePath(config.getLogFile().getCanonicalPath());
       memberInfo.setStatArchiveFilePath(config.getStatisticArchiveFile().getCanonicalPath());
@@ -96,6 +102,7 @@ public class GetMemberInformationFunction implements InternalFunction {
       memberInfo.setServerBindAddress(config.getServerBindAddress());
       memberInfo.setOffHeapMemorySize(config.getOffHeapMemorySize());
       memberInfo.setHttpServicePort(config.getHttpServicePort());
+
       memberInfo.setHttpServiceBindAddress(config.getHttpServiceBindAddress());
 
       MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();

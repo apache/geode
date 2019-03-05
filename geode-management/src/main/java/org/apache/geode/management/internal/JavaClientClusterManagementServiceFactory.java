@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
 import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.management.api.ClusterManagementService;
@@ -26,8 +29,7 @@ import org.apache.geode.management.client.ClusterManagementServiceProvider;
  * inferred from the implied runtime context but needs to be specifically configured using a given
  * URL or {@code ClientHttpRequestFactory}.
  */
-public class JavaClientClusterManagementServiceFactory
-    implements ClusterManagementServiceFactory {
+public class JavaClientClusterManagementServiceFactory implements ClusterManagementServiceFactory {
 
   @Override
   public String getContext() {
@@ -35,19 +37,31 @@ public class JavaClientClusterManagementServiceFactory
   }
 
   @Override
-  public ClusterManagementService create() throws IllegalArgumentException {
-    throw new IllegalArgumentException(String.format(
-        "When using a %s context, you must call create(String) or create(ClientHttpRequestFactory)",
-        ClusterManagementServiceProvider.JAVA_CLIENT_CONTEXT));
+  public ClusterManagementService create(String host, int port, boolean useSSL, String username,
+      String password) {
+    return new ClientClusterManagementService(host, port, useSSL, username, password);
   }
 
   @Override
-  public ClusterManagementService create(String clusterUrl) {
-    return new ClientClusterManagementService(clusterUrl);
+  public ClusterManagementService create(String host, int port, SSLContext sslContext,
+      HostnameVerifier hostnameVerifier, String username,
+      String password) {
+    return new ClientClusterManagementService(host, port, sslContext, hostnameVerifier, username,
+        password);
   }
 
   @Override
   public ClusterManagementService create(ClientHttpRequestFactory requestFactory) {
     return new ClientClusterManagementService(requestFactory);
+  }
+
+  @Override
+  public ClusterManagementService create() {
+    throw new IllegalArgumentException("must be invoked with a host and port");
+  }
+
+  @Override
+  public ClusterManagementService create(String username, String password) {
+    throw new IllegalArgumentException("must be invoked with a host and port");
   }
 }

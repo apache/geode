@@ -15,8 +15,27 @@
 
 package org.apache.geode.management.internal;
 
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriTemplateHandler;
@@ -54,34 +73,91 @@ public class ClientClusterManagementService implements ClusterManagementService 
     restTemplate.setErrorHandler(DEFAULT_ERROR_HANDLER);
   }
 
+  public ClientClusterManagementService(String host, int port, boolean useSSL, String username,
+      String password) {
+    this(host, port, useSSL ? createTrustAllSSLContext() : null,
+        useSSL ? new NoopHostnameVerifier() : null, username, password);
+  }
+
+  public ClientClusterManagementService(String host, int port, SSLContext sslContext,
+      HostnameVerifier hostnameVerifier, String username, String password) {
+    this();
+
+    DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
+    String schema = (sslContext == null) ? "http" : "https";
+    templateHandler.setBaseUrl(schema + "://" + host + ":" + port + "/geode-management/v2");
+    restTemplate.setUriTemplateHandler(templateHandler);
+
+    // HttpComponentsClientHttpRequestFactory allows use to preconfigure httpClient for
+    // authentication and ssl context
+    HttpComponentsClientHttpRequestFactory requestFactory =
+        new HttpComponentsClientHttpRequestFactory();
+
+    HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+    // configures the clientBuilder
+    if (username != null) {
+      CredentialsProvider credsProvider = new BasicCredentialsProvider();
+      credsProvider.setCredentials(new AuthScope(host, port),
+          new UsernamePasswordCredentials(username, password));
+      clientBuilder.setDefaultCredentialsProvider(credsProvider);
+    }
+
+    clientBuilder.setSSLContext(sslContext);
+    clientBuilder.setSSLHostnameVerifier(hostnameVerifier);
+
+    requestFactory.setHttpClient(clientBuilder.build());
+    restTemplate.setRequestFactory(requestFactory);
+  }
+
   public ClientClusterManagementService(ClientHttpRequestFactory requestFactory) {
     this();
     this.restTemplate.setRequestFactory(requestFactory);
   }
 
-  public ClientClusterManagementService(String clusterUrl) {
-    this();
-    DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
-    templateHandler.setBaseUrl(clusterUrl);
-    restTemplate.setUriTemplateHandler(templateHandler);
+  public static SSLContext createTrustAllSSLContext() {
+    try {
+      SSLContext sslContext = SSLContext.getInstance("TLS");
+      sslContext.init(new KeyManager[0], new TrustManager[] {new TrustAllTrustManager()},
+          new SecureRandom());
+      return sslContext;
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
+
+  private static class TrustAllTrustManager implements X509TrustManager {
+
+    @Override
+    public void checkClientTrusted(X509Certificate[] arg0, String arg1)
+        throws CertificateException {}
+
+    @Override
+    public void checkServerTrusted(X509Certificate[] arg0, String arg1)
+        throws CertificateException {}
+
+    @Override
+    public X509Certificate[] getAcceptedIssuers() {
+      return null;
+    }
   }
 
   @Override
   public ClusterManagementResult create(CacheElement config, String group) {
     String endPoint = getEndpoint(config);
-
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
-    return restTemplate.postForEntity(endPoint, config, ClusterManagementResult.class).getBody();
+    return restTemplate.postForObject(endPoint, config, ClusterManagementResult.class);
   }
 
   @Override
   public ClusterManagementResult delete(CacheElement config, String group) {
-    throw new NotImplementedException("Not implemented");
+    throw new NotImplementedException("Not Implemented");
   }
 
   @Override
   public ClusterManagementResult update(CacheElement config, String group) {
-    throw new NotImplementedException("Not implemented");
+    throw new NotImplementedException("Not Implemented");
   }
 
   public RestTemplate getRestTemplate() {
@@ -97,4 +173,5 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
     return ((RestfulEndpoint) config).getEndpoint();
   }
+
 }

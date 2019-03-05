@@ -36,6 +36,10 @@ public interface ClusterManagementService {
    */
   ClusterManagementResult create(CacheElement config, String group);
 
+  default ClusterManagementResult create(CacheElement config) {
+    return create(config, null);
+  }
+
   /**
    * This method will delete the element on all the applicable members in the cluster and update the
    * configuration in the cluster configuration if persistence is enabled.
@@ -48,6 +52,10 @@ public interface ClusterManagementService {
    */
   ClusterManagementResult delete(CacheElement config, String group);
 
+  default ClusterManagementResult delete(CacheElement config) {
+    return delete(config, null);
+  }
+
   /**
    * This method will update the element on all the applicable members in the cluster and persist
    * the updated configuration in the cluster configuration if persistence is enabled.
@@ -59,5 +67,9 @@ public interface ClusterManagementService {
    * @see CacheElement
    */
   ClusterManagementResult update(CacheElement config, String group);
+
+  default ClusterManagementResult update(CacheElement config) {
+    return update(config, null);
+  }
 
 }
