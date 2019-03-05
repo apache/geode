@@ -1383,7 +1383,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * <p>
    * Actual value of this constant is <code>20000000</code>.
    */
-  int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
+  int MAX_SOCKET_BUFFER_SIZE = Integer.MAX_VALUE;
 
   boolean VALIDATE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSize");
   int VALIDATE_CEILING = Integer
