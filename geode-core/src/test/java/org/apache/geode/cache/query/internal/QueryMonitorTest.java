@@ -14,9 +14,11 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,6 +35,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.internal.cache.InternalCache;
@@ -94,14 +98,18 @@ public class QueryMonitorTest {
   @Test
   public void monitorQueryThreadExpirationTaskScheduled() {
     DefaultQuery query = mock(DefaultQuery.class);
+    final AtomicReference queryCanceledExceptionAtomicReference =
+        new AtomicReference<CacheRuntimeException>();
+    doReturn(queryCanceledExceptionAtomicReference).when(query)
+        .getQueryCanceledExceptionAtomicReference();
 
     monitor.monitorQueryThread(query);
     Mockito.verify(scheduledThreadPoolExecutor, times(1)).schedule(captor.capture(), anyLong(),
         isA(TimeUnit.class));
     captor.getValue().run();
 
-    Mockito.verify(query, times(1))
-        .setQueryCanceledException(isA(QueryExecutionTimeoutException.class));
+    assertThat(queryCanceledExceptionAtomicReference.get())
+        .isInstanceOf(QueryExecutionTimeoutException.class);
     assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled)
         .isExactlyInstanceOf(QueryExecutionCanceledException.class);
   }

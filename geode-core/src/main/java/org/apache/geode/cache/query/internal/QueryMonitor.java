@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
@@ -351,9 +352,13 @@ public class QueryMonitor {
   private ScheduledFuture<?> scheduleCancelationTask(final DefaultQuery query,
       final long timeLimitMillis) {
 
-    // Make ThreadLocal queryCanceled available to closure, which will run in a separate thread
+    // Make ThreadLocal queryCanceled and queryCanceledException
+    // available to closure, which will run in a separate thread
     final AtomicBoolean queryCanceledThreadLocal =
         DefaultQuery.queryCanceled.get();
+
+    final AtomicReference<CacheRuntimeException> queryCanceledExceptionThreadLocal =
+        query.getQueryCanceledExceptionAtomicReference();
 
     /*
      * This is where the GoF "State" design pattern comes home to roost.
@@ -371,7 +376,7 @@ public class QueryMonitor {
       final CacheRuntimeException exception = memoryState
           .createCancelationException(timeLimitMillis, query);
 
-      query.setQueryCanceledException(exception);
+      queryCanceledExceptionThreadLocal.set(exception);
       queryCanceledThreadLocal.set(true);
 
     }, timeLimitMillis, TimeUnit.MILLISECONDS, executor, query);

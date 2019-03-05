@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
@@ -444,14 +446,20 @@ public class QueryMonitorDUnitTest {
       return;
     }
 
+    // Need to get a handle on the atomic reference because cancellation state
+    // is thread local, and awaitility until() runs in a separate thread.
+    final AtomicReference<CacheRuntimeException> cacheRuntimeExceptionAtomicReference =
+        query.getQueryCanceledExceptionAtomicReference();
+
     /*
      * The pollDelay() value was chosen to be larger than the
      * GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME (system property) value,
      * set during test initialization.
      */
+
     await("stall the query execution so that it gets cancelled")
         .pollDelay(10, TimeUnit.MILLISECONDS)
-        .until(() -> query.isCanceled());
+        .until(() -> cacheRuntimeExceptionAtomicReference.get() != null);
   }
 
   private static String[] queryStr = {"SELECT ID FROM /exampleRegion p WHERE  p.ID > 100",

@@ -14,22 +14,22 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.stubbing.Answer;
 
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -48,23 +48,22 @@ public class QueryMonitorIntegrationTest {
 
   private InternalCache cache;
   private DefaultQuery query;
-  private volatile CacheRuntimeException cacheRuntimeException;
   private volatile QueryExecutionCanceledException queryExecutionCanceledException;
 
   @Before
   public void before() {
-    cache = mock(InternalCache.class);
-    query = mock(DefaultQuery.class);
-    cacheRuntimeException = null;
+    cache = (InternalCache) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
+    query =
+        (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
     queryExecutionCanceledException = null;
   }
 
   @Test
-  public void setLowMemoryTrueCancelsQueriesImmediately() {
+  public void setLowMemoryTrueCancelsQueriesImmediatelyAndCannotMonitorNewQuery() {
 
     QueryMonitor queryMonitor = null;
 
-    ScheduledThreadPoolExecutor scheduledThreadPoolExecutor =
+    final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor =
         new ScheduledThreadPoolExecutor(1);
 
     try {
@@ -75,14 +74,32 @@ public class QueryMonitorIntegrationTest {
 
       queryMonitor.monitorQueryThread(query);
 
+      // Want to verify that all future queries are canceled due to low memory state, so create
+      // a new query and monitor it. The query has to be created before the low memory state is set,
+      // because the query service doesn't allow creating new queries in the low memory state.
+      final DefaultQuery query2 =
+          (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
+
+      // Set low memory and verify handling for the currently monitored exception
+
       queryMonitor.setLowMemory(true, 1);
 
-      verify(query, times(1))
-          .setQueryCanceledException(any(QueryExecutionLowMemoryException.class));
+      // Need to get a handle on the atomic reference because cancellation state
+      // is thread local, and awaitility until() runs in a separate thread.
+      final AtomicReference<CacheRuntimeException> cacheRuntimeExceptionAtomicReference =
+          query.getQueryCanceledExceptionAtomicReference();
+
+      GeodeAwaitility.await().until(() -> cacheRuntimeExceptionAtomicReference != null);
 
       assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled,
           "Expected setLowMemory(true,_) to cancel query immediately, but it didn't.",
           QueryExecutionCanceledException.class);
+
+      // Need to make query monitor effectively final for use in lambda. We expect this to throw
+      // because we cannot monitor a new query once we are in a low memory state.
+      final QueryMonitor finalQueryMonitor = queryMonitor;
+      assertThatThrownBy(() -> finalQueryMonitor.monitorQueryThread(query2))
+          .isExactlyInstanceOf(QueryExecutionLowMemoryException.class);
     } finally {
       if (queryMonitor != null) {
         /*
@@ -100,33 +117,78 @@ public class QueryMonitorIntegrationTest {
   @Test
   public void monitorQueryThreadCancelsLongRunningQueriesAndSetsExceptionAndThrowsException() {
 
-    QueryMonitor queryMonitor = new QueryMonitor(
+    final QueryMonitor queryMonitor = new QueryMonitor(
         new ScheduledThreadPoolExecutor(1),
         cache,
         EXPIRE_QUICK_MILLIS);
 
-    final Answer<Void> processSetQueryCanceledException = invocation -> {
-      final Object[] args = invocation.getArguments();
-      if (args[0] instanceof CacheRuntimeException) {
-        cacheRuntimeException = (CacheRuntimeException) args[0];
-      } else {
-        throw new AssertionError(
-            "setQueryCanceledException() received argument that wasn't a CacheRuntimeException.");
-      }
-      return null;
-    };
+    startQueryThread(queryMonitor, query);
 
-    doAnswer(processSetQueryCanceledException).when(query)
-        .setQueryCanceledException(any(CacheRuntimeException.class));
+    GeodeAwaitility.await().until(() -> queryExecutionCanceledException != null);
+
+    assertThat(queryExecutionCanceledException).isNotNull();
+  }
+
+  @Test
+  public void monitorQueryThreadThenStopMonitoringNoRemainingCancellationTasksRunning() {
+    cache = (InternalCache) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
+    query =
+        (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
+
+    final ScheduledThreadPoolExecutor queryMonitorExecutor = new ScheduledThreadPoolExecutor(1);
+
+    final QueryMonitor queryMonitor = new QueryMonitor(
+        queryMonitorExecutor,
+        cache,
+        NEVER_EXPIRE_MILLIS);
+
+    final Thread firstClientQueryThread = new Thread(() -> {
+      queryMonitor.monitorQueryThread(query);
+
+      final Thread secondClientQueryThread = new Thread(() -> {
+        queryMonitor.monitorQueryThread(query);
+        queryMonitor.stopMonitoringQueryThread(query);
+      });
+
+      secondClientQueryThread.start();
+      try {
+        secondClientQueryThread.join();
+      } catch (final InterruptedException ex) {
+        Assert.fail("Unexpected exception while executing query. Details:\n"
+            + ExceptionUtils.getStackTrace(ex));
+      }
+
+      queryMonitor.stopMonitoringQueryThread(query);
+    });
+
+    firstClientQueryThread.start();
+
+    // Both cancellation tasks should have been removed upon stopping monitoring the queries on
+    // each thread, so the task queue size should be 0
+    GeodeAwaitility.await().until(() -> queryMonitorExecutor.getQueue().size() == 0);
+  }
+
+  @Test
+  public void monitorQueryThreadTimesOutButCancellationStateIsThreadLocal() {
+    cache = (InternalCache) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
+    query =
+        (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
+
+    final ScheduledThreadPoolExecutor queryMonitorExecutor = new ScheduledThreadPoolExecutor(1);
+
+    final QueryMonitor queryMonitor = new QueryMonitor(
+        queryMonitorExecutor,
+        cache,
+        EXPIRE_QUICK_MILLIS);
 
     startQueryThread(queryMonitor, query);
 
-    GeodeAwaitility.await().until(() -> cacheRuntimeException != null);
+    GeodeAwaitility.await().until(() -> queryExecutionCanceledException != null);
 
-    assertThat(cacheRuntimeException)
-        .hasMessageContaining("canceled after exceeding max execution time");
-
-    assertThat(queryExecutionCanceledException).isNotNull();
+    // The cancellation state should be local to the query thread in startQueryThread, so we should
+    // be able to execute subsequent queries using the same query object. We are verifying that
+    // the cancellation state on the main test thread is still not set here.
+    assertThat(query.isCanceled()).isFalse();
   }
 
   private void startQueryThread(final QueryMonitor queryMonitor,
@@ -141,6 +203,7 @@ public class QueryMonitorIntegrationTest {
           Thread.sleep(5 * EXPIRE_QUICK_MILLIS);
         } catch (final QueryExecutionCanceledException e) {
           queryExecutionCanceledException = e;
+          assertThat(query.isCanceled()).isTrue();
           break;
         } catch (final InterruptedException e) {
           Thread.currentThread().interrupt();

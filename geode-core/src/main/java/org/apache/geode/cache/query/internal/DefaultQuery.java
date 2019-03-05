@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.annotations.Immutable;
@@ -82,9 +83,14 @@ public class DefaultQuery implements Query {
 
   private final QueryStatistics stats;
 
-  private Optional<ScheduledFuture> cancelationTask;
-
   private boolean traceOn = false;
+
+  private final ThreadLocal<Optional<ScheduledFuture>> cancelationTask;
+
+  private final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCanceledException;
+
+  static final ThreadLocal<AtomicBoolean> queryCanceled =
+      ThreadLocal.withInitial(AtomicBoolean::new);
 
   @Immutable
   private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -109,8 +115,6 @@ public class DefaultQuery implements Query {
    * blocking queue.
    */
   public static final Object NULL_RESULT = new Object();
-
-  private volatile CacheRuntimeException queryCancelledException;
 
   private ProxyCache proxyCache;
 
@@ -155,9 +159,6 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
 
-  static final ThreadLocal<AtomicBoolean> queryCanceled =
-      ThreadLocal.withInitial(AtomicBoolean::new);
-
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
     pdxClassToMethodsMap.set(map);
   }
@@ -167,11 +168,11 @@ public class DefaultQuery implements Query {
   }
 
   public Optional<ScheduledFuture> getCancelationTask() {
-    return cancelationTask;
+    return cancelationTask.get();
   }
 
   public void setCancelationTask(final ScheduledFuture cancelationTask) {
-    this.cancelationTask = Optional.of(cancelationTask);
+    this.cancelationTask.set(Optional.of(cancelationTask));
   }
 
   /**
@@ -195,7 +196,8 @@ public class DefaultQuery implements Query {
     this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
-    this.cancelationTask = Optional.empty();
+    this.cancelationTask = ThreadLocal.withInitial(Optional::empty);
+    this.queryCanceledException = ThreadLocal.withInitial(AtomicReference::new);
   }
 
   /**
@@ -478,6 +480,8 @@ public class DefaultQuery implements Query {
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
       queryCanceled.remove();
+      cancelationTask.remove();
+      queryCanceledException.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -715,14 +719,18 @@ public class DefaultQuery implements Query {
   }
 
   public CacheRuntimeException getQueryCanceledException() {
-    return queryCancelledException;
+    return queryCanceledException.get().get();
+  }
+
+  public AtomicReference<CacheRuntimeException> getQueryCanceledExceptionAtomicReference() {
+    return queryCanceledException.get();
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
   public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
-    this.queryCancelledException = queryCanceledException;
+    this.queryCanceledException.get().set(queryCanceledException);
   }
 
   public void setIsCqQuery(boolean isCqQuery) {
