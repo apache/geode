@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,15 +34,12 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.NetstatFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -55,7 +51,7 @@ public class NetstatCommand extends InternalGfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   // TODO : Verify the auto-completion for multiple values.
-  public Result netstat(
+  public ResultModel netstat(
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.NETSTAT__MEMBER__HELP) String[] members,
@@ -66,7 +62,7 @@ public class NetstatCommand extends InternalGfshCommand {
       @CliOption(key = CliStrings.NETSTAT__WITHLSOF, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.NETSTAT__WITHLSOF__HELP) boolean withlsof) {
-    Result result;
+    ResultModel result = new ResultModel();
 
     Map<String, DistributedMember> hostMemberMap = new HashMap<>();
     Map<String, List<String>> hostMemberListMap = new HashMap<>();
@@ -156,34 +152,15 @@ public class NetstatCommand extends InternalGfshCommand {
           }
         }
       }
-
-      InfoResultData resultData = ResultBuilder.createInfoResultData();
       if (saveAs != null && !saveAs.isEmpty()) {
         String saveToFile = saveAs;
         if (!saveAs.endsWith(NETSTAT_FILE_REQUIRED_EXTENSION)) {
           saveToFile = saveAs + NETSTAT_FILE_REQUIRED_EXTENSION;
         }
-        resultData.addAsFile(saveToFile, resultInfo.toString(),
-            CliStrings.NETSTAT__MSG__SAVED_OUTPUT_IN_0, false); // Note: substitution for {0} will
-        // happen on client side.
+        result.addFile(saveToFile, resultInfo.toString()); // Note: substitution for {0} will
       } else {
-        resultData.addLine(resultInfo.toString());
+        result.addInfo().addLine(resultInfo.toString());
       }
-      result = ResultBuilder.buildResult(resultData);
-    } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance(getCache())
-          .info(CliStrings.format(
-              CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
-              new Object[] {Arrays.toString(members)}));
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (RuntimeException e) {
-      LogWrapper.getInstance(getCache())
-          .info(CliStrings.format(
-              CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
-              new Object[] {Arrays.toString(members)}), e);
-      result = ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
-              new Object[] {Arrays.toString(members)}));
     } finally {
       hostMemberMap.clear();
       hostMemberListMap.clear();
