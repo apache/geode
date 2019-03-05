@@ -71,7 +71,7 @@ public class ManagementRequestLoggingDUnitTest {
             .hasStatusCode(201)
             .getClusterManagementResult();
 
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    assertThat(result.isSuccessful()).isTrue();
 
     locator.invoke(() -> {
       Logger logger = (Logger) LogManager.getLogger(ManagementLoggingFilter.class);
