@@ -82,7 +82,7 @@ public class DefaultQuery implements Query {
 
   private final QueryStatistics stats;
 
-  private Optional<ScheduledFuture> cancelationTask;
+  private final ThreadLocal<Optional<ScheduledFuture>> cancelationTask;
 
   private boolean traceOn = false;
 
@@ -166,12 +166,12 @@ public class DefaultQuery implements Query {
     return pdxClassToMethodsMap.get();
   }
 
-  public Optional<ScheduledFuture> getCancelationTask() {
+  public ThreadLocal<Optional<ScheduledFuture>> getCancelationTask() {
     return cancelationTask;
   }
 
   public void setCancelationTask(final ScheduledFuture cancelationTask) {
-    this.cancelationTask = Optional.of(cancelationTask);
+    this.cancelationTask.set(Optional.of(cancelationTask));
   }
 
   /**
@@ -195,7 +195,7 @@ public class DefaultQuery implements Query {
     this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
-    this.cancelationTask = Optional.empty();
+    this.cancelationTask = ThreadLocal.withInitial(Optional::empty);
   }
 
   /**
