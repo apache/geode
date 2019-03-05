@@ -39,14 +39,19 @@ public class DescribeConnectionCommandIntegrationTest {
   @Test
   public void describeConnectionTest() throws Exception {
     gfsh.connectAndVerify(locator.getJmxPort(), PortType.jmxManager);
-    gfsh.executeAndAssertThat("describe connection").tableHasColumnWithValuesContaining(
-        "Connection Endpoints", gfsh.getGfsh().getOperationInvoker().toString());
+    gfsh.executeAndAssertThat("describe connection").hasTableSection()
+        .hasColumnSize(1)
+        .hasColumn("Connection Endpoints")
+        .containsExactly(gfsh.getGfsh().getOperationInvoker().toString());
   }
 
   @Test
   public void executeWhileNotConnected() throws Exception {
     gfsh.executeAndAssertThat("describe connection")
-        .tableHasColumnWithValuesContaining("Connection Endpoints", "Not connected");
+        .hasTableSection()
+        .hasColumnSize(1)
+        .hasColumn("Connection Endpoints")
+        .containsExactly("Not connected");
   }
 
 }

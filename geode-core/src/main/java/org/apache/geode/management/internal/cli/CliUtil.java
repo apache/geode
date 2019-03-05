@@ -66,7 +66,6 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 
@@ -503,26 +502,6 @@ public class CliUtil {
   public static String resolvePathname(final String pathname) {
     return (StringUtils.isBlank(pathname) ? pathname
         : IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(pathname)));
-  }
-
-  public static Result getFunctionResult(ResultCollector<?, ?> rc, String commandName) {
-    Result result;
-    List<Object> results = (List<Object>) rc.getResult();
-    if (results != null) {
-      Object resultObj = results.get(0);
-      if (resultObj instanceof String) {
-        result = ResultBuilder.createInfoResult((String) resultObj);
-      } else if (resultObj instanceof Exception) {
-        result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
-      } else {
-        result = ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
-      }
-    } else {
-      result = ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
-    }
-    return result;
   }
 
   /***
