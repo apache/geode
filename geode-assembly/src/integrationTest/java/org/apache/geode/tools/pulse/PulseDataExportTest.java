@@ -57,6 +57,6 @@ public class PulseDataExportTest {
             .hasStatusCode(200)
             .hasResponseBody()
             .isEqualToIgnoringWhitespace(
-                "{\"result\":[[\"[Lorg.apache.geode.management.model.SubOrder;\",[[\"org.apache.geode.management.model.SubOrder\",{\"id\":\"null1\",\"items\":[\"java.util.ArrayList\",[]]}],null]]]}");
+                "{\"result\":[\"value1\",\"value2\",\"value3\"]}");
   }
 }

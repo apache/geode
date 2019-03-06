@@ -86,24 +86,10 @@ public class QueryResultFormatter {
 
     this.serializedObjects = new IdentityHashMap<>();
     this.mapper = new ObjectMapper();
-    // install a modifier that prevents recursive serialization in cases where
-    // there are cyclical references
-    SimpleModule mapperModule = new SimpleModule() {
-      @Override
-      public void setupModule(SetupContext context) {
-        // install a modifier that prevents recursive serialization in cases where
-        // there are cyclical references
-        super.setupModule(context);
-        context.addBeanSerializerModifier(new BeanSerializerModifier() {
-          @Override
-          public JsonSerializer<?> modifySerializer(
-              SerializationConfig config, BeanDescription desc, JsonSerializer<?> serializer) {
-            return new PreventReserializationSerializer(serializer, serializedObjects,
-                serializationDepth);
-          }
-        });
-      }
-    };
+
+    SimpleModule mapperModule =
+        new PreventReserializationModule(serializedObjects, serializationDepth);
+
     // insert a collection serializer that limits the number of elements generated
     mapperModule.addSerializer(Collection.class, new CollectionSerializer(maxCollectionElements));
     // insert a PdxInstance serializer that knows about PDX fields/values
@@ -435,5 +421,36 @@ public class QueryResultFormatter {
     public Class<Region.Entry> handledType() {
       return Region.Entry.class;
     }
+  }
+
+  /**
+   * A Jackson module that installs a serializer-modifier to detect and prevent
+   * reserialization of objects that have already been serialized. W/o this
+   * Jackson would throw infinite-recursion exceptions.
+   */
+  private static class PreventReserializationModule extends SimpleModule {
+    private final Map<Object, Object> serializedObjects;
+    private final int serializationDepth;
+
+    PreventReserializationModule(Map<Object, Object> serializedObjects, int serializationDepth) {
+      this.serializedObjects = serializedObjects;
+      this.serializationDepth = serializationDepth;
+    }
+
+    @Override
+    public void setupModule(SetupContext context) {
+      // install a modifier that prevents recursive serialization in cases where
+      // there are cyclical references
+      super.setupModule(context);
+      context.addBeanSerializerModifier(new BeanSerializerModifier() {
+        @Override
+        public JsonSerializer<?> modifySerializer(
+            SerializationConfig config, BeanDescription desc, JsonSerializer<?> serializer) {
+          return new PreventReserializationSerializer(serializer, serializedObjects,
+              serializationDepth);
+        }
+      });
+    }
+
   }
 }
