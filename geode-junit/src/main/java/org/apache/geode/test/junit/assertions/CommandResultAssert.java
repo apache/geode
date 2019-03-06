@@ -338,6 +338,11 @@ public class CommandResultAssert
     return this;
   }
 
+  public CommandResultAssert hasNoSection(String... sectionName) {
+    assertThat(getResultModel().getSectionNames()).doesNotContain(sectionName);
+    return this;
+  }
+
   // convenience method to get the first info section. if more than one info section
   // use the sectionName to get it
   public InfoResultModelAssert hasInfoSection() {

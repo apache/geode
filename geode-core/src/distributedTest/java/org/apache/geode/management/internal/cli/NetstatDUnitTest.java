@@ -126,8 +126,7 @@ public class NetstatDUnitTest {
   public void testOutputToFile() throws Exception {
     File outputFile = new File(temp.newFolder(), "command.log.txt");
 
-    CommandResult result = gfsh.executeCommand("netstat --file=" + outputFile.getAbsolutePath());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat("netstat --file=" + outputFile.getAbsolutePath()).statusIsSuccess();
 
     List<String> lines = new ArrayList<>();
     Scanner scanner = new Scanner(outputFile);
@@ -147,9 +146,9 @@ public class NetstatDUnitTest {
   public void testOutputToFileForOneGroup() throws Exception {
     File outputFile = new File(temp.newFolder(), "command.log.txt");
 
-    CommandResult result = gfsh.executeCommand(
-        String.format("netstat --file=%s --group=%s", outputFile.getAbsolutePath(), GROUP_1));
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat(
+        String.format("netstat --file=%s --group=%s", outputFile.getAbsolutePath(), GROUP_1))
+        .statusIsSuccess();
 
     List<String> lines = new ArrayList<>();
     Scanner scanner = new Scanner(outputFile);

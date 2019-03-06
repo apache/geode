@@ -358,13 +358,4 @@ public class ModelCommandResult implements CommandResult {
 
     addRowInRowGroup(rowGroup, model.getFooter());
   }
-
-  @Override
-  public String toString() {
-    return "ModelCommandResult[" +
-        "result=" + result +
-        ", commandOutput=" + commandOutput +
-        ", commandOutputIndex=" + commandOutputIndex +
-        ']';
-  }
 }

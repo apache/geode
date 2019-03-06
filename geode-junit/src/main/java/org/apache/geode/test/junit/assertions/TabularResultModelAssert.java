@@ -39,6 +39,10 @@ public class TabularResultModelAssert
     return this;
   }
 
+  public ListAssert<String> hasColumns() {
+    return assertThat(actual.getHeaders());
+  }
+
   /**
    * return a ListAssert for a column of values
    */

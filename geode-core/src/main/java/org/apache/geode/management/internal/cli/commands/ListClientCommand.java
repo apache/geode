@@ -46,8 +46,8 @@ public class ListClientCommand extends InternalGfshCommand {
     CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
     CompositeResultData.SectionResultData section = compositeResultData.addSection("section1");
 
-    TabularResultModel resultTable = result.addTable("TableForClientList");
-    String headerText = "ClientList";
+    TabularResultModel resultTable = result.addTable("clientList");
+    String headerText = "Client List";
     resultTable.setHeader(headerText);
 
     ManagementService service = getManagementService();

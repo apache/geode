@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.DataFormatException;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -34,7 +39,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.functions.NetstatFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -47,7 +54,9 @@ public class NetstatCommand extends InternalGfshCommand {
   private static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
 
   @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
+  @CliMetaData(
+      interceptor = "org.apache.geode.management.internal.cli.commands.NetstatCommand$Interceptor",
+      relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   // TODO : Verify the auto-completion for multiple values.
@@ -157,7 +166,10 @@ public class NetstatCommand extends InternalGfshCommand {
         if (!saveAs.endsWith(NETSTAT_FILE_REQUIRED_EXTENSION)) {
           saveToFile = saveAs + NETSTAT_FILE_REQUIRED_EXTENSION;
         }
-        result.addFile(saveToFile, resultInfo.toString()); // Note: substitution for {0} will
+
+        result.addFile(FilenameUtils.getName(saveToFile), resultInfo.toString()); // Note:
+                                                                                  // substitution
+                                                                                  // for {0} will
       } else {
         result.addInfo().addLine(resultInfo.toString());
       }
@@ -208,5 +220,32 @@ public class NetstatCommand extends InternalGfshCommand {
       list = hostMemberListMap.get(host);
     }
     list.add(memberIdOrName);
+  }
+
+  public static class Interceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public ResultModel preExecution(GfshParseResult parseResult) {
+      String saveAs = parseResult.getParamValueAsString(CliStrings.NETSTAT__FILE);
+
+      if (saveAs != null && StringUtils.isEmpty(FilenameUtils.getName(saveAs))) {
+        return ResultModel.createError("Invalid file name: " + saveAs);
+      }
+
+      return ResultModel.createInfo("");
+    }
+
+    @Override
+    public ResultModel postExecution(GfshParseResult parseResult, ResultModel result, Path tempFile)
+        throws IOException {
+      // save the content to the file specified by the user
+      String saveAs = parseResult.getParamValueAsString(CliStrings.NETSTAT__FILE);
+      if (saveAs == null) {
+        return result;
+      }
+
+      File file = new File(saveAs).getAbsoluteFile();
+      result.saveFileTo(file.getParentFile());
+      return result;
+    }
   }
 }

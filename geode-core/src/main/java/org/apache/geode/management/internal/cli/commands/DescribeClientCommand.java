@@ -68,7 +68,7 @@ public class DescribeClientCommand extends GfshCommand {
     ManagementService service = getManagementService();
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
     if (cacheServers.length == 0) {
-      return ResultModel.createCommandProcessingError(
+      return ResultModel.createError(
           CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
     }
 
@@ -83,11 +83,11 @@ public class DescribeClientCommand extends GfshCommand {
           try {
             clientHealthStatus = serverMbean.showClientStats(clientId);
             if (clientHealthStatus == null) {
-              return ResultModel.createCommandProcessingError(CliStrings.format(
+              return ResultModel.createError(CliStrings.format(
                   CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0, clientId));
             }
           } catch (Exception eee) {
-            return ResultModel.createCommandProcessingError(CliStrings.format(
+            return ResultModel.createError(CliStrings.format(
                 CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1, clientId,
                 eee.getMessage()));
           }
@@ -96,7 +96,7 @@ public class DescribeClientCommand extends GfshCommand {
     }
 
     if (clientHealthStatus == null) {
-      return ResultModel.createCommandProcessingError(
+      return ResultModel.createError(
           CliStrings.format(CliStrings.DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0, clientId));
     }
 
@@ -146,7 +146,7 @@ public class DescribeClientCommand extends GfshCommand {
 
       buildTableResult(result, clientHealthStatus, isDurable, primaryServers, secondaryServers);
     } else {
-      result = ResultModel.createCommandProcessingError(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
+      result = ResultModel.createError(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
     }
 
     LogWrapper.getInstance(getCache()).info("describe client result " + result);
@@ -166,7 +166,7 @@ public class DescribeClientCommand extends GfshCommand {
       secondServers.append(secondServer);
     }
 
-    DataResultModel dataSection = result.addData("InfoSection");
+    DataResultModel dataSection = result.addData("infoSection");
     if (clientHealthStatus != null) {
       dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS, primServers);
       dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS, secondServers);
@@ -193,8 +193,7 @@ public class DescribeClientCommand extends GfshCommand {
 
       if (poolStats.size() > 0) {
         for (Map.Entry<String, String> entry : poolStats.entrySet()) {
-          TabularResultModel poolStatsResultTable =
-              result.addTable("Pool Stats For Pool Name = " + entry.getKey());
+          TabularResultModel poolStatsResultTable = result.addTable(entry.getKey());
           poolStatsResultTable.setHeader("Pool Stats For Pool Name = " + entry.getKey());
           String poolStatsStr = entry.getValue();
           String str[] = poolStatsStr.split(";");
