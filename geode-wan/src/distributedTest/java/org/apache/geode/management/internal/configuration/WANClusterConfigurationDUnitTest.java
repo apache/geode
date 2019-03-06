@@ -34,8 +34,8 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -224,11 +224,10 @@ public class WANClusterConfigurationDUnitTest {
       CommandResult cmdResult = gfsh.executeCommand(csb2.toString());
       assertThat(cmdResult).isNotNull();
       assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-      TabularResultData tableSenderResultData = ((CompositeResultData) cmdResult.getResultData())
-          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER)
-          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+      TabularResultModel tableSenderResultData = ((ResultModel) cmdResult.getResultData())
+          .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders");
       List<String> senders =
-          tableSenderResultData.retrieveAllValues(CliStrings.RESULT_GATEWAY_SENDER_ID);
+          tableSenderResultData.getValuesInColumn(CliStrings.RESULT_GATEWAY_SENDER_ID);
       assertThat(senders).hasSize(4);
     });
   }
