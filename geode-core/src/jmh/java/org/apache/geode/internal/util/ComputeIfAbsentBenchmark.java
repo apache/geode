@@ -22,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Group;
+import org.openjdk.jmh.annotations.GroupThreads;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
@@ -29,9 +31,7 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 
-import org.apache.geode.cache.query.internal.JmhConcurrencyLoadGenerator;
 
 /**
  * Test spins up threads that constantly do computeIfAbsent
@@ -43,45 +43,26 @@ import org.apache.geode.cache.query.internal.JmhConcurrencyLoadGenerator;
 @Fork(1)
 public class ComputeIfAbsentBenchmark {
 
-  private JmhConcurrencyLoadGenerator jmhConcurrencyLoadGenerator;
   public Map map = new ConcurrentHashMap();
   /*
    * After load is established, how many measurements shall we take?
    */
   private static final double BENCHMARK_ITERATIONS = 10;
 
-  private static final int TIME_TO_QUIESCE_BEFORE_SAMPLING = 1;
-
-  private static final int THREAD_POOL_PROCESSOR_MULTIPLE = 2;
-
-  private static boolean testRunning = true;
-
   @Setup(Level.Trial)
-  public void trialSetup() throws InterruptedException {
-
-    final int numberOfThreads =
-        THREAD_POOL_PROCESSOR_MULTIPLE * Runtime.getRuntime().availableProcessors();
+  public void trialSetup() throws InterruptedException {}
 
 
-    jmhConcurrencyLoadGenerator = new JmhConcurrencyLoadGenerator(numberOfThreads);
-
-    jmhConcurrencyLoadGenerator.generateLoad(0, TimeUnit.MILLISECONDS, () -> {
-      while (testRunning) {
-        JavaWorkarounds.computeIfAbsent(map, 1, k -> k);
-      }
-    });
-
-    // allow system to quiesce
-    Thread.sleep(TIME_TO_QUIESCE_BEFORE_SAMPLING);
-  }
-
-  @TearDown(Level.Trial)
-  public void trialTeardown() {
-    testRunning = false;
-    jmhConcurrencyLoadGenerator.tearDown();
+  @Group("getBucketIndexThroughput")
+  @GroupThreads(10)
+  @Benchmark
+  public void getBucketIndexLoad() {
+    JavaWorkarounds.computeIfAbsent(map, 1, k -> k);
   }
 
   @Benchmark
+  @Group("computeIfAbsentThroughput")
+  @GroupThreads(1)
   @Measurement(iterations = (int) BENCHMARK_ITERATIONS)
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.SECONDS)
@@ -89,4 +70,5 @@ public class ComputeIfAbsentBenchmark {
   public Object computeIfAbsent() {
     return JavaWorkarounds.computeIfAbsent(map, 1, k -> k);
   }
+
 }

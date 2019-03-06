@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Group;
+import org.openjdk.jmh.annotations.GroupThreads;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
@@ -30,7 +32,6 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -48,18 +49,12 @@ import org.apache.geode.distributed.DistributedSystem;
 @Fork(1)
 public class PartitionedIndexGetBucketIndexBenchmark {
 
-  private JmhConcurrencyLoadGenerator jmhConcurrencyLoadGenerator;
   private PartitionedIndex index;
   /*
    * After load is established, how many measurements shall we take?
    */
   private static final double BENCHMARK_ITERATIONS = 10;
 
-  private static final int TIME_TO_QUIESCE_BEFORE_SAMPLING = 1;
-
-  private static final int THREAD_POOL_PROCESSOR_MULTIPLE = 2;
-
-  private static boolean testRunning = true;
 
   @Setup(Level.Trial)
   public void trialSetup() throws InterruptedException {
@@ -69,33 +64,19 @@ public class PartitionedIndexGetBucketIndexBenchmark {
     when(mockRegion.getCache()).thenReturn(mockCache);
     when(mockCache.getDistributedSystem()).thenReturn(mockDS);
     index = new PartitionedIndex(null, null, "", mockRegion, "", "", "");
-    // Index subIndex = mock(Index.class);
-    // when(subIndex.getName()).thenReturn("Name");
     index.addToBucketIndexes(mockRegion, mock(Index.class));
-
-
-    final int numberOfThreads =
-        THREAD_POOL_PROCESSOR_MULTIPLE * Runtime.getRuntime().availableProcessors();
-
-    jmhConcurrencyLoadGenerator = new JmhConcurrencyLoadGenerator(numberOfThreads);
-
-    jmhConcurrencyLoadGenerator.generateLoad(0, TimeUnit.MILLISECONDS, () -> {
-      while (PartitionedIndexGetBucketIndexBenchmark.testRunning) {
-        index.getBucketIndex();
-      }
-    });
-
-    // allow system to quiesce
-    Thread.sleep(TIME_TO_QUIESCE_BEFORE_SAMPLING);
   }
 
-  @TearDown(Level.Trial)
-  public void trialTeardown() {
-    testRunning = false;
-    jmhConcurrencyLoadGenerator.tearDown();
+  @Group("getBucketIndexThroughput")
+  @GroupThreads(10)
+  @Benchmark
+  public void getBucketIndexLoad() {
+    index.getBucketIndex();
   }
 
   @Benchmark
+  @Group("getBucketIndexThroughput")
+  @GroupThreads(1)
   @Measurement(iterations = (int) BENCHMARK_ITERATIONS)
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.SECONDS)
