@@ -52,6 +52,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -150,7 +151,7 @@ public class SocketCreator {
       && Boolean.getBoolean("java.net.preferIPv6Addresses");
 
   @MakeNotStatic
-  private static final Map<InetAddress, String> hostNames = new ConcurrentHashMap<>();
+  private static final ConcurrentMap<InetAddress, String> hostNames = new ConcurrentHashMap<>();
 
   /**
    * flag to force always using DNS (regardless of the fact that these lookups can hang)

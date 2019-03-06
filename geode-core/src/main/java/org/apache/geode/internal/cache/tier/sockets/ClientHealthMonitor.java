@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -63,7 +64,8 @@ public class ClientHealthMonitor {
    *
    * Accesses must be locked by _clientHeartbeatsLock
    */
-  private Map<ClientProxyMembershipID, AtomicLong> _clientHeartbeats = new ConcurrentHashMap<>();
+  private ConcurrentMap<ClientProxyMembershipID, AtomicLong> _clientHeartbeats =
+      new ConcurrentHashMap<>();
 
   /**
    * THe GemFire <code>Cache</code>
@@ -335,7 +337,9 @@ public class ClientHealthMonitor {
       return;
     }
 
-    logger.trace("ClientHealthMonitor: Received ping from client with member id {}", proxyID);
+    if (logger.isTraceEnabled()) {
+      logger.trace("ClientHealthMonitor: Received ping from client with member id {}", proxyID);
+    }
 
     AtomicLong heartbeat = _clientHeartbeats.get(proxyID);
     if (null == heartbeat) {
