@@ -27,7 +27,6 @@ import static org.apache.geode.management.MXBeanAwaitility.awaitGatewayReceiverM
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -36,14 +35,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.GatewayReceiverMXBean;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -234,26 +230,12 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
         "ln_Parallel", true, false));
 
     String command = CliStrings.LIST_GATEWAY;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-
-    TabularResultModel tableSenderResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders");
-    List<String> senders =
-        tableSenderResultData.getValuesInColumn(CliStrings.RESULT_GATEWAY_SENDER_ID);
-    assertThat(senders).hasSize(4);
-
-    List<String> hosts = tableSenderResultData.getValuesInColumn(CliStrings.RESULT_HOST_MEMBER);
-    assertThat(hosts).hasSize(4);
-
-    TabularResultModel tableReceiverResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewayReceivers");
-    List<String> ports = tableReceiverResultData.getValuesInColumn(CliStrings.RESULT_PORT);
-    assertThat(ports).hasSize(1);
-
-    hosts = tableReceiverResultData.getValuesInColumn(CliStrings.RESULT_HOST_MEMBER);
-    assertThat(hosts).hasSize(1);
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert
+        .hasTableSection("gatewaySenders").hasRowSize(4)
+        .hasColumns().contains("GatewaySender Id", "Member");
+    commandAssert.hasTableSection("gatewayReceivers")
+        .hasRowSize(1).hasColumns().contains("Port", "Member");
   }
 
   @Test
@@ -304,78 +286,33 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
         "ln_Parallel", true, false));
 
     String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Serial_Sender";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-
-    TabularResultModel tableSenderResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders");
-    List<String> senders =
-        tableSenderResultData.getValuesInColumn(CliStrings.RESULT_GATEWAY_SENDER_ID);
-    assertThat(senders).hasSize(4);
-    List<String> hosts = tableSenderResultData.getValuesInColumn(CliStrings.RESULT_HOST_MEMBER);
-    assertThat(hosts).hasSize(4);
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .hasTableSection("gatewaySenders").hasRowSize(4);
 
     command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Parallel_Sender";
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-
-    tableSenderResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders");
-    senders = tableSenderResultData.getValuesInColumn(CliStrings.RESULT_GATEWAY_SENDER_ID);
-    assertThat(senders).hasSize(5);
-
-    TabularResultModel tableReceiverResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewayReceivers");
-    List<String> ports = tableReceiverResultData.getValuesInColumn(CliStrings.RESULT_PORT);
-    assertThat(ports).hasSize(1);
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert.hasTableSection("gatewaySenders")
+        .hasRowSize(5);
+    commandAssert.hasTableSection("gatewayReceivers").hasRowSize(1);
 
     command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Receiver_Group";
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-
-    tableSenderResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders");
-    senders = tableSenderResultData.getValuesInColumn(CliStrings.RESULT_GATEWAY_SENDER_ID);
-    assertThat(senders).hasSize(1);
-
-    tableReceiverResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewayReceivers");
-    ports = tableReceiverResultData.getValuesInColumn(CliStrings.RESULT_PORT);
-    assertThat(ports).hasSize(1);
+    commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert.hasTableSection("gatewaySenders")
+        .hasRowSize(1);
+    commandAssert.hasTableSection("gatewayReceivers").hasRowSize(1);
 
     command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Serial_Sender,Parallel_Sender";
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-
-    tableSenderResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders");
-    senders = tableSenderResultData.getValuesInColumn(CliStrings.RESULT_GATEWAY_SENDER_ID);
-    assertThat(senders).hasSize(5);
-
-    tableReceiverResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewayReceivers");
-    ports = tableReceiverResultData.getValuesInColumn(CliStrings.RESULT_PORT);
-    assertThat(ports).hasSize(1);
+    commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert.hasTableSection("gatewaySenders")
+        .hasRowSize(5);
+    commandAssert.hasTableSection("gatewayReceivers").hasRowSize(1);
 
     command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP
         + "=Serial_Sender,Parallel_Sender,Receiver_Group";
-    cmdResult = gfsh.executeCommand(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-
-    tableSenderResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders");
-    senders = tableSenderResultData.getValuesInColumn(CliStrings.RESULT_GATEWAY_SENDER_ID);
-    assertThat(senders).hasSize(5);
-
-    tableReceiverResultData = ((ResultModel) cmdResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewayReceivers");
-    ports = tableReceiverResultData.getValuesInColumn(CliStrings.RESULT_PORT);
-    assertThat(ports).hasSize(1);
+    commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert.hasTableSection("gatewaySenders")
+        .hasRowSize(5);
+    commandAssert.hasTableSection("gatewayReceivers").hasRowSize(1);
   }
 
   private MemberVM startServerWithGroups(int index, String groups, int locPort) {
@@ -414,20 +351,11 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
 
     // Verify Results
     gfsh.connect(locatorSite1);
-    CommandResult listGatewaysCommandResult = gfsh.executeCommand(CliStrings.LIST_GATEWAY);
-    assertThat(listGatewaysCommandResult).isNotNull();
-    assertThat(listGatewaysCommandResult.getStatus()).isSameAs(Result.Status.OK);
-    TabularResultModel gatewayReceiversResultData =
-        ((ResultModel) listGatewaysCommandResult.getResultData())
-            .getTableSection(/* CliStrings.SECTION_GATEWAY_RECEIVER */"gatewayReceivers");
-    assertThat(gatewayReceiversResultData.getValuesInColumn(CliStrings.RESULT_PORT)).hasSize(1);
-    assertThat(gatewayReceiversResultData.getValuesInColumn(CliStrings.RESULT_HOST_MEMBER))
-        .hasSize(1);
-    List<String> sendersCount =
-        gatewayReceiversResultData.getValuesInColumn(CliStrings.RESULT_SENDERS_COUNT);
-    assertThat(sendersCount).hasSize(1).doesNotContain("0");
-    assertThat(((ResultModel) listGatewaysCommandResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders")).isNull();
+    gfsh.executeAndAssertThat(CliStrings.LIST_GATEWAY).statusIsSuccess()
+        .hasNoSection("gatewaySenders")
+        .hasTableSection("gatewayReceivers")
+        .hasRowSize(1)
+        .hasColumn("Sender Count").doesNotContain("0");
 
     // Stop receivers in Site #1 and Verify Sender Count
     server1.invoke(WANCommandUtils::stopReceivers);
@@ -435,17 +363,10 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
     locatorSite1
         .invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server1.getVM()), false));
     gfsh.connect(locatorSite1);
-    listGatewaysCommandResult = gfsh.executeCommand(CliStrings.LIST_GATEWAY);
-    assertThat(listGatewaysCommandResult).isNotNull();
-    assertThat(listGatewaysCommandResult.getStatus()).isSameAs(Result.Status.OK);
-    gatewayReceiversResultData = ((ResultModel) listGatewaysCommandResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_RECEIVER */"gatewayReceivers");
-    assertThat(gatewayReceiversResultData.getValuesInColumn(CliStrings.RESULT_PORT)).hasSize(1);
-    assertThat(gatewayReceiversResultData.getValuesInColumn(CliStrings.RESULT_HOST_MEMBER))
-        .hasSize(1);
-    sendersCount = gatewayReceiversResultData.getValuesInColumn(CliStrings.RESULT_SENDERS_COUNT);
-    assertThat(sendersCount).hasSize(1).containsExactly("0");
-    assertThat(((ResultModel) listGatewaysCommandResult.getResultData())
-        .getTableSection(/* CliStrings.SECTION_GATEWAY_SENDER */"gatewaySenders")).isNull();
+    gfsh.executeAndAssertThat(CliStrings.LIST_GATEWAY).statusIsSuccess()
+        .hasNoSection("gatewaySenders")
+        .hasTableSection("gatewayReceivers")
+        .hasRowSize(1)
+        .hasColumn("Sender Count").containsExactly("0");
   }
 }
