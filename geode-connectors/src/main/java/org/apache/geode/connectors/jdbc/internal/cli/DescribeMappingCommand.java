@@ -20,6 +20,7 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SPECIFIED_ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 
@@ -117,6 +118,7 @@ public class DescribeMappingCommand extends GfshCommand {
     attributes.put(DATA_SOURCE_NAME, regionMapping.getDataSourceName());
     attributes.put(SYNCHRONOUS_NAME, Boolean.toString(synchronous));
     attributes.put(ID_NAME, regionMapping.getIds());
+    attributes.put(SPECIFIED_ID_NAME, Boolean.toString(regionMapping.getSpecifiedIds()));
     if (regionMapping.getCatalog() != null) {
       attributes.put(CATALOG_NAME, regionMapping.getCatalog());
     }

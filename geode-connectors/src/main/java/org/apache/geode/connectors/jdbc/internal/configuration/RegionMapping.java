@@ -25,46 +25,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.XSDRootElement;
 
 /**
- * <p>
- * Java class for anonymous complex type.
- *
- * <p>
- * The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="field-mapping" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;simpleContent>
- *               &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
- *                 &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="pdx-type" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="jdbc-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="jdbc-type" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/extension>
- *             &lt;/simpleContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="data-source" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="table" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="pdx-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="ids" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="catalog" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- *
- *
+ * Java class for xsd mapping element.
  */
 @Experimental
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -84,6 +52,8 @@ public class RegionMapping implements CacheElement {
   protected String pdxName;
   @XmlAttribute(name = "ids")
   protected String ids;
+  @XmlAttribute(name = "specified-ids")
+  protected boolean specifiedIds;
   @XmlAttribute(name = "catalog")
   protected String catalog;
   @XmlAttribute(name = "schema")
@@ -103,6 +73,7 @@ public class RegionMapping implements CacheElement {
     this.tableName = tableName;
     this.dataSourceName = dataSourceName;
     this.ids = ids;
+    this.specifiedIds = !StringUtils.isEmpty(ids);
     this.catalog = catalog;
     this.schema = schema;
   }
@@ -135,6 +106,10 @@ public class RegionMapping implements CacheElement {
     this.schema = schema;
   }
 
+  public void setSpecifiedIds(boolean specifiedIds) {
+    this.specifiedIds = specifiedIds;
+  }
+
   public String getDataSourceName() {
     return dataSourceName;
   }
@@ -149,6 +124,10 @@ public class RegionMapping implements CacheElement {
 
   public String getIds() {
     return ids;
+  }
+
+  public boolean getSpecifiedIds() {
+    return specifiedIds;
   }
 
   public String getCatalog() {
@@ -187,6 +166,7 @@ public class RegionMapping implements CacheElement {
         && isEqual(tableName, that.tableName)
         && isEqual(dataSourceName, that.dataSourceName)
         && isEqual(ids, that.ids)
+        && specifiedIds == that.specifiedIds
         && isEqual(catalog, that.catalog)
         && isEqual(schema, that.schema)
         && isEqual(fieldMappings, that.fieldMappings);
@@ -216,6 +196,7 @@ public class RegionMapping implements CacheElement {
         + ", tableName='" + tableName + '\''
         + ", dataSourceName='" + dataSourceName + '\''
         + ", ids='" + ids + '\''
+        + ", specifiedIds='" + specifiedIds + '\''
         + ", catalog='" + catalog + '\''
         + ", schema='" + schema + '\''
         + ", fieldMapping='" + fieldMappings + '\''

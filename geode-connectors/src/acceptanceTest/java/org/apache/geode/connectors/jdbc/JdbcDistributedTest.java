@@ -74,6 +74,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       new DistributedRestoreSystemProperties();
 
   private MemberVM server;
+  private MemberVM server2;
   private MemberVM locator;
   private String connectionUrl;
 
@@ -230,7 +231,8 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   @Test
-  public void throwsExceptionWhenMappingDoesNotMatchTableDefinition() throws Exception {
+  public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnInitialOperation()
+      throws Exception {
     IgnoredException.addIgnoredException(
         "Error detected when comparing mapping for region \"employees\" with table definition:");
     createTable();
@@ -238,7 +240,8 @@ public abstract class JdbcDistributedTest implements Serializable {
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
     alterTable();
-    server.invoke(() -> {
+    server2 = startupRule.startServerVM(2, x -> x.withConnectionToLocator(locator.getPort()));
+    server2.invoke(() -> {
       PdxInstance pdxEmployee1 =
           ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
               .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
@@ -250,6 +253,19 @@ public abstract class JdbcDistributedTest implements Serializable {
               "Jdbc mapping for \"" + REGION_NAME
                   + "\" does not match table definition, check logs for more details.");
     });
+  }
+
+  @Test
+  public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnServerStartup()
+      throws Exception {
+    IgnoredException.addIgnoredException(
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
+    createTable();
+    createRegionUsingGfsh();
+    createJdbcDataSource();
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
+    alterTable();
+
   }
 
   @Test

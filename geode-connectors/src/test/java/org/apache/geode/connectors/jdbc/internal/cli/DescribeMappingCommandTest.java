@@ -20,6 +20,7 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.SPECIFIED_ID_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
 import static org.mockito.Mockito.mock;
@@ -88,6 +89,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(true);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     ArrayList<CacheElement> elements = new ArrayList<>();
@@ -106,6 +108,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(true);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     ArrayList<CacheElement> elements = new ArrayList<>();
@@ -125,6 +128,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(true);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     ArrayList<CacheElement> elements = new ArrayList<>();
@@ -143,6 +147,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(true);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     when(clusterConfig.getRegions()).thenReturn(new ArrayList<>());
@@ -159,6 +164,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(true);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     when(clusterConfig.getRegions()).thenReturn(new ArrayList<>());
@@ -176,6 +182,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(true);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     ArrayList<CacheElement> elements = new ArrayList<>();
@@ -185,10 +192,40 @@ public class DescribeMappingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
             PDX_NAME,
-            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
+            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, SPECIFIED_ID_NAME,
+            CATALOG_NAME, SCHEMA_NAME)
         .containsOutput(REGION_NAME, "region1")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SPECIFIED_ID_NAME, "true")
+        .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
+        .containsOutput("true");
+  }
+
+  @Test
+  public void commandSuccessWhenClusterConfigFoundAndRegionConfigFoundIdNotSpecified() {
+    RegionMapping regionMapping = new RegionMapping();
+    regionMapping.setRegionName("region1");
+    regionMapping.setPdxName("class1");
+    regionMapping.setTableName("table1");
+    regionMapping.setDataSourceName("name1");
+    regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(false);
+    regionMapping.setCatalog("myCatalog");
+    regionMapping.setSchema("mySchema");
+    ArrayList<CacheElement> elements = new ArrayList<>();
+    elements.add(regionMapping);
+    when(regionConfig.getCustomRegionElements()).thenReturn(elements);
+
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
+        .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
+            PDX_NAME,
+            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, SPECIFIED_ID_NAME,
+            CATALOG_NAME, SCHEMA_NAME)
+        .containsOutput(REGION_NAME, "region1")
+        .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
+        .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SPECIFIED_ID_NAME, "false")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
         .containsOutput("true");
   }
@@ -210,6 +247,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(true);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     ArrayList<CacheElement> elements = new ArrayList<>();
@@ -224,10 +262,12 @@ public class DescribeMappingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
             PDX_NAME,
-            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
+            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, SPECIFIED_ID_NAME,
+            CATALOG_NAME, SCHEMA_NAME)
         .containsOutput(REGION_NAME, "region1")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SPECIFIED_ID_NAME, "true")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
         .containsOutput("synchronous", "false");
   }
@@ -240,6 +280,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(false);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     FieldMapping fieldMapping =
@@ -255,10 +296,12 @@ public class DescribeMappingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
             PDX_NAME,
-            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
+            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, SPECIFIED_ID_NAME,
+            CATALOG_NAME, SCHEMA_NAME)
         .containsOutput(REGION_NAME, "region1")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SPECIFIED_ID_NAME, "true")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
         .containsOutput("synchronous", "false")
         .containsOutput("pdxName1", "pdxType1", "jdbcName1", "jdbcType1", "true")
@@ -273,6 +316,7 @@ public class DescribeMappingCommandTest {
     regionMapping.setTableName("table1");
     regionMapping.setDataSourceName("name1");
     regionMapping.setIds("myId");
+    regionMapping.setSpecifiedIds(false);
     regionMapping.setCatalog("myCatalog");
     regionMapping.setSchema("mySchema");
     ArrayList<CacheElement> elements = new ArrayList<>();
@@ -285,10 +329,12 @@ public class DescribeMappingCommandTest {
     gfsh.executeAndAssertThat(command, COMMAND + " --groups=group1").statusIsSuccess()
         .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
             PDX_NAME,
-            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, CATALOG_NAME, SCHEMA_NAME)
+            TABLE_NAME, DATA_SOURCE_NAME, SYNCHRONOUS_NAME, ID_NAME, SPECIFIED_ID_NAME,
+            CATALOG_NAME, SCHEMA_NAME)
         .containsOutput(REGION_NAME, "region1")
         .containsOutput(DATA_SOURCE_NAME, "name1").containsOutput(TABLE_NAME, "table1")
         .containsOutput(PDX_NAME, "class1").containsOutput(ID_NAME, "myId")
+        .containsOutput(SPECIFIED_ID_NAME, "true")
         .containsOutput(SCHEMA_NAME, "mySchema").containsOutput(CATALOG_NAME, "myCatalog")
         .containsOutput("true");
   }

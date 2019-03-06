@@ -102,7 +102,7 @@ public class SqlHandlerTest {
     tableMetaDataView = mock(TableMetaDataView.class);
     when(tableMetaDataView.getQuotedTablePath()).thenReturn(TABLE_NAME);
     when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN));
-    final String IDS = "ids";
+    final String IDS = KEY_COLUMN;
     when(tableMetaDataManager.getTableMetaDataView(any(), any()))
         .thenReturn(tableMetaDataView);
     connectorService = mock(JdbcConnectorService.class);
@@ -182,6 +182,12 @@ public class SqlHandlerTest {
   @Test(expected = JdbcConnectorException.class)
   public void createSqlHandlerThrowsExceptionWithModifiedColumnIsNullable() {
     when(tableMetaDataView.isColumnNullable(fieldName)).thenReturn(true);
+    createSqlHandler();
+  }
+
+  @Test(expected = JdbcConnectorException.class)
+  public void createSqlHandlerThrowsExceptionWithModifiedIdColumns() {
+    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN.toUpperCase()));
     createSqlHandler();
   }
 
@@ -442,6 +448,7 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
     when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
     when(value.getFieldNames()).thenReturn(Arrays.asList("fieldOne", "fieldTwo"));
+    when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
 
     handler.write(region, Operation.CREATE, compositeKey, value);
@@ -492,6 +499,7 @@ public class SqlHandlerTest {
     columnNames.add("fieldTwo");
     when(tableMetaDataView.getColumnDataType("fieldOne")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
+    when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
 
     handler.write(region, Operation.UPDATE, compositeKey, value);
@@ -538,6 +546,7 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldOne")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
     when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
 
     handler.write(region, Operation.DESTROY, destroyKey, value);
@@ -708,6 +717,7 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldOne")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
     when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
 
     EntryColumnData entryColumnData =
@@ -742,6 +752,7 @@ public class SqlHandlerTest {
     columnNames.add("fieldTwo");
     when(tableMetaDataView.getColumnDataType("fieldOne")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
+    when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage(
@@ -782,6 +793,7 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldOne")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("fieldTwoWrong")).thenReturn(JDBCType.VARCHAR);
+    when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("The key \"" + compositeKey
@@ -991,6 +1003,7 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldOne")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("otherColumn")).thenReturn(JDBCType.VARCHAR);
+    when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     when(regionMapping.getFieldMappings())
         .thenReturn(Arrays.asList(fieldMapping1, fieldMapping2, fieldMapping3));
     createSqlHandler();
@@ -1033,6 +1046,7 @@ public class SqlHandlerTest {
     when(tableMetaDataView.getColumnDataType("fieldOne")).thenReturn(JDBCType.VARCHAR);
     when(tableMetaDataView.getColumnDataType("fieldTwo")).thenReturn(JDBCType.VARCHAR);
     when(regionMapping.getFieldMappings()).thenReturn(Arrays.asList(fieldMapping1, fieldMapping2));
+    when(regionMapping.getIds()).thenReturn("fieldOne,fieldTwo");
     createSqlHandler();
 
     EntryColumnData entryColumnData =

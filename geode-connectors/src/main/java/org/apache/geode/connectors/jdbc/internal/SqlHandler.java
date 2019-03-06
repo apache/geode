@@ -94,11 +94,25 @@ public class SqlHandler {
       }
     }
 
+    if (!foundDifference) {
+      if (!regionMapping.getSpecifiedIds()
+          && !regionMapping.getIds().equals(String.join(",", metaDataView.getKeyColumnNames()))) {
+        foundDifference = true;
+      }
+    }
+
     if (foundDifference) {
       StringBuilder sb = new StringBuilder();
       sb.append("Error detected when comparing mapping for region \"" + regionName
-          + "\" with table definition: \n"
-          + "\nDefinition from Field Mappings (" + regionMapping.getFieldMappings().size()
+          + "\" with table definition: \n");
+
+      if (!regionMapping.getSpecifiedIds()) {
+        sb.append("\nId fields in Field Mappings: " + regionMapping.getIds());
+        sb.append(
+            "\nId fields in Table MetaData: " + String.join(",", metaDataView.getKeyColumnNames()));
+      }
+
+      sb.append("\n\nDefinition from Field Mappings (" + regionMapping.getFieldMappings().size()
           + " field mappings found):");
 
       for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
