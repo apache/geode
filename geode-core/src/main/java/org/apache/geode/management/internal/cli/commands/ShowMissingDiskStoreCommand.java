@@ -82,7 +82,7 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
     // sends a List of Sets. Some of the sets are Set<PersistentMemberIds>, some are
     // Set<ColocatedRegionDetails>. We want to return a List of all of the ColocatedRegionDetails,
     // and ignore the PersistentMemberIds
-    return (List<ColocatedRegionDetails>)results.stream().filter(Set.class::isInstance)
+    return (List<ColocatedRegionDetails>) results.stream().filter(Set.class::isInstance)
         .map(Set.class::cast)
         .flatMap(Set::stream)
         .filter(ColocatedRegionDetails.class::isInstance)
