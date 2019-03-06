@@ -38,4 +38,6 @@ public interface JdbcConnectorService extends CacheService {
   RegionMapping getMappingForRegion(String regionName);
 
   Set<RegionMapping> getRegionMappings();
+
+  void validateMapping(RegionMapping regionMapping);
 }

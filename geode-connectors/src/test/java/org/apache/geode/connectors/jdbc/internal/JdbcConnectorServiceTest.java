@@ -18,9 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.sql.JDBCType;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.connectors.jdbc.JdbcConnectorException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
@@ -65,4 +68,49 @@ public class JdbcConnectorServiceTest {
 
     assertThat(service.getMappingForRegion(TEST_REGION_NAME)).isNull();
   }
+
+//  @Test
+//  public void createSqlHandlerThrowsNoExceptionWithMatchingMapping() {
+//    createSqlHandler();
+//  }
+//
+//  @Test(expected = JdbcConnectorException.class)
+//  public void createSqlHandlerThrowsExceptionWithAddedColumn() {
+//    String extraColumn = "extra_column";
+//    columnNames.add(extraColumn);
+//    when(tableMetaDataView.getColumnDataType(extraColumn)).thenReturn(JDBCType.VARCHAR);
+//    createSqlHandler();
+//  }
+//
+//  @Test(expected = JdbcConnectorException.class)
+//  public void createSqlHandlerThrowsExceptionWithRemovedColumn() {
+//    columnNames.remove(fieldName);
+//    createSqlHandler();
+//  }
+//
+//  @Test(expected = JdbcConnectorException.class)
+//  public void createSqlHandlerThrowsExceptionWithColumnNameChanged() {
+//    columnNames.remove(fieldName);
+//    columnNames.add(fieldName.toUpperCase());
+//    when(tableMetaDataView.getColumnDataType(fieldName.toUpperCase())).thenReturn(JDBCType.VARCHAR);
+//    createSqlHandler();
+//  }
+//
+//  @Test(expected = JdbcConnectorException.class)
+//  public void createSqlHandlerThrowsExceptionWithModifiedColumn() {
+//    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.INTEGER);
+//    createSqlHandler();
+//  }
+//
+//  @Test(expected = JdbcConnectorException.class)
+//  public void createSqlHandlerThrowsExceptionWithModifiedColumnIsNullable() {
+//    when(tableMetaDataView.isColumnNullable(fieldName)).thenReturn(true);
+//    createSqlHandler();
+//  }
+//
+//  @Test(expected = JdbcConnectorException.class)
+//  public void createSqlHandlerThrowsExceptionWithModifiedIdColumns() {
+//    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN.toUpperCase()));
+//    createSqlHandler();
+//  }
 }
