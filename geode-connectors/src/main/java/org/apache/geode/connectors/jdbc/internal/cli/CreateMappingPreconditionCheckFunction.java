@@ -194,7 +194,7 @@ public class CreateMappingPreconditionCheckFunction extends CliFunction<RegionMa
     } catch (SerializationException ex) {
       String className = clazz.getName();
       ReflectionBasedAutoSerializer serializer =
-          this.reflectionBasedAutoSerializerFactory.create(className);
+          this.reflectionBasedAutoSerializerFactory.create("\\Q" + className + "\\E");
       PdxWriter writer = this.pdxWriterFactory.create(typeRegistry, object);
       boolean result = serializer.toData(object, writer);
       if (!result) {
