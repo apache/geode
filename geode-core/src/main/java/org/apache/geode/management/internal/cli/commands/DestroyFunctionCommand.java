@@ -36,8 +36,8 @@ import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.UnregisterFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -48,7 +48,7 @@ public class DestroyFunctionCommand extends InternalGfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
   // TODO: Add optioncontext for functionId
-  public Result destroyFunction(
+  public ResultModel destroyFunction(
       @CliOption(key = CliStrings.DESTROY_FUNCTION__ID, mandatory = true,
           help = CliStrings.DESTROY_FUNCTION__HELP) String functionId,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
@@ -60,43 +60,35 @@ public class DestroyFunctionCommand extends InternalGfshCommand {
       Cache cache = getCache();
       Set<DistributedMember> dsMembers = new HashSet<>();
       if (groups != null && memberId != null) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.DESTROY_FUNCTION__MSG__PROVIDE_OPTION);
+        return ResultModel.createError(CliStrings.DESTROY_FUNCTION__MSG__PROVIDE_OPTION);
       } else if (groups != null && groups.length > 0) {
         // execute on group members
         for (String grp : groups) {
           dsMembers.addAll(cache.getDistributedSystem().getGroupMembers(grp));
         }
-        @SuppressWarnings("unchecked")
-        Result results = executeFunction(cache, dsMembers, functionId);
-        return results;
+        return executeFunction(cache, dsMembers, functionId);
       } else if (memberId != null) {
         // execute on member
         dsMembers.add(getMember(memberId));
-        @SuppressWarnings("unchecked")
-        Result results = executeFunction(cache, dsMembers, functionId);
-        return results;
+        return executeFunction(cache, dsMembers, functionId);
       } else {
         // no option provided.
-        @SuppressWarnings("unchecked")
-        Result results = executeFunction(cache, cache.getMembers(), functionId);
-        return results;
+        return executeFunction(cache, cache.getMembers(), functionId);
       }
     } catch (Exception e) {
-      ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
-      return ResultBuilder.buildResult(errorResultData);
+      return ResultModel.createError(e.getMessage());
     }
   }
 
-  private Result executeFunction(Cache cache, Set<DistributedMember> DsMembers, String functionId) {
+  private ResultModel executeFunction(Cache cache, Set<DistributedMember> DsMembers,
+      String functionId) {
     // unregister on a set of of members
     Function unregisterFunction = new UnregisterFunction();
     FunctionService.registerFunction(unregisterFunction);
     List resultList;
 
     if (DsMembers.isEmpty()) {
-      return ResultBuilder.createInfoResult("No members for execution");
+      return ResultModel.createInfo("No members for execution");
     }
     Object[] obj = new Object[1];
     obj[0] = functionId;
@@ -105,17 +97,12 @@ public class DestroyFunctionCommand extends InternalGfshCommand {
 
     if (execution == null) {
       cache.getLogger().error("executeUnregister execution is null");
-      ErrorResultData errorResultData =
-          ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-              .addLine(CliStrings.DESTROY_FUNCTION__MSG__CANNOT_EXECUTE);
-      return (ResultBuilder.buildResult(errorResultData));
+      return ResultModel.createError(CliStrings.DESTROY_FUNCTION__MSG__CANNOT_EXECUTE);
     }
     try {
       resultList = (ArrayList) execution.execute(unregisterFunction).getResult();
     } catch (FunctionException ex) {
-      ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(ex.getMessage());
-      return (ResultBuilder.buildResult(errorResultData));
+      return ResultModel.createError(ex.getMessage());
     }
     String resultStr = ((String) resultList.get(0));
     if (resultStr.equals("Succeeded in unregistering")) {
@@ -124,10 +111,10 @@ public class DestroyFunctionCommand extends InternalGfshCommand {
         members.append(member.getId());
         members.append(",");
       }
-      return ResultBuilder.createInfoResult("Destroyed " + functionId + " Successfully on "
+      return ResultModel.createInfo("Destroyed " + functionId + " Successfully on "
           + members.toString().substring(0, members.toString().length() - 1));
     } else {
-      return ResultBuilder.createInfoResult("Failed in unregistering");
+      return ResultModel.createInfo("Failed in unregistering");
     }
   }
 

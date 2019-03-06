@@ -43,7 +43,10 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.AlterRuntimeConfigFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -59,7 +62,7 @@ public class AlterRuntimeConfigCommand extends InternalGfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.AlterRuntimeConfigCommand$AlterRuntimeInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result alterRuntimeConfig(
+  public ResultModel alterRuntimeConfig(
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.ALTER_RUNTIME_CONFIG__MEMBER__HELP) String[] memberNameOrId,
@@ -100,7 +103,7 @@ public class AlterRuntimeConfigCommand extends InternalGfshCommand {
     Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
     if (targetMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     if (archiveDiskSpaceLimit != null) {
@@ -174,8 +177,7 @@ public class AlterRuntimeConfigCommand extends InternalGfshCommand {
     }
 
     if (runTimeDistributionConfigAttributes.isEmpty() && rumTimeCacheAttributes.isEmpty()) {
-      return ResultBuilder
-          .createUserErrorResult(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
+      return ResultModel.createError(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
     }
 
     Map<String, String> allRunTimeAttributes = new HashMap<>();
@@ -197,6 +199,8 @@ public class AlterRuntimeConfigCommand extends InternalGfshCommand {
       }
     }
     final String lineSeparator = System.getProperty("line.separator");
+
+
     if (!successfulMembers.isEmpty()) {
       StringBuilder successMessageBuilder = new StringBuilder();
 
@@ -211,14 +215,18 @@ public class AlterRuntimeConfigCommand extends InternalGfshCommand {
       Properties properties = new Properties();
       properties.putAll(runTimeDistributionConfigAttributes);
 
-      Result result = ResultBuilder.createInfoResult(successMessageBuilder.toString());
-
+      ResultModel result = new ResultModel();
+      InfoResultModel successInfo = result.addInfo("success");
+      successInfo.addLine(successMessageBuilder.toString());
       // Set the Cache attributes to be modified
       final XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.CACHE)
           .withAttributes(rumTimeCacheAttributes).build();
-      persistClusterConfiguration(result,
-          () -> ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-              .modifyXmlAndProperties(properties, xmlEntity, group));
+      InternalConfigurationPersistenceService cps = getConfigurationPersistenceService();
+      if (cps == null) {
+        successInfo.addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
+      } else {
+        cps.modifyXmlAndProperties(properties, xmlEntity, group);
+      }
       return result;
     } else {
       StringBuilder errorMessageBuilder = new StringBuilder();
@@ -229,7 +237,7 @@ public class AlterRuntimeConfigCommand extends InternalGfshCommand {
         errorMessageBuilder.append(errorMessage);
         errorMessageBuilder.append(lineSeparator);
       }
-      return ResultBuilder.createUserErrorResult(errorMessageBuilder.toString());
+      return ResultModel.createError(errorMessageBuilder.toString());
     }
   }
 

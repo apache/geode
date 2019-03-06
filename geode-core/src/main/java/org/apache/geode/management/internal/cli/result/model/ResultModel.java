@@ -322,10 +322,6 @@ public class ResultModel {
     return response;
   }
 
-  public static ResultModel createCommandProcessingError(String message) {
-    return createError("Error processing command: " + message);
-  }
-
   /**
    * Helper method to create an {@code InfoResultModel} named "info". This method will also set
    * the status to ERROR.

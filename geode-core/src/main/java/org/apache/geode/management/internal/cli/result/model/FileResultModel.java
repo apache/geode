@@ -37,6 +37,9 @@ public class FileResultModel {
 
   public FileResultModel() {}
 
+  /**
+   * @param fileName only the name of the file, should not include directory information
+   */
   public FileResultModel(String fileName, String content) {
     this.filename = fileName;
     this.data = content.getBytes();

@@ -22,39 +22,35 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class EchoCommand extends OfflineGfshCommand {
   @CliCommand(value = {CliStrings.ECHO}, help = CliStrings.ECHO__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",
+  public ResultModel echo(@CliOption(key = {CliStrings.ECHO__STR, ""}, specifiedDefaultValue = "",
       mandatory = true, help = CliStrings.ECHO__STR__HELP) String stringToEcho) {
-    Result result;
 
     if (stringToEcho.equals("$*")) {
       Gfsh gfshInstance = getGfsh();
       Map<String, String> envMap = gfshInstance.getEnv();
       Set<Map.Entry<String, String>> setEnvMap = envMap.entrySet();
-      TabularResultData resultData = buildResultForEcho(setEnvMap);
-
-      result = ResultBuilder.buildResult(resultData);
+      return buildResultForEcho(setEnvMap);
     } else {
-      result = ResultBuilder.createInfoResult(stringToEcho);
+      return ResultModel.createInfo(stringToEcho);
     }
-    return result;
   }
 
-  private TabularResultData buildResultForEcho(Set<Map.Entry<String, String>> propertyMap) {
-    TabularResultData resultData = ResultBuilder.createTabularResultData();
+  private ResultModel buildResultForEcho(Set<Map.Entry<String, String>> propertyMap) {
+    ResultModel result = new ResultModel();
+    TabularResultModel echoResult = result.addTable("echoResult");
 
+    echoResult.setColumnHeader("Property", "Value");
     for (Map.Entry<String, String> setEntry : propertyMap) {
-      resultData.accumulate("Property", setEntry.getKey());
-      resultData.accumulate("Value", String.valueOf(setEntry.getValue()));
+      echoResult.addRow(setEntry.getKey(), String.valueOf(setEntry.getValue()));
     }
-    return resultData;
+    return result;
   }
 }

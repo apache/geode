@@ -106,7 +106,7 @@ public class AlterOfflineDiskStoreCommand extends SingleGfshCommand {
 
           return ResultModel.createInfo(resultMessage);
         } else {
-          return ResultModel.createCommandProcessingError(
+          return ResultModel.createError(
               "Cannot use the --remove=true parameter with any other parameters");
         }
       } else {

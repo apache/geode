@@ -15,7 +15,6 @@ package org.apache.geode.management.internal.cli.commands;
  * the License.
  */
 import static java.util.stream.Collectors.toSet;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -35,8 +33,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class ListGatewayCommandTest {
@@ -67,7 +66,7 @@ public class ListGatewayCommandTest {
 
   @Test
   public void listGatewaysDisplaysGatewaySendersAndReceivers() {
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
+    ResultModel crd = new ResultModel();
     crd.setHeader(CliStrings.HEADER_GATEWAYS);
 
     doReturn(new String[] {"10.118.19.31(server-ny-2:33256)<v2>:1029",
@@ -75,38 +74,35 @@ public class ListGatewayCommandTest {
             .getConnectedGatewaySenders();
 
     command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
-    JSONObject tableContent = (JSONObject) crd.retrieveSectionByIndex(0).getSectionGfJsonObject()
-        .get("__tables__-GatewayReceiver Table");
-
-    assertThat(tableContent.get("content").toString()).contains(
-        "[\"10.118.19.31(server-ny-2:33256)<v2>:1029, 10.118.19.31(server-ny-1:33206)<v1>:1028\"]");
+    new CommandResultAssert(new ModelCommandResult(crd))
+        .hasTableSection("gatewayReceivers")
+        .hasColumn("Senders Connected")
+        .containsExactly(
+            "10.118.19.31(server-ny-2:33256)<v2>:1029, 10.118.19.31(server-ny-1:33206)<v1>:1028");
   }
 
   @Test
   public void listGatewaysDisplaysGatewayReceiversWhenEmpty() {
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    crd.setHeader(CliStrings.HEADER_GATEWAYS);
+    ResultModel crd = new ResultModel();
 
     doReturn(new String[0]).when(receiverMXBean).getConnectedGatewaySenders();
 
     command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
-    JSONObject tableContent = (JSONObject) crd.retrieveSectionByIndex(0).getSectionGfJsonObject()
-        .get("__tables__-GatewayReceiver Table");
-
-    assertThat(tableContent.get("content").toString()).contains("[\"\"]");
+    new CommandResultAssert(new ModelCommandResult(crd))
+        .hasTableSection("gatewayReceivers")
+        .hasColumn("Senders Connected").containsExactly("");
   }
 
   @Test
   public void listGatewaysDisplaysGatewayReceiversWhenNull() {
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    crd.setHeader(CliStrings.HEADER_GATEWAYS);
+    ResultModel crd = new ResultModel();
 
     doReturn(null).when(receiverMXBean).getConnectedGatewaySenders();
 
     command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
-    JSONObject tableContent = (JSONObject) crd.retrieveSectionByIndex(0).getSectionGfJsonObject()
-        .get("__tables__-GatewayReceiver Table");
 
-    assertThat(tableContent.get("content").toString()).contains("[\"\"]");
+    new CommandResultAssert(new ModelCommandResult(crd))
+        .hasTableSection("gatewayReceivers")
+        .hasColumn("Senders Connected").containsExactly("");
   }
 }

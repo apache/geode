@@ -50,9 +50,11 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DeployFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
+import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -73,7 +75,7 @@ public class DeployCommand extends InternalGfshCommand {
       isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.DEPLOY)
-  public Result deploy(
+  public ResultModel deploy(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
@@ -81,7 +83,8 @@ public class DeployCommand extends InternalGfshCommand {
       @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir)
       throws IOException {
 
-    TabularResultData tabularData = ResultBuilder.createTabularResultData();
+    ResultModel result = new ResultModel();
+    TabularResultModel deployResult = result.addTable("deployResult");
 
     List<String> jarFullPaths = CommandExecutionContext.getFilePathFromShell();
 
@@ -120,34 +123,27 @@ public class DeployCommand extends InternalGfshCommand {
 
     List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
 
-    for (CliFunctionResult result : cleanedResults) {
-      if (result.getThrowable() != null) {
-        tabularData.accumulate("Member", result.getMemberIdOrName());
-        tabularData.accumulate("Deployed JAR", "");
-        tabularData.accumulate("Deployed JAR Location",
-            "ERROR: " + result.getThrowable().getClass().getName() + ": "
-                + result.getThrowable().getMessage());
-        tabularData.setStatus(Result.Status.ERROR);
+    deployResult.setColumnHeader("Member", "Deployed JAR", "Deployed JAR Location");
+    for (CliFunctionResult cliResult : cleanedResults) {
+      if (cliResult.getThrowable() != null) {
+        deployResult.addRow(cliResult.getMemberIdOrName(), "",
+            "ERROR: " + cliResult.getThrowable().getClass().getName() + ": "
+                + cliResult.getThrowable().getMessage());
+        result.setStatus(Result.Status.ERROR);
       } else {
-        String[] strings = (String[]) result.getSerializables();
+        String[] strings = (String[]) cliResult.getSerializables();
         for (int i = 0; i < strings.length; i += 2) {
-          tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Deployed JAR", strings[i]);
-          tabularData.accumulate("Deployed JAR Location", strings[i + 1]);
+          deployResult.addRow(cliResult.getMemberIdOrName(), strings[i], strings[i + 1]);
         }
       }
     }
 
-    Result result = ResultBuilder.buildResult(tabularData);
-    InternalConfigurationPersistenceService sc =
-        (InternalConfigurationPersistenceService) getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
     if (sc == null) {
-      result.setCommandPersisted(false);
+      result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
     } else {
       sc.addJarsToThisLocator(jarFullPaths, groups);
-      result.setCommandPersisted(true);
     }
-
     return result;
   }
 

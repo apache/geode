@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 
 
 public class TabularResultModelTest {
@@ -111,5 +112,8 @@ public class TabularResultModelTest {
     assertThat(table1.getValuesInRow(0)).containsExactly("v1", "k1", "t1");
     assertThat(table1.getValuesInRow(1)).containsExactly("v2", "k2", "t2");
     assertThat(table1.getValuesInRow(2)).containsExactly("v3", "k3", "t3");
+
+    new TabularResultModelAssert(table1).hasRowContaining("v1", "k1", "t1")
+        .hasRowContaining("v3", "k3", "t3");
   }
 }

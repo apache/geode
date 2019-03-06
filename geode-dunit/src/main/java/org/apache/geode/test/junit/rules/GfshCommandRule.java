@@ -240,6 +240,14 @@ public class GfshCommandRule extends DescribedExternalResource {
     return gfsh.getGfsh();
   }
 
+  /**
+   *
+   * @return Command result object
+   *
+   * @deprecated use executeAndAssertThat(command). if you really need to get the result object
+   *             to do assertion, you can use hasTable().getActual() or hasData().getActual
+   *             after that method call.
+   */
   public CommandResult executeCommand(String command) {
     gfsh.executeCommand(command);
     CommandResult result;
