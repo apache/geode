@@ -53,7 +53,6 @@ import org.apache.geode.pdx.PdxInstance;
 public class QueryResultFormatter {
 
   private final ObjectMapper mapper;
-  private final SimpleModule mapperModule;
 
   /**
    * map contains the named objects to be serialized
@@ -82,12 +81,14 @@ public class QueryResultFormatter {
    * @param maxCollectionElements limit on collection elements
    * @param serializationDepth when traversing objects, how deep should we go?
    */
-  public QueryResultFormatter(int maxCollectionElements, int serializationDepth) {
+  private QueryResultFormatter(int maxCollectionElements, int serializationDepth) {
     this.map = new LinkedHashMap<>();
 
     this.serializedObjects = new IdentityHashMap<>();
     this.mapper = new ObjectMapper();
-    this.mapperModule = new SimpleModule() {
+    // install a modifier that prevents recursive serialization in cases where
+    // there are cyclical references
+    SimpleModule mapperModule = new SimpleModule() {
       @Override
       public void setupModule(SetupContext context) {
         // install a modifier that prevents recursive serialization in cases where
@@ -130,7 +131,7 @@ public class QueryResultFormatter {
    * After instantiating a formatter add the objects you want to be formatted
    * using this method. Typically this will be add("result", queryResult)
    */
-  public QueryResultFormatter add(String key, Object value) {
+  public synchronized QueryResultFormatter add(String key, Object value) {
     List<Object> list = this.map.get(key);
     if (list != null) {
       list.add(value);
@@ -146,23 +147,10 @@ public class QueryResultFormatter {
 
   /* non-javadoc use Jackson to serialize added objects into JSON format */
   @Override
-  public String toString() {
-    StringWriter w = new StringWriter();
-    synchronized (w.getBuffer()) {
-      try {
-        return this.write(w).toString();
-      } catch (Exception e) {
-        e.printStackTrace();
-        return null;
-      }
-    }
-  }
-
-
-  private Writer write(Writer writer) throws GfJsonException {
+  public synchronized String toString() {
+    Writer writer = new StringWriter();
     try {
       boolean addComma = false;
-
       writer.write('{');
       for (Map.Entry<String, List<Object>> entry : this.map.entrySet()) {
         if (addComma) {
@@ -175,11 +163,15 @@ public class QueryResultFormatter {
       }
       writer.write('}');
 
-      return writer;
+      return writer.toString();
     } catch (IOException exception) {
-      throw new GfJsonException(exception);
+      new GfJsonException(exception).printStackTrace();
+    } catch (GfJsonException e) {
+      e.printStackTrace();
     }
+    return null;
   }
+
 
   private Writer writeList(Writer writer, List<Object> values) throws GfJsonException {
     // for each object we clear out the serializedObjects recursion map so that
@@ -343,7 +335,7 @@ public class QueryResultFormatter {
       gen.writeEndObject();
     }
 
-    public void _serialize(Collection value, JsonGenerator gen) throws IOException {
+    void _serialize(Collection value, JsonGenerator gen) throws IOException {
       Iterator<Object> objects = value.iterator();
       for (int i = 0; i < maxCollectionElements && objects.hasNext(); i++) {
         Object nextObject = objects.next();
@@ -377,7 +369,7 @@ public class QueryResultFormatter {
       gen.writeEndObject();
     }
 
-    public void _serialize(PdxInstance value, JsonGenerator gen) throws IOException {
+    void _serialize(PdxInstance value, JsonGenerator gen) throws IOException {
       for (String field : value.getFieldNames()) {
         gen.writeObjectField(field, value.getField(field));
       }
@@ -407,8 +399,8 @@ public class QueryResultFormatter {
       gen.writeEndObject();
     }
 
-    public void _serialize(StructImpl value, JsonGenerator gen) throws IOException {
-      String fields[] = value.getFieldNames();
+    void _serialize(StructImpl value, JsonGenerator gen) throws IOException {
+      String[] fields = value.getFieldNames();
       Object[] values = value.getFieldValues();
       for (int i = 0; i < fields.length; i++) {
         gen.writeObjectField(fields[i], values[i]);
