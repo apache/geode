@@ -5,4 +5,4 @@ org/apache/geode/connectors/jdbc/internal/cli/CreateMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/CreateMappingPreconditionCheckFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyMappingFunction,false
 org/apache/geode/connectors/jdbc/internal/configuration/FieldMapping,false,jdbcName:java/lang/String,jdbcNullable:boolean,jdbcType:java/lang/String,pdxName:java/lang/String,pdxType:java/lang/String
-org/apache/geode/connectors/jdbc/internal/configuration/RegionMapping,false,catalog:java/lang/String,dataSourceName:java/lang/String,fieldMappings:java/util/List,ids:java/lang/String,pdxName:java/lang/String,regionName:java/lang/String,schema:java/lang/String,tableName:java/lang/String
+org/apache/geode/connectors/jdbc/internal/configuration/RegionMapping,false,catalog:java/lang/String,dataSourceName:java/lang/String,fieldMappings:java/util/List,ids:java/lang/String,pdxName:java/lang/String,regionName:java/lang/String,schema:java/lang/String,specifiedIds:boolean,tableName:java/lang/String

@@ -134,7 +134,7 @@ public class RegionMappingTest {
     String result = rm.toString();
 
     assertThat(result).isEqualTo(
-        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='tableName', dataSourceName='dataSourceName', ids='ids', catalog='catalog', schema='schema', fieldMapping='[FieldMapping [pdxName=pdxName, pdxType=pdxType, jdbcName=jdbcName, jdbcType=jdbcType, jdbcNullable=true]]'}");
+        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='tableName', dataSourceName='dataSourceName', ids='ids', specifiedIds='true', catalog='catalog', schema='schema', fieldMapping='[FieldMapping [pdxName=pdxName, pdxType=pdxType, jdbcName=jdbcName, jdbcType=jdbcType, jdbcNullable=true]]'}");
   }
 
   @Test
@@ -145,7 +145,7 @@ public class RegionMappingTest {
     String result = rm.toString();
 
     assertThat(result).isEqualTo(
-        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='null', dataSourceName='dataSourceName', ids='null', catalog='null', schema='null', fieldMapping='[]'}");
+        "RegionMapping{regionName='regionName', pdxName='pdxClassName', tableName='null', dataSourceName='dataSourceName', ids='null', specifiedIds='false', catalog='null', schema='null', fieldMapping='[]'}");
   }
 
   @Test

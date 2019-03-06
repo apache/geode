@@ -160,7 +160,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canInsertIntoTable() throws Exception {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdx1);
     employees.put("2", pdx2);
 
@@ -176,7 +176,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canInsertIntoTableWithSchema() throws Exception {
     createTableWithSchema();
-    setupRegionWithSchema(null);
+    setupRegionWithSchema("id");
     employees.put("1", pdx1);
     employees.put("2", pdx2);
 
@@ -212,7 +212,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canPutAllInsertIntoTable() throws Exception {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     Map<String, PdxInstance> putAllMap = new HashMap<>();
     putAllMap.put("1", pdx1);
     putAllMap.put("2", pdx2);
@@ -228,7 +228,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void verifyThatPdxFieldNamedSameAsPrimaryKeyIsIgnored() throws Exception {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     PdxInstance pdxInstanceWithId = cache.createPdxInstanceFactory(Employee.class.getName())
         .writeString("name", "Emp1").writeInt("age", 55).writeString("id", "3").create();
     employees.put("1", pdxInstanceWithId);
@@ -242,7 +242,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void putNonPdxInstanceFails() throws Exception {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     Region nonPdxEmployees = this.employees;
     Throwable thrown = catchThrowable(() -> nonPdxEmployees.put("1", "non pdx instance"));
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
@@ -252,7 +252,7 @@ public abstract class JdbcWriterIntegrationTest {
   public void putNonPdxInstanceThatIsPdxSerializable()
       throws SQLException, RegionMappingExistsException {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     Region nonPdxEmployees = this.employees;
     Employee value = new Employee("2", "Emp2", 22);
     nonPdxEmployees.put("2", value);
@@ -266,7 +266,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canDestroyFromTable() throws Exception {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdx1);
     employees.put("2", pdx2);
 
@@ -281,7 +281,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canDestroyFromTableWithSchema() throws Exception {
     createTableWithSchema();
-    setupRegionWithSchema(null);
+    setupRegionWithSchema("id");
     employees.put("1", pdx1);
     employees.put("2", pdx2);
 
@@ -318,7 +318,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canUpdateTable() throws Exception {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdx1);
     employees.put("1", pdx2);
 
@@ -331,7 +331,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canUpdateTableWithSchema() throws Exception {
     createTableWithSchema();
-    setupRegionWithSchema(null);
+    setupRegionWithSchema("id");
     employees.put("1", pdx1);
     employees.put("1", pdx2);
 
@@ -368,7 +368,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canUpdateBecomeInsert() throws Exception {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdx1);
 
     statement.execute("delete from " + REGION_TABLE_NAME + " where id = '1'");
@@ -385,7 +385,7 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canInsertBecomeUpdate() throws Exception {
     createTable();
-    setupRegion(null);
+    setupRegion("id");
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'bogus', 11)");
     validateTableRowCount(1);
 
