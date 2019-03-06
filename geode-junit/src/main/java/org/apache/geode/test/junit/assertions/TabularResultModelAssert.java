@@ -16,7 +16,9 @@
 package org.apache.geode.test.junit.assertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.ListAssert;
 
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -31,6 +33,19 @@ public class TabularResultModelAssert
   public TabularResultModelAssert hasRowSize(int expectedSize) {
     assertThat(actual.getRowSize()).isEqualTo(expectedSize);
     return this;
+  }
+
+  public TabularResultModelAssert hasRowContaining(String... rowValues) {
+
+    for (int i = 0; i < actual.getRowSize(); i++) {
+      try {
+        hasRow(i).contains(rowValues);
+        return this;
+      } catch (AssertionError ignore) {
+      } ;
+    }
+    fail("Did not find [" + StringUtils.join(rowValues, ", ") + "] in any rows");
+    return null;
   }
 
 
