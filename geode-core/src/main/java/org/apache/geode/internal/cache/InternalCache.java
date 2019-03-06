@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -371,7 +372,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
    */
   InternalCacheForClientAccess getCacheForProcessingClientRequests();
 
-  HttpService getHttpService();
+  Optional<HttpService> getHttpService();
 
   void initialize();
 

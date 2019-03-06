@@ -157,6 +157,8 @@ public class HttpService {
       this.bindAddress = bindAddress;
     }
     this.port = port;
+
+    logger.info("Enabled HttpService on port {}", port);
   }
 
   public Server getHttpServer() {
