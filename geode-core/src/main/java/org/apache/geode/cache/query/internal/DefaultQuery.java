@@ -478,6 +478,7 @@ public class DefaultQuery implements Query {
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
       queryCanceled.remove();
+      cancelationTask.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
