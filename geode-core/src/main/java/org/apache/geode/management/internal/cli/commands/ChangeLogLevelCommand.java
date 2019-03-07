@@ -42,6 +42,8 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -53,7 +55,7 @@ public class ChangeLogLevelCommand extends InternalGfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.ChangeLogLevelCommand$ChangeLogLevelCommandInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.WRITE)
-  public Result changeLogLevel(
+  public ResultModel changeLogLevel(
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, unspecifiedDefaultValue = "",
@@ -63,8 +65,7 @@ public class ChangeLogLevelCommand extends InternalGfshCommand {
           help = CliStrings.CHANGE_LOGLEVEL__LOGLEVEL__HELP) String logLevel) {
 
     if ((memberIds == null || memberIds.length == 0) && (grps == null || grps.length == 0)) {
-      return ResultBuilder
-          .createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__SPECIFY_GRP_OR_MEMBER);
+      return ResultModel.createError(CliStrings.CHANGE_LOGLEVEL__MSG__SPECIFY_GRP_OR_MEMBER);
     }
 
     Cache cache = getCache();
@@ -91,7 +92,7 @@ public class ChangeLogLevelCommand extends InternalGfshCommand {
     }
 
     if (dsMembers.size() == 0) {
-      return ResultBuilder.createGemFireErrorResult(
+      return ResultModel.createError(
           "No members were found matching the given member IDs or groups.");
     }
 
@@ -107,10 +108,15 @@ public class ChangeLogLevelCommand extends InternalGfshCommand {
 
     Execution execution = FunctionService.onMembers(dsMembers).setArguments(functionArgs);
     if (execution == null) {
-      return ResultBuilder.createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__CANNOT_EXECUTE);
+      return ResultModel.createError(CliStrings.CHANGE_LOGLEVEL__MSG__CANNOT_EXECUTE);
     }
     List<?> resultList =
         (List<?>) this.executeFunction(logFunction, functionArgs, dsMembers).getResult();
+
+    ResultModel result = new ResultModel();
+    TabularResultModel tableInfo = result.addTable("result");
+    tableInfo.setColumnHeader(CliStrings.CHANGE_LOGLEVEL__COLUMN_MEMBER,
+        CliStrings.CHANGE_LOGLEVEL__COLUMN_STATUS);
     for (Object object : resultList) {
       try {
         if (object instanceof Throwable) {
@@ -124,11 +130,9 @@ public class ChangeLogLevelCommand extends InternalGfshCommand {
           Map.Entry<String, String> entry = resultMap.entrySet().iterator().next();
 
           if (entry.getValue().contains("ChangeLogLevelFunction exception")) {
-            resultTable.accumulate(CliStrings.CHANGE_LOGLEVEL__COLUMN_MEMBER, entry.getKey());
-            resultTable.accumulate(CliStrings.CHANGE_LOGLEVEL__COLUMN_STATUS, "false");
+            tableInfo.addRow(entry.getKey(), "false");
           } else {
-            resultTable.accumulate(CliStrings.CHANGE_LOGLEVEL__COLUMN_MEMBER, entry.getKey());
-            resultTable.accumulate(CliStrings.CHANGE_LOGLEVEL__COLUMN_STATUS, "true");
+            tableInfo.addRow(entry.getKey(), "true");
           }
 
         }
@@ -137,7 +141,6 @@ public class ChangeLogLevelCommand extends InternalGfshCommand {
       }
     }
 
-    Result result = ResultBuilder.buildResult(compositeResultData);
     logger.info("change log-level command result=" + result);
     return result;
 

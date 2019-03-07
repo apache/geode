@@ -32,6 +32,7 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction;
@@ -42,7 +43,7 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DescribeClientCommand extends InternalGfshCommand {
+public class DescribeClientCommand extends GfshCommand {
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -67,7 +68,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
     ManagementService service = getManagementService();
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
     if (cacheServers.length == 0) {
-      return ResultModel.createCommandProcessingError(
+      return ResultModel.createError(
           CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
     }
 
@@ -82,11 +83,11 @@ public class DescribeClientCommand extends InternalGfshCommand {
           try {
             clientHealthStatus = serverMbean.showClientStats(clientId);
             if (clientHealthStatus == null) {
-              return ResultModel.createCommandProcessingError(CliStrings.format(
+              return ResultModel.createError(CliStrings.format(
                   CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0, clientId));
             }
           } catch (Exception eee) {
-            return ResultModel.createCommandProcessingError(CliStrings.format(
+            return ResultModel.createError(CliStrings.format(
                 CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1, clientId,
                 eee.getMessage()));
           }
@@ -95,7 +96,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
     }
 
     if (clientHealthStatus == null) {
-      return ResultModel.createCommandProcessingError(
+      return ResultModel.createError(
           CliStrings.format(CliStrings.DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0, clientId));
     }
 
@@ -145,7 +146,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
 
       buildTableResult(result, clientHealthStatus, isDurable, primaryServers, secondaryServers);
     } else {
-      result = ResultModel.createCommandProcessingError(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
+      result = ResultModel.createError(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
     }
 
     LogWrapper.getInstance(getCache()).info("describe client result " + result);
@@ -165,7 +166,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
       secondServers.append(secondServer);
     }
 
-    DataResultModel dataSection = result.addData("InfoSection");
+    DataResultModel dataSection = result.addData("infoSection");
     if (clientHealthStatus != null) {
       dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS, primServers);
       dataSection.addData(CliStrings.DESCRIBE_CLIENT_COLUMN_SECONDARY_SERVERS, secondServers);
@@ -192,8 +193,7 @@ public class DescribeClientCommand extends InternalGfshCommand {
 
       if (poolStats.size() > 0) {
         for (Map.Entry<String, String> entry : poolStats.entrySet()) {
-          TabularResultModel poolStatsResultTable =
-              result.addTable("Pool Stats For Pool Name = " + entry.getKey());
+          TabularResultModel poolStatsResultTable = result.addTable(entry.getKey());
           poolStatsResultTable.setHeader("Pool Stats For Pool Name = " + entry.getKey());
           String poolStatsStr = entry.getValue();
           String str[] = poolStatsStr.split(";");

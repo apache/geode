@@ -42,6 +42,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -54,6 +55,7 @@ public class ConnectCommandTest {
   private ConnectCommand connectCommand;
   private Gfsh gfsh;
   private CommandResult result;
+  private ResultModel resultModel;
   private OperationInvoker operationInvoker;
   private Properties properties;
   private ArgumentCaptor<File> fileCaptor;
@@ -69,9 +71,10 @@ public class ConnectCommandTest {
     when(connectCommand.getGfsh()).thenReturn(gfsh);
     doReturn(properties).when(connectCommand).loadProperties(any());
     result = mock(CommandResult.class);
-    when(connectCommand.httpConnect(any(), any(), anyBoolean())).thenReturn(result);
+    resultModel = mock(ResultModel.class);
+    when(connectCommand.httpConnect(any(), any(), anyBoolean())).thenReturn(resultModel);
     when(connectCommand.jmxConnect(any(), anyBoolean(), any(), any(), anyBoolean()))
-        .thenReturn(result);
+        .thenReturn(resultModel);
     fileCaptor = ArgumentCaptor.forClass(File.class);
   }
 
@@ -323,7 +326,7 @@ public class ConnectCommandTest {
     when(gfsh.getVersion()).thenReturn("1.5.1");
     when(operationInvoker.getRemoteVersion()).thenReturn("1.5.2");
     when(operationInvoker.isConnected()).thenReturn(true);
-    when(result.getStatus()).thenReturn(Result.Status.OK);
+    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
 
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
         .statusIsSuccess();
@@ -334,7 +337,7 @@ public class ConnectCommandTest {
     when(gfsh.getVersion()).thenReturn("1.5.1");
     when(operationInvoker.getRemoteVersion()).thenReturn("1.5");
     when(operationInvoker.isConnected()).thenReturn(true);
-    when(result.getStatus()).thenReturn(Result.Status.OK);
+    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
 
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
         .statusIsSuccess();
@@ -345,7 +348,7 @@ public class ConnectCommandTest {
     when(gfsh.getVersion()).thenReturn("1.5.1");
     when(operationInvoker.getRemoteVersion()).thenReturn("1.5.0");
     when(operationInvoker.isConnected()).thenReturn(true);
-    when(result.getStatus()).thenReturn(Result.Status.OK);
+    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
 
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
         .statusIsSuccess();
@@ -368,7 +371,7 @@ public class ConnectCommandTest {
     when(operationInvoker.getRemoteVersion()).thenReturn("1.5");
     when(operationInvoker.isConnected()).thenReturn(true);
 
-    when(result.getStatus()).thenReturn(Result.Status.OK);
+    when(resultModel.getStatus()).thenReturn(Result.Status.OK);
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
         .statusIsSuccess();
   }

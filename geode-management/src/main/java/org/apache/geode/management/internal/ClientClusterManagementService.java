@@ -15,11 +15,11 @@
 
 package org.apache.geode.management.internal;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriTemplateHandler;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -76,12 +76,12 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public ClusterManagementResult delete(CacheElement config, String group) {
-    throw new NotImplementedException();
+    throw new NotImplementedException("Not implemented");
   }
 
   @Override
   public ClusterManagementResult update(CacheElement config, String group) {
-    throw new NotImplementedException();
+    throw new NotImplementedException("Not implemented");
   }
 
   public RestTemplate getRestTemplate() {

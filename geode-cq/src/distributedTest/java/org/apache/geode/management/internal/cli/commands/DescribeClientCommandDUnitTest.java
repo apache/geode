@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -39,13 +38,13 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -97,7 +96,7 @@ public class DescribeClientCommandDUnitTest {
     client2Vm4 = createClient(4, subscriptionEnabled);
     setupCqsOnVM(client2Vm4, STOCKS_REGION, "cq1", "cq2", "cq3");
 
-    waitForClientReady(3);
+    waitForClientReady(2);
 
     validateResults(subscriptionEnabled);
   }
@@ -111,75 +110,74 @@ public class DescribeClientCommandDUnitTest {
     client2Vm4 = createClient(4, subscriptionEnabled);
     setupCqsOnVM(client2Vm4, STOCKS_REGION, "cq1", "cq2", "cq3");
 
-    waitForClientReady(1);
+    waitForClientReady(2);
 
     validateResults(subscriptionEnabled);
   }
 
   private void validateResults(boolean subscriptionEnabled) {
-    CommandResult result = gfsh.executeCommand("list members");
-    Map<String, List<String>> members = result.getMapFromTableContent("members");
-    int server1Idx = members.get("Name").indexOf("server-1");
-    String server1 = members.get("Id").get(server1Idx);
+    TabularResultModel listMemberTable = gfsh.executeAndAssertThat("list members")
+        .statusIsSuccess()
+        .hasTableSection()
+        .hasRowSize(3).getActual();
+    String server1Id = listMemberTable.getValue("Id", 1);
 
-    result = gfsh.executeCommand("list clients");
-    String clientId = result.getColumnFromTableContent(CliStrings.LIST_CLIENT_COLUMN_Clients,
-        "section1", "TableForClientList").get(0);
+    TabularResultModel listClientsTable = gfsh.executeAndAssertThat("list clients")
+        .statusIsSuccess()
+        .hasTableSection()
+        .hasRowSize(2)
+        .getActual();
+    String clientId = listClientsTable.getValue("Client Name / ID", 0);
 
-    result = gfsh.executeCommand("describe client --clientID=" + clientId);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    CommandResultAssert describeAssert =
+        gfsh.executeAndAssertThat("describe client --clientID=" + clientId)
+            .statusIsSuccess();
+    TabularResultModel describeClientTable = describeAssert.hasTableSection("DEFAULT").getActual();
+    Map<String, String> dataResult =
+        describeAssert.hasDataSection("infoSection").getActual().getContent();
 
-    Map<String, List<String>> table =
-        result.getMapFromTableContent("Pool Stats For Pool Name = DEFAULT");
-    Map<String, String> data = result.getMapFromSection("InfoSection");
-
-    assertThat(table.get(CliStrings.DESCRIBE_CLIENT_MIN_CONN).get(0)).isEqualTo("1");
-    assertThat(table.get(CliStrings.DESCRIBE_CLIENT_MAX_CONN).get(0)).isEqualTo("-1");
-    assertThat(table.get(CliStrings.DESCRIBE_CLIENT_REDUNDANCY).get(0)).isEqualTo("1");
+    assertThat(describeClientTable.getHeader()).isEqualTo("Pool Stats For Pool Name = DEFAULT");
+    assertThat(describeClientTable.getRowSize()).isEqualTo(1);
+    assertThat(describeClientTable.getValue(CliStrings.DESCRIBE_CLIENT_MIN_CONN, 0)).isEqualTo("1");
+    assertThat(describeClientTable.getValue(CliStrings.DESCRIBE_CLIENT_MAX_CONN, 0))
+        .isEqualTo("-1");
+    assertThat(describeClientTable.getValue(CliStrings.DESCRIBE_CLIENT_REDUNDANCY, 0))
+        .isEqualTo("1");
 
     if (subscriptionEnabled) {
-      assertThat(table.get(CliStrings.DESCRIBE_CLIENT_CQs).get(0)).isEqualTo("3");
-      assertThat(Integer.parseInt(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE)))
-          .isGreaterThanOrEqualTo(1);
-      assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS)).isEqualTo(server1);
+      assertThat(describeClientTable.getValue(CliStrings.DESCRIBE_CLIENT_CQs, 0)).isEqualTo("3");
+      assertThat(Integer.parseInt(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE)))
+          .isGreaterThan(0);
+      assertThat(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS))
+          .isEqualTo(server1Id);
     } else {
-      assertThat(table.get(CliStrings.DESCRIBE_CLIENT_CQs).get(0)).isEqualTo("1");
-      assertThat(Integer.parseInt(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE)))
-          .isEqualTo(0);
-      assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS)).isEqualTo("N.A.");
+      assertThat(describeClientTable.getValue(CliStrings.DESCRIBE_CLIENT_CQs, 0)).isEqualTo("1");
+      assertThat(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE)).isEqualTo("0");
+      assertThat(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS))
+          .isEqualTo("N.A.");
     }
 
-    assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS)).isEqualTo("2");
-    assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS)).isEqualTo("0");
-    assertThat(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_DURABLE)).isEqualTo("No");
-    assertThat(Integer.parseInt(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_THREADS)))
+    assertThat(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PUTS)).isEqualTo("2");
+    assertThat(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_LISTENER_CALLS)).isEqualTo("0");
+    assertThat(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_DURABLE)).isEqualTo("No");
+
+    assertThat(Integer.parseInt(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_THREADS)))
         .isGreaterThan(0);
-    assertThat(Integer.parseInt(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_CPU))).isGreaterThan(0);
-    assertThat(Integer.parseInt(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_UP_TIME)))
+    assertThat(Integer.parseInt(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_CPU)))
+        .isGreaterThan(0);
+    assertThat(Integer.parseInt(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_UP_TIME)))
         .isGreaterThanOrEqualTo(0);
-    assertThat(Long.parseLong(data.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME)))
+    assertThat(Long.parseLong(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PROCESS_CPU_TIME)))
         .isGreaterThan(0);
   }
 
-  void waitForClientReady(int cqsToWaitFor) {
+  void waitForClientReady(int clientsCount) {
     // Wait until all CQs are ready
-    await().until(() -> {
-      CommandResult r = gfsh.executeCommand("list clients");
-      if (r.getStatus() != Result.Status.OK) {
-        return false;
-      }
-
-      String clientId = r.getColumnFromTableContent(CliStrings.LIST_CLIENT_COLUMN_Clients,
-          "section1", "TableForClientList").get(0);
-      r = gfsh.executeCommand("describe client --clientID=" + clientId);
-      Map<String, List<String>> table =
-          r.getMapFromTableContent("Pool Stats For Pool Name = DEFAULT");
-
-      if (table.size() == 0 || table.get(CliStrings.DESCRIBE_CLIENT_CQs).size() == 0) {
-        return false;
-      }
-
-      return table.get(CliStrings.DESCRIBE_CLIENT_CQs).get(0).equals(cqsToWaitFor + "");
+    await().untilAsserted(() -> {
+      gfsh.executeAndAssertThat("list clients")
+          .statusIsSuccess()
+          .hasTableSection()
+          .hasRowSize(clientsCount);
     });
   }
 

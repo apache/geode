@@ -132,11 +132,11 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
@@ -983,10 +983,12 @@ public class WANTestBase extends DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
-    CacheConfig cacheConfig = new CacheConfig();
-    cacheConfig.setPdxPersistent(true);
-    cacheConfig.setPdxDiskStore("PDX_TEST");
-    cache = GemFireCacheImpl.create(ds, false, cacheConfig);
+
+    cache = new InternalCacheBuilder(props)
+        .setPdxPersistent(true)
+        .setPdxDiskStore("PDX_TEST")
+        .setIsExistingOk(false)
+        .create(ds);
 
     File pdxDir = new File(CacheTestCase.getDiskDir(), "pdx");
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -2169,11 +2171,14 @@ public class WANTestBase extends DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + locPort + "]");
     InternalDistributedSystem ds = test.getSystem(props);
-    CacheConfig cacheConfig = new CacheConfig();
     File pdxDir = new File(CacheTestCase.getDiskDir(), "pdx");
-    cacheConfig.setPdxPersistent(true);
-    cacheConfig.setPdxDiskStore("pdxStore");
-    cache = GemFireCacheImpl.create(ds, false, cacheConfig);
+
+    cache = new InternalCacheBuilder(props)
+        .setPdxPersistent(true)
+        .setPdxDiskStore("pdxStore")
+        .setIsExistingOk(false)
+        .create(ds);
+
     cache.createDiskStoreFactory().setDiskDirs(new File[] {pdxDir}).setMaxOplogSize(1)
         .create("pdxStore");
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();

@@ -66,7 +66,7 @@ public class DescribeMembersCommandDUnitTest {
         .statusIsSuccess()
         .getCommandResult();
 
-    Map<String, String> memberInfo = result.getMapFromSection("0");
+    Map<String, String> memberInfo = result.getMapFromSection("memberInfo");
     assertThat(memberInfo.get("Name")).isEqualTo("locator-0");
     assertThat(memberInfo.get("Id")).contains("locator-0");
     assertThat(memberInfo.get("Host")).as("Host").isNotBlank();
@@ -85,7 +85,7 @@ public class DescribeMembersCommandDUnitTest {
         .statusIsSuccess()
         .getCommandResult();
 
-    Map<String, String> memberInfo = result.getMapFromSection("0");
+    Map<String, String> memberInfo = result.getMapFromSection("memberInfo");
     assertThat(memberInfo.get("Name")).isEqualTo("server-1");
     assertThat(memberInfo.get("Id")).contains("server-1");
     assertThat(memberInfo.get("Host")).as("Host").isNotBlank();
@@ -96,7 +96,7 @@ public class DescribeMembersCommandDUnitTest {
     assertThat(memberInfo.get("Log file")).as("Log File").isNotBlank();
     assertThat(memberInfo.get("Locators")).as("Locators").isNotBlank();
 
-    Map<String, String> cacheServerInfo = result.getMapFromSection("1");
+    Map<String, String> cacheServerInfo = result.getMapFromSection("connectionInfo");
     assertThat(cacheServerInfo.get("Server Bind")).as("Server Bind").isBlank();
     assertThat(cacheServerInfo.get("Server Port")).as("Server Port").isNotBlank();
     assertThat(cacheServerInfo.get("Running")).as("Running").isEqualTo("true");

@@ -18,35 +18,29 @@ package org.apache.geode.management.internal.cli.commands;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
 public class DescribeConnectionCommand extends OfflineGfshCommand {
   @CliCommand(value = {CliStrings.DESCRIBE_CONNECTION}, help = CliStrings.DESCRIBE_CONNECTION__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX})
-  public Result describeConnection() {
-    Result result;
-    try {
-      TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-      Gfsh gfshInstance = getGfsh();
-      if (gfshInstance.isConnectedAndReady()) {
-        OperationInvoker operationInvoker = gfshInstance.getOperationInvoker();
-        // tabularResultData.accumulate("Monitored GemFire DS", operationInvoker.toString());
-        tabularResultData.accumulate("Connection Endpoints", operationInvoker.toString());
-      } else {
-        tabularResultData.accumulate("Connection Endpoints", "Not connected");
-      }
-      result = ResultBuilder.buildResult(tabularResultData);
-    } catch (Exception e) {
-      ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-          .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
-      result = ResultBuilder.buildResult(errorResultData);
+  public ResultModel describeConnection() {
+    ResultModel result = new ResultModel();
+
+    TabularResultModel table = result.addTable("endPoints");
+    table.setColumnHeader("Connection Endpoints");
+    Gfsh gfshInstance = getGfsh();
+    if (gfshInstance.isConnectedAndReady()) {
+      OperationInvoker operationInvoker = gfshInstance.getOperationInvoker();
+      // tabularResultData.accumulate("Monitored GemFire DS", operationInvoker.toString());
+      table.addRow(operationInvoker.toString());
+    } else {
+      table.addRow("Not connected");
     }
+
     return result;
   }
 }

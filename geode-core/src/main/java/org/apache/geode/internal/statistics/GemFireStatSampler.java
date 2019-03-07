@@ -25,7 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.GemFireVersion;
@@ -51,27 +53,46 @@ public class GemFireStatSampler extends HostStatSampler {
 
   // TODO: change the listener maps to be copy-on-write
 
-  private final Map<LocalStatListenerImpl, Boolean> localListeners =
-      new ConcurrentHashMap<LocalStatListenerImpl, Boolean>();
+  private final Map<LocalStatListenerImpl, Boolean> localListeners = new ConcurrentHashMap<>();
 
   private final Map<InternalDistributedMember, List<RemoteStatListenerImpl>> recipientToListeners =
-      new HashMap<InternalDistributedMember, List<RemoteStatListenerImpl>>();
+      new HashMap<>();
 
-  private final InternalDistributedSystem con;
+  private final long systemId;
+  private final StatisticsConfig statisticsConfig;
+  private final StatisticsManager statisticsManager;
+  private final DistributionManager distributionManager;
 
   private int nextListenerId = 1;
-  private ProcessStats processStats = null;
+  private ProcessStats processStats;
 
-  ////////////////////// Constructors //////////////////////
-
-  public GemFireStatSampler(InternalDistributedSystem con) {
-    super(con.getCancelCriterion(), new StatSamplerStats(con, con.getId()));
-    this.con = con;
+  public GemFireStatSampler(InternalDistributedSystem internalDistributedSystem) {
+    this(internalDistributedSystem, null);
   }
 
-  public GemFireStatSampler(InternalDistributedSystem con, LogFile logFile) {
-    super(con.getCancelCriterion(), new StatSamplerStats(con, con.getId()), logFile);
-    this.con = con;
+  public GemFireStatSampler(InternalDistributedSystem internalDistributedSystem, LogFile logFile) {
+    this(internalDistributedSystem.getCancelCriterion(),
+        new StatSamplerStats(internalDistributedSystem,
+            internalDistributedSystem.getStatisticsManager().getPid()),
+        logFile,
+        internalDistributedSystem.getStatisticsConfig(),
+        internalDistributedSystem.getStatisticsManager(),
+        internalDistributedSystem.getDistributionManager(),
+        internalDistributedSystem.getId());
+  }
+
+  private GemFireStatSampler(CancelCriterion cancelCriterion,
+      StatSamplerStats statSamplerStats,
+      LogFile logFile,
+      StatisticsConfig statisticsConfig,
+      StatisticsManager statisticsManager,
+      DistributionManager distributionManager,
+      long systemId) {
+    super(cancelCriterion, statSamplerStats, logFile);
+    this.systemId = systemId;
+    this.statisticsConfig = statisticsConfig;
+    this.statisticsManager = statisticsManager;
+    this.distributionManager = distributionManager;
   }
 
   /**
@@ -81,7 +102,7 @@ public class GemFireStatSampler extends HostStatSampler {
    * @since GemFire 3.5
    */
   public ProcessStats getProcessStats() {
-    return this.processStats;
+    return processStats;
   }
 
   @Override
@@ -97,35 +118,34 @@ public class GemFireStatSampler extends HostStatSampler {
         // previous one was still being used
         result = getNextListenerId();
       }
-      RemoteStatListenerImpl sl =
+      RemoteStatListenerImpl remoteStatListener =
           RemoteStatListenerImpl.create(result, recipient, resourceId, statName, this);
-      listeners.put(result, sl);
-      List<RemoteStatListenerImpl> l = recipientToListeners.get(recipient);
-      if (l == null) {
-        l = new ArrayList<RemoteStatListenerImpl>();
-        recipientToListeners.put(recipient, l);
-      }
-      l.add(sl);
+      listeners.put(result, remoteStatListener);
+      List<RemoteStatListenerImpl> remoteStatListenerList =
+          recipientToListeners.computeIfAbsent(recipient, k -> new ArrayList<>());
+      remoteStatListenerList.add(remoteStatListener);
     }
     return result;
   }
 
   public boolean removeListener(int listenerId) {
     synchronized (listeners) {
-      RemoteStatListenerImpl sl = (RemoteStatListenerImpl) listeners.remove(listenerId);
-      if (sl != null) {
-        List<RemoteStatListenerImpl> l = recipientToListeners.get(sl.getRecipient());
-        l.remove(sl);
+      RemoteStatListenerImpl remoteStatListener =
+          (RemoteStatListenerImpl) listeners.remove(listenerId);
+      if (remoteStatListener != null) {
+        List<RemoteStatListenerImpl> remoteStatListenerList =
+            recipientToListeners.get(remoteStatListener.getRecipient());
+        remoteStatListenerList.remove(remoteStatListener);
       }
-      return sl != null;
+      return remoteStatListener != null;
     }
   }
 
   public void removeListenersByRecipient(InternalDistributedMember recipient) {
     synchronized (listeners) {
-      List<RemoteStatListenerImpl> l = recipientToListeners.get(recipient);
-      if (l != null && l.size() != 0) {
-        for (RemoteStatListenerImpl sl : l) {
+      List<RemoteStatListenerImpl> remoteStatListenerList = recipientToListeners.get(recipient);
+      if (remoteStatListenerList != null && remoteStatListenerList.size() != 0) {
+        for (RemoteStatListenerImpl sl : remoteStatListenerList) {
           listeners.remove(sl.getListenerId());
         }
         recipientToListeners.remove(recipient);
@@ -134,20 +154,20 @@ public class GemFireStatSampler extends HostStatSampler {
   }
 
   public void addLocalStatListener(LocalStatListener l, Statistics stats, String statName) {
-    LocalStatListenerImpl sl = null;
+    LocalStatListenerImpl localStatListener;
     synchronized (LocalStatListenerImpl.class) {
-      sl = LocalStatListenerImpl.create(l, stats, statName);
+      localStatListener = LocalStatListenerImpl.create(l, stats, statName);
     }
-    this.localListeners.put(sl, Boolean.TRUE);
+    localListeners.put(localStatListener, Boolean.TRUE);
   }
 
   public boolean removeLocalStatListener(LocalStatListener listener) {
-    Iterator<Map.Entry<LocalStatListenerImpl, Boolean>> it =
-        this.localListeners.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<LocalStatListenerImpl, Boolean> entry = it.next();
+    Iterator<Map.Entry<LocalStatListenerImpl, Boolean>> iterator =
+        localListeners.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Map.Entry<LocalStatListenerImpl, Boolean> entry = iterator.next();
       if (listener.equals(entry.getKey().getListener())) {
-        it.remove();
+        iterator.remove();
         return true;
       }
     }
@@ -155,21 +175,21 @@ public class GemFireStatSampler extends HostStatSampler {
   }
 
   public Set<LocalStatListenerImpl> getLocalListeners() {
-    return this.localListeners.keySet();
+    return localListeners.keySet();
   }
 
   @Override
   public File getArchiveFileName() {
-    return this.con.getConfig().getStatisticArchiveFile();
+    return statisticsConfig.getStatisticArchiveFile();
   }
 
   @Override
   public long getArchiveFileSizeLimit() {
     if (fileSizeLimitInKB()) {
       // use KB instead of MB to speed up rolling for testing
-      return ((long) this.con.getConfig().getArchiveFileSizeLimit()) * (1024);
+      return (long) statisticsConfig.getArchiveFileSizeLimit() * 1024;
     } else {
-      return ((long) this.con.getConfig().getArchiveFileSizeLimit()) * (1024 * 1024);
+      return (long) statisticsConfig.getArchiveFileSizeLimit() * (1024 * 1024);
     }
   }
 
@@ -177,15 +197,15 @@ public class GemFireStatSampler extends HostStatSampler {
   public long getArchiveDiskSpaceLimit() {
     if (fileSizeLimitInKB()) {
       // use KB instead of MB to speed up removal for testing
-      return ((long) this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024);
+      return (long) statisticsConfig.getArchiveDiskSpaceLimit() * 1024;
     } else {
-      return ((long) this.con.getConfig().getArchiveDiskSpaceLimit()) * (1024 * 1024);
+      return (long) statisticsConfig.getArchiveDiskSpaceLimit() * (1024 * 1024);
     }
   }
 
   @Override
   public long getSystemId() {
-    return con.getId();
+    return systemId;
   }
 
   @Override
@@ -196,27 +216,29 @@ public class GemFireStatSampler extends HostStatSampler {
         return;
       }
       long timeStamp = System.currentTimeMillis();
-      Iterator<Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>>> it1 =
-          recipientToListeners.entrySet().iterator();
-      while (it1.hasNext()) {
-        if (stopRequested())
+      for (Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>> internalDistributedMemberListEntry : recipientToListeners
+          .entrySet()) {
+        if (stopRequested()) {
           return;
-        Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>> me = it1.next();
-        List<RemoteStatListenerImpl> l = me.getValue();
-        if (l.size() > 0) {
-          InternalDistributedMember recipient = (InternalDistributedMember) me.getKey();
-          StatListenerMessage msg = StatListenerMessage.create(timeStamp, l.size());
-          msg.setRecipient(recipient);
-          for (RemoteStatListenerImpl statListener : l) {
+        }
+        Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>> entry =
+            internalDistributedMemberListEntry;
+        List<RemoteStatListenerImpl> remoteStatListenerList = entry.getValue();
+        if (remoteStatListenerList.size() > 0) {
+          InternalDistributedMember recipient = entry.getKey();
+          StatListenerMessage statListenerMessage =
+              StatListenerMessage.create(timeStamp, remoteStatListenerList.size());
+          statListenerMessage.setRecipient(recipient);
+          for (RemoteStatListenerImpl statListener : remoteStatListenerList) {
             if (getStatisticsManager().statisticsExists(statListener.getStatId())) {
-              statListener.checkForChange(msg);
+              statListener.checkForChange(statListenerMessage);
             } else {
               // its stale; indicate this with a negative listener id
               // fix for bug 29405
-              msg.addChange(-statListener.getListenerId(), 0);
+              statListenerMessage.addChange(-statListener.getListenerId(), 0);
             }
           }
-          this.con.getDistributionManager().putOutgoing(msg);
+          distributionManager.putOutgoing(statListenerMessage);
         }
       }
     }
@@ -224,22 +246,22 @@ public class GemFireStatSampler extends HostStatSampler {
 
   @Override
   protected int getSampleRate() {
-    return this.con.getConfig().getStatisticSampleRate();
+    return statisticsConfig.getStatisticSampleRate();
   }
 
   @Override
   public boolean isSamplingEnabled() {
-    return this.con.getConfig().getStatisticSamplingEnabled();
+    return statisticsConfig.getStatisticSamplingEnabled();
   }
 
   @Override
   protected StatisticsManager getStatisticsManager() {
-    return this.con.getStatisticsManager();
+    return statisticsManager;
   }
 
   @Override
   protected OsStatisticsFactory getOsStatisticsFactory() {
-    return this.con.getStatisticsManager();
+    return statisticsManager;
   }
 
   @Override
@@ -254,14 +276,14 @@ public class GemFireStatSampler extends HostStatSampler {
           logger.error(LogMarker.STATISTICS_MARKER,
               "OS statistics failed to initialize properly, some stats may be missing. See bugnote #37160.");
         }
-        HostStatHelper.newSystem(getOsStatisticsFactory());
+        HostStatHelper.newSystem(getOsStatisticsFactory(), id);
         String statName = getStatisticsManager().getName();
         if (statName == null || statName.length() == 0) {
           statName = "javaApp" + getSystemId();
         }
         Statistics stats =
             HostStatHelper.newProcess(getOsStatisticsFactory(), id, statName + "-proc");
-        this.processStats = HostStatHelper.newProcessStats(stats);
+        processStats = HostStatHelper.newProcessStats(stats);
       }
     }
   }
@@ -271,20 +293,21 @@ public class GemFireStatSampler extends HostStatSampler {
     if (prepareOnly || osStatsDisabled() || !PureJavaMode.osStatsAreAvailable()) {
       return;
     }
-    List<Statistics> l = getStatisticsManager().getStatsList();
-    if (l == null) {
+    List<Statistics> statisticsList = getStatisticsManager().getStatsList();
+    if (statisticsList == null) {
       return;
     }
-    if (stopRequested())
+    if (stopRequested()) {
       return;
+    }
     HostStatHelper.readyRefreshOSStats();
-    Iterator<Statistics> it = l.iterator();
-    while (it.hasNext()) {
-      if (stopRequested())
+    for (Statistics statistics : statisticsList) {
+      if (stopRequested()) {
         return;
-      StatisticsImpl s = (StatisticsImpl) it.next();
-      if (s.usesSystemCalls()) {
-        HostStatHelper.refresh((LocalStatisticsImpl) s);
+      }
+      StatisticsImpl statisticsImpl = (StatisticsImpl) statistics;
+      if (statisticsImpl.usesSystemCalls()) {
+        HostStatHelper.refresh((LocalStatisticsImpl) statisticsImpl);
       }
     }
   }
@@ -293,8 +316,8 @@ public class GemFireStatSampler extends HostStatSampler {
   protected void closeProcessStats() {
     if (PureJavaMode.osStatsAreAvailable()) {
       if (!osStatsDisabled()) {
-        if (this.processStats != null) {
-          this.processStats.close();
+        if (processStats != null) {
+          processStats.close();
         }
         HostStatHelper.closeOSStats();
       }
@@ -302,9 +325,9 @@ public class GemFireStatSampler extends HostStatSampler {
   }
 
   private void checkLocalListeners() {
-    for (LocalStatListenerImpl st : this.localListeners.keySet()) {
-      if (getStatisticsManager().statisticsExists(st.getStatId())) {
-        st.checkForChange();
+    for (LocalStatListenerImpl localStatListener : localListeners.keySet()) {
+      if (getStatisticsManager().statisticsExists(localStatListener.getStatId())) {
+        localStatListener.checkForChange();
       }
     }
   }
@@ -320,14 +343,14 @@ public class GemFireStatSampler extends HostStatSampler {
   protected abstract static class StatListenerImpl {
     protected Statistics stats;
     protected StatisticDescriptorImpl stat;
-    protected boolean oldValueInitialized = false;
+    protected boolean oldValueInitialized;
     protected long oldValue;
 
     public long getStatId() {
-      if (this.stats.isClosed()) {
+      if (stats.isClosed()) {
         return -1;
       } else {
-        return this.stats.getUniqueId();
+        return stats.getUniqueId();
       }
     }
 
@@ -338,7 +361,7 @@ public class GemFireStatSampler extends HostStatSampler {
     private LocalStatListener listener;
 
     public LocalStatListener getListener() {
-      return this.listener;
+      return listener;
     }
 
     static LocalStatListenerImpl create(LocalStatListener l, Statistics stats, String statName) {
@@ -430,11 +453,11 @@ public class GemFireStatSampler extends HostStatSampler {
     }
 
     public int getListenerId() {
-      return this.listenerId;
+      return listenerId;
     }
 
     public InternalDistributedMember getRecipient() {
-      return this.recipient;
+      return recipient;
     }
 
     static RemoteStatListenerImpl create(int listenerId, InternalDistributedMember recipient,

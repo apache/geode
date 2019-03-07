@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -139,12 +139,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   @Override
   public ClusterManagementResult delete(CacheElement config, String group) {
-    throw new NotImplementedException();
+    throw new NotImplementedException("Not implemented");
   }
 
   @Override
   public ClusterManagementResult update(CacheElement config, String group) {
-    throw new NotImplementedException();
+    throw new NotImplementedException("Not implemented");
   }
 
   @VisibleForTesting

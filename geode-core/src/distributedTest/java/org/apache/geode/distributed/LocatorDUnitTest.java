@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
@@ -1903,6 +1904,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, logger.getLevel().name());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.put(LOCATOR_WAIT_TIME, "10"); // seconds
     return properties;
   }
 

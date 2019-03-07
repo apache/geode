@@ -1223,4 +1223,14 @@ public class InternalCacheForClientAccess implements InternalCache {
   public HttpService getHttpService() {
     return delegate.getHttpService();
   }
+
+  @Override
+  public void initialize() {
+    // do nothing
+  }
+
+  @Override
+  public void throwCacheExistsException() {
+    delegate.throwCacheExistsException();
+  }
 }

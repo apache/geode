@@ -37,4 +37,8 @@ public abstract class AbstractResultModelAssert<S extends AbstractResultModelAss
   public AbstractCharSequenceAssert<?, String> hasFooter() {
     return assertThat(actual.getFooter());
   }
+
+  public T getActual() {
+    return this.actual;
+  }
 }
