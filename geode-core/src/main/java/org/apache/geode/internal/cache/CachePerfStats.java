@@ -158,7 +158,8 @@ public class CachePerfStats {
   static final int compressionPreCompressedBytesId;
   static final int compressionPostCompressedBytesId;
 
-  static final int messagesInProgressId;
+  static final int executeMessagesInProgressId;
+  static final int readMessagesInProgressId;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -497,7 +498,8 @@ public class CachePerfStats {
                 "operations"),
             f.createLongCounter("evictByCriteria_evaluationTime",
                 evictByCriteria_evaluationTimeDesc, "nanoseconds"),
-            f.createLongGauge("messagesInProgress", "Messages in progress.", "messages")});
+            f.createLongGauge("executeMessagesInProgress", "Execute messages in progress.", "messages"),
+            f.createLongGauge("readMessagesInProgress", "Read messages in progress.", "messages")});
 
     loadsInProgressId = type.nameToId("loadsInProgress");
     loadsCompletedId = type.nameToId("loadsCompleted");
@@ -619,7 +621,8 @@ public class CachePerfStats {
     compressionPreCompressedBytesId = type.nameToId("preCompressedBytes");
     compressionPostCompressedBytesId = type.nameToId("postCompressedBytes");
 
-    messagesInProgressId = type.nameToId("messagesInProgress");
+    executeMessagesInProgressId = type.nameToId("executeMessagesInProgress");
+    readMessagesInProgressId = type.nameToId("readMessagesInProgress");
   }
 
   /** The Statistics object that we delegate most behavior to */
@@ -1493,11 +1496,19 @@ public class CachePerfStats {
   }
 
   public void incMessagesInProgress() {
-    stats.incLong(messagesInProgressId, 1);
+    stats.incLong(executeMessagesInProgressId, 1);
   }
 
   public void decMessagesInProgress() {
-    stats.incLong(messagesInProgressId, -1);
+    stats.incLong(executeMessagesInProgressId, -1);
+  }
+
+  public void increadMessagesInProgress() {
+    stats.incLong(readMessagesInProgressId, 1);
+  }
+
+  public void decreadMessagesInProgress() {
+    stats.incLong(readMessagesInProgressId, -1);
   }
 
   interface Clock {
