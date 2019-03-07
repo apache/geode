@@ -48,9 +48,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
-import org.apache.geode.test.junit.rules.gfsh.GfshRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
@@ -67,9 +64,6 @@ public abstract class JdbcDistributedTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public transient GfshRule gfshRule = new GfshRule();
-
-  @Rule
   public transient ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
@@ -80,7 +74,6 @@ public abstract class JdbcDistributedTest implements Serializable {
       new DistributedRestoreSystemProperties();
 
   private MemberVM server;
-  private MemberVM server2;
   private MemberVM locator;
   private String connectionUrl;
 
@@ -240,7 +233,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnInitialOperation()
       throws Exception {
     IgnoredException.addIgnoredException(
-        "Jdbc mapping for region \"employees\" with table definition:");
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
     createTable();
     createRegionUsingGfsh();
     createJdbcDataSource();
@@ -264,13 +257,18 @@ public abstract class JdbcDistributedTest implements Serializable {
   public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnServerStartup()
       throws Exception {
     IgnoredException.addIgnoredException(
-        "Jdbc mapping for region \"employees\" with table definition:");
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
+    IgnoredException.addIgnoredException(
+        "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.");
     createTable();
     createRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
     alterTable();
-    startServerUsingGfsh();
+    assertThatThrownBy(
+        () -> startupRule.startServerVM(2, x -> x.withConnectionToLocator(locator.getPort())))
+            .hasCauseExactlyInstanceOf(JdbcConnectorException.class).hasStackTraceContaining(
+                "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.");
   }
 
   @Test
@@ -707,13 +705,6 @@ public abstract class JdbcDistributedTest implements Serializable {
     StringBuffer createRegionCmd = new StringBuffer();
     createRegionCmd.append("create region --name=" + REGION_NAME + " --type=REPLICATE");
     gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
-  }
-
-  private void startServerUsingGfsh() {
-    StringBuffer startServerCmd = new StringBuffer();
-    startServerCmd.append("start server --name=server2 " + " --server-port=0 --locators=localhost[" + locator.getPort() + "]");
-    GfshExecution gfshExecution = GfshScript.of(startServerCmd.toString()).execute(gfshRule);
-    System.out.println(gfshExecution.getOutputText());
   }
 
   private void createPartitionRegionUsingGfsh() {

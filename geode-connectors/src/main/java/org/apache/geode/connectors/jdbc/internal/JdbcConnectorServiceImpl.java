@@ -122,8 +122,9 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
 
     if (foundDifference) {
       StringBuilder sb = new StringBuilder();
-      sb.append("Error detected when comparing mapping for region \"" + regionMapping.getRegionName()
-          + "\" with table definition: \n");
+      sb.append(
+          "Error detected when comparing mapping for region \"" + regionMapping.getRegionName()
+              + "\" with table definition: \n");
 
       if (!regionMapping.getSpecifiedIds()) {
         sb.append("\nId fields in Field Mappings: " + regionMapping.getIds());
@@ -181,15 +182,20 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   }
 
   private Connection getConnection(String dataSourceName) throws SQLException {
-    return getDataSource(dataSourceName).getConnection();
+    DataSource dataSource = getDataSource(dataSourceName);
+    if (dataSource != null) {
+      return dataSource.getConnection();
+    } else {
+      throw new SQLException("No datasource " + dataSourceName + "found when creating mapping \"");
+    }
   }
 
-  //The following helper method is to allow for proper mocking in unit tests
+  // The following helper method is to allow for proper mocking in unit tests
   DataSource getDataSource(String dataSourceName) {
     return JNDIInvoker.getDataSource(dataSourceName);
   }
 
-  //The following helper method is to allow for proper mocking in unit tests
+  // The following helper method is to allow for proper mocking in unit tests
   TableMetaDataManager getTableMetaDataManager() {
     return new TableMetaDataManager();
   }

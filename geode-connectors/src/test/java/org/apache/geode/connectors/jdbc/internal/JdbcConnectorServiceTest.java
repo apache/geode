@@ -20,21 +20,20 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -95,8 +94,10 @@ public class JdbcConnectorServiceTest {
     allColumns.add(KEY_COLUMN_NAME);
     allColumns.add(VALUE_COLUMN_NAME);
 
-    fieldMappings.add(new FieldMapping("id", "integer", KEY_COLUMN_NAME, JDBCType.INTEGER.getName(), false));
-    fieldMappings.add(new FieldMapping("name", "string", VALUE_COLUMN_NAME, JDBCType.VARCHAR.getName(), true));
+    fieldMappings
+        .add(new FieldMapping("id", "integer", KEY_COLUMN_NAME, JDBCType.INTEGER.getName(), false));
+    fieldMappings.add(
+        new FieldMapping("name", "string", VALUE_COLUMN_NAME, JDBCType.VARCHAR.getName(), true));
 
     doReturn(dataSource).when(service).getDataSource(DATA_SOURCE_NAME);
     doReturn(manager).when(service).getTableMetaDataManager();
@@ -134,11 +135,11 @@ public class JdbcConnectorServiceTest {
   }
 
   @Test
-  public void validateMappingThrowsExceptionWhenGetConnectionHasSqlException() throws
-      SQLException {
+  public void validateMappingThrowsExceptionWhenGetConnectionHasSqlException() throws SQLException {
     when(dataSource.getConnection()).thenThrow(SQLException.class);
     Throwable throwable = catchThrowable(() -> service.validateMapping(mapping));
-    assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining("Exception thrown while connecting to datasource \"dataSource\": null");
+    assertThat(throwable).isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+        "Exception thrown while connecting to datasource \"dataSource\": null");
     verify(connection, never()).close();
   }
 
@@ -202,7 +203,8 @@ public class JdbcConnectorServiceTest {
     allColumns.add(COMPOSITE_KEY_COLUMN_NAME);
     when(view.getColumnDataType(COMPOSITE_KEY_COLUMN_NAME)).thenReturn(JDBCType.INTEGER);
     when(view.isColumnNullable(COMPOSITE_KEY_COLUMN_NAME)).thenReturn(false);
-    fieldMappings.add(new FieldMapping("key2", "integer", COMPOSITE_KEY_COLUMN_NAME, JDBCType.INTEGER.getName(), false));
+    fieldMappings.add(new FieldMapping("key2", "integer", COMPOSITE_KEY_COLUMN_NAME,
+        JDBCType.INTEGER.getName(), false));
     when(mapping.getSpecifiedIds()).thenReturn(false);
     when(mapping.getIds()).thenReturn(KEY_COLUMN_NAME + "," + COMPOSITE_KEY_COLUMN_NAME);
     service.validateMapping(mapping);

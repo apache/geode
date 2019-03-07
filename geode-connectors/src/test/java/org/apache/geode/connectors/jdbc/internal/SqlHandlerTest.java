@@ -153,54 +153,54 @@ public class SqlHandlerTest {
     createSqlHandler();
   }
 
-//  @Test(expected = JdbcConnectorException.class)
-//  public void createSqlHandlerThrowsExceptionWithAddedColumn() {
-//    String extraColumn = "extra_column";
-//    columnNames.add(extraColumn);
-//    when(tableMetaDataView.getColumnDataType(extraColumn)).thenReturn(JDBCType.VARCHAR);
-//    createSqlHandler();
-//  }
-//
-//  @Test(expected = JdbcConnectorException.class)
-//  public void createSqlHandlerThrowsExceptionWithRemovedColumn() {
-//    columnNames.remove(fieldName);
-//    createSqlHandler();
-//  }
-//
-//  @Test(expected = JdbcConnectorException.class)
-//  public void createSqlHandlerThrowsExceptionWithColumnNameChanged() {
-//    columnNames.remove(fieldName);
-//    columnNames.add(fieldName.toUpperCase());
-//    when(tableMetaDataView.getColumnDataType(fieldName.toUpperCase())).thenReturn(JDBCType.VARCHAR);
-//    createSqlHandler();
-//  }
-//
-//  @Test(expected = JdbcConnectorException.class)
-//  public void createSqlHandlerThrowsExceptionWithModifiedColumn() {
-//    when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.INTEGER);
-//    createSqlHandler();
-//  }
-//
-//  @Test(expected = JdbcConnectorException.class)
-//  public void createSqlHandlerThrowsExceptionWithModifiedColumnIsNullable() {
-//    when(tableMetaDataView.isColumnNullable(fieldName)).thenReturn(true);
-//    createSqlHandler();
-//  }
-//
-//  @Test(expected = JdbcConnectorException.class)
-//  public void createSqlHandlerThrowsExceptionWithModifiedIdColumns() {
-//    when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN.toUpperCase()));
-//    createSqlHandler();
-//  }
-//
-//  @Test
-//  public void createSqlHandlerHandlesSqlExceptionFromGetConnection() throws SQLException {
-//    doThrow(new SQLException("test exception")).when(dataSource).getConnection();
-//
-//    assertThatThrownBy(() -> createSqlHandler())
-//        .isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
-//            "Exception thrown while connecting to datasource \"dataSourceName\": test exception");
-//  }
+  // @Test(expected = JdbcConnectorException.class)
+  // public void createSqlHandlerThrowsExceptionWithAddedColumn() {
+  // String extraColumn = "extra_column";
+  // columnNames.add(extraColumn);
+  // when(tableMetaDataView.getColumnDataType(extraColumn)).thenReturn(JDBCType.VARCHAR);
+  // createSqlHandler();
+  // }
+  //
+  // @Test(expected = JdbcConnectorException.class)
+  // public void createSqlHandlerThrowsExceptionWithRemovedColumn() {
+  // columnNames.remove(fieldName);
+  // createSqlHandler();
+  // }
+  //
+  // @Test(expected = JdbcConnectorException.class)
+  // public void createSqlHandlerThrowsExceptionWithColumnNameChanged() {
+  // columnNames.remove(fieldName);
+  // columnNames.add(fieldName.toUpperCase());
+  // when(tableMetaDataView.getColumnDataType(fieldName.toUpperCase())).thenReturn(JDBCType.VARCHAR);
+  // createSqlHandler();
+  // }
+  //
+  // @Test(expected = JdbcConnectorException.class)
+  // public void createSqlHandlerThrowsExceptionWithModifiedColumn() {
+  // when(tableMetaDataView.getColumnDataType(fieldName)).thenReturn(JDBCType.INTEGER);
+  // createSqlHandler();
+  // }
+  //
+  // @Test(expected = JdbcConnectorException.class)
+  // public void createSqlHandlerThrowsExceptionWithModifiedColumnIsNullable() {
+  // when(tableMetaDataView.isColumnNullable(fieldName)).thenReturn(true);
+  // createSqlHandler();
+  // }
+  //
+  // @Test(expected = JdbcConnectorException.class)
+  // public void createSqlHandlerThrowsExceptionWithModifiedIdColumns() {
+  // when(tableMetaDataView.getKeyColumnNames()).thenReturn(Arrays.asList(KEY_COLUMN.toUpperCase()));
+  // createSqlHandler();
+  // }
+  //
+  // @Test
+  // public void createSqlHandlerHandlesSqlExceptionFromGetConnection() throws SQLException {
+  // doThrow(new SQLException("test exception")).when(dataSource).getConnection();
+  //
+  // assertThatThrownBy(() -> createSqlHandler())
+  // .isInstanceOf(JdbcConnectorException.class).hasMessageContaining(
+  // "Exception thrown while connecting to datasource \"dataSourceName\": test exception");
+  // }
 
   @Test
   public void readThrowsIfNoKeyProvided() throws Exception {

@@ -4310,7 +4310,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
          * Now replace all replaceable system properties here using {@code PropertyResolver}
          */
         String replacedXmlString = this.resolver.processUnresolvableString(stringWriter.toString());
-
         /*
          * Turn the string back into the default encoding so that the XML parser can work correctly
          * in the presence of an "encoding" attribute in the XML prolog.
