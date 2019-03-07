@@ -81,6 +81,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     StringBuilder classPath = new StringBuilder();
     for (String module : Arrays.asList(
         "commons-logging",
+        "commons-lang3",
         "geode-common",
         "geode-management",
         "jackson-annotations",
