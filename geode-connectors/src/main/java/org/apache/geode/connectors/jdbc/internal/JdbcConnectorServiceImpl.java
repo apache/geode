@@ -180,16 +180,22 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
     return null;
   }
 
-  DataSource getDataSource(String dataSourceName) {
-    return JNDIInvoker.getDataSource(dataSourceName);
-  }
-
   private Connection getConnection(String dataSourceName) throws SQLException {
     return getDataSource(dataSourceName).getConnection();
   }
 
+  //The following helper method is to allow for proper mocking in unit tests
+  DataSource getDataSource(String dataSourceName) {
+    return JNDIInvoker.getDataSource(dataSourceName);
+  }
+
+  //The following helper method is to allow for proper mocking in unit tests
+  TableMetaDataManager getTableMetaDataManager() {
+    return new TableMetaDataManager();
+  }
+
   private TableMetaDataView getTableMetaDataView(RegionMapping regionMapping) {
-    TableMetaDataManager manager = new TableMetaDataManager();
+    TableMetaDataManager manager = getTableMetaDataManager();
     try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
       return manager.getTableMetaDataView(connection, regionMapping);
     } catch (SQLException ex) {
