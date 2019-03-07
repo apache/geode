@@ -34,12 +34,12 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 
 /**
- * Integration tests for {@link TypedJson}.
+ * Integration tests for {@link QueryResultFormatter}.
  * <p>
  *
  * TODO: add actual assertions
  */
-public class TypedJsonPdxIntegrationTest {
+public class QueryResultFormatterPdxIntegrationTest {
 
   private static final String RESULT = "result";
 
@@ -71,9 +71,10 @@ public class TypedJsonPdxIntegrationTest {
     pdxInstanceFactory.writeObject("object", new SerializableObject(2));
     PdxInstance pdxInstance = pdxInstanceFactory.create();
 
-    TypedJson typedJson = new TypedJson(RESULT, pdxInstance);
+    QueryResultFormatter queryResultFormatter =
+        new QueryResultFormatter(100).add(RESULT, pdxInstance);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
@@ -83,13 +84,14 @@ public class TypedJsonPdxIntegrationTest {
     pdxInstanceFactory.writeString("secId", "IBM");
     PdxContainer pdxContainer = new PdxContainer(pdxInstanceFactory.create(), 1);
 
-    TypedJson typedJson = new TypedJson(RESULT, pdxContainer);
+    QueryResultFormatter queryResultFormatter =
+        new QueryResultFormatter(100).add(RESULT, pdxContainer);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
-  private void checkResult(TypedJson typedJson) throws GfJsonException {
-    GfJsonObject gfJsonObject = new GfJsonObject(typedJson.toString());
+  private void checkResult(QueryResultFormatter queryResultFormatter) throws GfJsonException {
+    GfJsonObject gfJsonObject = new GfJsonObject(queryResultFormatter.toString());
     System.out.println(gfJsonObject);
     assertThat(gfJsonObject.get(RESULT)).isNotNull();
   }

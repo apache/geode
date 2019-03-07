@@ -85,7 +85,6 @@ import org.apache.geode.management.internal.beans.stats.GatewaySenderClusterStat
 import org.apache.geode.management.internal.beans.stats.MemberClusterStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.ServerClusterStatsMonitor;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.json.TypedJson;
 
 /**
  * This is the gateway to distributed system as a whole. Aggregated metrics and stats are shown
@@ -208,7 +207,7 @@ public class DistributedSystemBridge {
    * NUmber of elements to be shown in queryData operation if query results contain collections like
    * Map, List etc.
    */
-  private int queryCollectionsDepth = TypedJson.DEFAULT_COLLECTION_ELEMENT_LIMIT;
+  private int queryCollectionsDepth = QueryDataFunction.DEFAULT_COLLECTION_ELEMENT_LIMIT;
 
   /**
    * used to issue queries
