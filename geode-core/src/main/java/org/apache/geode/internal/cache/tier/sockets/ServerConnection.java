@@ -846,7 +846,12 @@ public abstract class ServerConnection implements Runnable {
           }
         }
 
-        command.execute(message, this, this.securityService);
+        try {
+          getCache().getCachePerfStats().incMessagesInProgress();
+          command.execute(message, this, this.securityService);
+        } finally {
+          getCache().getCachePerfStats().decMessagesInProgress();
+        }
       }
     } finally {
       // Keep track of the fact that a message is no longer being
