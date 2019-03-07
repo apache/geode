@@ -80,7 +80,7 @@ public class ClusterManagementServiceProvider {
   /**
    * use this retrieve a ClusterManagementService from a server that connects to a secured locator
    */
-  public static ClusterManagementService create(String username, String password) {
+  public static ClusterManagementService getService(String username, String password) {
     return getServiceFactory(GEODE_CONTEXT).create(username, password);
   }
 

@@ -23,7 +23,7 @@ public class ManagementClientTestCreateRegion {
     String regionName = args[0];
 
     ClusterManagementService cms =
-        ClusterManagementServiceProvider.getService("http://localhost:7070/geode-management");
+        ClusterManagementServiceProvider.getService("localhost", 7070);
 
     RegionConfig config = new RegionConfig();
     config.setName(regionName);

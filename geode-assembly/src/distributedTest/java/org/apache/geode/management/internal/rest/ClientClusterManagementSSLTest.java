@@ -33,6 +33,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.springframework.web.client.ResourceAccessException;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -136,4 +138,26 @@ public class ClientClusterManagementSSLTest {
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
   }
 
+  @Test
+  public void invokeFromServer() throws Exception {
+    server.invoke(() -> {
+      // when getting the service from the server, we don't need to provide the host information
+      ClusterManagementService cmsClient =
+          ClusterManagementServiceProvider.getService("dataManage", "dataManage");
+      RegionConfig region = new RegionConfig();
+      region.setName("orders");
+      cmsClient.create(region);
+
+      // verify that the region is created on the server
+      assertThat(ClusterStartupRule.getCache().getRegion("/orders")).isNotNull();
+    });
+
+    // verify that the configuration is persisted on the locator
+    locator.invoke(() -> {
+      CacheConfig cacheConfig =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+              .getCacheConfig("cluster");
+      assertThat(CacheElement.findElement(cacheConfig.getRegions(), "orders")).isNotNull();
+    });
+  }
 }

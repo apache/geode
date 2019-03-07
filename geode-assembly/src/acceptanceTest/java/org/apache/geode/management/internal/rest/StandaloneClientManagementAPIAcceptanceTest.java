@@ -87,6 +87,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
         "jackson-annotations",
         "jackson-core",
         "jackson-databind",
+        "httpclient",
+        "httpcore",
         "spring-beans",
         "spring-core",
         "spring-web")) {
