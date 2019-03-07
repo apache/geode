@@ -610,7 +610,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
 
-  private Optional<HttpService> httpService;
+  private Optional<HttpService> httpService = Optional.ofNullable(null);
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
