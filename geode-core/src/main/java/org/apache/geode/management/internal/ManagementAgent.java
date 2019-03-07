@@ -196,8 +196,9 @@ public class ManagementAgent {
     }
 
     try {
-      HttpService httpService = cache.getHttpService().get();
-      if (httpService != null && agentUtil.isAnyWarFileAvailable(adminRestWar, pulseWar)) {
+      if (cache.getHttpService().isPresent()
+          && agentUtil.isAnyWarFileAvailable(adminRestWar, pulseWar)) {
+        HttpService httpService = cache.getHttpService().get();
 
         final String bindAddress = this.config.getHttpServiceBindAddress();
         final int port = this.config.getHttpServicePort();

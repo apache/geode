@@ -104,8 +104,8 @@ public class RestAgent {
           new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
               securityService);
 
-      HttpService httpService = cache.getHttpService().get();
-      if (httpService != null) {
+      if (cache.getHttpService().isPresent()) {
+        HttpService httpService = cache.getHttpService().get();
         httpService.addWebApplication("/gemfire-api", gemfireAPIWar, securityServiceAttr);
         httpService.addWebApplication("/geode", gemfireAPIWar, securityServiceAttr);
       } else {
