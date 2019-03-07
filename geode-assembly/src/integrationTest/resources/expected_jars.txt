@@ -1,4 +1,6 @@
+HdrHistogram
 HikariCP
+LatencyUtils
 animal-sniffer-annotations
 antlr
 aopalliance
@@ -66,6 +68,7 @@ lucene-core
 lucene-queries
 lucene-queryparser
 mapstruct
+micrometer-core
 mx4j
 mx4j-remote
 mx4j-tools

@@ -1,0 +1,133 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.apache.geode.internal.metrics;
+
+import java.util.Collection;
+import java.util.HashSet;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.cache.CacheLifecycleListener;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.metrics.MetricsPublishingService;
+import org.apache.geode.metrics.MetricsSession;
+
+/**
+ * Creates, configures, and manages the meter registry for a member of a distributed system.
+ */
+public class CacheMetricsSession implements MetricsSession, CacheLifecycleListener {
+  private final CacheLifecycle cacheLifecycle;
+  private final CompositeMeterRegistry registry;
+  private final Collection<MetricsPublishingService> metricsPublishingServices;
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  @VisibleForTesting
+  CacheMetricsSession(CacheLifecycle cacheLifecycle, CompositeMeterRegistry registry,
+      Collection<MetricsPublishingService> metricsPublishingServices) {
+    this.cacheLifecycle = cacheLifecycle;
+    this.registry = registry;
+    this.metricsPublishingServices = metricsPublishingServices;
+  }
+
+  @Override
+  public void connectDownstreamRegistry(MeterRegistry downstream) {
+    registry.add(downstream);
+  }
+
+  @Override
+  public void disconnectDownstreamRegistry(MeterRegistry downstream) {
+    registry.remove(downstream);
+  }
+
+  @Override
+  public void cacheCreated(InternalCache cache) {
+    for (MetricsPublishingService metricsPublishingService : metricsPublishingServices) {
+      metricsPublishingService.start(this);
+    }
+  }
+
+  @Override
+  public void cacheClosed(InternalCache cache) {
+    // TODO: is it ok to call cacheClosed without ever calling cacheCreated?
+
+    cacheLifecycle.removeListener(this);
+
+    for (MetricsPublishingService metricsPublishingService : metricsPublishingServices) {
+      metricsPublishingService.stop();
+    }
+
+    for (MeterRegistry downstream : new HashSet<>(registry.getRegistries())) {
+      disconnectDownstreamRegistry(downstream);
+    }
+  }
+
+  @VisibleForTesting
+  CompositeMeterRegistry meterRegistry() {
+    return registry;
+  }
+
+  @VisibleForTesting
+  Collection<MetricsPublishingService> metricsPublishingServices() {
+    return metricsPublishingServices;
+  }
+
+  public static class Builder {
+
+    private MetricsPublishingServiceLoader metricsPublishingServicesLoader =
+        new MetricsPublishingServiceLoader() {};
+    private CacheLifecycle cacheLifecycle = new CacheLifecycle() {};
+
+    private Builder() {
+      // nothing
+    }
+
+    public Builder setCacheLifecycle(CacheLifecycle cacheLifecycle) {
+      this.cacheLifecycle = cacheLifecycle;
+      return this;
+    }
+
+    public Builder setMetricsPublishingServicesLoader(
+        MetricsPublishingServiceLoader metricsPublishingServicesLoader) {
+      this.metricsPublishingServicesLoader = metricsPublishingServicesLoader;
+      return this;
+    }
+
+    public CacheMetricsSession build(CompositeMeterRegistry registry) {
+      Collection<MetricsPublishingService> services =
+          metricsPublishingServicesLoader.loadServices();
+      CacheMetricsSession cacheMetricsSession =
+          new CacheMetricsSession(cacheLifecycle, registry, services);
+      cacheLifecycle.addListener(cacheMetricsSession);
+      return cacheMetricsSession;
+    }
+  }
+
+  public interface CacheLifecycle {
+
+    default void addListener(CacheLifecycleListener listener) {
+      GemFireCacheImpl.addCacheLifecycleListener(listener);
+    }
+
+    default void removeListener(CacheLifecycleListener listener) {
+      GemFireCacheImpl.removeCacheLifecycleListener(listener);
+    }
+  }
+}

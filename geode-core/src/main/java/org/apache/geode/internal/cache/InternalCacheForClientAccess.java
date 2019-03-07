@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
@@ -1232,5 +1234,10 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public void throwCacheExistsException() {
     delegate.throwCacheExistsException();
+  }
+
+  @Override
+  public MeterRegistry getMeterRegistry() {
+    return delegate.getMeterRegistry();
   }
 }

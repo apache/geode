@@ -1,4 +1,6 @@
+HdrHistogram-2.1.9.jar
 HikariCP-3.2.0.jar
+LatencyUtils-2.0.3.jar
 antlr-2.7.7.jar
 classgraph-4.0.6.jar
 commons-beanutils-1.9.3.jar
@@ -59,6 +61,7 @@ lucene-analyzers-phonetic-6.6.2.jar
 lucene-core-6.6.2.jar
 lucene-queries-6.6.2.jar
 lucene-queryparser-6.6.2.jar
+micrometer-core-1.1.2.jar
 netty-all-4.1.31.Final.jar
 protobuf-java-3.6.1.jar
 rmiio-2.1.2.jar
