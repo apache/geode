@@ -180,15 +180,19 @@ public class CreateMappingCommand extends SingleGfshCommand {
           exporter.export(createSimpleRemoteInputStream(tempPdxClassFilePath));
     }
 
-    CliFunctionResult preconditionCheckResult =
-        executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(),
-            new Object[] {mapping, remoteInputStreamName, remoteInputStream},
-            targetMembers.iterator().next());
-    if (remoteInputStream != null) {
-      try {
-        remoteInputStream.close(true);
-      } catch (IOException ex) {
-        // Ignored. the stream may have already been closed.
+    CliFunctionResult preconditionCheckResult = null;
+    try {
+      preconditionCheckResult =
+          executeFunctionAndGetFunctionResult(new CreateMappingPreconditionCheckFunction(),
+              new Object[] {mapping, remoteInputStreamName, remoteInputStream},
+              targetMembers.iterator().next());
+    } finally {
+      if (remoteInputStream != null) {
+        try {
+          remoteInputStream.close(true);
+        } catch (IOException ex) {
+          // Ignored. the stream may have already been closed.
+        }
       }
     }
     if (preconditionCheckResult.isSuccessful()) {
