@@ -520,7 +520,7 @@ public class ClientHealthMonitor {
       if (collection == null) {
         return true;
       }
-      if (collection.connectionsProcessing.get() == 0) {
+      if (collection.connectionsProcessing.sum() == 0) {
         collection.isTerminating = true;
         return true;
       } else {

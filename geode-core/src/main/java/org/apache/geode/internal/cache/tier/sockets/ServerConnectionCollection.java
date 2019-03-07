@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 // This is used to form of group of connections for a particular client. Note that these objects are
 // managed by the ClientHealthMonitor, which also manages the synchronization of them.
@@ -24,7 +24,7 @@ public class ServerConnectionCollection {
   private Set<ServerConnection> connectionSet = new HashSet<ServerConnection>();
 
   // Number of connections currently processing messages for this client
-  final AtomicInteger connectionsProcessing = new AtomicInteger();
+  final LongAdder connectionsProcessing = new LongAdder();
 
   // Indicates that the server is soon to be or already in the process of terminating connections in
   // this collection.

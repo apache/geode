@@ -778,7 +778,7 @@ public abstract class ServerConnection implements Runnable {
       this.processMessages = false;
       return;
     }
-    serverConnectionCollection.connectionsProcessing.incrementAndGet();
+    serverConnectionCollection.connectionsProcessing.increment();
     ThreadState threadState = null;
     try {
       if (message != null) {
@@ -851,7 +851,7 @@ public abstract class ServerConnection implements Runnable {
     } finally {
       // Keep track of the fact that a message is no longer being
       // processed.
-      serverConnectionCollection.connectionsProcessing.decrementAndGet();
+      serverConnectionCollection.connectionsProcessing.decrement();
       setNotProcessingMessage();
       clearRequestMessage();
       if (threadState != null) {
