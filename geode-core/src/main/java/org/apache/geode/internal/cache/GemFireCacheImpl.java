@@ -280,7 +280,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * The {@code CacheLifecycleListener} s that have been registered in this VM
    */
   @MakeNotStatic
-  private static final Set<CacheLifecycleListener> cacheLifecycleListeners = new HashSet<>();
+  private static final Set<CacheLifecycleListener> cacheLifecycleListeners =
+      new CopyOnWriteArraySet<>();
 
   /**
    * Define gemfire.Cache.ASYNC_EVENT_LISTENERS=true to invoke event listeners in the background
