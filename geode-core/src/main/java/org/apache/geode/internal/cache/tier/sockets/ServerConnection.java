@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
@@ -220,8 +221,7 @@ public abstract class ServerConnection implements Runnable {
    */
   protected final CommunicationMode communicationMode;
 
-  private long processingMessageStartTime = -1;
-  private Object processingMessageLock = new Object();
+  private final AtomicLong processingMessageStartTime = new AtomicLong(-1);
 
   @MakeNotStatic
   private static final ConcurrentHashMap<ClientProxyMembershipID, ClientUserAuths> proxyIdVsClientUserAuths =
@@ -1320,32 +1320,21 @@ public abstract class ServerConnection implements Runnable {
   }
 
   void setProcessingMessage() {
-    synchronized (this.processingMessageLock) {
-      // go ahead and reset it if it is already set
-      this.processingMessageStartTime = System.currentTimeMillis();
-    }
+    // go ahead and reset it if it is already set
+    this.processingMessageStartTime.set(System.currentTimeMillis());
   }
 
   void updateProcessingMessage() {
-    synchronized (this.processingMessageLock) {
-      // only update it if it was already set by setProcessingMessage
-      if (this.processingMessageStartTime != -1) {
-        this.processingMessageStartTime = System.currentTimeMillis();
-      }
-    }
+    // only update it if it was already set by setProcessingMessage
+    this.processingMessageStartTime.compareAndSet(-1, System.currentTimeMillis());
   }
 
   private void setNotProcessingMessage() {
-    synchronized (this.processingMessageLock) {
-      this.processingMessageStartTime = -1;
-    }
+    this.processingMessageStartTime.set(-1);
   }
 
   long getCurrentMessageProcessingTime() {
-    long result;
-    synchronized (this.processingMessageLock) {
-      result = this.processingMessageStartTime;
-    }
+    long result = this.processingMessageStartTime.get();
     if (result != -1) {
       result = System.currentTimeMillis() - result;
     }
@@ -1360,14 +1349,7 @@ public abstract class ServerConnection implements Runnable {
        * This is a buffer that we add to client readTimeout value before we cleanup the connection.
        * This buffer time helps prevent EOF in the client instead of SocketTimeout
        */
-      synchronized (this.processingMessageLock) {
-        // If a message is currently being processed and it has been
-        // being processed for more than the client read timeout,
-        // then return true
-        if (getCurrentMessageProcessingTime() > timeout) {
-          return true;
-        }
-      }
+      return (getCurrentMessageProcessingTime() > timeout);
     }
     return false;
   }
