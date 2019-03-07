@@ -325,21 +325,21 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
+    String domainClassNameInAutoSerializer = "\\Q" + PdxClassDummy.class.getName() + "\\E";
     ReflectionBasedAutoSerializer reflectionedBasedAutoSerializer =
         mock(ReflectionBasedAutoSerializer.class);
     PdxWriter pdxWriter = mock(PdxWriter.class);
     when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(true);
     doReturn(reflectionedBasedAutoSerializer).when(function)
-        .getReflectionBasedAutoSerializer(PdxClassDummy.class.getName());
+        .getReflectionBasedAutoSerializer(domainClassNameInAutoSerializer);
     doReturn(pdxWriter).when(function).createPdxWriter(same(typeRegistry), any());
-
     SerializationException ex = new SerializationException("test");
     doThrow(ex).when(cache).registerPdxMetaData(any());
 
     CliFunctionResult result = function.executeFunction(context);
 
     assertThat(result.isSuccessful()).isTrue();
-    verify(function).getReflectionBasedAutoSerializer(PdxClassDummy.class.getName());
+    verify(function).getReflectionBasedAutoSerializer(domainClassNameInAutoSerializer);
     Object[] outputs = (Object[]) result.getResultObject();
     ArrayList<FieldMapping> fieldsMappings = (ArrayList<FieldMapping>) outputs[1];
     assertThat(fieldsMappings).hasSize(1);
@@ -362,10 +362,13 @@ public class CreateMappingPreconditionCheckFunctionTest {
     when(pdxType.getFields()).thenReturn(Arrays.asList(pdxField1));
     when(typeRegistry.getExistingTypeForClass(PdxClassDummy.class)).thenReturn(null)
         .thenReturn(pdxType);
+    String domainClassNameInAutoSerializer = "\\Q" + PdxClassDummy.class.getName() + "\\E";
     ReflectionBasedAutoSerializer reflectionedBasedAutoSerializer =
         mock(ReflectionBasedAutoSerializer.class);
     PdxWriter pdxWriter = mock(PdxWriter.class);
     when(reflectionedBasedAutoSerializer.toData(any(), same(pdxWriter))).thenReturn(false);
+    doReturn(reflectionedBasedAutoSerializer).when(function)
+        .getReflectionBasedAutoSerializer(domainClassNameInAutoSerializer);
     SerializationException ex = new SerializationException("test");
     doThrow(ex).when(cache).registerPdxMetaData(any());
     doReturn(reflectionedBasedAutoSerializer).when(function)

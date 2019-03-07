@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -40,19 +39,14 @@ import org.apache.geode.cache.query.IndexMaintenanceException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
-import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.entries.AbstractOplogDiskRegionEntry;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
-import org.apache.geode.internal.cache.eviction.EvictableEntry;
-import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.map.CacheModificationLock;
 import org.apache.geode.internal.cache.map.FocusedRegionMap;
 import org.apache.geode.internal.cache.map.RegionMapCommitPut;
@@ -85,9 +79,10 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
  *
  * @since GemFire 3.5.1
  */
-public abstract class AbstractRegionMap
-    implements RegionMap, FocusedRegionMap, CacheModificationLock {
+public abstract class AbstractRegionMap extends BaseRegionMap
+    implements FocusedRegionMap, CacheModificationLock {
   private static final Logger logger = LogService.getLogger();
+  private final EntryEventFactory entryEventFactory = new EntryEventFactoryImpl();
 
   /** The underlying map for this region. */
   protected ConcurrentMapWithReusableEntries<Object, Object> map;
@@ -274,7 +269,6 @@ public abstract class AbstractRegionMap
   public RegionEntry getEntryInVM(Object key) {
     return (RegionEntry) getEntryMap().get(key);
   }
-
 
   @Override
   public RegionEntry putEntryIfAbsent(Object key, RegionEntry regionEntry) {
@@ -477,28 +471,7 @@ public abstract class AbstractRegionMap
     return result;
   }
 
-  @Override
-  public void lruUpdateCallback() {
-    // By default do nothing; LRU maps needs to override this method
-  }
-
   public void lruUpdateCallback(boolean b) {
-    // By default do nothing; LRU maps needs to override this method
-  }
-
-  @Override
-  public boolean disableLruUpdateCallback() {
-    // By default do nothing; LRU maps needs to override this method
-    return false;
-  }
-
-  @Override
-  public void enableLruUpdateCallback() {
-    // By default do nothing; LRU maps needs to override this method
-  }
-
-  @Override
-  public void resetThreadLocals() {
     // By default do nothing; LRU maps needs to override this method
   }
 
@@ -533,21 +506,6 @@ public abstract class AbstractRegionMap
       lr = _getOwner();
     }
     e.decRefCount(null, lr);
-  }
-
-  @Override
-  public boolean lruLimitExceeded(DiskRegionView diskRegionView) {
-    return false;
-  }
-
-  @Override
-  public void lruCloseStats() {
-    // do nothing by default
-  }
-
-  @Override
-  public void lruEntryFaultIn(EvictableEntry entry) {
-    // do nothing by default
   }
 
   /**
@@ -1058,9 +1016,10 @@ public abstract class AbstractRegionMap
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
               @Released
-              final EntryEventImpl callbackEvent = createCallbackEvent(owner, op, key, null, txId,
-                  txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
-                  txEntryState, versionTag, tailKey);
+              final EntryEventImpl callbackEvent = entryEventFactory
+                  .createCallbackEvent(owner, op, key, null, txId,
+                      txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+                      txEntryState, versionTag, tailKey);
               try {
 
                 if (owner.isUsedForPartitionedRegionBucket()) {
@@ -1155,9 +1114,11 @@ public abstract class AbstractRegionMap
                 } else {
                   try {
                     boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
-                    callbackEvent = createCallbackEvent(owner, op, key, null, txId, txEvent,
-                        eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
-                        versionTag, tailKey);
+                    callbackEvent = entryEventFactory
+                        .createCallbackEvent(owner, op, key, null, txId, txEvent,
+                            eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
+                            txEntryState,
+                            versionTag, tailKey);
                     try {
                       callbackEvent.setRegionEntry(oldRe);
                       callbackEvent.setOldValue(Token.NOT_AVAILABLE);
@@ -1218,9 +1179,10 @@ public abstract class AbstractRegionMap
             if (!opCompleted) {
               opCompleted = true;
               boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
-              callbackEvent = createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
-                  aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag,
-                  tailKey);
+              callbackEvent = entryEventFactory
+                  .createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
+                      aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag,
+                      tailKey);
               try {
                 callbackEvent.setRegionEntry(newRe);
                 callbackEvent.setOldValue(Token.NOT_AVAILABLE);
@@ -1275,8 +1237,10 @@ public abstract class AbstractRegionMap
         // Notify clients with client events.
         @Released
         EntryEventImpl callbackEvent =
-            createCallbackEvent(owner, op, key, null, txId, txEvent, eventId, aCallbackArgument,
-                filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
+            entryEventFactory
+                .createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
+                    aCallbackArgument,
+                    filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
         try {
           if (owner.isUsedForPartitionedRegionBucket()) {
             txHandleWANEvent(owner, callbackEvent, txEntryState);
@@ -1301,29 +1265,6 @@ public abstract class AbstractRegionMap
 
   void releaseEvent(final EntryEventImpl event) {
     event.release();
-  }
-
-  /**
-   * If true then invalidates that throw EntryNotFoundException or that are already invalid will
-   * first call afterInvalidate on CacheListeners. The old value on the event passed to
-   * afterInvalidate will be null. If the region is not initialized then callbacks will not be done.
-   * This property only applies to non-transactional invalidates. Transactional invalidates ignore
-   * this property. Note that empty "proxy" regions on a client will not be sent invalidates from
-   * the server unless they also set the proxy InterestPolicy to ALL. If the invalidate is not sent
-   * then this property will not cause a listener on that client to be notified of the invalidate. A
-   * non-empty "caching-proxy" will receive invalidates from the server.
-   */
-  @MutableForTesting
-  public static boolean FORCE_INVALIDATE_EVENT =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "FORCE_INVALIDATE_EVENT");
-
-  /**
-   * If the FORCE_INVALIDATE_EVENT flag is true then invoke callbacks on the given event.
-   */
-  static void forceInvalidateEvent(EntryEventImpl event, LocalRegion owner) {
-    if (FORCE_INVALIDATE_EVENT) {
-      event.invokeCallbacks(owner, false, false);
-    }
   }
 
   @Override
@@ -1871,7 +1812,7 @@ public abstract class AbstractRegionMap
                   // for this region
                   boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
                   boolean callbackEventInPending = false;
-                  callbackEvent = createCallbackEvent(owner,
+                  callbackEvent = entryEventFactory.createCallbackEvent(owner,
                       localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue,
                       txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                       txEntryState, versionTag, tailKey);
@@ -1927,7 +1868,7 @@ public abstract class AbstractRegionMap
             if (!opCompleted) {
               boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
               boolean callbackEventInPending = false;
-              callbackEvent = createCallbackEvent(owner,
+              callbackEvent = entryEventFactory.createCallbackEvent(owner,
                   localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
                   txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                   txEntryState, versionTag, tailKey);
@@ -1985,7 +1926,7 @@ public abstract class AbstractRegionMap
               // for this region
               boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
               boolean callbackEventInPending = false;
-              callbackEvent = createCallbackEvent(owner,
+              callbackEvent = entryEventFactory.createCallbackEvent(owner,
                   localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
                   txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                   txEntryState, versionTag, tailKey);
@@ -2037,7 +1978,7 @@ public abstract class AbstractRegionMap
           // provider, thus causing region entry to be absent.
           // Notify clients with client events.
           boolean callbackEventInPending = false;
-          callbackEvent = createCallbackEvent(owner,
+          callbackEvent = entryEventFactory.createCallbackEvent(owner,
               localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
               txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
               versionTag, tailKey);
@@ -2189,21 +2130,6 @@ public abstract class AbstractRegionMap
   }
 
   /**
-   * Switch the event's region from BucketRegion to owning PR and set originRemote to the given
-   * value
-   */
-  static EntryEventImpl switchEventOwnerAndOriginRemote(EntryEventImpl event,
-      boolean originRemote) {
-    assert event != null;
-    if (event.getRegion().isUsedForPartitionedRegionBucket()) {
-      LocalRegion pr = event.getRegion().getPartitionedRegion();
-      event.setRegion(pr);
-    }
-    event.setOriginRemote(originRemote);
-    return event;
-  }
-
-  /**
    * Removing the existing indexed value requires the current value in the cache, that is the one
    * prior to applying the operation.
    *
@@ -2232,135 +2158,14 @@ public abstract class AbstractRegionMap
     }
   }
 
-  static boolean shouldInvokeCallbacks(final LocalRegion owner, final boolean isInitialized) {
-    LocalRegion lr = owner;
-    boolean isPartitioned = lr.isUsedForPartitionedRegionBucket();
-
-    if (isPartitioned) {
-      /*
-       * if(!((BucketRegion)lr).getBucketAdvisor().isPrimary()) {
-       * if(!BucketRegion.FORCE_LOCAL_LISTENERS_INVOCATION) { return false; } }
-       */
-      lr = owner.getPartitionedRegion();
-    }
-    return (isPartitioned || isInitialized) && (lr.shouldDispatchListenerEvent()
-        || lr.shouldNotifyBridgeClients() || lr.getConcurrencyChecksEnabled());
-  }
-
   EntryEventImpl createTransactionCallbackEvent(final LocalRegion re, Operation op, Object key,
       Object newValue, TransactionId txId, TXRmtEvent txEvent, EventID eventId,
       Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
-    return createCallbackEvent(re, op, key, newValue, txId, txEvent, eventId, aCallbackArgument,
-        filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
-  }
-
-  /** create a callback event for applying a transactional change to the local cache */
-  @Retained
-  public static EntryEventImpl createCallbackEvent(final InternalRegion internalRegion,
-      Operation op, Object key, Object newValue, TransactionId txId, TXRmtEvent txEvent,
-      EventID eventId, Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
-      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
-      long tailKey) {
-    DistributedMember originator = null;
-    // txId should not be null even on localOrigin
-    Assert.assertTrue(txId != null);
-    originator = txId.getMemberId();
-
-    InternalRegion eventRegion = internalRegion;
-    if (eventRegion.isUsedForPartitionedRegionBucket()) {
-      eventRegion = internalRegion.getPartitionedRegion();
-    }
-
-    @Retained
-    EntryEventImpl retVal = EntryEventImpl.create(internalRegion, op, key, newValue,
-        aCallbackArgument, txEntryState == null, originator);
-    boolean returnedRetVal = false;
-    try {
-
-
-      if (bridgeContext != null) {
-        retVal.setContext(bridgeContext);
-      }
-
-      if (eventRegion.generateEventID()) {
-        retVal.setEventId(eventId);
-      }
-
-      if (versionTag != null) {
-        retVal.setVersionTag(versionTag);
-      }
-
-      retVal.setTailKey(tailKey);
-
-      FilterInfo localRouting = null;
-      boolean computeFilterInfo = false;
-      if (filterRoutingInfo == null) {
-        computeFilterInfo = true;
-      } else {
-        localRouting = filterRoutingInfo.getLocalFilterInfo();
-        if (localRouting != null) {
-          // routing was computed in this VM but may need to perform local interest processing
-          computeFilterInfo = !filterRoutingInfo.hasLocalInterestBeenComputed();
-        } else {
-          // routing was computed elsewhere and is in the "remote" routing table
-          localRouting = filterRoutingInfo.getFilterInfo(internalRegion.getMyId());
-        }
-        if (localRouting != null) {
-          if (!computeFilterInfo) {
-            retVal.setLocalFilterInfo(localRouting);
-          }
-        } else {
-          computeFilterInfo = true;
-        }
-      }
-      if (logger.isTraceEnabled()) {
-        logger.trace("createCBEvent filterRouting={} computeFilterInfo={} local routing={}",
-            filterRoutingInfo, computeFilterInfo, localRouting);
-      }
-
-      if (internalRegion.isUsedForPartitionedRegionBucket()) {
-        BucketRegion bucket = (BucketRegion) internalRegion;
-        if (BucketRegion.FORCE_LOCAL_LISTENERS_INVOCATION
-            || bucket.getBucketAdvisor().isPrimary()) {
-          retVal.setInvokePRCallbacks(true);
-        } else {
-          retVal.setInvokePRCallbacks(false);
-        }
-
-        if (computeFilterInfo) {
-          if (bucket.getBucketAdvisor().isPrimary()) {
-            if (logger.isTraceEnabled()) {
-              logger.trace("createCBEvent computing routing for primary bucket");
-            }
-            FilterProfile fp =
-                ((BucketRegion) internalRegion).getPartitionedRegion().getFilterProfile();
-            if (fp != null) {
-              FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(filterRoutingInfo, retVal);
-              if (fri != null) {
-                retVal.setLocalFilterInfo(fri.getLocalFilterInfo());
-              }
-            }
-          }
-        }
-      } else if (computeFilterInfo) { // not a bucket
-        if (logger.isTraceEnabled()) {
-          logger.trace("createCBEvent computing routing for non-bucket");
-        }
-        FilterProfile fp = internalRegion.getFilterProfile();
-        if (fp != null) {
-          retVal.setLocalFilterInfo(fp.getLocalFilterRouting(retVal));
-        }
-      }
-      retVal.setTransactionId(txId);
-      returnedRetVal = true;
-      return retVal;
-    } finally {
-      if (!returnedRetVal) {
-        retVal.release();
-      }
-    }
+    return entryEventFactory
+        .createCallbackEvent(re, op, key, newValue, txId, txEvent, eventId, aCallbackArgument,
+            filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
   }
 
   @Override
@@ -2616,60 +2421,8 @@ public abstract class AbstractRegionMap
   }
 
   @Override
-  public long getEvictions() {
-    return 0;
-  }
-
-  @Override
-  public void incRecentlyUsed() {
-    // nothing by default
-  }
-
-  @Override
-  public EvictionController getEvictionController() {
-    return null;
-  }
-
-  @Override
   public int getEntryOverhead() {
     return (int) ReflectionSingleObjectSizer.sizeof(getEntryFactory().getEntryClass());
-  }
-
-  @Override
-  public boolean beginChangeValueForm(EvictableEntry le,
-      CachedDeserializable vmCachedDeserializable, Object v) {
-    return false;
-  }
-
-  @Override
-  public void finishChangeValueForm() {}
-
-  @Override
-  public int centralizedLruUpdateCallback() {
-    return 0;
-  }
-
-  @Override
-  public void updateEvictionCounter() {}
-
-  public interface ARMLockTestHook {
-    void beforeBulkLock(InternalRegion region);
-
-    void afterBulkLock(InternalRegion region);
-
-    void beforeBulkRelease(InternalRegion region);
-
-    void afterBulkRelease(InternalRegion region);
-
-    void beforeLock(InternalRegion region, CacheEvent event);
-
-    void afterLock(InternalRegion region, CacheEvent event);
-
-    void beforeRelease(InternalRegion region, CacheEvent event);
-
-    void afterRelease(InternalRegion region, CacheEvent event);
-
-    void beforeStateFlushWait();
   }
 
   private ARMLockTestHook armLockTestHook;

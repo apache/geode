@@ -54,7 +54,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -105,60 +104,64 @@ import org.apache.geode.security.GemFireSecurityException;
 @SuppressWarnings({"unused"})
 public class ServerLauncher extends AbstractLauncher<String> {
 
-  @MakeImmutable
-  private static final Map<String, String> helpMap = new HashMap<>();
+  @Immutable
+  private static final Map<String, String> helpMap;
 
   static {
-    helpMap.put("launcher",
+    Map<String, String> help = new HashMap<>();
+    help.put("launcher",
         "A GemFire launcher used to start, stop and determine a Server's status.");
-    helpMap.put(Command.START.getName(), String.format(
+    help.put(Command.START.getName(), String.format(
         "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the GemFire cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
         String.valueOf(getDefaultServerPort())));
-    helpMap.put(Command.STATUS.getName(),
+    help.put(Command.STATUS.getName(),
         "Displays the status of a Server given any combination of the member name/ID, PID, or the directory in which the Server is running.");
-    helpMap.put(Command.STOP.getName(),
+    help.put(Command.STOP.getName(),
         "Stops a running Server given given a member name/ID, PID, or the directory in which the Server is running.");
-    helpMap.put(Command.VERSION.getName(),
+    help.put(Command.VERSION.getName(),
         "Displays GemFire product version information.");
-    helpMap.put("assign-buckets",
+    help.put("assign-buckets",
         "Causes buckets to be assigned to the partitioned regions in the GemFire cache on Server start.");
-    helpMap.put("debug", "Displays verbose information during the invocation of the launcher.");
-    helpMap.put("delete-pid-file-on-stop",
+    help.put("debug", "Displays verbose information during the invocation of the launcher.");
+    help.put("delete-pid-file-on-stop",
         "Specifies that this Server's PID file should be deleted on stop.  The default is to not delete this Server's PID file until JVM exit if --delete-pid-file-on-stop is not specified.");
-    helpMap.put("dir",
+    help.put("dir",
         "Specifies the working directory where the Server is running.  Defaults to the current working directory.");
-    helpMap.put("disable-default-server",
+    help.put("disable-default-server",
         "Disables the addition of a default GemFire cache server.");
-    helpMap.put("force",
+    help.put("force",
         "Enables any existing Server PID file to be overwritten on start.  The default is to throw an error if a PID file already exists and --force is not specified.");
-    helpMap.put("help",
+    help.put("help",
         "Causes GemFire to print out information instead of performing the command. This option is supported by all commands.");
-    helpMap.put("member", "Identifies the Server by member name or ID in the GemFire cluster.");
-    helpMap.put("pid", "Indicates the OS process ID of the running Server.");
-    helpMap.put("rebalance",
+    help.put("member", "Identifies the Server by member name or ID in the GemFire cluster.");
+    help.put("pid", "Indicates the OS process ID of the running Server.");
+    help.put("rebalance",
         "An option to cause the GemFire cache's partitioned regions to be rebalanced on start.");
-    helpMap.put("redirect-output",
+    help.put("redirect-output",
         "An option to cause the Server to redirect standard out and standard error to the GemFire log file.");
-    helpMap.put(SERVER_BIND_ADDRESS,
+    help.put(SERVER_BIND_ADDRESS,
         "Specifies the IP address on which to bind, or on which the Server is bound, listening for client requests.  Defaults to all IP addresses available to the localhost.");
-    helpMap.put("hostname-for-clients",
+    help.put("hostname-for-clients",
         "An option to specify the hostname or IP address to send to clients so they can connect to this Server. The default is to use the IP address to which the Server is bound.");
-    helpMap.put("server-port", String.format(
+    help.put("server-port", String.format(
         "Specifies the port on which the Server is listening for client requests. Defaults to %s.",
         String.valueOf(getDefaultServerPort())));
+    helpMap = Collections.unmodifiableMap(help);
   }
 
-  @MakeImmutable
-  private static final Map<Command, String> usageMap = new TreeMap<>();
+  @Immutable
+  private static final Map<Command, String> usageMap;
 
   static {
-    usageMap.put(Command.START,
+    Map<Command, String> usage = new TreeMap<>();
+    usage.put(Command.START,
         "start <member-name> [--assign-buckets] [--disable-default-server] [--rebalance] [--server-bind-address=<IP-address>] [--server-port=<port>] [--force] [--debug] [--help]");
-    usageMap.put(Command.STATUS,
+    usage.put(Command.STATUS,
         "status [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Server-working-directory>] [--debug] [--help]");
-    usageMap.put(Command.STOP,
+    usage.put(Command.STOP,
         "stop [--member=<member-ID/Name>] [--pid=<process-ID>] [--dir=<Server-working-directory>] [--debug] [--help]");
-    usageMap.put(Command.VERSION, "version");
+    usage.put(Command.VERSION, "version");
+    usageMap = Collections.unmodifiableMap(usage);
   }
 
   private static final String DEFAULT_SERVER_LOG_EXT = ".log";

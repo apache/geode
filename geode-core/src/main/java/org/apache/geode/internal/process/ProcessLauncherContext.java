@@ -18,7 +18,6 @@ import static org.apache.commons.lang3.Validate.notNull;
 
 import java.util.Properties;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
@@ -36,12 +35,6 @@ public class ProcessLauncherContext {
    * Default value for {@link #isRedirectingOutput()}
    */
   private static final boolean REDIRECT_OUTPUT_DEFAULT = false;
-
-  /**
-   * Default value for {@link #getOverriddenDefaults()}
-   */
-  @MakeImmutable
-  private static final Properties OVERRIDDEN_DEFAULTS_DEFAULT = new Properties();
 
   private static final ThreadLocal<ProcessLauncherContext> DATA = new ThreadLocal<>();
 
@@ -76,7 +69,7 @@ public class ProcessLauncherContext {
   public static Properties getOverriddenDefaults() {
     ProcessLauncherContext context = get();
     if (context == null) {
-      return OVERRIDDEN_DEFAULTS_DEFAULT;
+      return new Properties();
     }
     return context.overriddenDefaults();
   }

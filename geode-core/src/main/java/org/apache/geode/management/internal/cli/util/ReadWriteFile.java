@@ -84,8 +84,7 @@ public class ReadWriteFile {
       // get all the levels below the one mentioned by user
       List<String> logLevels = new ArrayList<>();
       if (onlyLogLevel.toLowerCase().equals("false")) {
-        int[] intLogLevels = LogWriterImpl.allLevels;
-        for (int level : intLogLevels) {
+        for (int level : LogWriterImpl.allLevels) {
           if (level >= LogLevel.getLogWriterLevel(logLevel)) {
             logLevels.add(LogWriterImpl.levelToString(level).toLowerCase());
           }

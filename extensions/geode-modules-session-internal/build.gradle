@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,16 +17,16 @@
  * limitations under the License.
  */
 
-apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
 
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
   compile(project(':extensions:geode-modules'))
   compile(project(':geode-core'))
 
   compile('javax.servlet:javax.servlet-api')
   compile('mx4j:mx4j')
-  compile('org.apache.tomcat:servlet-api:' + project.'tomcat6.version')
+  compile('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
   compile('org.slf4j:slf4j-api')
 }
 

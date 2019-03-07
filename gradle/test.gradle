@@ -1,5 +1,6 @@
 import org.apache.geode.gradle.TestPropertiesWriter
 import org.apache.geode.gradle.RepeatTest
+import org.apache.geode.gradle.plugins.DependencyConstraints
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -108,17 +109,11 @@ subprojects {
     
     // This 'apt' configuration to be removed by GEODE-5606.
     apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
-    apt('junit:junit:' + project.'junit.version') {
-      transitive = false
-    }
-    // Because EnsureCorrectRunsWithProcessor needs access to
-    // CategoryWithParameterizedRunnerFactory.
-    // buildSrc uses version 1.3.0, so we use it here instead of the local geode-junit project
-    apt('org.apache.geode:geode-junit:1.3.0') {
+    apt('junit:junit:' + DependencyConstraints.get('junit.version')) {
       transitive = false
     }
 
-    testRuntime('cglib:cglib:' + project.'cglib.version') {
+    testRuntime('cglib:cglib:' + DependencyConstraints.get('cglib.version')) {
       exclude module: 'org.apache.ant'
     }
   }

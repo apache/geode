@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.plugins.DependencyConstraints
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,10 +19,10 @@
 
 evaluationDependsOn(":geode-core")
 
-apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
 
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
   compile(project(':geode-core'))
   compile('mx4j:mx4j')
   compile('javax.servlet:javax.servlet-api')
@@ -31,14 +33,14 @@ dependencies {
     exclude group: 'org.apache.tomcat'
   }
 
-  compile('org.apache.tomcat:tomcat-catalina:' + project.'tomcat7.version') {
+  compile('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat7.version')) {
     exclude module: 'tomcat-annotations-api'
     exclude module: 'tomcat-servlet-api'
   }
-  compile('org.apache.tomcat:tomcat-coyote:' + project.'tomcat7.version') {
+  compile('org.apache.tomcat:tomcat-coyote:' + DependencyConstraints.get('tomcat7.version')) {
     exclude module: 'tomcat-servlet-api'
   }
-  compile('org.apache.tomcat:tomcat-juli:' + project.'tomcat7.version')
+  compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
 
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'

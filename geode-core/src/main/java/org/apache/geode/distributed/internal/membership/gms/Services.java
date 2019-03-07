@@ -225,6 +225,7 @@ public class Services {
     }
     logger.info("Stopping membership services");
     this.stopping = true;
+    config.setIsReconnecting(false);
     try {
       this.timer.cancel();
     } finally {

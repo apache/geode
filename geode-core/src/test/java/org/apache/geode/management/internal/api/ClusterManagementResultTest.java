@@ -17,6 +17,8 @@
 
 package org.apache.geode.management.internal.api;
 
+import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ERROR;
+import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -36,8 +38,7 @@ public class ClusterManagementResultTest {
   public void failsWhenNotAppliedOnAllMembers() {
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", false, "msg-2");
-    result.setPersistenceStatus(true, "message");
-    assertThat(result.isRealizedOnAllOrNone()).isFalse();
+    result.setStatus(true, "message");
     assertThat(result.isSuccessful()).isFalse();
   }
 
@@ -45,36 +46,63 @@ public class ClusterManagementResultTest {
   public void successfulOnlyWhenResultIsSuccessfulOnAllMembers() {
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", true, "msg-2");
-    result.setPersistenceStatus(true, "message");
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    result.setStatus(true, "message");
     assertThat(result.isSuccessful()).isTrue();
   }
 
   @Test
   public void emptyMemberStatus() {
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
-    assertThat(result.isPersisted()).isFalse();
-    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
   }
 
 
   @Test
   public void failsWhenNotPersisted() {
-    result.setPersistenceStatus(false, "msg-1");
-    assertThat(result.isPersisted()).isFalse();
+    result.setStatus(false, "msg-1");
     assertThat(result.isSuccessful()).isFalse();
   }
 
   @Test
   public void whenNoMembersExists() {
-    result.setPersistenceStatus(false, "msg-1");
-    assertThat(result.isPersisted()).isFalse();
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    result.setStatus(false, "msg-1");
+    assertThat(result.isSuccessful()).isFalse();
+  }
+
+  @Test
+  public void whenNoMemberExists2() {
+    result.setStatus(true, "msg-1");
+    assertThat(result.isSuccessful()).isTrue();
+  }
+
+  @Test
+  public void errorCodeWillAlwaysBeUnSuccessful() throws Exception {
+    result = new ClusterManagementResult(ERROR, "message");
     assertThat(result.isSuccessful()).isFalse();
 
-    result.setPersistenceStatus(true, "msg-1");
-    assertThat(result.isPersisted()).isTrue();
-    assertThat(result.isRealizedOnAllOrNone()).isTrue();
+    result = new ClusterManagementResult(OK, "message");
     assertThat(result.isSuccessful()).isTrue();
+  }
+
+  @Test
+  public void onlyUnsuccessfulResultHasErrorCode() throws Exception {
+    result = new ClusterManagementResult(true, "message");
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+
+    result = new ClusterManagementResult(false, "message");
+    assertThat(result.getStatusCode()).isEqualTo(ERROR);
+
+    result = new ClusterManagementResult();
+    result.setStatus(false, "message");
+    assertThat(result.getStatusCode()).isEqualTo(ERROR);
+
+    result = new ClusterManagementResult();
+    result.setStatus(true, "message");
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    result.addMemberStatus("member-1", true, "message-1");
+    result.addMemberStatus("member-2", false, "message-2");
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusCode()).isEqualTo(ERROR);
+
   }
 }

@@ -358,7 +358,9 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
    */
   public void setType(String value) {
     this.type = value;
-    setShortcutAttributes();
+    if (value != null && value.length() > 0) {
+      setShortcutAttributes();
+    }
   }
 
   private void setShortcutAttributes() {

@@ -16,16 +16,12 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.Region;
@@ -58,14 +54,6 @@ import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 public class DescribeDiskStoreFunction implements InternalFunction {
 
   private static final Logger logger = LogService.getLogger();
-
-  @MakeImmutable
-  private static final Set<DataPolicy> PERSISTENT_DATA_POLICIES = new HashSet<>(2);
-
-  static {
-    PERSISTENT_DATA_POLICIES.add(DataPolicy.PERSISTENT_PARTITION);
-    PERSISTENT_DATA_POLICIES.add(DataPolicy.PERSISTENT_REPLICATE);
-  }
 
   protected static void assertState(final boolean condition, final String message,
       final Object... args) {

@@ -15,7 +15,6 @@
 
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 configurations {
@@ -24,6 +23,12 @@ configurations {
 
 sourceSets {
   integrationTest {
+    resources {
+      srcDir "${projectDir}/src/main/webapp"
+    }
+  }
+
+  distributedTest {
     resources {
       srcDir "${projectDir}/src/main/webapp"
     }
@@ -38,6 +43,7 @@ sourceSets {
 }
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
   compileOnly(project(':geode-core'))
 
   compileOnly('javax.servlet:javax.servlet-api')
@@ -111,20 +117,21 @@ dependencies {
   integrationTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
   }
-    
+
   distributedTestCompile(sourceSets.commonTest.output)
-  
+
   distributedTestCompile('org.springframework:spring-test')
   distributedTestCompile('org.springframework:spring-webmvc')
   distributedTestCompile('org.springframework.security:spring-security-test')
 
+  distributedTestCompile(project(':geode-core'))
   distributedTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   distributedTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-    
+
   distributedTestRuntimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
   }

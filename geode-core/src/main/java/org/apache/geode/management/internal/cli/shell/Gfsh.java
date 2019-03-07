@@ -137,7 +137,7 @@ public class Gfsh extends JLineShell {
   protected static PrintStream gfsherr = System.err;
   protected static final ThreadLocal<Gfsh> gfshThreadLocal = new ThreadLocal<>();
   @MakeNotStatic
-  private static Gfsh instance;
+  private static volatile Gfsh instance;
   // This flag is used to restrict column trimming to table only types
   private static final ThreadLocal<Boolean> resultTypeTL = new ThreadLocal<>();
   private static final String OS = System.getProperty("os.name").toLowerCase();
@@ -247,11 +247,14 @@ public class Gfsh extends JLineShell {
   }
 
   public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig) {
-    if (instance == null) {
+    Gfsh localGfshInstance = instance;
+    if (localGfshInstance == null) {
       synchronized (INSTANCE_LOCK) {
-        if (instance == null) {
-          instance = new Gfsh(launchShell, args, gfshConfig);
-          instance.executeInitFileIfPresent();
+        localGfshInstance = instance;
+        if (localGfshInstance == null) {
+          localGfshInstance = new Gfsh(launchShell, args, gfshConfig);
+          localGfshInstance.executeInitFileIfPresent();
+          instance = localGfshInstance;
         }
       }
     }

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -69,7 +68,7 @@ public interface CompiledValue {
   String PREF_INDEX_COND = "preferred_index_condition";
   String QUERY_INDEX_HINTS = "query_index_hints";
 
-  @MakeImmutable
+  @Immutable
   CompiledValue MAP_INDEX_ALL_KEYS = new AbstractCompiledValue() {
     @Override
     public void generateCanonicalizedExpression(StringBuilder clauseBuffer,
@@ -95,6 +94,11 @@ public interface CompiledValue {
     @Override
     public int getType() {
       return OQLLexerTokenTypes.TOK_STAR;
+    }
+
+    @Override
+    void setTypecast(ObjectType objectType) {
+      throw new UnsupportedOperationException("Cannot modify singleton");
     }
   };
 

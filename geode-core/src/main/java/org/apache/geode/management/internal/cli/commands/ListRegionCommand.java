@@ -27,18 +27,16 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.RegionInformation;
 import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -50,61 +48,52 @@ public class ListRegionCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result listRegion(
+  public ResultModel listRegion(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_REGION__GROUP__HELP) String[] group,
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.LIST_REGION__MEMBER__HELP) String[] memberNameOrId) {
-    Result result = null;
-    try {
-      Set<RegionInformation> regionInfoSet = new LinkedHashSet<>();
-      ResultCollector<?, ?> rc;
-      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
+    ResultModel result = new ResultModel();
 
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+    Set<RegionInformation> regionInfoSet = new LinkedHashSet<>();
+    ResultCollector<?, ?> rc;
+    Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
-      TabularResultData resultData = ResultBuilder.createTabularResultData();
-      rc = CliUtil.executeFunction(getRegionsFunction, null, targetMembers);
-      ArrayList<?> resultList = (ArrayList<?>) rc.getResult();
-
-      if (resultList != null) {
-        // Gather all RegionInformation into a flat set.
-        regionInfoSet.addAll(resultList.stream().filter(Objects::nonNull)
-            .filter(Object[].class::isInstance).map(Object[].class::cast).flatMap(Arrays::stream)
-            .filter(RegionInformation.class::isInstance).map(RegionInformation.class::cast)
-            .collect(Collectors.toSet()));
-
-        Set<String> regionNames = new TreeSet<>();
-
-        for (RegionInformation regionInfo : regionInfoSet) {
-          regionNames.add(regionInfo.getName());
-          Set<String> subRegionNames = regionInfo.getSubRegionNames();
-
-          regionNames.addAll(subRegionNames);
-        }
-
-        for (String regionName : regionNames) {
-          resultData.accumulate("List of regions", regionName);
-        }
-
-        if (!regionNames.isEmpty()) {
-          result = ResultBuilder.buildResult(resultData);
-
-        } else {
-          result = ResultBuilder.createInfoResult(CliStrings.LIST_REGION__MSG__NOT_FOUND);
-        }
-      }
-    } catch (FunctionInvocationTargetException e) {
-      result = ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.LIST_REGION));
-    } catch (Exception e) {
-      result = ResultBuilder
-          .createGemFireErrorResult(CliStrings.LIST_REGION__MSG__ERROR + " : " + e.getMessage());
+    if (targetMembers.isEmpty()) {
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
+
+    TabularResultModel resultData = result.addTable("regionInfo");
+    rc = CliUtil.executeFunction(getRegionsFunction, null, targetMembers);
+    ArrayList<?> resultList = (ArrayList<?>) rc.getResult();
+
+    if (resultList != null) {
+      // Gather all RegionInformation into a flat set.
+      regionInfoSet.addAll(resultList.stream().filter(Objects::nonNull)
+          .filter(Object[].class::isInstance).map(Object[].class::cast).flatMap(Arrays::stream)
+          .filter(RegionInformation.class::isInstance).map(RegionInformation.class::cast)
+          .collect(Collectors.toSet()));
+
+      Set<String> regionNames = new TreeSet<>();
+
+      for (RegionInformation regionInfo : regionInfoSet) {
+        regionNames.add(regionInfo.getName());
+        Set<String> subRegionNames = regionInfo.getSubRegionNames();
+
+        regionNames.addAll(subRegionNames);
+      }
+
+      if (regionNames.isEmpty()) {
+        return ResultModel.createInfo(CliStrings.LIST_REGION__MSG__NOT_FOUND);
+      }
+
+      for (String regionName : regionNames) {
+        resultData.accumulate("List of regions", regionName);
+      }
+    }
+
     return result;
   }
 }

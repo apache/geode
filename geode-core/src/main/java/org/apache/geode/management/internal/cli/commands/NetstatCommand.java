@@ -15,9 +15,11 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.DataFormatException;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -35,15 +39,14 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.NetstatFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -51,11 +54,13 @@ public class NetstatCommand extends InternalGfshCommand {
   private static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
 
   @CliCommand(value = CliStrings.NETSTAT, help = CliStrings.NETSTAT__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
+  @CliMetaData(
+      interceptor = "org.apache.geode.management.internal.cli.commands.NetstatCommand$Interceptor",
+      relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   // TODO : Verify the auto-completion for multiple values.
-  public Result netstat(
+  public ResultModel netstat(
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.NETSTAT__MEMBER__HELP) String[] members,
@@ -66,7 +71,7 @@ public class NetstatCommand extends InternalGfshCommand {
       @CliOption(key = CliStrings.NETSTAT__WITHLSOF, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.NETSTAT__WITHLSOF__HELP) boolean withlsof) {
-    Result result;
+    ResultModel result = new ResultModel();
 
     Map<String, DistributedMember> hostMemberMap = new HashMap<>();
     Map<String, List<String>> hostMemberListMap = new HashMap<>();
@@ -156,34 +161,18 @@ public class NetstatCommand extends InternalGfshCommand {
           }
         }
       }
-
-      InfoResultData resultData = ResultBuilder.createInfoResultData();
       if (saveAs != null && !saveAs.isEmpty()) {
         String saveToFile = saveAs;
         if (!saveAs.endsWith(NETSTAT_FILE_REQUIRED_EXTENSION)) {
           saveToFile = saveAs + NETSTAT_FILE_REQUIRED_EXTENSION;
         }
-        resultData.addAsFile(saveToFile, resultInfo.toString(),
-            CliStrings.NETSTAT__MSG__SAVED_OUTPUT_IN_0, false); // Note: substitution for {0} will
-        // happen on client side.
+
+        result.addFile(FilenameUtils.getName(saveToFile), resultInfo.toString()); // Note:
+                                                                                  // substitution
+                                                                                  // for {0} will
       } else {
-        resultData.addLine(resultInfo.toString());
+        result.addInfo().addLine(resultInfo.toString());
       }
-      result = ResultBuilder.buildResult(resultData);
-    } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance(getCache())
-          .info(CliStrings.format(
-              CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
-              new Object[] {Arrays.toString(members)}));
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (RuntimeException e) {
-      LogWrapper.getInstance(getCache())
-          .info(CliStrings.format(
-              CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
-              new Object[] {Arrays.toString(members)}), e);
-      result = ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.NETSTAT__MSG__ERROR_OCCURRED_WHILE_EXECUTING_NETSTAT_ON_0,
-              new Object[] {Arrays.toString(members)}));
     } finally {
       hostMemberMap.clear();
       hostMemberListMap.clear();
@@ -231,5 +220,32 @@ public class NetstatCommand extends InternalGfshCommand {
       list = hostMemberListMap.get(host);
     }
     list.add(memberIdOrName);
+  }
+
+  public static class Interceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public ResultModel preExecution(GfshParseResult parseResult) {
+      String saveAs = parseResult.getParamValueAsString(CliStrings.NETSTAT__FILE);
+
+      if (saveAs != null && StringUtils.isEmpty(FilenameUtils.getName(saveAs))) {
+        return ResultModel.createError("Invalid file name: " + saveAs);
+      }
+
+      return ResultModel.createInfo("");
+    }
+
+    @Override
+    public ResultModel postExecution(GfshParseResult parseResult, ResultModel result, Path tempFile)
+        throws IOException {
+      // save the content to the file specified by the user
+      String saveAs = parseResult.getParamValueAsString(CliStrings.NETSTAT__FILE);
+      if (saveAs == null) {
+        return result;
+      }
+
+      File file = new File(saveAs).getAbsoluteFile();
+      result.saveFileTo(file.getParentFile());
+      return result;
+    }
   }
 }

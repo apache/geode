@@ -15,29 +15,31 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.google.protobuf'
-apply plugin: 'idea'
-apply from: "${project.projectDir}/../gradle/publish.gradle"
-apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
-
+import org.apache.geode.gradle.plugins.DependencyConstraints
 
 buildscript {
   repositories {
     mavenCentral()
   }
   dependencies {
-    classpath 'com.google.protobuf:protobuf-gradle-plugin:' + project.'protobuf-gradle-plugin.version'
+    classpath 'com.google.protobuf:protobuf-gradle-plugin:' + DependencyConstraints.get('protobuf-gradle-plugin.version')
   }
 }
 
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+apply from: "${project.projectDir}/../gradle/publish.gradle"
+
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
+
   compile('com.google.protobuf:protobuf-java')
 }
 
 protobuf {
   protoc {
     // The artifact spec for the Protobuf Compiler
-    artifact = 'com.google.protobuf:protoc:' + project.'protoc.version'
+    artifact = 'com.google.protobuf:protoc:' + DependencyConstraints.get('protoc.version')
   }
   generatedFilesBaseDir = "$buildDir/generated-src/proto"
 }

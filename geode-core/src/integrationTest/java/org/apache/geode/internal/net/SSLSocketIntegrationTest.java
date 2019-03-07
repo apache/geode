@@ -53,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -71,6 +72,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -112,6 +114,8 @@ public class SSLSocketIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
+    IgnoredException.addIgnoredException("javax.net.ssl.SSLException: Read timed out");
+
     File keystore = findTestKeystore();
     System.setProperty("javax.net.ssl.trustStore", keystore.getCanonicalPath());
     System.setProperty("javax.net.ssl.trustStorePassword", "password");
@@ -324,6 +328,10 @@ public class SSLSocketIntegrationTest {
     socket.connect(new InetSocketAddress(localHost, serverPort));
     await().untilAsserted(() -> assertFalse(serverThread.isAlive()));
     assertNotNull(serverException);
+    if (serverException instanceof SSLException
+        && serverException.getCause() instanceof SocketTimeoutException) {
+      throw serverException.getCause();
+    }
     throw serverException;
   }
 
@@ -401,11 +409,15 @@ public class SSLSocketIntegrationTest {
           System.err.println(
               "client successfully connected to server but should not have been able to do so");
           return false;
-        } catch (SocketTimeoutException e) {
+        } catch (SSLException | SocketTimeoutException e) {
+          IOException ioException = e;
           // we need to verify that this timed out in the handshake
           // code
+          if (e instanceof SSLException && e.getCause() instanceof SocketTimeoutException) {
+            ioException = (SocketTimeoutException) ioException.getCause();
+          }
           System.out.println("client connect attempt timed out - checking stack trace");
-          StackTraceElement[] trace = e.getStackTrace();
+          StackTraceElement[] trace = ioException.getStackTrace();
           for (StackTraceElement element : trace) {
             if (element.getMethodName().equals("configureClientSSLSocket")) {
               System.out.println("client connect attempt timed out in the appropriate method");

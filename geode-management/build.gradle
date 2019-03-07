@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-apply from: "${project.projectDir}/../gradle/geode-dependency-management.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
-//versionManagement.applySpringDependencyManagement = false
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
   compile('org.apache.commons:commons-lang3')
   compile('com.fasterxml.jackson.core:jackson-databind')
   compile('com.fasterxml.jackson.core:jackson-core')
   compile('com.fasterxml.jackson.core:jackson-annotations')
   compile('org.springframework:spring-web')
+  compile('javax.xml.bind:jaxb-api')
 
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'

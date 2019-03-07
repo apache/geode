@@ -33,13 +33,11 @@ import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.GatewaySenderMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -48,7 +46,7 @@ public class ListGatewayCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result listGateway(
+  public ResultModel listGateway(
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.LIST_GATEWAY__MEMBER__HELP) String[] onMember,
@@ -57,13 +55,13 @@ public class ListGatewayCommand extends InternalGfshCommand {
           help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup)
       throws Exception {
 
-    Result result;
-    SystemManagementService service = (SystemManagementService) getManagementService();
+    ResultModel result = new ResultModel();
+    SystemManagementService service = getManagementService();
 
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
     if (dsMembers.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans = new TreeMap<>();
@@ -105,54 +103,51 @@ public class ListGatewayCommand extends InternalGfshCommand {
       }
     }
     if (gatewaySenderBeans.isEmpty() && gatewayReceiverBeans.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER);
+      return ResultModel.createError(CliStrings.GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER);
     }
-    CompositeResultData crd = ResultBuilder.createCompositeResultData();
-    crd.setHeader(CliStrings.HEADER_GATEWAYS);
-    accumulateListGatewayResult(crd, gatewaySenderBeans, gatewayReceiverBeans);
-    result = ResultBuilder.buildResult(crd);
+
+    accumulateListGatewayResult(result, gatewaySenderBeans, gatewayReceiverBeans);
 
     return result;
   }
 
-  protected void accumulateListGatewayResult(CompositeResultData crd,
+  protected void accumulateListGatewayResult(ResultModel result,
       Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans,
       Map<String, GatewayReceiverMXBean> gatewayReceiverBeans) {
     if (!gatewaySenderBeans.isEmpty()) {
-      TabularResultData gatewaySenderData = crd.addSection(CliStrings.SECTION_GATEWAY_SENDER)
-          .addTable(CliStrings.TABLE_GATEWAY_SENDER).setHeader(CliStrings.HEADER_GATEWAY_SENDER);
+      TabularResultModel gatewaySenders = result.addTable("gatewaySenders");
+      gatewaySenders.setHeader(CliStrings.SECTION_GATEWAY_SENDER);
       for (Map.Entry<String, Map<String, GatewaySenderMXBean>> entry : gatewaySenderBeans
           .entrySet()) {
         for (Map.Entry<String, GatewaySenderMXBean> memberToBean : entry.getValue().entrySet()) {
-          gatewaySenderData.accumulate(CliStrings.RESULT_GATEWAY_SENDER_ID, entry.getKey());
-          gatewaySenderData.accumulate(CliStrings.RESULT_HOST_MEMBER, memberToBean.getKey());
-          gatewaySenderData.accumulate(CliStrings.RESULT_REMOTE_CLUSTER,
-              memberToBean.getValue().getRemoteDSId());
-          gatewaySenderData.accumulate(CliStrings.RESULT_TYPE, memberToBean.getValue().isParallel()
+          gatewaySenders.accumulate(CliStrings.RESULT_GATEWAY_SENDER_ID, entry.getKey());
+          gatewaySenders.accumulate(CliStrings.RESULT_HOST_MEMBER, memberToBean.getKey());
+          gatewaySenders.accumulate(CliStrings.RESULT_REMOTE_CLUSTER,
+              memberToBean.getValue().getRemoteDSId() + "");
+          gatewaySenders.accumulate(CliStrings.RESULT_TYPE, memberToBean.getValue().isParallel()
               ? CliStrings.SENDER_PARALLEL : CliStrings.SENDER_SERIAL);
-          gatewaySenderData.accumulate(CliStrings.RESULT_STATUS, memberToBean.getValue().isRunning()
+          gatewaySenders.accumulate(CliStrings.RESULT_STATUS, memberToBean.getValue().isRunning()
               ? CliStrings.GATEWAY_RUNNING : CliStrings.GATEWAY_NOT_RUNNING);
-          gatewaySenderData.accumulate(CliStrings.RESULT_QUEUED_EVENTS,
-              memberToBean.getValue().getEventQueueSize());
-          gatewaySenderData.accumulate(CliStrings.RESULT_RECEIVER,
+          gatewaySenders.accumulate(CliStrings.RESULT_QUEUED_EVENTS,
+              memberToBean.getValue().getEventQueueSize() + "");
+          gatewaySenders.accumulate(CliStrings.RESULT_RECEIVER,
               memberToBean.getValue().getGatewayReceiver());
         }
       }
     }
 
     if (!gatewayReceiverBeans.isEmpty()) {
-      TabularResultData gatewayReceiverData = crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER)
-          .addTable(CliStrings.TABLE_GATEWAY_RECEIVER)
-          .setHeader(CliStrings.HEADER_GATEWAY_RECEIVER);
+      TabularResultModel gatewaySenders = result.addTable("gatewayReceivers");
+      gatewaySenders.setHeader(CliStrings.SECTION_GATEWAY_RECEIVER);
       for (Map.Entry<String, GatewayReceiverMXBean> entry : gatewayReceiverBeans.entrySet()) {
-        gatewayReceiverData.accumulate(CliStrings.RESULT_HOST_MEMBER, entry.getKey());
-        gatewayReceiverData.accumulate(CliStrings.RESULT_PORT, entry.getValue().getPort());
-        gatewayReceiverData.accumulate(CliStrings.RESULT_SENDERS_COUNT,
-            entry.getValue().getClientConnectionCount());
+        gatewaySenders.accumulate(CliStrings.RESULT_HOST_MEMBER, entry.getKey());
+        gatewaySenders.accumulate(CliStrings.RESULT_PORT, entry.getValue().getPort() + "");
+        gatewaySenders.accumulate(CliStrings.RESULT_SENDERS_COUNT,
+            entry.getValue().getClientConnectionCount() + "");
         if (entry.getValue() == null || entry.getValue().getConnectedGatewaySenders() == null) {
-          gatewayReceiverData.accumulate(CliStrings.RESULT_SENDER_CONNECTED, "");
+          gatewaySenders.accumulate(CliStrings.RESULT_SENDER_CONNECTED, "");
         } else {
-          gatewayReceiverData.accumulate(CliStrings.RESULT_SENDER_CONNECTED,
+          gatewaySenders.accumulate(CliStrings.RESULT_SENDER_CONNECTED,
               Arrays.stream(entry.getValue().getConnectedGatewaySenders()).collect(joining(", ")));
         }
       }

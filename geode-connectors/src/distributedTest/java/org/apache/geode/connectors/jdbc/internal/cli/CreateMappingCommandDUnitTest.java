@@ -59,6 +59,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -73,6 +74,7 @@ import org.apache.geode.test.compiler.JavaCompiler;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -86,6 +88,7 @@ public class CreateMappingCommandDUnitTest {
   private static final String EMPLOYEE_REGION = "employeeRegion";
   private static final String EMPLOYEE_LOWER = "employee";
   private static final String EMPLOYEE_UPPER = "EMPLOYEE";
+  private static final String EMPLOYEE_NUMERIC = "employeeNumeric";
   private static final String GROUP1_REGION = "group1Region";
   private static final String GROUP2_REGION = "group2Region";
   private static final String GROUP1_GROUP2_REGION = "group1Group2Region";
@@ -141,12 +144,16 @@ public class CreateMappingCommandDUnitTest {
     executeSql(
         "create table mySchema." + EMPLOYEE_UPPER
             + "(ID varchar(10) primary key, name varchar(10), AGE int)");
+    executeSql(
+        "create table mySchema." + EMPLOYEE_NUMERIC
+            + "(ID varchar(10) primary key, name varchar(10), AGE int, income real, refid bigint)");
   }
 
   private void teardownDatabase() {
     executeSql("drop table mySchema.myTable");
     executeSql("drop table mySchema." + EMPLOYEE_REGION);
     executeSql("drop table mySchema." + EMPLOYEE_UPPER);
+    executeSql("drop table mySchema." + EMPLOYEE_NUMERIC);
   }
 
   private void executeSql(String sql) {
@@ -894,6 +901,54 @@ public class CreateMappingCommandDUnitTest {
     }
   }
 
+  public static class EmployeeNumeric implements PdxSerializerObject {
+    private String id;
+    private String name;
+    private int age;
+    private float income;
+    private long refid;
+
+    public EmployeeNumeric() {
+      // nothing
+    }
+
+    EmployeeNumeric(String id, String name, int age, float income, long refid) {
+      this.id = id;
+      this.name = name;
+      this.age = age;
+      this.income = income;
+      this.refid = refid;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    int getAge() {
+      return age;
+    }
+
+    float getIncome() {
+      return income;
+    }
+
+    void setIncome(float income) {
+      this.income = income;
+    }
+
+    long getRefid() {
+      return refid;
+    }
+
+    void setRefid(long refid) {
+      this.refid = refid;
+    }
+  }
+
   public static class IdAndName implements PdxSerializable {
     private String id;
     private String name;
@@ -953,6 +1008,34 @@ public class CreateMappingCommandDUnitTest {
       assertValidEmployeeMappingOnLocator(regionMapping, region1Name, null, false, false,
           "employeeRegion");
     });
+
+    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
+        region1Name);
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+    commandResultAssert.containsOutput("age       | INT      | AGE         | INTEGER   | true");
+  }
+
+  @Test
+  public void createMappingsDoesNotRequirePdxSerializable() {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeNumeric");
+    csb.addOption(PDX_NAME, EmployeeNumeric.class.getName());
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(DESCRIBE_MAPPING).addOption(REGION_NAME,
+        region1Name);
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+    commandResultAssert.containsOutput("income    | FLOAT    | INCOME      | REAL      | true");
+    commandResultAssert.containsOutput("refid     | LONG     | REFID       | BIGINT    | true");
+    commandResultAssert.containsOutput("age       | INT      | AGE         | INTEGER   | true");
   }
 
   @Test

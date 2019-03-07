@@ -1104,7 +1104,7 @@ public class CliStrings {
       "Name/Id of the member to be described.";
   public static final String DESCRIBE_MEMBER__MSG__NOT_FOUND = "Member \"{0}\" not found";
   public static final String DESCRIBE_MEMBER__MSG__INFO_FOR__0__COULD_NOT_BE_RETRIEVED =
-      "Information for the member \"{0}\" could not be retrieved.";
+      "Information for the member %s could not be retrieved.";
 
   /* 'describe offline-disk-store' command */
   public static final String DESCRIBE_OFFLINE_DISK_STORE = "describe offline-disk-store";

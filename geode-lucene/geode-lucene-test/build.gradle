@@ -16,10 +16,10 @@
  */
 
 
-apply from: "${project.projectDir}/../../gradle/geode-dependency-management.gradle"
 
 
 dependencies {
+  compile(platform(project(':boms:geode-all-bom')))
   compile('org.apache.lucene:lucene-core')
   compile(project(':geode-core'))
   compileOnly(project(':geode-lucene'))

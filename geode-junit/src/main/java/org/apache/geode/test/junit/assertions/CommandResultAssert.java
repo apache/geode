@@ -71,6 +71,8 @@ public class CommandResultAssert
    * <pre>
    * <code> containsKeyValuePair("Key Class", "java.lang.String"); </code>
    * </pre>
+   *
+   * @deprecated use hasDataSection methods to verify the table contents
    */
   public CommandResultAssert containsKeyValuePair(String key, String value) {
     assertThat(actual.getOutput()).containsPattern("\\Q" + key + "\\E\\s+: \\Q" + value + "\\E");
@@ -89,6 +91,9 @@ public class CommandResultAssert
     return this;
   }
 
+  /**
+   * @deprecated use hasDataSection methods to verify the table contents
+   */
   public CommandResultAssert containsOrderedOutput(String dataSectionName,
       String... expectedOutputs) {
 
@@ -177,6 +182,8 @@ public class CommandResultAssert
    * <code> tableHasColumnWithExactValuesInExactOrder("Region Path", "/region1", "/region2");
    * </code>
    * </pre>
+   *
+   * @deprecated use hasTableSection methods to verify the table contents
    */
   public CommandResultAssert tableHasColumnWithExactValuesInExactOrder(String header,
       String... expectedValues) {
@@ -205,6 +212,8 @@ public class CommandResultAssert
    * <pre>
    * <code> tableHasColumnWithExactValuesInAnyOrder("Region Path", "/region2", "/region1"); </code>
    * </pre>
+   *
+   * @deprecated use hasTableSection methods to verify the table contents
    */
   public CommandResultAssert tableHasColumnWithExactValuesInAnyOrder(String header,
       String... expectedValues) {
@@ -214,7 +223,9 @@ public class CommandResultAssert
     return this;
   }
 
-
+  /**
+   * @deprecated use hasTableSection methods to verify the table contents
+   */
   public CommandResultAssert tableHasRowWithValues(String... headersThenValues) {
     assertThat(headersThenValues.length % 2)
         .describedAs("You need to pass even number of parameters.").isEqualTo(0);
@@ -265,6 +276,8 @@ public class CommandResultAssert
   /**
    * Verifies that each of the actual values in the column with the given header contains at least
    * one of the expectedValues.
+   *
+   * @deprecated use hasTableSection methods to verify the table contents
    */
   public CommandResultAssert tableHasColumnWithValuesContaining(String header,
       String... expectedValues) {
@@ -287,6 +300,8 @@ public class CommandResultAssert
   /**
    * Verifies that each of the actual values in the column with the given header contains at least
    * one of the expectedValues.
+   *
+   * @deprecated use hasTableSection methods to verify the table contents
    */
   public CommandResultAssert tableHasColumnOnlyWithValues(String header, String... expectedValues) {
     List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
@@ -320,6 +335,11 @@ public class CommandResultAssert
   public CommandResultAssert hasSection(String... sectionName) {
     ResultModel resultModel = getResultModel();
     assertThat(resultModel.getSectionNames()).contains(sectionName);
+    return this;
+  }
+
+  public CommandResultAssert hasNoSection(String... sectionName) {
+    assertThat(getResultModel().getSectionNames()).doesNotContain(sectionName);
     return this;
   }
 

@@ -17,7 +17,6 @@ package org.apache.geode.admin.jmx.internal;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeImmutable;
 
 /**
  * Type-safe definition for ModelMBean managed resources. The class type ({@link #getClassTypeName})
@@ -34,59 +33,61 @@ public class ManagedResourceType implements java.io.Serializable {
   /** Agent managed resource type */
   @Immutable
   public static final ManagedResourceType AGENT =
-      new ManagedResourceType("Agent", org.apache.geode.admin.jmx.Agent.class);
+      new ManagedResourceType("Agent", org.apache.geode.admin.jmx.Agent.class, 0);
 
   /** DistributedSystem managed resource type */
   @Immutable
   public static final ManagedResourceType DISTRIBUTED_SYSTEM = new ManagedResourceType(
-      "AdminDistributedSystem", org.apache.geode.admin.AdminDistributedSystem.class);
+      "AdminDistributedSystem", org.apache.geode.admin.AdminDistributedSystem.class, 1);
 
   /** SystemMember managed resource type */
   @Immutable
   public static final ManagedResourceType SYSTEM_MEMBER =
-      new ManagedResourceType("SystemMember", org.apache.geode.admin.SystemMember.class);
+      new ManagedResourceType("SystemMember", org.apache.geode.admin.SystemMember.class, 2);
 
   /** SystemMemberCache managed resource type */
   @Immutable
   public static final ManagedResourceType SYSTEM_MEMBER_CACHE =
-      new ManagedResourceType("SystemMemberCache", org.apache.geode.admin.SystemMemberCache.class);
+      new ManagedResourceType("SystemMemberCache", org.apache.geode.admin.SystemMemberCache.class,
+          3);
 
   /** SystemMemberCache managed resource type */
   @Immutable
   public static final ManagedResourceType SYSTEM_MEMBER_REGION = new ManagedResourceType(
-      "SystemMemberRegion", org.apache.geode.admin.SystemMemberRegion.class);
+      "SystemMemberRegion", org.apache.geode.admin.SystemMemberRegion.class, 4);
 
   /** SystemMemberCacheServer managed resource type */
   @Immutable
   public static final ManagedResourceType SYSTEM_MEMBER_CACHE_SERVER = new ManagedResourceType(
-      "SystemMemberCacheServer", org.apache.geode.admin.SystemMemberCacheServer.class);
+      "SystemMemberCacheServer", org.apache.geode.admin.SystemMemberCacheServer.class, 5);
 
   /** CacheVm managed resource type */
   @Immutable
   public static final ManagedResourceType CACHE_VM =
-      new ManagedResourceType("CacheVm", org.apache.geode.admin.CacheVm.class);
+      new ManagedResourceType("CacheVm", org.apache.geode.admin.CacheVm.class, 6);
 
   /** StatisticResource managed resource type */
   @Immutable
   public static final ManagedResourceType STATISTIC_RESOURCE =
-      new ManagedResourceType("StatisticResource", org.apache.geode.admin.StatisticResource.class);
+      new ManagedResourceType("StatisticResource", org.apache.geode.admin.StatisticResource.class,
+          7);
 
   @Immutable
   public static final ManagedResourceType GEMFIRE_HEALTH =
-      new ManagedResourceType("GemFireHealth", org.apache.geode.admin.GemFireHealth.class);
+      new ManagedResourceType("GemFireHealth", org.apache.geode.admin.GemFireHealth.class, 8);
 
   @Immutable
   public static final ManagedResourceType DISTRIBUTED_SYSTEM_HEALTH_CONFIG =
       new ManagedResourceType("DistributedSystemHealthConfig",
-          org.apache.geode.admin.DistributedSystemHealthConfig.class);
+          org.apache.geode.admin.DistributedSystemHealthConfig.class, 9);
 
   @Immutable
   public static final ManagedResourceType GEMFIRE_HEALTH_CONFIG = new ManagedResourceType(
-      "GemFireHealthConfig", org.apache.geode.admin.GemFireHealthConfig.class);
+      "GemFireHealthConfig", org.apache.geode.admin.GemFireHealthConfig.class, 10);
 
   @Immutable
   public static final ManagedResourceType DISTRIBUTION_LOCATOR = new ManagedResourceType(
-      "DistributionLocator", org.apache.geode.admin.DistributionLocator.class);
+      "DistributionLocator", org.apache.geode.admin.DistributionLocator.class, 11);
 
   //////////////////// Instance Fields ////////////////////
 
@@ -99,12 +100,7 @@ public class ManagedResourceType implements java.io.Serializable {
    */
   private final transient Class clazz;
 
-  // The 4 declarations below are necessary for serialization
-  /** int used as ordinal to represent this Scope */
-  public final int ordinal = nextOrdinal++;
-
-  @MakeImmutable
-  private static int nextOrdinal = 0;
+  public final int ordinal;
 
   @Immutable
   private static final ManagedResourceType[] VALUES =
@@ -117,9 +113,10 @@ public class ManagedResourceType implements java.io.Serializable {
   }
 
   /** Creates a new instance of ManagedResourceType. */
-  private ManagedResourceType(String name, Class clazz) {
+  private ManagedResourceType(String name, Class clazz, int ordinal) {
     this.name = name;
     this.clazz = clazz;
+    this.ordinal = ordinal;
   }
 
   /** Returns the ManagedResourceType represented by specified ordinal */

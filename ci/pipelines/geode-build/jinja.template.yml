@@ -143,6 +143,11 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor -%}
 {%- endfor %}
+- name: Semver Management
+  jobs:
+  {%- for semverPiece in ['major', 'minor', 'patch'] %}
+  - Bump{{ semverPiece.title() }}
+  {%- endfor %}
 
 resources:
 - name: concourse-metadata-resource
@@ -192,6 +197,16 @@ resource_types:
   source:
     repository: frodenas/gcs-resource
 jobs:
+{% for semverPiece in ['major', 'minor', 'patch'] -%}
+- name: Bump{{ semverPiece.title() }}
+  serial: true
+  plan:
+  - get: geode-build-version
+    params: { bump: {{ semverPiece }} }
+  - put: geode-build-version
+    params:
+      file: geode-build-version/number
+{% endfor %}
 - name: {{build_test.name}}
   public: true
   serial: true

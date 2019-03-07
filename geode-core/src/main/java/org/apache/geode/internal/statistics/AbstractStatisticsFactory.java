@@ -26,6 +26,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.internal.process.ProcessUtils;
 
 /**
  * An abstract standalone implementation of {@link StatisticsFactory}. It can be used in contexts
@@ -57,6 +58,11 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public String getName() {
     return this.name;
+  }
+
+  @Override
+  public int getPid() {
+    return ProcessUtils.identifyPidAsUnchecked();
   }
 
   @Override

@@ -117,7 +117,7 @@ public class GatewaySenderEventImpl
   /**
    * The serialized new value for this event's key. May not be computed at construction time.
    */
-  protected byte[] value;
+  protected volatile byte[] value;
 
   /**
    * The "object" form of the value. Will be null after this object is deserialized.

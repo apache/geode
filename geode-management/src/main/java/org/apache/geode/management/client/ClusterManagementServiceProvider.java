@@ -66,14 +66,72 @@ public class ClusterManagementServiceProvider {
 
   private static Map<String, ClusterManagementServiceFactory> serviceFactories = null;
 
+  /**
+   * Without any options, this method will try to retrieve the correct
+   * {@code ClusterManagementService} dependent on the context in which it is called - relevant
+   * contexts are locators, servers and geode clients (essentially wherever a {@code Cache} or
+   * {@code ClientCache} exist).
+   *
+   * @return a {@code ClusterManagementService} instance configured to connect to the service
+   *         endpoint.
+   * @throws IllegalArgumentException if the service instance cannot be retrieved, for example if
+   *         not called from a suitable context.
+   */
   public static ClusterManagementService getService() {
     return getServiceFactory(GEODE_CONTEXT).create();
   }
 
+  /**
+   * Retrieve a {@code ClusterManagementService} instance configured with an explicit service
+   * endpoint.
+   * <p/>
+   * For example:
+   *
+   * <pre>
+   * ClusterManagementServiceProvider.getService("http://locator-host:7070/geode-management")
+   * </pre>
+   *
+   * @param clusterUrl the URL of the Cluster Management Service running on a locator. The port
+   *        used is as configured by the <i>http-service-port</i> property on the Geode locator.
+   * @return a {@code ClusterManagementService} instance configured to connect to the service
+   *         endpoint.
+   * @throws IllegalArgumentException if the provided url is malformed
+   */
   public static ClusterManagementService getService(String clusterUrl) {
     return getServiceFactory(JAVA_CLIENT_CONTEXT).create(clusterUrl);
   }
 
+  /**
+   * Retrieve a {@code ClusterManagementService} instance configured with a
+   * {@link ClientHttpRequestFactory}. This would be required when connecting to a SSL enabled
+   * endpoint.
+   * <p/>
+   * For example:
+   *
+   * <pre>
+   *   String clusterUrl = "https://locator-host:7070/geode-management";
+   *
+   *   HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+   *   DefaultHttpClient httpClient = (DefaultHttpClient) requestFactory.getHttpClient();
+   *   TrustStrategy acceptingTrustStrategy = (cert, authType) -> true;
+   *   SSLSocketFactory sf = new SSLSocketFactory(acceptingTrustStrategy, ALLOW_ALL_HOSTNAME_VERIFIER);
+   *   httpClient.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 7070, sf));
+   *
+   *   RestTemplate restTemplate = new RestTemplate(requestFactory);
+   *
+   *   DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
+   *   templateHandler.setBaseUrl(clusterUrl);
+   *   restTemplate.setUriTemplateHandler(templateHandler);
+   *
+   *   ClusterManagementServiceProvider.getService(restTemplate);
+   * </pre>
+   *
+   * @param requestFactory the Request Factory configured with the URL of the Cluster Management
+   *        Service running on a locator. The port used is as configured by the
+   *        <i>http-service-port</i> property on the Geode locator.
+   * @return a {@code ClusterManagementService} instance configured to connect to the service
+   *         endpoint.
+   */
   public static ClusterManagementService getService(ClientHttpRequestFactory requestFactory) {
     return getServiceFactory(JAVA_CLIENT_CONTEXT).create(requestFactory);
   }
