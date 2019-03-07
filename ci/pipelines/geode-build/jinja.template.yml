@@ -79,8 +79,9 @@ DUNIT_PARALLEL_FORKS: {{ test.DUNIT_PARALLEL_FORKS }}
 MAINTENANCE_VERSION: ((geode-build-branch ))
 PARALLEL_DUNIT: {{ test.PARALLEL_DUNIT }}
 {% if test.PARALLEL_GRADLE is defined %}
-# TODO: DO NOT COMMIT THIS CHANGE WITHOUT USING A DEFAULTING TEMPLATE.  Should this default true or false?
-PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
+PARALLEL_GRADLE: {{ test.PARALLEL_GRADLE }}
+{% else %}
+PARALLEL_GRADLE: true
 {% endif %}
 ARTIFACT_BUCKET: ((artifact-bucket))
 SERVICE_ACCOUNT: ((concourse-gcp-account))

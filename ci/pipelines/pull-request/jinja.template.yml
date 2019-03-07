@@ -265,8 +265,9 @@ jobs:
           MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
         {% if test.PARALLEL_GRADLE is defined %}
-          # TODO: DO NOT COMMIT THIS CHANGE WITHOUT USING A DEFAULTING TEMPLATE.  Should this default true or false?
           PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
+        {% else %}
+          PARALLEL_GRADLE: true
         {% endif %}
           ARTIFACT_BUCKET: ((artifact-bucket))
           SERVICE_ACCOUNT: ((concourse-gcp-account))
