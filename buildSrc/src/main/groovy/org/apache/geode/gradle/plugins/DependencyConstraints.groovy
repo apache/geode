@@ -41,6 +41,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.11.1")
+    deps.put("micrometer.version", "1.1.3")
     deps.put("shiro.version", "1.4.0")
     deps.put("slf4j-api.version", "1.7.25")
 
@@ -111,6 +112,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         api(group: 'io.github.classgraph', name: 'classgraph', version: '4.0.6')
+        api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.netty', name: 'netty-all', version: '4.1.31.Final')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')

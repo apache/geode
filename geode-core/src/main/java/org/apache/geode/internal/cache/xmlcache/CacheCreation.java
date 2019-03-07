@@ -40,6 +40,8 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
@@ -2439,6 +2441,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public Optional<HttpService> getHttpService() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  public MeterRegistry getMeterRegistry() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 }

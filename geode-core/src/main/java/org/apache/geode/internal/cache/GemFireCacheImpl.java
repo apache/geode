@@ -77,6 +77,7 @@ import javax.transaction.TransactionManager;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -281,7 +282,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * The {@code CacheLifecycleListener} s that have been registered in this VM
    */
   @MakeNotStatic
-  private static final Set<CacheLifecycleListener> cacheLifecycleListeners = new HashSet<>();
+  private static final Set<CacheLifecycleListener> cacheLifecycleListeners =
+      new CopyOnWriteArraySet<>();
 
   /**
    * Define gemfire.Cache.ASYNC_EVENT_LISTENERS=true to invoke event listeners in the background
@@ -613,6 +615,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private Optional<HttpService> httpService = Optional.ofNullable(null);
 
+  private final MeterRegistry meterRegistry;
+
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
     String propertyName = "sun.nio.ch.bugLevel";
@@ -763,6 +767,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @deprecated Rather than fishing for a cache with this static method, use a cache that is passed
    *             in to your method.
    */
+  @Deprecated
   public static GemFireCacheImpl getForPdx(String reason) {
 
     InternalDistributedSystem system = getAnyInstance();
@@ -784,12 +789,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Currently only unit tests set the typeRegistry parameter to a non-null value
    */
   GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
-      InternalDistributedSystem internalDistributedSystem,
-      CacheConfig cacheConfig, boolean useAsyncEventListeners, TypeRegistry typeRegistry) {
+      InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
+      boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry) {
     this.isClient = isClient;
     this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig; // do early for bug 43213
     this.pdxRegistry = typeRegistry;
+    this.meterRegistry = meterRegistry;
 
     // Synchronized to prevent a new cache from being created
     // before an old one has finished closing
@@ -950,6 +956,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public void throwCacheExistsException() {
     throw new CacheExistsException(this, String.format("%s: An open cache already exists.", this),
         creationStack);
+  }
+
+  @Override
+  public MeterRegistry getMeterRegistry() {
+    return meterRegistry;
   }
 
   @Override
