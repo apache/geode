@@ -43,8 +43,8 @@ public class InitialImageOperationTest {
     dm = mock(ClusterDistributionManager.class);
     region = mock(LocalRegion.class);
 
-    when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(path)).thenReturn(region);
+    when(dm.getExistingCache()).thenReturn(cache);
+    when(cache.getRegion(path)).thenReturn(region);
     when(region.isInitialized()).thenReturn(true);
     when(region.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
   }
