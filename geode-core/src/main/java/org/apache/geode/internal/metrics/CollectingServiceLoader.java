@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ServiceLoader;
 
-public interface CollectingServiceLoader {
+interface CollectingServiceLoader {
 
   default <S> Collection<S> loadServices(Class<S> service) {
     List<S> services = new ArrayList<>();

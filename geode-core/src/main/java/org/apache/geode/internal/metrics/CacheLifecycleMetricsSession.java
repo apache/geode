@@ -115,7 +115,8 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
     }
   }
 
-  public interface CacheLifecycle {
+  @VisibleForTesting
+  interface CacheLifecycle {
 
     default void addListener(CacheLifecycleListener listener) {
       GemFireCacheImpl.addCacheLifecycleListener(listener);
