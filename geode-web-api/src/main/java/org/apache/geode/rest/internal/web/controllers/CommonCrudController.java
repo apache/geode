@@ -23,7 +23,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -203,14 +202,9 @@ public abstract class CommonCrudController extends AbstractBaseController {
       if (functionResult instanceof List<?>) {
         final HttpHeaders headers = new HttpHeaders();
         headers.setLocation(toUri("servers"));
-        try {
-          String functionResultAsJson =
-              JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
-          return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
-        } catch (JSONException e) {
-          throw new GemfireRestException(
-              "Could not convert function results into Restful (JSON) format!", e);
-        }
+        String functionResultAsJson =
+            JSONUtils.convertCollectionToJson((ArrayList<Object>) functionResult);
+        return new ResponseEntity<>(functionResultAsJson, headers, HttpStatus.OK);
       } else {
         throw new GemfireRestException(
             "Function has returned results that could not be converted into Restful (JSON) format!");
