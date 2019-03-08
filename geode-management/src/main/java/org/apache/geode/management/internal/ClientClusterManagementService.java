@@ -15,21 +15,13 @@
 
 package org.apache.geode.management.internal;
 
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.http.HttpHeaders;
@@ -73,12 +65,6 @@ public class ClientClusterManagementService implements ClusterManagementService 
     restTemplate.setErrorHandler(DEFAULT_ERROR_HANDLER);
   }
 
-  public ClientClusterManagementService(String host, int port, boolean useSSL, String username,
-      String password) {
-    this(host, port, useSSL ? createTrustAllSSLContext() : null,
-        useSSL ? new NoopHostnameVerifier() : null, username, password);
-  }
-
   public ClientClusterManagementService(String host, int port, SSLContext sslContext,
       HostnameVerifier hostnameVerifier, String username, String password) {
     this();
@@ -112,33 +98,6 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public ClientClusterManagementService(ClientHttpRequestFactory requestFactory) {
     this();
     this.restTemplate.setRequestFactory(requestFactory);
-  }
-
-  public static SSLContext createTrustAllSSLContext() {
-    try {
-      SSLContext sslContext = SSLContext.getInstance("TLS");
-      sslContext.init(new KeyManager[0], new TrustManager[] {new TrustAllTrustManager()},
-          new SecureRandom());
-      return sslContext;
-    } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
-  }
-
-  private static class TrustAllTrustManager implements X509TrustManager {
-
-    @Override
-    public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-        throws CertificateException {}
-
-    @Override
-    public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-        throws CertificateException {}
-
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-      return null;
-    }
   }
 
   @Override

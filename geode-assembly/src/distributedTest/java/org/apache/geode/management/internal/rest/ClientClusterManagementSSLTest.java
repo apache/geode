@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.rest;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,10 +26,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.File;
 import java.util.Properties;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.springframework.web.client.ResourceAccessException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -52,6 +56,11 @@ public class ClientClusterManagementSSLTest {
   private static MemberVM locator, server;
   private ClusterManagementService cmsClient;
   private RegionConfig region;
+  private static SSLContext sslContext;
+  private static HostnameVerifier hostnameVerifier;
+
+  @ClassRule
+  public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -62,13 +71,23 @@ public class ClientClusterManagementSSLTest {
     sslProps.setProperty(SSL_TRUSTSTORE, keyFile.getCanonicalPath());
     sslProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     sslProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-    sslProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     sslProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
     locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(sslProps)
         .withSecurityManager(SimpleSecurityManager.class));
     int locatorPort = locator.getPort();
     server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
+        .withProperties(sslProps)
         .withCredential("cluster", "cluster"));
+
+    System.setProperty("javax.net.ssl.keyStore", keyFile.getCanonicalPath());
+    System.setProperty("javax.net.ssl.keyStorePassword", "password");
+    System.setProperty("javax.net.ssl.keyStoreType", "JKS");
+    System.setProperty("javax.net.ssl.trustStore", keyFile.getCanonicalPath());
+    System.setProperty("javax.net.ssl.trustStorePassword", "password");
+    System.setProperty("javax.net.ssl.trustStoreType", "JKS");
+
+    sslContext = SSLContext.getDefault();
+    hostnameVerifier = new NoopHostnameVerifier();
   }
 
   @Before
@@ -80,7 +99,7 @@ public class ClientClusterManagementSSLTest {
   @Test
   public void createRegion_Successful() throws Exception {
     cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        true, "dataManage", "dataManage");
+        sslContext, hostnameVerifier, "dataManage", "dataManage");
 
     ClusterManagementResult result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isTrue();
@@ -91,14 +110,14 @@ public class ClientClusterManagementSSLTest {
   @Test
   public void createRegion_NoSsl() throws Exception {
     cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        false, "dataManage", "dataManage");
+        null, null, "dataManage", "dataManage");
     assertThatThrownBy(() -> cmsClient.create(region)).isInstanceOf(ResourceAccessException.class);
   }
 
   @Test
   public void createRegion_WrongPassword() throws Exception {
     cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        true, "dataManage", "wrongPswd");
+        sslContext, hostnameVerifier, "dataManage", "wrongPswd");
 
     ClusterManagementResult result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
@@ -109,7 +128,7 @@ public class ClientClusterManagementSSLTest {
   @Test
   public void createRegion_NoUser() throws Exception {
     cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        true, null, null);
+        sslContext, hostnameVerifier, null, null);
 
     ClusterManagementResult result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
@@ -120,7 +139,7 @@ public class ClientClusterManagementSSLTest {
   @Test
   public void createRegion_NoPassword() throws Exception {
     cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        true, "dataManage", null);
+        sslContext, hostnameVerifier, "dataManage", null);
 
     ClusterManagementResult result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
@@ -131,7 +150,7 @@ public class ClientClusterManagementSSLTest {
   @Test
   public void createRegion_NoPrivilege() throws Exception {
     cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        true, "dataRead", "dataRead");
+        sslContext, hostnameVerifier, "dataRead", "dataRead");
 
     ClusterManagementResult result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();

@@ -37,12 +37,6 @@ public class JavaClientClusterManagementServiceFactory implements ClusterManagem
   }
 
   @Override
-  public ClusterManagementService create(String host, int port, boolean useSSL, String username,
-      String password) {
-    return new ClientClusterManagementService(host, port, useSSL, username, password);
-  }
-
-  @Override
   public ClusterManagementService create(String host, int port, SSLContext sslContext,
       HostnameVerifier hostnameVerifier, String username,
       String password) {

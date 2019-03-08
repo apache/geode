@@ -103,22 +103,6 @@ public class ClusterManagementServiceProvider {
   /**
    * Retrieve a {@code ClusterManagementService} instance configured with an explicit service
    * endpoint. This service will allow you to connect to ssl enabled and security enabled end point
-   * with a trust-all trust store and no hostname verification.
-   *
-   * @param host the locator's host name
-   * @param port http port of the locator
-   * @param useSSL whether use ssl to connect or not
-   * @param username if cluster has security manager, use this username to connect
-   * @param password if cluster has security manager, use this password to connect
-   */
-  public static ClusterManagementService getService(String host, int port, boolean useSSL,
-      String username, String password) {
-    return getServiceFactory(JAVA_CLIENT_CONTEXT).create(host, port, useSSL, username, password);
-  }
-
-  /**
-   * Retrieve a {@code ClusterManagementService} instance configured with an explicit service
-   * endpoint. This service will allow you to connect to ssl enabled and security enabled end point
    * with the specified sslContext and hostnameVerifier
    *
    * @param host the locator's host name

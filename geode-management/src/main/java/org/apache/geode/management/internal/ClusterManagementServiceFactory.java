@@ -34,9 +34,6 @@ public interface ClusterManagementServiceFactory {
   String getContext();
 
   // plain java client side
-  ClusterManagementService create(String host, int port, boolean useSSL, String username,
-      String password);
-
   ClusterManagementService create(String host, int port, SSLContext sslContext,
       HostnameVerifier hostnameVerifier, String username, String password);
 

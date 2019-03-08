@@ -18,7 +18,11 @@ package org.apache.geode.management.internal.api;
 import java.util.List;
 import java.util.Set;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
@@ -31,12 +35,16 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.management.internal.ClusterManagementServiceFactory;
 import org.apache.geode.management.internal.JavaClientClusterManagementServiceFactory;
+import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 
@@ -80,8 +88,22 @@ public class GeodeClusterManagementServiceFactory
 
       MemberInformation memberInformation = getHttpServiceAddress(locatorsWithClusterConfig);
 
+      SSLContext sslContext = null;
+      HostnameVerifier hostnameVerifier = null;
+      if (memberInformation.isSsl()) {
+        SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+            ((GemFireCacheImpl) cache).getSystem().getConfig(), SecurableCommunicationChannel.WEB);
+        if (sslConfig.getTruststore() == null) {
+          throw new IllegalStateException(
+              "The server needs to have truststore specified in order to use cluster management service.");
+        }
+
+        sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
+        hostnameVerifier = new NoopHostnameVerifier();
+      }
+
       return create(getHostName(memberInformation), memberInformation.getHttpServicePort(),
-          memberInformation.isSsl(), username, password);
+          sslContext, hostnameVerifier, username, password);
     }
 
     ClientCache clientCache = ClientCacheFactory.getAnyInstance();
