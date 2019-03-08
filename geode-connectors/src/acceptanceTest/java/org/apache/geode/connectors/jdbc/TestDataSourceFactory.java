@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 import com.zaxxer.hikari.HikariDataSource;
 
 import org.apache.geode.connectors.jdbc.internal.SqlHandler.DataSourceFactory;
+import org.apache.geode.internal.jndi.JNDIInvoker;
 
 public class TestDataSourceFactory implements DataSourceFactory {
   private final String url;

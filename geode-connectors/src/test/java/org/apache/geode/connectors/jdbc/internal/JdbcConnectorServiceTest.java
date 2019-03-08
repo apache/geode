@@ -152,6 +152,12 @@ public class JdbcConnectorServiceTest {
   }
 
   @Test(expected = JdbcConnectorException.class)
+  public void validateMappingThrowsExceptionWithNullDataSource() {
+    doReturn(null).when(service).getDataSource(DATA_SOURCE_NAME);
+    service.validateMapping(mapping);
+  }
+
+  @Test(expected = JdbcConnectorException.class)
   public void validateMappingThrowsExceptionWithAddedColumn() {
     allColumns.add(EXTRA_COLUMN_NAME);
     when(view.getColumnDataType(EXTRA_COLUMN_NAME)).thenReturn(JDBCType.VARCHAR);

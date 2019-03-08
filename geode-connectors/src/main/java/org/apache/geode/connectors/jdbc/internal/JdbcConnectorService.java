@@ -16,6 +16,8 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
@@ -38,6 +40,8 @@ public interface JdbcConnectorService extends CacheService {
   RegionMapping getMappingForRegion(String regionName);
 
   Set<RegionMapping> getRegionMappings();
+
+  void validateMapping(RegionMapping regionMapping, DataSource dataSource);
 
   void validateMapping(RegionMapping regionMapping);
 }

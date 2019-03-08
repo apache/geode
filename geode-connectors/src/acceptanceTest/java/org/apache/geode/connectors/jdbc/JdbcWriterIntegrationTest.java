@@ -26,6 +26,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,12 +38,17 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
 
@@ -160,7 +168,9 @@ public abstract class JdbcWriterIntegrationTest {
   @Test
   public void canInsertIntoTable() throws Exception {
     createTable();
+    DataSource dataSource = testDataSourceFactory.getDataSource("testConnectionConfig");
     setupRegion("id");
+
     employees.put("1", pdx1);
     employees.put("2", pdx2);
 
@@ -169,6 +179,8 @@ public abstract class JdbcWriterIntegrationTest {
     assertRecordMatchesEmployee(resultSet, "1", employee1);
     assertRecordMatchesEmployee(resultSet, "2", employee2);
     assertThat(resultSet.next()).isFalse();
+
+    dataSource.getConnection();
   }
 
   protected abstract boolean vendorSupportsSchemas();

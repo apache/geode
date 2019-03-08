@@ -89,7 +89,17 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
 
   @Override
   public void validateMapping(RegionMapping regionMapping) {
-    TableMetaDataView metaDataView = getTableMetaDataView(regionMapping);
+
+      DataSource dataSource = getDataSource(regionMapping.getDataSourceName());
+      if(dataSource == null) {
+        throw new JdbcConnectorException("No datasource \"" + regionMapping.getDataSourceName() + "\" found when creating mapping \"" + regionMapping.getRegionName() + "\"");
+      }
+      validateMapping(regionMapping, dataSource);
+  }
+
+  @Override
+  public void validateMapping(RegionMapping regionMapping, DataSource dataSource) {
+    TableMetaDataView metaDataView = getTableMetaDataView(regionMapping, dataSource);
     boolean foundDifference = false;
 
     if (regionMapping.getFieldMappings().size() != metaDataView.getColumnNames().size()) {
@@ -181,14 +191,6 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
     return null;
   }
 
-  private Connection getConnection(String dataSourceName) throws SQLException {
-    DataSource dataSource = getDataSource(dataSourceName);
-    if (dataSource != null) {
-      return dataSource.getConnection();
-    } else {
-      throw new SQLException("No datasource " + dataSourceName + "found when creating mapping \"");
-    }
-  }
 
   // The following helper method is to allow for proper mocking in unit tests
   DataSource getDataSource(String dataSourceName) {
@@ -200,9 +202,9 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
     return new TableMetaDataManager();
   }
 
-  private TableMetaDataView getTableMetaDataView(RegionMapping regionMapping) {
+  private TableMetaDataView getTableMetaDataView(RegionMapping regionMapping, DataSource dataSource) {
     TableMetaDataManager manager = getTableMetaDataManager();
-    try (Connection connection = getConnection(regionMapping.getDataSourceName())) {
+    try (Connection connection = dataSource.getConnection()) {
       return manager.getTableMetaDataView(connection, regionMapping);
     } catch (SQLException ex) {
       throw JdbcConnectorException
