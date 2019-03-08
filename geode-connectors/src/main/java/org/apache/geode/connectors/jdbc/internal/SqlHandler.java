@@ -40,21 +40,20 @@ import org.apache.geode.pdx.PdxInstance;
 @Experimental
 public class SqlHandler {
   private final InternalCache cache;
-  private final TableMetaDataManager tableMetaDataManager;
   private final RegionMapping regionMapping;
   private final DataSource dataSource;
+  private final TableMetaDataView tableMetaData;
   private final Map<String, FieldMapping> pdxToFieldMappings = new HashMap<>();
   private final Map<String, FieldMapping> jdbcToFieldMappings = new HashMap<>();
   private volatile SqlToPdxInstance sqlToPdxInstance;
-  // private static final Logger logger = LogService.getLogger();
 
   public SqlHandler(InternalCache cache, String regionName,
       TableMetaDataManager tableMetaDataManager, JdbcConnectorService configService,
       DataSourceFactory dataSourceFactory) {
     this.cache = cache;
-    this.tableMetaDataManager = tableMetaDataManager;
     this.regionMapping = getMappingForRegion(configService, regionName);
     this.dataSource = getDataSource(dataSourceFactory, this.regionMapping.getDataSourceName());
+    this.tableMetaData = getTableMetaDataView(tableMetaDataManager);
     cache.getService(JdbcConnectorService.class).validateMapping(regionMapping, dataSource);
     initializeFieldMappingMaps();
   }
@@ -65,15 +64,12 @@ public class SqlHandler {
         dataSourceName -> JNDIInvoker.getDataSource(dataSourceName));
   }
 
-
-
-  private TableMetaDataView getTableMetaDataView() {
+  private TableMetaDataView getTableMetaDataView(TableMetaDataManager tableMetaDataManager) {
     try (Connection connection = getConnection()) {
       return tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
     } catch (SQLException ex) {
-      throw JdbcConnectorException
-          .createException("Exception thrown while connecting to datasource \""
-              + regionMapping.getDataSourceName() + "\": ", ex);
+      throw new JdbcConnectorException("Could not connect to datasource \""
+          + regionMapping.getDataSourceName() + "\" because: " + ex);
     }
   }
 
@@ -145,8 +141,6 @@ public class SqlHandler {
 
     PdxInstance result;
     try (Connection connection = getConnection()) {
-      TableMetaDataView tableMetaData =
-          this.tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
       EntryColumnData entryColumnData =
           getEntryColumnData(tableMetaData, key, null, Operation.GET);
       try (PreparedStatement statement =
@@ -240,8 +234,6 @@ public class SqlHandler {
     }
 
     try (Connection connection = getConnection()) {
-      TableMetaDataView tableMetaData =
-          this.tableMetaDataManager.getTableMetaDataView(connection, regionMapping);
       EntryColumnData entryColumnData =
           getEntryColumnData(tableMetaData, key, value, operation);
       int updateCount = 0;
