@@ -20,15 +20,14 @@
 """This script performs a multi-pass render of a Jinja templated file.
 See the argparse help for details."""
 import argparse
+import jinja2.exceptions
 import logging
 import os
 import pprint
-from itertools import combinations
-from typing import List, Dict
-
-import jinja2.exceptions
 import yaml
+from itertools import combinations
 from jinja2 import Environment, FileSystemLoader, Undefined
+from typing import List, Dict
 
 RENDER_PASS_LIMIT = 5
 
@@ -51,7 +50,7 @@ def render_template(template_file: str,
     env = get_environment(environment_dirs, template_file)
     variables = determine_variables(command_line_variable_options, variables_files)
     template = env.get_template(os.path.basename(template_file))
-    rendered_template = multipass_render(template, variables)
+    rendered_template = multipass_render(template, variables, env)
 
     if print_rendered:
         print(rendered_template)
@@ -74,17 +73,20 @@ def get_environment(environment_dirs, template_file):
     return env
 
 
-def multipass_render(template, variables):
+def multipass_render(template, variables, environment):
     f"""Performs a multiple-pass render of the template file, allowing variables to reference other variables.
     Performs at most RENDER_PASS_LIMIT (={RENDER_PASS_LIMIT}) passes.
     """
     this_template = template
+
     for i in range(1, RENDER_PASS_LIMIT + 1):
         logging.debug(f"Performing render pass {i}...")
 
-        this_template = this_template.render(variables)
-        if "{{" not in this_template:
-            return this_template
+        this_template_rendered = this_template.render(variables)
+        if "{{" not in this_template_rendered:
+            return this_template_rendered
+        this_template = environment.from_string(this_template_rendered)
+
     raise RuntimeError(f"Variables not eliminated from template after {RENDER_PASS_LIMIT} passes."
                        f"  Please verify that template variables references to not recurse.")
 
