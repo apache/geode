@@ -90,11 +90,12 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   @Override
   public void validateMapping(RegionMapping regionMapping) {
 
-      DataSource dataSource = getDataSource(regionMapping.getDataSourceName());
-      if(dataSource == null) {
-        throw new JdbcConnectorException("No datasource \"" + regionMapping.getDataSourceName() + "\" found when creating mapping \"" + regionMapping.getRegionName() + "\"");
-      }
-      validateMapping(regionMapping, dataSource);
+    DataSource dataSource = getDataSource(regionMapping.getDataSourceName());
+    if (dataSource == null) {
+      throw new JdbcConnectorException("No datasource \"" + regionMapping.getDataSourceName()
+          + "\" found when creating mapping \"" + regionMapping.getRegionName() + "\"");
+    }
+    validateMapping(regionMapping, dataSource);
   }
 
   @Override
@@ -202,7 +203,8 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
     return new TableMetaDataManager();
   }
 
-  private TableMetaDataView getTableMetaDataView(RegionMapping regionMapping, DataSource dataSource) {
+  private TableMetaDataView getTableMetaDataView(RegionMapping regionMapping,
+      DataSource dataSource) {
     TableMetaDataManager manager = getTableMetaDataManager();
     try (Connection connection = dataSource.getConnection()) {
       return manager.getTableMetaDataView(connection, regionMapping);

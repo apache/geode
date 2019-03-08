@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -38,17 +37,12 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
 
