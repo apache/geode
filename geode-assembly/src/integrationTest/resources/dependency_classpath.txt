@@ -18,6 +18,7 @@ geode-core-0.0.0.jar
 geode-cq-0.0.0.jar
 geode-json-0.0.0.jar
 geode-lucene-0.0.0.jar
+geode-redis-0.0.0.jar
 geode-management-0.0.0.jar
 geode-old-client-support-0.0.0.jar
 geode-protobuf-0.0.0.jar

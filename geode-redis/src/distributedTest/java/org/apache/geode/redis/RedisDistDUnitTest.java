@@ -69,7 +69,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    disconnectAllFromDS();
+    JUnit4DistributedTestCase.disconnectAllFromDS();
 
     localHost = SocketCreator.getLocalHost().getHostName();
 
@@ -103,7 +103,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    disconnectAllFromDS();
+    JUnit4DistributedTestCase.disconnectAllFromDS();
   }
 
   @Test

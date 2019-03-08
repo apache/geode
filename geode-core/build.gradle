@@ -194,9 +194,6 @@ dependencies {
     exclude module: 'xml-apis'
     ext.optional = true
   }
-  compile('io.netty:netty-all') {
-    ext.optional = true
-  }
   compile('it.unimi.dsi:fastutil')
   compile('javax.mail:javax.mail-api') {
     ext.optional = true
@@ -217,7 +214,6 @@ dependencies {
 
   compile('org.apache.logging.log4j:log4j-api')
   compile('org.apache.logging.log4j:log4j-core')
-  compile('com.github.davidmoten:geo')
 
   runtimeOnly('org.fusesource.jansi:jansi') {
     ext.optional = true
@@ -309,7 +305,6 @@ dependencies {
     exclude module: 'geode-core'
   }
   integrationTestCompile(project(':geode-concurrency-test'))
-  integrationTestCompile('redis.clients:jedis')
   integrationTestCompile('org.apache.bcel:bcel')
   integrationTestCompile('org.apache.logging.log4j:log4j-core::tests')
   integrationTestCompile('org.apache.logging.log4j:log4j-core::test-sources')
@@ -330,7 +325,6 @@ dependencies {
   distributedTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  distributedTestCompile('redis.clients:jedis')
   distributedTestCompile('pl.pragmatists:JUnitParams')
   distributedTestCompile('com.jayway.jsonpath:json-path-assert')
 
