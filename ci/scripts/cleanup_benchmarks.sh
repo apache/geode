@@ -51,7 +51,7 @@ else
 fi
 
 pushd geode-benchmarks/infrastructure/scripts/aws/
-./destroy_cluster.sh ${CLUSTER_TAG}
+./destroy_cluster.sh -t ${CLUSTER_TAG} --ci
 popd
 
 pushd ${RESULTS_BASE_DIR}
