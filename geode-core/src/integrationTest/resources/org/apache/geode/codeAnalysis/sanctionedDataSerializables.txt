@@ -2118,11 +2118,3 @@ org/apache/geode/pdx/internal/PdxType,2
 fromData,109
 toData,124
 
-org/apache/geode/redis/internal/ByteArrayWrapper,2
-fromData,20
-toData,9
-
-org/apache/geode/redis/internal/DoubleWrapper,2
-fromData,9
-toData,9
-

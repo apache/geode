@@ -247,7 +247,6 @@ import org.apache.geode.pdx.internal.InternalPdxInstance;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.geode.redis.GeodeRedisServer;
 
 // TODO: somebody Come up with more reasonable values for {@link #DEFAULT_LOCK_TIMEOUT}, etc.
 /**
@@ -587,11 +586,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * is specified
    */
   private GemFireMemcachedServer memcachedServer;
-
-  /**
-   * Redis server is started when {@link DistributionConfig#getRedisPort()} is set
-   */
-  private GeodeRedisServer redisServer;
 
   /**
    * {@link ExtensionPoint} support.
@@ -1169,6 +1163,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       listener.cacheCreated(this);
     }
 
+    if (isClient()) {
+      initializeClientRegionShortcuts(this);
+    } else {
+      initializeRegionShortcuts(this);
+    }
+
     // set ClassPathLoader and then deploy cluster config jars
     ClassPathLoader.setLatestToDefault(this.system.getConfig().getDeployWorkingDir());
 
@@ -1226,8 +1226,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     startColocatedJmxManagerLocator();
 
     startMemcachedServer();
-
-    startRedisServer();
 
     startRestAgentServer(this);
 
@@ -1295,25 +1293,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.memcachedServer =
           new GemFireMemcachedServer(bindAddress, port, Protocol.valueOf(protocol.toUpperCase()));
       this.memcachedServer.start();
-    }
-  }
-
-  private void startRedisServer() {
-    int port = this.system.getConfig().getRedisPort();
-    if (port != 0) {
-      String bindAddress = this.system.getConfig().getRedisBindAddress();
-      assert bindAddress != null;
-      if (bindAddress.equals(DistributionConfig.DEFAULT_REDIS_BIND_ADDRESS)) {
-        getLogger().info(
-            String.format("Starting GeodeRedisServer on port %s",
-                new Object[] {port}));
-      } else {
-        getLogger().info(
-            String.format("Starting GeodeRedisServer on bind address %s on port %s",
-                new Object[] {bindAddress, port}));
-      }
-      this.redisServer = new GeodeRedisServer(bindAddress, port);
-      this.redisServer.start();
     }
   }
 
@@ -1390,11 +1369,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     URL url = getCacheXmlURL();
     String cacheXmlDescription = this.cacheConfig.getCacheXMLDescription();
     if (url == null && cacheXmlDescription == null) {
-      if (isClient()) {
-        initializeClientRegionShortcuts(this);
-      } else {
-        initializeRegionShortcuts(this);
-      }
       initializePdxRegistry();
       readyDynamicRegionFactory();
       return; // nothing needs to be done
@@ -2204,7 +2178,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           stopMemcachedServer();
 
-          stopRedisServer();
+          this.stopServices();
 
           httpService.ifPresent(HttpService::stop);
 
@@ -2416,6 +2390,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   }
 
+  private void stopServices() {
+    for (CacheService service : this.services.values()) {
+      try {
+        service.close();
+      } catch (Throwable t) {
+        logger.warn("Error stopping service " + service, t);
+      }
+    }
+  }
+
   private void closeOffHeapEvictor() {
     OffHeapEvictor evictor = this.offHeapEvictor;
     if (evictor != null) {
@@ -2469,11 +2453,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           new Object[] {this.system.getConfig().getMemcachedPort()});
       this.memcachedServer.shutdown();
     }
-  }
-
-  private void stopRedisServer() {
-    if (this.redisServer != null)
-      this.redisServer.shutdown();
   }
 
   private void prepareDiskStoresForClose() {

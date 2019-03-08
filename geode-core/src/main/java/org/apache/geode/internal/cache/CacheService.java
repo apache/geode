@@ -43,4 +43,11 @@ public interface CacheService {
    * @return the MBean associated with this server
    */
   CacheServiceMBeanBase getMBean();
+
+  /**
+   * Close this service. Called when the cache is shutting down.
+   */
+  default void close() {
+    // do nothing
+  }
 }
