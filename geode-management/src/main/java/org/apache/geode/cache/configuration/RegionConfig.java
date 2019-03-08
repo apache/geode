@@ -175,7 +175,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
 
   @Override
   public String getEndpoint() {
-    return "/v2/regions";
+    return "/regions";
   }
 
   public RegionAttributesType getRegionAttributes() {

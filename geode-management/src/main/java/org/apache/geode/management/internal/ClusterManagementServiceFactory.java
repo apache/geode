@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
 import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.apache.geode.management.api.ClusterManagementService;
@@ -30,29 +33,14 @@ public interface ClusterManagementServiceFactory {
    */
   String getContext();
 
-  /**
-   * Create a {@code ClusterManagementService} instance. Throws an {@code IllegalStateException}
-   * if the instance cannot be created. This method would typically be used by an implementation
-   * that is able to infer the correct Cluster Management endpoint URL to use.
-   *
-   * @return an instance of the {@code ClusterManagementService}
-   */
-  ClusterManagementService create() throws IllegalStateException;
+  // plain java client side
+  ClusterManagementService create(String host, int port, SSLContext sslContext,
+      HostnameVerifier hostnameVerifier, String username, String password);
 
-  /**
-   * Create a {@code ClusterManagementService} that will use the given URL.
-   *
-   * @param clusterUrl the URL to conect to
-   * @return an instance of {@code ClusterManagementService}
-   */
-  ClusterManagementService create(String clusterUrl);
-
-  /**
-   * Create a {@code ClusterManagementService} that will use the given {@link
-   * ClientHttpRequestFactory} to establish connections with the Cluster Management endpoint.
-   *
-   * @param requestFactory the {@code ClientHttpRequestFactory} to use for new connections.
-   * @return an instance of {@code ClusterManagementService}
-   */
   ClusterManagementService create(ClientHttpRequestFactory requestFactory);
+
+  // geode server side, we can infer host and port and useSSL properties from the server side
+  ClusterManagementService create();
+
+  ClusterManagementService create(String username, String password);
 }

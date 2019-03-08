@@ -39,8 +39,7 @@ public class ClientClusterManagementServiceDunitTest {
   public static void beforeClass() {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server = cluster.startServerVM(1, locator.getPort());
-    cmsClient = ClusterManagementServiceProvider
-        .getService("http://localhost:" + locator.getHttpPort() + "/geode-management");
+    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort());
   }
 
   @Test

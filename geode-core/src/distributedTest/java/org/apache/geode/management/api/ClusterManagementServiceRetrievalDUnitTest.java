@@ -40,7 +40,8 @@ public class ClusterManagementServiceRetrievalDUnitTest {
         x -> x.withHttpService());
     server1 = cluster.startServerVM(1, locator.getPort());
 
-    final String url = String.format("http://localhost:%d", locator.getHttpPort());
+    final String url =
+        String.format("http://localhost:%d/geode-management/v2", locator.getHttpPort());
     server1.invoke(() -> {
       ClientClusterManagementService cms =
           (ClientClusterManagementService) ClusterManagementServiceProvider.getService();

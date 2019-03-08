@@ -15,8 +15,19 @@
 
 package org.apache.geode.management.internal;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriTemplateHandler;
@@ -54,34 +65,58 @@ public class ClientClusterManagementService implements ClusterManagementService 
     restTemplate.setErrorHandler(DEFAULT_ERROR_HANDLER);
   }
 
+  public ClientClusterManagementService(String host, int port, SSLContext sslContext,
+      HostnameVerifier hostnameVerifier, String username, String password) {
+    this();
+
+    DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
+    String schema = (sslContext == null) ? "http" : "https";
+    templateHandler.setBaseUrl(schema + "://" + host + ":" + port + "/geode-management/v2");
+    restTemplate.setUriTemplateHandler(templateHandler);
+
+    // HttpComponentsClientHttpRequestFactory allows use to preconfigure httpClient for
+    // authentication and ssl context
+    HttpComponentsClientHttpRequestFactory requestFactory =
+        new HttpComponentsClientHttpRequestFactory();
+
+    HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+    // configures the clientBuilder
+    if (username != null) {
+      CredentialsProvider credsProvider = new BasicCredentialsProvider();
+      credsProvider.setCredentials(new AuthScope(host, port),
+          new UsernamePasswordCredentials(username, password));
+      clientBuilder.setDefaultCredentialsProvider(credsProvider);
+    }
+
+    clientBuilder.setSSLContext(sslContext);
+    clientBuilder.setSSLHostnameVerifier(hostnameVerifier);
+
+    requestFactory.setHttpClient(clientBuilder.build());
+    restTemplate.setRequestFactory(requestFactory);
+  }
+
   public ClientClusterManagementService(ClientHttpRequestFactory requestFactory) {
     this();
     this.restTemplate.setRequestFactory(requestFactory);
   }
 
-  public ClientClusterManagementService(String clusterUrl) {
-    this();
-    DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
-    templateHandler.setBaseUrl(clusterUrl);
-    restTemplate.setUriTemplateHandler(templateHandler);
-  }
-
   @Override
   public ClusterManagementResult create(CacheElement config, String group) {
     String endPoint = getEndpoint(config);
-
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
-    return restTemplate.postForEntity(endPoint, config, ClusterManagementResult.class).getBody();
+    return restTemplate.postForObject(endPoint, config, ClusterManagementResult.class);
   }
 
   @Override
   public ClusterManagementResult delete(CacheElement config, String group) {
-    throw new NotImplementedException("Not implemented");
+    throw new NotImplementedException("Not Implemented");
   }
 
   @Override
   public ClusterManagementResult update(CacheElement config, String group) {
-    throw new NotImplementedException("Not implemented");
+    throw new NotImplementedException("Not Implemented");
   }
 
   public RestTemplate getRestTemplate() {
@@ -97,4 +132,5 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
     return ((RestfulEndpoint) config).getEndpoint();
   }
+
 }

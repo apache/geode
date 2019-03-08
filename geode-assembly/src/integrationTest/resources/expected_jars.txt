@@ -25,6 +25,8 @@ geo
 gfsh-dependencies.jar
 grumpy-core
 guava
+httpclient
+httpcore
 istack-commons-runtime
 j2objc-annotations
 jackson-annotations

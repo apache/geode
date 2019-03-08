@@ -17,5 +17,10 @@ package org.apache.geode.management.api;
 
 public interface RestfulEndpoint {
 
+  /**
+   * this needs to return the uri portion after the /geode-management/v2
+   *
+   * @return e.g. /regions
+   */
   String getEndpoint();
 }

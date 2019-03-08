@@ -18,7 +18,11 @@ package org.apache.geode.management.internal.api;
 import java.util.List;
 import java.util.Set;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
@@ -31,13 +35,16 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
-import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.management.internal.ClusterManagementServiceFactory;
 import org.apache.geode.management.internal.JavaClientClusterManagementServiceFactory;
+import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 
@@ -47,8 +54,8 @@ import org.apache.geode.management.internal.cli.functions.GetMemberInformationFu
  * address of the {@code ClusterManagementService} when using the {@code create()} call. Otherwise
  * an explicit can also be used.
  */
-public class GeodeClusterManagementServiceFactory extends
-    JavaClientClusterManagementServiceFactory {
+public class GeodeClusterManagementServiceFactory
+    extends JavaClientClusterManagementServiceFactory {
 
   @Immutable
   private static final GetMemberInformationFunction MEMBER_INFORMATION_FUNCTION =
@@ -61,8 +68,12 @@ public class GeodeClusterManagementServiceFactory extends
     return ClusterManagementServiceProvider.GEODE_CONTEXT;
   }
 
+  public ClusterManagementService create() {
+    return create(null, null);
+  }
+
   @Override
-  public ClusterManagementService create() throws IllegalStateException {
+  public ClusterManagementService create(String username, String password) {
     if (InternalLocator.getLocator() != null) {
       return InternalLocator.getLocator().getClusterManagementService();
     }
@@ -74,45 +85,52 @@ public class GeodeClusterManagementServiceFactory extends
       Set<InternalDistributedMember> locatorsWithClusterConfig =
           cacheImpl.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration()
               .keySet();
-      String serviceAddress = getHttpServiceAddress(locatorsWithClusterConfig);
 
-      return new ClientClusterManagementService(serviceAddress);
+      MemberInformation memberInformation = getHttpServiceAddress(locatorsWithClusterConfig);
+
+      SSLContext sslContext = null;
+      HostnameVerifier hostnameVerifier = null;
+      if (memberInformation.isSsl()) {
+        SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+            ((GemFireCacheImpl) cache).getSystem().getConfig(), SecurableCommunicationChannel.WEB);
+        if (sslConfig.getTruststore() == null) {
+          throw new IllegalStateException(
+              "The server needs to have truststore specified in order to use cluster management service.");
+        }
+
+        sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
+        hostnameVerifier = new NoopHostnameVerifier();
+      }
+
+      return create(getHostName(memberInformation), memberInformation.getHttpServicePort(),
+          sslContext, hostnameVerifier, username, password);
     }
 
     ClientCache clientCache = ClientCacheFactory.getAnyInstance();
     if (clientCache != null) {
       throw new IllegalStateException(
-          "Under construction. To retrieve an instance of ClusterManagementService from a Geode client, please use either create(clusterUrl) or create(requestFactory) methods");
+          "Under construction. To retrieve an instance of ClusterManagementService from a Geode client, please use other methods");
     }
     // } catch( CacheClosedException e) {
     throw new IllegalStateException("ClusterManagementService.create() " +
         "must be executed on one of locator, server or client cache VMs");
   }
 
-  private String getHttpServiceAddress(Set<InternalDistributedMember> locators) {
-    for (InternalDistributedMember locator : locators) {
 
+  private MemberInformation getHttpServiceAddress(Set<InternalDistributedMember> locators) {
+    for (InternalDistributedMember locator : locators) {
       try {
         ResultCollector resultCollector =
             FunctionService.onMember(locator).execute(MEMBER_INFORMATION_FUNCTION);
-        List<MemberInformation> memberInformation =
+        List<MemberInformation> memberInformations =
             (List<MemberInformation>) resultCollector.getResult();
         // Is this even possible?
-        if (memberInformation.isEmpty()) {
+        if (memberInformations.isEmpty()) {
           continue;
         }
 
-        // What address to use
-        String host;
-        if (StringUtils.isNotBlank(memberInformation.get(0).getHttpServiceBindAddress())) {
-          host = memberInformation.get(0).getHttpServiceBindAddress();
-        } else if (StringUtils.isNotBlank(memberInformation.get(0).getServerBindAddress())) {
-          host = memberInformation.get(0).getServerBindAddress();
-        } else {
-          host = memberInformation.get(0).getHost();
-        }
-
-        return String.format("http://%s:%d", host, memberInformation.get(0).getHttpServicePort());
+        // return the first available one. Later for HA, we can return the entire list
+        return memberInformations.get(0);
       } catch (FunctionException e) {
         logger.warn("Unable to execute GetMemberInformationFunction on " + locator.getId());
         throw new IllegalStateException(e);
@@ -120,5 +138,17 @@ public class GeodeClusterManagementServiceFactory extends
     }
 
     throw new IllegalStateException("Unable to determine ClusterManagementService endpoint");
+  }
+
+  private String getHostName(MemberInformation memberInformation) {
+    String host;
+    if (StringUtils.isNotBlank(memberInformation.getHttpServiceBindAddress())) {
+      host = memberInformation.getHttpServiceBindAddress();
+    } else if (StringUtils.isNotBlank(memberInformation.getServerBindAddress())) {
+      host = memberInformation.getServerBindAddress();
+    } else {
+      host = memberInformation.getHost();
+    }
+    return host;
   }
 }
