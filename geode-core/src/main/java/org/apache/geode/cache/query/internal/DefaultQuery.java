@@ -110,7 +110,7 @@ public class DefaultQuery implements Query {
    */
   public static final Object NULL_RESULT = new Object();
 
-  private volatile CacheRuntimeException queryCancelledException;
+  private ThreadLocal<CacheRuntimeException> queryCancelledException;
 
   private ProxyCache proxyCache;
 
@@ -479,6 +479,7 @@ public class DefaultQuery implements Query {
       pdxClassToMethodsMap.remove();
       queryCanceled.remove();
       cancelationTask.remove();
+      queryCancelledException.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -716,14 +717,14 @@ public class DefaultQuery implements Query {
   }
 
   public CacheRuntimeException getQueryCanceledException() {
-    return queryCancelledException;
+    return queryCancelledException.get();
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
   public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
-    this.queryCancelledException = queryCanceledException;
+    this.queryCancelledException.set(queryCanceledException);
   }
 
   public void setIsCqQuery(boolean isCqQuery) {
