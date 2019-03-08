@@ -560,7 +560,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
             --connectionCount;
           }
         } else {
-          availableConnections.addFirst(pooledConn);
+          availableConnections.addLast(pooledConn);
           freeConnection.signalAll();
         }
       }
@@ -766,7 +766,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
                   connectionCount);
             }
           } else {
-            availableConnections.addFirst(connection);
+            availableConnections.addLast(connection);
             freeConnection.signalAll();
             if (logger.isDebugEnabled()) {
               logger.debug("Prefilled connection {} connection count is now {}", connection,
