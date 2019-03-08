@@ -63,7 +63,7 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.BeanUtilFuncs;
-import org.apache.geode.management.internal.cli.json.TypedJson;
+import org.apache.geode.management.internal.beans.QueryDataFunction;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -237,7 +237,7 @@ public class QueryDataDUnitTest implements Serializable {
 
       // Query With Default values
       assertThat(distributedSystemMXBean.getQueryCollectionsDepth())
-          .isEqualTo(TypedJson.DEFAULT_COLLECTION_ELEMENT_LIMIT);
+          .isEqualTo(QueryDataFunction.DEFAULT_COLLECTION_ELEMENT_LIMIT);
       assertThat(distributedSystemMXBean.getQueryResultSetLimit()).isEqualTo(DEFAULT_QUERY_LIMIT);
 
       String jsonString = distributedSystemMXBean.queryData(QUERIES_FOR_LIMIT[0], null, 0);

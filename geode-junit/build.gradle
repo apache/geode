@@ -23,27 +23,28 @@ dependencies {
 
   compileOnly(project(':geode-core'))
 
+  compile('com.fasterxml.jackson.core:jackson-annotations')
+  compile('com.fasterxml.jackson.core:jackson-databind')
   compile('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
-  compile('com.jayway.jsonpath:json-path')
-  compile('org.assertj:assertj-core')
-  compile('commons-io:commons-io')
-  compile('org.apache.commons:commons-lang3')
   compile('com.google.guava:guava')
-  compile('org.mockito:mockito-core')
-  compile('org.awaitility:awaitility')
-  compile('org.apache.logging.log4j:log4j-api')
-  compile('org.apache.logging.log4j:log4j-core')
+  compile('com.jayway.jsonpath:json-path')
+  compile('commons-io:commons-io')
   compile('junit:junit') {
     exclude module: 'hamcrest-core'
   }
+  compile('org.apache.commons:commons-lang3')
+  compile('org.apache.logging.log4j:log4j-api')
+  compile('org.apache.logging.log4j:log4j-core')
+  compile('org.assertj:assertj-core')
+  compile('org.awaitility:awaitility')
+  compile('org.bouncycastle:bcpkix-jdk15on')
   compile('org.hamcrest:hamcrest-all')
+  compile('org.mockito:mockito-core')
   compile('org.skyscreamer:jsonassert') {
     exclude module: 'android-json'
   }
-
-  compile('org.bouncycastle:bcpkix-jdk15on')
 
   testCompile('pl.pragmatists:JUnitParams')
 

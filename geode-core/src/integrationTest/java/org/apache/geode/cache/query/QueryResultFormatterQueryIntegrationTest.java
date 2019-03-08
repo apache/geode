@@ -24,21 +24,21 @@ import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.json.TypedJson;
-import org.apache.geode.management.internal.cli.json.TypedJsonPdxIntegrationTest;
+import org.apache.geode.management.internal.cli.json.QueryResultFormatter;
+import org.apache.geode.management.internal.cli.json.QueryResultFormatterPdxIntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
- * Integration tests for {@link TypedJson} querying {@link Portfolio}.
+ * Integration tests for {@link QueryResultFormatter} querying {@link Portfolio}.
  * <p>
  *
- * Extracted from {@link TypedJsonPdxIntegrationTest}.
+ * Extracted from {@link QueryResultFormatterPdxIntegrationTest}.
  * <p>
  *
  * TODO: add real assertions
  */
 @Category({OQLQueryTest.class})
-public class TypedJsonQueryIntegrationTest {
+public class QueryResultFormatterQueryIntegrationTest {
 
   private static final String RESULT = "result";
 
@@ -46,18 +46,19 @@ public class TypedJsonQueryIntegrationTest {
   public void testUserObject() throws Exception {
     Portfolio p = new Portfolio(2);
 
-    TypedJson typedJson = new TypedJson(RESULT, p);
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, p);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
   public void testUserObjectArray() throws Exception {
     Portfolio[] portfolios = createPortfoliosAndPositions(2);
 
-    TypedJson typedJson = new TypedJson(RESULT, portfolios);
+    QueryResultFormatter queryResultFormatter =
+        new QueryResultFormatter(100).add(RESULT, portfolios);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
@@ -65,24 +66,25 @@ public class TypedJsonQueryIntegrationTest {
     Portfolio[] portfolios = createPortfoliosAndPositions(1000);
     System.out.println("Size Of port " + ObjectSizer.REFLECTION_SIZE.sizeof(portfolios));
 
-    TypedJson typedJson = new TypedJson(RESULT, portfolios);
-    System.out.println("Size Of json " + ObjectSizer.REFLECTION_SIZE.sizeof(typedJson));
+    QueryResultFormatter queryResultFormatter =
+        new QueryResultFormatter(100).add(RESULT, portfolios);
+    System.out.println("Size Of json " + ObjectSizer.REFLECTION_SIZE.sizeof(queryResultFormatter));
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
   public void testQueryLike() throws Exception {
     Portfolio[] portfolios = createPortfoliosAndPositions(2);
 
-    TypedJson typedJson = new TypedJson(RESULT, null);
-    typedJson.add("member", "server1");
-    // checkResult(typedJson); -- fails
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, null);
+    queryResultFormatter.add("member", "server1");
+    // checkResult(queryResultFormatter); -- fails
 
     for (int i = 0; i < 2; i++) {
-      typedJson.add(RESULT, portfolios[i]);
+      queryResultFormatter.add(RESULT, portfolios[i]);
     }
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   private Portfolio[] createPortfoliosAndPositions(final int count) {
@@ -94,8 +96,8 @@ public class TypedJsonQueryIntegrationTest {
     return portfolios;
   }
 
-  private void checkResult(final TypedJson typedJson) throws GfJsonException {
-    GfJsonObject gfJsonObject = new GfJsonObject(typedJson.toString());
+  private void checkResult(final QueryResultFormatter queryResultFormatter) throws GfJsonException {
+    GfJsonObject gfJsonObject = new GfJsonObject(queryResultFormatter.toString());
     System.out.println(gfJsonObject);
     assertThat(gfJsonObject.get(RESULT)).isNotNull();
   }

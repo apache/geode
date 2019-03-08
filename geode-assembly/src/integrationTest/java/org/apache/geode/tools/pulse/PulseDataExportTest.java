@@ -57,6 +57,6 @@ public class PulseDataExportTest {
             .hasStatusCode(200)
             .hasResponseBody()
             .isEqualToIgnoringWhitespace(
-                "{\"result\":[[\"java.lang.String\",\"value1\"],[\"java.lang.String\",\"value2\"],[\"java.lang.String\",\"value3\"]]}");
+                "{\"result\":[\"value1\",\"value2\",\"value3\"]}");
   }
 }

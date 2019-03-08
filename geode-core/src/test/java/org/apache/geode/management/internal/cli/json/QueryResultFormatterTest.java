@@ -19,7 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,25 +28,18 @@ import java.util.Map;
 import org.junit.Test;
 
 
-/**
- * Extracted from {@link TypedJsonPdxIntegrationTest}.
- * <p>
- *
- * TODO: add actual assertions
- */
-public class TypedJsonTest {
+public class QueryResultFormatterTest {
 
   private static final String RESULT = "result";
 
   @Test
   public void canBeMocked() throws Exception {
-    TypedJson mockTypedJson = mock(TypedJson.class);
-    Writer writer = null;
+    QueryResultFormatter mockQueryResultFormatter = mock(QueryResultFormatter.class);
     Object value = new Object();
 
-    mockTypedJson.writeVal(writer, value);
+    mockQueryResultFormatter.add("key", value);
 
-    verify(mockTypedJson, times(1)).writeVal(writer, value);
+    verify(mockQueryResultFormatter, times(1)).add("key", value);
   }
 
   @Test
@@ -57,9 +49,9 @@ public class TypedJsonTest {
     list.add("TWO");
     list.add("THREE");
 
-    TypedJson typedJson = new TypedJson(RESULT, list);
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, list);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
@@ -69,9 +61,9 @@ public class TypedJsonTest {
       intArray[i] = i;
     }
 
-    TypedJson typedJson = new TypedJson(RESULT, intArray);
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, intArray);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
@@ -81,25 +73,27 @@ public class TypedJsonTest {
       list.add("BIG_COLL_" + i);
     }
 
-    TypedJson typedJson = new TypedJson(RESULT, list);
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, list);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
   public void testEnumContainer() throws Exception {
     EnumContainer enumContainer = new EnumContainer(Currency.DIME);
 
-    TypedJson typedJson = new TypedJson(RESULT, enumContainer);
+    QueryResultFormatter queryResultFormatter =
+        new QueryResultFormatter(100).add(RESULT, enumContainer);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
   public void testEnum() throws Exception {
-    TypedJson typedJson = new TypedJson(RESULT, Currency.DIME);
+    QueryResultFormatter queryResultFormatter =
+        new QueryResultFormatter(100).add(RESULT, Currency.DIME);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
@@ -110,9 +104,9 @@ public class TypedJsonTest {
     list.add(Currency.QUARTER);
     list.add(Currency.NICKLE);
 
-    TypedJson typedJson = new TypedJson(RESULT, list);
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, list);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
@@ -123,38 +117,40 @@ public class TypedJsonTest {
     map.put("3", "THREE");
     map.put("4", "FOUR");
 
-    TypedJson typedJson = new TypedJson(RESULT, map);
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, map);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
   public void testBigDecimal() throws Exception {
     BigDecimal dc = new BigDecimal(20);
 
-    TypedJson typedJson = new TypedJson(RESULT, dc);
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100).add(RESULT, dc);
 
-    checkResult(typedJson);
+    checkResult(queryResultFormatter);
   }
 
   @Test
   public void testObjects() throws Exception {
     Object object = new Object();
 
-    TypedJson typedJson = new TypedJson(RESULT, object);
-
-    checkResult(typedJson);
+    QueryResultFormatter queryResultFormatter = new QueryResultFormatter(100);
+    queryResultFormatter.add(RESULT, object);
+    checkResult(queryResultFormatter);
   }
 
-  private void checkResult(final TypedJson typedJson) throws GfJsonException {
-    GfJsonObject gfJsonObject = new GfJsonObject(typedJson.toString());
-    System.out.println(gfJsonObject);
+  private void checkResult(final QueryResultFormatter queryResultFormatter) throws GfJsonException {
+    String jsonString = queryResultFormatter.toString();
+    System.out.println("queryResultFormatter.toString=" + jsonString);
+    GfJsonObject gfJsonObject = new GfJsonObject(jsonString);
+    System.out.println("gfJsonObject=" + gfJsonObject);
     assertThat(gfJsonObject.get(RESULT)).isNotNull();
   }
 
   private enum Currency {
     PENNY, NICKLE, DIME, QUARTER
-  };
+  }
 
   private static class EnumContainer {
 

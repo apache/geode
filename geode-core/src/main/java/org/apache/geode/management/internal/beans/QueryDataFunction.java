@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.cli.json.TypedJson;
+import org.apache.geode.management.internal.cli.json.QueryResultFormatter;
 
 /**
  * This function is executed on one or multiple members based on the member input to
@@ -55,6 +55,11 @@ public class QueryDataFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
 
   private static final Logger logger = LogService.getLogger();
+
+  /**
+   * Limit of collection length to be serialized in JSON format.
+   */
+  public static final int DEFAULT_COLLECTION_ELEMENT_LIMIT = 100;
 
   private static final String MEMBER_KEY = "member";
   private static final String RESULT_KEY = "result";
@@ -113,7 +118,7 @@ public class QueryDataFunction implements Function, InternalEntity {
     queryString = applyLimitClause(queryString, limit, queryResultSetLimit);
 
     try {
-      TypedJson result = new TypedJson(queryCollectionsDepth);
+      QueryResultFormatter result = new QueryResultFormatter(queryCollectionsDepth);
 
       Region region = cache.getRegion(regionName);
 

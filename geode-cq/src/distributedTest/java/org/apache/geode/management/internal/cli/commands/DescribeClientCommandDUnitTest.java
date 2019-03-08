@@ -18,8 +18,10 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
@@ -120,7 +122,11 @@ public class DescribeClientCommandDUnitTest {
         .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(3).getActual();
-    String server1Id = listMemberTable.getValue("Id", 1);
+
+    // get the list of server ids (member ids without the locator id)
+    List<String> serverIds = listMemberTable.getValuesInColumn("Id")
+        .stream().filter(x -> !x.contains("Coordinator"))
+        .collect(Collectors.toList());
 
     TabularResultModel listClientsTable = gfsh.executeAndAssertThat("list clients")
         .statusIsSuccess()
@@ -149,7 +155,7 @@ public class DescribeClientCommandDUnitTest {
       assertThat(Integer.parseInt(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE)))
           .isGreaterThan(0);
       assertThat(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_PRIMARY_SERVERS))
-          .isEqualTo(server1Id);
+          .isIn(serverIds.toArray());
     } else {
       assertThat(describeClientTable.getValue(CliStrings.DESCRIBE_CLIENT_CQs, 0)).isEqualTo("1");
       assertThat(dataResult.get(CliStrings.DESCRIBE_CLIENT_COLUMN_QUEUE_SIZE)).isEqualTo("0");

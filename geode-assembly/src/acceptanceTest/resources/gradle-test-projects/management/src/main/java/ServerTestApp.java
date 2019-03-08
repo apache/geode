@@ -12,19 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.util.internal;
 
-public final class MappingConstants {
-  public static final String REGION_NAME = "region";
-  public static final String PDX_NAME = "pdx-name";
-  public static final String TABLE_NAME = "table";
-  public static final String DATA_SOURCE_NAME = "data-source";
-  public static final String SYNCHRONOUS_NAME = "synchronous";
-  public static final String ID_NAME = "id";
-  public static final String SCHEMA_NAME = "schema";
-  public static final String CATALOG_NAME = "catalog";
-  public static final String GROUP_NAME = "groups";
-  public static final String PDX_CLASS_FILE = "pdx-class-file";
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
 
-  private MappingConstants() {}
+public class ServerTestApp {
+  public static void main(String[] args) throws Exception {
+    Cache cache = new CacheFactory()
+        .set("start-dev-rest-api", "true")
+        .create();
+    cache.createRegionFactory(RegionShortcut.REPLICATE).create("REGION1");
+  }
 }

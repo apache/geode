@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -609,7 +610,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
 
-  private HttpService httpService;
+  private Optional<HttpService> httpService = Optional.ofNullable(null);
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
@@ -933,9 +934,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
       backupService = new BackupService(this);
       if (!this.isClient) {
-        httpService = new HttpService(systemConfig.getHttpServiceBindAddress(),
-            systemConfig.getHttpServicePort(), SSLConfigurationFactory
-                .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB));
+        try {
+          httpService = Optional.of(new HttpService(systemConfig.getHttpServiceBindAddress(),
+              systemConfig.getHttpServicePort(), SSLConfigurationFactory
+                  .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB)));
+        } catch (Throwable ex) {
+          logger.warn("Could not enable HttpService: {}", ex.getMessage());
+        }
       }
     } // synchronized
   }
@@ -947,7 +952,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public HttpService getHttpService() {
+  public Optional<HttpService> getHttpService() {
     return httpService;
   }
 
@@ -2193,9 +2198,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           stopRedisServer();
 
-          if (httpService != null) {
-            httpService.stop();
-          }
+          httpService.ifPresent(HttpService::stop);
 
           // no need to track PR instances since we won't create any more
           // cacheServers or gatewayHubs
