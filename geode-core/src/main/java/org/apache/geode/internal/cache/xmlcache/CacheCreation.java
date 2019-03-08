@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -2437,7 +2438,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public HttpService getHttpService() {
+  public Optional<HttpService> getHttpService() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 }

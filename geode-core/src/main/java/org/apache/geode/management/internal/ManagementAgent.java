@@ -196,7 +196,9 @@ public class ManagementAgent {
     }
 
     try {
-      if (agentUtil.isAnyWarFileAvailable(adminRestWar, pulseWar)) {
+      if (cache.getHttpService().isPresent()
+          && agentUtil.isAnyWarFileAvailable(adminRestWar, pulseWar)) {
+        HttpService httpService = cache.getHttpService().get();
 
         final String bindAddress = this.config.getHttpServiceBindAddress();
         final int port = this.config.getHttpServicePort();
@@ -208,7 +210,6 @@ public class ManagementAgent {
             new ImmutablePair<>(HttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
                 createSslProps());
 
-        HttpService httpService = cache.getHttpService();
         // if jmx manager is running, admin rest should be available, either on locator or server
         if (agentUtil.isAnyWarFileAvailable(adminRestWar)) {
           httpService.addWebApplication("/gemfire", adminRestWar, securityServiceAttr);
@@ -234,7 +235,7 @@ public class ManagementAgent {
               .concat(String.valueOf(port)).concat("/pulse/"));
         }
       }
-    } catch (Exception e) {
+    } catch (Throwable e) {
       setStatusMessage(managerBean, "HTTP service failed to start with "
           + e.getClass().getSimpleName() + " '" + e.getMessage() + "'");
       throw new ManagementException("HTTP service failed to start", e);
