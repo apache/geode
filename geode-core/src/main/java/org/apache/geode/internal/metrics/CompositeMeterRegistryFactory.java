@@ -20,8 +20,7 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.geode.annotations.VisibleForTesting;
 
 /**
- * Creates {@code CompositeMeterRegistry} and configures commonTags for {@code "ClusterId"} and
- * {@code "MemberName"}.
+ * Creates {@code CompositeMeterRegistry} and configures commonTags.
  */
 public interface CompositeMeterRegistryFactory {
 
