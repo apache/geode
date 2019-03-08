@@ -1485,8 +1485,8 @@ public class InitialImageOperation {
         logger.debug("RequestImageMessage: attempting to get region reference for {}, initLevel={}",
             regionPath, initLevel);
       }
-      InternalCache cache = dm.getCache();
-      lclRgn = cache == null ? null : (LocalRegion) cache.getRegionByPath(regionPath);
+      InternalCache cache = dm.getExistingCache();
+      lclRgn = cache == null ? null : (LocalRegion) cache.getRegion(regionPath);
       // if this is a targeted getInitialImage after a region was initialized,
       // make sure this is the region that was reinitialized.
       if (lclRgn != null && !lclRgn.isUsedForPartitionedRegionBucket() && targetReinitialized
@@ -1875,9 +1875,7 @@ public class InitialImageOperation {
           if (thr != null) {
             rex = new ReplyException(thr);
           }
-          // null chunk signals receiver that we are aborting
-          ImageReplyMessage.send(getSender(), processorId, rex, dm, null, 0, 0, 1, true, 0, false,
-              null, null);
+          sendFailureMessage(dm, rex);
         } // !success
 
         if (internalAfterSentImageReply != null
@@ -1885,6 +1883,12 @@ public class InitialImageOperation {
           internalAfterSentImageReply.run();
         }
       }
+    }
+
+    void sendFailureMessage(ClusterDistributionManager dm, ReplyException rex) {
+      // null chunk signals receiver that we are aborting
+      ImageReplyMessage.send(getSender(), processorId, rex, dm, null, 0, 0, 1, true, 0, false,
+          null, null);
     }
 
 
