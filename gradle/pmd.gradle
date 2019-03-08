@@ -17,11 +17,11 @@
 apply plugin: 'pmd'
 pmd {
   sourceSets = [sourceSets.main]
-  ruleSetFiles = files("${project.projectDir}/../static-analysis/pmd/src/main/resources/geodepmd.xml")
+  ruleSetFiles = files("${project.projectDir}/../static-analysis/pmd-rules/src/main/resources/geodepmd.xml")
   ruleSets = []
 }
 dependencies {
-  pmd  project(":static-analysis:pmd")
+  pmd  project(":static-analysis:pmd-rules")
 }
 
 pmdMain {
