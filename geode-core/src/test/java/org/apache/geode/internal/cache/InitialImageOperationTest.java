@@ -15,12 +15,16 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 
@@ -39,8 +43,8 @@ public class InitialImageOperationTest {
     dm = mock(ClusterDistributionManager.class);
     region = mock(LocalRegion.class);
 
-    when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(path)).thenReturn(region);
+    when(dm.getExistingCache()).thenReturn(cache);
+    when(cache.getRegion(path)).thenReturn(region);
     when(region.isInitialized()).thenReturn(true);
     when(region.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
   }
@@ -49,5 +53,17 @@ public class InitialImageOperationTest {
   public void getsRegionFromCacheFromDM() {
     LocalRegion value = InitialImageOperation.getGIIRegion(dm, path, false);
     assertThat(value).isSameAs(region);
+  }
+
+  @Test
+  public void processRequestImageMessageWillSendFailureMessageIfGotCancelException() {
+    InitialImageOperation.RequestImageMessage message =
+        spy(new InitialImageOperation.RequestImageMessage());
+    message.regionPath = "regionPath";
+    when(dm.getExistingCache()).thenThrow(new CacheClosedException());
+
+    message.process(dm);
+
+    verify(message).sendFailureMessage(eq(dm), eq(null));
   }
 }
