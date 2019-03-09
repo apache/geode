@@ -44,7 +44,6 @@ public class SqlHandler {
   private final DataSource dataSource;
   private final TableMetaDataView tableMetaData;
   private final Map<String, FieldMapping> pdxToFieldMappings = new HashMap<>();
-  private final Map<String, FieldMapping> jdbcToFieldMappings = new HashMap<>();
   private volatile SqlToPdxInstance sqlToPdxInstance;
 
   public SqlHandler(InternalCache cache, String regionName,
@@ -96,38 +95,16 @@ public class SqlHandler {
 
   private void initializeFieldMappingMaps() {
     for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
-      this.jdbcToFieldMappings.put(fieldMapping.getJdbcName(), fieldMapping);
-      if (!fieldMapping.getPdxName().isEmpty()) {
-        this.pdxToFieldMappings.put(fieldMapping.getPdxName(), fieldMapping);
-      }
+      this.pdxToFieldMappings.put(fieldMapping.getPdxName(), fieldMapping);
     }
   }
 
   private String getColumnNameForField(String fieldName) {
-    FieldMapping exactMatch = this.pdxToFieldMappings.get(fieldName);
-    if (exactMatch != null) {
-      return exactMatch.getJdbcName();
+    FieldMapping match = this.pdxToFieldMappings.get(fieldName);
+    if (match != null) {
+      return match.getJdbcName();
     }
-    exactMatch = this.jdbcToFieldMappings.get(fieldName);
-    if (exactMatch != null) {
-      this.pdxToFieldMappings.put(fieldName, exactMatch);
-      return exactMatch.getJdbcName();
-    }
-    FieldMapping inexactMatch = null;
-    for (FieldMapping fieldMapping : regionMapping.getFieldMappings()) {
-      if (fieldMapping.getJdbcName().equalsIgnoreCase(fieldName)) {
-        if (inexactMatch != null) {
-          throw new JdbcConnectorException(
-              "Multiple columns matched the pdx field \"" + fieldName + "\".");
-        }
-        inexactMatch = fieldMapping;
-      }
-    }
-    if (inexactMatch == null) {
-      throw new JdbcConnectorException("No column matched the pdx field \"" + fieldName + "\".");
-    }
-    this.pdxToFieldMappings.put(fieldName, inexactMatch);
-    return inexactMatch.getJdbcName();
+    return null;
   }
 
   Connection getConnection() throws SQLException {
@@ -338,7 +315,7 @@ public class SqlHandler {
       }
       for (String fieldName : fieldNames) {
         String columnName = getColumnNameForField(fieldName);
-        if (!keyColumnNames.contains(columnName)) {
+        if (columnName == null || !keyColumnNames.contains(columnName)) {
           throw new JdbcConnectorException("The key \"" + key + "\" has the field \"" + fieldName
               + "\" which does not match any of the key columns: " + keyColumnNames);
         }
@@ -355,6 +332,11 @@ public class SqlHandler {
     List<ColumnData> result = new ArrayList<>();
     for (String fieldName : value.getFieldNames()) {
       String columnName = getColumnNameForField(fieldName);
+      if (columnName == null) {
+        // The user must have added a new field to their pdx domain class.
+        // To support PDX class versioning we will ignore this field.
+        continue;
+      }
       if (tableMetaData.getKeyColumnNames().contains(columnName)) {
         continue;
       }

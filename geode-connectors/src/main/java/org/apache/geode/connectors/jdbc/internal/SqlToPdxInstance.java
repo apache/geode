@@ -80,9 +80,9 @@ public class SqlToPdxInstance {
       String columnName = metaData.getColumnName(i);
       PdxFieldInfo fieldInfo = this.columnToPdxFieldMap.get(columnName);
       if (fieldInfo == null) {
-        // TODO: this column was added since create jdbc-mapping was done.
-        // Log a warning, once, and just ignore this column
-        continue;
+        throw new JdbcConnectorException(
+            "The jdbc-mapping does not contain the column name \"" + columnName + "\"."
+                + " This is probably caused by a column being added to the table after the jdbc-mapping was created.");
       }
       Object fieldValue = getFieldValue(resultSet, i, fieldInfo.getType(), metaData);
       result.setField(fieldInfo.getName(), fieldValue);

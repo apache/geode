@@ -118,12 +118,12 @@ public class SqlToPdxInstanceTest {
     when(resultSet.getString(1)).thenReturn("column1");
     when(resultSet.getString(2)).thenReturn("column2");
     sqlToPdxInstance.addMapping(COLUMN_NAME_2, PDX_FIELD_NAME_2, FieldType.STRING);
+    thrown.expect(JdbcConnectorException.class);
+    thrown.expectMessage("The jdbc-mapping does not contain the column name \""
+        + COLUMN_NAME_1
+        + "\". This is probably caused by a column being added to the table after the jdbc-mapping was created.");
 
-    PdxInstance result = createPdxInstance();
-
-    assertThat(result).isSameAs(writablePdxInstance);
-    verify((WritablePdxInstance) result).setField(PDX_FIELD_NAME_2, "column2");
-    verifyNoMoreInteractions(result);
+    createPdxInstance();
   }
 
   @Test
@@ -318,6 +318,10 @@ public class SqlToPdxInstanceTest {
 
   @Test
   public void throwsExceptionIfMoreThanOneResultReturned() throws Exception {
+    when(metaData.getColumnCount()).thenReturn(2);
+    when(metaData.getColumnName(2)).thenReturn(COLUMN_NAME_2);
+    sqlToPdxInstance.addMapping(COLUMN_NAME_1, PDX_FIELD_NAME_1, FieldType.STRING);
+    sqlToPdxInstance.addMapping(COLUMN_NAME_2, PDX_FIELD_NAME_2, FieldType.STRING);
     when(resultSet.next()).thenReturn(true);
     thrown.expect(JdbcConnectorException.class);
     thrown.expectMessage("Multiple rows returned for query: ");
