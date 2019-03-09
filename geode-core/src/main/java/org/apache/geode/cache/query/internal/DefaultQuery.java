@@ -82,9 +82,14 @@ public class DefaultQuery implements Query {
 
   private final QueryStatistics stats;
 
+  private boolean traceOn = false;
+
   private final ThreadLocal<Optional<ScheduledFuture>> cancelationTask;
 
-  private boolean traceOn = false;
+  private final ThreadLocal<CacheRuntimeException> queryCancelledException;
+
+  static final ThreadLocal<AtomicBoolean> queryCanceled =
+      ThreadLocal.withInitial(AtomicBoolean::new);
 
   @Immutable
   private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -109,8 +114,6 @@ public class DefaultQuery implements Query {
    * blocking queue.
    */
   public static final Object NULL_RESULT = new Object();
-
-  private ThreadLocal<CacheRuntimeException> queryCancelledException;
 
   private ProxyCache proxyCache;
 
@@ -155,9 +158,6 @@ public class DefaultQuery implements Query {
   private static final ThreadLocal<Map<String, Set<String>>> pdxClassToMethodsMap =
       ThreadLocal.withInitial(HashMap::new);
 
-  static final ThreadLocal<AtomicBoolean> queryCanceled =
-      ThreadLocal.withInitial(AtomicBoolean::new);
-
   public static void setPdxClasstoMethodsmap(Map<String, Set<String>> map) {
     pdxClassToMethodsMap.set(map);
   }
@@ -196,6 +196,7 @@ public class DefaultQuery implements Query {
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
     this.cancelationTask = ThreadLocal.withInitial(Optional::empty);
+    this.queryCancelledException = new ThreadLocal<>();
   }
 
   /**
