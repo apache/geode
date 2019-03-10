@@ -213,7 +213,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   @Override
   public Connection borrowConnection(long acquireTimeout)
       throws AllConnectionsInUseException, NoAvailableServersException {
-    long waitStart = 0;
+    long waitStart = -1;
     try {
       long timeout = System.currentTimeMillis() + acquireTimeout;
       while (System.currentTimeMillis() < timeout) {
@@ -223,8 +223,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
         PooledConnection connection = availableConnections.pollFirst();
         if (null == connection) {
-          waitStart = getPoolStats().beginConnectionWait();
-
           connection = tryCreateConnection();
           if (null != connection) {
             return connection;
@@ -232,6 +230,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
           if (Thread.currentThread().isInterrupted()) {
             break;
+          }
+
+          if (-1 == waitStart) {
+            waitStart = getPoolStats().beginConnectionWait();
           }
 
           Thread.yield();
@@ -246,7 +248,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         }
       }
     } finally {
-      if (waitStart > 0) {
+      if (-1 != waitStart) {
         getPoolStats().endConnectionWait(waitStart);
       }
     }
