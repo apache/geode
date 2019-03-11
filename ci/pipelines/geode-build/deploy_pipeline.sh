@@ -63,6 +63,7 @@ repository:
   branch: ${GEODE_BRANCH}
   upstream_fork: ${UPSTREAM_FORK}
   public: ${REPOSITORY_PUBLIC}
+  sanitized_fork: ${SANITIZED_GEODE_FORK}
 YML
 
   python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml || exit 1
