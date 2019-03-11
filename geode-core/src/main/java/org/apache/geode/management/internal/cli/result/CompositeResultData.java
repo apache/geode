@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.result;
 
 import java.util.Iterator;
 
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
@@ -225,20 +224,6 @@ public class CompositeResultData extends AbstractResultData {
         tabularResultData = new TabularResultData(tableData);
       }
       return tabularResultData;
-    }
-
-    public Object retrieveObject(String name) {
-      Object retrievedObject = sectionGfJsonObject.get(name);
-
-      if (retrievedObject instanceof GfJsonArray) {
-        GfJsonArray.toStringArray(((GfJsonArray) retrievedObject));
-      }
-
-      return sectionGfJsonObject.get(name);
-    }
-
-    public String retrieveString(String name) {
-      return sectionGfJsonObject.getString(name);
     }
 
     public static String generateSectionKey(String keyToRetrieve) {

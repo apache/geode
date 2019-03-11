@@ -171,7 +171,7 @@ public abstract class AbstractResultData implements ResultData {
     int length = byteDataArray.size();
     String options = length > 1 ? "(y/N/a)" : "(y/N)";
     for (int i = 0; i < length; i++) {
-      GfJsonObject object = byteDataArray.getJSONObject(i);
+      GfJsonObject object = byteDataArray.getInternalJsonObject(i);
 
       int fileType = object.getInt(FILE_TYPE_FIELD);
 
@@ -187,7 +187,7 @@ public abstract class AbstractResultData implements ResultData {
         fileNameBytes = GfJsonArray.toByteArray(fileNameJsonBytes);
         fileName = new String(fileNameBytes);
       } else { // if on member
-        fileName = (String) object.get(FILE_NAME_FIELD);
+        fileName = object.get(FILE_NAME_FIELD).toString();
       }
 
       // build file message
@@ -198,11 +198,11 @@ public abstract class AbstractResultData implements ResultData {
         fileMessageBytes = GfJsonArray.toByteArray(fileMessageJsonBytes);
         fileMessage = new String(fileMessageBytes);
       } else { // if on member
-        fileMessage = (String) object.get(FILE_MESSAGE);
+        fileMessage = object.get(FILE_MESSAGE).asText();
       }
 
-      String fileDataString = (String) object.get(FILE_DATA_FIELD);
-      int fileDataLength = (int) object.get(DATA_LENGTH_FIELD);
+      String fileDataString = object.get(FILE_DATA_FIELD).asText();
+      int fileDataLength = object.get(DATA_LENGTH_FIELD).asInt();
       byte[] byteArray = Base64.getDecoder().decode(fileDataString);
       byte[] uncompressBytes = CliUtil.uncompressBytes(byteArray, fileDataLength).getData();
 

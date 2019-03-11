@@ -214,7 +214,7 @@ public abstract class AbstractBaseController implements InitializingBean {
       Collection<PdxInstance> pdxInstances = new ArrayList<PdxInstance>();
 
       for (int index = 0; index < jsonArr.length(); index++) {
-        // String element = jsonArr.getJSONObject(i).toString();
+        // String element = jsonArr.getInternalJsonObject(i).toString();
         // String element = jsonArr.getString(i);
         Object object = jsonArr.get(index);
         String element = object.toString();

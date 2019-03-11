@@ -25,9 +25,9 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -426,16 +426,18 @@ public class LegacyCommandResult implements CommandResult {
 
   @Override
   public List<String> getColumnFromTableContent(String column, String sectionId, String tableId) {
-    return toList(getTableContent(sectionId, tableId).getInternalJsonObject().getJSONArray(column));
+    return toList((ArrayNode) getTableContent(sectionId, tableId).get(column));
   }
 
   @Override
   public Map<String, List<String>> getMapFromTableContent(String sectionId, String tableId) {
     Map<String, List<String>> result = new LinkedHashMap<>();
 
-    JSONObject table = getTableContent(sectionId, tableId).getInternalJsonObject();
-    for (String column : table.keySet()) {
-      result.put(column, toList(table.getJSONArray(column)));
+    JsonNode table = getTableContent(sectionId, tableId).getInternalJsonObject();
+    Iterator<String> fieldNames = table.fieldNames();
+    while (fieldNames.hasNext()) {
+      String column = fieldNames.next();
+      result.put(column, toList((ArrayNode) table.get(column)));
     }
 
     return result;
@@ -526,11 +528,11 @@ public class LegacyCommandResult implements CommandResult {
     return getTableContent("0", "0").getArrayValues(columnName);
   }
 
-  private List<String> toList(JSONArray array) {
-    Object[] values = new Object[array.length()];
+  private List<String> toList(ArrayNode array) {
+    Object[] values = new Object[array.size()];
 
-    for (int i = 0; i < array.length(); i++) {
-      values[i] = array.get(i);
+    for (int i = 0; i < array.size(); i++) {
+      values[i] = array.get(i).textValue();
     }
 
     return Arrays.stream(values).map(Object::toString).collect(Collectors.toList());

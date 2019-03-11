@@ -49,12 +49,12 @@ public class InfoResultDataTest {
     ResultData data = result.addAsFile("content.zip", "file contents", "a message", false);
 
     assertThat(result.getGfJsonObject().getJSONObject("content").getJSONArray("__bytes__")
-        .getJSONObject(0).getString("fileName")).isEqualTo("content.zip");
+        .getInternalJsonObject(0).getString("fileName")).isEqualTo("content.zip");
     assertThat(result.getGfJsonObject().getJSONObject("content").getJSONArray("__bytes__")
-        .getJSONObject(0).getString("fileType")).isEqualTo("1");
+        .getInternalJsonObject(0).getString("fileType")).isEqualTo("1");
     assertThat(result.getGfJsonObject().getJSONObject("content").getJSONArray("__bytes__")
-        .getJSONObject(0).getString("fileMessage")).isEqualTo("a message");
+        .getInternalJsonObject(0).getString("fileMessage")).isEqualTo("a message");
     assertThat(result.getGfJsonObject().getJSONObject("content").getJSONArray("__bytes__")
-        .getJSONObject(0).getString("fileData").length()).isGreaterThan(0);
+        .getInternalJsonObject(0).getString("fileData").length()).isGreaterThan(0);
   }
 }

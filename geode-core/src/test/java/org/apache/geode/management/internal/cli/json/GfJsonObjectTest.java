@@ -44,6 +44,35 @@ public class GfJsonObjectTest {
     }
   }
 
+  public static class GetMethodReturnsObjectReferencingMe {
+    private String id;
+    private GetMethodReturnsObjectReferencingMe peer;
+
+    static GetMethodReturnsObjectReferencingMe createTestInstance() {
+      GetMethodReturnsObjectReferencingMe inst1 = new GetMethodReturnsObjectReferencingMe();
+      inst1.id = "instance1";
+      GetMethodReturnsObjectReferencingMe inst2 = new GetMethodReturnsObjectReferencingMe();
+      inst2.id = "instance2";
+      inst1.peer = inst2;
+      inst2.peer = inst1;
+      return inst1;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public void setId(String id) {
+      this.id = id;
+    }
+
+    public GetMethodReturnsObjectReferencingMe getPeer() {
+      return peer;
+    }
+
+  }
+
+
   @Before
   public void setup() {
     gfJsonObject = new GfJsonObject();
@@ -60,6 +89,13 @@ public class GfJsonObjectTest {
 
     assertThat(gfJsonObject.getString("key")).isEqualTo("1");
     assertThat(gfJsonObject.getString("value")).isEqualTo("a");
+  }
+
+  @Test
+  public void addBidirectionalReferenceObject() throws GfJsonException {
+    // JSONObject.cyclicDepChkEnabled.set(true);
+    // JSONObject.cyclicDependencySet.set(new HashSet());
+    new GfJsonObject(new GetMethodReturnsObjectReferencingMe());
   }
 
   @Test

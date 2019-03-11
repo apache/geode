@@ -24,18 +24,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.beanutils.ConvertUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.internal.cli.result.ResultDataException;
 
 /**
  * This class contains utility methods for JSON (http://www.json.org/) which is used by classes used
@@ -45,93 +42,6 @@ import org.apache.geode.management.internal.cli.result.ResultDataException;
  * @since GemFire 7.0
  */
 public class JsonUtil {
-
-  /**
-   * Converts given JSON String in to a Map. Refer http://www.json.org/ to construct a JSON format.
-   *
-   * @param jsonString jsonString to be converted in to a Map.
-   * @return a Map created from
-   *
-   * @throws IllegalArgumentException if the specified JSON string can not be converted in to a Map
-   */
-  public static Map<String, String> jsonToMap(String jsonString) {
-    Map<String, String> jsonMap = new TreeMap<String, String>();
-    try {
-      GfJsonObject jsonObject = new GfJsonObject(jsonString);
-      Iterator<String> keys = jsonObject.keys();
-
-      while (keys.hasNext()) {
-        String key = keys.next();
-        jsonMap.put(key, jsonObject.getString(key));
-      }
-
-    } catch (GfJsonException e) {
-      throw new IllegalArgumentException(
-          "Could not convert jsonString : '" + jsonString + "' to map.");
-    }
-    return jsonMap;
-  }
-
-  /**
-   * Converts given Map in to a JSON string representing a Map. Refer http://www.json.org/ for more.
-   *
-   * @param properties a Map of Strings to be converted in to JSON String
-   * @return a JSON string representing the specified Map.
-   */
-  public static String mapToJson(Map<String, String> properties) {
-    return new GfJsonObject(properties).toString();
-  }
-
-  /**
-   * Converts given Object in to a JSON string representing an Object. Refer http://www.json.org/
-   * for more.
-   *
-   * @param object an Object to be converted in to JSON String
-   * @return a JSON string representing the specified object.
-   */
-  public static String objectToJson(Object object) {
-    return new GfJsonObject(object).toString();
-  }
-
-  /**
-   * Converts given Object in to a JSON string representing an Object. If object contains an
-   * attribute which itself is another object it will be displayed as className if its json
-   * representation exceeds the length
-   *
-   * @param object an Object to be converted in to JSON String
-   * @return a JSON string representing the specified object.
-   */
-  public static String objectToJsonNested(Object object, int length) {
-    return objectToJsonNestedChkCDep(object, length, false);
-  }
-
-  public static String objectToJsonNestedChkCDep(Object object, int length) {
-    return objectToJsonNestedChkCDep(object, length, true);
-  }
-
-  private static String objectToJsonNestedChkCDep(Object object, int length,
-      boolean checkCyclicDep) {
-    GfJsonObject jsonObject = new GfJsonObject(object, checkCyclicDep);
-    Iterator<String> iterator = jsonObject.keys();
-    while (iterator.hasNext()) {
-      String key = iterator.next();
-      Object value = jsonObject.get(key);
-      if (value != null && !isPrimitiveOrWrapper(value.getClass())) {
-        GfJsonObject jsonified = new GfJsonObject(value);
-        String stringified = jsonified.toString();
-        try {
-          if (stringified.length() > length) {
-            jsonObject.put(key, jsonified.getType());
-          } else {
-            jsonObject.put(key, stringified);
-          }
-        } catch (GfJsonException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-    return jsonObject.toString();
-  }
 
   /**
    * Converts given JSON String in to a Object. Refer http://www.json.org/ to construct a JSON
@@ -199,32 +109,66 @@ public class JsonUtil {
       throw new IllegalArgumentException("Couldn't convert JSON to Object of type " + klass, e);
     } catch (IllegalAccessException e) {
       throw new IllegalArgumentException("Couldn't convert JSON to Object of type " + klass, e);
-    } catch (GfJsonException e) {
-      throw new IllegalArgumentException("Couldn't convert JSON to Object of type " + klass, e);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Couldn't convert JSON to Object of type " + klass, e);
     } catch (InvocationTargetException e) {
       throw new IllegalArgumentException("Couldn't convert JSON to Object of type " + klass, e);
+    } catch (GfJsonException e) {
+      throw new IllegalArgumentException(e);
     }
     return objectFromJson;
+  }
+
+  private static void throwUnsupportedType(String containerType, JsonNodeType valueType)
+      throws GfJsonException {
+    throw new GfJsonException(String.format(
+        "Only primitive types are supported in %s type for input commands but found %s",
+        containerType, valueType.toString()));
   }
 
   private static Object toArray(Object value, Class<?> parameterType) throws GfJsonException {
     Class arrayComponentType = parameterType.getComponentType();
     if (isPrimitiveOrWrapper(arrayComponentType)) {
-      if (value instanceof JSONArray) {
+      if (value instanceof ArrayNode) {
         try {
-          JSONArray jsonArray = (JSONArray) value;
-          Object jArray = Array.newInstance(arrayComponentType, jsonArray.length());
-          for (int i = 0; i < jsonArray.length(); i++) {
-            Array.set(jArray, i, jsonArray.get(i));
+          ArrayNode jsonArray = (ArrayNode) value;
+          Object jArray = Array.newInstance(arrayComponentType, jsonArray.size());
+          for (int i = 0; i < jsonArray.size(); i++) {
+            JsonNode elem = jsonArray.get(i);
+            switch (elem.getNodeType()) {
+              case ARRAY:
+                throwUnsupportedType("array", elem.getNodeType());
+              case BINARY:
+                throwUnsupportedType("array", elem.getNodeType());
+              case BOOLEAN:
+                Array.set(jArray, i, jsonArray.get(i).booleanValue());
+              case MISSING:
+                throwUnsupportedType("array", elem.getNodeType());
+              case NULL:
+                throwUnsupportedType("array", elem.getNodeType());
+              case NUMBER:
+                if (elem.isIntegralNumber()) {
+                  Array.set(jArray, i, elem.longValue());
+                } else {
+                  Array.set(jArray, i, elem.doubleValue());
+                }
+                break;
+              case OBJECT:
+                throwUnsupportedType("array", elem.getNodeType());
+              case POJO:
+                throwUnsupportedType("array", elem.getNodeType());
+              case STRING:
+                if (elem.textValue() != null) {
+                  Array.set(jArray, i, elem.textValue());
+                } else {
+                  Array.set(jArray, i, elem.toString());
+                }
+            }
           }
           return jArray;
         } catch (ArrayIndexOutOfBoundsException e) {
           throw new GfJsonException(e);
         } catch (IllegalArgumentException e) {
-          throw new GfJsonException(e);
-        } catch (JSONException e) {
           throw new GfJsonException(e);
         }
       } else {
@@ -244,93 +188,134 @@ public class JsonUtil {
   @SuppressWarnings({"rawtypes", "unchecked"})
   private static Object toSet(Object value, Class<?> parameterType) throws GfJsonException {
     try {
-      JSONArray array = (JSONArray) value;
+      ArrayNode array = (ArrayNode) value;
       Set set = new HashSet();
-      for (int i = 0; i < array.length(); i++) {
-        Object element = array.get(i);
-        if (isPrimitiveOrWrapper(element.getClass())) {
-          set.add(element);
-        } else
-          throw new GfJsonException(
-              "Only primitive types are supported in set type for input commands");
+      for (int i = 0; i < array.size(); i++) {
+        JsonNode elem = array.get(i);
+        switch (elem.getNodeType()) {
+          case ARRAY:
+            throwUnsupportedType("list", elem.getNodeType());
+          case BINARY:
+            throwUnsupportedType("list", elem.getNodeType());
+          case BOOLEAN:
+            set.add(elem.booleanValue());
+          case MISSING:
+            throwUnsupportedType("list", elem.getNodeType());
+          case NULL:
+            throwUnsupportedType("list", elem.getNodeType());
+          case NUMBER:
+            if (elem.isIntegralNumber()) {
+              set.add(elem.longValue());
+            } else {
+              set.add(elem.doubleValue());
+            }
+            break;
+          case OBJECT:
+            throwUnsupportedType("list", elem.getNodeType());
+          case POJO:
+            throwUnsupportedType("list", elem.getNodeType());
+          case STRING:
+            if (elem.textValue() != null) {
+              set.add(elem.textValue());
+            } else {
+              set.add(elem.toString());
+            }
+        }
       }
       return set;
-    } catch (JSONException e) {
+    } catch (Exception e) {
       throw new GfJsonException(e);
     }
   }
 
   private static Object toMap(Object value, Class<?> parameterType) throws GfJsonException {
     try {
-      if (value instanceof JSONObject) {
-        JSONObject obj = (JSONObject) value;
-        Iterator iterator = obj.keys();
+      if (value instanceof ObjectNode) {
+        ObjectNode obj = (ObjectNode) value;
+        Iterator iterator = obj.fieldNames();
         Map map = new HashMap();
         while (iterator.hasNext()) {
           String key = (String) iterator.next();
-          Object elem;
-          elem = obj.get(key);
-          if (isPrimitiveOrWrapper(elem.getClass())) {
-            map.put(key, elem);
-          } else
-            throw new GfJsonException(
-                "Only primitive types are supported in map type for input commands");
+          JsonNode elem = obj.get(key);
+          switch (elem.getNodeType()) {
+            case ARRAY:
+              throwUnsupportedType("map", elem.getNodeType());
+            case BINARY:
+              throwUnsupportedType("map", elem.getNodeType());
+            case BOOLEAN:
+              map.put(key, elem.booleanValue());
+            case MISSING:
+              throwUnsupportedType("map", elem.getNodeType());
+            case NULL:
+              throwUnsupportedType("map", elem.getNodeType());
+            case NUMBER:
+              if (elem.isIntegralNumber()) {
+                map.put(key, elem.longValue());
+              } else {
+                map.put(key, elem.doubleValue());
+              }
+              break;
+            case OBJECT:
+              throwUnsupportedType("map", elem.getNodeType());
+            case POJO:
+              throwUnsupportedType("map", elem.getNodeType());
+            case STRING:
+              if (elem.textValue() != null) {
+                map.put(key, elem.textValue());
+              } else {
+                map.put(key, elem.toString());
+              }
+          }
         }
         return map;
       } else
         throw new GfJsonException(
             "Expected JSONObject for Map. Retrieved type is " + value.getClass());
-    } catch (JSONException e) {
+    } catch (Exception e) {
       throw new GfJsonException(e);
     }
   }
 
   private static Object toList(Object value, Class<?> parameterType) throws GfJsonException {
     try {
-      JSONArray array = (JSONArray) value;
+      ArrayNode array = (ArrayNode) value;
       List list = new ArrayList();
-      for (int i = 0; i < array.length(); i++) {
-        Object element = array.get(i);
-        if (isPrimitiveOrWrapper(element.getClass())) {
-          list.add(element);
-        } else
-          throw new GfJsonException(
-              "Only primitive types are supported in set type for input commands");
+      for (int i = 0; i < array.size(); i++) {
+        JsonNode elem = array.get(i);
+        switch (elem.getNodeType()) {
+          case ARRAY:
+            throwUnsupportedType("list", elem.getNodeType());
+          case BINARY:
+            throwUnsupportedType("list", elem.getNodeType());
+          case BOOLEAN:
+            list.add(elem.booleanValue());
+          case MISSING:
+            throwUnsupportedType("list", elem.getNodeType());
+          case NULL:
+            throwUnsupportedType("list", elem.getNodeType());
+          case NUMBER:
+            if (elem.isIntegralNumber()) {
+              list.add(elem.longValue());
+            } else {
+              list.add(elem.doubleValue());
+            }
+            break;
+          case OBJECT:
+            throwUnsupportedType("list", elem.getNodeType());
+          case POJO:
+            throwUnsupportedType("list", elem.getNodeType());
+          case STRING:
+            if (elem.textValue() != null) {
+              list.add(elem.textValue());
+            } else {
+              list.add(elem.toString());
+            }
+        }
       }
       return list;
-    } catch (JSONException e) {
+    } catch (Exception e) {
       throw new GfJsonException(e);
     }
-  }
-
-  public static Object jsonToObject(String jsonString) {
-    Object objectFromJson = null;
-    try {
-      GfJsonObject jsonObject = new GfJsonObject(jsonString);
-
-      Iterator<String> keys = jsonObject.keys();
-
-      Object[] arr = new Object[jsonObject.size()];
-      int i = 0;
-
-      while (keys.hasNext()) {
-        String key = keys.next();
-        Class<?> klass = ClassPathLoader.getLatest().forName(key);
-        arr[i++] = jsonToObject((String) jsonObject.get(key).toString(), klass);
-      }
-
-      if (arr.length == 1) {
-        objectFromJson = arr[0];
-      } else {
-        objectFromJson = arr;
-      }
-    } catch (GfJsonException e) {
-      throw new IllegalArgumentException("Couldn't convert JSON to Object.", e);
-    } catch (ClassNotFoundException e) {
-      throw new IllegalArgumentException("Couldn't convert JSON to Object.", e);
-    }
-
-    return objectFromJson;
   }
 
   public static String capitalize(String str) {
@@ -426,127 +411,4 @@ public class JsonUtil {
     }
     return value;
   }
-
-  public static int getInt(GfJsonObject jsonObject, String byName) {
-    return jsonObject.getInt(byName);
-  }
-
-  public static long getLong(GfJsonObject jsonObject, String byName) {
-    return jsonObject.getLong(byName);
-  }
-
-  public static double getDouble(GfJsonObject jsonObject, String byName) {
-    return jsonObject.getDouble(byName);
-  }
-
-  public static boolean getBoolean(GfJsonObject jsonObject, String byName) {
-    return jsonObject.getBoolean(byName);
-  }
-
-  public static String getString(GfJsonObject jsonObject, String byName) {
-    return jsonObject.getString(byName);
-  }
-
-  public static GfJsonObject getJSONObject(GfJsonObject jsonObject, String byName) {
-    return jsonObject.getJSONObject(byName);
-  }
-
-  public static String[] getStringArray(GfJsonObject jsonObject, String byName) {
-    String[] stringArray = null;
-    try {
-      GfJsonArray jsonArray = jsonObject.getJSONArray(byName);
-      stringArray = GfJsonArray.toStringArray(jsonArray);
-    } catch (GfJsonException e) {
-      throw new ResultDataException(e.getMessage());
-    }
-    return stringArray;
-  }
-
-  public static byte[] getByteArray(GfJsonObject jsonObject, String byName) {
-    byte[] byteArray = null;
-    try {
-      GfJsonArray jsonArray = jsonObject.getJSONArray(byName);
-      byteArray = GfJsonArray.toByteArray(jsonArray);
-    } catch (GfJsonException e) {
-      throw new ResultDataException(e.getMessage());
-    }
-    return byteArray;
-  }
-
-  // For testing purpose
-  public static void main(String[] args) {
-    System.out.println(capitalize("key"));
-    System.out.println(capitalize("Key"));
-
-    String str =
-        "{\"org.apache.geode.management.internal.cli.JsonUtil$Employee\":{\"id\":1234,\"name\":\"Foo BAR\",\"department\":{\"id\":456,\"name\":\"support\"}}}";
-    Object jsonToObject = jsonToObject(str);
-    System.out.println(jsonToObject);
-
-    str = "{\"id\":1234,\"name\":\"Foo BAR\",\"department\":{\"id\":456,\"name\":\"support\"}}";
-    Object jsonToObject2 = jsonToObject(str, Employee.class);
-    System.out.println(jsonToObject2);
-  }
-
-  public static class Employee {
-    private int id;
-    private String name;
-    private Department department;
-
-    public int getId() {
-      return id;
-    }
-
-    public void setId(int id) {
-      this.id = id;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public Department getDepartment() {
-      return department;
-    }
-
-    public void setDepartment(Department department) {
-      this.department = department;
-    }
-
-    @Override
-    public String toString() {
-      return "Employee [id=" + id + ", name=" + name + ", department=" + department + "]";
-    }
-  }
-
-  public static class Department {
-    private int id;
-    private String name;
-
-    public int getId() {
-      return id;
-    }
-
-    public void setId(int id) {
-      this.id = id;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public String toString() {
-      return "Department [id=" + id + ", name=" + name + "]";
-    }
-  }
-
 }

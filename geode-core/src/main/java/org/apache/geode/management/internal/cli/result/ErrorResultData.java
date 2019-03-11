@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
@@ -40,11 +42,11 @@ public class ErrorResultData extends InfoResultData {
   }
 
   public int getErrorCode() {
-    Integer code = (Integer) contentObject.get(ERROR_CODE);
+    JsonNode code = contentObject.get(ERROR_CODE);
     if (code == null) {
       return ResultBuilder.ERRORCODE_DEFAULT;
     }
-    return code;
+    return code.asInt();
   }
 
   /**
