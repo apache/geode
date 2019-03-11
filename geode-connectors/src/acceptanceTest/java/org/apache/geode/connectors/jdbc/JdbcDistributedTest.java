@@ -100,7 +100,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     Connection connection = getConnection();
     Statement statement = connection.createStatement();
     statement.execute("Alter Table " + TABLE_NAME
-        + " add column new_column varchar(10) not null");
+        + " add column new_column varchar(10)");
   }
 
   private void createTableForAllSupportedFields() throws SQLException {

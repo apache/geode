@@ -43,6 +43,7 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
 
@@ -110,9 +111,9 @@ public abstract class JdbcWriterIntegrationTest {
   protected void sharedRegionSetup(String ids, String catalog, String schema)
       throws RegionMappingExistsException {
     List<FieldMapping> fieldMappings = Arrays.asList(
-        new FieldMapping("", "", "id", JDBCType.VARCHAR.name(), false),
-        new FieldMapping("", "", "name", JDBCType.VARCHAR.name(), true),
-        new FieldMapping("", "", "age", JDBCType.INTEGER.name(), true));
+        new FieldMapping("id", FieldType.STRING.name(), "id", JDBCType.VARCHAR.name(), false),
+        new FieldMapping("name", FieldType.STRING.name(), "name", JDBCType.VARCHAR.name(), true),
+        new FieldMapping("age", FieldType.OBJECT.name(), "age", JDBCType.INTEGER.name(), true));
     employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME, ids, catalog, schema,
         fieldMappings);
   }
