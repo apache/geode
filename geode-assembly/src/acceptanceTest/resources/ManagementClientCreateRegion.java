@@ -13,6 +13,7 @@
  * the License.
  */
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -27,7 +28,7 @@ public class ManagementClientTestCreateRegion {
 
     RegionConfig config = new RegionConfig();
     config.setName(regionName);
-    config.setType("REPLICATE");
+    config.setType(RegionShortcut.REPLICATE);
 
     ClusterManagementResult result = cms.create(config, "cluster");
 

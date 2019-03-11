@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 public class RegionConfigValidatorTest {
@@ -39,7 +40,7 @@ public class RegionConfigValidatorTest {
   @Test
   public void noChangesWhenTypeIsSet() {
     config.setName("regionName");
-    config.setType("REPLICATE");
+    config.setType(RegionShortcut.REPLICATE);
     validator.validate(config);
     assertThat(config.getType()).isEqualTo("REPLICATE");
   }

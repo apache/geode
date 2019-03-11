@@ -23,6 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -57,7 +58,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setType("REPLICATE");
+    regionConfig.setType(RegionShortcut.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();
     json = mapper.writeValueAsString(regionConfig);
   }

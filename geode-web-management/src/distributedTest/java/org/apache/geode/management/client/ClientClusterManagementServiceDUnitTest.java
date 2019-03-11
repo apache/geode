@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -73,7 +74,7 @@ public class ClientClusterManagementServiceDUnitTest {
   public void createRegion() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
-    region.setType("REPLICATE");
+    region.setType(RegionShortcut.REPLICATE);
 
     ClusterManagementResult result = client.create(region, "");
 

@@ -63,7 +63,7 @@ public class RegionAPIDUnitTest {
     locator.invoke(() -> {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
-      config.setType(RegionShortcut.PARTITION.toString());
+      config.setType(RegionShortcut.PARTITION);
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();
@@ -88,7 +88,7 @@ public class RegionAPIDUnitTest {
     locator.invoke(() -> {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
-      config.setType(RegionShortcut.REPLICATE.toString());
+      config.setType(RegionShortcut.REPLICATE);
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();

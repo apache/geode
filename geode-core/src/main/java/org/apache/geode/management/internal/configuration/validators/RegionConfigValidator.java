@@ -15,27 +15,26 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.RegionNameValidation;
 
 public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
-  public static final String DEFAULT_REGION_TYPE = "PARTITION";
 
   @Override
   public void validate(RegionConfig config)
       throws IllegalArgumentException {
-    // validate the name
     if (config.getName() == null) {
       throw new IllegalArgumentException("Name of the region has to be specified.");
     }
 
     RegionNameValidation.validate(config.getName());
 
-    // validate the type
     if (config.getType() == null) {
-      config.setType(DEFAULT_REGION_TYPE);
+      RegionShortcut defaultRegion = RegionShortcut.PARTITION;
+      config.setType(defaultRegion);
     }
   }
 
