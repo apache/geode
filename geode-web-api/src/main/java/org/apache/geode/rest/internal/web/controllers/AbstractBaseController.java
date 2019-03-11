@@ -699,7 +699,7 @@ public abstract class AbstractBaseController implements InitializingBean {
       } else {
         final String typeValue = (String) rawDataBinding.get(TYPE_META_DATA_PROPERTY);
         if (typeValue == null) {
-          return (T) objectMapper.createObjectNode();
+          return (T) new Object();
         }
         // Added for the primitive types put. Not supporting primitive types
         if (NumberUtils.isPrimitiveOrObject(typeValue)) {
@@ -712,12 +712,12 @@ public abstract class AbstractBaseController implements InitializingBean {
           }
         } else {
           Assert.state(
-              ClassUtils.isPresent(String.valueOf(typeValue),
+              ClassUtils.isPresent(typeValue,
                   Thread.currentThread().getContextClassLoader()),
               String.format("Class (%1$s) could not be found!", typeValue));
 
           return (T) objectMapper.convertValue(rawDataBinding, ClassUtils.resolveClassName(
-              String.valueOf(typeValue), Thread.currentThread().getContextClassLoader()));
+              typeValue, Thread.currentThread().getContextClassLoader()));
         }
       }
     }

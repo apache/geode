@@ -135,7 +135,7 @@ public class RestAccessControllerTest {
     RestAgent.createParameterizedQueryRegion();
 
     FunctionService.registerFunction(new AddFreeItemToOrders());
-    FunctionService.registerFunction(new NoArgumentFunction());
+    FunctionService.registerFunction(new EchoArgumentFunction());
 
     rule.createRegion(RegionShortcut.REPLICATE_PROXY, "empty",
         f -> f.setCacheLoader(new SimpleCacheLoader()).setCacheWriter(new SimpleCacheWriter()));
@@ -665,7 +665,7 @@ public class RestAccessControllerTest {
 
     mockMvc.perform(post(
         "/v1/queries?id=selectOrder&q=SELECT DISTINCT o FROM /orders o, o.items item WHERE item.quantity > $1 AND item.totalPrice > $2")
-            .with(POST_PROCESSOR))
+        .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/selectOrder"));
 
@@ -677,7 +677,7 @@ public class RestAccessControllerTest {
 
     mockMvc.perform(post(
         "/v1/queries?id=selectHighRoller&q=SELECT DISTINCT c FROM /customers c, /orders o, o.items item WHERE item.totalprice > $1 AND c.customerId = o.customerId")
-            .with(POST_PROCESSOR))
+        .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/selectHighRoller"));
 
@@ -810,7 +810,7 @@ public class RestAccessControllerTest {
     mockMvc.perform(get("/v1/functions"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.functions",
-            containsInAnyOrder("AddFreeItemToOrders", "NoArgumentFunction")));
+            containsInAnyOrder("AddFreeItemToOrders", "EchoArgumentFunction")));
   }
 
   @Test
@@ -837,16 +837,41 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
-  public void executeNoArgFunction() throws Exception {
-    mockMvc.perform(post("/v1/functions/NoArgumentFunction")
-        .content("{ }")
+  public void executeNoArgFunctionWithInvalidArg() throws Exception {
+    mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
+        .content("{\"type\": \"int\"}")
         .with(POST_PROCESSOR))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(content().json("[{}]"));
+  }
 
-    mockMvc.perform(post("/v1/functions/NoArgumentFunction")
+  @Test
+  @WithMockUser
+  public void executeNoArgFunctionWithEmptyObject() throws Exception {
+    mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
         .content("[{ }]")
         .with(POST_PROCESSOR))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(content().json("[{}]"));
+  }
+
+  @Test
+  @WithMockUser
+  public void executeNoArgFunctionWithEmptyArray() throws Exception {
+    mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
+        .content("[]")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().json("[[]]"));
+  }
+
+  @Test
+  @WithMockUser
+  public void executeNoArgFunctionWithNoContent() throws Exception {
+    mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().json("[null]"));
   }
 
   @Test
@@ -970,7 +995,7 @@ public class RestAccessControllerTest {
 class TestContextLoader extends GenericXmlWebContextLoader {
   @Override
   protected void loadBeanDefinitions(GenericWebApplicationContext context,
-      WebMergedContextConfiguration webMergedConfig) {
+                                     WebMergedContextConfiguration webMergedConfig) {
     super.loadBeanDefinitions(context, webMergedConfig);
     context.getServletContext().setAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
         RestAccessControllerTest.rule.getCache().getSecurityService());
