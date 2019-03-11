@@ -13,14 +13,15 @@
  * the License.
  */
 
-package org.apache.geode.management.api;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.RegionShortcut;
 
-public interface RestfulEndpoint {
-
-  /**
-   * this needs to return the uri portion after the /geode-management/v2
-   *
-   * @return e.g. /regions
-   */
-  String getEndpoint();
+public class ServerTestApp {
+  public static void main(String[] args) throws Exception {
+    Cache cache = new CacheFactory()
+        .set("start-dev-rest-api", "true")
+        .create();
+    cache.createRegionFactory(RegionShortcut.REPLICATE).create("REGION1");
+  }
 }

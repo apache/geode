@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 
-{% from 'shared/shared_jinja.yml' import alpine_tools_config with context %}
-{% from 'shared/shared_jinja.yml' import pipeline_prefix with context %}
+{% from 'shared_jinja.yml' import alpine_tools_config with context %}
+{% from 'shared_jinja.yml' import pipeline_prefix with context %}
 
 groups:
 - name: main
@@ -264,7 +264,11 @@ jobs:
           GRADLE_TASK_OPTIONS: ""
           MAINTENANCE_VERSION: {{repository.branch}}
           PARALLEL_DUNIT: {{test.PARALLEL_DUNIT}}
+        {% if test.PARALLEL_GRADLE is defined %}
           PARALLEL_GRADLE: {{test.PARALLEL_GRADLE}}
+        {% else %}
+          PARALLEL_GRADLE: true
+        {% endif %}
           ARTIFACT_BUCKET: ((artifact-bucket))
           SERVICE_ACCOUNT: ((concourse-gcp-account))
           GRADLE_GLOBAL_ARGS: ((gradle-global-args))

@@ -100,6 +100,10 @@ repositories {
       artifact '/dist/tomcat/tomcat-6/v6.0.37/bin/[organisation]-[module]-[revision].[ext]'
     }
   }
+  // For gradle tooling dependencies
+  maven {
+    url 'https://repo.gradle.org/gradle/libs-releases'
+  }
 }
 
 configurations {
@@ -211,6 +215,7 @@ dependencies {
   }
   acceptanceTestCompile(project(':geode-assembly:geode-assembly-test'))
   acceptanceTestCompile('org.apache.httpcomponents:httpclient')
+  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.2.1')
 
 
   uiTestCompile(project(':geode-core'))
@@ -537,7 +542,7 @@ distributions {
   }
 }
 
-tasks.withType(Test){
+tasks.withType(Test) {
   dependsOn installDist
   environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
 }
@@ -545,6 +550,7 @@ tasks.withType(Test){
 // Make build final task to generate all test and product resources
 build.dependsOn installDist
 
+acceptanceTest.dependsOn(rootProject.getTasksByName("publishToMavenLocal", true))
 installDist.dependsOn ':extensions:geode-modules-assembly:dist'
 distributedTest.dependsOn ':extensions:session-testing-war:war'
 distributedTest.dependsOn ':geode-old-versions:build'

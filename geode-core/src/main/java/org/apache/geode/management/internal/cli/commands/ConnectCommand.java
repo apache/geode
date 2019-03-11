@@ -20,26 +20,17 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PREFIX;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -429,83 +420,13 @@ public class ConnectCommand extends OfflineGfshCommand {
         locatorResponse.isJmxManagerSslEnabled());
   }
 
-  private KeyManager[] getKeyManagers(SSLConfig sslConfig) throws Exception {
-    FileInputStream keyStoreStream = null;
-    KeyManagerFactory keyManagerFactory = null;
 
-    try {
-      if (StringUtils.isNotBlank(sslConfig.getKeystore())) {
-        KeyStore clientKeys = KeyStore.getInstance(sslConfig.getKeystoreType());
-        keyStoreStream = new FileInputStream(sslConfig.getKeystore());
-        clientKeys.load(keyStoreStream, sslConfig.getKeystorePassword().toCharArray());
 
-        keyManagerFactory =
-            KeyManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        keyManagerFactory.init(clientKeys, sslConfig.getKeystorePassword().toCharArray());
-      }
-    } finally {
-      if (keyStoreStream != null) {
-        keyStoreStream.close();
-      }
-    }
-
-    return keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null;
-  }
-
-  private TrustManager[] getTrustManagers(SSLConfig sslConfig, boolean skipSslVerification)
-      throws Exception {
-    FileInputStream trustStoreStream = null;
-    TrustManagerFactory trustManagerFactory = null;
-
-    if (skipSslVerification) {
-      TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
-        @Override
-        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-          return null;
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-
-      }};
-      return trustAllCerts;
-    }
-
-    try {
-      // load server public key
-      if (StringUtils.isNotBlank(sslConfig.getTruststore())) {
-        KeyStore serverPub = KeyStore.getInstance(sslConfig.getTruststoreType());
-        trustStoreStream = new FileInputStream(sslConfig.getTruststore());
-        serverPub.load(trustStoreStream, sslConfig.getTruststorePassword().toCharArray());
-        trustManagerFactory =
-            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        trustManagerFactory.init(serverPub);
-      }
-    } finally {
-      if (trustStoreStream != null) {
-        trustStoreStream.close();
-      }
-    }
-    return trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null;
-  }
-
-  private void configureHttpsURLConnection(SSLConfig sslConfig, boolean skipSslVerification)
-      throws Exception {
-    KeyManager[] keyManagers = getKeyManagers(sslConfig);
-    TrustManager[] trustManagers = getTrustManagers(sslConfig, skipSslVerification);
-
+  private void configureHttpsURLConnection(SSLConfig sslConfig, boolean skipSslVerification) {
+    SSLContext ssl = SSLUtil.createAndConfigureSSLContext(sslConfig, skipSslVerification);
     if (skipSslVerification) {
       HttpsURLConnection.setDefaultHostnameVerifier((String s, SSLSession sslSession) -> true);
     }
-
-    SSLContext ssl =
-        SSLContext.getInstance(SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols())));
-
-    ssl.init(keyManagers, trustManagers, new SecureRandom());
-
     HttpsURLConnection.setDefaultSSLSocketFactory(ssl.getSocketFactory());
   }
 

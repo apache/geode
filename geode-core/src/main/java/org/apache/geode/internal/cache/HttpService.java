@@ -36,7 +36,6 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.SSLUtil;
@@ -95,39 +94,7 @@ public class HttpService {
         sslContextFactory.setIncludeCipherSuites(SSLUtil.readArray(sslConfig.getCiphers()));
       }
 
-      String protocol = SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols()));
-      if (protocol != null) {
-        sslContextFactory.setProtocol(protocol);
-      } else {
-        logger.warn("SSL Protocol could not be determined. SSL settings might not work correctly");
-      }
-
-      if (StringUtils.isBlank(sslConfig.getKeystore())) {
-        throw new GemFireConfigException(
-            "Key store can't be empty if SSL is enabled for HttpService");
-      }
-
-      sslContextFactory.setKeyStorePath(sslConfig.getKeystore());
-
-      if (StringUtils.isNotBlank(sslConfig.getKeystoreType())) {
-        sslContextFactory.setKeyStoreType(sslConfig.getKeystoreType());
-      }
-
-      if (StringUtils.isNotBlank(sslConfig.getKeystorePassword())) {
-        sslContextFactory.setKeyStorePassword(sslConfig.getKeystorePassword());
-      }
-
-      if (StringUtils.isNotBlank(sslConfig.getTruststore())) {
-        sslContextFactory.setTrustStorePath(sslConfig.getTruststore());
-      }
-
-      if (StringUtils.isNotBlank(sslConfig.getTruststorePassword())) {
-        sslContextFactory.setTrustStorePassword(sslConfig.getTruststorePassword());
-      }
-
-      if (StringUtils.isNotBlank(sslConfig.getTruststoreType())) {
-        sslContextFactory.setTrustStoreType(sslConfig.getTruststoreType());
-      }
+      sslContextFactory.setSslContext(SSLUtil.createAndConfigureSSLContext(sslConfig, false));
 
       if (logger.isDebugEnabled()) {
         logger.debug(sslContextFactory.dump());
@@ -157,6 +124,8 @@ public class HttpService {
       this.bindAddress = bindAddress;
     }
     this.port = port;
+
+    logger.info("Enabled HttpService on port {}", port);
   }
 
   public Server getHttpServer() {

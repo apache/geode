@@ -19,6 +19,7 @@ import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingComma
 import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
+import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_CLASS_FILE;
 import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
@@ -27,6 +28,7 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_N
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -66,7 +68,9 @@ import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.compiler.CompiledSourceCode;
 import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.compiler.JavaCompiler;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -544,24 +548,43 @@ public class CreateMappingCommandDUnitTest {
     }
   }
 
-  private File loadTestResource(String fileName) throws URISyntaxException {
+  private File loadTestResource(String fileName) {
     String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
     assertThat(filePath).isNotNull();
 
     return new File(filePath);
   }
 
-  private void deployJar() throws URISyntaxException, IOException {
+  private void deployJar() throws IOException {
+    File outputJar = createJar();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEPLOY);
+    csb.addOption(CliStrings.JAR, outputJar.getAbsolutePath());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
+  private File createJar() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
     File source = loadTestResource(
         "/org/apache/geode/internal/ResourcePDX.java");
 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
+    return outputJar;
+  }
 
-    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DEPLOY);
-    csb.addOption(CliStrings.JAR, outputJar.getAbsolutePath());
-    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  private File createClassFile() throws IOException {
+    final JavaCompiler javaCompiler = new JavaCompiler();
+    File source = loadTestResource(
+        "/org/apache/geode/internal/ResourcePDX.java");
+    List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(source);
+    String className = compiledSourceCodes.get(0).className;
+    String fileName = className.substring(className.lastIndexOf(".") + 1) + ".class";
+    File file = new File(temporaryFolder.getRoot(), fileName);
+    FileOutputStream fileOutputStream = new FileOutputStream(file);
+    fileOutputStream.write(compiledSourceCodes.get(0).compiledBytecode);
+    fileOutputStream.close();
+    return file;
   }
 
   @Test
@@ -594,9 +617,105 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
     csb.addOption(ID_NAME, "id");
     csb.addOption(SCHEMA_NAME, "mySchema");
-    IgnoredException.addIgnoredException(ClassNotFoundException.class);
 
     deployJar();
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(region1Name);
+      assertValidResourcePDXMappingOnServer(mapping, region1Name, false, false, "employeeRegion");
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(region1Name, null);
+      assertValidResourcePDXMappingOnLocator(regionMapping, region1Name, null, false, false,
+          "employeeRegion");
+    });
+  }
+
+  @Test
+  public void createMappingWithPdxClassFileSetToAJarFile() throws IOException, URISyntaxException {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+    File jarFile = createJar();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(PDX_CLASS_FILE, jarFile);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    server1.invoke(() -> {
+      RegionMapping mapping = getRegionMappingFromService(region1Name);
+      assertValidResourcePDXMappingOnServer(mapping, region1Name, false, false, "employeeRegion");
+    });
+
+    locator.invoke(() -> {
+      RegionMapping regionMapping = getRegionMappingFromClusterConfig(region1Name, null);
+      assertValidResourcePDXMappingOnLocator(regionMapping, region1Name, null, false, false,
+          "employeeRegion");
+    });
+  }
+
+  @Test
+  public void createMappingWithNonExistingPdxClassFileFails() throws IOException {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(PDX_CLASS_FILE, "NonExistingJarFile.jar");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("NonExistingJarFile.jar not found.");
+  }
+
+  @Test
+  public void createMappingWithInvalidJarPdxClassFileFails() throws IOException {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+    File invalidFile = loadTestResource(
+        "/org/apache/geode/internal/ResourcePDX.java");
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(PDX_CLASS_FILE, invalidFile);
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput(invalidFile + " must end with \".jar\" or \".class\".");
+  }
+
+  @Test
+  public void createMappingWithPdxClassFileSetToAClassFile()
+      throws IOException, URISyntaxException {
+    String region1Name = "region1";
+    setupReplicate(region1Name);
+    File classFile = createClassFile();
+
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, region1Name);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "employeeRegion");
+    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(ID_NAME, "id");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(PDX_CLASS_FILE, classFile);
+
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     server1.invoke(() -> {
@@ -1090,7 +1209,7 @@ public class CreateMappingCommandDUnitTest {
     // NOTE: --table is optional so it should not be in the output but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
-            "You should specify option (--table, --pdx-name, --synchronous, --id, --catalog, --schema, --group) for this command");
+            "You should specify option (--table, --pdx-name, --pdx-class-file, --synchronous, --id, --catalog, --schema, --group) for this command");
   }
 
   @Test

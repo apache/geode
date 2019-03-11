@@ -94,4 +94,22 @@ public abstract class ThrowableUtils {
 
     return false;
   }
+
+  /**
+   * Set the root cause of an exception, if possible, to be newRootCause
+   */
+  public static void setRootCause(Throwable exception, Throwable newRootCause) {
+    Throwable nt = exception;
+    while (nt.getCause() != null) {
+      nt = nt.getCause();
+    }
+
+    // Don't try to set something as it's own cause
+    if (nt == newRootCause) {
+      return;
+    }
+
+    nt.initCause(newRootCause);
+  }
+
 }

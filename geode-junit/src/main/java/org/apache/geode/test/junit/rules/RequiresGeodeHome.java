@@ -48,4 +48,9 @@ public class RequiresGeodeHome extends SerializableExternalResource {
 
     return geodeHome;
   }
+
+  @Override
+  public String toString() {
+    return getGeodeHome().getAbsolutePath();
+  }
 }

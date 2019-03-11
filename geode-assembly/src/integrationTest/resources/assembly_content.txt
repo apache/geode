@@ -908,6 +908,8 @@ lib/geode-wan-0.0.0.jar
 lib/geode-web-0.0.0.jar
 lib/gfsh-dependencies.jar
 lib/grumpy-core-0.2.2.jar
+lib/httpclient-4.5.6.jar
+lib/httpcore-4.4.10.jar
 lib/istack-commons-runtime-2.2.jar
 lib/jackson-annotations-2.9.8.jar
 lib/jackson-core-2.9.8.jar

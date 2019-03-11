@@ -25,6 +25,8 @@ geode-protobuf-messages-0.0.0.jar
 geode-rebalancer-0.0.0.jar
 geode-wan-0.0.0.jar
 grumpy-core-0.2.2.jar
+httpclient-4.5.6.jar
+httpcore-4.4.10.jar
 istack-commons-runtime-2.2.jar
 jackson-annotations-2.9.8.jar
 jackson-core-2.9.8.jar

@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -210,6 +211,7 @@ import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
+import org.apache.geode.internal.lang.ThrowableUtils;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -609,7 +611,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
 
-  private HttpService httpService;
+  private Optional<HttpService> httpService = Optional.ofNullable(null);
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
@@ -933,9 +935,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
       backupService = new BackupService(this);
       if (!this.isClient) {
-        httpService = new HttpService(systemConfig.getHttpServiceBindAddress(),
-            systemConfig.getHttpServicePort(), SSLConfigurationFactory
-                .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB));
+        try {
+          httpService = Optional.of(new HttpService(systemConfig.getHttpServiceBindAddress(),
+              systemConfig.getHttpServicePort(), SSLConfigurationFactory
+                  .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB)));
+        } catch (Throwable ex) {
+          logger.warn("Could not enable HttpService: {}", ex.getMessage());
+        }
       }
     } // synchronized
   }
@@ -947,7 +953,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public HttpService getHttpService() {
+  public Optional<HttpService> getHttpService() {
     return httpService;
   }
 
@@ -1533,12 +1539,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
 
       // Attempt to stick rootCause at tail end of the exception chain.
-      Throwable nt = throwable;
-      while (nt.getCause() != null) {
-        nt = nt.getCause();
-      }
       try {
-        nt.initCause(GemFireCacheImpl.this.disconnectCause);
+        ThrowableUtils.setRootCause(throwable, GemFireCacheImpl.this.disconnectCause);
         return new CacheClosedException(reason, throwable);
       } catch (IllegalStateException ignore) {
         // Bug 39496 (JRockit related) Give up. The following
@@ -2193,9 +2195,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           stopRedisServer();
 
-          if (httpService != null) {
-            httpService.stop();
-          }
+          httpService.ifPresent(HttpService::stop);
 
           // no need to track PR instances since we won't create any more
           // cacheServers or gatewayHubs

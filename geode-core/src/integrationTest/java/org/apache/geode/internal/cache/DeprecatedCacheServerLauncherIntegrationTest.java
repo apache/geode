@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -43,6 +44,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -144,6 +146,17 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     unexportObject(this.status);
     unexportObject(this.registry);
     destroy(this.processWrapper);
+
+    if (logFile.exists()) {
+
+      System.out.println("------------------------------------------------------------");
+      System.out.println("Log file for launched process");
+      System.out.println("------------------------------------------------------------");
+      try (FileInputStream input = new FileInputStream(logFile)) {
+        IOUtils.copy(input, System.out);
+      }
+      System.out.println("------------------------------------------------------------");
+    }
   }
 
   @AfterClass

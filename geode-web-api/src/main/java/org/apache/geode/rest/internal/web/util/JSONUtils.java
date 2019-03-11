@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.json.JSONException;
 import org.springframework.util.Assert;
 
 import org.apache.geode.cache.Region;
@@ -151,7 +150,7 @@ public abstract class JSONUtils {
     }
   }
 
-  public static String convertCollectionToJson(Collection<Object> collection) throws JSONException {
+  public static String convertCollectionToJson(Collection<Object> collection) {
     HeapDataOutputStream outputStream =
         new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
 

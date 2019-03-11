@@ -13,14 +13,27 @@
  * the License.
  */
 
-package org.apache.geode.management.api;
+plugins {
+    id 'java'
+    id 'application'
+}
 
-public interface RestfulEndpoint {
+version = '1.0'
 
-  /**
-   * this needs to return the uri portion after the /geode-management/v2
-   *
-   * @return e.g. /regions
-   */
-  String getEndpoint();
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    compile("org.apache.geode:geode-core:${findProperty('geodeVersion')}")
+    runtime('org.apache.logging.log4j:log4j-slf4j-impl:2.11.1')
+}
+
+application {
+    mainClassName = 'ServerTestApp'
+}
+
+run {
+    environment['GEODE_HOME'] = "${findProperty('geodeHome')}"
 }

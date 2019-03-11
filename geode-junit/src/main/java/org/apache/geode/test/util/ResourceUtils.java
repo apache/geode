@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import com.google.common.io.Resources;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -83,5 +84,19 @@ public class ResourceUtils {
     IOUtils.copy(resource.openStream(), new FileOutputStream(targetFile));
     assertThat(targetFile).hasSameContentAs(new File(resource.toURI()));
     return targetFile;
+  }
+
+  /**
+   * Copies a directory, pointed to by a {@code resource}, to a {@code targetFolder}
+   *
+   * @param resource a file-based resource referencing a directory
+   * @param targetFolder the directory to which to copy the resource and all files within that
+   *        resource.
+   */
+  public static void copyDirectoryResource(final URL resource, final File targetFolder)
+      throws IOException {
+    File source = new File(resource.getPath());
+    assertThat(source.exists()).as("Source does not exist: " + resource.getPath());
+    FileUtils.copyDirectory(source, targetFolder);
   }
 }

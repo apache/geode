@@ -60,6 +60,7 @@ import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -1118,9 +1119,12 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       // This results in ConflictingPersistentDataException. As part of GEODE-2918, the cache is
       // closed when ConflictingPersistentDataException is encountered.
       vm0.invoke(() -> {
+        Cache cache = getCache();
         assertThatThrownBy(() -> createPartitionedRegion(0, -1, 113, true))
             .isInstanceOf(CacheClosedException.class)
             .hasCauseInstanceOf(ConflictingPersistentDataException.class);
+        // Wait for the cache to completely close
+        cache.close();
       });
     }
 
