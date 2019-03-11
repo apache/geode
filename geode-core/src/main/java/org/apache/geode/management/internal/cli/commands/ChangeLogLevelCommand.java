@@ -34,7 +34,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction;
@@ -148,14 +147,14 @@ public class ChangeLogLevelCommand extends InternalGfshCommand {
 
   public static class ChangeLogLevelCommandInterceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       // validate log level
       String logLevel = parseResult.getParamValueAsString("loglevel");
       if (StringUtils.isBlank(logLevel) || LogLevel.getLevel(logLevel) == null) {
-        return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
+        return ResultModel.createError("Invalid log level: " + logLevel);
       }
 
-      return ResultBuilder.createInfoResult("");
+      return ResultModel.createInfo("");
     }
   }
 }

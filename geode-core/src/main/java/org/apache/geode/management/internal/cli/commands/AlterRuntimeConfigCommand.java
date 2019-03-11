@@ -36,7 +36,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -44,7 +43,6 @@ import org.apache.geode.management.internal.cli.functions.AlterRuntimeConfigFunc
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -243,13 +241,13 @@ public class AlterRuntimeConfigCommand extends InternalGfshCommand {
 
   public static class AlterRuntimeInterceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       // validate log level
       String logLevel = parseResult.getParamValueAsString("log-level");
       if (StringUtils.isNotBlank(logLevel) && (LogLevel.getLevel(logLevel) == null)) {
-        return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
+        return ResultModel.createError("Invalid log level: " + logLevel);
       }
-      return ResultBuilder.createInfoResult("");
+      return ResultModel.createInfo("");
     }
   }
 }
