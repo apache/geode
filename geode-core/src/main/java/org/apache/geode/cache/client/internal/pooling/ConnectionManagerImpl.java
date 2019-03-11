@@ -175,16 +175,15 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   private PooledConnection tryCreateConnection() {
-    PooledConnection connection = null;
     int currentCount;
-
     while ((currentCount = connectionCount.get()) < maxConnections) {
       if (connectionCount.compareAndSet(currentCount, currentCount + 1)) {
-        // actually create connection
+        PooledConnection connection = null;
         try {
           Connection plainConnection =
               connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
           connection = addConnection(plainConnection);
+          return connection;
         } catch (GemFireSecurityException | GatewayConfigurationException e) {
           throw new ServerOperationException(e);
         } catch (ServerRefusedConnectionException srce) {
@@ -200,7 +199,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
 
-    return connection;
+    return null;
   }
 
   @Override
