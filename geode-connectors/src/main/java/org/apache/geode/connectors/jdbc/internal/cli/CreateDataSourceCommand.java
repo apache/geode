@@ -82,7 +82,6 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel createDataSource(
       @CliOption(key = POOLED_DATA_SOURCE_FACTORY_CLASS,
-          unspecifiedDefaultValue = DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS,
           help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP) String pooledDataSourceFactoryClass,
       @CliOption(key = URL, mandatory = true,
           help = URL__HELP) String url,
@@ -90,14 +89,19 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
       @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "true") boolean ifNotExists,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
       @CliOption(key = POOLED, help = POOLED__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean pooled,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "true") boolean pooled,
       @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
           help = POOL_PROPERTIES_HELP) PoolProperty[] poolProperties) {
 
     JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();
-    configuration.setConnPooledDatasourceClass(pooledDataSourceFactoryClass);
+    if (pooled) {
+      if (pooledDataSourceFactoryClass == null) {
+        pooledDataSourceFactoryClass = DEFAULT_POOLED_DATA_SOURCE_FACTORY_CLASS;
+      }
+      configuration.setConnPooledDatasourceClass(pooledDataSourceFactoryClass);
+    }
     configuration.setConnectionUrl(url);
     configuration.setJndiName(name);
     configuration.setPassword(password);
