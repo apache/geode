@@ -68,7 +68,7 @@ public class DescribeDataSourceCommandDUnitTest {
 
     result.statusIsSuccess()
         .tableHasRowWithValues("Property", "Value", "name", "simple")
-        .tableHasRowWithValues("Property", "Value", "pooled", "false")
+        .tableHasRowWithValues("Property", "Value", "pooled", "true")
         .tableHasRowWithValues("Property", "Value", "username", "joe")
         .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:memory:newDB;create=true");
     assertThat(result.getResultModel().toString()).doesNotContain("myPassword");
@@ -153,7 +153,7 @@ public class DescribeDataSourceCommandDUnitTest {
 
       result.statusIsSuccess()
           .tableHasRowWithValues("Property", "Value", "name", "simple")
-          .tableHasRowWithValues("Property", "Value", "pooled", "false")
+          .tableHasRowWithValues("Property", "Value", "pooled", "true")
           .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:memory:newDB;create=true");
       InfoResultModel infoSection = result.getResultModel()
           .getInfoSection(DescribeDataSourceCommand.REGIONS_USING_DATA_SOURCE_SECTION);
