@@ -187,13 +187,23 @@ public class ConnectionManagerImpl implements ConnectionManager {
       Connection plainConnection =
           connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
       connection = addConnection(plainConnection);
+      if (connection == null) {
+        // TODO:
+        // org.apache.geode.cache.client.internal.ConnectionFactoryImpl.createClientToServerConnection(Set)
+        // can return null without throwing an exception. Either change
+        // createClientToServerConnection
+        // to throw an exception consistently (when it fails) or keep this throw here
+        // The test that hung because of this was:
+        // CustomSSLProviderDistributedTest.expectConnectionFailureWhenNoHostNameInServerKey()
+        // if we failed, release the space we reserved for our connection
+        throw new NoAvailableServersException();
+      }
       return connection;
     } catch (GemFireSecurityException | GatewayConfigurationException e) {
       throw new ServerOperationException(e);
     } catch (ServerRefusedConnectionException srce) {
       throw new NoAvailableServersException(srce);
     } finally {
-      // if we failed, release the space we reserved for our connection
       if (connection == null) {
         decrementConnectionCount();
       }
@@ -209,10 +219,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     int currentCount;
     while ((currentCount = connectionCount.get()) < maxConnections) {
       if (connectionCount.compareAndSet(currentCount, currentCount + 1)) {
-        PooledConnection connection = createConnection();
-        if (connection != null) {
-          return connection;
-        }
+        return createConnection();
       }
     }
 
