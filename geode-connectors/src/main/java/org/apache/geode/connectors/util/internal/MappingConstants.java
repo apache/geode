@@ -21,6 +21,7 @@ public final class MappingConstants {
   public static final String DATA_SOURCE_NAME = "data-source";
   public static final String SYNCHRONOUS_NAME = "synchronous";
   public static final String ID_NAME = "id";
+  public static final String SPECIFIED_ID_NAME = "id-user-specified";
   public static final String SCHEMA_NAME = "schema";
   public static final String CATALOG_NAME = "catalog";
   public static final String GROUP_NAME = "groups";

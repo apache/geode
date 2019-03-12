@@ -256,7 +256,7 @@ public abstract class JdbcLoaderIntegrationTest {
   protected <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
       List<FieldMapping> fieldMappings)
       throws RegionMappingExistsException {
-    return createRegionWithJDBCLoader(regionName, pdxClassName, null, null, null, fieldMappings);
+    return createRegionWithJDBCLoader(regionName, pdxClassName, "id", null, null, fieldMappings);
   }
 
   protected ClassWithSupportedPdxFields createClassWithSupportedPdxFieldsForInsert(String key) {

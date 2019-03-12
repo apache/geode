@@ -61,7 +61,7 @@ public class PostgresJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest
   @Test
   public void canDestroyFromTableWithCatalogAndSchema() throws Exception {
     createTableWithCatalogAndSchema();
-    sharedRegionSetup(null, DB_NAME, SCHEMA_NAME);
+    sharedRegionSetup("id", DB_NAME, SCHEMA_NAME);
     employees.put("1", pdx1);
     employees.put("2", pdx2);
 
@@ -77,7 +77,7 @@ public class PostgresJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest
   @Test
   public void canInsertIntoTableWithCatalogAndSchema() throws Exception {
     createTableWithCatalogAndSchema();
-    sharedRegionSetup(null, DB_NAME, SCHEMA_NAME);
+    sharedRegionSetup("id", DB_NAME, SCHEMA_NAME);
     employees.put("1", pdx1);
     employees.put("2", pdx2);
 
@@ -92,7 +92,7 @@ public class PostgresJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest
   @Test
   public void canUpdateTableWithCatalogAndSchema() throws Exception {
     createTableWithCatalogAndSchema();
-    sharedRegionSetup(null, DB_NAME, SCHEMA_NAME);
+    sharedRegionSetup("id", DB_NAME, SCHEMA_NAME);
     employees.put("1", pdx1);
     employees.put("1", pdx2);
 

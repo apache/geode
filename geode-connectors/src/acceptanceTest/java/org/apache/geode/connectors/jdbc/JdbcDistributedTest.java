@@ -96,6 +96,13 @@ public abstract class JdbcDistributedTest implements Serializable {
         + " (id varchar(10) primary key not null, name varchar(10), age int not null)");
   }
 
+  private void alterTable() throws SQLException {
+    Connection connection = getConnection();
+    Statement statement = connection.createStatement();
+    statement.execute("Alter Table " + TABLE_NAME
+        + " add column new_column varchar(10)");
+  }
+
   private void createTableForAllSupportedFields() throws SQLException {
     server = startupRule.startServerVM(1,
         x -> x.withConnectionToLocator(locator.getPort()).withPDXReadSerialized());
@@ -220,6 +227,80 @@ public abstract class JdbcDistributedTest implements Serializable {
         assertThat(asyncWriter.getFailedEvents()).isEqualTo(1);
       });
     });
+  }
+
+  @Test
+  public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnInitialOperation()
+      throws Exception {
+    IgnoredException.addIgnoredException(
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
+    createTable();
+    createRegionUsingGfsh();
+    createJdbcDataSource();
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
+    alterTable();
+    server.invoke(() -> {
+      PdxInstance pdxEmployee1 =
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+              .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
+
+      String key = "id1";
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      assertThatThrownBy(() -> region.put(key, pdxEmployee1))
+          .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
+              "Jdbc mapping for \"" + REGION_NAME
+                  + "\" does not match table definition, check logs for more details.");
+    });
+  }
+
+  @Test
+  public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnLoaderAlreadyInitialized()
+      throws Exception {
+    IgnoredException.addIgnoredException(
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
+    createTable();
+    createRegionUsingGfsh();
+    createJdbcDataSource();
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
+    server.invoke(() -> {
+      PdxInstance pdxEmployee1 =
+          ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+              .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
+
+      String key = "id1";
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      region.put(key, pdxEmployee1); // this initializes the writer
+      region.invalidate(key);
+      region.get(key); // this initializes the loader
+      region.invalidate(key);
+    });
+    alterTable();
+    server.invoke(() -> {
+      String key = "id1";
+      Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      assertThatThrownBy(() -> region.get(key))
+          .isExactlyInstanceOf(JdbcConnectorException.class).hasMessage(
+              "The jdbc-mapping does not contain the column name \"new_column\"."
+                  + " This is probably caused by a column being added to the table after the jdbc-mapping was created.");
+    });
+  }
+
+  @Test
+  public void throwsExceptionWhenMappingDoesNotMatchTableDefinitionOnServerStartup()
+      throws Exception {
+    IgnoredException.addIgnoredException(
+        "Error detected when comparing mapping for region \"employees\" with table definition:");
+    IgnoredException.addIgnoredException(
+        "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.");
+    createTable();
+    createRegionUsingGfsh();
+    createJdbcDataSource();
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
+    alterTable();
+    assertThatThrownBy(
+        () -> startupRule.startServerVM(2, x -> x.withConnectionToLocator(locator.getPort())))
+            .hasCauseExactlyInstanceOf(JdbcConnectorException.class).hasStackTraceContaining(
+                "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.");
   }
 
   @Test

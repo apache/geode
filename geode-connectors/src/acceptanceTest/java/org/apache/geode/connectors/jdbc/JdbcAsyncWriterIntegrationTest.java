@@ -40,6 +40,7 @@ import org.apache.geode.connectors.jdbc.internal.TableMetaDataManager;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.WritablePdxInstance;
 
@@ -78,9 +79,9 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   private void setupRegion(String ids) throws RegionMappingExistsException {
     List<FieldMapping> fieldMappings = Arrays.asList(
-        new FieldMapping("", "", "id", JDBCType.VARCHAR.name(), false),
-        new FieldMapping("", "", "name", JDBCType.VARCHAR.name(), true),
-        new FieldMapping("", "", "age", JDBCType.INTEGER.name(), true));
+        new FieldMapping("id", FieldType.STRING.name(), "id", JDBCType.VARCHAR.name(), false),
+        new FieldMapping("name", FieldType.STRING.name(), "name", JDBCType.VARCHAR.name(), true),
+        new FieldMapping("age", FieldType.OBJECT.name(), "age", JDBCType.INTEGER.name(), true));
     employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME, ids, fieldMappings);
   }
 
@@ -110,7 +111,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void validateJDBCAsyncWriterTotalEvents() throws RegionMappingExistsException {
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdxEmployee1);
     employees.put("2", pdxEmployee2);
 
@@ -119,7 +120,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void verifyThatPdxFieldNamedSameAsPrimaryKeyIsIgnored() throws Exception {
-    setupRegion(null);
+    setupRegion("id");
     PdxInstance pdx1 = cache.createPdxInstanceFactory("Employee").writeString("name", "Emp1")
         .writeObject("age", 55).writeInt("id", 3).create();
     employees.put("1", pdx1);
@@ -134,7 +135,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void putNonPdxInstanceFails() throws RegionMappingExistsException {
-    setupRegion(null);
+    setupRegion("id");
     Region nonPdxEmployees = this.employees;
     nonPdxEmployees.put("1", "non pdx instance");
 
@@ -146,7 +147,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
   @Test
   public void putNonPdxInstanceThatIsPdxSerializable()
       throws SQLException, RegionMappingExistsException {
-    setupRegion(null);
+    setupRegion("id");
     Region nonPdxEmployees = this.employees;
     Employee value = new Employee("2", "Emp2", 22);
     nonPdxEmployees.put("2", value);
@@ -161,7 +162,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void canDestroyFromTable() throws Exception {
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdxEmployee1);
     employees.put("2", pdxEmployee2);
 
@@ -201,7 +202,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void canInsertIntoTable() throws Exception {
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdxEmployee1);
     employees.put("2", pdxEmployee2);
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(2));
@@ -236,7 +237,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void canUpdateTable() throws Exception {
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdxEmployee1);
 
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));
@@ -277,7 +278,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void canUpdateBecomeInsert() throws Exception {
-    setupRegion(null);
+    setupRegion("id");
     employees.put("1", pdxEmployee1);
 
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));
@@ -297,7 +298,7 @@ public abstract class JdbcAsyncWriterIntegrationTest {
 
   @Test
   public void canInsertBecomeUpdate() throws Exception {
-    setupRegion(null);
+    setupRegion("id");
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'bogus', 11)");
     validateTableRowCount(1);
 
