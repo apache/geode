@@ -41,6 +41,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.Connection;
@@ -174,25 +175,29 @@ public class ConnectionManagerImpl implements ConnectionManager {
     };
   }
 
+  private void decrementConnectionCount() {
+    if (connectionCount.decrementAndGet() < minConnections) {
+      startBackgroundPrefill();
+    }
+  }
+
   private PooledConnection createConnection() {
-      PooledConnection connection = null;
-      try {
-        Connection plainConnection =
-            connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
-        connection = addConnection(plainConnection);
-        return connection;
-      } catch (GemFireSecurityException | GatewayConfigurationException e) {
-        throw new ServerOperationException(e);
-      } catch (ServerRefusedConnectionException srce) {
-        throw new NoAvailableServersException(srce);
-      } finally {
-        // if we failed, release the space we reserved for our connection
-        if (connection == null) {
-          if (connectionCount.decrementAndGet() < minConnections) {
-            startBackgroundPrefill();
-          }
-        }
+    PooledConnection connection = null;
+    try {
+      Connection plainConnection =
+          connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
+      connection = addConnection(plainConnection);
+      return connection;
+    } catch (GemFireSecurityException | GatewayConfigurationException e) {
+      throw new ServerOperationException(e);
+    } catch (ServerRefusedConnectionException srce) {
+      throw new NoAvailableServersException(srce);
+    } finally {
+      // if we failed, release the space we reserved for our connection
+      if (connection == null) {
+        decrementConnectionCount();
       }
+    }
   }
 
   private PooledConnection forceCreateConnection() {
@@ -284,8 +289,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
 
     if (shuttingDown.get()) {
-        throw new PoolCancelledException();
-      }
+      throw new PoolCancelledException();
+    }
 
     for (int i = availableConnections.size(); i > 0; i--) {
       PooledConnection connection = availableConnections.poll();
@@ -308,17 +313,19 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   @Override
-  public Connection exchangeConnection(Connection oldConnection, Set/* <ServerLocation> */ excludedServers, long acquireTimeout) throws AllConnectionsInUseException {
+  public Connection exchangeConnection(Connection oldConnection,
+      Set/* <ServerLocation> */ excludedServers, long acquireTimeout)
+      throws AllConnectionsInUseException {
 
-     assert oldConnection instanceof PooledConnection;
+    assert oldConnection instanceof PooledConnection;
 
-     PooledConnection newConnection = null;
-     PooledConnection oldPooledConnection = (PooledConnection) oldConnection;
-     boolean needToUndoEstimate = false;
+    PooledConnection newConnection = null;
+    PooledConnection oldPooledConnection = (PooledConnection) oldConnection;
+    boolean needToUndoEstimate = false;
 
-     if (shuttingDown.get()) {
-     throw new PoolCancelledException();
-     }
+    if (shuttingDown.get()) {
+      throw new PoolCancelledException();
+    }
 
     for (int i = availableConnections.size(); i > 0; i--) {
       PooledConnection connection = availableConnections.poll();
@@ -328,10 +335,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
           connection.activate();
           newConnection = connection;
 
-          if(allConnectionsMap.removeConnection(oldPooledConnection)) {
-            if(connectionCount.decrementAndGet() < minConnections) {
-              startBackgroundPrefill();
-            }
+          if (allConnectionsMap.removeConnection(oldPooledConnection)) {
+            decrementConnectionCount();
           }
         } catch (ConnectionDestroyedException ignored) {
         }
@@ -343,78 +348,16 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
 
-    if(newConnection == null) {
-      // TODO Do we need to check max connections? Can this method go over max?
-      // TODO what does it mean if the connection can't be removed from the all connections map?
-      // TODO what is "needToUndoEstimate"??
+    if (newConnection == null) {
       newConnection = forceCreateConnection();
+      if (allConnectionsMap.removeConnection(oldPooledConnection)) {
+        decrementConnectionCount();
+      }
     }
 
     oldPooledConnection.internalDestroy();
 
     return newConnection;
-
-//     for (Iterator<PooledConnection> itr = availableConnections.iterator(); itr.hasNext();) {
-//     PooledConnection nextConnection = itr.next();
-//     if (!excludedServers.contains(nextConnection.getServer())) {
-//     itr.remove();
-//     try {
-//     nextConnection.activate();
-//     newConnection = nextConnection;
-//     if (allConnectionsMap.removeConnection(oldPooledConnection)) {
-//     --connectionCount;
-//     if (connectionCount < minConnections) {
-//     startBackgroundPrefill();
-//     }
-//     }
-//     break;
-//     } catch (ConnectionDestroyedException ex) {
-//     // someone else already destroyed this connection so ignore it
-//     // but remove it from availableConnections
-//     }
-//     }
-//     }
-    // TODO WHY THIS??
-//    if (newConnection == null) {
-//     if (!allConnectionsMap.removeConnection(oldPooledConnection)) {
-//     // We need to create a connection. Reserve space for it.
-//     needToUndoEstimate = true;
-//     connectionCount++;
-//     }
-//     }
-    // TODO END OF THIS
-
-//     if (newConnection == null) {
-//     try {
-//     Connection plainConnection =
-//     connectionFactory.createClientToServerConnection(excludedServers);
-//     newConnection = addConnection(plainConnection);
-//     } catch (GemFireSecurityException e) {
-//     throw new ServerOperationException(e);
-//     } catch (ServerRefusedConnectionException srce) {
-//     throw new NoAvailableServersException(srce);
-//     } finally {
-//     if (needToUndoEstimate && newConnection == null) {
-//     lock.lock();
-//     try {
-//     --connectionCount;
-//     if (connectionCount < minConnections) {
-//     startBackgroundPrefill();
-//     }
-//     } finally {
-//     lock.unlock();
-//     }
-//     }
-//     }
-//     }
-//
-//     if (newConnection == null) {
-//     throw new NoAvailableServersException();
-//     }
-
-//     oldPooledConnection.internalDestroy();
-
-//     return newConnection;
   }
 
   protected/* GemStoneAddition */ String getPoolName() {
@@ -445,11 +388,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
             connectionCount);
       }
 
-      if (connectionCount.get() < minConnections) {
-        startBackgroundPrefill();
-      }
+      decrementConnectionCount();
     }
-    connectionCount.decrementAndGet();
 
     connection.internalDestroy();
   }
@@ -469,28 +409,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
       logger.debug("Invalidating {} connections to server {}", badConnections.size(), endpoint);
     }
 
-    // mark connections for destruction now, so if anyone tries
-    // to return a connection they'll get an exception
     for (Iterator itr = badConnections.iterator(); itr.hasNext();) {
       PooledConnection conn = (PooledConnection) itr.next();
-      if (!conn.setShouldDestroy()) {
-      }
-    }
-
-    availableConnections.removeIf((connection) -> {
-      if (badConnections.contains(connection)) {
-        connectionCount.decrementAndGet();
-        return true;
-      }
-      return false;
-    });
-
-    if (connectionCount.get() < minConnections) {
-      startBackgroundPrefill();
-    }
-
-    for (Iterator itr = badConnections.iterator(); itr.hasNext();) {
-      PooledConnection conn = (PooledConnection) itr.next();
+      conn.setShouldDestroy();
+      availableConnections.remove(conn);
+      decrementConnectionCount();
       conn.internalDestroy();
     }
   }
@@ -519,7 +442,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
 
       // reduce the pool size if it is above the limit (the connection limit can be broken by
-      // borrowConnection(ServerLocation, long)
+      // borrowConnection(ServerLocation, long) and exchangeConnection(Connection, Set, long)
       int currentConnectionCount;
       while ((currentConnectionCount = connectionCount.get()) > maxConnections) {
         if (connectionCount.compareAndSet(currentConnectionCount, currentConnectionCount - 1)) {
@@ -667,60 +590,50 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   private boolean prefillConnection() {
-    // boolean createConnection = false;
-    // lock.lock();
-    // try {
-    // if (shuttingDown.get()) {
-    // return false;
-    // }
-    // if (connectionCount.get() < minConnections) {
-    // connectionCount.incrementAndGet();
-    // createConnection = true;
-    // }
-    // } finally {
-    // lock.unlock();
-    // }
-    //
-    // if (createConnection) {
-    // PooledConnection connection = null;
-    // try {
-    // Connection plainConnection =
-    // connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
-    // if (plainConnection == null) {
-    // return false;
-    // }
-    // connection = addConnection(plainConnection);
-    // connection.passivate(false);
-    // getPoolStats().incPrefillConnect();
-    // } catch (ServerConnectivityException ex) {
-    // logger
-    // .info(String.format("Unable to prefill pool to minimum because: %s",
-    // ex.getMessage()));
-    // return false;
-    // } finally {
-    // lock.lock();
-    // try {
-    // if (connection == null) {
-    // connectionCount--;
-    // if (logger.isDebugEnabled()) {
-    // logger.debug("Unable to prefill pool to minimum, connection count is now {}",
-    // connectionCount);
-    // }
-    // } else {
-    // availableConnections.addFirst(connection);
-    // freeConnection.signalAll();
-    // if (logger.isDebugEnabled()) {
-    // logger.debug("Prefilled connection {} connection count is now {}", connection,
-    // connectionCount);
-    // }
-    // }
-    // } finally {
-    // lock.unlock();
-    // }
-    // }
-    // }
+    if (shuttingDown.get()) {
+      return false;
+    }
 
-    return true;
+    int currentCount;
+    while ((currentCount = connectionCount.get()) < minConnections) {
+      if (connectionCount.compareAndSet(currentCount, currentCount + 1)) {
+
+        PooledConnection connection = null;
+        try {
+          Connection plainConnection =
+              connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
+          if (plainConnection == null) {
+            return false;
+          }
+          connection = addConnection(plainConnection);
+          connection.passivate(false);
+          getPoolStats().incPrefillConnect();
+
+          availableConnections.add(connection);
+
+          if (logger.isDebugEnabled()) {
+            logger.debug("Prefilled connection {} connection count is now {}", connection,
+                connectionCount);
+            return true;
+          }
+        } catch (ServerConnectivityException ex) {
+          logger
+              .info(
+                  String.format("Unable to prefill pool to minimum because: %s", ex.getMessage()));
+          return false;
+        } finally {
+          if (connection == null) {
+            connectionCount.decrementAndGet();
+            if (logger.isDebugEnabled()) {
+              logger.debug("Unable to prefill pool to minimum, connection count is now {}",
+                  connectionCount);
+            }
+          }
+        }
+      }
+    }
+
+    return false;
   }
 
   public static void loadEmergencyClasses() {
