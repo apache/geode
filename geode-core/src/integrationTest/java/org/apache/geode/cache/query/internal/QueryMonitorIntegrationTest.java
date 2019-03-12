@@ -18,12 +18,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,11 +27,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheRuntimeException;
-import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -56,8 +50,7 @@ public class QueryMonitorIntegrationTest {
   private InternalCache cache;
   private DefaultQuery query;
   private volatile QueryExecutionCanceledException queryExecutionCanceledException;
-  private AtomicReference<CacheRuntimeException>
-      queryCanceledExceptionAtomicReference;
+  private AtomicReference<CacheRuntimeException> queryCanceledExceptionAtomicReference;
 
   @Before
   public void before() {

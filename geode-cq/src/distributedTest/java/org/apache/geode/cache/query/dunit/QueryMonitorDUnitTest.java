@@ -448,8 +448,8 @@ public class QueryMonitorDUnitTest {
 
     // Need to get a handle on the atomic reference because cancellation state
     // is thread local, and awaitility until() runs in a separate thread.
-    final AtomicReference<CacheRuntimeException> cacheRuntimeExceptionAtomicReference
-        = query.getQueryCanceledExceptionAtomicReference();
+    final AtomicReference<CacheRuntimeException> cacheRuntimeExceptionAtomicReference =
+        query.getQueryCanceledExceptionAtomicReference();
 
     /*
      * The pollDelay() value was chosen to be larger than the
