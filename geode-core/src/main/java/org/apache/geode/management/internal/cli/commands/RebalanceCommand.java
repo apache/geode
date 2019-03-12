@@ -48,24 +48,23 @@ import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.RebalanceFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class RebalanceCommand extends InternalGfshCommand {
+public class RebalanceCommand extends GfshCommand {
   @CliCommand(value = CliStrings.REBALANCE, help = CliStrings.REBALANCE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DATA, CliStrings.TOPIC_GEODE_REGION})
   @ResourceOperation(resource = ResourcePermission.Resource.DATA,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result rebalance(
+  public ResultModel rebalance(
       @CliOption(key = CliStrings.REBALANCE__INCLUDEREGION,
           help = CliStrings.REBALANCE__INCLUDEREGION__HELP) String[] includeRegions,
       @CliOption(key = CliStrings.REBALANCE__EXCLUDEREGION,
@@ -79,32 +78,32 @@ public class RebalanceCommand extends InternalGfshCommand {
 
     ExecutorService commandExecutors =
         LoggingExecutors.newSingleThreadExecutor("RebalanceCommand", false);
-    List<Future<Result>> commandResult = new ArrayList<>();
-    Result result;
+    List<Future<ResultModel>> commandResult = new ArrayList<>();
+    ResultModel result;
     try {
       commandResult.add(commandExecutors.submit(new ExecuteRebalanceWithTimeout(includeRegions,
           excludeRegions, simulate, (InternalCache) getCache())));
 
-      Future<Result> fs = commandResult.get(0);
+      Future<ResultModel> fs = commandResult.get(0);
       if (timeout > 0) {
         result = fs.get(timeout, TimeUnit.SECONDS);
       } else {
         result = fs.get();
       }
     } catch (TimeoutException timeoutException) {
-      result = ResultBuilder.createInfoResult(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
+      result = ResultModel.createInfo(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
     }
     LogWrapper.getInstance(getCache()).info("Rebalance returning result >>>" + result);
     return result;
   }
 
-  private boolean checkResultList(CompositeResultData rebalanceResultData, List resultList,
+  private boolean checkResultList(DataResultModel rebalanceResultData, List resultList,
       DistributedMember member) {
     boolean toContinueForOtherMembers = false;
     if (CollectionUtils.isNotEmpty(resultList)) {
       for (Object object : resultList) {
         if (object instanceof Exception) {
-          rebalanceResultData.addSection().addData(
+          rebalanceResultData.addData(
               CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
               ((Exception) object).getMessage());
 
@@ -115,7 +114,7 @@ public class RebalanceCommand extends InternalGfshCommand {
           toContinueForOtherMembers = true;
           break;
         } else if (object instanceof Throwable) {
-          rebalanceResultData.addSection().addData(
+          rebalanceResultData.addData(
               CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
               ((Throwable) object).getMessage());
 
@@ -130,86 +129,87 @@ public class RebalanceCommand extends InternalGfshCommand {
     } else {
       LogWrapper.getInstance(getCache()).info(
           "Rebalancing for member=" + member.getId() + ", resultList is either null or empty");
-      rebalanceResultData.addSection().addData("Rebalancing for member=" + member.getId(),
+      rebalanceResultData.addData("Rebalancing for member=" + member.getId(),
           ", resultList is either null or empty");
       toContinueForOtherMembers = true;
     }
     return toContinueForOtherMembers;
   }
 
-  private CompositeResultData toCompositeResultData(CompositeResultData rebalanceResultData,
+  private void toCompositeResultData(ResultModel result,
       List<String> rstlist, int index, boolean simulate, InternalCache cache) {
     int resultItemCount = 9;
-    // add only if there are any valid regions in results
-    if (rstlist.size() > resultItemCount && StringUtils.isNotEmpty(rstlist.get(resultItemCount))) {
-      TabularResultData table1 = rebalanceResultData.addSection().addTable("Table" + index);
-      String newLine = System.getProperty("line.separator");
-      StringBuilder resultStr = new StringBuilder();
-      resultStr.append(newLine);
-      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES);
-      table1.accumulate("Value", rstlist.get(0));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES).append(" = ")
-          .append(rstlist.get(0)).append(newLine);
-      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM);
-      table1.accumulate("Value", rstlist.get(1));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM).append(" = ")
-          .append(rstlist.get(1)).append(newLine);
 
-      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED);
-      table1.accumulate("Value", rstlist.get(2));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED).append(" = ")
-          .append(rstlist.get(2)).append(newLine);
-
-      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES);
-      table1.accumulate("Value", rstlist.get(3));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES).append(" = ")
-          .append(rstlist.get(3)).append(newLine);
-
-      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME);
-      table1.accumulate("Value", rstlist.get(4));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME).append(" = ")
-          .append(rstlist.get(4)).append(newLine);
-
-      table1.accumulate("Rebalanced Stats",
-          CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED);
-      table1.accumulate("Value", rstlist.get(5));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED).append(" = ")
-          .append(rstlist.get(5)).append(newLine);
-
-      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME);
-      table1.accumulate("Value", rstlist.get(6));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME).append(" = ")
-          .append(rstlist.get(6)).append(newLine);
-
-      table1.accumulate("Rebalanced Stats",
-          CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED);
-      table1.accumulate("Value", rstlist.get(7));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED).append(" = ")
-          .append(rstlist.get(7)).append(newLine);
-
-      table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALTIME);
-      table1.accumulate("Value", rstlist.get(8));
-      resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ").append(rstlist.get(8))
-          .append(newLine);
-
-      String headerText;
-      if (simulate) {
-        headerText = "Simulated partition regions ";
-      } else {
-        headerText = "Rebalanced partition regions ";
-      }
-      for (int i = resultItemCount; i < rstlist.size(); i++) {
-        headerText = headerText + " " + rstlist.get(i);
-      }
-      table1.setHeader(headerText);
-      cache.getLogger().info(headerText + resultStr);
+    if(rstlist.size() <= resultItemCount || StringUtils.isEmpty(rstlist.get(resultItemCount))) {
+      return;
     }
-    return rebalanceResultData;
+
+    TabularResultModel table1 = result.addTable("Table" + index);
+    String newLine = System.getProperty("line.separator");
+    StringBuilder resultStr = new StringBuilder();
+    resultStr.append(newLine);
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES);
+    table1.accumulate("Value", rstlist.get(0));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES).append(" = ")
+        .append(rstlist.get(0)).append(newLine);
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM);
+    table1.accumulate("Value", rstlist.get(1));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM).append(" = ")
+        .append(rstlist.get(1)).append(newLine);
+
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED);
+    table1.accumulate("Value", rstlist.get(2));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED).append(" = ")
+        .append(rstlist.get(2)).append(newLine);
+
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES);
+    table1.accumulate("Value", rstlist.get(3));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES).append(" = ")
+        .append(rstlist.get(3)).append(newLine);
+
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME);
+    table1.accumulate("Value", rstlist.get(4));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME).append(" = ")
+        .append(rstlist.get(4)).append(newLine);
+
+    table1.accumulate("Rebalanced Stats",
+        CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED);
+    table1.accumulate("Value", rstlist.get(5));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED).append(" = ")
+        .append(rstlist.get(5)).append(newLine);
+
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME);
+    table1.accumulate("Value", rstlist.get(6));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME).append(" = ")
+        .append(rstlist.get(6)).append(newLine);
+
+    table1.accumulate("Rebalanced Stats",
+        CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED);
+    table1.accumulate("Value", rstlist.get(7));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED).append(" = ")
+        .append(rstlist.get(7)).append(newLine);
+
+    table1.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALTIME);
+    table1.accumulate("Value", rstlist.get(8));
+    resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ").append(rstlist.get(8))
+        .append(newLine);
+
+    String headerText;
+    if (simulate) {
+      headerText = "Simulated partition regions ";
+    } else {
+      headerText = "Rebalanced partition regions ";
+    }
+    for (int i = resultItemCount; i < rstlist.size(); i++) {
+      headerText = headerText + " " + rstlist.get(i);
+    }
+    table1.setHeader(headerText);
+    cache.getLogger().info(headerText + resultStr);
   }
 
 
   // TODO EY Move this to its own class
-  private class ExecuteRebalanceWithTimeout implements Callable<Result> {
+  private class ExecuteRebalanceWithTimeout implements Callable<ResultModel> {
 
     String[] includeRegions = null;
     String[] excludeRegions = null;
@@ -217,7 +217,7 @@ public class RebalanceCommand extends InternalGfshCommand {
     InternalCache cache = null;
 
     @Override
-    public Result call() throws Exception {
+    public ResultModel call() throws Exception {
       return executeRebalanceWithTimeout(includeRegions, excludeRegions, simulate);
     }
 
@@ -229,15 +229,15 @@ public class RebalanceCommand extends InternalGfshCommand {
       this.cache = cache;
     }
 
-    Result executeRebalanceWithTimeout(String[] includeRegions, String[] excludeRegions,
+    ResultModel executeRebalanceWithTimeout(String[] includeRegions, String[] excludeRegions,
         boolean simulate) {
 
-      Result result = null;
+      ResultModel result = new ResultModel();
       try {
         RebalanceOperation op;
 
         if (ArrayUtils.isNotEmpty(includeRegions)) {
-          CompositeResultData rebalanceResultData = ResultBuilder.createCompositeResultData();
+          DataResultModel dataResult = result.addData("rebalanceResult");
           int index = 0;
 
           for (String regionName : includeRegions) {
@@ -278,22 +278,18 @@ public class RebalanceCommand extends InternalGfshCommand {
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
-                  rebalanceResultData.addSection()
-                      .addData(CliStrings.format(
+                  dataResult.addData(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
                           member.getId()), ex.getMessage());
-                  result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
 
-                if (checkResultList(rebalanceResultData, resultList, member)) {
-                  result = ResultBuilder.buildResult(rebalanceResultData);
+                if (checkResultList(dataResult, resultList, member)) {
                   continue;
                 }
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
 
-                result = ResultBuilder.buildResult(
-                    toCompositeResultData(rebalanceResultData, rstList, index, true, cache));
+                toCompositeResultData(result, rstList, index, true, cache);
               } else {
                 List resultList;
                 try {
@@ -304,22 +300,18 @@ public class RebalanceCommand extends InternalGfshCommand {
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
-                  rebalanceResultData.addSection()
-                      .addData(CliStrings.format(
+                  dataResult.addData(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
                           member.getId()), ex.getMessage());
-                  result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
 
-                if (checkResultList(rebalanceResultData, resultList, member)) {
-                  result = ResultBuilder.buildResult(rebalanceResultData);
+                if (checkResultList(dataResult, resultList, member)) {
                   continue;
                 }
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
 
-                result = ResultBuilder.buildResult(
-                    toCompositeResultData(rebalanceResultData, rstList, index, false, cache));
+                toCompositeResultData(result, rstList, index, false, cache);
               }
 
             } else {
@@ -337,14 +329,12 @@ public class RebalanceCommand extends InternalGfshCommand {
 
               if (simulate) {
                 op = manager.createRebalanceFactory().simulate();
-                result = ResultBuilder.buildResult(buildResultForRebalance(rebalanceResultData,
-                    op.getResults(), index, true, cache));
+                buildResultForRebalance(result, op.getResults(), index, true, cache);
 
               } else {
                 op = manager.createRebalanceFactory().start();
                 // Wait until the rebalance is complete and then get the results
-                result = ResultBuilder.buildResult(buildResultForRebalance(rebalanceResultData,
-                    op.getResults(), index, false, cache));
+                buildResultForRebalance(result, op.getResults(), index, false, cache);
               }
             }
             index++;
@@ -357,7 +347,7 @@ public class RebalanceCommand extends InternalGfshCommand {
               .info("Starting Rebalance simulate false result >> " + result);
         }
       } catch (Exception e) {
-        result = ResultBuilder.createGemFireErrorResult(e.getMessage());
+        result = ResultModel.createError(e.getMessage());
       }
       LogWrapper.getInstance(cache).info("Rebalance returning result >>>" + result);
       return result;
@@ -395,7 +385,7 @@ public class RebalanceCommand extends InternalGfshCommand {
     return member;
   }
 
-  private CompositeResultData buildResultForRebalance(CompositeResultData rebalanceResultData,
+  private void buildResultForRebalance(ResultModel resultModel,
       RebalanceResults results, int index, boolean simulate, InternalCache cache) {
     Set<PartitionRebalanceInfo> regions = results.getPartitionRebalanceDetails();
     Iterator iterator = regions.iterator();
@@ -403,59 +393,58 @@ public class RebalanceCommand extends InternalGfshCommand {
     // add only if there are valid number of regions
     if (regions.size() > 0
         && StringUtils.isNotEmpty(((PartitionRebalanceInfo) iterator.next()).getRegionPath())) {
-      final TabularResultData resultData =
-          rebalanceResultData.addSection().addTable("Table" + index);
+      final TabularResultModel resultData = resultModel.addTable("Table" + index);
       String newLine = System.getProperty("line.separator");
       StringBuilder resultStr = new StringBuilder();
       resultStr.append(newLine);
 
       resultData.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES);
-      resultData.accumulate("Value", results.getTotalBucketCreateBytes());
+      resultData.accumulate("Value", results.getTotalBucketCreateBytes() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES).append(" = ")
           .append(results.getTotalBucketCreateBytes()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM);
-      resultData.accumulate("Value", results.getTotalBucketCreateTime());
+      resultData.accumulate("Value", results.getTotalBucketCreateTime() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM).append(" = ")
           .append(results.getTotalBucketCreateTime()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED);
-      resultData.accumulate("Value", results.getTotalBucketCreatesCompleted());
+      resultData.accumulate("Value", results.getTotalBucketCreatesCompleted() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED).append(" = ")
           .append(results.getTotalBucketCreatesCompleted()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES);
-      resultData.accumulate("Value", results.getTotalBucketTransferBytes());
+      resultData.accumulate("Value", results.getTotalBucketTransferBytes() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES).append(" = ")
           .append(results.getTotalBucketTransferBytes()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME);
-      resultData.accumulate("Value", results.getTotalBucketTransferTime());
+      resultData.accumulate("Value", results.getTotalBucketTransferTime() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME).append(" = ")
           .append(results.getTotalBucketTransferTime()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED);
-      resultData.accumulate("Value", results.getTotalBucketTransfersCompleted());
+      resultData.accumulate("Value", results.getTotalBucketTransfersCompleted() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED).append(" = ")
           .append(results.getTotalBucketTransfersCompleted()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME);
-      resultData.accumulate("Value", results.getTotalPrimaryTransferTime());
+      resultData.accumulate("Value", results.getTotalPrimaryTransferTime() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME).append(" = ")
           .append(results.getTotalPrimaryTransferTime()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats",
           CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED);
-      resultData.accumulate("Value", results.getTotalPrimaryTransfersCompleted());
+      resultData.accumulate("Value", results.getTotalPrimaryTransfersCompleted() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED).append(" = ")
           .append(results.getTotalPrimaryTransfersCompleted()).append(newLine);
 
       resultData.accumulate("Rebalanced Stats", CliStrings.REBALANCE__MSG__TOTALTIME);
-      resultData.accumulate("Value", results.getTotalTime());
+      resultData.accumulate("Value", results.getTotalTime() + "");
       resultStr.append(CliStrings.REBALANCE__MSG__TOTALTIME).append(" = ")
           .append(results.getTotalTime()).append(newLine);
 
@@ -477,14 +466,13 @@ public class RebalanceCommand extends InternalGfshCommand {
 
       cache.getLogger().info(headerText + resultStr);
     }
-    return rebalanceResultData;
   }
 
-  private Result executeRebalanceOnDS(InternalCache cache, String simulate,
+  private ResultModel executeRebalanceOnDS(InternalCache cache, String simulate,
       String[] excludeRegionsList) {
-    Result result = null;
+    ResultModel resultModel = new ResultModel();
     int index = 1;
-    CompositeResultData rebalanceResultData = ResultBuilder.createCompositeResultData();
+    DataResultModel rebalanceResultData = resultModel.addData("rebalanceResult");
     List<String> listExcludedRegion = new ArrayList<>();
     if (excludeRegionsList != null) {
       Collections.addAll(listExcludedRegion, excludeRegionsList);
@@ -492,8 +480,7 @@ public class RebalanceCommand extends InternalGfshCommand {
     List<MemberPRInfo> listMemberRegion = getMemberRegionList(cache, listExcludedRegion);
 
     if (listMemberRegion.size() == 0) {
-      return ResultBuilder
-          .createInfoResult(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
+      return ResultModel.createInfo(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
     }
 
     Iterator<MemberPRInfo> iterator = listMemberRegion.iterator();
@@ -508,8 +495,7 @@ public class RebalanceCommand extends InternalGfshCommand {
     }
 
     if (!flagToContinueWithRebalance) {
-      return ResultBuilder
-          .createInfoResult(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
+      return ResultModel.createInfo(CliStrings.REBALANCE__MSG__NO_REBALANCING_REGIONS_ON_DS);
     }
 
     for (MemberPRInfo memberPR : listMemberRegion) {
@@ -537,60 +523,52 @@ public class RebalanceCommand extends InternalGfshCommand {
                     .getResult();
 
                 if (checkResultList(rebalanceResultData, resultList, dsMember)) {
-                  result = ResultBuilder.buildResult(rebalanceResultData);
                   continue;
                 }
 
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-                result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData,
-                    rstList, index, simulate.equals("true"), cache));
+                toCompositeResultData(resultModel, rstList, index, simulate.equals("true"), cache);
                 index++;
 
                 // Rebalancing for region is done so break and continue with other region
                 break;
               } else {
                 if (i == memberPR.dsMemberList.size() - 1) {
-                  rebalanceResultData.addSection().addData(
+                  rebalanceResultData.addData(
                       CliStrings.format(
                           CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
                           memberPR.region, listOfAllMembers(memberPR.dsMemberList)),
                       CliStrings.REBALANCE__MSG__MEMBERS_MIGHT_BE_DEPARTED);
-                  result = ResultBuilder.buildResult(rebalanceResultData);
                 } else {
                   continue;
                 }
               }
             } catch (Exception ex) {
               if (i == memberPR.dsMemberList.size() - 1) {
-                rebalanceResultData.addSection().addData(
+                rebalanceResultData.addData(
                     CliStrings.format(
                         CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
                         memberPR.region, listOfAllMembers(memberPR.dsMemberList)),
                     CliStrings.REBALANCE__MSG__REASON + ex.getMessage());
-                result = ResultBuilder.buildResult(rebalanceResultData);
               } else {
                 continue;
               }
             }
 
             if (checkResultList(rebalanceResultData, resultList, dsMember)) {
-              result = ResultBuilder.buildResult(rebalanceResultData);
               continue;
             }
 
             List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-            result = ResultBuilder.buildResult(toCompositeResultData(rebalanceResultData, rstList,
-                index, simulate.equals("true"), cache));
+            toCompositeResultData(resultModel, rstList, index, simulate.equals("true"), cache);
             index++;
           }
         }
       } catch (Exception e) {
-        ErrorResultData errorResultData = ResultBuilder.createErrorResultData()
-            .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine(e.getMessage());
-        return (ResultBuilder.buildResult(errorResultData));
+        return ResultModel.createError(e.getMessage());
       }
     }
-    return result;
+    return resultModel;
   }
 
   private static class MemberPRInfo {
