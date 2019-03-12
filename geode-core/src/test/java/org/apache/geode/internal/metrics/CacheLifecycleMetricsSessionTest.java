@@ -67,7 +67,7 @@ public class CacheLifecycleMetricsSessionTest {
 
     MeterRegistry downstreamRegistry = new SimpleMeterRegistry();
 
-    metricsSession.connectDownstreamRegistry(downstreamRegistry);
+    metricsSession.addSubregistry(downstreamRegistry);
 
     assertThat(compositeRegistry.getRegistries())
         .contains(downstreamRegistry);
@@ -79,9 +79,9 @@ public class CacheLifecycleMetricsSessionTest {
         Collections.emptyList());
 
     MeterRegistry downstreamRegistry = new SimpleMeterRegistry();
-    metricsSession.connectDownstreamRegistry(downstreamRegistry);
+    metricsSession.addSubregistry(downstreamRegistry);
 
-    metricsSession.disconnectDownstreamRegistry(downstreamRegistry);
+    metricsSession.removeSubregistry(downstreamRegistry);
 
     assertThat(compositeRegistry.getRegistries())
         .doesNotContain(downstreamRegistry);
@@ -99,7 +99,7 @@ public class CacheLifecycleMetricsSessionTest {
     primaryCounter.increment(amountIncrementedBeforeConnectingDownstreamRegistry);
 
     MeterRegistry downstreamRegistry = new SimpleMeterRegistry();
-    metricsSession.connectDownstreamRegistry(downstreamRegistry);
+    metricsSession.addSubregistry(downstreamRegistry);
 
     Counter downstreamCounter = downstreamRegistry.find(counterName).counter();
     assertThat(downstreamCounter)
@@ -127,7 +127,7 @@ public class CacheLifecycleMetricsSessionTest {
         Collections.emptyList());
 
     MeterRegistry downstreamRegistry = new SimpleMeterRegistry();
-    metricsSession.connectDownstreamRegistry(downstreamRegistry);
+    metricsSession.addSubregistry(downstreamRegistry);
 
     String counterName = "the.counter";
     Counter newCounter = compositeRegistry.counter(counterName);
@@ -193,9 +193,9 @@ public class CacheLifecycleMetricsSessionTest {
     MeterRegistry downstreamMeterRegistry2 = new SimpleMeterRegistry();
     MeterRegistry downstreamMeterRegistry3 = new SimpleMeterRegistry();
 
-    metricsSession.connectDownstreamRegistry(downstreamMeterRegistry1);
-    metricsSession.connectDownstreamRegistry(downstreamMeterRegistry2);
-    metricsSession.connectDownstreamRegistry(downstreamMeterRegistry3);
+    metricsSession.addSubregistry(downstreamMeterRegistry1);
+    metricsSession.addSubregistry(downstreamMeterRegistry2);
+    metricsSession.addSubregistry(downstreamMeterRegistry3);
 
     metricsSession.cacheClosed(mock(InternalCache.class));
 

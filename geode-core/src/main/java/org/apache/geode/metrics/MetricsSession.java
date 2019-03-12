@@ -17,28 +17,25 @@ package org.apache.geode.metrics;
 import io.micrometer.core.instrument.MeterRegistry;
 
 /**
- * Manages the lifecycle of a cache meter registry and allows connecting <em>downstream</em> meter
- * registries to publish the cache meter registry's meters to external monitoring systems.
+ * Provides the ability to add and remove a meter registry for publishing cache metrics to external
+ * monitoring systems.
  */
 public interface MetricsSession {
   /**
-   * Connects the given <em>downstream</em> registry to the cache meter registry. For each meter in
-   * the cache meter registry, a corresponding meter is created or discovered in the downstream
-   * registry. Subsequent operations on the cache meter registry's meters are forwarded to the
-   * corresponding meters in the downstream registry. When meters are subsequently added or removed
-   * in the cache meter registry, corresponding meters are added or removed in the downstream
-   * registry.
+   * Adds the given registry to the cache's composite registry.
    *
-   * @param downstream the registry to connect to the cache meter registry
+   * @param subregistry the registry to add
    */
-  void connectDownstreamRegistry(MeterRegistry downstream);
+  void addSubregistry(MeterRegistry subregistry);
 
   /**
-   * Disconnects the given registry from the cache meter registry. For each meter in the cache meter
-   * registry, the corresponding meter in the downstream registry is removed. Subsequent additions
-   * and removals of meters in the cache meter registry have no effect on disconnected registries.
+   * Removes the given registry from the cache's composite registry.
    *
-   * @param downstream the registry to disconnect from the cache meter registry
+   * <p>
+   * <strong>Caution:</strong> This method deletes from the sub-registry each meter that corresponds
+   * to a meter in the cache's composite registry.
+   *
+   * @param subregistry the registry to remove
    */
-  void disconnectDownstreamRegistry(MeterRegistry downstream);
+  void removeSubregistry(MeterRegistry subregistry);
 }

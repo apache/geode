@@ -45,13 +45,13 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
   }
 
   @Override
-  public void connectDownstreamRegistry(MeterRegistry downstream) {
-    registry.add(downstream);
+  public void addSubregistry(MeterRegistry subregistry) {
+    registry.add(subregistry);
   }
 
   @Override
-  public void disconnectDownstreamRegistry(MeterRegistry downstream) {
-    registry.remove(downstream);
+  public void removeSubregistry(MeterRegistry subregistry) {
+    registry.remove(subregistry);
   }
 
   @Override
@@ -70,7 +70,7 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
     }
 
     for (MeterRegistry downstream : new HashSet<>(registry.getRegistries())) {
-      disconnectDownstreamRegistry(downstream);
+      removeSubregistry(downstream);
     }
   }
 
