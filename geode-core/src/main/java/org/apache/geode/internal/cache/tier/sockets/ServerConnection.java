@@ -56,7 +56,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
@@ -772,15 +771,12 @@ public abstract class ServerConnection implements Runnable {
       this.processMessages = false;
       return;
     }
-    final CachePerfStats cachePerfStats = getCache().getCachePerfStats();
-    final Message message;
-    final long readMessageStart = System.nanoTime();
+    Message message;
     try {
-      cachePerfStats.incReadMessagesInProgress();
+      getCache().getCachePerfStats().increadMessagesInProgress();
       message = BaseCommand.readRequest(this);
     } finally {
-      cachePerfStats.incReadMessageTime(System.nanoTime() - readMessageStart);
-      cachePerfStats.decReadMessagesInProgress();
+      getCache().getCachePerfStats().decreadMessagesInProgress();
     }
     if (serverConnectionCollection.isTerminating) {
       // Client is being disconnected, don't try to process message.
@@ -855,13 +851,11 @@ public abstract class ServerConnection implements Runnable {
           }
         }
 
-        final long executeMessageStart = System.nanoTime();
         try {
-          cachePerfStats.incExecuteMessagesInProgress();
+          getCache().getCachePerfStats().incMessagesInProgress();
           command.execute(message, this, this.securityService);
         } finally {
-          cachePerfStats.incExecuteMessageTime(System.nanoTime() - executeMessageStart);
-          cachePerfStats.decExecuteMessagesInProgress();
+          getCache().getCachePerfStats().decMessagesInProgress();
         }
       }
     } finally {

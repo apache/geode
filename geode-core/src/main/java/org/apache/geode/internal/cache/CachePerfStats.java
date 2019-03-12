@@ -159,9 +159,7 @@ public class CachePerfStats {
   static final int compressionPostCompressedBytesId;
 
   static final int executeMessagesInProgressId;
-  static final int executeMessagesTimeId;
   static final int readMessagesInProgressId;
-  static final int readMessagesTimeId;
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
@@ -500,13 +498,8 @@ public class CachePerfStats {
                 "operations"),
             f.createLongCounter("evictByCriteria_evaluationTime",
                 evictByCriteria_evaluationTimeDesc, "nanoseconds"),
-            f.createLongGauge("executeMessagesInProgress", "Execute messages in progress.",
-                "messages"),
-            f.createLongCounter("executeMessagesTime", "Time in message execute.",
-                "nanoseconds"),
-            f.createLongGauge("readMessagesInProgress", "Read messages in progress.", "messages"),
-            f.createLongCounter("readMessagesTime", "Time in message read.",
-                "nanoseconds")});
+            f.createLongGauge("executeMessagesInProgress", "Execute messages in progress.", "messages"),
+            f.createLongGauge("readMessagesInProgress", "Read messages in progress.", "messages")});
 
     loadsInProgressId = type.nameToId("loadsInProgress");
     loadsCompletedId = type.nameToId("loadsCompleted");
@@ -629,9 +622,7 @@ public class CachePerfStats {
     compressionPostCompressedBytesId = type.nameToId("postCompressedBytes");
 
     executeMessagesInProgressId = type.nameToId("executeMessagesInProgress");
-    executeMessagesTimeId = type.nameToId("executeMessagesTime");
     readMessagesInProgressId = type.nameToId("readMessagesInProgress");
-    readMessagesTimeId = type.nameToId("readMessagesTime");
   }
 
   /** The Statistics object that we delegate most behavior to */
@@ -1504,28 +1495,20 @@ public class CachePerfStats {
     }
   }
 
-  public void incExecuteMessagesInProgress() {
+  public void incMessagesInProgress() {
     stats.incLong(executeMessagesInProgressId, 1);
   }
 
-  public void decExecuteMessagesInProgress() {
+  public void decMessagesInProgress() {
     stats.incLong(executeMessagesInProgressId, -1);
   }
 
-  public void incExecuteMessageTime(long nanoseconds) {
-    stats.incLong(executeMessagesTimeId, nanoseconds);
-  }
-
-  public void incReadMessagesInProgress() {
+  public void increadMessagesInProgress() {
     stats.incLong(readMessagesInProgressId, 1);
   }
 
-  public void decReadMessagesInProgress() {
+  public void decreadMessagesInProgress() {
     stats.incLong(readMessagesInProgressId, -1);
-  }
-
-  public void incReadMessageTime(long nanoseconds) {
-    stats.incLong(readMessagesTimeId, nanoseconds);
   }
 
   interface Clock {
