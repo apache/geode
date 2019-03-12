@@ -138,22 +138,27 @@ public class GfJsonObject extends AbstractJSONFormatter {
     return this;
   }
 
-  // TODO all uses of this need to be examined - most can use type-specific get() methods
+  /**
+   * return the Jackson JsonNode associated with the given key
+   */
   public JsonNode get(String key) {
     return rootNode.get(key);
   }
 
   public String getString(String key) {
-    System.out.println("Bruce: rootNode.get(" + key + "=" + rootNode.get(key) + ")");
+    System.out.println("Bruce: rootNode.getString(" + key + ") =" + rootNode.get(key)/*
+                                                                                      * +
+                                                                                      * " (rootNode="
+                                                                                      * +rootNode+
+                                                                                      * ")"
+                                                                                      */);
+    if (key.equals("fileToDownload"))
+      Thread.dumpStack();
     JsonNode node = rootNode.get(key);
     if (node == null) {
-      return "null";
+      return null; // "null";
     }
-    String textValue = node.textValue();
-    if (textValue != null) {
-      return textValue;
-    }
-    return node.toString();
+    return node.asText();
   }
 
   public int getInt(String key) {
@@ -191,8 +196,17 @@ public class GfJsonObject extends AbstractJSONFormatter {
    */
   public GfJsonArray getJSONArray(String key) throws GfJsonException {
     JsonNode node = rootNode.get(key);
-    if (!(node instanceof ArrayNode)) {
+    if (node == null) {
       return null;
+    }
+    if (!(node instanceof ArrayNode)) {
+      // convert from list format to array format
+      ArrayNode newNode = mapper.createArrayNode();
+      for (int i = 0; i < node.size(); i++) {
+        newNode.add(node.get("" + i));
+      }
+      rootNode.set(key, newNode);
+      return new GfJsonArray(newNode);
     }
     return new GfJsonArray(node);
   }
@@ -329,6 +343,8 @@ public class GfJsonObject extends AbstractJSONFormatter {
 
   public List<String> getArrayValues(String key) {
     List<String> result = new ArrayList<>();
+    System.out.println("Bruce: GfJsonObject.getArrayValues(" + key + ") node=" + rootNode.get(key)
+        + " class=" + rootNode.get(key).getClass());
     if (rootNode.has(key)) {
       JsonNode node = rootNode.get(key);
       if (!(node instanceof ArrayNode)) {
@@ -336,7 +352,8 @@ public class GfJsonObject extends AbstractJSONFormatter {
       }
       ArrayNode array = (ArrayNode) node;
       for (int i = 0; i < array.size(); i++) {
-        result.add(array.get(i).textValue());
+        JsonNode valueNode = array.get(i);
+        result.add(valueNode.asText());
       }
     }
     return result;

@@ -187,7 +187,7 @@ public abstract class AbstractResultData implements ResultData {
         fileNameBytes = GfJsonArray.toByteArray(fileNameJsonBytes);
         fileName = new String(fileNameBytes);
       } else { // if on member
-        fileName = object.get(FILE_NAME_FIELD).toString();
+        fileName = object.getString(FILE_NAME_FIELD);
       }
 
       // build file message
@@ -198,11 +198,11 @@ public abstract class AbstractResultData implements ResultData {
         fileMessageBytes = GfJsonArray.toByteArray(fileMessageJsonBytes);
         fileMessage = new String(fileMessageBytes);
       } else { // if on member
-        fileMessage = object.get(FILE_MESSAGE).asText();
+        fileMessage = object.getString(FILE_MESSAGE);
       }
 
-      String fileDataString = object.get(FILE_DATA_FIELD).asText();
-      int fileDataLength = object.get(DATA_LENGTH_FIELD).asInt();
+      String fileDataString = object.getString(FILE_DATA_FIELD);
+      int fileDataLength = object.getInt(DATA_LENGTH_FIELD);
       byte[] byteArray = Base64.getDecoder().decode(fileDataString);
       byte[] uncompressBytes = CliUtil.uncompressBytes(byteArray, fileDataLength).getData();
 

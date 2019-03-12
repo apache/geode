@@ -199,6 +199,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
       try {
         assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE);
       } catch (Exception e) {
+        e.printStackTrace();
         throw new AssertionError(statusFailedWithException(e), e);
       }
     });

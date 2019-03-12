@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.json;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -63,9 +65,9 @@ public class GfJsonArray extends AbstractJSONFormatter {
    * @return An object value.
    * @throws GfJsonException If there is no value for the index.
    */
-  public Object get(int index) throws GfJsonException {
+  public String getString(int index) throws GfJsonException {
     try {
-      return this.jsonArray.get(index).textValue();
+      return jsonArray.get(index).asText();
     } catch (IllegalArgumentException e) {
       throw new GfJsonException(e);
     }
@@ -81,7 +83,6 @@ public class GfJsonArray extends AbstractJSONFormatter {
 
   public GfJsonArray put(Object value) {
     this.jsonArray.add(toJsonNode(value));
-
     return this;
   }
 
@@ -139,7 +140,7 @@ public class GfJsonArray extends AbstractJSONFormatter {
       byteArray = new byte[length];
       for (int i = 0; i < length; i++) {
         try {
-          byteArray[i] = Byte.valueOf(String.valueOf(jsonArray.get(i)));
+          byteArray[i] = Byte.valueOf(String.valueOf(jsonArray.getString(i)));
         } catch (GfJsonException e) {
           throw new GfJsonException(e.getMessage());
         }
@@ -149,21 +150,18 @@ public class GfJsonArray extends AbstractJSONFormatter {
     return byteArray;
   }
 
-  public static String[] toStringArray(GfJsonArray jsonArray) {
-    String[] stringArray = null;
-    if (jsonArray != null) {
-      int length = jsonArray.size();
-      stringArray = new String[length];
-      for (int i = 0; i < length; i++) {
-        try {
-          stringArray[i] = String.valueOf(jsonArray.get(i));
-        } catch (GfJsonException e) {
-          logger.info("", e);
-          stringArray = null;
-        }
+  public List<String> toStringList() {
+    List<String> stringArray = null;
+    int length = jsonArray.size();
+    stringArray = new ArrayList<>(length);
+    for (int i = 0; i < length; i++) {
+      try {
+        stringArray.add(getString(i));
+      } catch (GfJsonException e) {
+        logger.info("", e);
+        stringArray = null;
       }
     }
-
     return stringArray;
   }
 

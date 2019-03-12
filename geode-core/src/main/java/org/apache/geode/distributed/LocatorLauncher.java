@@ -78,7 +78,6 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.lang.AttachAPINotFoundException;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.util.HostUtils;
@@ -2000,8 +1999,16 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
         final Status status = Status.valueOfDescription(gfJsonObject.getString(JSON_STATUS));
 
+        // StringWriter writer = new StringWriter().append("Bruce: LocatorState.fromJson document
+        // keys=");
+        // for (Iterator<String> keys = gfJsonObject.keys(); keys.hasNext();) {
+        // writer.append(" ").append(keys.next());
+        // }
+        // System.out.println(writer.toString());
+        // System.out.println("Bruce: jvmArguments="+gfJsonObject.getJSONObject(JSON_JVMARGUMENTS));
+
         final List<String> jvmArguments =
-            Arrays.asList(GfJsonArray.toStringArray(gfJsonObject.getJSONArray(JSON_JVMARGUMENTS)));
+            gfJsonObject.getJSONArray(JSON_JVMARGUMENTS).toStringList();
 
         return new LocatorState(status, gfJsonObject.getString(JSON_STATUSMESSAGE),
             gfJsonObject.getLong(JSON_TIMESTAMP), gfJsonObject.getString(JSON_LOCATION),

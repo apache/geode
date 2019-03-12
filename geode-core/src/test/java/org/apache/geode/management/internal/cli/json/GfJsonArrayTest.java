@@ -59,15 +59,15 @@ public class GfJsonArrayTest {
     gfJsonArray = new GfJsonArray(new String[] {"a", "b", "c"});
 
     assertThat(gfJsonArray.size()).isEqualTo(3);
-    assertThat(gfJsonArray.get(0)).isEqualTo("a");
-    assertThat(gfJsonArray.get(1)).isEqualTo("b");
-    assertThat(gfJsonArray.get(2)).isEqualTo("c");
+    assertThat(gfJsonArray.getString(0)).isEqualTo("a");
+    assertThat(gfJsonArray.getString(1)).isEqualTo("b");
+    assertThat(gfJsonArray.getString(2)).isEqualTo("c");
   }
 
   @Test
   public void addSingleObject() throws Exception {
     gfJsonArray.put("a");
-    assertThat(gfJsonArray.get(0)).isEqualTo("a");
+    assertThat(gfJsonArray.getString(0)).isEqualTo("a");
     assertThat(gfJsonArray.toString()).isEqualTo("[\"a\"]");
   }
 
@@ -77,9 +77,9 @@ public class GfJsonArrayTest {
     gfJsonArray.put("b");
     gfJsonArray.put("c");
 
-    assertThat(gfJsonArray.get(0)).isEqualTo("a");
-    assertThat(gfJsonArray.get(1)).isEqualTo("b");
-    assertThat(gfJsonArray.get(2)).isEqualTo("c");
+    assertThat(gfJsonArray.getString(0)).isEqualTo("a");
+    assertThat(gfJsonArray.getString(1)).isEqualTo("b");
+    assertThat(gfJsonArray.getString(2)).isEqualTo("c");
     assertThat(gfJsonArray.toString()).isEqualTo("[\"a\",\"b\",\"c\"]");
   }
 

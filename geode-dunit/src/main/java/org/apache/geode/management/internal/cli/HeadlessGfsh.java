@@ -105,6 +105,9 @@ public class HeadlessGfsh implements ResultHandler {
     if (!success && shell.output != null) {
       outputString = shell.output.toString();
       shell.output.reset();
+      System.out.println(
+          "Bruce: HeadlessGfsh.executeCommand setting gfsh.outputString to " + outputString);
+      Thread.dumpStack();
     }
     return success;
   }
@@ -117,6 +120,11 @@ public class HeadlessGfsh implements ResultHandler {
   @Override
   public void handleExecutionResult(Object result, String sysout) {
     queue.add(result);
+    System.out.println("Bruce: HeadlessGfsh.handleExecutionResult result class is "
+        + result.getClass() + " toString=" + result);
+    System.out
+        .println("Bruce: HeadlessGfsh.handleExecutionResult is setting gfsh.outputString to \""
+            + sysout + "\"");
     outputString = sysout;
   }
 
@@ -126,6 +134,7 @@ public class HeadlessGfsh implements ResultHandler {
       return null;
     try {
       Object result = queue.poll(timeout, TimeUnit.SECONDS);
+      // System.out.println("Bruce: HeadlessGfsh.getResult found " + result);
       queue.clear();
       if (!(result instanceof org.apache.geode.management.internal.cli.result.CommandResult)) {
         if (result == null) {
@@ -206,6 +215,8 @@ public class HeadlessGfsh implements ResultHandler {
     @Override
     protected void handleExecutionResult(Object result) {
       if (!result.equals(ERROR_RESULT)) {
+        System.out
+            .println("HeadlessGfsh.handleExecutionResult output is \"" + output.toString() + "\"");
         super.handleExecutionResult(result);
         handler.handleExecutionResult(result, output.toString());
         output.reset();

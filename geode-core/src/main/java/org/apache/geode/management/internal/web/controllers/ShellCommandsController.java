@@ -48,6 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.Result;
@@ -191,8 +192,12 @@ public class ShellCommandsController extends AbstractCommandsController {
   private ResponseEntity<InputStreamResource> getResponse(String result) {
     CommandResult commandResult = ResultBuilder.fromJson(result);
     if (commandResult.getStatus().equals(Result.Status.OK) && commandResult.hasFileToDownload()) {
+      InternalDistributedSystem.getLogger()
+          .info("Bruce: returning file download response from ShellCommandsController.getResponse");
       return getFileDownloadResponse(commandResult);
     } else {
+      InternalDistributedSystem.getLogger()
+          .info("Bruce: returning json response from ShellCommandsController.getResponse");
       return getJsonResponse(result);
     }
   }

@@ -270,18 +270,23 @@ public class Gfsh extends JLineShell {
   }
 
   public static void println() {
+    System.out.println("Bruce: println()");
     gfshout.println();
   }
 
   public static <T> void println(T toPrint) {
+    System.out.println("Bruce: println(" + "\"" + toPrint + "\")");
     gfshout.println(toPrint);
   }
 
   public static <T> void print(T toPrint) {
+    System.out.print("Bruce: print(\"" + toPrint + "\")");
     gfshout.print(toPrint);
   }
 
   public static <T> void printlnErr(T toPrint) {
+    System.err.println("Bruce: printlnErr(\"" + toPrint + "\"");
+    Thread.dumpStack();
     gfsherr.println(toPrint);
   }
 
@@ -706,7 +711,9 @@ public class Gfsh extends JLineShell {
           if (!isScriptRunning) {
             // Normal Command
             while (commandResult.hasNextLine()) {
-              write(commandResult.nextLine(), isError);
+              String nextLine = commandResult.nextLine();
+              System.out.println("Bruce: Gfsh.handleExecutionResult writing " + nextLine);
+              write(nextLine, isError);
             }
           } else if (!suppressScriptCmdOutput) {
             // Command is part of script. Show output only when quite=false
@@ -722,6 +729,7 @@ public class Gfsh extends JLineShell {
         // to save the exported file at this point. All file saving should be done in the
         // specific command's postExecutor
         if (result instanceof LegacyCommandResult) {
+          System.out.println("Bruce: Gfsh.handleExecutionResult processing LegacyCommandResult");
           CommandResult cmdResult = (CommandResult) result;
           if (cmdResult.hasIncomingFiles()) {
             boolean isAlreadySaved = cmdResult.getNumTimesSaved() > 0;
@@ -733,9 +741,11 @@ public class Gfsh extends JLineShell {
         }
       }
       if (result != null && !(result instanceof Result)) {
+        System.out.println("Bruce: Gfsh.handleExecutionResult is printing " + result);
         printAsInfo(result.toString());
       }
     } catch (Exception e) {
+      e.printStackTrace();
       printAsWarning(e.getMessage());
       logToFile(e.getMessage(), e);
     }

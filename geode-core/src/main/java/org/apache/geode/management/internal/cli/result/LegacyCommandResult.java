@@ -262,7 +262,7 @@ public class LegacyCommandResult implements CommandResult {
   }
 
   private static String[] getValuesSeparatedByLines(Object object) {
-    String valueString = String.valueOf(object);
+    String valueString = "" + object;
     return valueString.split(GfshParser.LINE_SEPARATOR);
   }
 
@@ -275,7 +275,7 @@ public class LegacyCommandResult implements CommandResult {
 
     // build Table Header first
     for (int i = 0; i < numOfColumns; i++) {
-      Object object = columnNames.get(i);
+      Object object = columnNames.getString(i);
       if (ResultData.BYTE_DATA_ACCESSOR.equals(object)) {
         // skip file data if any
         continue;
@@ -286,7 +286,7 @@ public class LegacyCommandResult implements CommandResult {
     // Build remaining rows by extracting data column-wise from JSON object
     Row[] dataRows = null;
     for (int i = 0; i < numOfColumns; i++) {
-      Object object = columnNames.get(i);
+      Object object = columnNames.getString(i);
       if (ResultData.BYTE_DATA_ACCESSOR.equals(object)) {
         // skip file data if any
         continue;
@@ -312,7 +312,7 @@ public class LegacyCommandResult implements CommandResult {
 
     // Add data column-wise
     for (int j = 0; j < size; j++) {
-      dataRows[j].newLeftCol(accumulatedData.get(j));
+      dataRows[j].newLeftCol(accumulatedData.getString(j));
     }
     return dataRows;
   }
@@ -402,6 +402,7 @@ public class LegacyCommandResult implements CommandResult {
   public String getMessageFromContent() {
     List<String> messages;
     try {
+      // System.out.println("BRUCE: getMessageFromContent() content="+getContent());
       GfJsonArray jsonArray = getContent().getJSONArray("message");
       if (jsonArray == null) {
         return "";
@@ -421,6 +422,7 @@ public class LegacyCommandResult implements CommandResult {
 
   @Override
   public List<String> getListFromContent(String key) {
+    System.out.println("BRUCE: LegacyCommandResult.getListFromContentString(" + key + ")");
     return getContent().getArrayValues(key);
   }
 

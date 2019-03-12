@@ -1078,8 +1078,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
   private void forceDisconnect(String reason) {
     this.isStopping = true;
     if (!isJoined) {
-      logger.fatal("BRUCE: forcedDisconnect invoked.  isReconnecting={} isJoined={}",
-          services.getConfig().isReconnecting(), isJoined);
       joinResponse[0] =
           new JoinResponseMessage(
               "Stopping due to ForcedDisconnectException caused by '" + reason + "'", -1);

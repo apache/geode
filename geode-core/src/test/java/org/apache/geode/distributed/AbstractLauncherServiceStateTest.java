@@ -42,7 +42,6 @@ import org.junit.Test;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
@@ -805,8 +804,7 @@ public class AbstractLauncherServiceStateTest {
           GfJsonObject gfJsonObject = new GfJsonObject(json);
 
           Status status = valueOfDescription(gfJsonObject.getString(JSON_STATUS));
-          List<String> jvmArguments = Arrays
-              .asList(GfJsonArray.toStringArray(gfJsonObject.getJSONArray(JSON_JVMARGUMENTS)));
+          List<String> jvmArguments = gfJsonObject.getJSONArray(JSON_JVMARGUMENTS).toStringList();
 
           return new TestState(status, gfJsonObject.getString(JSON_STATUSMESSAGE),
               gfJsonObject.getLong(JSON_TIMESTAMP), gfJsonObject.getString(JSON_LOCATION),
