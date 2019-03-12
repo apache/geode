@@ -2728,7 +2728,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return in.readUTF();
   }
 
-  private static ThreadLocal<byte[]> readStringBytesFromDataInputBuffer =
+  private static final ThreadLocal<byte[]> readStringBytesFromDataInputBuffer =
       new ThreadLocal<>().withInitial(() -> new byte[100000]);
 
   private static String readStringBytesFromDataInput(DataInput dataInput, int len)
