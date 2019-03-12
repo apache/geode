@@ -48,8 +48,7 @@ import org.apache.geode.internal.datasource.ClientConnectionFactoryWrapper;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.datasource.DataSourceFactory;
-import org.apache.geode.internal.datasource.GemFireBasicDataSource;
-import org.apache.geode.internal.datasource.GemFireConnPooledDataSource;
+import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
@@ -409,9 +408,11 @@ public class JNDIInvoker {
   public static boolean checkForInvalidDataSource(String name) {
     Object dataSource = dataSourceMap.get(name);
 
-    if (dataSource == null || dataSource instanceof GemFireBasicDataSource
-        || dataSource instanceof GemFireConnPooledDataSource) {
-      return false;
+    if (dataSource != null) {
+      if (dataSource instanceof DataSource
+          && !(dataSource instanceof GemFireTransactionDataSource)) {
+        return false;
+      }
     }
     return true;
   }

@@ -163,6 +163,18 @@ public class ListDataSourceCommandDUnitTest {
   }
 
   @Test
+  public void listDataSourceForPooledDataSourceByDefault() {
+    gfsh.executeAndAssertThat(
+        "create data-source --name=pooledDataSource --url=\"jdbc:derby:memory:newDB;create=true\" --pooled-data-source-factory-class=org.apache.geode.internal.jta.CacheJTAPooledDataSourceFactory --pool-properties={'name':'prop1','value':'value1'},{'name':'pool.prop2','value':'value2'}")
+        .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
+
+    gfsh.executeAndAssertThat("list data-source").statusIsSuccess()
+        .tableHasRowWithValues("name", "pooled", "in use", "url", "pooledDataSource", "true",
+            "false",
+            "jdbc:derby:memory:newDB;create=true");
+  }
+
+  @Test
   public void listDataSourceWithMultipleDataSourcesListsAll() {
     gfsh.executeAndAssertThat(
         "create data-source --name=simple --pooled=false --url=\"jdbc:derby:memory:newDB;create=true\" --username=joe --password=myPassword")

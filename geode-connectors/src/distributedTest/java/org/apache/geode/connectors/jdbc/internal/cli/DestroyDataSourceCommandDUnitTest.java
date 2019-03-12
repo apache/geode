@@ -62,7 +62,7 @@ public class DestroyDataSourceCommandDUnitTest {
     gfsh.connectAndVerify(locator);
 
     gfsh.execute(
-        "create data-source --name=datasource1 --url=\"jdbc:derby:memory:newDB;create=true\" --pooled=false");
+        "create data-source --name=datasource1 --url=\"jdbc:derby:memory:newDB;create=true\"");
   }
 
   @Test
@@ -72,7 +72,7 @@ public class DestroyDataSourceCommandDUnitTest {
         .invokeInEveryMember(
             () -> assertThat(JNDIInvoker.getBindingNamesRecursively(JNDIInvoker.getJNDIContext()))
                 .containsKey("java:datasource1").containsValue(
-                    "org.apache.geode.internal.datasource.GemFireBasicDataSource"),
+                    "com.zaxxer.hikari.HikariDataSource"),
             server1, server2);
 
     gfsh.executeAndAssertThat("destroy data-source --name=datasource1").statusIsSuccess()
@@ -97,6 +97,69 @@ public class DestroyDataSourceCommandDUnitTest {
       for (int i = 0; i < jndiBindings.getLength(); i++) {
         Element eachBinding = (Element) jndiBindings.item(i);
         if (eachBinding.getAttribute("jndi-name").equals("datasource1")) {
+          found = true;
+          break;
+        }
+      }
+      AssertionsForClassTypes.assertThat(found).isFalse();
+    });
+
+    // verify datasource does not exists
+    VMProvider.invokeInEveryMember(
+        () -> AssertionsForClassTypes.assertThat(JNDIInvoker.getNoOfAvailableDataSources())
+            .isEqualTo(0),
+        server1, server2);
+
+    // bounce server1 and assert that there is still no datasource received from cluster config
+    server1.stop(false);
+    server1 = cluster.startServerVM(1, locator.getPort());
+
+    // verify no datasource from cluster config
+    server1.invoke(() -> {
+      AssertionsForClassTypes.assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0);
+    });
+  }
+
+  @Test
+  public void testDestroySimpleDataSource() throws Exception {
+    // drop the default pooled data source
+    gfsh.executeAndAssertThat("destroy data-source --name=datasource1").statusIsSuccess();
+
+    // create a simple data source, i.e. non-pooled data source
+    gfsh.execute(
+        "create data-source --name=datasource2 --url=\"jdbc:derby:memory:newDB;create=true\" --pooled=false");
+
+    // assert that there is a datasource
+    VMProvider
+        .invokeInEveryMember(
+            () -> assertThat(JNDIInvoker.getBindingNamesRecursively(JNDIInvoker.getJNDIContext()))
+                .containsKey("java:datasource2").containsValue(
+                    "org.apache.geode.internal.datasource.GemFireBasicDataSource"),
+            server1, server2);
+
+
+    gfsh.executeAndAssertThat("destroy data-source --name=datasource2").statusIsSuccess()
+        .tableHasColumnOnlyWithValues("Member", "server-1", "server-2")
+        .tableHasColumnOnlyWithValues("Message",
+            "Data source \"datasource2\" destroyed on \"server-1\"",
+            "Data source \"datasource2\" destroyed on \"server-2\"");
+
+    // verify cluster config is updated
+    locator.invoke(() -> {
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
+      AssertionsForClassTypes.assertThat(internalLocator).isNotNull();
+      InternalConfigurationPersistenceService ccService =
+          internalLocator.getConfigurationPersistenceService();
+      Configuration configuration = ccService.getConfiguration("cluster");
+      Document document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
+      NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
+
+      AssertionsForClassTypes.assertThat(jndiBindings.getLength()).isEqualTo(0);
+
+      boolean found = false;
+      for (int i = 0; i < jndiBindings.getLength(); i++) {
+        Element eachBinding = (Element) jndiBindings.item(i);
+        if (eachBinding.getAttribute("jndi-name").equals("datasource2")) {
           found = true;
           break;
         }
@@ -191,6 +254,29 @@ public class DestroyDataSourceCommandDUnitTest {
       gfsh.executeAndAssertThat("destroy data-source --name=datasource1").statusIsError()
           .containsOutput(
               "Data source named \"datasource1\" is still being used by region \"myRegion\"."
+                  + " Use destroy jdbc-mapping --region=myRegion and then try again.");
+    } finally {
+      dropTable();
+    }
+  }
+
+  @Test
+  public void destroySimpleDataSourceFailsIfInUseByJdbcMapping() throws Exception {
+    // create a simple data source, i.e. non-pooled data source
+    gfsh.execute(
+        "create data-source --name=datasource2 --url=\"jdbc:derby:memory:newDB;create=true\" --pooled=false");
+
+    gfsh.executeAndAssertThat("create region --name=myRegion --type=REPLICATE").statusIsSuccess();
+    createTable();
+    try {
+      gfsh.executeAndAssertThat(
+          "create jdbc-mapping --data-source=datasource2 --pdx-name=" + IdAndName.class.getName()
+              + " --region=myRegion --schema=mySchema")
+          .statusIsSuccess();
+
+      gfsh.executeAndAssertThat("destroy data-source --name=datasource2").statusIsError()
+          .containsOutput(
+              "Data source named \"datasource2\" is still being used by region \"myRegion\"."
                   + " Use destroy jdbc-mapping --region=myRegion and then try again.");
     } finally {
       dropTable();
