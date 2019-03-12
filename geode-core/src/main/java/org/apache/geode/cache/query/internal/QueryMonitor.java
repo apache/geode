@@ -150,7 +150,7 @@ public class QueryMonitor {
    * ThreadLocal on the query thread!
    */
   public void stopMonitoringQueryThread(final DefaultQuery query) {
-    query.getCancelationTask().get().ifPresent(task -> task.cancel(false));
+    query.getCancelationTask().ifPresent(task -> task.cancel(false));
 
     if (logger.isDebugEnabled()) {
       logDebug(query, "Query completed before cancelation.");
