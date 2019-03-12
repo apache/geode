@@ -12,11 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.util;
+package org.apache.geode.cache.query.internal;
 
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -32,43 +33,56 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.internal.index.PartitionedIndex;
+import org.apache.geode.distributed.DistributedSystem;
 
 /**
- * Test spins up threads that constantly do computeIfAbsent
+ * Test spins up threads that constantly do getBucketIndex
  * The tests will measure throughput
- * The benchmark tests computeIfAbsent in the presence of other threads contending for the same key
+ * The benchmark tests getBucketIndex in the presence of other threads attempting the same operation
  */
 
 @State(Scope.Thread)
 @Fork(1)
-public class ComputeIfAbsentBenchmark {
+public class PartitionedIndexGetBucketIndexBenchmark {
 
-  public Map map = new ConcurrentHashMap();
+  private PartitionedIndex index;
   /*
    * After load is established, how many measurements shall we take?
    */
   private static final double BENCHMARK_ITERATIONS = 10;
 
-  @Setup(Level.Trial)
-  public void trialSetup() throws InterruptedException {}
 
+  @Setup(Level.Trial)
+  public void trialSetup() throws InterruptedException {
+    DistributedSystem mockDS = mock(DistributedSystem.class);
+    Cache mockCache = mock(Cache.class);
+    Region mockRegion = mock(Region.class);
+    when(mockRegion.getCache()).thenReturn(mockCache);
+    when(mockCache.getDistributedSystem()).thenReturn(mockDS);
+    index = new PartitionedIndex(null, null, "", mockRegion, "", "", "");
+    index.addToBucketIndexes(mockRegion, mock(Index.class));
+  }
 
   @Group("getBucketIndexThroughput")
   @GroupThreads(10)
   @Benchmark
   public void getBucketIndexLoad() {
-    JavaWorkarounds.computeIfAbsent(map, 1, k -> k);
+    index.getBucketIndex();
   }
 
   @Benchmark
-  @Group("computeIfAbsentThroughput")
+  @Group("getBucketIndexThroughput")
   @GroupThreads(1)
   @Measurement(iterations = (int) BENCHMARK_ITERATIONS)
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.SECONDS)
   // @Warmup we don't warm up because our @Setup warms us up
-  public Object computeIfAbsent() {
-    return JavaWorkarounds.computeIfAbsent(map, 1, k -> k);
+  public Object getBucketIndex() {
+    return index.getBucketIndex();
   }
 
 }
