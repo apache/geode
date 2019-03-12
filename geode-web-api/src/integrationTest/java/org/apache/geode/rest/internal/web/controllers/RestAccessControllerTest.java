@@ -665,7 +665,7 @@ public class RestAccessControllerTest {
 
     mockMvc.perform(post(
         "/v1/queries?id=selectOrder&q=SELECT DISTINCT o FROM /orders o, o.items item WHERE item.quantity > $1 AND item.totalPrice > $2")
-        .with(POST_PROCESSOR))
+            .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/selectOrder"));
 
@@ -677,7 +677,7 @@ public class RestAccessControllerTest {
 
     mockMvc.perform(post(
         "/v1/queries?id=selectHighRoller&q=SELECT DISTINCT c FROM /customers c, /orders o, o.items item WHERE item.totalprice > $1 AND c.customerId = o.customerId")
-        .with(POST_PROCESSOR))
+            .with(POST_PROCESSOR))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", BASE_URL + "/queries/selectHighRoller"));
 
@@ -995,7 +995,7 @@ public class RestAccessControllerTest {
 class TestContextLoader extends GenericXmlWebContextLoader {
   @Override
   protected void loadBeanDefinitions(GenericWebApplicationContext context,
-                                     WebMergedContextConfiguration webMergedConfig) {
+      WebMergedContextConfiguration webMergedConfig) {
     super.loadBeanDefinitions(context, webMergedConfig);
     context.getServletContext().setAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
         RestAccessControllerTest.rule.getCache().getSecurityService());
