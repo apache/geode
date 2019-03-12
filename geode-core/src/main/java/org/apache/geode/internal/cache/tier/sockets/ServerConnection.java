@@ -772,12 +772,7 @@ public abstract class ServerConnection implements Runnable {
       return;
     }
     Message message;
-    try {
-      getCache().getCachePerfStats().increadMessagesInProgress();
-      message = BaseCommand.readRequest(this);
-    } finally {
-      getCache().getCachePerfStats().decreadMessagesInProgress();
-    }
+    message = BaseCommand.readRequest(this);
     if (serverConnectionCollection.isTerminating) {
       // Client is being disconnected, don't try to process message.
       this.processMessages = false;
