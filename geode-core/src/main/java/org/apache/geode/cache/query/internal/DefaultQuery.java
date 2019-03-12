@@ -166,8 +166,8 @@ public class DefaultQuery implements Query {
     return pdxClassToMethodsMap.get();
   }
 
-  public ThreadLocal<Optional<ScheduledFuture>> getCancelationTask() {
-    return cancelationTask;
+  public Optional<ScheduledFuture> getCancelationTask() {
+    return cancelationTask.get();
   }
 
   public void setCancelationTask(final ScheduledFuture cancelationTask) {
