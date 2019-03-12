@@ -357,7 +357,7 @@ public class QueryMonitor {
         DefaultQuery.queryCanceled.get();
 
     final AtomicReference<CacheRuntimeException> queryCanceledException =
-        query.queryCancelledException.get();
+        query.getQueryCanceledExceptionAtomicReference();
 
     /*
      * This is where the GoF "State" design pattern comes home to roost.

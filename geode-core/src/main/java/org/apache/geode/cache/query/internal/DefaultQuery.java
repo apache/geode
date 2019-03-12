@@ -87,7 +87,7 @@ public class DefaultQuery implements Query {
 
   private final ThreadLocal<Optional<ScheduledFuture>> cancelationTask;
 
-  final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCancelledException;
+  private final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCancelledException;
 
   static final ThreadLocal<AtomicBoolean> queryCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
@@ -720,6 +720,10 @@ public class DefaultQuery implements Query {
 
   public CacheRuntimeException getQueryCanceledException() {
     return queryCancelledException.get().get();
+  }
+
+  public AtomicReference<CacheRuntimeException> getQueryCanceledExceptionAtomicReference() {
+    return queryCancelledException.get();
   }
 
   /**
