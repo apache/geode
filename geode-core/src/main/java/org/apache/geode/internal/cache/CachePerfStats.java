@@ -158,8 +158,6 @@ public class CachePerfStats {
   static final int compressionPreCompressedBytesId;
   static final int compressionPostCompressedBytesId;
 
-  static final int messagesInProgressId;
-
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
@@ -496,8 +494,7 @@ public class CachePerfStats {
             f.createLongCounter("evictByCriteria_evaluations", evictByCriteria_evaluationsDesc,
                 "operations"),
             f.createLongCounter("evictByCriteria_evaluationTime",
-                evictByCriteria_evaluationTimeDesc, "nanoseconds"),
-            f.createLongGauge("messagesInProgress", "Messages in progress.", "messages")});
+                evictByCriteria_evaluationTimeDesc, "nanoseconds")});
 
     loadsInProgressId = type.nameToId("loadsInProgress");
     loadsCompletedId = type.nameToId("loadsCompleted");
@@ -618,8 +615,6 @@ public class CachePerfStats {
     compressionDecompressionsId = type.nameToId("decompressions");
     compressionPreCompressedBytesId = type.nameToId("preCompressedBytes");
     compressionPostCompressedBytesId = type.nameToId("postCompressedBytes");
-
-    messagesInProgressId = type.nameToId("messagesInProgress");
   }
 
   /** The Statistics object that we delegate most behavior to */
@@ -1490,14 +1485,6 @@ public class CachePerfStats {
     if (enableClockStats) {
       stats.incLong(exportTimeId, getClockTime() - start);
     }
-  }
-
-  public void incMessagesInProgress() {
-    stats.incLong(messagesInProgressId, 1);
-  }
-
-  public void decMessagesInProgress() {
-    stats.incLong(messagesInProgressId, -1);
   }
 
   interface Clock {
