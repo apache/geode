@@ -1,7 +1,6 @@
 [<img src="https://geode.apache.org/img/apache_geode_logo.png" align="center"/>](http://geode.apache.org)
 
-[![Build Status](https://travis-ci.org/apache/geode.svg?branch=develop)](https://travis-ci.org/apache/geode) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.geode/geode-core/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.geode%22) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](http://brewformulas.org/ApacheGeode) [![Docker Pulls](https://img.shields.io/docker/pulls/apachegeode/geode.svg)](https://hub.docker.com/r/apachegeode/geode/)
-
+[![Build Status](https://concourse.apachegeode-ci.info/api/v1/teams/main/pipelines/apache-develop-main/jobs/Build/badge)](https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-develop-main) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.geode/geode-core/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.geode%22) [![homebrew](https://img.shields.io/homebrew/v/apache-geode.svg)](http://brewformulas.org/ApacheGeode) [![Docker Pulls](https://img.shields.io/docker/pulls/apachegeode/geode.svg)](https://hub.docker.com/r/apachegeode/geode/)
 
 ## Contents
 1. [Overview](#overview)
@@ -110,11 +109,11 @@ Apache Geode includes the following features:
 
 ## <a name="building"></a>Building this Release from Source
 
-See [BUILDING.md](https://github.com/apache/geode/blob/develop/BUILDING.md) for
+See [BUILDING.md](./BUILDING.md) for
 instructions on how to build the project.
 
 ## <a name="testing"></a>Running Tests
-See [TESTING.md](https://github.com/apache/geode/blob/develop/TESTING.md) for
+See [TESTING.md](./TESTING.md) for
 instructions on how to run tests.
 
 ## <a name="started"></a>Geode in 5 minutes
