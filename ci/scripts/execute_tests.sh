@@ -39,7 +39,7 @@ REPODIR=$(cd geode; git rev-parse --show-toplevel)
 if [[ ${PARALLEL_GRADLE:-"true"} == "true" ]]; then
   PARALLEL_GRADLE="--parallel"
 else
-  PARALLEL_GRADLE=""
+  PARALLEL_GRADLE="--no-parallel"
 fi
 DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon"
 GRADLE_SKIP_TASK_OPTIONS="-x javadoc -x spotlessCheck -x rat"
