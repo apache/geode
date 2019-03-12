@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.cli.result.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 public class InfoResultModel extends AbstractResultModel {
@@ -44,10 +43,5 @@ public class InfoResultModel extends AbstractResultModel {
   public InfoResultModel removeLine(int index) {
     messages.remove(index);
     return this;
-  }
-
-  @JsonIgnore
-  public String getStringContent() {
-    return String.join(System.lineSeparator(), messages);
   }
 }
