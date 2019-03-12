@@ -55,7 +55,8 @@ public interface ConnectionFactory {
    * @throws GemFireSecurityException if there was a security exception trying to establish a
    *         connection.
    */
-  Connection createClientToServerConnection(Set excludedServers) throws GemFireSecurityException;
+  Connection createClientToServerConnection(Set<ServerLocation> excludedServers)
+      throws GemFireSecurityException;
 
   ClientUpdater createServerToClientConnection(Endpoint endpoint, QueueManager qManager,
       boolean isPrimary, ClientUpdater failedUpdater);

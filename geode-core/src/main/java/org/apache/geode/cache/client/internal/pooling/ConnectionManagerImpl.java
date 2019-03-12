@@ -94,7 +94,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   private ConnectionFactory connectionFactory;
   protected boolean haveIdleExpireConnectionsTask;
-  protected volatile boolean havePrefillTask;
+  protected final AtomicBoolean havePrefillTask = new AtomicBoolean(false);
   private boolean keepAlive = false;
   protected final AtomicBoolean shuttingDown = new AtomicBoolean(false);
   private EndpointManager.EndpointListenerAdapter endpointListener;
@@ -178,13 +178,19 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /**
    * Should only be called by a method that atomically increments @{link #connectionCount}, like
-   * {@link #tryCreateConnection()} or {@link #forceCreateConnection()}.
+   * {@link #tryCreateConnection(Set)} or {@link #forceCreateConnection(ServerLocation, Set)}.
    */
-  private PooledConnection createPooledConnection() {
+  private PooledConnection createPooledConnection(final ServerLocation serverLocation,
+      final Set<ServerLocation> excludedServers) {
     PooledConnection connection = null;
     try {
-      connection =
-          addConnection(connectionFactory.createClientToServerConnection(Collections.EMPTY_SET));
+      if (null == serverLocation) {
+        connection =
+            addConnection(connectionFactory.createClientToServerConnection(excludedServers));
+      } else {
+        connection =
+            addConnection(connectionFactory.createClientToServerConnection(serverLocation, false));
+      }
     } catch (GemFireSecurityException | GatewayConfigurationException e) {
       throw new ServerOperationException(e);
     } catch (ServerRefusedConnectionException e) {
@@ -203,13 +209,13 @@ public class ConnectionManagerImpl implements ConnectionManager {
   /**
    * Try to create a connection if and only if we have not reached {@link #maxConnections}.
    */
-  private PooledConnection tryCreateConnection()
+  private PooledConnection tryCreateConnection(final Set<ServerLocation> excludedServers)
       throws ServerOperationException, NoAvailableServersException {
 
     int currentConnectionCount;
     while ((currentConnectionCount = connectionCount.get()) < maxConnections) {
       if (connectionCount.compareAndSet(currentConnectionCount, currentConnectionCount + 1)) {
-        return createPooledConnection();
+        return createPooledConnection(null, excludedServers);
       }
     }
 
@@ -220,27 +226,23 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * Always creates a connection and may cause {@link #connectionCount} to exceed
    * {@link #maxConnections}.
    */
-  private PooledConnection forceCreateConnection()
+  private PooledConnection forceCreateConnection(final ServerLocation serverLocation,
+      final Set<ServerLocation> excludedServers)
       throws ServerOperationException, NoAvailableServersException {
     connectionCount.getAndIncrement();
-    return createPooledConnection();
+    return createPooledConnection(serverLocation, excludedServers);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.pooling.ConnectionManager#borrowConnection(long)
-   */
   @Override
   public Connection borrowConnection(long acquireTimeout)
       throws AllConnectionsInUseException, NoAvailableServersException {
     long waitStart = -1;
     try {
       long timeout = System.currentTimeMillis() + acquireTimeout;
-      while (System.currentTimeMillis() < timeout) {
+      while (true) {
         PooledConnection connection = availableConnections.poll();
         if (null == connection) {
-          connection = tryCreateConnection();
+          connection = tryCreateConnection(Collections.emptySet());
           if (null != connection) {
             return connection;
           }
@@ -263,6 +265,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
         if (-1 == waitStart) {
           waitStart = getPoolStats().beginConnectionWait();
+        }
+
+        if (System.currentTimeMillis() >= timeout) {
+          break;
         }
 
         Thread.yield();
@@ -298,32 +304,46 @@ public class ConnectionManagerImpl implements ConnectionManager {
       return connection;
     }
 
-    if (onlyUseExistingCnx) {
-      throw new AllConnectionsInUseException();
+    if (!onlyUseExistingCnx) {
+      connection = forceCreateConnection(server, Collections.emptySet());
+      if (null != connection) {
+        return connection;
+      }
     }
 
-    return forceCreateConnection();
+    throw new AllConnectionsInUseException();
   }
 
   @Override
-  public Connection exchangeConnection(Connection oldConnection,
-      Set<ServerLocation> excludedServers, long acquireTimeout)
+  public Connection exchangeConnection(final Connection oldConnection,
+      final Set<ServerLocation> excludedServers, final long acquireTimeout)
       throws AllConnectionsInUseException {
 
     if (shuttingDown.get()) {
       throw new PoolCancelledException();
     }
 
-    returnConnection(oldConnection);
+    try {
+      long timeout = System.currentTimeMillis() + acquireTimeout;
+      PooledConnection connection =
+          findConnection(
+              (c) -> !(excludedServers.contains(c.getServer()) || oldConnection.equals(c)), timeout,
+              false);
+      if (null != connection) {
+        return connection;
+      }
 
-    long timeout = System.currentTimeMillis() + acquireTimeout;
-    PooledConnection connection =
-        findConnection((c) -> !excludedServers.contains(c.getServer()), timeout, false);
-    if (null != connection) {
-      return connection;
+      // TODO the description of this method does not really make sense. Forcing connection here to
+      // make test pass
+      connection = forceCreateConnection(null, excludedServers);
+      if (null != connection) {
+        return connection;
+      }
+    } finally {
+      returnConnection(oldConnection);
     }
 
-    return tryCreateConnection();
+    throw new AllConnectionsInUseException();
   }
 
   /**
@@ -340,10 +360,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     while (true) {
       // TODO size is not constant time
       for (int i = availableConnections.size(); i > 0; --i) {
-        if (timeout > System.currentTimeMillis()) {
-          throw new AllConnectionsInUseException();
-        }
-
         PooledConnection connection = availableConnections.poll();
         if (null == connection) {
           break;
@@ -362,6 +378,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
 
       if (findUntilTimeout) {
+        if (timeout > System.currentTimeMillis()) {
+          throw new AllConnectionsInUseException();
+        }
+
         Thread.yield();
         continue;
       }
@@ -399,10 +419,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
         logger.debug("Invalidating connection {} connection count is now {}", connection,
             connectionCount);
       }
+    }
 
-      if (connectionCount.decrementAndGet() < minConnections) {
-        startBackgroundPrefill();
-      }
+    if (connectionCount.decrementAndGet() < minConnections) {
+      startBackgroundPrefill();
     }
 
     connection.internalDestroy();
@@ -437,15 +457,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
       conn.setShouldDestroy();
     }
 
-    availableConnections.removeIf((connection) -> {
-      if (badConnections.contains(connection)) {
-        connectionCount.decrementAndGet();
-        return true;
-      }
-      return false;
-    });
+    availableConnections.removeIf(badConnections::contains);
 
-    if (connectionCount.get() < minConnections) {
+    if (connectionCount.addAndGet(-badConnections.size()) < minConnections) {
       startBackgroundPrefill();
     }
 
@@ -474,7 +488,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     assert connection instanceof PooledConnection;
     PooledConnection pooledConn = (PooledConnection) connection;
 
-    // boolean shouldClose = false;
     if (pooledConn.isDestroyed()) {
       return;
     }
@@ -501,7 +514,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
    */
   private boolean destroyIfOverLimit(PooledConnection connection) {
     int currentCount;
-    while ((currentCount = connectionCount.get()) >= maxConnections) {
+    while ((currentCount = connectionCount.get()) > maxConnections) {
       if (connectionCount.compareAndSet(currentCount, currentCount - 1)) {
         if (allConnectionsMap.removeConnection(connection)) {
           try {
@@ -604,9 +617,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   /** Always called with lock held */
-  protected void startBackgroundPrefill() {
-    if (!havePrefillTask) {
-      havePrefillTask = true;
+  private void startBackgroundPrefill() {
+    if (havePrefillTask.compareAndSet(false, true)) {
       try {
         backgroundProcessor.execute(new PrefillConnectionsTask());
       } catch (RejectedExecutionException e) {
@@ -616,7 +628,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
-  protected boolean prefill() {
+  private boolean prefill() {
     try {
       while (connectionCount.get() < minConnections) {
         if (cancelCriterion.isCancelInProgress()) {
@@ -664,45 +676,44 @@ public class ConnectionManagerImpl implements ConnectionManager {
       return false;
     }
 
-    int currentConnectionCount = connectionCount.get();
-    if (!(currentConnectionCount < minConnections &&
-        connectionCount.compareAndSet(currentConnectionCount, currentConnectionCount + 1))) {
-      return false;
+    int currentConnectionCount;
+    while ((currentConnectionCount = connectionCount.get()) < minConnections) {
+      if (connectionCount.compareAndSet(currentConnectionCount, currentConnectionCount + 1)) {
+        PooledConnection connection = null;
+        try {
+          Connection plainConnection =
+              connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
+          if (plainConnection == null) {
+            return false;
+          }
+          connection = addConnection(plainConnection);
+          connection.passivate(false);
+          getPoolStats().incPrefillConnect();
+          return true;
+        } catch (ServerConnectivityException ex) {
+          logger
+              .info(String.format("Unable to prefill pool to minimum because: %s",
+                  ex.getMessage()));
+          return false;
+        } finally {
+          if (connection == null) {
+            currentConnectionCount = connectionCount.decrementAndGet();
+            if (logger.isDebugEnabled()) {
+              logger.debug("Unable to prefill pool to minimum, connection count is now {}",
+                  currentConnectionCount);
+            }
+          } else {
+            availableConnections.add(connection);
+            if (logger.isDebugEnabled()) {
+              logger.debug("Prefilled connection {} connection count is now {}", connection,
+                  currentConnectionCount);
+            }
+          }
+        }
+      }
     }
 
-
-    PooledConnection connection = null;
-    try {
-      Connection plainConnection =
-          connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
-      if (plainConnection == null) {
-        return false;
-      }
-      connection = addConnection(plainConnection);
-      connection.passivate(false);
-      getPoolStats().incPrefillConnect();
-    } catch (ServerConnectivityException ex) {
-      logger
-          .info(String.format("Unable to prefill pool to minimum because: %s",
-              ex.getMessage()));
-      return false;
-    } finally {
-      if (connection == null) {
-        currentConnectionCount = connectionCount.decrementAndGet();
-        if (logger.isDebugEnabled()) {
-          logger.debug("Unable to prefill pool to minimum, connection count is now {}",
-              currentConnectionCount);
-        }
-      } else {
-        availableConnections.add(connection);
-        if (logger.isDebugEnabled()) {
-          logger.debug("Prefilled connection {} connection count is now {}", connection,
-              currentConnectionCount);
-        }
-      }
-    }
-
-    return null == connection;
+    return false;
   }
 
   public static void loadEmergencyClasses() {
@@ -766,7 +777,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
           // ignore, the timer has been cancelled, which means we're shutting down.
         }
       } else {
-        havePrefillTask = false;
+        havePrefillTask.set(false);
       }
     }
   }

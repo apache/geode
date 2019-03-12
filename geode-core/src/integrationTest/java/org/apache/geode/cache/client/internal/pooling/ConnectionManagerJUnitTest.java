@@ -356,10 +356,13 @@ public class ConnectionManagerJUnitTest {
 
     Connection conn1 = manager.borrowConnection(500);
     Connection conn2 = manager.borrowConnection(500);
+    Assert.assertEquals(2, factory.creates);
 
     // Return some connections, let them idle expire
     manager.returnConnection(conn1);
+    Assert.assertEquals(0, factory.destroys);
     manager.returnConnection(conn2);
+    Assert.assertEquals(0, factory.destroys);
 
     {
       long start = System.currentTimeMillis();
@@ -570,7 +573,11 @@ public class ConnectionManagerJUnitTest {
     Assert.assertEquals(0, factory.destroys);
     Assert.assertEquals(2, manager.getConnectionCount());
 
-    Connection conn3 = manager.exchangeConnection(conn1, Collections.EMPTY_SET, 10);
+    Connection conn3 = manager.exchangeConnection(conn1, Collections.emptySet(), 10);
+    Assert.assertNotNull(conn3);
+    Assert.assertNotEquals(conn1, conn3);
+    // TODO this violates the description of the method, disable until reconciled
+    // Assert.assertNotEquals(conn1.getServer(), conn3.getServer());
 
     Assert.assertEquals(3, factory.creates);
     Assert.assertEquals(1, factory.destroys);
@@ -882,7 +889,7 @@ public class ConnectionManagerJUnitTest {
     }
 
     @Override
-    public Connection createClientToServerConnection(Set excluded) {
+    public Connection createClientToServerConnection(Set<ServerLocation> excluded) {
       return createClientToServerConnection(nextServer, true);
     }
 

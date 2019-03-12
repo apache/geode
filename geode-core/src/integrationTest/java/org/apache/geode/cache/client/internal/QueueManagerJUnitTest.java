@@ -597,7 +597,7 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public Connection createClientToServerConnection(Set excludedServers) {
+    public Connection createClientToServerConnection(Set<ServerLocation> excludedServers) {
       return null;
     }
 

@@ -183,7 +183,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   }
 
   @Override
-  public Connection createClientToServerConnection(Set excludedServers)
+  public Connection createClientToServerConnection(Set<ServerLocation> excludedServers)
       throws GemFireSecurityException {
     final Set origExcludedServers = excludedServers;
     excludedServers = new HashSet(excludedServers);
