@@ -164,9 +164,15 @@ public class DeployWithGroupsDUnitTest implements Serializable {
       assertThatCannotLoad(jarName4, class4);
     });
 
-    // Undeploy of multiple jars by specifying group
+    // Undeploy of multiple jars without specifying group
     gfshConnector.executeAndAssertThat("undeploy --jars=" + jarName3 + "," + jarName4)
-        .statusIsSuccess();
+        .statusIsSuccess()
+        .hasTableSection("jars")
+        .hasRowSize(4)
+        .hasRowContaining("server-1", "DeployCommandsDUnit3.jar")
+        .hasRowContaining("server-1", "DeployCommandsDUnit4.jar")
+        .hasRowContaining("server-2", "DeployCommandsDUnit3.jar", "JAR not deployed")
+        .hasRowContaining("server-2", "DeployCommandsDUnit4.jar", "JAR not deployed");
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
       assertThatCannotLoad(jarName4, class4);

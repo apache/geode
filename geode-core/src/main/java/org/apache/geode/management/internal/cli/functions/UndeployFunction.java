@@ -14,14 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
@@ -58,52 +60,37 @@ public class UndeployFunction implements InternalFunction {
         memberId = member.getName();
       }
 
-      String[] undeployedJars = new String[0];
-      if (ArrayUtils.isEmpty(jarFilenameList)) {
-        final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
-        undeployedJars = new String[jarClassLoaders.size() * 2];
-        int index = 0;
-        for (DeployedJar jarClassLoader : jarClassLoaders) {
-          undeployedJars[index++] = jarClassLoader.getJarName();
-          try {
-            undeployedJars[index++] =
-                ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getJarName());
-          } catch (IllegalArgumentException iaex) {
-            // It's okay for it to have have been uneployed from this server
-            undeployedJars[index++] = iaex.getMessage();
-          }
-        }
+      List<String> jarNamesToUndeploy;
+      if (ArrayUtils.isNotEmpty(jarFilenameList)) {
+        jarNamesToUndeploy = Arrays.stream(jarFilenameList).collect(Collectors.toList());
       } else {
-        List<String> undeployedList = new ArrayList<String>();
-        for (String jarFilename : jarFilenameList) {
-          try {
-            undeployedList.add(jarFilename);
-            undeployedList.add(ClassPathLoader.getLatest().getJarDeployer().undeploy(jarFilename));
-          } catch (IllegalArgumentException iaex) {
-            // It's okay for it to not have been deployed to this server
-            undeployedList.add(iaex.getMessage());
-          }
-        }
-        undeployedJars = undeployedList.toArray(undeployedJars);
+        final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
+        jarNamesToUndeploy =
+            jarClassLoaders.stream().map(l -> l.getJarName()).collect(Collectors.toList());
       }
 
-      CliFunctionResult result = new CliFunctionResult(memberId, undeployedJars);
+      Map<String, String> undeployedJars = new HashMap<>();
+      for (String jarName : jarNamesToUndeploy) {
+        String jarLocation;
+        try {
+          jarLocation =
+              ClassPathLoader.getLatest().getJarDeployer().undeploy(jarName);
+        } catch (IOException | IllegalArgumentException iaex) {
+          // It's okay for it to have have been undeployed from this server
+          jarLocation = iaex.getMessage();
+        }
+        undeployedJars.put(jarName, jarLocation);
+      }
+
+      CliFunctionResult result = new CliFunctionResult(memberId, undeployedJars, null);
       context.getResultSender().lastResult(result);
 
-    } catch (CacheClosedException cce) {
+    } catch (Exception cce) {
+      logger.error(cce.getMessage(), cce);
       CliFunctionResult result = new CliFunctionResult(memberId, false, null);
       context.getResultSender().lastResult(result);
-
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      logger.error("Could not undeploy JAR file: {}", th.getMessage(), th);
-      CliFunctionResult result = new CliFunctionResult(memberId, th, null);
-      context.getResultSender().lastResult(result);
     }
+
   }
 
   @Override

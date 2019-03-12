@@ -40,6 +40,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -58,7 +59,7 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DeployCommand extends InternalGfshCommand {
+public class DeployCommand extends GfshCommand {
   private final DeployFunction deployFunction = new DeployFunction();
 
   /**

@@ -14,12 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
@@ -54,28 +54,17 @@ public class ListDeployedFunction implements InternalFunction {
       }
 
       final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
-      final String[] jars = new String[jarClassLoaders.size() * 2];
-      int index = 0;
+      final Map<String, String> jars = new HashMap<>();
       for (DeployedJar jarClassLoader : jarClassLoaders) {
-        jars[index++] = jarClassLoader.getJarName();
-        jars[index++] = jarClassLoader.getFileCanonicalPath();
+        jars.put(jarClassLoader.getJarName(), jarClassLoader.getFileCanonicalPath());
       }
 
-      CliFunctionResult result = new CliFunctionResult(memberId, jars);
+      CliFunctionResult result = new CliFunctionResult(memberId, jars, null);
       context.getResultSender().lastResult(result);
 
-    } catch (CacheClosedException cce) {
-      CliFunctionResult result = new CliFunctionResult(memberId, false, null);
-      context.getResultSender().lastResult(result);
-
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      logger.error("Could not list JAR files: {}", th.getMessage(), th);
-      CliFunctionResult result = new CliFunctionResult(memberId, th, null);
+    } catch (Exception cce) {
+      logger.error(cce.getMessage(), cce);
+      CliFunctionResult result = new CliFunctionResult(memberId, false, cce.getMessage());
       context.getResultSender().lastResult(result);
     }
   }
