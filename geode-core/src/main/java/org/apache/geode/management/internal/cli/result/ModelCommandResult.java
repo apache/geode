@@ -167,7 +167,7 @@ public class ModelCommandResult implements CommandResult {
 
   @Override
   public List<String> getListFromContent(String key) {
-    System.out.println("BRUCE: ModelCommandResult.getListFromContentString(" + key + ")");
+    // System.out.println("BRUCE: ModelCommandResult.getListFromContentString("+key+")");
     return null;
   }
 

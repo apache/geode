@@ -105,8 +105,8 @@ public class HeadlessGfsh implements ResultHandler {
     if (!success && shell.output != null) {
       outputString = shell.output.toString();
       shell.output.reset();
-      System.out.println(
-          "Bruce: HeadlessGfsh.executeCommand setting gfsh.outputString to " + outputString);
+      // System.out.println("Bruce: HeadlessGfsh.executeCommand setting gfsh.outputString to " +
+      // outputString);
       Thread.dumpStack();
     }
     return success;
@@ -120,11 +120,10 @@ public class HeadlessGfsh implements ResultHandler {
   @Override
   public void handleExecutionResult(Object result, String sysout) {
     queue.add(result);
-    System.out.println("Bruce: HeadlessGfsh.handleExecutionResult result class is "
-        + result.getClass() + " toString=" + result);
-    System.out
-        .println("Bruce: HeadlessGfsh.handleExecutionResult is setting gfsh.outputString to \""
-            + sysout + "\"");
+    // System.out.println("Bruce: HeadlessGfsh.handleExecutionResult result class is " +
+    // result.getClass() + " toString=" + result);
+    // System.out.println("Bruce: HeadlessGfsh.handleExecutionResult is setting gfsh.outputString to
+    // \"" + sysout + "\"");
     outputString = sysout;
   }
 

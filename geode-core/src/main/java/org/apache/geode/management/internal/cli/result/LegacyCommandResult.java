@@ -422,7 +422,7 @@ public class LegacyCommandResult implements CommandResult {
 
   @Override
   public List<String> getListFromContent(String key) {
-    System.out.println("BRUCE: LegacyCommandResult.getListFromContentString(" + key + ")");
+    // System.out.println("Bruce: LegacyCommandResult.getListFromContentString("+key+")");
     return getContent().getArrayValues(key);
   }
 

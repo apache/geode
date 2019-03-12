@@ -146,14 +146,8 @@ public class GfJsonObject extends AbstractJSONFormatter {
   }
 
   public String getString(String key) {
-    System.out.println("Bruce: rootNode.getString(" + key + ") =" + rootNode.get(key)/*
-                                                                                      * +
-                                                                                      * " (rootNode="
-                                                                                      * +rootNode+
-                                                                                      * ")"
-                                                                                      */);
-    if (key.equals("fileToDownload"))
-      Thread.dumpStack();
+    // System.out.println("Bruce: rootNode.getString(" + key + ") =" + rootNode.get(key)/* + "
+    // (rootNode="+rootNode+")"*/);
     JsonNode node = rootNode.get(key);
     if (node == null) {
       return null; // "null";
@@ -343,8 +337,8 @@ public class GfJsonObject extends AbstractJSONFormatter {
 
   public List<String> getArrayValues(String key) {
     List<String> result = new ArrayList<>();
-    System.out.println("Bruce: GfJsonObject.getArrayValues(" + key + ") node=" + rootNode.get(key)
-        + " class=" + rootNode.get(key).getClass());
+    // System.out.println("Bruce: GfJsonObject.getArrayValues("+key+") node="+rootNode.get(key) + "
+    // class="+rootNode.get(key).getClass());
     if (rootNode.has(key)) {
       JsonNode node = rootNode.get(key);
       if (!(node instanceof ArrayNode)) {
