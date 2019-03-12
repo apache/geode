@@ -280,7 +280,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     this.cancelCriterion.checkCancelInProgress(null);
-    throw new AllConnectionsInUseException();
+    if (connectionCount.get() >= maxConnections) {
+      throw new AllConnectionsInUseException();
+    }
+    throw new NoAvailableServersException();
   }
 
   /**
