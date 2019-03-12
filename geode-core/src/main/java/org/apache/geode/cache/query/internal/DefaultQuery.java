@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 
 import org.apache.geode.annotations.Immutable;
@@ -86,7 +87,7 @@ public class DefaultQuery implements Query {
 
   private final ThreadLocal<Optional<ScheduledFuture>> cancelationTask;
 
-  private final ThreadLocal<CacheRuntimeException> queryCancelledException;
+  final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCancelledException;
 
   static final ThreadLocal<AtomicBoolean> queryCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
@@ -196,7 +197,7 @@ public class DefaultQuery implements Query {
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
     this.cancelationTask = ThreadLocal.withInitial(Optional::empty);
-    this.queryCancelledException = new ThreadLocal<>();
+    this.queryCancelledException = ThreadLocal.withInitial(AtomicReference::new);
   }
 
   /**
@@ -718,14 +719,14 @@ public class DefaultQuery implements Query {
   }
 
   public CacheRuntimeException getQueryCanceledException() {
-    return queryCancelledException.get();
+    return queryCancelledException.get().get();
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
   public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
-    this.queryCancelledException.set(queryCanceledException);
+    this.queryCancelledException.get().set(queryCanceledException);
   }
 
   public void setIsCqQuery(boolean isCqQuery) {
