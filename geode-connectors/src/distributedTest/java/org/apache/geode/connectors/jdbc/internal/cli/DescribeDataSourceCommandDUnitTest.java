@@ -61,14 +61,14 @@ public class DescribeDataSourceCommandDUnitTest {
   @Test
   public void describeDataSourceForSimpleDataSource() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\" --username=joe --password=myPassword")
+        "create data-source --name=simple --pooled=false --url=\"jdbc:derby:memory:newDB;create=true\" --username=joe --password=myPassword")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
 
     CommandResultAssert result = gfsh.executeAndAssertThat("describe data-source --name=simple");
 
     result.statusIsSuccess()
         .tableHasRowWithValues("Property", "Value", "name", "simple")
-        .tableHasRowWithValues("Property", "Value", "pooled", "true")
+        .tableHasRowWithValues("Property", "Value", "pooled", "false")
         .tableHasRowWithValues("Property", "Value", "username", "joe")
         .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:memory:newDB;create=true");
     assertThat(result.getResultModel().toString()).doesNotContain("myPassword");
@@ -87,7 +87,7 @@ public class DescribeDataSourceCommandDUnitTest {
   private void executeSql(String sql) {
     server.invoke(() -> {
       try {
-        DataSource ds = JNDIInvoker.getDataSource("simple");
+        DataSource ds = JNDIInvoker.getDataSource("pool");
         Connection conn = ds.getConnection();
         Statement sm = conn.createStatement();
         sm.execute(sql);
@@ -136,23 +136,23 @@ public class DescribeDataSourceCommandDUnitTest {
   @Test
   public void describeDataSourceUsedByRegionsListsTheRegionsInOutput() {
     gfsh.executeAndAssertThat(
-        "create data-source --name=simple --url=\"jdbc:derby:memory:newDB;create=true\"")
+        "create data-source --name=pool --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=region2 --type=PARTITION").statusIsSuccess();
     setupDatabase();
     try {
       gfsh.executeAndAssertThat(
-          "create jdbc-mapping --region=region1 --data-source=simple --pdx-name="
+          "create jdbc-mapping --region=region1 --data-source=pool --pdx-name="
               + IdAndName.class.getName() + " --schema=mySchema");
       gfsh.executeAndAssertThat(
-          "create jdbc-mapping --region=region2 --data-source=simple --pdx-name="
+          "create jdbc-mapping --region=region2 --data-source=pool --pdx-name="
               + IdAndName.class.getName() + " --schema=mySchema");
 
-      CommandResultAssert result = gfsh.executeAndAssertThat("describe data-source --name=simple");
+      CommandResultAssert result = gfsh.executeAndAssertThat("describe data-source --name=pool");
 
       result.statusIsSuccess()
-          .tableHasRowWithValues("Property", "Value", "name", "simple")
+          .tableHasRowWithValues("Property", "Value", "name", "pool")
           .tableHasRowWithValues("Property", "Value", "pooled", "true")
           .tableHasRowWithValues("Property", "Value", "url", "jdbc:derby:memory:newDB;create=true");
       InfoResultModel infoSection = result.getResultModel()
