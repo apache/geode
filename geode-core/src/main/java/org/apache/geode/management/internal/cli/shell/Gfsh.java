@@ -269,7 +269,9 @@ public class Gfsh extends JLineShell {
     return resultTypeTL.get();
   }
 
-  public static void println() {}
+  public static void println() {
+    gfshout.println();
+  }
 
   public static <T> void println(T toPrint) {
     gfshout.println(toPrint);
