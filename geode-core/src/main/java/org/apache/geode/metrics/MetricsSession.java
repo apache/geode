@@ -16,10 +16,13 @@ package org.apache.geode.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * Provides the ability to add and remove a meter registry for publishing cache metrics to external
  * monitoring systems.
  */
+@Experimental("Micrometer metrics is a new addition to Geode and the API may change")
 public interface MetricsSession {
   /**
    * Adds the given registry to the cache's composite registry.

@@ -13,9 +13,9 @@
  * the License.
  */
 /**
- * Each Geode cache maintains a registry of all meters that instrument Geode code. Users can add
- * sub-registries for various purposes. A key purpose for a sub-registry is to publish a cache's
- * metrics to an external monitoring system.
+ * Geode uses Micrometer for its metrics. Each Geode cache maintains a registry of all meters that
+ * instrument Geode code. Users can add sub-registries for various purposes. A key purpose for a
+ * sub-registry is to publish a cache's metrics to an external monitoring system.
  *
  * <p>
  * The {@link org.apache.geode.metrics.MetricsSession MetricsSession} provides the ability to add
@@ -27,5 +27,11 @@
  * a session starts, the service can add a meter registry to the cache's composite registry. When
  * the session stops, the service can clean up any resources and remove its meter registry from the
  * cache's composite registry.
+ *
+ * @see <a href="https://micrometer.io/docs">Micrometer Documentation</a>
+ * @see <a href="https://micrometer.io/docs/concepts">Micrometer Concepts</a>
  */
+@Experimental("Micrometer metrics is a new addition to Geode and the API may change")
 package org.apache.geode.metrics;
+
+import org.apache.geode.annotations.Experimental;
