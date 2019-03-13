@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.After;
 import org.junit.Test;
 
@@ -54,6 +55,8 @@ public class GemFireCacheImplTest {
 
   @After
   public void tearDown() {
+    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = false;
+
     if (gemFireCacheImpl != null) {
       gemFireCacheImpl.close();
     }
@@ -336,6 +339,13 @@ public class GemFireCacheImplTest {
 
     // reset it back to the old value
     InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = oldValue;
+  }
+
+  @Test
+  public void getMeterRegistryReturnsTheMeterRegistry() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    assertThat(gemFireCacheImpl.getMeterRegistry()).isInstanceOf(MeterRegistry.class);
   }
 
   private static GemFireCacheImpl createGemFireCacheImpl() {

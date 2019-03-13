@@ -97,6 +97,7 @@ WHERE <args>:
                         fastutil.jar
                         javax.transactions-api.jar
                         jgroups.jar
+                        micrometer-core.jar
                         slf4j-api.jar
                         slf4j-jdk14.jar (not for WebLogic)
                         geode-modules-slf4j-weblogic.jar (WebLogic only)
@@ -280,6 +281,7 @@ OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
     ${GEODE}/lib/commons-lang3-@COMMONS_LANG_VERSION@.jar \
     ${GEODE}/lib/shiro-core-@SHIRO_VERSION@.jar \
     ${GEODE}/lib/commons-validator-@COMMONS_VALIDATOR_VERSION@.jar \
+    ${GEODE}/lib/micrometer-core-@MICROMETER_VERSION@.jar \
     ${LIB_DIR}/geode-modules-${VERSION}.jar \
     ${LIB_DIR}/geode-modules-session-internal-${VERSION}.jar \
     ${LIB_DIR}/slf4j-api-@SLF4J_VERSION@.jar \

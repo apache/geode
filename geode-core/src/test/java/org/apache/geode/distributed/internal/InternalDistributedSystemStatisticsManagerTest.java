@@ -42,7 +42,7 @@ import org.apache.geode.internal.statistics.StatisticsManagerFactory;
 /**
  * Unit tests for {@link InternalDistributedSystem}.
  */
-public class InternalDistributedSystemTest {
+public class InternalDistributedSystemStatisticsManagerTest {
 
   private static final String STATISTIC_NAME = "statistic-name";
   private static final String STATISTIC_DESCRIPTION = "statistic-description";

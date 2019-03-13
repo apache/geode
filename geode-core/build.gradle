@@ -194,6 +194,8 @@ dependencies {
     exclude module: 'xml-apis'
     ext.optional = true
   }
+  compile('io.micrometer:micrometer-core')
+
   compile('io.netty:netty-all') {
     ext.optional = true
   }

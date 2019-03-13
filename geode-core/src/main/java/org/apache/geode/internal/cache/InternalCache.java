@@ -27,6 +27,8 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.TransactionManager;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Declarable;
@@ -377,4 +379,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   void initialize();
 
   void throwCacheExistsException();
+
+  MeterRegistry getMeterRegistry();
 }
