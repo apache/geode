@@ -37,11 +37,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.functions.CreateRegionFunctionArgs;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class CreateRegionCommandTest {
@@ -81,54 +79,48 @@ public class CreateRegionCommandTest {
 
   @Test
   public void missingBothTypeAndUseAttributeFrom() throws Exception {
-    CommandResult result =
-        parser.executeCommandWithInstance(command, "create region --name=region");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent())
+    parser.executeAndAssertThat(command, "create region --name=region")
+        .statusIsError()
+        .hasInfoSection().hasOutput()
         .contains("One of \"type\" or \"template-region\" is required.");
   }
 
   @Test
   public void haveBothTypeAndUseAttributeFrom() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --template-region=regionB");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent())
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=REPLICATE --template-region=regionB").statusIsError()
+        .hasInfoSection().hasOutput()
         .contains("Only one of type & template-region can be specified.");
   }
 
   @Test
   public void invalidEvictionAction() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --eviction-action=invalidAction");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent())
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=REPLICATE --eviction-action=invalidAction")
+        .statusIsError().hasInfoSection().hasOutput()
         .contains("eviction-action must be 'local-destroy' or 'overflow-to-disk'");
   }
 
   @Test
   public void invalidEvictionAttributes() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --eviction-max-memory=1000 --eviction-entry-count=200");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent())
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=REPLICATE --eviction-max-memory=1000 --eviction-entry-count=200")
+        .statusIsError().hasInfoSection().hasOutput()
         .contains("eviction-max-memory and eviction-entry-count cannot both be specified.");
   }
 
   @Test
   public void missingEvictionAction() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --eviction-max-memory=1000");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains("eviction-action must be specified.");
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=REPLICATE --eviction-max-memory=1000").statusIsError()
+        .hasInfoSection().hasOutput().contains("eviction-action must be specified.");
   }
 
   @Test
   public void invalidEvictionSizerAndCount() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --eviction-entry-count=1 --eviction-object-sizer=abc --eviction-action=local-destroy");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent())
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=REPLICATE --eviction-entry-count=1 --eviction-object-sizer=abc --eviction-action=local-destroy")
+        .statusIsError().hasInfoSection().hasOutput()
         .contains("eviction-object-sizer cannot be specified with eviction-entry-count");
   }
 
@@ -145,7 +137,7 @@ public class CreateRegionCommandTest {
     doReturn(true).when(command).verifyDistributedRegionMbean(any(), any());
     when(service.getDistributedRegionMXBean(any())).thenReturn(null);
 
-    parser.executeCommandWithInstance(command, "create region --name=A --type=REPLICATE");
+    parser.executeAndAssertThat(command, "create region --name=A --type=REPLICATE").statusIsError();
     ArgumentCaptor<CreateRegionFunctionArgs> argsCaptor =
         ArgumentCaptor.forClass(CreateRegionFunctionArgs.class);
     verify(command).executeFunction(any(), argsCaptor.capture(), any(Set.class));
@@ -278,26 +270,23 @@ public class CreateRegionCommandTest {
 
   @Test
   public void invalidCompressor() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --compressor=abc-def");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains("abc-def is an invalid Compressor.");
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=REPLICATE --compressor=abc-def").statusIsError()
+        .hasInfoSection().hasOutput().contains("abc-def is an invalid Compressor.");
   }
 
   @Test
   public void invalidKeyType() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --key-type=abc-def");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=REPLICATE --key-type=abc-def").statusIsError()
+        .hasInfoSection().hasOutput().contains("Invalid command");
   }
 
   @Test
   public void invalidValueType() throws Exception {
-    CommandResult result = parser.executeCommandWithInstance(command,
-        "create region --name=region --type=REPLICATE --value-type=abc-def");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=REPLICATE --value-type=abc-def").statusIsError()
+        .hasInfoSection().hasOutput().contains("Invalid command");
   }
 
   @Test
