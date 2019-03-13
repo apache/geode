@@ -206,8 +206,6 @@ public class HeadlessGfsh implements ResultHandler {
     @Override
     protected void handleExecutionResult(Object result) {
       if (!result.equals(ERROR_RESULT)) {
-        System.out
-            .println("HeadlessGfsh.handleExecutionResult output is \"" + output.toString() + "\"");
         super.handleExecutionResult(result);
         handler.handleExecutionResult(result, output.toString());
         output.reset();
