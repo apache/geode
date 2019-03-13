@@ -181,11 +181,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
-  private PooledConnection createConnection() {
+  private PooledConnection createConnection(Set/* <ServerLocation> */ excludedServers) {
     PooledConnection connection = null;
     try {
       Connection plainConnection =
-          connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
+          connectionFactory.createClientToServerConnection(excludedServers);
       connection = addConnection(plainConnection);
       if (connection == null) {
         // TODO:
@@ -210,16 +210,16 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
-  private PooledConnection forceCreateConnection() {
+  private PooledConnection forceCreateConnection(Set/* <ServerLocation> */ excludedServers) {
     connectionCount.incrementAndGet();
-    return createConnection();
+    return createConnection(excludedServers);
   }
 
   private PooledConnection tryCreateConnection() {
     int currentCount;
     while ((currentCount = connectionCount.get()) < maxConnections) {
       if (connectionCount.compareAndSet(currentCount, currentCount + 1)) {
-        return createConnection();
+        return createConnection(Collections.emptySet());
       }
     }
 
@@ -316,7 +316,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
 
-    return forceCreateConnection();
+    return forceCreateConnection(Collections.emptySet());
   }
 
   @Override
@@ -356,7 +356,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     if (newConnection == null) {
-      newConnection = forceCreateConnection();
+      newConnection = forceCreateConnection(excludedServers);
       if (allConnectionsMap.removeConnection(oldPooledConnection)) {
         decrementConnectionCount();
       }
@@ -608,7 +608,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         PooledConnection connection = null;
         try {
           Connection plainConnection =
-              connectionFactory.createClientToServerConnection(Collections.EMPTY_SET);
+              connectionFactory.createClientToServerConnection(Collections.emptySet());
           if (plainConnection == null) {
             return false;
           }
