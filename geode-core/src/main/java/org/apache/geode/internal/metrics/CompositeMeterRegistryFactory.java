@@ -14,31 +14,12 @@
  */
 package org.apache.geode.internal.metrics;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-
-import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * Creates {@code CompositeMeterRegistry} and configures commonTags.
  */
 public interface CompositeMeterRegistryFactory {
 
-  @VisibleForTesting
-  String CLUSTER_ID_TAG = "ClusterId";
-  @VisibleForTesting
-  String MEMBER_NAME_TAG = "MemberName";
-  @VisibleForTesting
-  String HOST_NAME_TAG = "HostName";
-
-  default CompositeMeterRegistry create(int systemId, String memberName, String hostName) {
-    CompositeMeterRegistry registry = new CompositeMeterRegistry();
-
-    MeterRegistry.Config registryConfig = registry.config();
-    registryConfig.commonTags(CLUSTER_ID_TAG, String.valueOf(systemId));
-    registryConfig.commonTags(MEMBER_NAME_TAG, memberName == null ? "" : memberName);
-    registryConfig.commonTags(HOST_NAME_TAG, hostName == null ? "" : hostName);
-
-    return registry;
-  }
+  CompositeMeterRegistry create(int systemId, String memberName, String hostName);
 }

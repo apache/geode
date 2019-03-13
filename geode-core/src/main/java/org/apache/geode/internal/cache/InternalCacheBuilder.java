@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SecurityConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.metrics.CacheLifecycleMetricsSession;
+import org.apache.geode.internal.metrics.CacheMeterRegistryFactory;
 import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -111,7 +112,7 @@ public class InternalCacheBuilder {
   private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig) {
     this(configProperties,
         cacheConfig,
-        new CompositeMeterRegistryFactory() {},
+        new CacheMeterRegistryFactory(),
         CacheLifecycleMetricsSession.builder()::build,
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,

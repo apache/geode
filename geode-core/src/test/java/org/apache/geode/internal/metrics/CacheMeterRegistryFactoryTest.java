@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.metrics;
 
-import static org.apache.geode.internal.metrics.CompositeMeterRegistryFactory.CLUSTER_ID_TAG;
-import static org.apache.geode.internal.metrics.CompositeMeterRegistryFactory.HOST_NAME_TAG;
-import static org.apache.geode.internal.metrics.CompositeMeterRegistryFactory.MEMBER_NAME_TAG;
+import static org.apache.geode.internal.metrics.CacheMeterRegistryFactory.CLUSTER_ID_TAG;
+import static org.apache.geode.internal.metrics.CacheMeterRegistryFactory.HOST_NAME_TAG;
+import static org.apache.geode.internal.metrics.CacheMeterRegistryFactory.MEMBER_NAME_TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.micrometer.core.instrument.Meter;
@@ -24,7 +24,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.junit.Test;
 
-public class CompositeMeterRegistryFactoryTest {
+public class CacheMeterRegistryFactoryTest {
 
   private static final int CLUSTER_ID = 42;
   private static final String MEMBER_NAME = "member-name";
@@ -32,7 +32,7 @@ public class CompositeMeterRegistryFactoryTest {
 
   @Test
   public void createsCompositeMeterRegistry() {
-    CompositeMeterRegistryFactory factory = new CompositeMeterRegistryFactory() {};
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
 
     assertThat(factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME))
         .isInstanceOf(CompositeMeterRegistry.class);
@@ -40,7 +40,7 @@ public class CompositeMeterRegistryFactoryTest {
 
   @Test
   public void addsMemberNameCommonTag() {
-    CompositeMeterRegistryFactory factory = new CompositeMeterRegistryFactory() {};
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
     String theMemberName = "the-member-name";
 
     CompositeMeterRegistry registry = factory.create(CLUSTER_ID, theMemberName, HOST_NAME);
@@ -53,7 +53,7 @@ public class CompositeMeterRegistryFactoryTest {
 
   @Test
   public void addsClusterIdCommonTag() {
-    CompositeMeterRegistryFactory factory = new CompositeMeterRegistryFactory() {};
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
     int theSystemId = 21;
 
     CompositeMeterRegistry registry = factory.create(theSystemId, MEMBER_NAME, HOST_NAME);
@@ -66,7 +66,7 @@ public class CompositeMeterRegistryFactoryTest {
 
   @Test
   public void addsHostNameCommonTag() {
-    CompositeMeterRegistryFactory factory = new CompositeMeterRegistryFactory() {};
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
     String theHostName = "the-host-name";
 
     CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, theHostName);
