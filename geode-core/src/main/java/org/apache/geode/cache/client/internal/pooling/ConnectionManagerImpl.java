@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal.pooling;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -99,8 +101,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
   protected final AtomicBoolean shuttingDown = new AtomicBoolean(false);
   private EndpointManager.EndpointListenerAdapter endpointListener;
 
-  private static final long NANOS_PER_MS = 1000000L;
-
   /**
    * Adds an arbitrary variance to a positive temporal interval. Where possible, 10% of the interval
    * is added or subtracted from the interval. Otherwise, 1 is added or subtracted from the
@@ -156,7 +156,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.maxConnections = maxConnections == -1 ? Integer.MAX_VALUE : maxConnections;
     this.minConnections = minConnections;
     this.lifetimeTimeout = addVarianceToInterval(lifetimeTimeout);
-    this.lifetimeTimeoutNanos = this.lifetimeTimeout * NANOS_PER_MS;
+    this.lifetimeTimeoutNanos = MILLISECONDS.toNanos(this.lifetimeTimeout);
     if (this.lifetimeTimeout != -1) {
       if (idleTimeout > this.lifetimeTimeout || idleTimeout == -1) {
         // lifetimeTimeout takes precedence over longer idle timeouts
@@ -164,7 +164,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
     this.idleTimeout = idleTimeout;
-    this.idleTimeoutNanos = this.idleTimeout * NANOS_PER_MS;
+    this.idleTimeoutNanos = MILLISECONDS.toNanos(this.idleTimeout);
     this.securityLogWriter = securityLogger;
     this.prefillRetry = pingInterval;
     this.cancelCriterion = cancelCriterion;
@@ -238,7 +238,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       throws AllConnectionsInUseException, NoAvailableServersException {
     long waitStart = -1;
     try {
-      long timeout = System.currentTimeMillis() + acquireTimeout;
+      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
         PooledConnection connection = availableConnections.poll();
         if (null == connection) {
@@ -254,29 +254,16 @@ public class ConnectionManagerImpl implements ConnectionManager {
           }
         }
 
-        if (shuttingDown.get()) {
-          throw new PoolCancelledException();
-        }
-
-        if (Thread.currentThread().isInterrupted()) {
-          Thread.currentThread().interrupt();
+        if (checkShutdownInterruptedOrTimeout(timeout)) {
           break;
         }
 
-        if (-1 == waitStart) {
-          waitStart = getPoolStats().beginConnectionWait();
-        }
-
-        if (System.currentTimeMillis() >= timeout) {
-          break;
-        }
+        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
 
         Thread.yield();
       }
     } finally {
-      if (-1 != waitStart) {
-        getPoolStats().endConnectionWait(waitStart);
-      }
+      endConnectionWaitStatIfStarted(waitStart);
     }
 
     this.cancelCriterion.checkCancelInProgress(null);
@@ -296,25 +283,39 @@ public class ConnectionManagerImpl implements ConnectionManager {
   public Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
 
-    if (shuttingDown.get()) {
-      throw new PoolCancelledException();
-    }
+    long waitStart = -1;
+    try {
+      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
+      while (true) {
+        PooledConnection connection = findConnection((c) -> c.getServer().equals(server));
+        if (null != connection) {
+          return connection;
+        }
 
-    long timeout = System.currentTimeMillis() + acquireTimeout;
-    PooledConnection connection =
-        findConnection((c) -> (c.getServer().equals(server)), timeout, onlyUseExistingCnx);
-    if (null != connection) {
-      return connection;
-    }
+        if (!onlyUseExistingCnx) {
+          connection = forceCreateConnection(server, Collections.emptySet());
+          if (null != connection) {
+            return connection;
+          }
+        }
 
-    if (!onlyUseExistingCnx) {
-      connection = forceCreateConnection(server, Collections.emptySet());
-      if (null != connection) {
-        return connection;
+        if (checkShutdownInterruptedOrTimeout(timeout)) {
+          break;
+        }
+
+        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
+
+        Thread.yield();
       }
+    } finally {
+      endConnectionWaitStatIfStarted(waitStart);
     }
 
-    throw new AllConnectionsInUseException();
+    this.cancelCriterion.checkCancelInProgress(null);
+    if (connectionCount.get() >= maxConnections) {
+      throw new AllConnectionsInUseException();
+    }
+    throw new NoAvailableServersException();
   }
 
   @Override
@@ -322,74 +323,68 @@ public class ConnectionManagerImpl implements ConnectionManager {
       final Set<ServerLocation> excludedServers, final long acquireTimeout)
       throws AllConnectionsInUseException {
 
-    if (shuttingDown.get()) {
-      throw new PoolCancelledException();
-    }
-
+    long waitStart = -1;
     try {
-      long timeout = System.currentTimeMillis() + acquireTimeout;
-      PooledConnection connection =
-          findConnection(
-              (c) -> !(excludedServers.contains(c.getServer()) || oldConnection.equals(c)), timeout,
-              false);
-      if (null != connection) {
-        return connection;
-      }
+      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
+      while (true) {
 
-      // TODO the description of this method does not really make sense. Forcing connection here to
-      // make test pass
-      connection = forceCreateConnection(null, excludedServers);
-      if (null != connection) {
-        return connection;
-      }
-    } finally {
-      returnConnection(oldConnection);
-    }
+        PooledConnection connection =
+            findConnection(
+                (c) -> !(excludedServers.contains(c.getServer()) || oldConnection.equals(c)));
+        if (null != connection) {
+          return connection;
+        }
 
-    throw new AllConnectionsInUseException();
-  }
+        // TODO the description of this method does not really make sense. Forcing connection here
+        // to
+        // make test pass
+        connection = forceCreateConnection(null, excludedServers);
+        if (null != connection) {
+          return connection;
+        }
 
-  /**
-   *
-   * @param predicate to test connection against
-   * @param timeout after which find fails
-   * @param findUntilTimeout if true, will keep searching the queue until timeout,
-   *        otherwise searches to some limit and returns null
-   * @return A PooledConnection if one matches the predicate, otherwise null.
-   * @throws AllConnectionsInUseException if timeout occurs
-   */
-  private PooledConnection findConnection(Predicate<PooledConnection> predicate, long timeout,
-      boolean findUntilTimeout) throws AllConnectionsInUseException {
-    while (true) {
-      // TODO size is not constant time
-      for (int i = availableConnections.size(); i > 0; --i) {
-        PooledConnection connection = availableConnections.poll();
-        if (null == connection) {
+        if (checkShutdownInterruptedOrTimeout(timeout)) {
           break;
         }
 
-        if (predicate.test(connection)) {
-          try {
-            connection.activate();
-            return connection;
-          } catch (ConnectionDestroyedException ignored) {
-            continue;
-          }
-        }
-
-        availableConnections.offer(connection);
-      }
-
-      if (findUntilTimeout) {
-        if (timeout > System.currentTimeMillis()) {
-          throw new AllConnectionsInUseException();
-        }
+        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
 
         Thread.yield();
-        continue;
+      }
+    } finally {
+      returnConnection(oldConnection);
+      endConnectionWaitStatIfStarted(waitStart);
+    }
+
+    this.cancelCriterion.checkCancelInProgress(null);
+    if (connectionCount.get() >= maxConnections) {
+      throw new AllConnectionsInUseException();
+    }
+    throw new NoAvailableServersException();
+  }
+
+  /**
+   * @param predicate to test connection against
+   * @return A PooledConnection if one matches the predicate, otherwise null.
+   */
+  private PooledConnection findConnection(Predicate<PooledConnection> predicate) {
+    // TODO size is not constant time
+    for (int i = availableConnections.size(); i > 0; --i) {
+      PooledConnection connection = availableConnections.poll();
+      if (null == connection) {
+        break;
       }
 
-      break;
+      if (predicate.test(connection)) {
+        try {
+          connection.activate();
+          return connection;
+        } catch (ConnectionDestroyedException ignored) {
+          continue;
+        }
+      }
+
+      availableConnections.offer(connection);
     }
 
     return null;
@@ -429,6 +424,38 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     connection.internalDestroy();
+  }
+
+  private long beginConnectionWaitStatIfNotStarted(final long waitStart) {
+    if (-1 == waitStart) {
+      return getPoolStats().beginConnectionWait();
+    }
+
+    return waitStart;
+  }
+
+  private void endConnectionWaitStatIfStarted(final long waitStart) {
+    if (-1 != waitStart) {
+      getPoolStats().endConnectionWait(waitStart);
+    }
+  }
+
+  private boolean checkShutdownInterruptedOrTimeout(final long timeout)
+      throws PoolCancelledException {
+    if (shuttingDown.get()) {
+      throw new PoolCancelledException();
+    }
+
+    if (Thread.currentThread().isInterrupted()) {
+      Thread.currentThread().interrupt();
+      return true;
+    }
+
+    if (timeout < System.nanoTime()) {
+      return true;
+    }
+
+    return false;
   }
 
 
@@ -579,7 +606,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (this.loadConditioningProcessor != null) {
         this.loadConditioningProcessor.shutdown();
         if (!this.loadConditioningProcessor.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT,
-            TimeUnit.MILLISECONDS)) {
+            MILLISECONDS)) {
           logger.warn("Timeout waiting for load conditioning tasks to complete");
         }
       }
@@ -609,7 +636,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
           haveIdleExpireConnectionsTask = true;
           try {
             backgroundProcessor.schedule(new IdleExpireConnectionsTask(), idleTimeout,
-                TimeUnit.MILLISECONDS);
+                MILLISECONDS);
           } catch (RejectedExecutionException e) {
             // ignore, the timer has been cancelled, which means we're shutting
             // down.
@@ -775,7 +802,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (connectionCount.get() < minConnections && !cancelCriterion.isCancelInProgress()) {
         try {
           backgroundProcessor.schedule(new PrefillConnectionsTask(), prefillRetry,
-              TimeUnit.MILLISECONDS);
+              MILLISECONDS);
         } catch (RejectedExecutionException e) {
           // ignore, the timer has been cancelled, which means we're shutting down.
         }
