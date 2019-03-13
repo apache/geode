@@ -32,7 +32,7 @@ public class DestroyJndiBindingFunction extends CliFunction<Object[]> {
 
     if (destroyingDataSource) {
       typeName = "Data source";
-      if (checkForInvalidDataSource(jndiName)) {
+      if (!isValidDataSource(jndiName)) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
             CliStrings.format(
                 "Data Source {0} has invalid type for destroy data-source, destroy jndi-binding command should be used.",
@@ -53,7 +53,7 @@ public class DestroyJndiBindingFunction extends CliFunction<Object[]> {
     }
   }
 
-  boolean checkForInvalidDataSource(String jndiName) {
-    return JNDIInvoker.checkForInvalidDataSource(jndiName);
+  boolean isValidDataSource(String jndiName) {
+    return JNDIInvoker.isValidDataSource(jndiName);
   }
 }

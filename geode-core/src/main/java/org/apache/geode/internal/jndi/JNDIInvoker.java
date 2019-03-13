@@ -405,16 +405,15 @@ public class JNDIInvoker {
     }
   }
 
-  public static boolean checkForInvalidDataSource(String name) {
+  public static boolean isValidDataSource(String name) {
     Object dataSource = dataSourceMap.get(name);
 
-    if (dataSource != null) {
-      if (dataSource instanceof DataSource
-          && !(dataSource instanceof GemFireTransactionDataSource)) {
-        return false;
-      }
+    if (dataSource == null || (dataSource != null && dataSource instanceof DataSource
+        && !(dataSource instanceof GemFireTransactionDataSource))) {
+      return true;
     }
-    return true;
+
+    return false;
   }
 
   /**

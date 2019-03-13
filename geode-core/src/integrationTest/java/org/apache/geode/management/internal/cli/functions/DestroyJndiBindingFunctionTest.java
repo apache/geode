@@ -134,7 +134,7 @@ public class DestroyJndiBindingFunctionTest {
     when(context.getArguments()).thenReturn(new Object[] {"jndi1", true});
     when(context.getResultSender()).thenReturn(resultSender);
     DestroyJndiBindingFunction destroyFunctionSpy = spy(destroyJndiBindingFunction);
-    doReturn(true).when(destroyFunctionSpy).checkForInvalidDataSource(any());
+    doReturn(false).when(destroyFunctionSpy).isValidDataSource(any());
 
     destroyFunctionSpy.execute(context);
     verify(resultSender).lastResult(resultCaptor.capture());
