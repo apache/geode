@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.SplittableRandom;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -77,8 +77,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private final String poolName;
   private final PoolStats poolStats;
   protected final long prefillRetry; // ms
-  private final ConcurrentLinkedQueue<PooledConnection> availableConnections =
-      new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedDeque<PooledConnection> availableConnections =
+      new ConcurrentLinkedDeque<>();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
   private final EndpointManager endpointManager;
   private final int maxConnections;
@@ -240,7 +240,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
-        PooledConnection connection = availableConnections.poll();
+        PooledConnection connection = availableConnections.pollFirst();
         if (null == connection) {
           connection = tryCreateConnection(Collections.emptySet());
           if (null != connection) {
@@ -370,7 +370,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private PooledConnection findConnection(Predicate<PooledConnection> predicate) {
     // TODO size is not constant time
     for (int i = availableConnections.size(); i > 0; --i) {
-      PooledConnection connection = availableConnections.poll();
+      PooledConnection connection = availableConnections.pollFirst();
       if (null == connection) {
         break;
       }
@@ -384,7 +384,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         }
       }
 
-      availableConnections.offer(connection);
+      availableConnections.offerLast(connection);
     }
 
     return null;
@@ -531,7 +531,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
 
       if (!destroyIfOverLimit(pooledConn)) {
-        availableConnections.add(pooledConn);
+        availableConnections.offerFirst(pooledConn);
       }
     }
 
@@ -733,7 +733,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
                   currentConnectionCount);
             }
           } else {
-            availableConnections.add(connection);
+            availableConnections.offerFirst(connection);
             if (logger.isDebugEnabled()) {
               logger.debug("Prefilled connection {} connection count is now {}", connection,
                   currentConnectionCount);
