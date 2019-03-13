@@ -352,11 +352,12 @@ public class QueryMonitor {
   private ScheduledFuture<?> scheduleCancelationTask(final DefaultQuery query,
       final long timeLimitMillis) {
 
-    // Make ThreadLocal queryCanceled available to closure, which will run in a separate thread
+    // Make ThreadLocal queryCanceled and queryCanceledException
+    // available to closure, which will run in a separate thread
     final AtomicBoolean queryCanceledThreadLocal =
         DefaultQuery.queryCanceled.get();
 
-    final AtomicReference<CacheRuntimeException> queryCanceledException =
+    final AtomicReference<CacheRuntimeException> queryCanceledExceptionThreadLocal =
         query.getQueryCanceledExceptionAtomicReference();
 
     /*
@@ -375,7 +376,7 @@ public class QueryMonitor {
       final CacheRuntimeException exception = memoryState
           .createCancelationException(timeLimitMillis, query);
 
-      queryCanceledException.set(exception);
+      queryCanceledExceptionThreadLocal.set(exception);
       queryCanceledThreadLocal.set(true);
 
     }, timeLimitMillis, TimeUnit.MILLISECONDS, executor, query);
