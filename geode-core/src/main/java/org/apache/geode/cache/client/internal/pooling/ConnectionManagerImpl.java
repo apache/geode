@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.SplittableRandom;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -77,8 +77,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private final String poolName;
   private final PoolStats poolStats;
   protected final long prefillRetry; // ms
-  private final ConcurrentLinkedQueue<PooledConnection> availableConnections =
-      new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedDeque<PooledConnection> availableConnections =
+      new ConcurrentLinkedDeque<>();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
   private final EndpointManager endpointManager;
   private final int maxConnections;
@@ -367,7 +367,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       // an existing one. But if we called forceCreateConnection then
       // do we still want returnConnection to possibly not return oldConnection
       // to the pool because we are now over max?
-      returnConnection(oldConnection);
+      returnConnection(oldConnection, true, true);
     }
 
     throw new AllConnectionsInUseException();
@@ -489,7 +489,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   @Override
   public void returnConnection(Connection connection, boolean accessed) {
+    returnConnection(connection, accessed, false);
+  }
 
+  private void returnConnection(Connection connection, boolean accessed, boolean addToTail) {
     assert connection instanceof PooledConnection;
     PooledConnection pooledConn = (PooledConnection) connection;
 
@@ -505,7 +508,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
         pooledConn.passivate(accessed);
       }
       if (!destroyIfOverLimit(pooledConn)) {
-        availableConnections.add(pooledConn);
+        if (addToTail) {
+          availableConnections.addLast(pooledConn);
+        } else {
+          availableConnections.addFirst(pooledConn);
+        }
       }
     }
   }
