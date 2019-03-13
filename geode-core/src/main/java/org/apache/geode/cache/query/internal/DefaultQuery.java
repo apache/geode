@@ -87,7 +87,7 @@ public class DefaultQuery implements Query {
 
   private final ThreadLocal<Optional<ScheduledFuture>> cancelationTask;
 
-  private final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCancelledException;
+  private final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCanceledException;
 
   static final ThreadLocal<AtomicBoolean> queryCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
@@ -197,7 +197,7 @@ public class DefaultQuery implements Query {
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
     this.cancelationTask = ThreadLocal.withInitial(Optional::empty);
-    this.queryCancelledException = ThreadLocal.withInitial(AtomicReference::new);
+    this.queryCanceledException = ThreadLocal.withInitial(AtomicReference::new);
   }
 
   /**
@@ -481,7 +481,7 @@ public class DefaultQuery implements Query {
       pdxClassToMethodsMap.remove();
       queryCanceled.remove();
       cancelationTask.remove();
-      queryCancelledException.remove();
+      queryCanceledException.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -719,18 +719,18 @@ public class DefaultQuery implements Query {
   }
 
   public CacheRuntimeException getQueryCanceledException() {
-    return queryCancelledException.get().get();
+    return queryCanceledException.get().get();
   }
 
   public AtomicReference<CacheRuntimeException> getQueryCanceledExceptionAtomicReference() {
-    return queryCancelledException.get();
+    return queryCanceledException.get();
   }
 
   /**
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
   public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
-    this.queryCancelledException.get().set(queryCanceledException);
+    this.queryCanceledException.get().set(queryCanceledException);
   }
 
   public void setIsCqQuery(boolean isCqQuery) {
