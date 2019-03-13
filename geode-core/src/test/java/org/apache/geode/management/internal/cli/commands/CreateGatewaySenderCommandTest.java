@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,20 +52,18 @@ public class CreateGatewaySenderCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private CreateGatewaySenderCommand command;
-  private InternalCache cache;
   private List<CliFunctionResult> functionResults;
   private CliFunctionResult cliFunctionResult;
-  ArgumentCaptor<GatewaySenderFunctionArgs> argsArgumentCaptor =
+  private ArgumentCaptor<GatewaySenderFunctionArgs> argsArgumentCaptor =
       ArgumentCaptor.forClass(GatewaySenderFunctionArgs.class);
 
   @Before
   public void before() {
     command = spy(CreateGatewaySenderCommand.class);
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
     functionResults = new ArrayList<>();
-    doReturn(functionResults).when(command).executeAndGetFunctionResult(any(),
-        any(), any(Set.class));
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(), any());
   }
 
   @Test
@@ -95,7 +94,7 @@ public class CreateGatewaySenderCommandTest {
   }
 
   @Test
-  public void paralleAndThreadOrderPolicy() {
+  public void parallelAndThreadOrderPolicy() {
     gfsh.executeAndAssertThat(command,
         "create gateway-sender --id=ln --remote-distributed-system-id=1 "
             + "--parallel --order-policy=THREAD")
@@ -135,7 +134,7 @@ public class CreateGatewaySenderCommandTest {
             + "--gateway-event-filter=test1,test2 --gateway-transport-filter=test1,test2")
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(),
-        any(Set.class));
+        any());
     assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isEqualTo(
         GatewaySender.OrderPolicy.THREAD.toString());
     assertThat(argsArgumentCaptor.getValue().getRemoteDistributedSystemId()).isEqualTo(1);
@@ -170,9 +169,9 @@ public class CreateGatewaySenderCommandTest {
     // Create a set of mixed version members
     Set<DistributedMember> members = new HashSet<>();
     InternalDistributedMember currentVersionMember = mock(InternalDistributedMember.class);
-    doReturn(Version.CURRENT).when(currentVersionMember).getVersionObject();
+    when(currentVersionMember.getVersionObject()).thenReturn(Version.CURRENT);
     InternalDistributedMember oldVersionMember = mock(InternalDistributedMember.class);
-    doReturn(Version.GEODE_1_4_0).when(oldVersionMember).getVersionObject();
+    when(oldVersionMember.getVersionObject()).thenReturn(Version.GEODE_1_4_0);
     members.add(currentVersionMember);
     members.add(oldVersionMember);
     doReturn(members).when(command).getMembers(any(), any());
@@ -181,5 +180,88 @@ public class CreateGatewaySenderCommandTest {
     gfsh.executeAndAssertThat(command,
         "create gateway-sender --id=1 --remote-distributed-system-id=1").statusIsError()
         .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
+  }
+
+  @Test
+  public void testDefaultArguments() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult =
+        new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=testGateway --remote-distributed-system-id=1")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
+
+    assertThat(argsArgumentCaptor.getValue().getId()).isEqualTo("testGateway");
+    assertThat(argsArgumentCaptor.getValue().getRemoteDistributedSystemId()).isEqualTo(1);
+    assertThat(argsArgumentCaptor.getValue().isParallel()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().isManualStart()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().getSocketBufferSize()).isNull();
+    assertThat(argsArgumentCaptor.getValue().getSocketReadTimeout()).isNull();
+    assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().getBatchSize()).isNull();
+    assertThat(argsArgumentCaptor.getValue().getBatchTimeInterval()).isNull();
+    assertThat(argsArgumentCaptor.getValue().getBatchSize()).isNull();
+    assertThat(argsArgumentCaptor.getValue().getBatchSize()).isNull();
+    assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().getDiskStoreName()).isNull();
+    assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isTrue();
+    assertThat(argsArgumentCaptor.getValue().getMaxQueueMemory()).isNull();
+    assertThat(argsArgumentCaptor.getValue().getAlertThreshold()).isNull();
+    assertThat(argsArgumentCaptor.getValue().getDispatcherThreads()).isNull();
+    assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isNull();
+    assertThat(argsArgumentCaptor.getValue().getGatewayEventFilter()).isNotNull().isEmpty();
+    assertThat(argsArgumentCaptor.getValue().getGatewayTransportFilter()).isNotNull().isEmpty();
+  }
+
+  @Test
+  public void booleanArgumentsShouldBeSetAsTrueWhenSpecifiedWithoutValue() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult =
+        new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --member=xyz --id=testGateway --remote-distributed-system-id=1"
+            + " --parallel"
+            + " --manual-start"
+            + " --disk-synchronous"
+            + " --enable-persistence"
+            + " --enable-batch-conflation")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
+
+    assertThat(argsArgumentCaptor.getValue().getId()).isEqualTo("testGateway");
+    assertThat(argsArgumentCaptor.getValue().getRemoteDistributedSystemId()).isEqualTo(1);
+    assertThat(argsArgumentCaptor.getValue().isParallel()).isTrue();
+    assertThat(argsArgumentCaptor.getValue().isManualStart()).isNull();
+    assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isTrue();
+    assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isTrue();
+    assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isTrue();
+  }
+
+  @Test
+  public void booleanArgumentsShouldUseTheCustomParameterValueWhenSpecified() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult =
+        new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --member=xyz --id=testGateway --remote-distributed-system-id=1"
+            + " --parallel=false"
+            + " --manual-start=false"
+            + " --disk-synchronous=false"
+            + " --enable-persistence=false"
+            + " --enable-batch-conflation=false")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
+
+    assertThat(argsArgumentCaptor.getValue().getId()).isEqualTo("testGateway");
+    assertThat(argsArgumentCaptor.getValue().getRemoteDistributedSystemId()).isEqualTo(1);
+    assertThat(argsArgumentCaptor.getValue().isParallel()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().isManualStart()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().isDiskSynchronous()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().isPersistenceEnabled()).isFalse();
+    assertThat(argsArgumentCaptor.getValue().isBatchConflationEnabled()).isFalse();
   }
 }

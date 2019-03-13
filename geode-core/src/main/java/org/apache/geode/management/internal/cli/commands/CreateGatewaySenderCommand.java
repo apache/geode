@@ -51,25 +51,32 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateGatewaySenderCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
-  public ResultModel createGatewaySender(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
-      optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
+  public ResultModel createGatewaySender(
+
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+          optionContext = ConverterHint.MEMBERGROUP,
+          help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
 
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID, mandatory = true,
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID,
+          mandatory = true,
           help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, mandatory = true,
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID,
+          mandatory = true,
           help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL, specifiedDefaultValue = "true",
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL,
+          specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__PARALLEL__HELP) boolean parallel,
 
-      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
+      // Users must avoid this feature, it might cause data loss and other issues during startup.
+      @Deprecated @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART,
+          unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__MANUALSTART__HELP) Boolean manualStart,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE,
@@ -79,6 +86,8 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT__HELP) Integer socketReadTimeout,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION,
+          specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION__HELP) Boolean enableBatchConflation,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE,
@@ -88,12 +97,16 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL__HELP) Integer batchTimeInterval,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE,
+          specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE__HELP) Boolean enablePersistence,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME,
           help = CliStrings.CREATE_GATEWAYSENDER__DISKSTORENAME__HELP) String diskStoreName,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS,
+          specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "true",
           help = CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS__HELP) Boolean diskSynchronous,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY,
@@ -205,18 +218,19 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
   }
 
   private String int2string(Integer i) {
-    return Optional.ofNullable(i).map(in -> in.toString()).orElse(null);
+    return Optional.ofNullable(i).map(String::valueOf).orElse(null);
   }
 
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Integer dispatcherThreads =
-          (Integer) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS);
-      OrderPolicy orderPolicy =
-          (OrderPolicy) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY);
       Boolean parallel =
           (Boolean) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__PARALLEL);
+      OrderPolicy orderPolicy =
+          (OrderPolicy) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY);
+      Integer dispatcherThreads =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS);
+
       if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
         return ResultBuilder.createUserErrorResult(
             "Must specify --order-policy when --dispatcher-threads is larger than 1.");

@@ -2163,7 +2163,9 @@ public class CliStrings {
   public static final String CREATE_GATEWAYSENDER__PARALLEL = "parallel";
   public static final String CREATE_GATEWAYSENDER__PARALLEL__HELP =
       "Whether this is Parallel GatewaySender.";
+  @Deprecated
   public static final String CREATE_GATEWAYSENDER__MANUALSTART = "manual-start";
+  @Deprecated
   public static final String CREATE_GATEWAYSENDER__MANUALSTART__HELP =
       "Whether manual start is to be enabled or the sender will start automatically after creation.\n"
           + "Deprecated: Since Geode 1.4. Manual start of senders is deprecated and will be removed in a later release.";
