@@ -138,7 +138,7 @@ public class FunctionCommandsDUnitTestBase {
         "execute function --id=" + TEST_FUNCTION1 + " --region=/" + REGION_ONE).statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
-        .hasRowContaining("server-2", "OK", "[false, false]");
+        .hasRowContaining("OK", "[false, false]");
   }
 
   @Test
@@ -161,7 +161,7 @@ public class FunctionCommandsDUnitTestBase {
         .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
-        .hasRowContaining("server-2", "OK", "[ARG1, ARG1]");
+        .hasRowContaining("OK", "[ARG1, ARG1]");
   }
 
   @Test
@@ -284,15 +284,13 @@ public class FunctionCommandsDUnitTestBase {
     gfsh.executeAndAssertThat("list functions --matches=Test.* --groups=group-1").statusIsSuccess()
         .hasTableSection()
         .hasColumn("Function")
-        .containsExactlyInAnyOrder("Function", TEST_FUNCTION1,
-            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION);
+        .containsExactlyInAnyOrder(TEST_FUNCTION1, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION);
 
     gfsh.executeAndAssertThat("list functions --matches=Test.* --members=" + server1.getName())
         .statusIsSuccess()
         .hasTableSection()
         .hasColumn("Function")
-        .containsExactlyInAnyOrder(TEST_FUNCTION1,
-            TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION);
+        .containsExactlyInAnyOrder(TEST_FUNCTION1, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION);
   }
 
   @Test
