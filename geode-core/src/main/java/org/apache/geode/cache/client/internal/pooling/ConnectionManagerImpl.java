@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal.pooling;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -93,12 +95,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   private ConnectionFactory connectionFactory;
   protected boolean haveIdleExpireConnectionsTask;
-  protected boolean havePrefillTask;
+  protected final AtomicBoolean havePrefillTask = new AtomicBoolean(false);
   private boolean keepAlive = false;
-  protected AtomicBoolean shuttingDown = new AtomicBoolean(false);
+  protected final AtomicBoolean shuttingDown = new AtomicBoolean(false);
   private EndpointManager.EndpointListenerAdapter endpointListener;
-
-  private static final long NANOS_PER_MS = 1000000L;
 
   /**
    * Adds an arbitrary variance to a positive temporal interval. Where possible, 10% of the interval
@@ -155,7 +155,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.maxConnections = maxConnections == -1 ? Integer.MAX_VALUE : maxConnections;
     this.minConnections = minConnections;
     this.lifetimeTimeout = addVarianceToInterval(lifetimeTimeout);
-    this.lifetimeTimeoutNanos = this.lifetimeTimeout * NANOS_PER_MS;
+    this.lifetimeTimeoutNanos = MILLISECONDS.toNanos(this.lifetimeTimeout);
     if (this.lifetimeTimeout != -1) {
       if (idleTimeout > this.lifetimeTimeout || idleTimeout == -1) {
         // lifetimeTimeout takes precedence over longer idle timeouts
@@ -163,7 +163,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
     this.idleTimeout = idleTimeout;
-    this.idleTimeoutNanos = this.idleTimeout * NANOS_PER_MS;
+    this.idleTimeoutNanos = MILLISECONDS.toNanos(this.idleTimeout);
     this.securityLogWriter = securityLogger;
     this.prefillRetry = pingInterval;
     this.cancelCriterion = cancelCriterion;
@@ -500,7 +500,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (this.loadConditioningProcessor != null) {
         this.loadConditioningProcessor.shutdown();
         if (!this.loadConditioningProcessor.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT,
-            TimeUnit.MILLISECONDS)) {
+            MILLISECONDS)) {
           logger.warn("Timeout waiting for load conditioning tasks to complete");
         }
       }
@@ -530,7 +530,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
           haveIdleExpireConnectionsTask = true;
           try {
             backgroundProcessor.schedule(new IdleExpireConnectionsTask(), idleTimeout,
-                TimeUnit.MILLISECONDS);
+                MILLISECONDS);
           } catch (RejectedExecutionException e) {
             // ignore, the timer has been cancelled, which means we're shutting
             // down.
@@ -542,8 +542,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /** Always called with lock held */
   protected void startBackgroundPrefill() {
-    if (!havePrefillTask) {
-      havePrefillTask = true;
+    if (havePrefillTask.compareAndSet(false, true)) {
       try {
         backgroundProcessor.execute(new PrefillConnectionsTask());
       } catch (RejectedExecutionException e) {
@@ -699,12 +698,12 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (connectionCount.get() < minConnections && !cancelCriterion.isCancelInProgress()) {
         try {
           backgroundProcessor.schedule(new PrefillConnectionsTask(), prefillRetry,
-              TimeUnit.MILLISECONDS);
+              MILLISECONDS);
         } catch (RejectedExecutionException e) {
           // ignore, the timer has been cancelled, which means we're shutting down.
         }
       } else {
-        havePrefillTask = false;
+        havePrefillTask.set(false);
       }
     }
   }
