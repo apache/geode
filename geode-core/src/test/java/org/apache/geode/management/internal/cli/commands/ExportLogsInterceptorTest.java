@@ -22,8 +22,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -32,7 +32,7 @@ public class ExportLogsInterceptorTest {
 
   private ExportLogsInterceptor interceptor;
   private GfshParseResult parseResult;
-  private Result result;
+  private ResultModel result;
 
   @Before
   public void before() {
@@ -48,7 +48,8 @@ public class ExportLogsInterceptorTest {
     when(parseResult.getParamValueAsString("group")).thenReturn("group");
     when(parseResult.getParamValueAsString("member")).thenReturn("group");
     result = interceptor.preExecution(parseResult);
-    assertThat(result.nextLine()).contains("Can't specify both group and member");
+    assertThat(result.getInfoSection("info").getContent())
+        .containsOnly("Can't specify both group and member.");
   }
 
   @Test
@@ -56,12 +57,13 @@ public class ExportLogsInterceptorTest {
     when(parseResult.getParamValueAsString("start-time")).thenReturn("2000/01/01");
     when(parseResult.getParamValueAsString("end-time")).thenReturn("2000/01/02");
     result = interceptor.preExecution(parseResult);
-    assertThat(result.nextLine()).isEmpty();
+    assertThat(result.getInfoSection("info").getContent()).containsOnly("");
 
     when(parseResult.getParamValueAsString("start-time")).thenReturn("2000/01/02");
     when(parseResult.getParamValueAsString("end-time")).thenReturn("2000/01/01");
     result = interceptor.preExecution(parseResult);
-    assertThat(result.nextLine()).contains("start-time has to be earlier than end-time");
+    assertThat(result.getInfoSection("info").getContent())
+        .containsOnly("start-time has to be earlier than end-time.");
   }
 
   @Test
@@ -69,11 +71,12 @@ public class ExportLogsInterceptorTest {
     when(parseResult.getParamValue("logs-only")).thenReturn(true);
     when(parseResult.getParamValue("stats-only")).thenReturn(false);
     result = interceptor.preExecution(parseResult);
-    assertThat(result.nextLine()).isEmpty();
+    assertThat(result.getInfoSection("info").getContent()).containsOnly("");
 
     when(parseResult.getParamValue("logs-only")).thenReturn(true);
     when(parseResult.getParamValue("stats-only")).thenReturn(true);
     result = interceptor.preExecution(parseResult);
-    assertThat(result.nextLine()).contains("logs-only and stats-only can't both be true");
+    assertThat(result.getInfoSection("info").getContent())
+        .containsOnly("logs-only and stats-only can't both be true");
   }
 }

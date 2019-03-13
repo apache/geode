@@ -26,6 +26,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
+/**
+ * this is used to save the content of the file in the byte[] and send the results
+ * back to the gfsh client.
+ */
 public class FileResultModel {
   public static final int FILE_TYPE_BINARY = 0;
   public static final int FILE_TYPE_TEXT = 1;

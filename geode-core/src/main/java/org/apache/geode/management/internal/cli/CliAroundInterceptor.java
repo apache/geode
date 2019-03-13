@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli;
 import java.nio.file.Path;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 
@@ -34,7 +33,7 @@ public interface CliAroundInterceptor {
    * called by the OperationInvoker before the command is executed
    */
   default Object preExecution(GfshParseResult parseResult) {
-    return ResultBuilder.createInfoResult("");
+    return ResultModel.createInfo("");
   }
 
   /**

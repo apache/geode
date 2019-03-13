@@ -25,9 +25,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -36,7 +36,7 @@ public class LogLevelInterceptorTest {
 
   private final List<AbstractCliAroundInterceptor> interceptors = new ArrayList<>();
   private GfshParseResult parseResult;
-  private Result result;
+  private ResultModel result;
 
   @Before
   public void before() {
@@ -53,8 +53,9 @@ public class LogLevelInterceptorTest {
     when(parseResult.getParamValueAsString("log-level")).thenReturn("test");
     when(parseResult.getParamValueAsString("loglevel")).thenReturn("test");
     for (AbstractCliAroundInterceptor interceptor : interceptors) {
-      result = (Result) interceptor.preExecution(parseResult);
-      assertThat(result.nextLine()).contains("Invalid log level: test");
+      result = (ResultModel) interceptor.preExecution(parseResult);
+      assertThat(result.getInfoSection("info").getContent())
+          .containsOnly("Invalid log level: test");
     }
   }
 
@@ -63,8 +64,8 @@ public class LogLevelInterceptorTest {
     when(parseResult.getParamValueAsString("log-level")).thenReturn("fine");
     when(parseResult.getParamValueAsString("loglevel")).thenReturn("fine");
     for (AbstractCliAroundInterceptor interceptor : interceptors) {
-      result = (Result) interceptor.preExecution(parseResult);
-      assertThat(result.nextLine()).isEmpty();
+      result = (ResultModel) interceptor.preExecution(parseResult);
+      assertThat(result.getInfoSection("info").getContent()).containsOnly("");
     }
   }
 
@@ -73,8 +74,8 @@ public class LogLevelInterceptorTest {
     when(parseResult.getParamValueAsString("log-level")).thenReturn("trace");
     when(parseResult.getParamValueAsString("loglevel")).thenReturn("trace");
     for (AbstractCliAroundInterceptor interceptor : interceptors) {
-      result = (Result) interceptor.preExecution(parseResult);
-      assertThat(result.nextLine()).isEmpty();
+      result = (ResultModel) interceptor.preExecution(parseResult);
+      assertThat(result.getInfoSection("info").getContent()).containsOnly("");
     }
   }
 }

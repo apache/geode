@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.result.model;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -75,7 +76,13 @@ public class ResultModel {
   private Map<String, AbstractResultModel> sections = new LinkedHashMap<>();
   private Result.Status status = Result.Status.OK;
   private Object configObject;
+  // this is used by commands (e.g. ExportConfigCommand) saving the file content in the memory and
+  // transfer the byte[] in json string back to the client
   private Map<String, FileResultModel> files = new LinkedHashMap<>();
+
+  // this is used by commands (e.g ExportlogsCommand) that can download file to the client when in
+  // http connection
+  private Path fileToDownload;
 
   @JsonIgnore
   public Object getConfigObject() {
@@ -153,6 +160,14 @@ public class ResultModel {
 
   public void addFile(File file, int fileType) {
     files.put(file.getName(), new FileResultModel(file, fileType));
+  }
+
+  public Path getFileToDownload() {
+    return fileToDownload;
+  }
+
+  public void setFileToDownload(Path fileToDownload) {
+    this.fileToDownload = fileToDownload;
   }
 
   /**

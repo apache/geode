@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
-import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.BytesToString;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
@@ -192,7 +192,7 @@ public class ExportLogsCommandTest {
         .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member2));
     doReturn(10 * MEGABYTE).when(spyCmd).getLocalDiskAvailable();
 
-    CommandResult res = (CommandResult) spyCmd.exportLogs("working dir", null, null, logLevel,
+    ResultModel res = spyCmd.exportLogs("working dir", null, null, logLevel,
         onlyLogLevel, false, start, end, logsOnly, statsOnly, "125m");
     assertThat(res.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(res.toJson())
@@ -235,7 +235,7 @@ public class ExportLogsCommandTest {
         .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member2));
     doReturn(GIGABYTE).when(spyCmd).getLocalDiskAvailable();
 
-    CommandResult res = (CommandResult) spyCmd.exportLogs("working dir", null, null, logLevel,
+    ResultModel res = spyCmd.exportLogs("working dir", null, null, logLevel,
         onlyLogLevel, false, start, end, logsOnly, statsOnly, "125m");
     assertThat(res.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(res.toJson()).contains(
@@ -275,7 +275,7 @@ public class ExportLogsCommandTest {
     doReturn(testResults1).when(spyCmd)
         .estimateLogSize(Matchers.any(SizeExportLogsFunction.Args.class), eq(member1));
 
-    CommandResult res = (CommandResult) spyCmd.exportLogs("working dir", null, null, logLevel,
+    ResultModel res = spyCmd.exportLogs("working dir", null, null, logLevel,
         onlyLogLevel, false, start, end, logsOnly, statsOnly, "125m");
     assertThat(res.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(res.toJson()).contains(
