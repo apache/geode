@@ -1981,7 +1981,7 @@ fromData,212
 toData,239
 
 org/apache/geode/internal/cache/versions/VersionTag,2
-fromData,187
+fromData,189
 toData,259
 
 org/apache/geode/internal/cache/wan/GatewaySenderAdvisor$GatewaySenderProfile,4

@@ -85,6 +85,9 @@ public class GfJsonObject extends AbstractJSONFormatter {
     } catch (IOException e) {
       throw new GfJsonException(e.getMessage());
     }
+    if (rootNode == null) {
+      throw new GfJsonException("Unable to parse JSON document");
+    }
   }
 
   void postCreateMapper() {
@@ -146,13 +149,14 @@ public class GfJsonObject extends AbstractJSONFormatter {
   }
 
   public String getString(String key) {
-    // System.out.println("Bruce: rootNode.getString(" + key + ") =" + rootNode.get(key)/* + "
-    // (rootNode="+rootNode+")"*/);
     JsonNode node = rootNode.get(key);
     if (node == null) {
       return null; // "null";
     }
-    return node.asText();
+    if (node.textValue() != null) {
+      return node.textValue();
+    }
+    return node.toString();
   }
 
   public int getInt(String key) {
@@ -337,8 +341,6 @@ public class GfJsonObject extends AbstractJSONFormatter {
 
   public List<String> getArrayValues(String key) {
     List<String> result = new ArrayList<>();
-    // System.out.println("Bruce: GfJsonObject.getArrayValues("+key+") node="+rootNode.get(key) + "
-    // class="+rootNode.get(key).getClass());
     if (rootNode.has(key)) {
       JsonNode node = rootNode.get(key);
       if (!(node instanceof ArrayNode)) {
@@ -347,7 +349,7 @@ public class GfJsonObject extends AbstractJSONFormatter {
       ArrayNode array = (ArrayNode) node;
       for (int i = 0; i < array.size(); i++) {
         JsonNode valueNode = array.get(i);
-        result.add(valueNode.asText());
+        result.add(valueNode.textValue() == null ? valueNode.toString() : valueNode.asText());
       }
     }
     return result;

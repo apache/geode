@@ -67,7 +67,12 @@ public class GfJsonArray extends AbstractJSONFormatter {
    */
   public String getString(int index) throws GfJsonException {
     try {
-      return jsonArray.get(index).asText();
+      JsonNode node = jsonArray.get(index);
+      if (node.textValue() != null) {
+        return node.asText();
+      } else {
+        return node.toString();
+      }
     } catch (IllegalArgumentException e) {
       throw new GfJsonException(e);
     }

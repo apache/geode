@@ -402,7 +402,6 @@ public class LegacyCommandResult implements CommandResult {
   public String getMessageFromContent() {
     List<String> messages;
     try {
-      // System.out.println("BRUCE: getMessageFromContent() content="+getContent());
       GfJsonArray jsonArray = getContent().getJSONArray("message");
       if (jsonArray == null) {
         return "";
@@ -422,7 +421,6 @@ public class LegacyCommandResult implements CommandResult {
 
   @Override
   public List<String> getListFromContent(String key) {
-    // System.out.println("Bruce: LegacyCommandResult.getListFromContentString("+key+")");
     return getContent().getArrayValues(key);
   }
 

@@ -34,8 +34,6 @@ public class CommandResponseBuilder {
   private static CommandResponse prepareCommandResponse(String memberName, CommandResult result) {
     GfJsonObject content;
     content = result.getContent();
-    // System.out.println("Bruce:
-    // CommandResponseBuilder.prepareCommandResponse(content="+content+")");
     return new CommandResponse(memberName, getType(result), result.getStatus().getCode(), "1/1",
         CliMetaData.ANNOTATION_NULL_VALUE, getDebugInfo(), result.getHeader(), content,
         result.getFooter(), result.failedToPersist(), result.getFileToDownload());

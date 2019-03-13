@@ -1999,14 +1999,6 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
         final Status status = Status.valueOfDescription(gfJsonObject.getString(JSON_STATUS));
 
-        // StringWriter writer = new StringWriter().append("Bruce: LocatorState.fromJson document
-        // keys=");
-        // for (Iterator<String> keys = gfJsonObject.keys(); keys.hasNext();) {
-        // writer.append(" ").append(keys.next());
-        // }
-        // System.out.println(writer.toString());
-        // System.out.println("Bruce: jvmArguments="+gfJsonObject.getJSONObject(JSON_JVMARGUMENTS));
-
         final List<String> jvmArguments =
             gfJsonObject.getJSONArray(JSON_JVMARGUMENTS).toStringList();
 

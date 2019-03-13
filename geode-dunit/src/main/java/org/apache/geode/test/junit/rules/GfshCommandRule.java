@@ -256,8 +256,6 @@ public class GfshCommandRule extends DescribedExternalResource {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    // System.out.println("Bruce: GfshCommandRule.executeCommand
-    // gfsh.outputString="+gfsh.outputString);
     if (StringUtils.isBlank(gfsh.outputString) && result != null
         && !result.getMessageFromContent().isEmpty()) {
       if (result.getStatus() == Result.Status.ERROR) {
