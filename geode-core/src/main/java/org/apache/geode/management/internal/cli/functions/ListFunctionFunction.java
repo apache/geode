@@ -14,17 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
@@ -60,32 +58,23 @@ public class ListFunctionFunction implements InternalFunction {
       final Map<String, Function> functions = FunctionService.getRegisteredFunctions();
       CliFunctionResult result;
       if (stringPattern == null || stringPattern.isEmpty()) {
-        result = new CliFunctionResult(memberId, functions.keySet().toArray(new String[0]));
+        result = new CliFunctionResult(memberId, new HashSet(functions.keySet()), null);
       } else {
         Pattern pattern = Pattern.compile(stringPattern);
-        List<String> resultList = new LinkedList<String>();
+        Set<String> resultSet = new HashSet<>();
         for (String functionId : functions.keySet()) {
           Matcher matcher = pattern.matcher(functionId);
           if (matcher.matches()) {
-            resultList.add(functionId);
+            resultSet.add(functionId);
           }
         }
-        result = new CliFunctionResult(memberId, resultList.toArray(new String[0]));
+        result = new CliFunctionResult(memberId, resultSet, null);
       }
       context.getResultSender().lastResult(result);
 
-    } catch (CacheClosedException cce) {
-      CliFunctionResult result = new CliFunctionResult(memberId, false, null);
-      context.getResultSender().lastResult(result);
-
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      logger.error("Could not list functions: {}", th.getMessage(), th);
-      CliFunctionResult result = new CliFunctionResult(memberId, th, null);
+    } catch (Exception cce) {
+      logger.error(cce.getMessage(), cce);
+      CliFunctionResult result = new CliFunctionResult(memberId, false, cce.getMessage());
       context.getResultSender().lastResult(result);
     }
   }

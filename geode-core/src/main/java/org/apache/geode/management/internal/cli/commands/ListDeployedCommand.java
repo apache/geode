@@ -16,26 +16,24 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListDeployedFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListDeployedCommand extends InternalGfshCommand {
+public class ListDeployedCommand extends GfshCommand {
   private final ListDeployedFunction listDeployedFunction = new ListDeployedFunction();
 
   /**
@@ -48,55 +46,33 @@ public class ListDeployedCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result listDeployed(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+  public ResultModel listDeployed(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
       help = CliStrings.LIST_DEPLOYED__GROUP__HELP) String[] group) {
 
-    try {
-      TabularResultData tabularData = ResultBuilder.createTabularResultData();
-      boolean accumulatedData = false;
-
-      Set<DistributedMember> targetMembers = findMembers(group, null);
-
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
-
-      ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(this.listDeployedFunction, null, targetMembers);
-      List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
-
-      for (CliFunctionResult result : results) {
-        if (result.getThrowable() != null) {
-          tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("JAR", "");
-          tabularData.accumulate("JAR Location",
-              "ERROR: " + result.getThrowable().getClass().getName() + ": "
-                  + result.getThrowable().getMessage());
-          accumulatedData = true;
-          tabularData.setStatus(Result.Status.ERROR);
-        } else {
-          String[] strings = (String[]) result.getSerializables();
-          for (int i = 0; i < strings.length; i += 2) {
-            tabularData.accumulate("Member", result.getMemberIdOrName());
-            tabularData.accumulate("JAR", strings[i]);
-            tabularData.accumulate("JAR Location", strings[i + 1]);
-            accumulatedData = true;
-          }
-        }
-      }
-
-      if (!accumulatedData) {
-        return ResultBuilder.createInfoResult(CliStrings.LIST_DEPLOYED__NO_JARS_FOUND_MESSAGE);
-      }
-      return ResultBuilder.buildResult(tabularData);
-
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createGemFireErrorResult("Exception while attempting to list deployed: "
-          + th.getClass().getName() + ": " + th.getMessage());
+    Set<DistributedMember> targetMembers = findMembers(group, null);
+    if (targetMembers.isEmpty()) {
+      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
+
+    ResultModel result = new ResultModel();
+    TabularResultModel tabularData = result.addTable("jars");
+
+    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(this.listDeployedFunction,
+        null, targetMembers);
+
+    for (CliFunctionResult cliResult : functionResults) {
+      Map<String, String> strings = (Map<String, String>) cliResult.getResultObject();
+      for (Map.Entry<String, String> jar : strings.entrySet()) {
+        tabularData.accumulate("Member", cliResult.getMemberIdOrName());
+        tabularData.accumulate("JAR", jar.getKey());
+        tabularData.accumulate("JAR Location", jar.getValue());
+      }
+    }
+
+    if (tabularData.getRowSize() == 0) {
+      return ResultModel.createInfo(CliStrings.LIST_DEPLOYED__NO_JARS_FOUND_MESSAGE);
+    }
+
+    return result;
   }
 }
