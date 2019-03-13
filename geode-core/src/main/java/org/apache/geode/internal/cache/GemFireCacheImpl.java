@@ -2163,11 +2163,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
          * closed!
          */
         try {
-          this.stopServices();
-
           this.stopServers();
 
           stopMemcachedServer();
+
+          this.stopServices();
 
           httpService.ifPresent(HttpService::stop);
 
@@ -2381,7 +2381,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private void stopServices() {
     for (CacheService service : this.services.values()) {
-      service.close();
+      try {
+        service.close();
+      } catch (Throwable t) {
+        logger.warn("Error stopping service " + service, t);
+      }
     }
   }
 
