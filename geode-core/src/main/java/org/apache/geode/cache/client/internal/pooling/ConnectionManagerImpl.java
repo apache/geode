@@ -301,7 +301,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
     for (int i = availableConnections.size(); i > 0; i--) {
       PooledConnection connection = availableConnections.poll();
-
+      if (connection == null) {
+        break;
+      }
       if (connection.getServer().equals(server)) {
         try {
           connection.activate();
