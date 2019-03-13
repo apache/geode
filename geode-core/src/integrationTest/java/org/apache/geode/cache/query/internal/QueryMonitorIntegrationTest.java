@@ -18,8 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
@@ -79,8 +77,8 @@ public class QueryMonitorIntegrationTest {
 
       // Need to get a handle on the atomic reference because cancellation state
       // is thread local, and awaitility until() runs in a separate thread.
-      final AtomicReference<CacheRuntimeException> cacheRuntimeExceptionAtomicReference
-          = query.getQueryCanceledExceptionAtomicReference();
+      final AtomicReference<CacheRuntimeException> cacheRuntimeExceptionAtomicReference =
+          query.getQueryCanceledExceptionAtomicReference();
 
       GeodeAwaitility.await().until(() -> cacheRuntimeExceptionAtomicReference != null);
 
@@ -171,7 +169,7 @@ public class QueryMonitorIntegrationTest {
     GeodeAwaitility.await().until(() -> queryExecutionCanceledException != null);
 
     // The cancellation state should be local to the query thread in startQueryThread, so we should
-    // be able to execute subsequent queries using the same query object.  We are verifying that
+    // be able to execute subsequent queries using the same query object. We are verifying that
     // the cancellation state on the main test thread is still not set here.
     assertThat(query.isCanceled()).isFalse();
   }

@@ -98,15 +98,18 @@ public class QueryMonitorTest {
   @Test
   public void monitorQueryThreadExpirationTaskScheduled() {
     DefaultQuery query = mock(DefaultQuery.class);
-    final AtomicReference queryCanceledExceptionAtomicReference = new AtomicReference<CacheRuntimeException>();
-    doReturn(queryCanceledExceptionAtomicReference).when(query).getQueryCanceledExceptionAtomicReference();
+    final AtomicReference queryCanceledExceptionAtomicReference =
+        new AtomicReference<CacheRuntimeException>();
+    doReturn(queryCanceledExceptionAtomicReference).when(query)
+        .getQueryCanceledExceptionAtomicReference();
 
     monitor.monitorQueryThread(query);
     Mockito.verify(scheduledThreadPoolExecutor, times(1)).schedule(captor.capture(), anyLong(),
         isA(TimeUnit.class));
     captor.getValue().run();
 
-    assertThat(queryCanceledExceptionAtomicReference.get()).isInstanceOf(QueryExecutionTimeoutException.class);
+    assertThat(queryCanceledExceptionAtomicReference.get())
+        .isInstanceOf(QueryExecutionTimeoutException.class);
     assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled)
         .isExactlyInstanceOf(QueryExecutionCanceledException.class);
   }
