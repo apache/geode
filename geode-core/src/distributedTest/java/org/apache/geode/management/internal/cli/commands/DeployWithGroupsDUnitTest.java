@@ -169,10 +169,10 @@ public class DeployWithGroupsDUnitTest implements Serializable {
         .statusIsSuccess()
         .hasTableSection("jars")
         .hasRowSize(4)
-        .hasRowContaining("server-1", "DeployCommandsDUnit3.jar")
-        .hasRowContaining("server-1", "DeployCommandsDUnit4.jar")
-        .hasRowContaining("server-2", "DeployCommandsDUnit3.jar", "JAR not deployed")
-        .hasRowContaining("server-2", "DeployCommandsDUnit4.jar", "JAR not deployed");
+        .hasAnyRow().contains("server-1", "DeployCommandsDUnit3.jar")
+        .hasAnyRow().contains("server-1", "DeployCommandsDUnit4.jar")
+        .hasAnyRow().contains("server-2", "DeployCommandsDUnit3.jar", "JAR not deployed")
+        .hasAnyRow().contains("server-2", "DeployCommandsDUnit4.jar", "JAR not deployed");
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
       assertThatCannotLoad(jarName4, class4);
