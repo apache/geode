@@ -625,6 +625,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           "View with removed and left members removed is {}; removed members: {}; left members: {}; suspect members: {}",
           check, removedMembers, leftMembers, suspectMembers);
       if (check.getCoordinator().equals(localAddress)) {
+        for (InternalDistributedMember suspect : suspectMembers) {
+          recordViewRequest(
+              new RemoveMemberMessage(localAddress, suspect, "Failed availability check"));
+        }
         synchronized (viewInstallationLock) {
           becomeCoordinator(mbr);
         }
@@ -935,9 +939,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     } else {
       // Added a check in the view processor to turn off the ViewCreator
       // if another server is the coordinator - GEODE-870
+      ViewCreator thread = this.viewCreator;
       if (isCoordinator && !localAddress.equals(view.getCoordinator())
-          && getViewCreator() != null) {
-        getViewCreator().markViewCreatorForShutdown();
+          && !localAddress.equals(view.getCreator())
+          && thread != null) {
+        thread.markViewCreatorForShutdown(view.getCoordinator());
         this.isCoordinator = false;
       }
       installView(new NetView(view, view.getViewId()));
@@ -2249,7 +2255,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
      * This allows GMSJoinLeave to tell the ViewCreator to shut down after finishing its current
      * task. See GEODE-870.
      */
-    private void markViewCreatorForShutdown() {
+    private void markViewCreatorForShutdown(InternalDistributedMember viewCreator) {
+      logger.info(
+          "Marking view creator for shutdown because {} is now the coordinator.  My address is {}."
+              + "  Net member IDs are {} and {} respectively",
+          viewCreator, localAddress, viewCreator.getNetMember(), localAddress.getNetMember());
       this.markViewCreatorForShutdown = true;
     }
 
@@ -2372,6 +2382,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           }
         }
       } finally {
+        logger.info("View Creator thread is exiting");
         setShutdownFlag();
         informToPendingJoinRequests();
         org.apache.geode.distributed.internal.membership.gms.interfaces.Locator locator =
@@ -2706,6 +2717,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       // can be transmitted to the new members w/o including it in the view message
 
       if (markViewCreatorForShutdown && getViewCreator() != null) {
+        markViewCreatorForShutdown = false;
         setShutdownFlag();
       }
 
