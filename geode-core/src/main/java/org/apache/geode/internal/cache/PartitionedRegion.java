@@ -1398,6 +1398,14 @@ public class PartitionedRegion extends LocalRegion
       synchronized (prIdToPR) {
         prIdToPR.put(this.partitionedRegionId, this); // last
       }
+      int loaderWriterValue = 0;
+      if (node.isCacheLoaderAttached()) {
+        loaderWriterValue = loaderWriterValue + 1;
+      }
+      if (node.isCacheWriterAttached()) {
+        loaderWriterValue = loaderWriterValue + 2;
+      }
+
       prConfig.addNode(this.node);
       if (this.getFixedPartitionAttributesImpl() != null) {
         calculateStartingBucketIDs(prConfig);
@@ -9990,6 +9998,25 @@ public class PartitionedRegion extends LocalRegion
       throw new EntryNotFoundException("Bucket for key " + key + " does not exist.");
     }
     return br.getEntryExpiryTask(key);
+  }
+
+  @Override
+  public void updatePrNodeInformation(CacheLoader cacheLoader, CacheWriter cacheWriter) {
+    if (prRoot != null) {
+      PartitionRegionConfig prConfig = prRoot.get(getRegionIdentifier());
+      if (prConfig != null) {
+        for (Node node : prConfig.getNodes()) {
+          if (node.getMemberId().equals(getDistributionManager().getId())) {
+            byte loaderByte = (byte) (cacheLoader != null ? 0x01 : 0x00);
+            byte writerByte = (byte) (cacheWriter != null ? 0x02 : 0x00);
+            prConfig.removeNode(node);
+            node.setLoaderWriterByte((byte) (loaderByte + writerByte));
+            prConfig.addNode(node);
+          }
+          prRoot.put(getRegionIdentifier(), prConfig);
+        }
+      }
+    }
   }
 
   public Logger getLogger() {

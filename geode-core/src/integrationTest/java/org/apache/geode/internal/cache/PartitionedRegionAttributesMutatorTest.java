@@ -15,6 +15,8 @@
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -25,16 +27,21 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverAdapter;
@@ -67,6 +74,22 @@ public class PartitionedRegionAttributesMutatorTest {
     createBucket.get(DEFAULT_WAIT_DURATION, DEFAULT_WAIT_UNIT);
 
     getAllBucketRegions(pr).forEach(region -> assertEquals(loader, region.getCacheLoader()));
+  }
+
+  @Test
+  public void testChangeCacheLoaderUpdatesNodeInfo() {
+    createRegionSpy();
+    CacheLoader loader = createTestCacheLoader();
+    pr.getAttributesMutator().setCacheLoader(loader);
+    verify(pr).updatePrNodeInformation(loader, null);
+  }
+
+  @Test
+  public void testChangeCacheWriterUpdatesNodeInfo() {
+    createRegionSpy();
+    CacheWriter writer = createTestCacheWriter();
+    pr.getAttributesMutator().setCacheWriter(writer);
+    verify(pr).updatePrNodeInformation(null, writer);
   }
 
   @Test
@@ -145,6 +168,11 @@ public class PartitionedRegionAttributesMutatorTest {
     setRegionObserver();
   }
 
+  private void createRegionSpy() {
+    pr = Mockito.spy((PartitionedRegion) server.getCache().createRegionFactory(RegionShortcut.PARTITION)
+        .setStatisticsEnabled(true).create(TEST_REGION_NAME));
+  }
+
   private void createRegionWithFewBuckets() {
     PartitionAttributes partitionAttributes =
         new PartitionAttributesFactory().setTotalNumBuckets(5).create();
@@ -189,6 +217,39 @@ public class PartitionedRegionAttributesMutatorTest {
       public Object load(LoaderHelper helper) throws CacheLoaderException {
         return null;
       }
+    };
+  }
+
+  private CacheWriter createTestCacheWriter() {
+    return new CacheWriter() {
+      @Override
+      public void beforeUpdate(EntryEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void beforeCreate(EntryEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void beforeDestroy(EntryEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void close() {}
+
     };
   }
 
