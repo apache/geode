@@ -1707,13 +1707,13 @@ public class PRHARedundancyProvider {
     ArrayList<ProxyBucketRegion> bucketsHostedLocally =
         new ArrayList<ProxyBucketRegion>(proxyBucketArray.length);
 
-    allBucketsRecoveredFromDisk = new CountDownLatch(proxyBucketArray.length);
 
     /*
      * Start the redundancy logger before recovering any proxy buckets.
      */
     startRedundancyLogger(proxyBucketArray.length);
 
+    allBucketsRecoveredFromDisk = new CountDownLatch(proxyBucketArray.length);
     /*
      * Spawn a separate thread for bucket that we previously hosted to recover that bucket.
      *
@@ -1785,24 +1785,12 @@ public class PRHARedundancyProvider {
   }
 
   void startRedundancyLogger(int proxyBuckets) {
-    try {
-      if (proxyBuckets > 0) {
-        redundancyLogger = createRedundancyLogger();
-        Thread loggingThread = new LoggingThread(
-            "RedundancyLogger for region " + this.prRegion.getName(), false, this.redundancyLogger);
-        loggingThread.start();
-      }
-    } catch (RuntimeException e) {
-      for (int i = 0; i < proxyBuckets; i++) {
-        allBucketsRecoveredFromDisk.countDown();
-      }
-      allBucketsRecoveredFromDisk = null;
-      throw e;
+    if (proxyBuckets > 0) {
+      redundancyLogger = new RedundancyLogger(this);
+      Thread loggingThread = new LoggingThread(
+          "RedundancyLogger for region " + this.prRegion.getName(), false, this.redundancyLogger);
+      loggingThread.start();
     }
-  }
-
-  RedundancyLogger createRedundancyLogger() {
-    return new RedundancyLogger(this);
   }
 
   /**
