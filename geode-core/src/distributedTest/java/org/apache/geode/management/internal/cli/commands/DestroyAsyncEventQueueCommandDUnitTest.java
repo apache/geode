@@ -173,8 +173,8 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1").statusIsSuccess()
         .hasTableSection()
         .hasRowSize(2)
-        .hasRowContaining("server-1", "OK", "Async event queue \"queue1\" destroyed")
-        .hasRowContaining("server-2", "ERROR", "Async event queue \"queue1\" not found");
+        .hasAnyRow().contains("server-1", "OK", "Async event queue \"queue1\" destroyed")
+        .hasAnyRow().contains("server-2", "ERROR", "Async event queue \"queue1\" not found");
 
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
         .containsOutput("No Async Event Queues Found");
@@ -197,7 +197,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
         .statusIsSuccess().containsOutput(String.format(
             DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1"));
     gfsh.executeAndAssertThat("list async-event-queues").statusIsSuccess()
-        .hasTableSection().hasRowContaining("server-3", "queue3");
+        .hasTableSection().hasAnyRow().contains("server-3", "queue3");
 
     // verify that cluster config aeq entry for destroyed queue is deleted
     locator.invoke(() -> {
