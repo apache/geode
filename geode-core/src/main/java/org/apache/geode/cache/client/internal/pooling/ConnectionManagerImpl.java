@@ -178,7 +178,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   /**
    * Should only be called by a method that atomically increments @{link #connectionCount}, like
-   * {@link #tryCreateConnection(Set)} or {@link #forceCreateConnection(ServerLocation, Set)}.
+   * {@link #tryReserveConnection()}} or {@link #forceCreateConnection(ServerLocation, Set)}.
    */
   private PooledConnection createPooledConnection(final ServerLocation serverLocation,
       final Set<ServerLocation> excludedServers) {
@@ -191,35 +191,29 @@ public class ConnectionManagerImpl implements ConnectionManager {
         connection =
             addConnection(connectionFactory.createClientToServerConnection(serverLocation, false));
       }
-    } catch (GemFireSecurityException | GatewayConfigurationException e) {
-      throw new ServerOperationException(e);
-    } catch (ServerRefusedConnectionException e) {
-      throw new NoAvailableServersException(e);
     } finally {
       if (connection == null) {
-        if (connectionCount.decrementAndGet() < minConnections) {
-          startBackgroundPrefill();
-        }
+        cancelReserveConnection();
       }
     }
 
     return connection;
   }
 
-  /**
-   * Try to create a connection if and only if we have not reached {@link #maxConnections}.
-   */
-  private PooledConnection tryCreateConnection(final Set<ServerLocation> excludedServers)
-      throws ServerOperationException, NoAvailableServersException {
-
+  private boolean tryReserveConnection() {
     int currentConnectionCount;
     while ((currentConnectionCount = connectionCount.get()) < maxConnections) {
       if (connectionCount.compareAndSet(currentConnectionCount, currentConnectionCount + 1)) {
-        return createPooledConnection(null, excludedServers);
+        return true;
       }
     }
+    return false;
+  }
 
-    return null;
+  private void cancelReserveConnection() {
+    if (connectionCount.decrementAndGet() < minConnections) {
+      startBackgroundPrefill();
+    }
   }
 
   /**
@@ -241,17 +235,28 @@ public class ConnectionManagerImpl implements ConnectionManager {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
         PooledConnection connection = availableConnections.pollFirst();
-        if (null == connection) {
-          connection = tryCreateConnection(Collections.emptySet());
-          if (null != connection) {
-            return connection;
-          }
-        } else {
+        if (null != connection) {
           try {
             connection.activate();
             return connection;
           } catch (ConnectionDestroyedException ignored) {
+            continue;
           }
+        }
+
+        if (tryReserveConnection()) {
+          try {
+            connection = createPooledConnection(null, Collections.emptySet());
+            if (null != connection) {
+              return connection;
+            }
+          } catch (GemFireSecurityException | GatewayConfigurationException e) {
+            throw new ServerOperationException(e);
+          } catch (ServerRefusedConnectionException srce) {
+            throw new NoAvailableServersException(srce);
+          }
+
+          throw new NoAvailableServersException();
         }
 
         if (checkShutdownInterruptedOrTimeout(timeout)) {
@@ -267,10 +272,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     this.cancelCriterion.checkCancelInProgress(null);
-    if (connectionCount.get() >= maxConnections) {
-      throw new AllConnectionsInUseException();
-    }
-    throw new NoAvailableServersException();
+    throw new AllConnectionsInUseException();
   }
 
   /**
@@ -283,39 +285,26 @@ public class ConnectionManagerImpl implements ConnectionManager {
   public Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
 
-    long waitStart = -1;
-    try {
-      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
-      while (true) {
-        PooledConnection connection = findConnection((c) -> c.getServer().equals(server));
-        if (null != connection) {
-          return connection;
-        }
-
-        if (!onlyUseExistingCnx) {
-          connection = forceCreateConnection(server, Collections.emptySet());
-          if (null != connection) {
-            return connection;
-          }
-        }
-
-        if (checkShutdownInterruptedOrTimeout(timeout)) {
-          break;
-        }
-
-        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
-
-        Thread.yield();
-      }
-    } finally {
-      endConnectionWaitStatIfStarted(waitStart);
+    PooledConnection connection = findConnection((c) -> c.getServer().equals(server));
+    if (null != connection) {
+      return connection;
     }
 
-    this.cancelCriterion.checkCancelInProgress(null);
-    if (connectionCount.get() >= maxConnections) {
+    if (onlyUseExistingCnx) {
       throw new AllConnectionsInUseException();
     }
-    throw new NoAvailableServersException();
+
+    try {
+      connection = forceCreateConnection(server, Collections.emptySet());
+      if (null != connection) {
+        return connection;
+      }
+    } catch (GemFireSecurityException e) {
+      throw new ServerOperationException(e);
+    }
+
+    throw new ServerConnectivityException(
+        "Could not create a new connection to server " + server);
   }
 
   @Override
@@ -323,43 +312,31 @@ public class ConnectionManagerImpl implements ConnectionManager {
       final Set<ServerLocation> excludedServers, final long acquireTimeout)
       throws AllConnectionsInUseException {
 
-    long waitStart = -1;
+
     try {
-      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
-      while (true) {
+      PooledConnection connection =
+          findConnection(
+              (c) -> !(excludedServers.contains(c.getServer()) || oldConnection.equals(c)));
+      if (null != connection) {
+        return connection;
+      }
 
-        PooledConnection connection =
-            findConnection(
-                (c) -> !(excludedServers.contains(c.getServer()) || oldConnection.equals(c)));
-        if (null != connection) {
-          return connection;
-        }
-
-        // TODO the description of this method does not really make sense. Forcing connection here
-        // to
-        // make test pass
+      // TODO the description of this method does not really make sense. Forcing connection here
+      // to make test pass
+      try {
         connection = forceCreateConnection(null, excludedServers);
         if (null != connection) {
           return connection;
         }
-
-        if (checkShutdownInterruptedOrTimeout(timeout)) {
-          break;
-        }
-
-        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
-
-        Thread.yield();
+      } catch (GemFireSecurityException e) {
+        throw new ServerOperationException(e);
+      } catch (ServerRefusedConnectionException e) {
+        throw new NoAvailableServersException(e);
       }
     } finally {
       returnConnection(oldConnection);
-      endConnectionWaitStatIfStarted(waitStart);
     }
 
-    this.cancelCriterion.checkCancelInProgress(null);
-    if (connectionCount.get() >= maxConnections) {
-      throw new AllConnectionsInUseException();
-    }
     throw new NoAvailableServersException();
   }
 
