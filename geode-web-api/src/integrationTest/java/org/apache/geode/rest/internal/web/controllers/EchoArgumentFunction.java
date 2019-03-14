@@ -17,6 +17,8 @@ package org.apache.geode.rest.internal.web.controllers;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -26,7 +28,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 
-public class NoArgumentFunction implements Function {
+public class EchoArgumentFunction implements Function {
   /**
    * Specifies whether the function sends results while executing. The method returns false if no
    * result is expected.<br>
@@ -40,12 +42,11 @@ public class NoArgumentFunction implements Function {
    * </p>
    *
    * @return whether this function returns a Result back to the caller.
-   *
    * @since GemFire 6.0
    */
   @Override
   public boolean hasResult() {
-    return false;
+    return true;
   }
 
   /**
@@ -56,46 +57,53 @@ public class NoArgumentFunction implements Function {
    * in parameter is instance of {@link RegionFunctionContext}.
    *
    * @param context as created by {@link Execution}
-   *
    * @since GemFire 6.0
    */
   @Override
   public void execute(final FunctionContext context) {
-    // do nothing
+    Object args = context.getArguments();
+
+    // Echo the arguments back to the caller for assertion
+    if (args != null && args.getClass().isAssignableFrom(Object.class)) {
+      // Object is not serializable
+      context.getResultSender().lastResult(new ObjectMapper().createObjectNode());
+    } else {
+      context.getResultSender().lastResult(args);
+    }
   }
 
   /**
-   * Return a unique function identifier, used to register the function with {@link FunctionService}
+   * Return a unique function identifier, used to register the function with {@link
+   * FunctionService}
    *
    * @return string identifying this function
-   *
    * @since GemFire 6.0
    */
   @Override
   public String getId() {
-    return "NoArgumentFunction";
+    return "EchoArgumentFunction";
   }
 
   /**
    * <p>
    * Return true to indicate to GemFire the method requires optimization for writing the targeted
-   * {@link FunctionService#onRegion(Region)} and any associated
-   * {@linkplain Execution#withFilter(Set) routing objects}.
+   * {@link FunctionService#onRegion(Region)} and any associated {@linkplain
+   * Execution#withFilter(Set) routing objects}.
    * </p>
    *
    * <p>
-   * Returning false will optimize for read behavior on the targeted
-   * {@link FunctionService#onRegion(Region)} and any associated
-   * {@linkplain Execution#withFilter(Set) routing objects}.
+   * Returning false will optimize for read behavior on the targeted {@link
+   * FunctionService#onRegion(Region)} and any associated {@linkplain Execution#withFilter(Set)
+   * routing objects}.
    * </p>
    *
    * <p>
    * This method is only consulted when Region passed to
-   * FunctionService#onRegion(org.apache.geode.cache.Region) is a partitioned region
+   * FunctionService#onRegion(org.apache.geode.cache.Region)
+   * is a partitioned region
    * </p>
    *
    * @return false if the function is read only, otherwise returns true
-   *
    * @see FunctionService
    * @since GemFire 6.0
    */
@@ -108,7 +116,6 @@ public class NoArgumentFunction implements Function {
    * Specifies whether the function is eligible for re-execution (in case of failure).
    *
    * @return whether the function is eligible for re-execution.
-   *
    * @see RegionFunctionContext#isPossibleDuplicate()
    * @since GemFire 6.5
    */

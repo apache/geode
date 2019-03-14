@@ -135,7 +135,7 @@ public class RestAccessControllerTest {
     RestAgent.createParameterizedQueryRegion();
 
     FunctionService.registerFunction(new AddFreeItemToOrders());
-    FunctionService.registerFunction(new NoArgumentFunction());
+    FunctionService.registerFunction(new EchoArgumentFunction());
 
     rule.createRegion(RegionShortcut.REPLICATE_PROXY, "empty",
         f -> f.setCacheLoader(new SimpleCacheLoader()).setCacheWriter(new SimpleCacheWriter()));
@@ -810,7 +810,7 @@ public class RestAccessControllerTest {
     mockMvc.perform(get("/v1/functions"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.functions",
-            containsInAnyOrder("AddFreeItemToOrders", "NoArgumentFunction")));
+            containsInAnyOrder("AddFreeItemToOrders", "EchoArgumentFunction")));
   }
 
   @Test
@@ -837,16 +837,41 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
-  public void executeNoArgFunction() throws Exception {
-    mockMvc.perform(post("/v1/functions/NoArgumentFunction")
-        .content("{ }")
+  public void executeNoArgFunctionWithInvalidArg() throws Exception {
+    mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
+        .content("{\"type\": \"int\"}")
         .with(POST_PROCESSOR))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(content().json("[{}]"));
+  }
 
-    mockMvc.perform(post("/v1/functions/NoArgumentFunction")
+  @Test
+  @WithMockUser
+  public void executeNoArgFunctionWithEmptyObject() throws Exception {
+    mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
         .content("[{ }]")
         .with(POST_PROCESSOR))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(content().json("[{}]"));
+  }
+
+  @Test
+  @WithMockUser
+  public void executeNoArgFunctionWithEmptyArray() throws Exception {
+    mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
+        .content("[]")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().json("[[]]"));
+  }
+
+  @Test
+  @WithMockUser
+  public void executeNoArgFunctionWithNoContent() throws Exception {
+    mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().json("[null]"));
   }
 
   @Test
