@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheRuntimeException;
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -58,7 +59,7 @@ public class QueryMonitorIntegrationTest {
   }
 
   @Test
-  public void setLowMemoryTrueCancelsQueriesImmediately() {
+  public void setLowMemoryTrueCancelsQueriesImmediatelyAndCannotMonitorNewQuery() {
 
     QueryMonitor queryMonitor = null;
 
@@ -73,6 +74,14 @@ public class QueryMonitorIntegrationTest {
 
       queryMonitor.monitorQueryThread(query);
 
+      // Want to verify that all future queries are canceled due to low memory state, so create
+      // a new query and monitor it. The query has to be created before the low memory state is set,
+      // because the query service doesn't allow creating new queries in the low memory state.
+      DefaultQuery query2 =
+          (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
+
+      // Set low memory and verify handling for the currently monitored exception
+
       queryMonitor.setLowMemory(true, 1);
 
       // Need to get a handle on the atomic reference because cancellation state
@@ -85,6 +94,12 @@ public class QueryMonitorIntegrationTest {
       assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled,
           "Expected setLowMemory(true,_) to cancel query immediately, but it didn't.",
           QueryExecutionCanceledException.class);
+
+      // Need to make query monitor effectively final for use in lambda. We expect this to throw
+      // because we cannot monitor a new query once we are in a low memory state.
+      final QueryMonitor finalQueryMonitor = queryMonitor;
+      assertThatThrownBy(() -> finalQueryMonitor.monitorQueryThread(query2))
+          .isExactlyInstanceOf(QueryExecutionLowMemoryException.class);
     } finally {
       if (queryMonitor != null) {
         /*
