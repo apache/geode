@@ -49,11 +49,12 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.RebalanceFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -93,19 +94,23 @@ public class RebalanceCommand extends GfshCommand {
     } catch (TimeoutException timeoutException) {
       result = ResultModel.createInfo(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
     }
-    LogWrapper.getInstance(getCache()).info("Rebalance returning result >>>" + result);
+
+    // if the result contains only error section, then we need to mark the result as error status
+    if (result.getSection("error") != null && result.getSectionSize() == 1) {
+      result.setStatus(Result.Status.ERROR);
+    }
     return result;
   }
 
-  private boolean checkResultList(DataResultModel rebalanceResultData, List resultList,
+  private boolean checkResultList(InfoResultModel errors, List resultList,
       DistributedMember member) {
     boolean toContinueForOtherMembers = false;
     if (CollectionUtils.isNotEmpty(resultList)) {
       for (Object object : resultList) {
         if (object instanceof Exception) {
-          rebalanceResultData.addData(
-              CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
-              ((Exception) object).getMessage());
+          errors.addLine(
+              CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()) + ": " +
+                  ((Exception) object).getMessage());
 
           LogWrapper.getInstance(getCache()).info(CliStrings.REBALANCE__MSG__NO_EXECUTION
               + member.getId() + " exception=" + ((Throwable) object).getMessage(),
@@ -114,9 +119,9 @@ public class RebalanceCommand extends GfshCommand {
           toContinueForOtherMembers = true;
           break;
         } else if (object instanceof Throwable) {
-          rebalanceResultData.addData(
-              CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
-              ((Throwable) object).getMessage());
+          errors.addLine(
+              CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()) + ": " +
+                  ((Throwable) object).getMessage());
 
           LogWrapper.getInstance(getCache()).info(CliStrings.REBALANCE__MSG__NO_EXECUTION
               + member.getId() + " exception=" + ((Throwable) object).getMessage(),
@@ -129,7 +134,7 @@ public class RebalanceCommand extends GfshCommand {
     } else {
       LogWrapper.getInstance(getCache()).info(
           "Rebalancing for member=" + member.getId() + ", resultList is either null or empty");
-      rebalanceResultData.addData("Rebalancing for member=" + member.getId(),
+      errors.addLine("Rebalancing for member=" + member.getId() +
           ", resultList is either null or empty");
       toContinueForOtherMembers = true;
     }
@@ -140,7 +145,7 @@ public class RebalanceCommand extends GfshCommand {
       List<String> rstlist, int index, boolean simulate, InternalCache cache) {
     int resultItemCount = 9;
 
-    if(rstlist.size() <= resultItemCount || StringUtils.isEmpty(rstlist.get(resultItemCount))) {
+    if (rstlist.size() <= resultItemCount || StringUtils.isEmpty(rstlist.get(resultItemCount))) {
       return;
     }
 
@@ -237,7 +242,7 @@ public class RebalanceCommand extends GfshCommand {
         RebalanceOperation op;
 
         if (ArrayUtils.isNotEmpty(includeRegions)) {
-          DataResultModel dataResult = result.addData("rebalanceResult");
+          InfoResultModel errors = result.addInfo("error");
           int index = 0;
 
           for (String regionName : includeRegions) {
@@ -250,7 +255,7 @@ public class RebalanceCommand extends GfshCommand {
               DistributedMember member = getAssociatedMembers(regionName, cache);
 
               if (member == null) {
-                LogWrapper.getInstance(cache).info(CliStrings.format(
+                errors.addLine(CliStrings.format(
                     CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
                 continue;
               }
@@ -278,13 +283,13 @@ public class RebalanceCommand extends GfshCommand {
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
-                  dataResult.addData(CliStrings.format(
-                          CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
-                          member.getId()), ex.getMessage());
+                  errors.addLine(CliStrings.format(
+                      CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
+                      member.getId()) + ": " + ex.getMessage());
                   continue;
                 }
 
-                if (checkResultList(dataResult, resultList, member)) {
+                if (checkResultList(errors, resultList, member)) {
                   continue;
                 }
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
@@ -300,13 +305,13 @@ public class RebalanceCommand extends GfshCommand {
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
-                  dataResult.addData(CliStrings.format(
-                          CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
-                          member.getId()), ex.getMessage());
+                  errors.addLine(CliStrings.format(
+                      CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
+                      member.getId()) + ": " + ex.getMessage());
                   continue;
                 }
 
-                if (checkResultList(dataResult, resultList, member)) {
+                if (checkResultList(errors, resultList, member)) {
                   continue;
                 }
                 List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
@@ -472,7 +477,7 @@ public class RebalanceCommand extends GfshCommand {
       String[] excludeRegionsList) {
     ResultModel resultModel = new ResultModel();
     int index = 1;
-    DataResultModel rebalanceResultData = resultModel.addData("rebalanceResult");
+    InfoResultModel errors = resultModel.addInfo("errors");
     List<String> listExcludedRegion = new ArrayList<>();
     if (excludeRegionsList != null) {
       Collections.addAll(listExcludedRegion, excludeRegionsList);
@@ -522,7 +527,7 @@ public class RebalanceCommand extends GfshCommand {
                 resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, dsMember)
                     .getResult();
 
-                if (checkResultList(rebalanceResultData, resultList, dsMember)) {
+                if (checkResultList(errors, resultList, dsMember)) {
                   continue;
                 }
 
@@ -534,28 +539,28 @@ public class RebalanceCommand extends GfshCommand {
                 break;
               } else {
                 if (i == memberPR.dsMemberList.size() - 1) {
-                  rebalanceResultData.addData(
+                  errors.addLine(
                       CliStrings.format(
                           CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
-                          memberPR.region, listOfAllMembers(memberPR.dsMemberList)),
-                      CliStrings.REBALANCE__MSG__MEMBERS_MIGHT_BE_DEPARTED);
+                          memberPR.region, listOfAllMembers(memberPR.dsMemberList)) + ", " +
+                          CliStrings.REBALANCE__MSG__MEMBERS_MIGHT_BE_DEPARTED);
                 } else {
                   continue;
                 }
               }
             } catch (Exception ex) {
               if (i == memberPR.dsMemberList.size() - 1) {
-                rebalanceResultData.addData(
+                errors.addLine(
                     CliStrings.format(
                         CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
-                        memberPR.region, listOfAllMembers(memberPR.dsMemberList)),
-                    CliStrings.REBALANCE__MSG__REASON + ex.getMessage());
+                        memberPR.region, listOfAllMembers(memberPR.dsMemberList)) + ", " +
+                        CliStrings.REBALANCE__MSG__REASON + ex.getMessage());
               } else {
                 continue;
               }
             }
 
-            if (checkResultList(rebalanceResultData, resultList, dsMember)) {
+            if (checkResultList(errors, resultList, dsMember)) {
               continue;
             }
 
