@@ -36,6 +36,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 @RunWith(SpringRunner.class)
@@ -62,7 +63,7 @@ public class RegionManagementIntegrationTest {
   public void sanityCheck() throws Exception {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setType("REPLICATE");
+    regionConfig.setType(RegionShortcut.REPLICATE);
 
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);

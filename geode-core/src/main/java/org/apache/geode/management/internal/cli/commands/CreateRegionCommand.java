@@ -226,7 +226,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
     InternalConfigurationPersistenceService persistenceService =
         getConfigurationPersistenceService();
     if (regionShortcut != null) {
-      regionConfig.setType(regionShortcut.name());
+      regionConfig.setType(regionShortcut);
     }
     // get the attributes from the template region
     else {

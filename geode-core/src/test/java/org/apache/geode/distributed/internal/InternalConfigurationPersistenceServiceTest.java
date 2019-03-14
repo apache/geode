@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.RegionConfig;
@@ -82,7 +83,7 @@ public class InternalConfigurationPersistenceServiceTest {
     service.updateCacheConfig("cluster", cacheConfig -> {
       RegionConfig regionConfig = new RegionConfig();
       regionConfig.setName("regionA");
-      regionConfig.setType("REPLICATE");
+      regionConfig.setType(RegionShortcut.REPLICATE);
       cacheConfig.getRegions().add(regionConfig);
       return cacheConfig;
     });

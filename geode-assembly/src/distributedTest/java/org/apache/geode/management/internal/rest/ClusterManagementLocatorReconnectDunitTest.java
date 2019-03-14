@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
@@ -68,7 +69,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
   private void makeRestCallAndVerifyResult(String regionName) throws Exception {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName(regionName);
-    regionConfig.setType("REPLICATE");
+    regionConfig.setType(RegionShortcut.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 

@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -43,7 +44,7 @@ public class RegionConfigRealizerIntegrationTest {
   @Test
   public void sanityCheck() throws Exception {
     config.setName("test");
-    config.setType("REPLICATE");
+    config.setType(RegionShortcut.REPLICATE);
 
     realizer.create(config, server.getCache());
 

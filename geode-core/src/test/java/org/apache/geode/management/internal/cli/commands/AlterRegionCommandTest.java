@@ -34,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
@@ -78,7 +79,7 @@ public class AlterRegionCommandTest {
     cacheConfig = new CacheConfig();
     existingRegionConfig = new RegionConfig();
     existingRegionConfig.setName("/regionA");
-    existingRegionConfig.setType("REPLICATE");
+    existingRegionConfig.setType(RegionShortcut.REPLICATE);
     cacheConfig.getRegions().add(existingRegionConfig);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }

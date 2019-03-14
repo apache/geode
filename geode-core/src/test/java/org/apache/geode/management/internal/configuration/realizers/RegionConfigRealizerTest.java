@@ -27,6 +27,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 
@@ -47,7 +48,7 @@ public class RegionConfigRealizerTest {
   public void createsPartitionedInCache() {
     RegionConfig config = new RegionConfig();
     config.setName("regionName");
-    config.setType("PARTITION");
+    config.setType(RegionShortcut.PARTITION);
 
     realizer.create(config, cache);
 
@@ -62,7 +63,7 @@ public class RegionConfigRealizerTest {
   public void createsReplicateInCache() {
     RegionConfig config = new RegionConfig();
     config.setName("regionName");
-    config.setType("REPLICATE");
+    config.setType(RegionShortcut.REPLICATE);
 
     realizer.create(config, cache);
 

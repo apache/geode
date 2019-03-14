@@ -71,19 +71,13 @@ public class RegionConfigTest {
     RegionShortcut[] shortcuts = RegionShortcut.values();
     for (RegionShortcut shortcut : shortcuts) {
       RegionConfig config = new RegionConfig();
-      config.setType(shortcut.name());
+      config.setType(shortcut);
       config.setName(shortcut.name());
       RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
       assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
     }
   }
 
-  @Test
-  public void invalidType() {
-    regionConfig.setName("test");
-    assertThatThrownBy(() -> regionConfig.setType("INVALID-TYPE")).isInstanceOf(
-        IllegalArgumentException.class);
-  }
 
   @Test
   public void correctJsonAndXml() throws Exception {

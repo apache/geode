@@ -23,6 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.config.JAXBService;
 
 
@@ -48,7 +49,7 @@ public class CacheConfigTest {
     service.validateWithLocalCacheXSD();
     regionConfig = new RegionConfig();
     regionConfig.setName("regionA");
-    regionConfig.setType("REPLICATE");
+    regionConfig.setType(RegionShortcut.REPLICATE);
     regionXml = "<region name=\"regionA\" refid=\"REPLICATE\">";
 
     classNameTypeXml = "<class-name>my.className</class-name>";
@@ -172,7 +173,7 @@ public class CacheConfigTest {
     cacheConfig = new CacheConfig("1.0");
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("test");
-    regionConfig.setType("REPLICATE");
+    regionConfig.setType(RegionShortcut.REPLICATE);
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setCacheLoader(new DeclarableType("abc.Foo"));
     regionConfig.setRegionAttributes(attributes);
