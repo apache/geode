@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.logging.log4j.Logger;
@@ -57,6 +58,11 @@ public class GfJsonArray extends AbstractJSONFormatter {
     } catch (IllegalArgumentException e) {
       throw new GfJsonException(e);
     }
+  }
+
+  void postCreateMapper() {
+    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
   }
 
   /**

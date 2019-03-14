@@ -183,7 +183,7 @@ public abstract class AbstractJSONFormatter {
       gen.setCurrentValue(value);
       WritableTypeId typeIdDef = typeSer.writeTypePrefix(gen,
           typeSer.typeId(value, JsonToken.START_OBJECT));
-      _serialize(value, gen);
+      serializeElements(value, gen);
       typeSer.writeTypeSuffix(gen, typeIdDef);
     }
 
@@ -191,11 +191,11 @@ public abstract class AbstractJSONFormatter {
     public void serialize(Collection value, JsonGenerator gen, SerializerProvider serializers)
         throws IOException {
       gen.writeStartObject();
-      _serialize(value, gen);
+      serializeElements(value, gen);
       gen.writeEndObject();
     }
 
-    void _serialize(Collection value, JsonGenerator gen) throws IOException {
+    void serializeElements(Collection value, JsonGenerator gen) throws IOException {
       Iterator<Object> objects = value.iterator();
       for (int i = 0; i < maxCollectionElements && objects.hasNext(); i++) {
         Object nextObject = objects.next();
@@ -217,7 +217,7 @@ public abstract class AbstractJSONFormatter {
         throws IOException {
       WritableTypeId writableTypeId = typeSer.typeId(value, JsonToken.START_OBJECT);
       typeSer.writeTypePrefix(gen, writableTypeId);
-      _serialize(value, gen);
+      serializeFields(value, gen);
       typeSer.writeTypeSuffix(gen, writableTypeId);
     }
 
@@ -225,11 +225,11 @@ public abstract class AbstractJSONFormatter {
     public void serialize(PdxInstance value, JsonGenerator gen, SerializerProvider serializers)
         throws IOException {
       gen.writeStartObject();
-      _serialize(value, gen);
+      serializeFields(value, gen);
       gen.writeEndObject();
     }
 
-    void _serialize(PdxInstance value, JsonGenerator gen) throws IOException {
+    void serializeFields(PdxInstance value, JsonGenerator gen) throws IOException {
       for (String field : value.getFieldNames()) {
         gen.writeObjectField(field, value.getField(field));
       }
@@ -247,7 +247,7 @@ public abstract class AbstractJSONFormatter {
         SerializerProvider serializers, TypeSerializer typeSer)
         throws IOException {
       typeSer.writeTypePrefix(gen, typeSer.typeId(value, JsonToken.START_OBJECT));
-      _serialize(value, gen);
+      serializeElements(value, gen);
       typeSer.writeTypeSuffix(gen, typeSer.typeId(value, JsonToken.START_OBJECT));
     }
 
@@ -255,11 +255,11 @@ public abstract class AbstractJSONFormatter {
     public void serialize(StructImpl value, JsonGenerator gen, SerializerProvider serializers)
         throws IOException {
       gen.writeStartObject();
-      _serialize(value, gen);
+      serializeElements(value, gen);
       gen.writeEndObject();
     }
 
-    void _serialize(StructImpl value, JsonGenerator gen) throws IOException {
+    void serializeElements(StructImpl value, JsonGenerator gen) throws IOException {
       String[] fields = value.getFieldNames();
       Object[] values = value.getFieldValues();
       for (int i = 0; i < fields.length; i++) {
