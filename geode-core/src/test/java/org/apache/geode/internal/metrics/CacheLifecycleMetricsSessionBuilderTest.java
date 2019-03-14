@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.metrics.CacheLifecycleMetricsSession.Builder;
 import org.apache.geode.internal.metrics.CacheLifecycleMetricsSession.CacheLifecycle;
+import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.metrics.MetricsPublishingService;
 
 public class CacheLifecycleMetricsSessionBuilderTest {
