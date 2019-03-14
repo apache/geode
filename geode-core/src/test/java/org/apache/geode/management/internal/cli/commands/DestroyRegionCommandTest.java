@@ -113,11 +113,11 @@ public class DestroyRegionCommandTest {
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any());
     when(result1.isSuccessful()).thenReturn(true);
-    when(result1.getLegacyStatus()).thenReturn("result1 message");
+    when(result1.getStatusMessage()).thenReturn("result1 message");
     when(result1.getXmlEntity()).thenReturn(xmlEntity);
 
     when(result2.isSuccessful()).thenReturn(false);
-    when(result2.getLegacyStatus()).thenReturn("result2 message");
+    when(result2.getStatusMessage()).thenReturn("result2 message");
 
     parser.executeAndAssertThat(command, "destroy region --name=test").statusIsSuccess()
         .containsOutput("result1 message").containsOutput("result2 message");
@@ -132,11 +132,11 @@ public class DestroyRegionCommandTest {
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any());
     when(result1.isSuccessful()).thenReturn(true);
-    when(result1.getLegacyStatus()).thenReturn("result1 message");
+    when(result1.getStatusMessage()).thenReturn("result1 message");
     when(result1.getXmlEntity()).thenReturn(xmlEntity);
 
     when(result2.isSuccessful()).thenReturn(false);
-    when(result2.getLegacyStatus()).thenReturn("something happened");
+    when(result2.getStatusMessage()).thenReturn("something happened");
 
     parser.executeAndAssertThat(command, "destroy region --name=test").statusIsSuccess()
         .containsOutput("result1 message").containsOutput("something happened");
@@ -152,17 +152,17 @@ public class DestroyRegionCommandTest {
     doReturn(Collections.singleton(DistributedMember.class)).when(command)
         .findMembersForRegion(any());
     when(result1.isSuccessful()).thenReturn(false);
-    when(result1.getLegacyStatus()).thenReturn("result1 message");
+    when(result1.getStatusMessage()).thenReturn("result1 message");
 
     when(result2.isSuccessful()).thenReturn(false);
-    when(result2.getLegacyStatus()).thenReturn("something happened");
+    when(result2.getStatusMessage()).thenReturn("something happened");
 
     parser.executeAndAssertThat(command, "destroy region --name=test").statusIsError()
         .containsOutput("result1 message").containsOutput("something happened");
 
 
     // verify that xmlEntry returned by the result1 is saved to Cluster config
-    verify(command, never()).persistClusterConfiguration(any(), any());
+    verify(ccService, never()).deleteXmlEntity(any(), any());
   }
 
   private void setupJDBCMappingOnRegion(String regionName) {

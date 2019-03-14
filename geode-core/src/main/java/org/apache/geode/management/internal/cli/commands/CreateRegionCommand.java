@@ -53,7 +53,6 @@ import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -63,7 +62,6 @@ import org.apache.geode.management.internal.cli.functions.CreateRegionFunctionAr
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
@@ -660,12 +658,12 @@ public class CreateRegionCommand extends SingleGfshCommand {
 
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       Integer localMaxMemory =
           (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__LOCALMAXMEMORY);
       if (localMaxMemory != null) {
         if (localMaxMemory < 0) {
-          return ResultBuilder.createUserErrorResult(
+          return ResultModel.createError(
               "PartitionAttributes localMaxMemory must not be negative.");
         }
       }
@@ -673,7 +671,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
           (Long) parseResult.getParamValue(CliStrings.CREATE_REGION__TOTALMAXMEMORY);
       if (totalMaxMemory != null) {
         if (totalMaxMemory <= 0) {
-          return ResultBuilder.createUserErrorResult(
+          return ResultModel.createError(
               "Total size of partition region must be > 0.");
         }
       }
@@ -681,7 +679,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
           (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REDUNDANTCOPIES);
       if (redundantCopies != null) {
         if (redundantCopies < 0 || redundantCopies > 3) {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
+          return ResultModel.createError(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__REDUNDANT_COPIES_SHOULD_BE_ONE_OF_0123,
               new Object[] {redundantCopies}));
         }
@@ -691,7 +689,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
           (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__CONCURRENCYLEVEL);
       if (concurrencyLevel != null) {
         if (concurrencyLevel < 0) {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
+          return ResultModel.createError(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_CONCURRENCYLEVEL_0_IS_NOT_VALID,
               new Object[] {concurrencyLevel}));
         }
@@ -700,7 +698,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
       String keyConstraint =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__KEYCONSTRAINT);
       if (keyConstraint != null && !ClassName.isClassNameValid(keyConstraint)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
+        return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID,
             new Object[] {keyConstraint}));
       }
@@ -708,21 +706,21 @@ public class CreateRegionCommand extends SingleGfshCommand {
       String valueConstraint =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__VALUECONSTRAINT);
       if (valueConstraint != null && !ClassName.isClassNameValid(valueConstraint)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
+        return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID,
             new Object[] {valueConstraint}));
       }
 
       String compressor = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__COMPRESSOR);
       if (compressor != null && !ClassName.isClassNameValid(compressor)) {
-        return ResultBuilder.createUserErrorResult(CliStrings
+        return ResultModel.createError(CliStrings
             .format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR, new Object[] {compressor}));
       }
 
       Boolean cloningEnabled =
           (Boolean) parseResult.getParamValue(CliStrings.CREATE_REGION__CLONINGENABLED);
       if (compressor != null && cloningEnabled != null && !cloningEnabled) {
-        return ResultBuilder.createUserErrorResult(CliStrings
+        return ResultModel.createError(CliStrings
             .format(CliStrings.CREATE_REGION__MSG__CANNOT_DISABLE_CLONING_WITH_COMPRESSOR,
                 new Object[] {compressor}));
       }
@@ -739,7 +737,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
               + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,
                   new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
 
-          return ResultBuilder.createUserErrorResult(message);
+          return ResultModel.createError(message);
         }
       }
 
@@ -773,7 +771,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
           && (statisticsEnabled == null || !statisticsEnabled)) {
         String message =
             "Statistics must be enabled for expiration";
-        return ResultBuilder.createUserErrorResult(message + ".");
+        return ResultModel.createError(message + ".");
       }
 
 
@@ -786,27 +784,24 @@ public class CreateRegionCommand extends SingleGfshCommand {
       String evictionSizer =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_OBJECT_SIZER);
       if (maxEntry != null && maxMemory != null) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.CREATE_REGION__MSG__BOTH_EVICTION_VALUES);
+        return ResultModel.createError(CliStrings.CREATE_REGION__MSG__BOTH_EVICTION_VALUES);
       }
 
       if ((maxEntry != null || maxMemory != null) && evictionAction == null) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.CREATE_REGION__MSG__MISSING_EVICTION_ACTION);
+        return ResultModel.createError(CliStrings.CREATE_REGION__MSG__MISSING_EVICTION_ACTION);
       }
 
       if (evictionSizer != null && maxEntry != null) {
-        return ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT);
       }
 
       if (evictionAction != null
           && EvictionAction.parseAction(evictionAction) == EvictionAction.NONE) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_ACTION);
+        return ResultModel.createError(CliStrings.CREATE_REGION__MSG__INVALID_EVICTION_ACTION);
       }
 
-      return ResultBuilder.createInfoResult("");
+      return ResultModel.createInfo("");
     }
   }
 }
