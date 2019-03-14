@@ -14,12 +14,15 @@
  */
 package org.apache.geode.test.junit.rules.accessible;
 
+import java.io.Serializable;
+
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 /**
  * Subclass RestoreSystemProperties in order to invoke protected methods from different package.
  */
-public class AccessibleRestoreSystemProperties extends RestoreSystemProperties {
+public class AccessibleRestoreSystemProperties extends RestoreSystemProperties implements
+    Serializable {
 
   @Override
   public void before() throws Throwable {

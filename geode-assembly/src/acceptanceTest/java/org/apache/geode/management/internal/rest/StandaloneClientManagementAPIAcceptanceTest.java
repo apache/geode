@@ -91,9 +91,11 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     jarBuilder.buildJar(outputJar, new File(filePath));
 
     GfshExecution startCluster =
-        GfshScript.of("start locator " + getSslParameters(),
-            "start server --locators=localhost[10334] " + getSslParameters())
+        GfshScript.of("start locator --J=-Denable-experimental-cluster-management-service=true "
+            + getSslParameters(),
+            "start server --locators=localhost[10334]")
             .withName("startCluster").execute(gfsh);
+
 
     assertThat(startCluster.getProcess().exitValue())
         .as("Cluster did not start correctly").isEqualTo(0);
