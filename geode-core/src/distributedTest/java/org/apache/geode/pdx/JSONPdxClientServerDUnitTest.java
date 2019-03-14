@@ -44,6 +44,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.pdx.internal.json.PdxToJSON;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -184,7 +185,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  public void VerifyPdxInstanceAndJsonConversion() throws JsonProcessingException {
+  public void VerifyPdxInstanceAndJsonConversion() throws JsonProcessingException, GfJsonException {
     Region region = getRootRegion("testSimplePdx");
 
     // Create Object and initialize its members.
@@ -214,7 +215,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void validateReceivedJSON(Region region, TestObjectForJSONFormatter actualTestObject,
-      ObjectMapper objectMapper) throws JsonProcessingException {
+      ObjectMapper objectMapper) throws JsonProcessingException, GfJsonException {
     // 1. get the json from the object using Jackson Object Mapper
     String json = objectMapper.writeValueAsString(actualTestObject);
     String jsonWithClassType = actualTestObject.addClassTypeToJson(json);

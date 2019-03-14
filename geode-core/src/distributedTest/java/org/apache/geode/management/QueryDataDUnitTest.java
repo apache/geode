@@ -37,9 +37,6 @@ import java.util.concurrent.TimeoutException;
 
 import javax.management.ObjectName;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,6 +61,8 @@ import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartiti
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.BeanUtilFuncs;
 import org.apache.geode.management.internal.beans.QueryDataFunction;
+import org.apache.geode.management.internal.cli.json.GfJsonArray;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -72,7 +71,7 @@ import org.apache.geode.test.dunit.rules.DistributedUseJacksonForJsonPathRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * Distributed tests for {@link DistributedSystemMXBean#queryData(String, String, int)}.
+ * Distributed tests for DistributedSystemMXBean#queryData(String, String, int).
  * </p>
  *
  * <pre>
@@ -246,16 +245,17 @@ public class QueryDataDUnitTest implements Serializable {
       assertThat(jsonString).contains("result").doesNotContain("No Data Found");
       assertThat(jsonString).contains(BIG_COLLECTION_ELEMENT_);
 
-      JSONObject jsonObject = new JSONObject(jsonString);
-      JSONArray jsonArray = jsonObject.getJSONArray("result");
+      GfJsonObject jsonObject = new GfJsonObject(jsonString);
+      GfJsonArray jsonArray = jsonObject.getJSONArray("result");
       assertThat(jsonArray.length()).isEqualTo(DEFAULT_QUERY_LIMIT);
 
       // Get the first element
-      JSONArray jsonArray1 = jsonArray.getJSONArray(0);
+      GfJsonArray jsonArray1 = jsonArray.getJSONArray(0);
+      assertThat(jsonArray1).isNotNull();
 
       // Get the ObjectValue
-      JSONObject collectionObject = (JSONObject) jsonArray1.get(1);
-      assertThat(collectionObject.length()).isEqualTo(100);
+      GfJsonObject collectionObject = jsonArray1.getInternalJsonObject(1);
+      assertThat(collectionObject.size()).isEqualTo(100);
 
       // Query With Override Values
       int newQueryCollectionDepth = 150;
@@ -274,7 +274,7 @@ public class QueryDataDUnitTest implements Serializable {
       verifyJsonIsValid(jsonString);
       assertThat(jsonString).contains("result").doesNotContain("No Data Found");
 
-      jsonObject = new JSONObject(jsonString);
+      jsonObject = new GfJsonObject(jsonString);
       assertThat(jsonString).contains(BIG_COLLECTION_ELEMENT_);
 
       jsonArray = jsonObject.getJSONArray("result");
@@ -284,8 +284,8 @@ public class QueryDataDUnitTest implements Serializable {
       jsonArray1 = jsonArray.getJSONArray(0);
 
       // Get the ObjectValue
-      collectionObject = (JSONObject) jsonArray1.get(1);
-      assertThat(collectionObject.length()).isEqualTo(newQueryCollectionDepth);
+      collectionObject = jsonArray1.getInternalJsonObject(1);
+      assertThat(collectionObject.size()).isEqualTo(newQueryCollectionDepth);
     });
   }
 
@@ -482,10 +482,9 @@ public class QueryDataDUnitTest implements Serializable {
     return calendar.getTime();
   }
 
-  private void verifyJsonIsValid(final String jsonString) throws JSONException {
+  private void verifyJsonIsValid(final String jsonString) {
     assertThat(jsonString, isJson());
     assertThat(jsonString, hasJsonPath("$.result"));
-    assertThat(new JSONObject(jsonString)).isNotNull();
   }
 
   private void putDataInRegion(final String regionName, final Object[] portfolio, final int from,

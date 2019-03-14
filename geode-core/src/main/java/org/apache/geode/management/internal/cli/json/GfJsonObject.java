@@ -14,63 +14,62 @@
  */
 package org.apache.geode.management.internal.cli.json;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * Wrapper over JSONObject.
- *
- *
- * @since GemFire 7.0
+ * Simiulation of org.json.JSONObject based on Jackson Databind
  */
-public class GfJsonObject {
-  public static final Object NULL = JSONObject.NULL;
+public class GfJsonObject extends AbstractJSONFormatter {
+  @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+  public static final Object NULL = new Object() {
+    @Override
+    public boolean equals(Object o) {
+      if (Objects.isNull(o)) {
+        return true;
+      }
+      return o == this;
+    }
 
-  private JSONObject jsonObject;
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    @Override
+    public String toString() {
+      return "null";
+    }
+  };
+
+  private ObjectNode rootNode;
 
   public GfJsonObject() {
-    this.jsonObject = new JSONObject();
-  }
-
-  @SuppressWarnings("rawtypes")
-  public GfJsonObject(Object bean, boolean checkCyclicDep) {
-    if (checkCyclicDep) {
-      JSONObject.cyclicDepChkEnabled.set(true);
-      JSONObject.cyclicDependencySet.set(new HashSet());
-    }
-    if (bean instanceof JSONObject) {
-      this.jsonObject = (JSONObject) bean;
-    } else {
-      this.jsonObject = new JSONObject(bean);
-    }
-    if (checkCyclicDep) {
-      JSONObject.cyclicDepChkEnabled.set(false);
-      JSONObject.cyclicDependencySet.set(null);
-    }
-  }
-
-  public GfJsonObject(GfJsonObject gfJsonObject) {
-    this.jsonObject = gfJsonObject.jsonObject;
+    super(-1, -1, false);
+    this.rootNode = mapper.createObjectNode();
   }
 
   public GfJsonObject(Map<?, ?> map) {
-    this.jsonObject = new JSONObject(map);
+    super(-1, -1, false);
+    this.rootNode = mapper.valueToTree(map);
   }
 
   public GfJsonObject(Object bean) {
-    if (bean instanceof JSONObject) {
-      this.jsonObject = (JSONObject) bean;
+    super(-1, -1, false);
+    if (bean instanceof ObjectNode) {
+      this.rootNode = (ObjectNode) bean;
     } else {
-      this.jsonObject = new JSONObject(bean);
+      this.rootNode = mapper.valueToTree(bean);
     }
   }
 
@@ -80,11 +79,20 @@ public class GfJsonObject {
    * @throws GfJsonException - If there is a syntax error in the source string or a duplicated key.
    */
   public GfJsonObject(String source) throws GfJsonException {
+    super(-1, -1, false);
     try {
-      this.jsonObject = new JSONObject(source);
-    } catch (JSONException e) {
+      this.rootNode = (ObjectNode) mapper.readTree(source);
+    } catch (IOException e) {
       throw new GfJsonException(e.getMessage());
     }
+    if (rootNode == null) {
+      throw new GfJsonException("Unable to parse JSON document");
+    }
+  }
+
+  void postCreateMapper() {
+    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
   }
 
   /**
@@ -94,14 +102,16 @@ public class GfJsonObject {
    */
   public GfJsonObject accumulate(String key, Object value) throws GfJsonException {
     try {
-      if (jsonObject.has(key)) {
-        jsonObject.append(key, value);
+      if (rootNode.has(key)) {
+        append(key, value);
       } else {
         // first time always add JSONArray for accumulate - for convenience
-        jsonObject.put(key, new JSONArray().put(value));
+        ArrayNode array = mapper.createArrayNode();
+        array.add(mapper.valueToTree(value));
+        rootNode.set(key, array);
       }
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+    } catch (RuntimeException e) {
+      throw new GfJsonException(e);
     }
     return this;
   }
@@ -114,52 +124,67 @@ public class GfJsonObject {
    */
   public GfJsonObject append(String key, Object value) throws GfJsonException {
     try {
-      jsonObject.append(key, value);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      JsonNode current = rootNode.get(key);
+      if (current instanceof ArrayNode) {
+        ArrayNode array = (ArrayNode) current;
+        array.add(mapper.valueToTree(value));
+      } else if (current == null) {
+        ArrayNode array = mapper.createArrayNode();
+        array.add(mapper.valueToTree(value));
+        rootNode.set(key, array);
+      } else {
+        throw new GfJsonException("Cannot append to a non-array field");
+      }
+    } catch (RuntimeException e) {
+      throw new GfJsonException(e);
     }
     return this;
   }
 
-  public Object get(String key) {
-    return jsonObject.opt(key);
+  /**
+   * return the Jackson JsonNode associated with the given key
+   */
+  public JsonNode get(String key) {
+    return rootNode.get(key);
   }
 
   public String getString(String key) {
-    return jsonObject.optString(key);
+    JsonNode node = rootNode.get(key);
+    if (node == null) {
+      return null; // "null";
+    }
+    if (node.textValue() != null) {
+      return node.textValue();
+    }
+    return node.toString();
   }
 
   public int getInt(String key) {
-    return jsonObject.optInt(key);
+    return rootNode.get(key).asInt();
   }
 
   public long getLong(String key) {
-    return jsonObject.optLong(key);
+    return rootNode.get(key).asLong();
   }
 
   public double getDouble(String key) {
-    return jsonObject.optDouble(key);
+    return rootNode.get(key).asDouble();
   }
 
   public boolean getBoolean(String key) {
-    return jsonObject.optBoolean(key);
+    return rootNode.get(key).asBoolean();
   }
 
   public GfJsonObject getJSONObject(String key) {
-    Object opt = jsonObject.opt(key);
-    if (opt instanceof GfJsonObject) {
-      return (GfJsonObject) opt;
-    }
-
-    if (opt == null) {
+    Object value = rootNode.get(key);
+    if (value == null) {
       return null;
     }
-
-    return new GfJsonObject(opt);
+    return new GfJsonObject(value);
   }
 
-  public JSONObject getInternalJsonObject() {
-    return jsonObject;
+  public JsonNode getInternalJsonObject() {
+    return rootNode;
   }
 
   /**
@@ -168,11 +193,20 @@ public class GfJsonObject {
    * @throws GfJsonException If there is a syntax error while preparing GfJsonArray.
    */
   public GfJsonArray getJSONArray(String key) throws GfJsonException {
-    JSONArray jsonArray = jsonObject.optJSONArray(key);
-    if (jsonArray == null) {
+    JsonNode node = rootNode.get(key);
+    if (node == null) {
       return null;
     }
-    return new GfJsonArray(jsonArray);
+    if (!(node instanceof ArrayNode)) {
+      // convert from list format to array format
+      ArrayNode newNode = mapper.createArrayNode();
+      for (int i = 0; i < node.size(); i++) {
+        newNode.add(node.get("" + i));
+      }
+      rootNode.set(key, newNode);
+      return new GfJsonArray(newNode);
+    }
+    return new GfJsonArray(node);
   }
 
   /**
@@ -181,13 +215,17 @@ public class GfJsonObject {
    * @throws GfJsonException If there is a syntax error while preparing GfJsonArray.
    */
   public GfJsonArray names() throws GfJsonException {
-    GfJsonArray gfJsonArray = new GfJsonArray();
-    JSONArray names = jsonObject.names();
-    if (names != null) {
-      gfJsonArray = new GfJsonArray(names);
+    int size = rootNode.size();
+    if (size == 0) {
+      return new GfJsonArray();
     }
-
-    return gfJsonArray;
+    String[] fieldNames = new String[rootNode.size()];
+    Iterator<String> fieldNameIter = rootNode.fieldNames();
+    int i = 0;
+    while (fieldNameIter.hasNext()) {
+      fieldNames[i++] = fieldNameIter.next();
+    }
+    return new GfJsonArray(fieldNames);
   }
 
   /**
@@ -197,23 +235,19 @@ public class GfJsonObject {
    */
   public GfJsonObject put(String key, Object value) throws GfJsonException {
     try {
-      jsonObject.put(key, extractInternalForGfJsonOrReturnSame(value));
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      rootNode.set(key, toJsonNode(value));
+    } catch (IllegalArgumentException e) {
+      throw new GfJsonException(e);
     }
     return this;
   }
 
   public GfJsonObject putAsJSONObject(String key, Object value) throws GfJsonException {
     try {
-      Object internalJsonObj = extractInternalForGfJsonOrReturnSame(value);
-      if (internalJsonObj == value) {
-        GfJsonObject jsonObj = new GfJsonObject(value);
-        internalJsonObj = jsonObj.getInternalJsonObject();
-      }
-      jsonObject.put(key, internalJsonObj);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      JsonNode internalJsonObj = toJsonNode(value);
+      rootNode.set(key, internalJsonObj);
+    } catch (IllegalArgumentException e) {
+      throw new GfJsonException(e);
     }
     return this;
   }
@@ -224,125 +258,123 @@ public class GfJsonObject {
    * @throws GfJsonException If the value is a non-finite number.
    */
   public GfJsonObject putOpt(String key, Object value) throws GfJsonException {
+    if (key == null || value == null) {
+      return this;
+    }
     try {
-      jsonObject.putOpt(key, extractInternalForGfJsonOrReturnSame(value));
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      rootNode.set(key, toJsonNode(value));
+    } catch (IllegalArgumentException e) {
+      throw new GfJsonException(e);
     }
     return this;
   }
 
-  /**
-   *
-   * @return this GfJsonObject
-   * @throws GfJsonException If the value is a non-finite number.
-   */
-  public GfJsonObject put(String key, Collection<?> value) throws GfJsonException {
-    try {
-      jsonObject.putOpt(key, value);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
-    }
-    return this;
-  }
+  // /**
+  // *
+  // * @return this GfJsonObject
+  // * @throws GfJsonException If the value is a non-finite number.
+  // */
+  // public GfJsonObject put(String key, Collection<?> value) throws GfJsonException {
+  // if (key == null || value == null) {
+  // return this;
+  // }
+  // try {
+  // rootNode.set(key, toJsonNode(value));
+  // } catch (IllegalArgumentException e) {
+  // throw new GfJsonException(e);
+  // }
+  // return this;
+  // }
+  //
+  // public GfJsonObject put(String key, Map<?, ?> value) throws GfJsonException {
+  // try {
+  // rootNode.set(key, toJsonNode(value));
+  // } catch (IllegalArgumentException e) {
+  // throw new GfJsonException(e);
+  // }
+  // return this;
+  // }
 
-  public GfJsonObject putJSONArray(String key, GfJsonArray value) throws GfJsonException {
-    try {
-      jsonObject.putOpt(key, value.getInternalJsonArray());
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
-    }
-    return this;
-  }
+  // public static String quote(String string) {
+  // return JSONObject.quote(string);
+  // }
 
-  public GfJsonObject put(String key, Map<?, ?> value) throws GfJsonException {
-    try {
-      jsonObject.put(key, value);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
-    }
-    return this;
-  }
-
-  public static String quote(String string) {
-    return JSONObject.quote(string);
-  }
-
-  public Object remove(String key) {
-    return jsonObject.remove(key);
-  }
+  // public Object remove(String key) {
+  // return rootNode.remove(key);
+  // }
 
   public boolean has(String key) {
-    return jsonObject.has(key);
+    return rootNode.has(key);
   }
 
-  @SuppressWarnings("unchecked")
   public Iterator<String> keys() {
-    return jsonObject.keys();
+    return rootNode.fieldNames();
   }
 
   /**
    * @return the column size of this GfJsonObject
    */
   public int size() {
-    return jsonObject.length();
+    return rootNode.size();
   }
 
   public String toString() {
-    return jsonObject.toString();
+    return rootNode.toString();
   }
 
-  public String getType() {
-    return jsonObject.optString("type-class");
-  }
+  // public String getType() {
+  // return rootNode.optString("type-class");
+  // }
 
   /**
    *
    * @return this GfJsonObject
    * @throws GfJsonException If the object contains an invalid number.
    */
-  public String toIndentedString(int indentFactor) throws GfJsonException {
+  public String toIndentedString() throws GfJsonException {
     try {
-      return jsonObject.toString(indentFactor);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      return rootNode.toString();
+    } catch (Exception e) {
+      throw new GfJsonException(e);
     }
   }
 
   public List<String> getArrayValues(String key) {
     List<String> result = new ArrayList<>();
-    if (jsonObject.has(key)) {
-      JSONArray jsonArray = jsonObject.getJSONArray(key);
-
-      for (int i = 0; i < jsonArray.length(); i++) {
-        result.add(jsonArray.getString(i));
+    if (rootNode.has(key)) {
+      JsonNode node = rootNode.get(key);
+      if (!(node instanceof ArrayNode)) {
+        throw new IllegalStateException("requested field is not an array: " + key);
+      }
+      ArrayNode array = (ArrayNode) node;
+      for (int i = 0; i < array.size(); i++) {
+        JsonNode valueNode = array.get(i);
+        result.add(valueNode.textValue() == null ? valueNode.toString() : valueNode.asText());
       }
     }
-
     return result;
   }
 
-  private static Object extractInternalForGfJsonOrReturnSame(Object value) {
-    Object returnedValue = value;
-    if (value instanceof GfJsonObject) {
-      returnedValue = ((GfJsonObject) value).getInternalJsonObject();
-    } else if (value instanceof GfJsonArray) {
-      returnedValue = ((GfJsonArray) value).getInternalJsonArray();
-    } else if (value == null) {
-      returnedValue = NULL;
+  private JsonNode toJsonNode(Object value) {
+    if (value instanceof JsonNode) {
+      return (JsonNode) value;
     }
-
-    return returnedValue;
+    if (value instanceof GfJsonObject) {
+      return ((GfJsonObject) value).getInternalJsonObject();
+    }
+    if (value instanceof GfJsonArray) {
+      return ((GfJsonArray) value).getInternalJsonArray();
+    }
+    if (value == null) {
+      return mapper.valueToTree(NULL);
+    }
+    return mapper.valueToTree(value);
   }
 
   public static GfJsonObject getGfJsonErrorObject(String errorMessage) {
     Map<String, String> errorMap = new HashMap<String, String>();
     errorMap.put("error", errorMessage);
     return new GfJsonObject(errorMap);
-  }
-
-  public static boolean isJSONKind(Object object) {
-    return object instanceof JSONObject;
   }
 
 }

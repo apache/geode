@@ -25,7 +25,6 @@ dependencies {
   compile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  compile(project(':geode-json'))
 
   compile('com.jayway.jsonpath:json-path')
   compile('org.apache.logging.log4j:log4j-api')

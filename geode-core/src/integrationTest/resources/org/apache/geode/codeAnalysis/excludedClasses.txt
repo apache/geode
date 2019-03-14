@@ -68,7 +68,7 @@ org/apache/geode/internal/tcp/VersionedByteBufferInputStream
 org/apache/geode/internal/util/concurrent/StoppableReadWriteLock
 org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category
 org/apache/geode/management/internal/cli/exceptions/UserErrorException
-org/apache/geode/management/internal/cli/json/QueryResultFormatter$PreventReserializationModule
+org/apache/geode/management/internal/cli/json/AbstractJSONFormatter$PreventReserializationModule
 org/apache/geode/security/ResourcePermission
 org/apache/geode/security/ResourcePermission$Operation
 org/apache/geode/security/ResourcePermission$Resource

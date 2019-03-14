@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
@@ -46,21 +48,25 @@ public interface ResultData {
 
   String getFooter();
 
+  @JsonIgnore
   default GfJsonObject getGfJsonObject() {
     throw new UnsupportedOperationException(
         "This should never be called and only exists during migration from GfJsonObject to POJOs - use getContent() instead");
   }
 
+  @JsonIgnore
   default String getType() {
     throw new UnsupportedOperationException(
         "This should never be called and only exists during migration from GfJsonObject to POJOs");
   }
 
+  @JsonIgnore
   default Status getStatus() {
     throw new UnsupportedOperationException(
         "This should never be called and only exists during migration from GfJsonObject to POJOs");
   }
 
+  @JsonIgnore
   default void setStatus(final Status status) {
     throw new UnsupportedOperationException(
         "This should never be called and only exists during migration from GfJsonObject to POJOs");

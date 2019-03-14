@@ -14,12 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.json;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import org.apache.geode.internal.logging.LogService;
 
@@ -29,28 +31,38 @@ import org.apache.geode.internal.logging.LogService;
  *
  * @since GemFire 7.0
  */
-public class GfJsonArray {
+public class GfJsonArray extends AbstractJSONFormatter {
   private static final Logger logger = LogService.getLogger();
 
-  private JSONArray jsonArray;
+  private final ArrayNode jsonArray;
 
   public GfJsonArray() {
-    this.jsonArray = new JSONArray();
+    super(-1, -1, false);
+    this.jsonArray = mapper.createArrayNode();
   }
 
   /**
    * @throws GfJsonException If not an array.
    */
   public GfJsonArray(Object array) throws GfJsonException {
+    super(-1, -1, false);
     try {
-      if (array instanceof JSONArray) {
-        this.jsonArray = (JSONArray) array;
+      if (array instanceof ArrayNode) {
+        this.jsonArray = (ArrayNode) array;
       } else {
-        this.jsonArray = new JSONArray(array);
+        this.jsonArray = mapper.valueToTree(array);
       }
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      if (this.jsonArray == null) {
+        throw new IllegalArgumentException("Array translated into null JSON node: " + array);
+      }
+    } catch (IllegalArgumentException e) {
+      throw new GfJsonException(e);
     }
+  }
+
+  void postCreateMapper() {
+    mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
   }
 
   /**
@@ -59,26 +71,34 @@ public class GfJsonArray {
    * @return An object value.
    * @throws GfJsonException If there is no value for the index.
    */
-  public Object get(int index) throws GfJsonException {
+  public String getString(int index) throws GfJsonException {
     try {
-      return this.jsonArray.get(index);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      JsonNode node = jsonArray.get(index);
+      if (node.textValue() != null) {
+        return node.asText();
+      } else {
+        return node.toString();
+      }
+    } catch (IllegalArgumentException e) {
+      throw new GfJsonException(e);
     }
   }
 
-  public GfJsonObject getJSONObject(int index) throws GfJsonException {
+  public GfJsonObject getInternalJsonObject(int index) throws GfJsonException {
     try {
-      return new GfJsonObject(jsonArray.getJSONObject(index));
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      return new GfJsonObject(jsonArray.get(index));
+    } catch (IllegalArgumentException e) {
+      throw new GfJsonException(e);
     }
   }
 
   public GfJsonArray put(Object value) {
-    this.jsonArray.put(extractInternalForGfJsonOrReturnSame(value));
-
+    this.jsonArray.add(toJsonNode(value));
     return this;
+  }
+
+  public int length() {
+    return this.jsonArray.size();
   }
 
   /**
@@ -86,34 +106,18 @@ public class GfJsonArray {
    * @throws GfJsonException If the index is negative or if the the value is an invalid number.
    */
   public GfJsonArray put(int index, Object value) throws GfJsonException {
+    JsonNode json = null;
     try {
-      this.jsonArray.put(index, extractInternalForGfJsonOrReturnSame(value));
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      json = toJsonNode(value);
+      this.jsonArray.set(index, json);
+    } catch (IndexOutOfBoundsException e) {
+      while (this.jsonArray.size() < index) {
+        this.jsonArray.add((JsonNode) null);
+      }
+      this.jsonArray.add(json);
+    } catch (IllegalArgumentException e) {
+      throw new GfJsonException(e);
     }
-    return this;
-  }
-
-  public GfJsonArray put(Collection<?> value) {
-    this.jsonArray.put(value);
-    return this;
-  }
-
-  /**
-   * @return this GfJsonArray
-   * @throws GfJsonException If the index is negative or if the value is not finite.
-   */
-  public GfJsonArray put(int index, Collection<?> value) throws GfJsonException {
-    try {
-      this.jsonArray.put(index, value);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
-    }
-    return this;
-  }
-
-  public GfJsonArray put(Map<?, ?> value) {
-    this.jsonArray.put(value);
     return this;
   }
 
@@ -123,15 +127,15 @@ public class GfJsonArray {
    */
   public GfJsonArray put(int index, Map<?, ?> value) throws GfJsonException {
     try {
-      this.jsonArray.put(index, value);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
+      this.jsonArray.set(index, toJsonNode(value));
+    } catch (IllegalArgumentException e) {
+      throw new GfJsonException(e);
     }
     return this;
   }
 
   public int size() {
-    return jsonArray.length();
+    return jsonArray.size();
   }
 
   @Override
@@ -147,7 +151,7 @@ public class GfJsonArray {
       byteArray = new byte[length];
       for (int i = 0; i < length; i++) {
         try {
-          byteArray[i] = Byte.valueOf(String.valueOf(jsonArray.get(i)));
+          byteArray[i] = Byte.valueOf(String.valueOf(jsonArray.getString(i)));
         } catch (GfJsonException e) {
           throw new GfJsonException(e.getMessage());
         }
@@ -157,38 +161,38 @@ public class GfJsonArray {
     return byteArray;
   }
 
-  public static String[] toStringArray(GfJsonArray jsonArray) {
-    String[] stringArray = null;
-    if (jsonArray != null) {
-      int length = jsonArray.size();
-      stringArray = new String[length];
-      for (int i = 0; i < length; i++) {
-        try {
-          stringArray[i] = String.valueOf(jsonArray.get(i));
-        } catch (GfJsonException e) {
-          logger.info("", e);
-          stringArray = null;
-        }
+  public List<String> toStringList() {
+    List<String> stringArray = null;
+    int length = jsonArray.size();
+    stringArray = new ArrayList<>(length);
+    for (int i = 0; i < length; i++) {
+      try {
+        stringArray.add(getString(i));
+      } catch (GfJsonException e) {
+        logger.info("", e);
+        stringArray = null;
       }
     }
-
     return stringArray;
   }
 
-  public JSONArray getInternalJsonArray() {
+  public ArrayNode getInternalJsonArray() {
     return jsonArray;
   }
 
-  private static Object extractInternalForGfJsonOrReturnSame(Object value) {
-    Object returnedValue = value;
+  private JsonNode toJsonNode(Object value) {
     if (value instanceof GfJsonObject) {
-      returnedValue = ((GfJsonObject) value).getInternalJsonObject();
-    } else if (value instanceof GfJsonArray) {
-      returnedValue = ((GfJsonArray) value).getInternalJsonArray();
-    } else if (value == null) {
-      returnedValue = GfJsonObject.NULL;
+      return ((GfJsonObject) value).getInternalJsonObject();
     }
+    if (value instanceof GfJsonArray) {
+      return ((GfJsonArray) value).getInternalJsonArray();
+    } else if (value == null) {
+      return mapper.valueToTree(GfJsonObject.NULL);
+    }
+    return mapper.valueToTree(value);
+  }
 
-    return returnedValue;
+  public GfJsonArray getJSONArray(int i) throws GfJsonException {
+    return new GfJsonArray(jsonArray.get(i));
   }
 }

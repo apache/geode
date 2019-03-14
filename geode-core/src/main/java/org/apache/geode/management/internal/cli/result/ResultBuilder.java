@@ -258,7 +258,7 @@ public class ResultBuilder {
         resultData = errorResultData;
       }
 
-      Integer statusCode = (Integer) jsonObject.get("status");
+      Integer statusCode = jsonObject.getInt("status");
       if (Result.Status.OK.getCode() == statusCode) {
         resultData.setStatus(Result.Status.OK);
       } else {
