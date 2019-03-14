@@ -80,8 +80,7 @@ public class QueryMonitorIntegrationTest {
       final DefaultQuery query2 =
           (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
 
-      // Set low memory and verify handling for the currently monitored exception
-
+      // Set low memory and verify handling for the currently monitored query
       queryMonitor.setLowMemory(true, 1);
 
       // Need to get a handle on the atomic reference because cancellation state
@@ -185,9 +184,10 @@ public class QueryMonitorIntegrationTest {
 
     GeodeAwaitility.await().until(() -> queryExecutionCanceledException != null);
 
-    // The cancellation state should be local to the query thread in startQueryThread, so we should
-    // be able to execute subsequent queries using the same query object. We are verifying that
-    // the cancellation state on the main test thread is still not set here.
+    // The cancellation state should be local to the query thread in startQueryThread(), so we
+    // should be able to execute subsequent queries using the same query object. We are verifying
+    // that the cancellation state on the main test thread is still not set here despite it being
+    // set in the thread in startQueryThread().
     assertThat(query.isCanceled()).isFalse();
   }
 
