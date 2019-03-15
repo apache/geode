@@ -23,6 +23,7 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   compileOnly('javax.servlet:javax.servlet-api')
+  testCompile('javax.servlet:javax.servlet-api')
   compileOnly(project(path: ':geode-core', configuration: 'classesOutput'))
 
   runtimeOnly('org.springframework:spring-aspects') {
@@ -60,9 +61,7 @@ dependencies {
   }
 
 
-  integrationTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
+  integrationTestCompile(project(':geode-dunit'));
 
   integrationTestRuntime(files(war.destinationDir))
   integrationTestRuntime('org.springframework:spring-webmvc') {
@@ -71,9 +70,8 @@ dependencies {
   }
 
 
-  distributedTestCompile(project(':geode-dunit')){
-    exclude module: 'geode-core'
-  }
+  distributedTestCompile(project(':geode-common'))
+  distributedTestCompile(project(':geode-dunit'))
   distributedTestCompile('pl.pragmatists:JUnitParams')
 
   distributedTestRuntime(files(war.destinationDir))
