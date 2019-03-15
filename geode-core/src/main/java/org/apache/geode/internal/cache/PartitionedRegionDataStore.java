@@ -73,7 +73,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketRegion.RawValue;
-import org.apache.geode.internal.cache.LocalRegion.RegionPerfStats;
 import org.apache.geode.internal.cache.PartitionedRegion.BucketLock;
 import org.apache.geode.internal.cache.PartitionedRegion.SizeEntry;
 import org.apache.geode.internal.cache.backup.BackupService;
@@ -204,7 +203,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
     // this.bucketStats = new CachePerfStats(pr.getSystem(), "partition-" + pr.getName());
     this.bucketStats =
-        new RegionPerfStats(pr.getCache(), pr.getCachePerfStats(), "partition-" + pr.getName());
+        new RegionPerfStats(pr.getCache().getInternalDistributedSystem().getStatisticsManager(),
+            pr.getCachePerfStats(), "partition-" + pr.getName());
     this.keysOfInterest = new ConcurrentHashMap();
   }
 
