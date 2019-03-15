@@ -17,8 +17,6 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Map;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.CacheStatistics;
@@ -143,20 +141,13 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   @Override
   public Object getUserAttribute() {
     checkEntryDestroyed();
-    Map userAttr = region.entryUserAttributes;
-    if (userAttr == null) {
-      return null;
-    }
-    return userAttr.get(this.regionEntry.getKey());
+    return region.getEntryUserAttributes().get(regionEntry.getKey());
   }
 
   @Override
   public Object setUserAttribute(Object value) {
     checkEntryDestroyed();
-    if (region.entryUserAttributes == null) {
-      region.entryUserAttributes = new Hashtable();
-    }
-    return region.entryUserAttributes.put(this.regionEntry.getKey(), value);
+    return region.getEntryUserAttributes().put(regionEntry.getKey(), value);
   }
 
   @Override

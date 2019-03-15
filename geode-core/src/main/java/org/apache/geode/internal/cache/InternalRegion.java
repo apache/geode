@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
@@ -408,7 +409,9 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   EvictionController getEvictionController();
 
-  default void handleWANEvent(EntryEventImpl event) {}
+  default void handleWANEvent(EntryEventImpl event) {
+    // do nothing;
+  }
 
   MemoryThresholdInfo getAtomicThresholdInfo();
 
@@ -416,7 +419,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   default boolean lockWhenRegionIsInitializing() {
     return false;
-  };
+  }
 
-  default void unlockWhenRegionIsInitializing() {};
+  default void unlockWhenRegionIsInitializing() {
+    // do nothing
+  }
+
+  Map<Object, Object> getEntryUserAttributes();
 }
