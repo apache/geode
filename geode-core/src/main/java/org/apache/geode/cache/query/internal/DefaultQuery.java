@@ -727,7 +727,7 @@ public class DefaultQuery implements Query {
    * The query gets canceled by the QueryMonitor with the reason being specified
    */
   public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
-    this.queryCanceledException.get().set(queryCanceledException);
+    DefaultQuery.queryCanceledException.get().set(queryCanceledException);
   }
 
   void removeCancellationThreadLocals() {

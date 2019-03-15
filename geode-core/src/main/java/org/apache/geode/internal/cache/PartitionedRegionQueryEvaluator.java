@@ -30,12 +30,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -119,6 +121,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   private final PartitionedRegion pr;
   private volatile Map<InternalDistributedMember, List<Integer>> node2bucketIds;
   private final DefaultQuery query;
+  private final AtomicReference<CacheRuntimeException> queryCanceledException;
   private final Object[] parameters;
   private SelectResults cumulativeResults;
   /**
@@ -147,6 +150,10 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     super(sys, pr.getPRId());
     this.pr = pr;
     this.query = query;
+    // Need to get a reference to the query thread's thread local cancel exception
+    // so we can set it if we encounter low memory while processing StreamingQueryPartitionResponse
+    // messages
+    this.queryCanceledException = query.getQueryCanceledExceptionAtomicReference();
     this.parameters = parameters;
     this.cumulativeResults = cumulativeResults;
     this.bucketsToQuery = bucketsToQuery;
@@ -237,7 +244,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         if (QueryMonitor.isLowMemory()) {
           String reason =
               "Query execution canceled due to low memory while gathering results from partitioned regions";
-          query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
+          queryCanceledException.set(new QueryExecutionLowMemoryException(reason));
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug("query cancelled while gathering results, aborting due to exception "
@@ -759,7 +766,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     if (QueryMonitor.isLowMemory()) {
       String reason =
           "Query execution canceled due to low memory while gathering results from partitioned regions";
-      query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
+      queryCanceledException.set(new QueryExecutionLowMemoryException(reason));
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook
             .doTestHook(DefaultQuery.TestHook.SPOTS.BEFORE_THROW_QUERY_CANCELED_EXCEPTION, null);
@@ -1102,7 +1109,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         if (m.isCanceled()) {
           String reason =
               "Query execution canceled due to low memory while gathering results from partitioned regions";
-          query.setQueryCanceledException(new QueryExecutionLowMemoryException(reason));
+          queryCanceledException.set(new QueryExecutionLowMemoryException(reason));
           this.abort = true;
         }
 
