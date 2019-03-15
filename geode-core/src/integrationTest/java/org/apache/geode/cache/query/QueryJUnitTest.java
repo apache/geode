@@ -52,6 +52,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
@@ -396,7 +397,8 @@ public class QueryJUnitTest {
     }
 
     @Override
-    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
+        final ExecutionContext executionContext) {
       if (spot == SPOTS.BEFORE_QUERY_EXECUTION) {
         try {
           barrier.await(8, TimeUnit.SECONDS);

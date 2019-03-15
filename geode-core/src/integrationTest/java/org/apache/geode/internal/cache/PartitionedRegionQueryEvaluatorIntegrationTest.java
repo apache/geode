@@ -80,7 +80,8 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
     // running the algorithm and getting the list of bucktes to grab
     PartitionedRegionQueryEvaluator evalr =
-        new PartitionedRegionQueryEvaluator(pr.getSystem(), pr, null, null, null, bucketsToQuery);
+        new PartitionedRegionQueryEvaluator(pr.getSystem(), pr, null, null, null, null,
+            bucketsToQuery);
     Map n2bMap = null;
     try {
       n2bMap = evalr.buildNodeToBucketMap();
@@ -99,7 +100,8 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
       assertTrue(" Bucket with Id = " + i + " not present in bucketList.",
           buckList.contains(new Integer(i)));
     }
-    clearAllPartitionedRegion(pr);
+
+    pr.destroyRegion();
   }
 
   /**
@@ -134,12 +136,6 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
         assertTrue(ra.getBucket(i).getBucketAdvisor().putProfile(bp, forceBadProfile));
       }
     }
-  }
-
-  private void clearAllPartitionedRegion(PartitionedRegion pr) {
-    InternalCache cache = pr.getCache();
-    Region allPR = PartitionedRegionHelper.getPRRoot(cache);
-    allPR.clear();
   }
 
   /**

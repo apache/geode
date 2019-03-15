@@ -50,7 +50,7 @@ import org.apache.geode.pdx.PdxSerializer;
  *
  * <p>
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
- * use {@code LocatorServerStartupRule}.
+ * use {@code ClusterStartupRule}.
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
   private transient InternalCache cache;

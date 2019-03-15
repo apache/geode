@@ -72,6 +72,7 @@ public class QueryExecutionContext extends ExecutionContext {
   public QueryExecutionContext(Object[] bindArguments, InternalCache cache, Query query) {
     super(bindArguments, cache);
     this.query = query;
+    this.cqQueryContext = ((DefaultQuery) query).isCqQuery();
   }
 
   @Override
@@ -139,11 +140,6 @@ public class QueryExecutionContext extends ExecutionContext {
   @Override
   int nextFieldNum() {
     return this.nextFieldNum++;
-  }
-
-  @Override
-  public void setCqQueryContext(boolean cqQuery) {
-    this.cqQueryContext = cqQuery;
   }
 
   @Override

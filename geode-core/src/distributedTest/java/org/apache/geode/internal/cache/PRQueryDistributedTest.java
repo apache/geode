@@ -42,6 +42,7 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQuery.TestHook;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -575,7 +576,8 @@ public class PRQueryDistributedTest implements Serializable {
     }
 
     @Override
-    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
+        final ExecutionContext executionContext) {
       hooks.put(spot, Boolean.TRUE);
     }
   }

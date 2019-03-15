@@ -547,7 +547,7 @@ public abstract class StreamingOperation {
             if (DefaultQuery.testHook != null) {
               DefaultQuery.testHook.doTestHook(
                   DefaultQuery.TestHook.SPOTS.BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION,
-                  null);
+                  null, null);
             }
             if (isQueryMessageProcessor && QueryMonitor.isLowMemory()) {
               lowMemoryDetected = true;
@@ -571,7 +571,7 @@ public abstract class StreamingOperation {
             if (DefaultQuery.testHook != null) {
               DefaultQuery.testHook.doTestHook(
                   DefaultQuery.TestHook.SPOTS.LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION,
-                  null);
+                  null, null);
             }
           }
         } finally {

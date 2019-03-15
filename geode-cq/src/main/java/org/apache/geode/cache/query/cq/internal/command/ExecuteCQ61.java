@@ -179,8 +179,9 @@ public class ExecuteCQ61 extends BaseCQCommand {
           cqRegionNames = ((DefaultQuery) query).getRegionsInQuery(null);
         }
         ((DefaultQuery) query).setIsCqQuery(true);
-        successQuery = processQuery(clientMessage, query, cqQueryString, cqRegionNames, start,
-            cqQuery, executeCQContext, serverConnection, sendResults, securityService);
+        successQuery =
+            processQuery(clientMessage, query, cqQueryString, cqRegionNames,
+                start, cqQuery, executeCQContext, serverConnection, sendResults, securityService);
 
 
         // Update the CQ statistics.
