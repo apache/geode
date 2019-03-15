@@ -297,7 +297,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private Object regionUserAttribute;
 
   // TODO: shouldn't this be an identity map whose key is a RegionEntry?
-  Map entryUserAttributes;
+  private final Map<Object, Object> entryUserAttributes = new ConcurrentHashMap<>();
 
   private final String regionName;
 
@@ -5094,9 +5094,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // Bug 40842: clearing index of the old value performed in AbstractRegionMap
     }
     if (didDestroy) {
-      if (this.entryUserAttributes != null) {
-        this.entryUserAttributes.remove(key);
-      }
+      entryUserAttributes.remove(key);
     }
   }
 
@@ -5106,9 +5104,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public void txApplyPutHandleDidDestroy(Object key) {
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.remove(key);
-    }
+    entryUserAttributes.remove(key);
   }
 
   /**
@@ -5191,9 +5187,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
     }
     if (didDestroy) {
-      if (this.entryUserAttributes != null) {
-        this.entryUserAttributes.remove(key);
-      }
+      entryUserAttributes.remove(key);
     }
     if (this.statisticsEnabled && !clearConflict) {
       addExpiryTaskIfAbsent(regionEntry);
@@ -5781,6 +5775,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     return new MemoryThresholdInfo(isMemoryThresholdReached(),
         Collections.singleton(this.cache.getMyId()));
+  }
+
+  @Override
+  public Map<Object, Object> getEntryUserAttributes() {
+    return entryUserAttributes;
   }
 
   /**
@@ -6834,9 +6833,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (!inTokenMode || duringRI) {
       updateStatsForDestroy();
     }
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.remove(event.getKey());
-    }
+    entryUserAttributes.remove(event.getKey());
   }
 
   /**
@@ -6950,9 +6947,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     } else if (!alreadyDestroyedOrRemoved) {
       updateStatsForDestroy();
     }
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.remove(key);
-    }
+    entryUserAttributes.remove(key);
   }
 
   void basicInvalidateRegion(RegionEventImpl event) {
@@ -7982,20 +7977,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Override
     public Object getUserAttribute() {
-      Map userAttr = this.region.entryUserAttributes;
-      if (userAttr == null) {
-        return null;
-      }
-      return userAttr.get(getKey());
+      return region.getEntryUserAttributes().get(getKey());
     }
 
     @Override
     public Object setUserAttribute(Object userAttribute) {
-      LocalRegion lr = this.region;
-      if (lr.entryUserAttributes == null) {
-        lr.entryUserAttributes = new ConcurrentHashMap();
-      }
-      return lr.entryUserAttributes.put(getKey(), userAttribute);
+      return region.getEntryUserAttributes().put(getKey(), userAttribute);
     }
 
     @Override
@@ -8294,11 +8281,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public Object basicGetEntryUserAttribute(Object entryKey) {
-    Map userAttr = this.entryUserAttributes;
-    if (userAttr == null) {
-      return null;
-    }
-    return userAttr.get(entryKey);
+    return entryUserAttributes.get(entryKey);
   }
 
   public TXStateProxy getTXState() {
@@ -8809,19 +8792,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     @Override
     public Object getUserAttribute() {
       this.basicGetEntry();
-      Map userAttributes = LocalRegion.this.entryUserAttributes;
-      if (userAttributes == null) {
-        return null;
-      }
-      return userAttributes.get(basicGetEntry().getKey());
+      return entryUserAttributes.get(basicGetEntry().getKey());
     }
 
     @Override
     public Object setUserAttribute(Object userAttribute) {
-      if (LocalRegion.this.entryUserAttributes == null) {
-        LocalRegion.this.entryUserAttributes = new ConcurrentHashMap();
-      }
-      return LocalRegion.this.entryUserAttributes.put(basicGetEntry().getKey(), userAttribute);
+      return entryUserAttributes.put(basicGetEntry().getKey(), userAttribute);
     }
 
     @Override
@@ -9112,9 +9088,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // on the map , but that should be OK, as the expiration thread will
     // silently move ahead if the entry to be expired no longer existed
     this.cancelAllEntryExpiryTasks();
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.clear();
-    }
+    entryUserAttributes.clear();
 
     // if all current content has been removed then the version vector
     // does not need to retain any exceptions and the GC versions can
