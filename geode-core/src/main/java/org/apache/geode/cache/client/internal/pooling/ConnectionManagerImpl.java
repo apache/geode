@@ -345,9 +345,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       throws AllConnectionsInUseException {
 
     try {
-      PooledConnection connection =
-          findConnection(
-              (c) -> !(excludedServers.contains(c.getServer()) || oldConnection.equals(c)));
+      PooledConnection connection = findConnection((c) -> !excludedServers.contains(c.getServer()));
       if (null != connection) {
         return connection;
       }
@@ -1207,8 +1205,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (expireCount > 0) {
         getPoolStats().incIdleExpire(expireCount);
         getPoolStats().incPoolConnections(-expireCount);
-        connectionCount.addAndGet(-expireCount);
-        if (connectionCount.get() < minConnections) {
+        if (connectionCount.addAndGet(-expireCount) < minConnections) {
           startBackgroundPrefill();
         }
       }
