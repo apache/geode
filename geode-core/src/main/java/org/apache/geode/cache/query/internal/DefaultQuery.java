@@ -85,11 +85,11 @@ public class DefaultQuery implements Query {
 
   private boolean traceOn = false;
 
-  private static final ThreadLocal<Optional<ScheduledFuture>> cancelationTask
-      = ThreadLocal.withInitial(Optional::empty);
+  private static final ThreadLocal<Optional<ScheduledFuture>> cancelationTask =
+      ThreadLocal.withInitial(Optional::empty);
 
-  private static final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCanceledException
-      = ThreadLocal.withInitial(AtomicReference::new);
+  private static final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCanceledException =
+      ThreadLocal.withInitial(AtomicReference::new);
 
   static final ThreadLocal<AtomicBoolean> queryCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
