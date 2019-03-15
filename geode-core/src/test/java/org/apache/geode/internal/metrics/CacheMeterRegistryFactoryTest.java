@@ -14,14 +14,15 @@
  */
 package org.apache.geode.internal.metrics;
 
-import static org.apache.geode.internal.metrics.CacheMeterRegistryFactory.CLUSTER_ID_TAG;
-import static org.apache.geode.internal.metrics.CacheMeterRegistryFactory.HOST_NAME_TAG;
-import static org.apache.geode.internal.metrics.CacheMeterRegistryFactory.MEMBER_NAME_TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collection;
+
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Test;
 
 public class CacheMeterRegistryFactoryTest {
@@ -45,10 +46,11 @@ public class CacheMeterRegistryFactoryTest {
 
     CompositeMeterRegistry registry = factory.create(CLUSTER_ID, theMemberName, HOST_NAME);
 
-    Meter meter = registry.counter("my.meter");
+    Meter meter = registry
+        .counter("my.meter");
 
     assertThat(meter.getId().getTags())
-        .contains(Tag.of(MEMBER_NAME_TAG, theMemberName));
+        .contains(Tag.of("member.name", theMemberName));
   }
 
   @Test
@@ -58,10 +60,11 @@ public class CacheMeterRegistryFactoryTest {
 
     CompositeMeterRegistry registry = factory.create(theSystemId, MEMBER_NAME, HOST_NAME);
 
-    Meter meter = registry.counter("my.meter");
+    Meter meter = registry
+        .counter("my.meter");
 
     assertThat(meter.getId().getTags())
-        .contains(Tag.of(CLUSTER_ID_TAG, String.valueOf(theSystemId)));
+        .contains(Tag.of("cluster.id", String.valueOf(theSystemId)));
   }
 
   @Test
@@ -71,9 +74,26 @@ public class CacheMeterRegistryFactoryTest {
 
     CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, theHostName);
 
-    Meter meter = registry.counter("my.meter");
+    Meter meter = registry
+        .counter("my.meter");
 
     assertThat(meter.getId().getTags())
-        .contains(Tag.of(HOST_NAME_TAG, theHostName));
+        .contains(Tag.of("host.name", theHostName));
+  }
+
+  @Test
+  public void addsGaugesForHeapAndNonHeapUsedMemory() {
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
+
+    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
+    registry.add(new SimpleMeterRegistry());
+
+    Collection<Gauge> gauges = registry
+        .find("host.jvm.memory.used")
+        .gauges();
+
+    assertThat(gauges)
+        .extracting(g -> g.getId().getTag("area"))
+        .containsExactlyInAnyOrder("heap", "nonheap");
   }
 }
