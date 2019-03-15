@@ -352,8 +352,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
         return connection;
       }
 
-      // TODO the description of this method does not really make sense. Forcing connection here
-      // to make test pass
       try {
         connection = forceCreateConnection(null, excludedServers);
         if (null != connection) {
@@ -376,7 +374,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * @return A PooledConnection if one matches the predicate, otherwise null.
    */
   private PooledConnection findConnection(Predicate<PooledConnection> predicate) {
-    // TODO size is not constant time
     for (int i = availableConnections.size(); i > 0; --i) {
       PooledConnection connection = availableConnections.pollFirst();
       if (null == connection) {
@@ -513,7 +510,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
           }
         } else {
           // Not a pooled connection so undo the decrement.
-          // TODO does it make sense that we could have unpooled connections through here?
           connectionCount.getAndIncrement();
         }
 
