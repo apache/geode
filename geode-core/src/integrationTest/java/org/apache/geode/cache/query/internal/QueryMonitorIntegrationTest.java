@@ -23,6 +23,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,6 +55,11 @@ public class QueryMonitorIntegrationTest {
     query =
         (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
     queryExecutionCanceledException = null;
+  }
+
+  @After
+  public void after() {
+    query.removeCancellationThreadLocals();
   }
 
   @Test
