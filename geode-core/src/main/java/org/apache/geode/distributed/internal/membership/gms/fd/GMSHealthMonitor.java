@@ -857,8 +857,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
       InternalDistributedMember oldNeighbor = nextNeighbor;
       if (oldNeighbor != newNeighbor) {
-        logger.info("Failure detection is now watching " + newNeighbor
-            + "; suspects are " + suspectedMemberIds);
+        logger.info("Failure detection is now watching " + newNeighbor);
         nextNeighbor = newNeighbor;
       }
     }
