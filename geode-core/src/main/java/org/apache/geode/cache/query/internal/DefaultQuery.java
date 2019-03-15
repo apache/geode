@@ -85,9 +85,11 @@ public class DefaultQuery implements Query {
 
   private boolean traceOn = false;
 
-  private final ThreadLocal<Optional<ScheduledFuture>> cancelationTask;
+  private static final ThreadLocal<Optional<ScheduledFuture>> cancelationTask
+      = ThreadLocal.withInitial(Optional::empty);
 
-  private final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCanceledException;
+  private static final ThreadLocal<AtomicReference<CacheRuntimeException>> queryCanceledException
+      = ThreadLocal.withInitial(AtomicReference::new);
 
   static final ThreadLocal<AtomicBoolean> queryCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
@@ -196,8 +198,6 @@ public class DefaultQuery implements Query {
     this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
     this.stats = new DefaultQueryStatistics();
-    this.cancelationTask = ThreadLocal.withInitial(Optional::empty);
-    this.queryCanceledException = ThreadLocal.withInitial(AtomicReference::new);
   }
 
   /**

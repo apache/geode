@@ -35,8 +35,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Test QueryMonitor, integrated with its ScheduledThreadPoolExecutor.
- *
- * Mock DefaultQuery.
  */
 public class QueryMonitorIntegrationTest {
 
