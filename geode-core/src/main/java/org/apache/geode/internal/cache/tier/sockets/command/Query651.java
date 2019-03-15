@@ -26,6 +26,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
@@ -95,8 +96,9 @@ public class Query651 extends BaseCommandQuery {
     }
     try {
       // Create query
+      final InternalCache cache = serverConnection.getCachedRegionHelper().getCache();
       QueryService queryService =
-          serverConnection.getCachedRegionHelper().getCache().getLocalQueryService();
+          cache.getLocalQueryService();
       org.apache.geode.cache.query.Query query = null;
 
       if (queryParams != null) {
@@ -132,8 +134,9 @@ public class Query651 extends BaseCommandQuery {
         }
       }
 
-      processQueryUsingParams(clientMessage, query, queryString, regionNames, start, null,
-          queryContext, serverConnection, true, queryParams, securityService);
+      processQueryUsingParams(clientMessage, query, queryString, regionNames,
+          start,
+          null, queryContext, serverConnection, true, queryParams, securityService);
     } catch (QueryInvalidException e) {
       throw new QueryInvalidException(e.getMessage() + queryString);
     }

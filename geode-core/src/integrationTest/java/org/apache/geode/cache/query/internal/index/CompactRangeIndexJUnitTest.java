@@ -41,6 +41,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.DefaultQuery.TestHook;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 
@@ -346,7 +347,8 @@ public class CompactRangeIndexJUnitTest {
     }
 
     @Override
-    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
+        final ExecutionContext executionContext) {
       try {
         switch (spot) {
           case ATTEMPT_REMOVE:
@@ -395,7 +397,8 @@ public class CompactRangeIndexJUnitTest {
     }
 
     @Override
-    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
+        final ExecutionContext executionContext) {
       try {
         switch (spot) {
           case ATTEMPT_REMOVE:

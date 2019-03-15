@@ -233,7 +233,6 @@ public class PRQueryProcessor {
       throws ForceReattemptException, QueryInvocationTargetException, QueryException {
     // Check if QueryMonitor is enabled, if so add query to be monitored.
     QueryMonitor queryMonitor = null;
-    context.setCqQueryContext(query.isCqQuery());
     if (GemFireCacheImpl.getInstance() != null) {
       queryMonitor = GemFireCacheImpl.getInstance().getQueryMonitor();
     }
@@ -241,7 +240,7 @@ public class PRQueryProcessor {
     try {
       if (queryMonitor != null) {
         // Add current thread to be monitored by QueryMonitor.
-        queryMonitor.monitorQueryThread(query);
+        queryMonitor.monitorQueryExecution(context);
       }
 
       Object results = query.executeUsingContext(context);
@@ -270,7 +269,7 @@ public class PRQueryProcessor {
       throw qe;
     } finally {
       if (queryMonitor != null) {
-        queryMonitor.stopMonitoringQueryThread(query);
+        queryMonitor.stopMonitoringQueryExecution(context);
       }
     }
   }

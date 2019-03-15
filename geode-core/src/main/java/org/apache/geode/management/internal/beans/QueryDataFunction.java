@@ -34,6 +34,8 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
@@ -153,7 +155,8 @@ public class QueryDataFunction implements Function, InternalEntity {
             }
             LocalDataSet lds = new LocalDataSet(parRegion, localPrimaryBucketSet);
             DefaultQuery query = (DefaultQuery) cache.getQueryService().newQuery(queryString);
-            results = lds.executeQuery(query, null, localPrimaryBucketSet);
+            final ExecutionContext executionContext = new QueryExecutionContext(null, cache, query);
+            results = lds.executeQuery(query, executionContext, null, localPrimaryBucketSet);
           }
         } else {
           rcollector = FunctionService.onRegion(cache.getRegion(regionName))

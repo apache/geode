@@ -32,8 +32,10 @@ import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
 import org.apache.geode.cache.query.internal.PRQueryTraceInfo;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
@@ -169,6 +171,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
     }
 
     DefaultQuery query = new DefaultQuery(this.queryString, pr.getCache(), false);
+    final ExecutionContext executionContext = new QueryExecutionContext(null, pr.getCache(), query);
     // Remote query, use the PDX types in serialized form.
     Boolean initialPdxReadSerialized = pr.getCache().getPdxReadSerializedOverride();
     pr.getCache().setPdxReadSerializedOverride(true);
@@ -194,7 +197,7 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook
               .doTestHook(DefaultQuery.TestHook.SPOTS.CREATE_PR_QUERY_TRACE_INFO_FOR_REMOTE_QUERY,
-                  null);
+                  null, null);
         }
         queryTraceInfo = new PRQueryTraceInfo();
         queryTraceList = Collections.singletonList(queryTraceInfo);
@@ -214,7 +217,8 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
       if (isQueryTraced) {
         if (DefaultQuery.testHook != null) {
           DefaultQuery.testHook
-              .doTestHook(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY, null);
+              .doTestHook(DefaultQuery.TestHook.SPOTS.POPULATING_TRACE_INFO_FOR_REMOTE_QUERY, null,
+                  null);
         }
 
         // calculate the number of rows being sent
@@ -248,8 +252,8 @@ public class QueryMessage extends StreamingPartitionOperation.StreamingPartition
             "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
             QueryMonitor.getMemoryUsedBytes());
         throw new QueryExecutionLowMemoryException(reason);
-      } else if (query.isCanceled()) {
-        throw query.getQueryCanceledException();
+      } else if (executionContext.isCanceled()) {
+        throw executionContext.getQueryCanceledException();
       }
       super.operateOnPartitionedRegion(dm, pr, startTime);
     } finally {

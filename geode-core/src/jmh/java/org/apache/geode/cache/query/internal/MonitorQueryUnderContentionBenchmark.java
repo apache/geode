@@ -54,7 +54,7 @@ public class MonitorQueryUnderContentionBenchmark {
   private static final int START_DELAY_RANGE_MILLIS = 100;
 
   /*
-   * Delay, from time startOneSimulatedQuery() is called, until monitorQueryThread() is called.
+   * Delay, from time startOneSimulatedQuery() is called, until monitorQueryExecution() is called.
    */
   private static final int QUERY_INITIAL_DELAY = 0;
 
@@ -136,8 +136,8 @@ public class MonitorQueryUnderContentionBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   // @Warmup we don't warm up because our @Setup warms us up
   public void monitorQuery() {
-    queryMonitor.monitorQueryThread(query);
-    queryMonitor.stopMonitoringQueryThread(query);
+    queryMonitor.monitorQueryExecution(query);
+    queryMonitor.stopMonitoringQueryExecution(query);
   }
 
   private void generateLoad(final ScheduledExecutorService executorService,
@@ -160,9 +160,9 @@ public class MonitorQueryUnderContentionBenchmark {
       int startDelayRangeMillis, int completeDelayRangeMillis) {
     executorService.schedule(() -> {
       final DefaultQuery query = createDefaultQuery();
-      queryMonitor.monitorQueryThread(query);
+      queryMonitor.monitorQueryExecution(query);
       executorService.schedule(() -> {
-        queryMonitor.stopMonitoringQueryThread(query);
+        queryMonitor.stopMonitoringQueryExecution(query);
       },
           gaussianLong(completeDelayRangeMillis),
           TimeUnit.MILLISECONDS);

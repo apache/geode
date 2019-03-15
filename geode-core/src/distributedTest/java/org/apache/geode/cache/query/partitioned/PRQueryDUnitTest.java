@@ -42,6 +42,8 @@ import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.test.dunit.VM;
@@ -113,6 +115,7 @@ public class PRQueryDUnitTest extends CacheTestCase {
 
     DefaultQuery query = (DefaultQuery) getCache().getQueryService()
         .newQuery("select distinct * from " + region.getFullPath());
+    final ExecutionContext executionContext = new QueryExecutionContext(null, getCache(), query);
     SelectResults results =
         query.getSimpleSelect().getEmptyResultSet(EMPTY_PARAMETERS, getCache(), query);
 
@@ -124,6 +127,7 @@ public class PRQueryDUnitTest extends CacheTestCase {
     PartitionedRegion partitionedRegion = (PartitionedRegion) region;
     PartitionedRegionQueryEvaluator queryEvaluator =
         new PartitionedRegionQueryEvaluator(partitionedRegion.getSystem(), partitionedRegion, query,
+            executionContext,
             EMPTY_PARAMETERS, results, buckets);
 
     DisconnectingTestHook testHook = new DisconnectingTestHook();
@@ -164,13 +168,15 @@ public class PRQueryDUnitTest extends CacheTestCase {
 
       for (int i = 0; i < queries.length; i++) {
         DefaultQuery query = (DefaultQuery) getCache().getQueryService().newQuery(queries[i]);
+        final ExecutionContext executionContext =
+            new QueryExecutionContext(null, getCache(), query);
         SelectResults results =
             query.getSimpleSelect().getEmptyResultSet(EMPTY_PARAMETERS, getCache(), query);
 
         PartitionedRegion partitionedRegion = (PartitionedRegion) region;
         PartitionedRegionQueryEvaluator queryEvaluator =
             new PartitionedRegionQueryEvaluator(partitionedRegion.getSystem(), partitionedRegion,
-                query, EMPTY_PARAMETERS, results, bucketsToQuery);
+                query, executionContext, EMPTY_PARAMETERS, results, bucketsToQuery);
 
         CollatingTestHook testHook = new CollatingTestHook(queryEvaluator);
         queryEvaluator.queryBuckets(testHook);
@@ -212,13 +218,14 @@ public class PRQueryDUnitTest extends CacheTestCase {
 
     for (int i = 0; i < queries.length; i++) {
       DefaultQuery query = (DefaultQuery) getCache().getQueryService().newQuery(queries[i]);
+      final ExecutionContext executionContext = new QueryExecutionContext(null, getCache(), query);
       SelectResults results =
           query.getSimpleSelect().getEmptyResultSet(EMPTY_PARAMETERS, getCache(), query);
 
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       PartitionedRegionQueryEvaluator queryEvaluator =
           new PartitionedRegionQueryEvaluator(partitionedRegion.getSystem(), partitionedRegion,
-              query, EMPTY_PARAMETERS, results, buckets);
+              query, executionContext, EMPTY_PARAMETERS, results, buckets);
 
       CollatingTestHook testHook = new CollatingTestHook(queryEvaluator);
       queryEvaluator.queryBuckets(testHook);
@@ -258,6 +265,7 @@ public class PRQueryDUnitTest extends CacheTestCase {
 
       DefaultQuery query = (DefaultQuery) getCache().getQueryService()
           .newQuery("select distinct * from /" + regionName);
+      final ExecutionContext executionContext = new QueryExecutionContext(null, getCache(), query);
       SelectResults results =
           query.getSimpleSelect().getEmptyResultSet(EMPTY_PARAMETERS, getCache(), query);
 
@@ -270,7 +278,7 @@ public class PRQueryDUnitTest extends CacheTestCase {
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       PartitionedRegionQueryEvaluator queryEvaluator =
           new PartitionedRegionQueryEvaluator(partitionedRegion.getSystem(), partitionedRegion,
-              query, EMPTY_PARAMETERS, results, buckets);
+              query, executionContext, EMPTY_PARAMETERS, results, buckets);
 
       assertThatThrownBy(() -> queryEvaluator.queryBuckets(null))
           .isInstanceOf(QueryException.class);
