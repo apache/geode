@@ -62,6 +62,9 @@ public class ListDeployedCommand extends GfshCommand {
 
     for (CliFunctionResult cliResult : functionResults) {
       Map<String, String> strings = (Map<String, String>) cliResult.getResultObject();
+      if (strings == null) {
+        continue;
+      }
       for (Map.Entry<String, String> jar : strings.entrySet()) {
         tabularData.accumulate("Member", cliResult.getMemberIdOrName());
         tabularData.accumulate("JAR", jar.getKey());
