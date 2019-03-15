@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import java.util.Properties;
 
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
