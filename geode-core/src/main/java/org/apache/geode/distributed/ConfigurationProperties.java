@@ -1890,8 +1890,8 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"redis-port"</i> property <a name="redis-port"/a>
    * </p>
-   * <U>Description</U>: Specifies the port used by {@link GeodeRedisServer} which enables redis
-   * clients to connect and store data in GemFire distributed system. see {@link GeodeRedisServer}
+   * <U>Description</U>: Specifies the port used by {@code GeodeRedisServer} which enables redis
+   * clients to connect and store data in GemFire distributed system. see {@code GeodeRedisServer}
    * for other configuration options.
    * </p>
    * <U>Default</U>: "0" disables GemFireMemcachedServer
@@ -1903,7 +1903,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"redis-bind-address"</i> property <a
    * name="redis-bind-address"/a>
    * </p>
-   * <U>Description</U>: Specifies the bind address used by {@link GeodeRedisServer}
+   * <U>Description</U>: Specifies the bind address used by {@code GeodeRedisServer}
    * </p>
    * <U>Default</U>: ""
    */
@@ -1912,7 +1912,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"redis-password"</i> property <a
    * name="redis-password"/a>
    * </p>
-   * <U>Description</U>: Specifies the password to authenticate a client of {@link GeodeRedisServer}
+   * <U>Description</U>: Specifies the password to authenticate a client of {@code GeodeRedisServer}
    * </p>
    * <U>Default</U>: ""
    */
