@@ -195,18 +195,22 @@ public class QueryMonitorIntegrationTest {
     final Thread queryThread = new Thread(() -> {
       queryMonitor.monitorQueryThread(query);
 
-      while (true) {
-        try {
-          QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
-          Thread.sleep(5 * EXPIRE_QUICK_MILLIS);
-        } catch (final QueryExecutionCanceledException e) {
-          queryExecutionCanceledException = e;
-          assertThat(query.isCanceled()).isTrue();
-          break;
-        } catch (final InterruptedException e) {
-          Thread.currentThread().interrupt();
-          throw new AssertionError("Simulated query thread unexpectedly interrupted.");
+      try {
+        while (true) {
+          try {
+            QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();
+            Thread.sleep(5 * EXPIRE_QUICK_MILLIS);
+          } catch (final QueryExecutionCanceledException e) {
+            queryExecutionCanceledException = e;
+            assertThat(query.isCanceled()).isTrue();
+            break;
+          } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("Simulated query thread unexpectedly interrupted.");
+          }
         }
+      } finally {
+        queryMonitor.stopMonitoringQueryThread(query);
       }
     });
 
