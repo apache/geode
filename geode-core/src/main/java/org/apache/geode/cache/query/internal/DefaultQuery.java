@@ -479,9 +479,6 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
-      queryCanceled.remove();
-      cancelationTask.remove();
-      queryCanceledException.remove();
       ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
     }
   }
@@ -731,6 +728,12 @@ public class DefaultQuery implements Query {
    */
   public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
     this.queryCanceledException.get().set(queryCanceledException);
+  }
+
+  void removeCancellationThreadLocals() {
+    queryCanceled.remove();
+    cancelationTask.remove();
+    queryCanceledException.remove();
   }
 
   public void setIsCqQuery(boolean isCqQuery) {
