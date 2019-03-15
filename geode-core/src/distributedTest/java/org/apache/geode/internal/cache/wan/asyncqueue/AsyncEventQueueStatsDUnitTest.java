@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
+import static junit.framework.TestCase.assertNotNull;
+import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
@@ -22,7 +24,13 @@ import java.util.Map;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
+import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.AEQTest;
@@ -339,5 +347,119 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm1.invoke(
         () -> AsyncEventQueueTestBase.checkAsyncEventQueueStats("ln", 0, 0, 2000, 2000, 1000));
     vm1.invoke(() -> AsyncEventQueueTestBase.checkAsyncEventQueueConflatedStats("ln", 500));
+  }
+
+  @Test
+  public void testPartitionedProxyShouldHaveSameAEQId() {
+    Integer lnPort =
+        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", false, 100, 100, false,
+        true, null, false));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue(
+        getTestMethodName() + "_PR", "ln", isOffHeap()));
+    vm2.invoke(() -> AsyncEventQueueTestBase
+        .createPartitionedRegionAccessorWithAsyncEventQueue(getTestMethodName() + "_PR", "ln"));
+
+    vm2.invoke(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_PR", 100));
+    vm1.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener("ln", 100));
+  }
+
+  @Test
+  public void testPartitionedProxyWithoutSameAEQIdShouldThrowException() {
+    Integer lnPort =
+        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", false, 100, 100, false,
+        true, null, false));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue(
+        getTestMethodName() + "_PR", "ln", isOffHeap()));
+    vm2.invoke(() -> {
+      AttributesFactory fact = new AttributesFactory();
+      PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+      pfact.setTotalNumBuckets(16);
+      pfact.setLocalMaxMemory(0);
+      fact.setPartitionAttributes(pfact.create());
+      Region r = cache.createRegionFactory(fact.create()).create(getTestMethodName() + "_PR");
+      assertNotNull(r);
+    });
+
+    vm2.invoke(() -> {
+      try {
+        AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_PR", 100);
+        fail("expected GatewaySenderConfigurationException");
+      } catch (GatewaySenderConfigurationException e) {
+        assertTrue(e.getMessage()
+            .contains("For region across all members, AsyncEvent queue IDs should be same."));
+      }
+    });
+  }
+
+  @Test
+  public void testReplicatedProxyShouldHaveSameAEQId() {
+    Integer lnPort =
+        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", false, 100, 100, false,
+        false, null, false));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase
+        .createReplicatedRegionWithAsyncEventQueue(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm2.invoke(() -> {
+      AttributesFactory fact = new AttributesFactory();
+      fact.addAsyncEventQueueId("ln");
+      fact.setDataPolicy(DataPolicy.EMPTY);
+      fact.setOffHeap(isOffHeap());
+      RegionFactory regionFactory = cache.createRegionFactory(fact.create());
+      Region r = regionFactory.create(getTestMethodName() + "_RR");
+      assertNotNull(r);
+    });
+
+    vm2.invoke(() -> AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 100));
+    vm1.invoke(() -> AsyncEventQueueTestBase.validateAsyncEventListener("ln", 100));
+  }
+
+  @Test
+  public void testReplicatedProxyWithoutSameAEQIdShouldThrowException() {
+    Integer lnPort =
+        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
+    vm2.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", false, 100, 100, false,
+        false, null, false));
+
+    vm1.invoke(() -> AsyncEventQueueTestBase
+        .createReplicatedRegionWithAsyncEventQueue(getTestMethodName() + "_RR", "ln", isOffHeap()));
+    vm2.invoke(() -> {
+      AttributesFactory fact = new AttributesFactory();
+      fact.setDataPolicy(DataPolicy.EMPTY);
+      fact.setOffHeap(isOffHeap());
+      RegionFactory regionFactory = cache.createRegionFactory(fact.create());
+      Region r = regionFactory.create(getTestMethodName() + "_RR");
+      assertNotNull(r);
+    });
+
+    vm2.invoke(() -> {
+      try {
+        AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 100);
+        fail("expected GatewaySenderConfigurationException");
+      } catch (GatewaySenderConfigurationException e) {
+        assertTrue(e.getMessage()
+            .contains("For region across all members, AsyncEvent queue IDs should be same."));
+      }
+    });
   }
 }

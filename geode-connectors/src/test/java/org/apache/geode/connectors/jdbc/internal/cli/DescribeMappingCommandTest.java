@@ -36,6 +36,8 @@ import org.mockito.Mock;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
@@ -57,6 +59,9 @@ public class DescribeMappingCommandTest {
   @Mock
   RegionConfig regionConfig;
 
+  @Mock
+  RegionAttributesType regionAttributesType;
+
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
@@ -66,6 +71,8 @@ public class DescribeMappingCommandTest {
     configurationPersistenceService = mock(ConfigurationPersistenceService.class);
     clusterConfig = mock(CacheConfig.class);
     regionConfig = mock(RegionConfig.class);
+    regionAttributesType = mock(RegionAttributesType.class);
+    when(regionConfig.getRegionAttributes()).thenReturn(regionAttributesType);
     when(command.getConfigurationPersistenceService()).thenReturn(configurationPersistenceService);
     when(configurationPersistenceService
         .getCacheConfig(ConfigurationPersistenceService.CLUSTER_CONFIG)).thenReturn(clusterConfig);
@@ -188,6 +195,8 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
+    when(regionConfig.getRegionAttributes().getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
@@ -216,6 +225,8 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
+    when(regionConfig.getRegionAttributes().getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
@@ -253,6 +264,8 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
+    when(regionConfig.getRegionAttributes().getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.REPLICATE);
     when(clusterConfig.getAsyncEventQueues()).thenReturn(queueList);
     when(asyncEventQueue.getId())
         .thenReturn(MappingCommandUtils.createAsyncEventQueueName("region2"))
@@ -292,6 +305,8 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
+    when(regionConfig.getRegionAttributes().getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOrderedOutput(DescribeMappingCommand.RESULT_SECTION_NAME + "0", REGION_NAME,
@@ -322,6 +337,8 @@ public class DescribeMappingCommandTest {
     ArrayList<CacheElement> elements = new ArrayList<>();
     elements.add(regionMapping);
     when(regionConfig.getCustomRegionElements()).thenReturn(elements);
+    when(regionConfig.getRegionAttributes().getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.REPLICATE);
     when(configurationPersistenceService.getCacheConfig("group1")).thenReturn(clusterConfig);
 
 
@@ -342,6 +359,8 @@ public class DescribeMappingCommandTest {
   @Test
   public void whenNoMappingFoundOnMember() {
     when(regionConfig.getCustomRegionElements()).thenReturn(new ArrayList<>());
+    when(regionConfig.getRegionAttributes().getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.REPLICATE);
 
     gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
         .containsOutput("mapping for region 'region1' not found");

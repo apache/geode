@@ -21,6 +21,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -120,6 +121,7 @@ public class CreateMappingCommandTest {
     cacheConfig = mock(CacheConfig.class);
 
     matchingRegion = mock(RegionConfig.class);
+    when(matchingRegion.getType()).thenReturn("PARTITION");
     when(matchingRegion.getName()).thenReturn(regionName);
     matchingRegionAttributes = mock(RegionAttributesType.class);
     when(matchingRegionAttributes.getDataPolicy()).thenReturn(RegionAttributesDataPolicy.REPLICATE);
@@ -720,6 +722,26 @@ public class CreateMappingCommandTest {
     createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
 
     verify(matchingRegionAttributes, never()).setAsyncEventQueueIds(any());
+  }
+
+  @Test
+  public void updateClusterConfigWithAsycProxyRegionOnlyUpdateAEQId() {
+    arguments[1] = false;
+    List<RegionConfig> list = new ArrayList<>();
+    List<CacheElement> listCacheElements = new ArrayList<>();
+    when(matchingRegion.getCustomRegionElements()).thenReturn(listCacheElements);
+    list.add(matchingRegion);
+    RegionAttributesType attributesType = mock(RegionAttributesType.class);
+    when(matchingRegion.getRegionAttributes().getDataPolicy())
+        .thenReturn(RegionAttributesDataPolicy.EMPTY);
+    when(cacheConfig.getRegions()).thenReturn(list);
+    List<CacheConfig.AsyncEventQueue> queueList = new ArrayList<>();
+    String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
+
+    createRegionMappingCommand.updateConfigForGroup(null, cacheConfig, arguments);
+    verify(matchingRegionAttributes, times(1)).setAsyncEventQueueIds(queueName);
+    verify(matchingRegionAttributes, never()).setCacheWriter(any());
+    verify(matchingRegionAttributes, never()).setCacheLoader(any());
   }
 
   @Test
