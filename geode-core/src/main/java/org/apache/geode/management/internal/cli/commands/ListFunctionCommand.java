@@ -62,7 +62,11 @@ public class ListFunctionCommand extends GfshCommand {
     ResultModel result = new ResultModel();
     TabularResultModel tabularData = result.addTable("functions");
     for (CliFunctionResult cliResult : results) {
-      String[] strings = ((Set<String>) cliResult.getResultObject()).toArray(new String[0]);
+      Set<String> resultObject = (Set<String>) cliResult.getResultObject();
+      if (resultObject == null) {
+        continue;
+      }
+      String[] strings = resultObject.toArray(new String[0]);
       Arrays.sort(strings);
       for (String string : strings) {
         tabularData.accumulate("Member", cliResult.getMemberIdOrName());
