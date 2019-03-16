@@ -1172,7 +1172,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       CacheLoader oldLoader = this.cacheLoader;
       this.cacheLoader = cacheLoader;
       cacheLoaderChanged(oldLoader);
-      updatePrNodeInformation(this.cacheLoader, this.cacheWriter);
+      updatePRNodeInformation(this.cacheLoader, this.cacheWriter);
       return oldLoader;
     } finally {
       readWriteLockForCacheLoader.writeLock().unlock();
@@ -1180,7 +1180,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
-  public void updatePrNodeInformation(CacheLoader cacheLoader, CacheWriter writer) {
+  public void updatePRNodeInformation(CacheLoader cacheLoader, CacheWriter writer) {
     return;
   }
 
@@ -1201,7 +1201,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       CacheWriter oldWriter = this.cacheWriter;
       this.cacheWriter = cacheWriter;
       cacheWriterChanged(oldWriter);
-      updatePrNodeInformation(this.cacheLoader, this.cacheWriter);
+      updatePRNodeInformation(this.cacheLoader, this.cacheWriter);
       return oldWriter;
     } finally {
       readWriteLockForCacheWriter.writeLock().unlock();

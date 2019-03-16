@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import java.util.Set;
@@ -81,7 +80,7 @@ public class PartitionedRegionAttributesMutatorTest {
     createRegionSpy();
     CacheLoader loader = createTestCacheLoader();
     pr.getAttributesMutator().setCacheLoader(loader);
-    verify(pr).updatePrNodeInformation(loader, null);
+    verify(pr).updatePRNodeInformation(loader, null);
   }
 
   @Test
@@ -89,7 +88,7 @@ public class PartitionedRegionAttributesMutatorTest {
     createRegionSpy();
     CacheWriter writer = createTestCacheWriter();
     pr.getAttributesMutator().setCacheWriter(writer);
-    verify(pr).updatePrNodeInformation(null, writer);
+    verify(pr).updatePRNodeInformation(null, writer);
   }
 
   @Test
@@ -169,8 +168,9 @@ public class PartitionedRegionAttributesMutatorTest {
   }
 
   private void createRegionSpy() {
-    pr = Mockito.spy((PartitionedRegion) server.getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setStatisticsEnabled(true).create(TEST_REGION_NAME));
+    pr = Mockito
+        .spy((PartitionedRegion) server.getCache().createRegionFactory(RegionShortcut.PARTITION)
+            .setStatisticsEnabled(true).create(TEST_REGION_NAME));
   }
 
   private void createRegionWithFewBuckets() {

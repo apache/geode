@@ -163,7 +163,7 @@ public interface AttributesMutator<K, V> {
    * @param cacheLoader the cache loader after update
    * @param cacheLoader the cache writer after update
    */
-  void updatePrNodeInformation(CacheLoader<K, V> cacheLoader, CacheWriter<K, V> cacheWriter);
+  void updatePRNodeInformation(CacheLoader<K, V> cacheLoader, CacheWriter<K, V> cacheWriter);
 
   /**
    * Allows changing the eviction controller attributes for the region.

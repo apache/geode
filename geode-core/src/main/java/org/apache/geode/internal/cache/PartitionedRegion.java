@@ -1304,6 +1304,11 @@ public class PartitionedRegion extends LocalRegion
     this.prRoot = PartitionedRegionHelper.getPRRoot(getCache());
   }
 
+  // Used for testing purposes
+  Region<String, PartitionRegionConfig> getPRRoot() {
+    return prRoot;
+  }
+
   @Override
   public void remoteRegionInitialized(CacheProfile profile) {
     if (isInitialized() && hasListener()) {
@@ -10001,9 +10006,10 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void updatePrNodeInformation(CacheLoader cacheLoader, CacheWriter cacheWriter) {
-    if (prRoot != null) {
-      PartitionRegionConfig prConfig = prRoot.get(getRegionIdentifier());
+  public void updatePRNodeInformation(CacheLoader cacheLoader, CacheWriter cacheWriter) {
+    Region<String, PartitionRegionConfig> partionedRegionRoot = getPRRoot();
+    if (partionedRegionRoot != null) {
+      PartitionRegionConfig prConfig = partionedRegionRoot.get(getRegionIdentifier());
       if (prConfig != null) {
         for (Node node : prConfig.getNodes()) {
           if (node.getMemberId().equals(getDistributionManager().getId())) {
@@ -10013,8 +10019,8 @@ public class PartitionedRegion extends LocalRegion
             node.setLoaderWriterByte((byte) (loaderByte + writerByte));
             prConfig.addNode(node);
           }
-          prRoot.put(getRegionIdentifier(), prConfig);
         }
+        partionedRegionRoot.put(getRegionIdentifier(), prConfig);
       }
     }
   }
