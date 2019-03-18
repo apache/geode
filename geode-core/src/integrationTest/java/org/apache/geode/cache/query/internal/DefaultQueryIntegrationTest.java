@@ -18,6 +18,8 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,8 +36,24 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({OQLQueryTest.class})
 public class DefaultQueryIntegrationTest {
+  private int previousMaxQueryExecutionTime;
+  private DefaultQuery.TestHook previousDefaultQueryTestHook;
+
   @Rule
   public ServerStarterRule serverStarterRule = new ServerStarterRule().withAutoStart();
+
+  @Before
+  public void setUp() {
+    // Capturing static variables which may have been defined in previous tests
+    previousMaxQueryExecutionTime = GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME;
+    previousDefaultQueryTestHook = DefaultQuery.testHook;
+  }
+
+  @After
+  public void tearDown() {
+    GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = previousMaxQueryExecutionTime;
+    DefaultQuery.testHook = previousDefaultQueryTestHook;
+  }
 
   @Test
   public void testDefaultQueryObjectReusableAfterFirstExecutionTimesOut() throws Exception {
