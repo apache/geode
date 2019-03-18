@@ -73,6 +73,7 @@ import org.apache.geode.security.GemFireSecurityException;
  */
 public class ConnectionManagerImpl implements ConnectionManager {
   private static final Logger logger = LogService.getLogger();
+  public static final int NOT_WAITING = -1;
 
   private final String poolName;
   private final PoolStats poolStats;
@@ -235,7 +236,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     if (Thread.currentThread().isInterrupted()) {
-      Thread.currentThread().interrupt();
       return true;
     }
 
@@ -247,7 +247,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   private long beginConnectionWaitStatIfNotStarted(final long waitStart) {
-    if (-1 == waitStart) {
+    if (NOT_WAITING == waitStart) {
       return getPoolStats().beginConnectionWait();
     }
 
@@ -255,7 +255,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   private void endConnectionWaitStatIfStarted(final long waitStart) {
-    if (-1 != waitStart) {
+    if (NOT_WAITING != waitStart) {
       getPoolStats().endConnectionWait(waitStart);
     }
   }
@@ -263,7 +263,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   @Override
   public Connection borrowConnection(long acquireTimeout)
       throws AllConnectionsInUseException, NoAvailableServersException {
-    long waitStart = -1;
+    long waitStart = NOT_WAITING;
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
