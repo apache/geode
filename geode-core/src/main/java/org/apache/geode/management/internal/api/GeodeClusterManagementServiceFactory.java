@@ -90,10 +90,10 @@ public class GeodeClusterManagementServiceFactory
 
       SSLContext sslContext = null;
       HostnameVerifier hostnameVerifier = null;
-      if (memberInformation.isSsl()) {
+      if (memberInformation.isWebSSL()) {
         SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
             ((GemFireCacheImpl) cache).getSystem().getConfig(), SecurableCommunicationChannel.WEB);
-        if (sslConfig.getTruststore() == null) {
+        if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
           throw new IllegalStateException(
               "The server needs to have truststore specified in order to use cluster management service.");
         }

@@ -92,7 +92,7 @@ public class GetMemberInformationFunction implements InternalFunction {
 
       SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(config,
           SecurableCommunicationChannel.WEB);
-      memberInfo.setSsl(sslConfig.isEnabled());
+      memberInfo.setWebSSL(sslConfig.isEnabled());
       memberInfo.setGroups(config.getGroups());
       memberInfo.setLogFilePath(config.getLogFile().getCanonicalPath());
       memberInfo.setStatArchiveFilePath(config.getStatisticArchiveFile().getCanonicalPath());
