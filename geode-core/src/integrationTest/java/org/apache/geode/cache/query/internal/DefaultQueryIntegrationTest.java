@@ -53,7 +53,6 @@ public class DefaultQueryIntegrationTest {
   public void tearDown() {
     GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = previousMaxQueryExecutionTime;
     DefaultQuery.testHook = previousDefaultQueryTestHook;
-    ExecutionContext.isCanceled.get().set(false);
   }
 
   @Test
@@ -94,5 +93,7 @@ public class DefaultQueryIntegrationTest {
     for (int i = 0; i < numRegionEntries; ++i) {
       assertThat(results.contains(i)).isTrue();
     }
+
+    ExecutionContext.isCanceled.remove();
   }
 }
