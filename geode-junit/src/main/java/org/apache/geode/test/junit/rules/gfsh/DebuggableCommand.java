@@ -19,11 +19,14 @@ public class DebuggableCommand {
   final String command;
 
   public DebuggableCommand(String command) {
-    this.command = command;
-    this.debugPort = -1;
+    this(command, -1);
   }
 
   public DebuggableCommand(String command, int debugPort) {
+
+    if (command.startsWith("start locator")) {
+      command += " --J=-Denable-experimental-cluster-management-service=true ";
+    }
     this.command = command;
     this.debugPort = debugPort;
   }
