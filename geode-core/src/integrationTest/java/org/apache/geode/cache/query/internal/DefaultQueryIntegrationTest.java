@@ -53,6 +53,7 @@ public class DefaultQueryIntegrationTest {
   public void tearDown() {
     GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = previousMaxQueryExecutionTime;
     DefaultQuery.testHook = previousDefaultQueryTestHook;
+    ExecutionContext.isCanceled.get().set(false);
   }
 
   @Test
