@@ -21,21 +21,33 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class StandaloneClientManagementAPIAcceptanceTest {
 
   @Rule
@@ -44,7 +56,31 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
 
+  private static String trustStorePath;
+
+  @Parameter
+  public Boolean useSsl;
+
+  @Parameters
+  public static Collection<Boolean> data() {
+    return Arrays.asList(true, false);
+  }
+
+  @BeforeClass
+  public static void beforeClass() {
+    /**
+     * This file was generated with:
+     * keytool -genkey -dname "CN=localhost" -alias self -validity 3650 -keyalg EC \
+     * -keystore trusted.keystore -keypass password -storepass password \
+     * -ext san=ip:127.0.0.1,dns:localhost -storetype jks
+     */
+    trustStorePath = TestUtil.getResourcePath(StandaloneClientManagementAPIAcceptanceTest.class,
+        "/ssl/trusted.keystore");
+    assertThat(trustStorePath).as("java file resource not found").isNotBlank();
+  }
+
   @Test
+  @Parameterized.Parameters
   public void clientCreatesRegionUsingClusterManagementService() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =
@@ -55,7 +91,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     jarBuilder.buildJar(outputJar, new File(filePath));
 
     GfshExecution startCluster =
-        GfshScript.of("start locator", "start server --locators=localhost[10334]")
+        GfshScript.of("start locator " + getSslParameters(),
+            "start server --locators=localhost[10334] " + getSslParameters())
             .withName("startCluster").execute(gfsh);
 
     assertThat(startCluster.getProcess().exitValue())
@@ -99,12 +136,42 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     classPath.append(File.pathSeparator);
     classPath.append(outputJar.getAbsolutePath());
 
-    pBuilder.command(javaBin.toString(), "-classpath", classPath.toString(),
-        "ManagementClientTestCreateRegion", "REGION1");
+    List<String> command = new ArrayList<>();
+    command.add(javaBin.toString());
+
+    if (useSsl) {
+      command.add("-Djavax.net.ssl.keyStore=" + trustStorePath);
+      command.add("-Djavax.net.ssl.keyStorePassword=password");
+      command.add("-Djavax.net.ssl.trustStore=" + trustStorePath);
+      command.add("-Djavax.net.ssl.trustStorePassword=password");
+    }
+
+    command.add("-classpath");
+    command.add(classPath.toString());
+    command.add("ManagementClientCreateRegion");
+    command.add("REGION1");
+    command.add(useSsl.toString());
+
+    pBuilder.command(command);
+
+    System.out.format("Launching client command: %s\n", command);
 
     Process process = pBuilder.start();
     new ProcessLogger(process, "clientCreateRegion");
     return process;
+  }
+
+  private String getSslParameters() {
+    if (useSsl) {
+      return String.format(" --J=-Dgemfire.ssl-keystore=%1$s"
+          + " --J=-Dgemfire.ssl-keystore-password=%2$s"
+          + " --J=-Dgemfire.ssl-truststore=%1$s"
+          + " --J=-Dgemfire.ssl-truststore-password=%2$s"
+          + " --J=-Dgemfire.ssl-enabled-components=web",
+          trustStorePath, "password");
+    }
+
+    return "";
   }
 
   private String getJarOrClassesForModule(String module) {
