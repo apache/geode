@@ -50,7 +50,7 @@ import org.apache.geode.internal.cache.InternalCache;
  *
  * <p>
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
- * use {@code LocatorServerStartupRule}.
+ * use {@code ClusterStartupRule}.
  */
 public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> implements Locator {
   private transient InternalLocator locator;

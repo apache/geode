@@ -15,6 +15,8 @@
 package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -31,6 +33,7 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.CqAttributes;
@@ -40,6 +43,7 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
@@ -53,6 +57,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 /**
@@ -359,6 +364,48 @@ public class QueryMonitorDUnitTest {
     });
   }
 
+  @Test
+  public void testQueryObjectReusableAfterFirstExecutionTimesOut() throws Exception {
+    server1.invoke(() -> {
+      // Setting query timeout to 10 seconds
+      GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = 10000;
+
+      final InternalCache cache = ClusterStartupRule.getCache();
+      final String regionName = "exampleRegion";
+      final RegionFactory<Integer, Integer> regionFactory =
+          cache.createRegionFactory(RegionShortcut.LOCAL);
+      final Region<Integer, Integer> exampleRegion = regionFactory.create(regionName);
+      final int numRegionEntries = 10;
+      for (int i = 0; i < numRegionEntries; ++i) {
+        exampleRegion.put(i, i);
+      }
+
+      final String queryString = "select * from /" + regionName;
+      final Query query = cache.getQueryService().newQuery(queryString);
+
+      // Install a test hook which causes the query to timeout
+      DefaultQuery.testHook =
+          (spot, qry, executionContext) -> {
+            if (spot != DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_DEPENDENCY_COMPUTATION) {
+              return;
+            }
+
+            await("stall the query execution so that it gets cancelled")
+                .until(executionContext::isCanceled);
+          };
+
+      assertThatThrownBy(query::execute).isInstanceOf(QueryExecutionTimeoutException.class);
+
+      // Uninstall test hook so that query object is reused to execute again, this time successfully
+      DefaultQuery.testHook = null;
+
+      final SelectResults results = (SelectResults) query.execute();
+
+      for (int i = 0; i < numRegionEntries; ++i) {
+        assertThat(results.contains(i)).isTrue();
+      }
+    });
+  }
 
   private static void populateRegion(int startingId, int endingId) {
     Region exampleRegion = ClusterStartupRule.getCache().getRegion("exampleRegion");
