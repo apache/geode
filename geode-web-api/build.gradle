@@ -72,8 +72,6 @@ dependencies {
   testCompile(project(':geode-core'))
   testCompile('javax.servlet:javax.servlet-api')
 
-  // apache-license org.json implementation needed by spring-test
-//  integrationTestCompile('com.vaadin.external.google:android-json')
   integrationTestCompile('org.springframework:spring-test')
   integrationTestCompile('org.springframework.security:spring-security-test')
 
