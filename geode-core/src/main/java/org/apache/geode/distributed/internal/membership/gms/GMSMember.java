@@ -25,7 +25,6 @@ import org.jgroups.util.UUID;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -45,10 +44,6 @@ import org.apache.geode.internal.Version;
  *
  */
 public class GMSMember implements NetMember, DataSerializableFixedID {
-  // whether to show UUID info in toString()
-  private static final boolean SHOW_UUIDS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_UUIDs");
-
   private int udpPort = 0;
   private boolean preferredForCoordinator;
   private boolean networkPartitionDetectionEnabled;
