@@ -576,7 +576,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
 
   private String formatUUID() {
-    return SHOW_UUIDS ? ";uuid=" + getUUID().toStringLong()
-        : uuidLSBs == 0 && uuidMSBs == 0 ? "; no uuid" : "; uuid set";
+    return ";uuid=" + getUUID().toStringLong();
   }
 }
