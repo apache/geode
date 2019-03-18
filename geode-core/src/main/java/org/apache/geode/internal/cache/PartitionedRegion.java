@@ -10005,7 +10005,7 @@ public class PartitionedRegion extends LocalRegion
       PartitionRegionConfig prConfig = partionedRegionRoot.get(getRegionIdentifier());
       if (prConfig != null) {
         for (Node node : prConfig.getNodes()) {
-          if (node.getMemberId().equals(getDistributionManager().getId())) {
+          if (node.getMemberId().equals(getMyId())) {
             byte loaderByte = (byte) (cacheLoader != null ? 0x01 : 0x00);
             byte writerByte = (byte) (cacheWriter != null ? 0x02 : 0x00);
             prConfig.removeNode(node);
