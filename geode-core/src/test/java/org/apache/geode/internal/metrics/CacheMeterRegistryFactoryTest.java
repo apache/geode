@@ -82,18 +82,32 @@ public class CacheMeterRegistryFactoryTest {
   }
 
   @Test
-  public void addsGaugesForHeapAndNonHeapUsedMemory() {
+  public void addsGaugesForHeapMemory() {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
 
     CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
     registry.add(new SimpleMeterRegistry());
 
-    Collection<Gauge> gauges = registry
-        .find("host.jvm.memory.used")
+    Collection<Gauge> heapGauges = registry
+        .find("jvm.memory.used")
+        .tag("area", "heap")
         .gauges();
 
-    assertThat(gauges)
-        .extracting(g -> g.getId().getTag("area"))
-        .containsExactlyInAnyOrder("heap", "nonheap");
+    assertThat(heapGauges).isNotEmpty();
+  }
+
+  @Test
+  public void addsGaugesForNonHeapUsedMemory() {
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
+
+    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
+    registry.add(new SimpleMeterRegistry());
+
+    Collection<Gauge> nonheapGauges = registry
+        .find("jvm.memory.used")
+        .tag("area", "nonheap")
+        .gauges();
+
+    assertThat(nonheapGauges).isNotEmpty();
   }
 }
