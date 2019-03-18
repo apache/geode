@@ -57,7 +57,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 /**
