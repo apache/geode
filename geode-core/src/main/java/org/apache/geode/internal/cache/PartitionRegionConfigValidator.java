@@ -347,15 +347,6 @@ public class PartitionRegionConfigValidator {
       return;
     }
     Set<Node> nodes = prconf.getNodes();
-    for (Node node : nodes) {
-      int loaderWriterValue = 0;
-      if (node.isCacheLoaderAttached()) {
-        loaderWriterValue = loaderWriterValue + 1;
-      }
-      if (node.isCacheWriterAttached()) {
-        loaderWriterValue = loaderWriterValue + 2;
-      }
-    }
     Iterator itor = nodes.iterator();
     while (itor.hasNext()) {
       Node n = (Node) itor.next();

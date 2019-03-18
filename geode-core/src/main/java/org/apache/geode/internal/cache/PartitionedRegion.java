@@ -1403,13 +1403,6 @@ public class PartitionedRegion extends LocalRegion
       synchronized (prIdToPR) {
         prIdToPR.put(this.partitionedRegionId, this); // last
       }
-      int loaderWriterValue = 0;
-      if (node.isCacheLoaderAttached()) {
-        loaderWriterValue = loaderWriterValue + 1;
-      }
-      if (node.isCacheWriterAttached()) {
-        loaderWriterValue = loaderWriterValue + 2;
-      }
 
       prConfig.addNode(this.node);
       if (this.getFixedPartitionAttributesImpl() != null) {
