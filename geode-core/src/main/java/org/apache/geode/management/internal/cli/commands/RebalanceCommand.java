@@ -95,7 +95,10 @@ public class RebalanceCommand extends GfshCommand {
       result = ResultModel.createInfo(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
     }
 
-    // if the result contains only error section, then we need to mark the result as error status
+    // if the result contains only error section, i.e. no rebalance operation is done, mark this
+    // command result to be error. This would happy if user hasn't specified any valid region. If
+    // only one region specified is valid and rebalance is done, the result would be marked as
+    // success.
     if (result.getSection("error") != null && result.getSectionSize() == 1) {
       result.setStatus(Result.Status.ERROR);
     }
