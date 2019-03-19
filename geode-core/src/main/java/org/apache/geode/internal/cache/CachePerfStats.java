@@ -626,8 +626,7 @@ public class CachePerfStats {
    * Created specially for bug 39348. Should not be invoked in any other case.
    */
   public CachePerfStats() {
-    stats = null;
-    clock = () -> enableClockStats ? NanoTimer.getTime() : 0;
+    this(null);
   }
 
   /**
@@ -635,7 +634,7 @@ public class CachePerfStats {
    * factory.
    */
   public CachePerfStats(StatisticsFactory factory) {
-    this(factory, "cachePerfStats", () -> enableClockStats ? NanoTimer.getTime() : 0);
+    this(factory, "cachePerfStats", enableClockStats ? NanoTimer::getTime : () -> 0);
   }
 
   /**
@@ -643,12 +642,12 @@ public class CachePerfStats {
    * factory.
    */
   public CachePerfStats(StatisticsFactory factory, String regionName) {
-    this(factory, "RegionStats-" + regionName, () -> enableClockStats ? NanoTimer.getTime() : 0);
+    this(factory, "RegionStats-" + regionName, enableClockStats ? NanoTimer::getTime : () -> 0);
   }
 
   @VisibleForTesting
   CachePerfStats(StatisticsFactory factory, String textId, Clock clock) {
-    stats = factory.createAtomicStatistics(type, textId);
+    stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
   }
 
@@ -667,7 +666,7 @@ public class CachePerfStats {
     return type;
   }
 
-  private long getClockTime() {
+  protected long getClockTime() {
     return clock.getTime();
   }
 
