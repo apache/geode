@@ -14,6 +14,7 @@
  */
 package org.apache.geode.pdx.internal;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,7 +68,7 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         newTypeId = GetPDXIdForTypeOp.execute((ExecutablePool) pool, newType);
         newType.setTypeId(newTypeId);
-        sendTypeToPool(newType, newTypeId, pool);
+        sendTypeToAllPools(newType, newTypeId, getAllPoolsExcept(pool));
         return newTypeId;
       } catch (ServerConnectivityException e) {
         // ignore, try the next pool.
@@ -75,6 +76,12 @@ public class ClientTypeRegistration implements TypeRegistration {
       }
     }
     throw returnCorrectExceptionForFailure(pools, newTypeId, lastException);
+  }
+
+  private Collection<Pool> getAllPoolsExcept(Pool pool) {
+    Collection<Pool> targetPools = new ArrayList<>(getAllPools());
+    targetPools.remove(pool);
+    return targetPools;
   }
 
   private void sendTypeToPool(PdxType type, int id, Pool pool) {
@@ -174,7 +181,8 @@ public class ClientTypeRegistration implements TypeRegistration {
     for (Pool pool : pools) {
       try {
         int result = GetPDXIdForEnumOp.execute((ExecutablePool) pool, enumInfo);
-        sendEnumIdToPool(enumInfo, result, pool);
+
+        sendEnumToAllPools(enumInfo, result, getAllPoolsExcept(pool));
         return result;
       } catch (ServerConnectivityException e) {
         // ignore, try the next pool.
@@ -289,8 +297,11 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public void addImportedType(int typeId, PdxType importedType) {
-    Collection<Pool> pools = getAllPools();
+    sendTypeToAllPools(importedType, typeId, getAllPools());
+  }
 
+  private void sendTypeToAllPools(PdxType importedType, int typeId,
+      Collection<Pool> pools) {
     ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
@@ -310,6 +321,11 @@ public class ClientTypeRegistration implements TypeRegistration {
   public void addImportedEnum(int enumId, EnumInfo importedInfo) {
     Collection<Pool> pools = getAllPools();
 
+    sendEnumToAllPools(importedInfo, enumId, pools);
+    return;
+  }
+
+  private void sendEnumToAllPools(EnumInfo importedInfo, int enumId, Collection<Pool> pools) {
     ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
