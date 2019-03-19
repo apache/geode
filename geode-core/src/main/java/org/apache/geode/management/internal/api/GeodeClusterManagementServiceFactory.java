@@ -95,7 +95,7 @@ public class GeodeClusterManagementServiceFactory
             ((GemFireCacheImpl) cache).getSystem().getConfig(), SecurableCommunicationChannel.WEB);
         if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
           throw new IllegalStateException(
-              "The server needs to have truststore specified in order to use cluster management service.");
+              "The server needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
         }
 
         sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
