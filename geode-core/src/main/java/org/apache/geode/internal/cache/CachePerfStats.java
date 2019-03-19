@@ -647,7 +647,7 @@ public class CachePerfStats {
 
   @VisibleForTesting
   CachePerfStats(StatisticsFactory factory, String textId, Clock clock) {
-    stats = factory.createAtomicStatistics(type, textId);
+    stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
   }
 
