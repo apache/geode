@@ -298,7 +298,6 @@ public class ClientTypeRegistration implements TypeRegistration {
   @Override
   public void addImportedType(int typeId, PdxType importedType) {
     sendTypeToAllPools(importedType, typeId, getAllPools());
-    return;
   }
 
   private void sendTypeToAllPools(PdxType importedType, int typeId,
