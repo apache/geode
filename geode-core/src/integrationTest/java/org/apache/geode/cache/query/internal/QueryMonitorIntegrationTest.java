@@ -135,7 +135,7 @@ public class QueryMonitorIntegrationTest {
   }
 
   @Test
-  public void monitorQueryExecutionThenStopMonitoringNoRemainingCancellationTasksRunning() {
+  public void monitorMultipleQueryExecutionsThenStopMonitoringNoRemainingCancellationTasksRunning() {
     cache = (InternalCache) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0").create();
     final DefaultQuery query =
         (DefaultQuery) cache.getQueryService().newQuery("SELECT DISTINCT * FROM /exampleRegion");
@@ -149,6 +149,9 @@ public class QueryMonitorIntegrationTest {
         cache,
         NEVER_EXPIRE_MILLIS);
 
+    // We want to ensure isolation of cancellation tasks for different query threads/executions.
+    // Here we ensure that if we monitor/unmonitor two executions in different threads that
+    // both cancellation tasks are removed from the executor queue.
     final Thread firstClientQueryThread = new Thread(() -> {
       queryMonitor.monitorQueryExecution(executionContext);
 
