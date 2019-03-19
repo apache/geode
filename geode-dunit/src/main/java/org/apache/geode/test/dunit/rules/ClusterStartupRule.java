@@ -380,5 +380,4 @@ public class ClusterStartupRule implements SerializableTestRule {
       clientCacheRule = null;
     }
   }
-
 }

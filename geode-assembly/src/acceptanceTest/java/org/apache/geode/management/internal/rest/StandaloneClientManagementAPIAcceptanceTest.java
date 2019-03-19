@@ -92,8 +92,9 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
     GfshExecution startCluster =
         GfshScript.of("start locator " + getSslParameters(),
-            "start server --locators=localhost[10334] " + getSslParameters())
+            "start server --locators=localhost[10334]")
             .withName("startCluster").execute(gfsh);
+
 
     assertThat(startCluster.getProcess().exitValue())
         .as("Cluster did not start correctly").isEqualTo(0);

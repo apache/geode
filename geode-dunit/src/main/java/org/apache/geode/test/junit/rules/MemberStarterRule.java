@@ -68,12 +68,14 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.junit.rules.accessible.AccessibleRestoreSystemProperties;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 /**
@@ -91,6 +93,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   protected String name;
   protected boolean logFile = false;
   protected Properties properties = new Properties();
+  protected Properties systemProperties = new Properties();
 
   protected boolean autoStart = false;
   private final transient UniquePortSupplier portSupplier;
@@ -103,6 +106,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   private static int WAIT_UNTIL_TIMEOUT = 30;
+
+  private AccessibleRestoreSystemProperties restore = new AccessibleRestoreSystemProperties();
 
   public MemberStarterRule() {
     this(new UniquePortSupplier());
@@ -117,10 +122,16 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // set the reconnect wait time to 5 seconds in case some tests needs to reconnect in a timely
     // manner.
     properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
+    systemProperties.setProperty(ClusterManagementService.FEATURE_FLAG, "true");
   }
 
   @Override
   public void before() {
+    try {
+      restore.before();
+    } catch (Throwable throwable) {
+      throw new RuntimeException(throwable.getMessage(), throwable);
+    }
     normalizeProperties();
     if (httpPort < 0) {
       // at this point, httpPort is not being configured by api, we assume they do not
@@ -129,10 +140,15 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       properties.putIfAbsent(HTTP_SERVICE_PORT, "0");
     }
     firstLevelChildrenFile = Arrays.asList(getWorkingDir().listFiles());
+
+    for (String key : systemProperties.stringPropertyNames()) {
+      System.setProperty(key, systemProperties.getProperty(key));
+    }
   }
 
   @Override
   public void after() {
+    restore.after();
     // invoke stop() first and then ds.disconnect
     stopMember();
 
@@ -170,6 +186,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     if (ds != null) {
       ds.disconnect();
     }
+  }
+
+  public T withSystemProperty(String key, String value) {
+    systemProperties.put(key, value);
+    return (T) this;
   }
 
   public T withProperty(String key, String value) {

@@ -708,14 +708,23 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         new ImmutablePair<>(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
             clusterManagementService);
 
-    myCache.getHttpService().ifPresent(x -> {
-      try {
-        x.addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,
-            cmServiceAttr);
-      } catch (Throwable e) {
-        logger.warn("Unable to start geode-management service: {}", e.getMessage());
-      }
-    });
+    if (Boolean.getBoolean(ClusterManagementService.FEATURE_FLAG)) {
+      logger.info(
+          "System Property " + ClusterManagementService.FEATURE_FLAG
+              + "=true Geode Management API is enabled.");
+      myCache.getHttpService().ifPresent(x -> {
+        try {
+          x.addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,
+              cmServiceAttr);
+        } catch (Throwable e) {
+          logger.warn("Unable to start geode-management service: {}", e.getMessage());
+        }
+      });
+    } else {
+      logger.info(
+          "System Property " + ClusterManagementService.FEATURE_FLAG
+              + "=false Geode Management API is disabled.");
+    }
   }
 
   /**
