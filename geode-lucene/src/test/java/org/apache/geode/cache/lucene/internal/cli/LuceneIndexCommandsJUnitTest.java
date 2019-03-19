@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
-import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
-import static org.apache.geode.management.internal.cli.result.ResultData.TYPE_TABULAR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.any;
@@ -43,7 +41,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -71,18 +68,20 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
 /**
  * The LuceneIndexCommandsJUnitTest class is a test suite of test cases testing the contract and
- * functionality of the LuceneIndexCommands class.
+ * functionality of the Lucene Index Commands.
  *
- * @see LuceneIndexCommands
- * @see LuceneIndexDetails
- * @see LuceneListIndexFunction
- * @see org.junit.Test
- * @since GemFire 7.0
+ * @see LuceneCreateIndexCommand
+ * @see LuceneDescribeIndexCommand
+ * @see LuceneDestroyIndexCommand
+ * @see LuceneListIndexCommand
+ * @see LuceneSearchIndexCommand
  */
 @Category(LuceneTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -125,21 +124,22 @@ public class LuceneIndexCommandsJUnitTest {
         .thenReturn(mockResultCollector);
     when(mockResultCollector.getResult()).thenReturn(results);
 
-    final LuceneIndexCommands commands = createIndexCommands(this.mockCache, mockFunctionExecutor);
+    final LuceneListIndexCommand command =
+        new LuceneTestListIndexCommand(this.mockCache, mockFunctionExecutor);
 
-    CommandResult result = (CommandResult) commands.listIndex(false);
-    TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(data.retrieveAllValues("Index Name"))
+    ResultModel result = command.listIndex(false);
+    TabularResultModel data = result.getTableSection("lucene-indexes");
+    assertThat(data.getValuesInColumn("Index Name"))
         .isEqualTo(Arrays.asList("memberFive", "memberSix", "memberTen"));
-    assertThat(data.retrieveAllValues("Region Path"))
+    assertThat(data.getValuesInColumn("Region Path"))
         .isEqualTo(Arrays.asList("/Employees", "/Employees", "/Employees"));
-    assertThat(data.retrieveAllValues("Indexed Fields")).isEqualTo(Arrays.asList(
+    assertThat(data.getValuesInColumn("Indexed Fields")).isEqualTo(Arrays.asList(
         "[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"));
-    assertThat(data.retrieveAllValues("Field Analyzer"))
+    assertThat(data.getValuesInColumn("Field Analyzer"))
         .isEqualTo(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
             "{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
             "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"));
-    assertThat(data.retrieveAllValues("Status"))
+    assertThat(data.getValuesInColumn("Status"))
         .isEqualTo(Arrays.asList("INITIALIZED", "NOT_INITIALIZED", "INITIALIZED"));
   }
 
@@ -176,25 +176,26 @@ public class LuceneIndexCommandsJUnitTest {
         .thenReturn(mockResultCollector);
     when(mockResultCollector.getResult()).thenReturn(results);
 
-    final LuceneIndexCommands commands = createIndexCommands(this.mockCache, mockFunctionExecutor);
+    final LuceneListIndexCommand command =
+        new LuceneTestListIndexCommand(this.mockCache, mockFunctionExecutor);
 
-    CommandResult result = (CommandResult) commands.listIndex(true);
-    TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(data.retrieveAllValues("Index Name"))
+    ResultModel result = command.listIndex(true);
+    TabularResultModel data = result.getTableSection("lucene-indexes");
+    assertThat(data.getValuesInColumn("Index Name"))
         .isEqualTo(Arrays.asList("memberFive", "memberSix", "memberTen"));
-    assertThat(data.retrieveAllValues("Region Path"))
+    assertThat(data.getValuesInColumn("Region Path"))
         .isEqualTo(Arrays.asList("/Employees", "/Employees", "/Employees"));
-    assertThat(data.retrieveAllValues("Indexed Fields")).isEqualTo(Arrays.asList(
+    assertThat(data.getValuesInColumn("Indexed Fields")).isEqualTo(Arrays.asList(
         "[field1, field2, field3]", "[field1, field2, field3]", "[field1, field2, field3]"));
-    assertThat(data.retrieveAllValues("Field Analyzer"))
+    assertThat(data.getValuesInColumn("Field Analyzer"))
         .isEqualTo(Arrays.asList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
             "{field1=StandardAnalyzer, field2=KeywordAnalyzer}",
             "{field1=StandardAnalyzer, field2=KeywordAnalyzer}"));
-    assertThat(data.retrieveAllValues("Query Executions")).isEqualTo(Arrays.asList("1", "2", "3"));
-    assertThat(data.retrieveAllValues("Commits")).isEqualTo(Arrays.asList("10", "20", "30"));
-    assertThat(data.retrieveAllValues("Updates")).isEqualTo(Arrays.asList("5", "10", "15"));
-    assertThat(data.retrieveAllValues("Documents")).isEqualTo(Arrays.asList("1", "2", "3"));
-    assertThat(data.retrieveAllValues("Serializer"))
+    assertThat(data.getValuesInColumn("Query Executions")).isEqualTo(Arrays.asList("1", "2", "3"));
+    assertThat(data.getValuesInColumn("Commits")).isEqualTo(Arrays.asList("10", "20", "30"));
+    assertThat(data.getValuesInColumn("Updates")).isEqualTo(Arrays.asList("5", "10", "15"));
+    assertThat(data.getValuesInColumn("Documents")).isEqualTo(Arrays.asList("1", "2", "3"));
+    assertThat(data.getValuesInColumn("Serializer"))
         .isEqualTo(Arrays.asList(HeterogeneousLuceneSerializer.class.getSimpleName(),
             HeterogeneousLuceneSerializer.class.getSimpleName(),
             HeterogeneousLuceneSerializer.class.getSimpleName()));
@@ -203,7 +204,8 @@ public class LuceneIndexCommandsJUnitTest {
   @Test
   public void testCreateIndex() throws Exception {
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
-    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
+    final LuceneCreateIndexCommand command =
+        spy(new LuceneTestCreateIndexCommand(this.mockCache, null));
 
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     cliFunctionResults
@@ -213,7 +215,7 @@ public class LuceneIndexCommandsJUnitTest {
     cliFunctionResults
         .add(new CliFunctionResult("member3", CliFunctionResult.StatusState.OK, "Index Created"));
 
-    doReturn(mockResultCollector).when(commands).executeFunctionOnAllMembers(
+    doReturn(mockResultCollector).when(command).executeFunctionOnAllMembers(
         any(LuceneCreateIndexFunction.class), any(LuceneIndexInfo.class));
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
@@ -225,13 +227,13 @@ public class LuceneIndexCommandsJUnitTest {
 
     String serializer = PrimitiveSerializer.class.getCanonicalName();
 
-    CommandResult result = (CommandResult) commands.createIndex(indexName, regionPath,
-        searchableFields, fieldAnalyzers, serializer);
+    ResultModel result = command.createIndex(indexName, regionPath, searchableFields,
+        fieldAnalyzers, serializer);
     assertThat(result.getStatus()).isEqualTo(Status.OK);
-    TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(data.retrieveAllValues("Member"))
+    TabularResultModel data = result.getTableSection("lucene-indexes");
+    assertThat(data.getValuesInColumn("Member"))
         .isEqualTo(Arrays.asList("member1", "member2", "member3"));
-    assertThat(data.retrieveAllValues("Status"))
+    assertThat(data.getValuesInColumn("Status"))
         .isEqualTo(Arrays.asList("Successfully created lucene index",
             "Failed: Index creation failed", "Successfully created lucene index"));
   }
@@ -240,7 +242,8 @@ public class LuceneIndexCommandsJUnitTest {
   public void testDescribeIndex() throws Exception {
     final String serverName = "mockServer";
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
+    final LuceneDescribeIndexCommand command =
+        spy(new LuceneTestDescribeIndexCommand(this.mockCache, null));
 
     String[] searchableFields = {"field1", "field2", "field3"};
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
@@ -253,34 +256,35 @@ public class LuceneIndexCommandsJUnitTest {
     indexDetails.add(createIndexDetails("memberFive", "/Employees", searchableFields,
         fieldAnalyzers, mockIndexStats, LuceneIndexStatus.INITIALIZED, serverName, serializer));
 
-    doReturn(mockResultCollector).when(commands).executeFunctionOnRegion(
+    doReturn(mockResultCollector).when(command).executeFunctionOnRegion(
         any(LuceneDescribeIndexFunction.class), any(LuceneIndexInfo.class), eq(true));
     doReturn(indexDetails).when(mockResultCollector).getResult();
 
-    CommandResult result = (CommandResult) commands.describeIndex("memberFive", "/Employees");
+    ResultModel result = command.describeIndex("memberFive", "/Employees");
 
-    TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(data.retrieveAllValues("Index Name"))
+    TabularResultModel data = result.getTableSection("lucene-indexes");
+    assertThat(data.getValuesInColumn("Index Name"))
         .isEqualTo(Collections.singletonList("memberFive"));
-    assertThat(data.retrieveAllValues("Region Path"))
+    assertThat(data.getValuesInColumn("Region Path"))
         .isEqualTo(Collections.singletonList("/Employees"));
-    assertThat(data.retrieveAllValues("Indexed Fields"))
+    assertThat(data.getValuesInColumn("Indexed Fields"))
         .isEqualTo(Collections.singletonList("[field1, field2, field3]"));
-    assertThat(data.retrieveAllValues("Field Analyzer"))
+    assertThat(data.getValuesInColumn("Field Analyzer"))
         .isEqualTo(Collections.singletonList("{field1=StandardAnalyzer, field2=KeywordAnalyzer}"));
-    assertThat(data.retrieveAllValues("Status"))
+    assertThat(data.getValuesInColumn("Status"))
         .isEqualTo(Collections.singletonList("INITIALIZED"));
-    assertThat(data.retrieveAllValues("Query Executions"))
+    assertThat(data.getValuesInColumn("Query Executions"))
         .isEqualTo(Collections.singletonList("1"));
-    assertThat(data.retrieveAllValues("Commits")).isEqualTo(Collections.singletonList("10"));
-    assertThat(data.retrieveAllValues("Updates")).isEqualTo(Collections.singletonList("5"));
-    assertThat(data.retrieveAllValues("Documents")).isEqualTo(Collections.singletonList("1"));
+    assertThat(data.getValuesInColumn("Commits")).isEqualTo(Collections.singletonList("10"));
+    assertThat(data.getValuesInColumn("Updates")).isEqualTo(Collections.singletonList("5"));
+    assertThat(data.getValuesInColumn("Documents")).isEqualTo(Collections.singletonList("1"));
   }
 
   @Test
   public void testSearchIndex() throws Exception {
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
+    final LuceneSearchIndexCommand command =
+        spy(new LuceneTestSearchIndexCommand(this.mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
@@ -288,23 +292,24 @@ public class LuceneIndexCommandsJUnitTest {
     queryResults.add(createQueryResults("B", "Result1", Float.valueOf("1.2")));
     queryResults.add(createQueryResults("C", "Result1", Float.valueOf("1.1")));
     queryResultsList.add(queryResults);
-    doReturn(mockResultCollector).when(commands).executeSearch(any(LuceneQueryInfo.class));
+    doReturn(mockResultCollector).when(command).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
 
-    CommandResult result =
-        (CommandResult) commands.searchIndex("index", "region", "Result1", "field1", -1, false);
-    TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(data.retrieveAllValues("key")).isEqualTo(Arrays.asList("A", "B", "C"));
-    assertThat(data.retrieveAllValues("value"))
+    ResultModel result =
+        command.searchIndex("index", "region", "Result1", "field1", -1, false);
+    TabularResultModel data = result.getTableSection("lucene-indexes");
+    assertThat(data.getValuesInColumn("key")).isEqualTo(Arrays.asList("A", "B", "C"));
+    assertThat(data.getValuesInColumn("value"))
         .isEqualTo(Arrays.asList("Result1", "Result1", "Result1"));
-    assertThat(data.retrieveAllValues("score")).isEqualTo(Arrays.asList("1.3", "1.2", "1.1"));
+    assertThat(data.getValuesInColumn("score")).isEqualTo(Arrays.asList("1.3", "1.2", "1.1"));
   }
 
-  @Ignore
+  @Test
   public void testSearchIndexWithPaging() throws Exception {
     final Gfsh mockGfsh = mock(Gfsh.class);
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
+    final LuceneSearchIndexCommand command =
+        spy(new LuceneTestSearchIndexCommand(this.mockCache, null));
     ArgumentCaptor<String> resultCaptor = ArgumentCaptor.forClass(String.class);
 
     LuceneSearchResults result1 = createQueryResults("A", "Result1", Float.valueOf("1.7"));
@@ -317,21 +322,22 @@ public class LuceneIndexCommandsJUnitTest {
     final List<Set<LuceneSearchResults>> queryResultsList =
         getSearchResults(result1, result2, result3, result4, result5, result6, result7);
 
-    doReturn(mockResultCollector).when(commands).executeSearch(any(LuceneQueryInfo.class));
+    doReturn(mockResultCollector).when(command).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
-    doReturn(mockGfsh).when(commands).initGfsh();
+    doReturn(mockGfsh).when(command).initGfsh();
     when(mockGfsh.interact(anyString())).thenReturn("n").thenReturn("n").thenReturn("n")
         .thenReturn("n").thenReturn("p").thenReturn("p").thenReturn("p").thenReturn("p")
         .thenReturn("p").thenReturn("n").thenReturn("q");
+    when(command.getPageSize()).thenReturn(2);
 
     LuceneSearchResults[] expectedResults =
         new LuceneSearchResults[] {result7, result6, result5, result4, result3, result2, result1};
-    String expectedPage1 = getPage(expectedResults, new int[] {0, 1});
-    String expectedPage2 = getPage(expectedResults, new int[] {2, 3});
-    String expectedPage3 = getPage(expectedResults, new int[] {4, 5});
-    String expectedPage4 = getPage(expectedResults, new int[] {6});
+    String expectedPage1 = getPage(expectedResults, new int[] {6, 5});
+    String expectedPage2 = getPage(expectedResults, new int[] {4, 3});
+    String expectedPage3 = getPage(expectedResults, new int[] {2, 1});
+    String expectedPage4 = getPage(expectedResults, new int[] {0});
 
-    commands.searchIndex("index", "region", "Result1", "field1", -1, false);
+    command.searchIndex("index", "region", "Result1", "field1", -1, false);
     verify(mockGfsh, times(20)).printAsInfo(resultCaptor.capture());
     List<String> actualPageResults = resultCaptor.getAllValues();
 
@@ -370,7 +376,8 @@ public class LuceneIndexCommandsJUnitTest {
   @Test
   public void testSearchIndexWithKeysOnly() throws Exception {
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
+    final LuceneSearchIndexCommand command =
+        spy(new LuceneTestSearchIndexCommand(this.mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
@@ -378,19 +385,19 @@ public class LuceneIndexCommandsJUnitTest {
     queryResults.add(createQueryResults("B", "Result1", Float.valueOf("1.2")));
     queryResults.add(createQueryResults("C", "Result1", Float.valueOf("1.1")));
     queryResultsList.add(queryResults);
-    doReturn(mockResultCollector).when(commands).executeSearch(any(LuceneQueryInfo.class));
+    doReturn(mockResultCollector).when(command).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
 
-    CommandResult result =
-        (CommandResult) commands.searchIndex("index", "region", "Result1", "field1", -1, true);
-    TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(data.retrieveAllValues("key")).isEqualTo(Arrays.asList("A", "B", "C"));
+    ResultModel result = command.searchIndex("index", "region", "Result1", "field1", -1, true);
+    TabularResultModel data = result.getTableSection("lucene-indexes");
+    assertThat(data.getValuesInColumn("key")).isEqualTo(Arrays.asList("A", "B", "C"));
   }
 
   @Test
   public void testSearchIndexWhenSearchResultsHaveSameScore() throws Exception {
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
-    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
+    final LuceneSearchIndexCommand command =
+        spy(new LuceneTestSearchIndexCommand(this.mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
@@ -415,32 +422,34 @@ public class LuceneIndexCommandsJUnitTest {
     queryResults.add(createQueryResults("T", "Result1", 1));
     queryResultsList.add(queryResults);
 
-    doReturn(mockResultCollector).when(commands).executeSearch(any(LuceneQueryInfo.class));
+    doReturn(mockResultCollector).when(command).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
 
-    CommandResult result =
-        (CommandResult) commands.searchIndex("index", "region", "Result1", "field1", -1, true);
-    TabularResultData data = (TabularResultData) result.getResultData();
-    assertThat(data.retrieveAllValues("key").size()).isEqualTo(queryResults.size());
+    ResultModel result = command.searchIndex("index", "region", "Result1", "field1", -1, true);
+    TabularResultModel data = result.getTableSection("lucene-indexes");
+    assertThat(data.getValuesInColumn("key").size()).isEqualTo(queryResults.size());
   }
 
   @Test
   public void testDestroySingleIndexNoRegionMembers() {
-    LuceneIndexCommands commands = createTestLuceneIndexCommandsForDestroyIndex();
+    LuceneDestroyIndexCommand command =
+        spy(new LuceneTestDestroyIndexCommand(mockCache, null));
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-        new Object[] {Version.GEODE_1_7_0}) + LINE_SEPARATOR;
+        new Object[] {Version.GEODE_1_7_0});
     cliFunctionResults.add(new CliFunctionResult("member0", CliFunctionResult.StatusState.OK));
-    doReturn(Collections.emptySet()).when(commands).getNormalMembersWithSameOrNewerVersion(any());
-    CommandResult result = (CommandResult) commands.destroyIndex("index", "regionPath");
+    doReturn(Collections.emptySet()).when(command).getNormalMembersWithSameOrNewerVersion(any());
+
+    ResultModel result = command.destroyIndex("index", "regionPath");
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
   }
 
   @Test
   @Parameters({"true", "false"})
   public void testDestroySingleIndexWithRegionMembers(boolean expectedToSucceed) {
-    LuceneIndexCommands commands = createTestLuceneIndexCommandsForDestroyIndex();
+    LuceneDestroyIndexCommand command =
+        spy(new LuceneTestDestroyIndexCommand(mockCache, null));
     String indexName = "index";
     String regionPath = "regionPath";
 
@@ -464,33 +473,36 @@ public class LuceneIndexCommandsJUnitTest {
       cliFunctionResults.add(new CliFunctionResult("member0", e, e.getMessage()));
     }
 
-    doReturn(mockResultCollector).when(commands).executeFunction(
+    doReturn(mockResultCollector).when(command).executeFunction(
         any(LuceneDestroyIndexFunction.class), any(LuceneDestroyIndexInfo.class), anySet());
     doReturn(cliFunctionResults).when(mockResultCollector).getResult();
 
-    doReturn(members).when(commands).getNormalMembersWithSameOrNewerVersion(any());
+    doReturn(members).when(command).getNormalMembersWithSameOrNewerVersion(any());
 
-    CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
+    ResultModel result = command.destroyIndex(indexName, regionPath);
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
   }
 
   @Test
   public void testDestroyAllIndexesNoRegionMembers() {
-    LuceneIndexCommands commands = createTestLuceneIndexCommandsForDestroyIndex();
+    LuceneDestroyIndexCommand commands =
+        spy(new LuceneTestDestroyIndexCommand(mockCache, null));
     doReturn(Collections.emptySet()).when(commands).getNormalMembersWithSameOrNewerVersion(any());
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULD_NOT_FIND__MEMBERS_GREATER_THAN_VERSION_0,
-        new Object[] {Version.GEODE_1_7_0}) + LINE_SEPARATOR;
+        new Object[] {Version.GEODE_1_7_0});
     cliFunctionResults.add(new CliFunctionResult("member0", CliFunctionResult.StatusState.OK));
-    CommandResult result = (CommandResult) commands.destroyIndex(null, "regionPath");
+
+    ResultModel result = commands.destroyIndex(null, "regionPath");
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
   }
 
   @Test
   @Parameters({"true", "false"})
   public void testDestroyAllIndexesWithRegionMembers(boolean expectedToSucceed) {
-    LuceneIndexCommands commands = createTestLuceneIndexCommandsForDestroyIndex();
+    LuceneDestroyIndexCommand commands =
+        spy(new LuceneTestDestroyIndexCommand(mockCache, null));
     String indexName = null;
     String regionPath = "regionPath";
 
@@ -520,43 +532,33 @@ public class LuceneIndexCommandsJUnitTest {
 
     doReturn(members).when(commands).getNormalMembersWithSameOrNewerVersion(any());
 
-    CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
+    ResultModel result = commands.destroyIndex(indexName, regionPath);
     verifyDestroyIndexCommandResult(result, cliFunctionResults, expectedStatus);
   }
 
-  private LuceneIndexCommands createTestLuceneIndexCommandsForDestroyIndex() {
-    final ResultCollector mockResultCollector = mock(ResultCollector.class);
-    final LuceneIndexCommands commands = spy(createIndexCommands(this.mockCache, null));
-
-    final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
-    cliFunctionResults
-        .add(new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "Index Destroyed"));
-
-    doReturn(mockResultCollector).when(commands).executeFunctionOnRegion(
-        any(LuceneDestroyIndexFunction.class), any(LuceneIndexInfo.class), eq(false));
-    doReturn(cliFunctionResults).when(mockResultCollector).getResult();
-    return commands;
-  }
-
-  private void verifyDestroyIndexCommandResult(CommandResult result,
+  private void verifyDestroyIndexCommandResult(ResultModel result,
       List<CliFunctionResult> cliFunctionResults, String expectedStatus) {
     assertThat(result.getStatus()).isEqualTo(Status.OK);
-    if (result.getType().equals(TYPE_TABULAR)) {
-      TabularResultData data = (TabularResultData) result.getResultData();
-      List<String> members = data.retrieveAllValues("Member");
+
+    TabularResultModel data = result.getTableSection("lucene-indexes");
+    if (data != null) {
+      List<String> members = data.getValuesInColumn("Member");
       assertThat(cliFunctionResults.size()).isEqualTo(members.size());
       // Verify each member
       for (int i = 0; i < members.size(); i++) {
         assertThat(members.get(i)).isEqualTo("member" + i);
       }
       // Verify each status
-      List<String> status = data.retrieveAllValues("Status");
+      List<String> status = data.getValuesInColumn("Status");
       for (String statu : status) {
         assertThat(statu).isEqualTo(expectedStatus);
       }
-    } else {
+    } else if (result.getInfoSection("info") != null) {
       // Info result. Verify next lines are equal.
-      assertThat(result.nextLine()).isEqualTo(expectedStatus);
+      assertThat(result.getInfoSection("info").getContent().get(0)).isEqualTo(expectedStatus);
+    } else {
+      // Error result. Verify next lines are equal.
+      assertThat(result.getInfoSection("error").getContent().get(0)).isEqualTo(expectedStatus);
     }
   }
 
@@ -592,11 +594,6 @@ public class LuceneIndexCommandsJUnitTest {
     return mockIndexStats;
   }
 
-  private LuceneIndexCommands createIndexCommands(final InternalCache cache,
-      final Execution functionExecutor) {
-    return new LuceneTestIndexCommands(cache, functionExecutor);
-  }
-
   private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath,
       final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers,
       LuceneIndexStats indexStats, LuceneIndexStatus status, final String serverName,
@@ -617,11 +614,10 @@ public class LuceneIndexCommandsJUnitTest {
     return new LuceneSearchResults(key, value, score);
   }
 
-  private static class LuceneTestIndexCommands extends LuceneIndexCommands {
-
+  private static class LuceneTestListIndexCommand extends LuceneListIndexCommand {
     private final Execution functionExecutor;
 
-    LuceneTestIndexCommands(final InternalCache cache, final Execution functionExecutor) {
+    LuceneTestListIndexCommand(final InternalCache cache, final Execution functionExecutor) {
       assert cache != null : "The InternalCache cannot be null!";
       setCache(cache);
       this.functionExecutor = functionExecutor;
@@ -639,4 +635,87 @@ public class LuceneIndexCommandsJUnitTest {
     }
   }
 
+  private static class LuceneTestCreateIndexCommand extends LuceneCreateIndexCommand {
+    private final Execution functionExecutor;
+
+    LuceneTestCreateIndexCommand(final InternalCache cache, final Execution functionExecutor) {
+      assert cache != null : "The InternalCache cannot be null!";
+      setCache(cache);
+      this.functionExecutor = functionExecutor;
+    }
+
+    @Override
+    public Set<DistributedMember> getAllMembers() {
+      return Collections.emptySet();
+    }
+
+    @Override
+    public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
+      assertThat(members).isNotNull();
+      return this.functionExecutor;
+    }
+  }
+
+  private static class LuceneTestDescribeIndexCommand extends LuceneDescribeIndexCommand {
+    private final Execution functionExecutor;
+
+    LuceneTestDescribeIndexCommand(final InternalCache cache, final Execution functionExecutor) {
+      assert cache != null : "The InternalCache cannot be null!";
+      setCache(cache);
+      this.functionExecutor = functionExecutor;
+    }
+
+    @Override
+    public Set<DistributedMember> getAllMembers() {
+      return Collections.emptySet();
+    }
+
+    @Override
+    public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
+      assertThat(members).isNotNull();
+      return this.functionExecutor;
+    }
+  }
+
+  private static class LuceneTestSearchIndexCommand extends LuceneSearchIndexCommand {
+    private final Execution functionExecutor;
+
+    LuceneTestSearchIndexCommand(final InternalCache cache, final Execution functionExecutor) {
+      assert cache != null : "The InternalCache cannot be null!";
+      setCache(cache);
+      this.functionExecutor = functionExecutor;
+    }
+
+    @Override
+    public Set<DistributedMember> getAllMembers() {
+      return Collections.emptySet();
+    }
+
+    @Override
+    public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
+      assertThat(members).isNotNull();
+      return this.functionExecutor;
+    }
+  }
+
+  private static class LuceneTestDestroyIndexCommand extends LuceneDestroyIndexCommand {
+    private final Execution functionExecutor;
+
+    LuceneTestDestroyIndexCommand(final InternalCache cache, final Execution functionExecutor) {
+      assert cache != null : "The InternalCache cannot be null!";
+      setCache(cache);
+      this.functionExecutor = functionExecutor;
+    }
+
+    @Override
+    public Set<DistributedMember> getAllMembers() {
+      return Collections.emptySet();
+    }
+
+    @Override
+    public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
+      assertThat(members).isNotNull();
+      return this.functionExecutor;
+    }
+  }
 }
