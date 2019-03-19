@@ -54,7 +54,7 @@ import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntrie
  */
 class ProxyRegionMap extends BaseRegionMap {
 
-  private final EntryEventFactory entryEventFactory = new EntryEventFactoryImpl();
+  private final TxCallbackEventFactory txCallbackEventFactory = new TxCallbackEventFactoryImpl();
 
   protected ProxyRegionMap(LocalRegion owner, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
@@ -274,7 +274,7 @@ class ProxyRegionMap extends BaseRegionMap {
         // fix for bug 39526
         @Released
         EntryEventImpl e =
-            entryEventFactory.createCallbackEvent(this.owner, op, key, null,
+            txCallbackEventFactory.createCallbackEvent(this.owner, op, key, null,
                 rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                 txEntryState, versionTag, tailKey);
         switchEventOwnerAndOriginRemote(e, txEntryState == null);
@@ -297,7 +297,7 @@ class ProxyRegionMap extends BaseRegionMap {
       if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = entryEventFactory.createCallbackEvent(this.owner,
+        EntryEventImpl e = txCallbackEventFactory.createCallbackEvent(this.owner,
             localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, rmtOrigin,
             event, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
             versionTag, tailKey);
@@ -323,7 +323,7 @@ class ProxyRegionMap extends BaseRegionMap {
       if (shouldInvokeCallbacks(this.owner, this.owner.isInitialized())) {
         // fix for bug 39526
         @Released
-        EntryEventImpl e = entryEventFactory
+        EntryEventImpl e = txCallbackEventFactory
             .createCallbackEvent(this.owner, putOperation, key,
                 newValue, rmtOrigin, event, eventId, aCallbackArgument, filterRoutingInfo,
                 bridgeContext, txEntryState, versionTag, tailKey);

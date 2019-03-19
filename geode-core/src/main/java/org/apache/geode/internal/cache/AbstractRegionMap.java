@@ -82,7 +82,7 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 public abstract class AbstractRegionMap extends BaseRegionMap
     implements FocusedRegionMap, CacheModificationLock {
   private static final Logger logger = LogService.getLogger();
-  private final EntryEventFactory entryEventFactory = new EntryEventFactoryImpl();
+  private final TxCallbackEventFactory txCallbackEventFactory = new TxCallbackEventFactoryImpl();
 
   /** The underlying map for this region. */
   protected ConcurrentMapWithReusableEntries<Object, Object> map;
@@ -1016,7 +1016,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
               // a receipt of a TXCommitMessage AND there are callbacks installed
               // for this region
               @Released
-              final EntryEventImpl callbackEvent = entryEventFactory
+              final EntryEventImpl callbackEvent = txCallbackEventFactory
                   .createCallbackEvent(owner, op, key, null, txId,
                       txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                       txEntryState, versionTag, tailKey);
@@ -1114,7 +1114,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                 } else {
                   try {
                     boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
-                    callbackEvent = entryEventFactory
+                    callbackEvent = txCallbackEventFactory
                         .createCallbackEvent(owner, op, key, null, txId, txEvent,
                             eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                             txEntryState,
@@ -1179,7 +1179,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
             if (!opCompleted) {
               opCompleted = true;
               boolean invokeCallbacks = shouldInvokeCallbacks(owner, isRegionReady || inRI);
-              callbackEvent = entryEventFactory
+              callbackEvent = txCallbackEventFactory
                   .createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
                       aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState, versionTag,
                       tailKey);
@@ -1237,7 +1237,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         // Notify clients with client events.
         @Released
         EntryEventImpl callbackEvent =
-            entryEventFactory
+            txCallbackEventFactory
                 .createCallbackEvent(owner, op, key, null, txId, txEvent, eventId,
                     aCallbackArgument,
                     filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
@@ -1812,7 +1812,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   // for this region
                   boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
                   boolean callbackEventInPending = false;
-                  callbackEvent = entryEventFactory.createCallbackEvent(owner,
+                  callbackEvent = txCallbackEventFactory.createCallbackEvent(owner,
                       localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue,
                       txId, txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                       txEntryState, versionTag, tailKey);
@@ -1868,7 +1868,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
             if (!opCompleted) {
               boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
               boolean callbackEventInPending = false;
-              callbackEvent = entryEventFactory.createCallbackEvent(owner,
+              callbackEvent = txCallbackEventFactory.createCallbackEvent(owner,
                   localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
                   txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                   txEntryState, versionTag, tailKey);
@@ -1926,7 +1926,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
               // for this region
               boolean invokeCallbacks = shouldInvokeCallbacks(owner, owner.isInitialized());
               boolean callbackEventInPending = false;
-              callbackEvent = entryEventFactory.createCallbackEvent(owner,
+              callbackEvent = txCallbackEventFactory.createCallbackEvent(owner,
                   localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
                   txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext,
                   txEntryState, versionTag, tailKey);
@@ -1978,7 +1978,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
           // provider, thus causing region entry to be absent.
           // Notify clients with client events.
           boolean callbackEventInPending = false;
-          callbackEvent = entryEventFactory.createCallbackEvent(owner,
+          callbackEvent = txCallbackEventFactory.createCallbackEvent(owner,
               localOp ? Operation.LOCAL_INVALIDATE : Operation.INVALIDATE, key, newValue, txId,
               txEvent, eventId, aCallbackArgument, filterRoutingInfo, bridgeContext, txEntryState,
               versionTag, tailKey);
@@ -2163,7 +2163,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       Object aCallbackArgument, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
-    return entryEventFactory
+    return txCallbackEventFactory
         .createCallbackEvent(re, op, key, newValue, txId, txEvent, eventId, aCallbackArgument,
             filterRoutingInfo, bridgeContext, txEntryState, versionTag, tailKey);
   }

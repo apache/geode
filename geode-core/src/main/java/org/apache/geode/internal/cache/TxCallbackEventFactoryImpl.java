@@ -26,9 +26,9 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
- * Implementation of {@link EntryEventFactory}
+ * Implementation of {@link TxCallbackEventFactory}
  */
-public class EntryEventFactoryImpl implements EntryEventFactory {
+public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
   private static final Logger logger = LogService.getLogger();
 
   /** create a callback event for applying a transactional change to the local cache */
@@ -94,8 +94,8 @@ public class EntryEventFactoryImpl implements EntryEventFactory {
           computeFilterInfo = true;
         }
       }
-      if (EntryEventFactoryImpl.logger.isTraceEnabled()) {
-        EntryEventFactoryImpl.logger.trace(
+      if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
+        TxCallbackEventFactoryImpl.logger.trace(
             "createCBEvent filterRouting={} computeFilterInfo={} local routing={}",
             filterRoutingInfo, computeFilterInfo, localRouting);
       }
@@ -111,8 +111,8 @@ public class EntryEventFactoryImpl implements EntryEventFactory {
 
         if (computeFilterInfo) {
           if (bucket.getBucketAdvisor().isPrimary()) {
-            if (EntryEventFactoryImpl.logger.isTraceEnabled()) {
-              EntryEventFactoryImpl.logger
+            if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
+              TxCallbackEventFactoryImpl.logger
                   .trace("createCBEvent computing routing for primary bucket");
             }
             FilterProfile fp =
@@ -126,8 +126,8 @@ public class EntryEventFactoryImpl implements EntryEventFactory {
           }
         }
       } else if (computeFilterInfo) { // not a bucket
-        if (EntryEventFactoryImpl.logger.isTraceEnabled()) {
-          EntryEventFactoryImpl.logger.trace("createCBEvent computing routing for non-bucket");
+        if (TxCallbackEventFactoryImpl.logger.isTraceEnabled()) {
+          TxCallbackEventFactoryImpl.logger.trace("createCBEvent computing routing for non-bucket");
         }
         FilterProfile fp = internalRegion.getFilterProfile();
         if (fp != null) {

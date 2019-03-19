@@ -15,22 +15,31 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.Operation;
-import org.apache.geode.cache.TransactionId;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.distributed.DistributedMember;
 
-/**
- * Factory for creating instances of {@link EntryEventImpl}
- */
 public interface EntryEventFactory {
-  @Retained
-  EntryEventImpl createCallbackEvent(InternalRegion internalRegion,
-      Operation op, Object key, Object newValue,
-      TransactionId txId, TXRmtEvent txEvent,
-      EventID eventId, Object aCallbackArgument,
-      FilterRoutingInfo filterRoutingInfo,
-      ClientProxyMembershipID bridgeContext,
-      TXEntryState txEntryState, VersionTag versionTag,
-      long tailKey);
+
+  EntryEventImpl create(InternalRegion region, Operation op, Object key,
+      Object newValue, Object callbackArgument,
+      boolean originRemote, DistributedMember distributedMember);
+
+  EntryEventImpl create(InternalRegion region, Operation op, Object key,
+      Object newValue, Object callbackArgument,
+      boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks);
+
+  EntryEventImpl create(InternalRegion region, Operation op, Object key,
+      boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
+      boolean fromRILocalDestroy);
+
+  EntryEventImpl create(InternalRegion region, Operation op, Object key,
+      Object newValue, Object callbackArgument,
+      boolean originRemote, DistributedMember distributedMember, boolean generateCallbacks,
+      EventID eventID);
+
+  EntryEventImpl createPutAllEvent(DistributedPutAllOperation putAllOp,
+      InternalRegion region, Operation entryOp, Object entryKey,
+      Object entryNewValue);
+
+  EntryEventImpl createRemoveAllEvent(DistributedRemoveAllOperation op,
+      InternalRegion region, Object entryKey);
 }
