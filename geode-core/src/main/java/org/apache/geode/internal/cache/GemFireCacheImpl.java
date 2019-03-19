@@ -235,8 +235,6 @@ import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.management.internal.beans.ManagementListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
-import org.apache.geode.memcached.GemFireMemcachedServer;
-import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -580,12 +578,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private static final boolean XML_PARAMETERIZATION_ENABLED =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "xml.parameterization.disabled");
-
-  /**
-   * the memcachedServer instance that is started when {@link DistributionConfig#getMemcachedPort()}
-   * is specified
-   */
-  private GemFireMemcachedServer memcachedServer;
 
   /**
    * {@link ExtensionPoint} support.
@@ -1225,8 +1217,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     startColocatedJmxManagerLocator();
 
-    startMemcachedServer();
-
     startRestAgentServer(this);
 
     this.isInitialized = true;
@@ -1276,25 +1266,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private void startMemcachedServer() {
-    int port = this.system.getConfig().getMemcachedPort();
-    if (port != 0) {
-      String protocol = this.system.getConfig().getMemcachedProtocol();
-      assert protocol != null;
-      String bindAddress = this.system.getConfig().getMemcachedBindAddress();
-      assert bindAddress != null;
-      if (bindAddress.equals(DistributionConfig.DEFAULT_MEMCACHED_BIND_ADDRESS)) {
-        logger.info("Starting GemFireMemcachedServer on port {} for {} protocol",
-            new Object[] {port, protocol});
-      } else {
-        logger.info("Starting GemFireMemcachedServer on bind address {} on port {} for {} protocol",
-            new Object[] {bindAddress, port, protocol});
-      }
-      this.memcachedServer =
-          new GemFireMemcachedServer(bindAddress, port, Protocol.valueOf(protocol.toUpperCase()));
-      this.memcachedServer.start();
-    }
-  }
+
 
   @Override
   public URL getCacheXmlURL() {
@@ -2176,8 +2148,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         try {
           this.stopServers();
 
-          stopMemcachedServer();
-
           this.stopServices();
 
           httpService.ifPresent(HttpService::stop);
@@ -2445,14 +2415,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       cache = null;
     }
     return cache;
-  }
-
-  private void stopMemcachedServer() {
-    if (this.memcachedServer != null) {
-      logger.info("GemFireMemcachedServer on port {} is shutting down",
-          new Object[] {this.system.getConfig().getMemcachedPort()});
-      this.memcachedServer.shutdown();
-    }
   }
 
   private void prepareDiskStoresForClose() {

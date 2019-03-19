@@ -207,7 +207,6 @@ import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
-import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution
@@ -3384,7 +3383,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
 
   @ConfigAttribute(type = String.class)
   String MEMCACHED_PROTOCOL_NAME = MEMCACHED_PROTOCOL;
-  String DEFAULT_MEMCACHED_PROTOCOL = GemFireMemcachedServer.Protocol.ASCII.name();
+  String DEFAULT_MEMCACHED_PROTOCOL = "ASCII";
 
   /**
    * Returns the value of the {@link ConfigurationProperties#MEMCACHED_BIND_ADDRESS} property

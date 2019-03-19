@@ -149,6 +149,7 @@ dependencies {
   archives project(':geode-connectors')
   archives project(':geode-lucene')
   archives project(':geode-redis')
+  archives project(':geode-memcached')
   archives project(':geode-old-client-support')
   archives project(':geode-protobuf')
   archives project(':geode-protobuf-messages')
@@ -487,6 +488,8 @@ distributions {
         from project(':geode-lucene').configurations.archives.allArtifacts.files
         from project(':geode-redis').configurations.runtimeClasspath
         from project(':geode-redis').configurations.runtimeClasspath.allArtifacts.files
+        from project(':geode-memcached').configurations.runtimeClasspath
+        from project(':geode-memcached').configurations.runtimeClasspath.allArtifacts.files
         from project(':geode-connectors').configurations.runtimeClasspath
         from project(':geode-connectors').configurations.archives.allArtifacts.files
         from project(':geode-old-client-support').configurations.runtimeClasspath
