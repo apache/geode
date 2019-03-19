@@ -5014,6 +5014,7 @@ public class PartitionedRegion extends LocalRegion
   protected void cacheWriterChanged(CacheWriter p_oldWriter) {
     super.cacheWriterChanged(p_oldWriter);
     if (p_oldWriter == null ^ basicGetWriter() == null) {
+      updatePRNodeInformation();
       new UpdateAttributesProcessor(this).distribute();
     }
   }
@@ -5024,6 +5025,7 @@ public class PartitionedRegion extends LocalRegion
     this.dataStore.cacheLoaderChanged(basicGetLoader(), oldLoader);
     super.cacheLoaderChanged(oldLoader);
     if (oldLoader == null ^ basicGetLoader() == null) {
+      updatePRNodeInformation();
       new UpdateAttributesProcessor(this).distribute();
     }
   }
@@ -9998,8 +10000,9 @@ public class PartitionedRegion extends LocalRegion
     return br.getEntryExpiryTask(key);
   }
 
-  @Override
-  public void updatePRNodeInformation(CacheLoader cacheLoader, CacheWriter cacheWriter) {
+  public void updatePRNodeInformation() {
+    CacheLoader cacheLoader = basicGetLoader();
+    CacheWriter cacheWriter = basicGetWriter();
     Region<String, PartitionRegionConfig> partionedRegionRoot = getPRRoot();
     if (partionedRegionRoot != null) {
       PartitionRegionConfig prConfig = partionedRegionRoot.get(getRegionIdentifier());

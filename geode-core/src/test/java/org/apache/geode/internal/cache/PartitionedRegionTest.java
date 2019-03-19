@@ -99,7 +99,9 @@ public class PartitionedRegionTest {
     prNodes.add(otherNode2);
     when(mockConfig.getNodes()).thenReturn(prNodes.getListCopy());
 
-    prSpy.updatePRNodeInformation(mockLoader, mockWriter);
+    doReturn(mockLoader).when(prSpy).basicGetLoader();
+    doReturn(mockWriter).when(prSpy).basicGetWriter();
+    prSpy.updatePRNodeInformation();
 
     verify(prRoot).get(prSpy.getRegionIdentifier());
 

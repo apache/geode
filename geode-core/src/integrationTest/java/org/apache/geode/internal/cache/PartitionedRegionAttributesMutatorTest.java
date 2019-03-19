@@ -80,7 +80,7 @@ public class PartitionedRegionAttributesMutatorTest {
     createRegionSpy();
     CacheLoader loader = createTestCacheLoader();
     pr.getAttributesMutator().setCacheLoader(loader);
-    verify(pr).updatePRNodeInformation(loader, null);
+    verify(pr).updatePRNodeInformation();
   }
 
   @Test
@@ -88,7 +88,7 @@ public class PartitionedRegionAttributesMutatorTest {
     createRegionSpy();
     CacheWriter writer = createTestCacheWriter();
     pr.getAttributesMutator().setCacheWriter(writer);
-    verify(pr).updatePRNodeInformation(null, writer);
+    verify(pr).updatePRNodeInformation();
   }
 
   @Test

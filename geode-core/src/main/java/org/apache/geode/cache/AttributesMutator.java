@@ -156,15 +156,6 @@ public interface AttributesMutator<K, V> {
    */
   CacheLoader<K, V> setCacheLoader(CacheLoader<K, V> cacheLoader);
 
-
-  /**
-   * Updates Partitioned Region Configuration for the cache loader and writer
-   *
-   * @param cacheLoader the cache loader after update
-   * @param cacheLoader the cache writer after update
-   */
-  void updatePRNodeInformation(CacheLoader<K, V> cacheLoader, CacheWriter<K, V> cacheWriter);
-
   /**
    * Allows changing the eviction controller attributes for the region.
    *
