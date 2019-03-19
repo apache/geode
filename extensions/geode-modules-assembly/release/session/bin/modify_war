@@ -87,7 +87,6 @@ WHERE <args>:
                         geode-modules.jar
                         geode-modules-session-internal.jar
                         geode-core.jar
-                        geode-json.jar
                         geode-common.jar
                         geode-management.jar
                         antlr.jar
@@ -263,7 +262,6 @@ SESSION_JAR="${LIB_DIR}/geode-modules-session-${VERSION}.jar"
 
 declare -a OTHER_JARS
 OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
-    ${GEODE}/lib/geode-json-${VERSION}.jar \
     ${GEODE}/lib/geode-common-${VERSION}.jar \
     ${GEODE}/lib/geode-management-${VERSION}.jar \
     ${GEODE}/lib/antlr-@ANTLR_VERSION@.jar \
