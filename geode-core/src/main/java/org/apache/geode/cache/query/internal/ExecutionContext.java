@@ -21,9 +21,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -92,6 +96,11 @@ public class ExecutionContext {
   private Object currentProjectionField = null;
   private boolean isPRQueryNode = false;
 
+  private Optional<ScheduledFuture> cancelationTask;
+  private volatile CacheRuntimeException canceledException;
+  static final ThreadLocal<AtomicBoolean> isCanceled =
+      ThreadLocal.withInitial(AtomicBoolean::new);
+
   /**
    * Param specialIteratorVar name of special variable to use to denote the current iteration
    * element. Used to implement the "this" var in the query shortcut methods
@@ -101,6 +110,15 @@ public class ExecutionContext {
   public ExecutionContext(Object[] bindArguments, InternalCache cache) {
     this.bindArguments = bindArguments;
     this.cache = cache;
+    this.cancelationTask = Optional.empty();
+  }
+
+  Optional<ScheduledFuture> getCancelationTask() {
+    return cancelationTask;
+  }
+
+  void setCancelationTask(final ScheduledFuture cancelationTask) {
+    this.cancelationTask = Optional.of(cancelationTask);
   }
 
   public CachePerfStats getCachePerfStats() {
@@ -603,10 +621,6 @@ public class ExecutionContext {
     throw new UnsupportedOperationException("Method should not have been called");
   }
 
-  public void setCqQueryContext(boolean cqQuery) {
-    throw new UnsupportedOperationException("Method should not have been called");
-  }
-
   public Query getQuery() {
     throw new UnsupportedOperationException("Method should not have been called");
   }
@@ -647,4 +661,36 @@ public class ExecutionContext {
     return this.isPRQueryNode;
   }
 
+  /**
+   * Check to see if the query execution was canceled. The query gets canceled by the QueryMonitor
+   * if it takes more than the max query execution time or low memory situations
+   */
+  public boolean isCanceled() {
+    return getQueryCanceledException() != null;
+  }
+
+  public CacheRuntimeException getQueryCanceledException() {
+    return canceledException;
+  }
+
+  public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
+    this.canceledException = queryCanceledException;
+  }
+
+  /**
+   * This method attempts to reintrepret a {@link QueryExecutionCanceledException} using the
+   * the value returned by {@link #getQueryCanceledException} (set by the {@link QueryMonitor}).
+   *
+   * @throws if {@link #getQueryCanceledException} doesn't return {@code null} then throw that
+   *         {@link CacheRuntimeException}, otherwise throw {@link QueryExecutionCanceledException}
+   */
+  Object reinterpretQueryExecutionCanceledException() {
+    final CacheRuntimeException queryCanceledException = getQueryCanceledException();
+    if (queryCanceledException != null) {
+      throw queryCanceledException;
+    } else {
+      throw new QueryExecutionCanceledException(
+          "Query was canceled. It may be due to low memory or the query was running longer than the MAX_QUERY_EXECUTION_TIME.");
+    }
+  }
 }

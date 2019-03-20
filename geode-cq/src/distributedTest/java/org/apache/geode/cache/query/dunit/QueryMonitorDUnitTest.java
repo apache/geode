@@ -15,6 +15,8 @@
 package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -31,6 +33,7 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.CqAttributes;
@@ -40,9 +43,11 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -117,7 +122,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query
-    VMProvider.invokeInEveryMember(() -> executeQuery(), client3, client4);
+    VMProvider.invokeInEveryMember(() -> executeQueries(), client3, client4);
   }
 
   @Test
@@ -135,7 +140,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query from client3
-    client3.invoke(() -> executeQuery());
+    client3.invoke(() -> executeQueries());
   }
 
   @Test
@@ -157,8 +162,8 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
     server2.invoke(() -> populateRegion(100, 200));
 
-    client3.invoke(() -> executeQuery());
-    client4.invoke(() -> executeQuery());
+    client3.invoke(() -> executeQueries());
+    client4.invoke(() -> executeQueries());
   }
 
   @Test
@@ -170,7 +175,7 @@ public class QueryMonitorDUnitTest {
     server1.invoke(() -> populateRegion(0, 100));
 
     // execute the query from one server
-    server1.invoke(() -> executeQuery());
+    server1.invoke(() -> executeQueries());
 
     // Create index and Perform cache op. Bug#44307
     server1.invoke(() -> {
@@ -194,8 +199,8 @@ public class QueryMonitorDUnitTest {
     server2.invoke(() -> populateRegion(200, 300));
 
     // execute the query from one server
-    server1.invoke(() -> executeQuery());
-    server2.invoke(() -> executeQuery());
+    server1.invoke(() -> executeQueries());
+    server2.invoke(() -> executeQueries());
   }
 
   @Test
@@ -217,8 +222,8 @@ public class QueryMonitorDUnitTest {
     client4 = cluster.startClientVM(4, new Properties(), ccf -> {
       configureClientCacheFactory(ccf, server2Port);
     });
-    client3.invoke(() -> executeQuery());
-    client4.invoke(() -> executeQuery());
+    client3.invoke(() -> executeQueries());
+    client4.invoke(() -> executeQueries());
   }
 
   @Test
@@ -250,8 +255,8 @@ public class QueryMonitorDUnitTest {
         cluster.startClientVM(4,
             c -> c.withPoolSubscription(true).withServerConnection(server2Port));
 
-    client3.invoke(() -> executeQuery());
-    client4.invoke(() -> executeQuery());
+    client3.invoke(() -> executeQueries());
+    client4.invoke(() -> executeQueries());
   }
 
   @Test
@@ -358,6 +363,48 @@ public class QueryMonitorDUnitTest {
     });
   }
 
+  @Test
+  public void testQueryObjectReusableAfterFirstExecutionTimesOut() throws Exception {
+    server1.invoke(() -> {
+      // Setting query timeout to 10 seconds
+      GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = 10000;
+
+      final InternalCache cache = ClusterStartupRule.getCache();
+      final String regionName = "exampleRegion";
+      final RegionFactory<Integer, Integer> regionFactory =
+          cache.createRegionFactory(RegionShortcut.LOCAL);
+      final Region<Integer, Integer> exampleRegion = regionFactory.create(regionName);
+      final int numRegionEntries = 10;
+      for (int i = 0; i < numRegionEntries; ++i) {
+        exampleRegion.put(i, i);
+      }
+
+      final String queryString = "select * from /" + regionName;
+      final Query query = cache.getQueryService().newQuery(queryString);
+
+      // Install a test hook which causes the query to timeout
+      DefaultQuery.testHook =
+          (spot, qry, executionContext) -> {
+            if (spot != DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_DEPENDENCY_COMPUTATION) {
+              return;
+            }
+
+            await("stall the query execution so that it gets cancelled")
+                .until(executionContext::isCanceled);
+          };
+
+      assertThatThrownBy(query::execute).isInstanceOf(QueryExecutionTimeoutException.class);
+
+      // Uninstall test hook so that query object is reused to execute again, this time successfully
+      DefaultQuery.testHook = null;
+
+      final SelectResults results = (SelectResults) query.execute();
+
+      for (int i = 0; i < numRegionEntries; ++i) {
+        assertThat(results.contains(i)).isTrue();
+      }
+    });
+  }
 
   private static void populateRegion(int startingId, int endingId) {
     Region exampleRegion = ClusterStartupRule.getCache().getRegion("exampleRegion");
@@ -366,7 +413,7 @@ public class QueryMonitorDUnitTest {
     }
   }
 
-  private static void executeQuery() {
+  private static void executeQueries() {
     QueryService queryService;
     if (ClusterStartupRule.getClientCache() == null) {
       queryService = ClusterStartupRule.getCache().getQueryService();
@@ -382,6 +429,20 @@ public class QueryMonitorDUnitTest {
       } catch (Exception e) {
         verifyException(e);
       }
+    }
+
+    final String queryString = "SELECT DISTINCT * FROM /exampleRegion p WHERE p.id = $1";
+    final Query query = queryService.newQuery(queryString);
+
+    try {
+      for (int i = 0; i < 100; ++i) {
+        final Object[] params = new Object[1];
+        params[0] = i;
+
+        query.execute(params);
+      }
+    } catch (final Exception e) {
+      verifyException(e);
     }
   }
 
@@ -436,7 +497,8 @@ public class QueryMonitorDUnitTest {
    * query execution long enough for the QueryMonitor to mark the query as cancelled.
    */
   private static void delayQueryTestHook(final DefaultQuery.TestHook.SPOTS spot,
-      final DefaultQuery query) {
+      final DefaultQuery query,
+      final ExecutionContext executionContext) {
     if (spot != DefaultQuery.TestHook.SPOTS.BEFORE_QUERY_DEPENDENCY_COMPUTATION) {
       return;
     }
@@ -451,7 +513,7 @@ public class QueryMonitorDUnitTest {
      */
     await("stall the query execution so that it gets cancelled")
         .pollDelay(10, TimeUnit.MILLISECONDS)
-        .until(() -> query.isCanceled());
+        .until(() -> executionContext.isCanceled());
   }
 
   private static String[] queryStr = {"SELECT ID FROM /exampleRegion p WHERE  p.ID > 100",
