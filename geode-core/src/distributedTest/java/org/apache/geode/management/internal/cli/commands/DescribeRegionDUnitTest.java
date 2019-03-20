@@ -39,7 +39,6 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -169,20 +168,16 @@ public class DescribeRegionDUnitTest {
 
   @Test
   public void describeRegionWithCustomExpiry() {
-    CommandResult result = gfsh.executeAndAssertThat("describe region --name=" + PR1)
-        .statusIsSuccess().getCommandResult();
+    CommandResultAssert result = gfsh.executeAndAssertThat("describe region --name=" + PR1)
+        .statusIsSuccess();
 
-    List<String> names = result.getColumnFromTableContent("Name", "0", "0");
-    assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
+    result.hasTableSection("non-default-1")
+        .hasColumn("Name").containsOnlyOnce(RegionAttributesNames.ENTRY_IDLE_TIME_CUSTOM_EXPIRY)
+        .hasColumn("Value").containsOnlyOnce(TestCustomIdleExpiry.class.getName());
 
-    List<String> values = result.getColumnFromTableContent("Value", "0", "0");
-    assertThat(values).containsOnlyOnce(TestCustomIdleExpiry.class.getName());
-
-    names = result.getColumnFromTableContent("Name", "0", "1");
-    assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY);
-
-    values = result.getColumnFromTableContent("Value", "0", "1");
-    assertThat(values).containsOnlyOnce(TestCustomTTLExpiry.class.getName());
+    result.hasTableSection("member-non-default-1")
+        .hasColumn("Name").containsOnlyOnce(RegionAttributesNames.ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY)
+        .hasColumn("Value").containsOnlyOnce(TestCustomTTLExpiry.class.getName());
   }
 
   /**
@@ -221,8 +216,8 @@ public class DescribeRegionDUnitTest {
 
     commandResultAssert.hasTableSection("non-default-1")
         .hasColumn("Type").containsExactly("Region", "", "Partition")
-        .hasColumn("Name").containsExactly("size", "data-policy", "local-max-memory")
-        .hasColumn("Value").containsExactly("PARTITION", "0", "0");
+        .hasColumn("Name").contains("data-policy", "size", "local-max-memory")
+        .hasColumn("Value").contains("PARTITION", "0", "0");
 
     commandResultAssert.hasDataSection("region-2").hasContent()
         .containsEntry("Name", HOSTING_AND_ACCESSOR_REGION_NAME)
@@ -231,8 +226,8 @@ public class DescribeRegionDUnitTest {
         .asList()
         .containsExactlyInAnyOrder("server-1", "server-2", "server-3", "server-4");
 
-    commandResultAssert.hasTableSection("member-non-default-2")
-        .hasColumn("Type").containsExactly("Type", "Region")
+    commandResultAssert.hasTableSection("non-default-2")
+        .hasColumn("Type").containsExactly("Region", "")
         .hasColumn("Name").containsExactly("size", "data-policy")
         .hasColumn("Value").containsExactly("0", "PARTITION");
   }

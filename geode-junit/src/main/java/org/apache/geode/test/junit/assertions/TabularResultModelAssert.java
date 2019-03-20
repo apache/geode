@@ -17,6 +17,8 @@ package org.apache.geode.test.junit.assertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class TabularResultModelAssert
@@ -60,7 +62,9 @@ public class TabularResultModelAssert
    * return a ListAssert-like handle to assert on the values of a named column
    */
   public TabularResultModelColumnAssert<String> hasColumn(String header) {
-    return new TabularResultModelColumnAssert<>(this, actual.getValuesInColumn(header));
+    List<String> values = actual.getValuesInColumn(header);
+    assertThat(values).withFailMessage("Column not found: %s", header).isNotNull();
+    return new TabularResultModelColumnAssert<>(this, values);
   }
 
   /**
