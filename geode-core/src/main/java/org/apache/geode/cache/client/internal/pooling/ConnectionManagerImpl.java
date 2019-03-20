@@ -32,7 +32,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
@@ -82,7 +81,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       new ConcurrentLinkedDeque<>();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
   private final EndpointManager endpointManager;
-  private final int maxConnections;
+  protected final int maxConnections;
   protected final int minConnections;
   private final long idleTimeout; // make this an int
   protected final long idleTimeoutNanos;
@@ -91,7 +90,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private final InternalLogWriter securityLogWriter;
   protected final CancelCriterion cancelCriterion;
 
-  protected final AtomicInteger connectionCount = new AtomicInteger(0);
+  private final ConnectionAccounting connectionAccounting;
   protected ScheduledExecutorService backgroundProcessor;
   protected ScheduledExecutorService loadConditioningProcessor;
 
@@ -156,6 +155,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.endpointManager = endpointManager;
     this.maxConnections = maxConnections == -1 ? Integer.MAX_VALUE : maxConnections;
     this.minConnections = minConnections;
+    this.connectionAccounting = new ConnectionAccounting(this.minConnections, this.maxConnections);
     this.lifetimeTimeout = addVarianceToInterval(lifetimeTimeout);
     this.lifetimeTimeoutNanos = MILLISECONDS.toNanos(this.lifetimeTimeout);
     if (this.lifetimeTimeout != -1) {
@@ -177,25 +177,15 @@ public class ConnectionManagerImpl implements ConnectionManager {
     };
   }
 
-  private void decrementConnectionCount() {
-    int newConnectionCount = connectionCount.decrementAndGet();
+  private void decrementConnectionCountAndPrefill() {
+    int newConnectionCount = connectionAccounting.decrementAndGetConnectionCount();
     if (newConnectionCount < minConnections) {
       startBackgroundPrefill();
     }
   }
 
-  private boolean tryReserveConnection() {
-    int currentConnectionCount;
-    while ((currentConnectionCount = connectionCount.get()) < maxConnections) {
-      if (connectionCount.compareAndSet(currentConnectionCount, currentConnectionCount + 1)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /**
-   * Should only be called by a method that atomically increments @{link #connectionCount}, like
+   * Should only be called by a method that atomically increments @{link #count}, like
    * {@link #tryReserveConnection()}} or {@link #forceCreateConnection(ServerLocation, Set)}.
    */
   private PooledConnection createPooledConnection(final ServerLocation serverLocation,
@@ -211,7 +201,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     } finally {
       if (connection == null) {
-        decrementConnectionCount();
+        decrementConnectionCountAndPrefill();
       }
     }
 
@@ -225,7 +215,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private PooledConnection forceCreateConnection(final ServerLocation serverLocation,
       final Set<ServerLocation> excludedServers)
       throws ServerOperationException, NoAvailableServersException {
-    connectionCount.getAndIncrement();
+    connectionAccounting.incrementConnectionCount();
     return createPooledConnection(serverLocation, excludedServers);
   }
 
@@ -277,7 +267,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
           }
         }
 
-        if (tryReserveConnection()) {
+        if (connectionAccounting.tryReserveConnection()) {
           try {
             connection = createPooledConnection(null, Collections.emptySet());
             if (null != connection) {
@@ -409,7 +399,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     allConnectionsMap.addConnection(pooledConn);
     if (logger.isDebugEnabled()) {
       logger.debug("Created a new connection. {} Connection count is now {}", pooledConn,
-          connectionCount);
+          connectionAccounting.getConnectionCount());
     }
     return pooledConn;
   }
@@ -418,10 +408,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
     if (allConnectionsMap.removeConnection(connection)) {
       if (logger.isDebugEnabled()) {
         logger.debug("Invalidating connection {} connection count is now {}", connection,
-            connectionCount);
+            connectionAccounting.getConnectionCount());
       }
 
-      decrementConnectionCount();
+      decrementConnectionCountAndPrefill();
     }
 
     connection.internalDestroy();
@@ -446,7 +436,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       PooledConnection conn = (PooledConnection) itr.next();
       conn.setShouldDestroy();
       availableConnections.remove(conn);
-      decrementConnectionCount();
+      decrementConnectionCountAndPrefill();
       conn.internalDestroy();
     }
   }
@@ -492,9 +482,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * @return true if connection is destroyed, otherwise false.
    */
   private boolean destroyIfOverLimit(PooledConnection connection) {
-    int currentCount;
-    while ((currentCount = connectionCount.get()) > maxConnections) {
-      if (connectionCount.compareAndSet(currentCount, currentCount - 1)) {
+    if(connectionAccounting.shouldDestroy()) {
         if (allConnectionsMap.removeConnection(connection)) {
           try {
             PoolImpl localpool = (PoolImpl) PoolManagerImpl.getPMI().find(poolName);
@@ -508,11 +496,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
           }
         } else {
           // Not a pooled connection so undo the decrement.
-          connectionCount.getAndIncrement();
+          connectionAccounting.incrementConnectionCount();
         }
 
         return true;
-      }
     }
 
     return false;
@@ -523,7 +510,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.backgroundProcessor = backgroundProcessor;
     String name = "poolLoadConditioningMonitor-" + getPoolName();
     this.loadConditioningProcessor =
-        LoggingExecutors.newScheduledThreadPool(name, 1/* why not 0? */, false);
+        LoggingExecutors.newScheduledThreadPool(name, 1, false);
 
     endpointManager.addListener(endpointListener);
 
@@ -600,7 +587,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   protected boolean prefill() {
     try {
-      while (connectionCount.get() < minConnections) {
+      while (connectionAccounting.isUnderMinimum()) {
         if (cancelCriterion.isCancelInProgress()) {
           return true;
         }
@@ -623,7 +610,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   @Override
   public int getConnectionCount() {
-    return this.connectionCount.get();
+    return connectionAccounting.getConnectionCount();
   }
 
   protected PoolStats getPoolStats() {
@@ -641,41 +628,39 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
+
   private boolean prefillConnection() {
     if (shuttingDown.get()) {
       return false;
     }
 
-    int currentCount;
-    while ((currentCount = connectionCount.get()) < minConnections) {
-      if (connectionCount.compareAndSet(currentCount, currentCount + 1)) {
-        PooledConnection connection = null;
-        try {
-          Connection plainConnection =
-              connectionFactory.createClientToServerConnection(Collections.emptySet());
-          if (plainConnection == null) {
-            return false;
-          }
-          connection = addConnection(plainConnection);
-          connection.passivate(false);
-          getPoolStats().incPrefillConnect();
-          availableConnections.add(connection);
-          if (logger.isDebugEnabled()) {
-            logger.debug("Prefilled connection {} connection count is now {}", connection,
-                connectionCount);
-          }
-          return true;
-        } catch (ServerConnectivityException ex) {
-          logger.info(
-              String.format("Unable to prefill pool to minimum because: %s", ex.getMessage()));
+    if (connectionAccounting.tryReserveConnection()) {
+      PooledConnection connection = null;
+      try {
+        Connection plainConnection =
+            connectionFactory.createClientToServerConnection(Collections.emptySet());
+        if (plainConnection == null) {
           return false;
-        } finally {
-          if (connection == null) {
-            connectionCount.decrementAndGet();
-            if (logger.isDebugEnabled()) {
-              logger.debug("Unable to prefill pool to minimum, connection count is now {}",
-                  connectionCount);
-            }
+        }
+        connection = addConnection(plainConnection);
+        connection.passivate(false);
+        getPoolStats().incPrefillConnect();
+        availableConnections.add(connection);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Prefilled connection {} connection count is now {}", connection,
+              connectionAccounting.getConnectionCount());
+        }
+        return true;
+      } catch (ServerConnectivityException ex) {
+        logger.info(
+            String.format("Unable to prefill pool to minimum because: %s", ex.getMessage()));
+        return false;
+      } finally {
+        if (connection == null) {
+          connectionAccounting.decrementAndGetConnectionCount();
+          if (logger.isDebugEnabled()) {
+            logger.debug("Unable to prefill pool to minimum, connection count is now {}",
+                this::getConnectionCount);
           }
         }
       }
@@ -737,7 +722,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
 
       prefill();
-      if (connectionCount.get() < minConnections && !cancelCriterion.isCancelInProgress()) {
+      if (connectionAccounting.isUnderMinimum() && !cancelCriterion.isCancelInProgress()) {
         try {
           backgroundProcessor.schedule(new PrefillConnectionsTask(), prefillRetry,
               MILLISECONDS);
@@ -1205,7 +1190,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (expireCount > 0) {
         getPoolStats().incIdleExpire(expireCount);
         getPoolStats().incPoolConnections(-expireCount);
-        if (connectionCount.addAndGet(-expireCount) < minConnections) {
+        if (connectionAccounting.decrementAndGetConnectionCount(expireCount) < minConnections) {
           startBackgroundPrefill();
         }
       }
@@ -1238,7 +1223,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
       do {
         getPoolStats().incLoadConditioningCheck();
         long firstLife = -1;
-        done = true;
         ServerLocation candidate = null;
         boolean idlePossible = true;
 
@@ -1284,6 +1268,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
       startBackgroundLifetimeExpiration(lifetimeTimeoutNanos);
     }
 
+  }
+
+  // extract
+  private int decrementAndGetConnectionCount(int howMany) {
+    return connectionAccounting.decrementAndGetConnectionCount(howMany);
   }
 
   private void logInfo(String message, Throwable t) {
