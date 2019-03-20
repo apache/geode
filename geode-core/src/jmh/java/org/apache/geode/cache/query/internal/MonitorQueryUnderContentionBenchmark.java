@@ -84,7 +84,7 @@ public class MonitorQueryUnderContentionBenchmark {
   private static final int RANDOM_SEED = 151;
 
   private QueryMonitor queryMonitor;
-  private DefaultQuery query;
+  private ExecutionContext queryExecutionContext;
   private Random random;
   private ScheduledThreadPoolExecutor loadGenerationExecutorService;
 
@@ -107,7 +107,7 @@ public class MonitorQueryUnderContentionBenchmark {
 
     random = new Random(RANDOM_SEED);
 
-    query = createDefaultQuery();
+    queryExecutionContext = mock(ExecutionContext.class);
 
     generateLoad(
         loadGenerationExecutorService, () -> startOneFastQuery(loadGenerationExecutorService),
@@ -136,8 +136,8 @@ public class MonitorQueryUnderContentionBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   // @Warmup we don't warm up because our @Setup warms us up
   public void monitorQuery() {
-    queryMonitor.monitorQueryExecution(query);
-    queryMonitor.stopMonitoringQueryExecution(query);
+    queryMonitor.monitorQueryExecution(queryExecutionContext);
+    queryMonitor.stopMonitoringQueryExecution(queryExecutionContext);
   }
 
   private void generateLoad(final ScheduledExecutorService executorService,
@@ -159,10 +159,10 @@ public class MonitorQueryUnderContentionBenchmark {
   private void startOneSimulatedQuery(ScheduledExecutorService executorService,
       int startDelayRangeMillis, int completeDelayRangeMillis) {
     executorService.schedule(() -> {
-      final DefaultQuery query = createDefaultQuery();
-      queryMonitor.monitorQueryExecution(query);
+      final ExecutionContext queryExecutionContext = mock(ExecutionContext.class);
+      queryMonitor.monitorQueryExecution(queryExecutionContext);
       executorService.schedule(() -> {
-        queryMonitor.stopMonitoringQueryExecution(query);
+        queryMonitor.stopMonitoringQueryExecution(queryExecutionContext);
       },
           gaussianLong(completeDelayRangeMillis),
           TimeUnit.MILLISECONDS);
@@ -173,9 +173,5 @@ public class MonitorQueryUnderContentionBenchmark {
 
   private long gaussianLong(int range) {
     return (long) (random.nextGaussian() * range);
-  }
-
-  private DefaultQuery createDefaultQuery() {
-    return mock(DefaultQuery.class);
   }
 }
