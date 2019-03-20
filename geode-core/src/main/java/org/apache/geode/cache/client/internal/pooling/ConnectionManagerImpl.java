@@ -81,8 +81,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
       new ConcurrentLinkedDeque<>();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
   private final EndpointManager endpointManager;
-  protected final int maxConnections;
-  protected final int minConnections;
   private final long idleTimeout; // make this an int
   protected final long idleTimeoutNanos;
   final int lifetimeTimeout;
@@ -153,9 +151,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
     this.connectionFactory = factory;
     this.endpointManager = endpointManager;
-    this.maxConnections = maxConnections == -1 ? Integer.MAX_VALUE : maxConnections;
-    this.minConnections = minConnections;
-    this.connectionAccounting = new ConnectionAccounting(this.minConnections, this.maxConnections);
+    this.connectionAccounting = new ConnectionAccounting(minConnections,
+        maxConnections == -1 ? Integer.MAX_VALUE : maxConnections);
     this.lifetimeTimeout = addVarianceToInterval(lifetimeTimeout);
     this.lifetimeTimeoutNanos = MILLISECONDS.toNanos(this.lifetimeTimeout);
     if (this.lifetimeTimeout != -1) {
@@ -179,7 +176,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   private void decrementConnectionCountAndPrefill() {
     int newConnectionCount = connectionAccounting.decrementAndGetConnectionCount();
-    if (newConnectionCount < minConnections) {
+    if (newConnectionCount < connectionAccounting.getMinConnections()) {
       startBackgroundPrefill();
     }
   }
@@ -482,24 +479,24 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * @return true if connection is destroyed, otherwise false.
    */
   private boolean destroyIfOverLimit(PooledConnection connection) {
-    if(connectionAccounting.shouldDestroy()) {
-        if (allConnectionsMap.removeConnection(connection)) {
-          try {
-            PoolImpl localpool = (PoolImpl) PoolManagerImpl.getPMI().find(poolName);
-            boolean durable = false;
-            if (localpool != null) {
-              durable = localpool.isDurableClient();
-            }
-            connection.internalClose(durable || this.keepAlive);
-          } catch (Exception e) {
-            logger.warn(String.format("Error closing connection %s", connection), e);
+    if (connectionAccounting.shouldDestroy()) {
+      if (allConnectionsMap.removeConnection(connection)) {
+        try {
+          PoolImpl localpool = (PoolImpl) PoolManagerImpl.getPMI().find(poolName);
+          boolean durable = false;
+          if (localpool != null) {
+            durable = localpool.isDurableClient();
           }
-        } else {
-          // Not a pooled connection so undo the decrement.
-          connectionAccounting.incrementConnectionCount();
+          connection.internalClose(durable || this.keepAlive);
+        } catch (Exception e) {
+          logger.warn(String.format("Error closing connection %s", connection), e);
         }
+      } else {
+        // Not a pooled connection so undo the decrement.
+        connectionAccounting.incrementConnectionCount();
+      }
 
-        return true;
+      return true;
     }
 
     return false;
@@ -843,7 +840,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     volatile boolean closing;
 
     public synchronized boolean isIdleExpirePossible() {
-      return this.allConnections.size() > minConnections;
+      return this.allConnections.size() > connectionAccounting.getMinConnections();
     }
 
     @Override
@@ -1145,14 +1142,15 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
         // find connections which have idle expired
         int conCount = this.allConnections.size();
-        if (conCount <= minConnections) {
+        if (conCount <= connectionAccounting.getMinConnections()) {
           return;
         }
         final long now = System.nanoTime();
         long minRemainingIdle = Long.MAX_VALUE;
-        toClose = new ArrayList<PooledConnection>(conCount - minConnections);
+        toClose =
+            new ArrayList<PooledConnection>(conCount - connectionAccounting.getMinConnections());
         for (Iterator it = this.allConnections.iterator(); it.hasNext()
-            && conCount > minConnections;) {
+            && conCount > connectionAccounting.getMinConnections();) {
           PooledConnection pc = (PooledConnection) it.next();
           if (pc.shouldDestroy()) {
             // ignore these connections
@@ -1176,7 +1174,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
             }
           }
         }
-        if (conCount > minConnections && minRemainingIdle < Long.MAX_VALUE) {
+        if (conCount > connectionAccounting.getMinConnections()
+            && minRemainingIdle < Long.MAX_VALUE) {
           try {
             backgroundProcessor.schedule(new IdleExpireConnectionsTask(), minRemainingIdle,
                 TimeUnit.NANOSECONDS);
@@ -1190,7 +1189,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (expireCount > 0) {
         getPoolStats().incIdleExpire(expireCount);
         getPoolStats().incPoolConnections(-expireCount);
-        if (connectionAccounting.decrementAndGetConnectionCount(expireCount) < minConnections) {
+        if (connectionAccounting.decrementAndGetConnectionCount(expireCount) < connectionAccounting
+            .getMinConnections()) {
           startBackgroundPrefill();
         }
       }

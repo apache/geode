@@ -48,7 +48,15 @@ public class ConnectionAccounting {
     return count.get();
   }
 
-  public int decrementAndGetConnectionCount(int howMany) {
-    return count.addAndGet(-howMany);
+  public int decrementAndGetConnectionCount(int decrementBy) {
+    return count.addAndGet(-decrementBy);
+  }
+
+  public int getMinConnections() {
+    return this.min;
+  }
+
+  public int getMaxConnections() {
+    return this.max;
   }
 }
