@@ -101,14 +101,14 @@ public class PartitionedRegionTest {
 
     doReturn(mockLoader).when(prSpy).basicGetLoader();
     doReturn(mockWriter).when(prSpy).basicGetWriter();
+    PartitionedRegion.RegionLock
+        mockLock = mock(PartitionedRegion.RegionLock.class);
+    doReturn(mockLock).when(prSpy).getRegionLock();
+
     prSpy.updatePRNodeInformation();
 
     verify(prRoot).get(prSpy.getRegionIdentifier());
-
-    verify(mockConfig).removeNode(ourNode);
-    verify(ourNode).setLoaderWriterByte(configByte);
-    verify(mockConfig).addNode(ourNode);
-
+    verify(prSpy).updatePRConfig(mockConfig, false);
     verify(prRoot).put(prSpy.getRegionIdentifier(), mockConfig);
   }
 
