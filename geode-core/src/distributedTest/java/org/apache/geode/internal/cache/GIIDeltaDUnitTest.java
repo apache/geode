@@ -57,7 +57,6 @@ import org.apache.geode.internal.cache.DistributedTombstoneOperation.TombstoneMe
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;

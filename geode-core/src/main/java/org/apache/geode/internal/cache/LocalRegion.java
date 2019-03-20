@@ -1846,7 +1846,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       return null;
     }
 
-    return new NonTXEntry(re);
+    return new NonTXEntry(this, re);
   }
 
   protected boolean isClosed() {
@@ -8681,157 +8681,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  public class NonTXEntry implements Region.Entry {
-
-    private final Object key;
-
-    private boolean entryIsDestroyed = false;
-
-    @Override
-    public boolean isLocal() {
-      return true;
-    }
-
-    /**
-     * Create an Entry given a key. The returned Entry may or may not be destroyed
-     */
-    public NonTXEntry(RegionEntry regionEntry) {
-      if (regionEntry == null) {
-        throw new IllegalArgumentException(
-            "regionEntry should not be null");
-      }
-      // for a soplog region, since the entry may not be in memory,
-      // we will have to fetch it from soplog, if the entry is in
-      // memory this is a quick lookup, so rather than RegionEntry
-      // we keep reference to key
-      this.key = regionEntry.getKey();
-    }
-
-    /** Internal method for getting the underlying RegionEntry */
-    public RegionEntry getRegionEntry() {
-      RegionEntry regionEntry = LocalRegion.this.getRegionMap().getEntry(this.key);
-      if (regionEntry == null) {
-        throw new EntryDestroyedException(this.key.toString());
-      }
-      return regionEntry;
-    }
-
-    private RegionEntry basicGetEntry() {
-      RegionEntry re = LocalRegion.this.basicGetEntry(this.key);
-      if (re == null) {
-        throw new EntryDestroyedException(this.key.toString());
-      }
-      return re;
-    }
-
-    @Override
-    public boolean isDestroyed() {
-      if (this.entryIsDestroyed) {
-        return true;
-      }
-      if (LocalRegion.this.isDestroyed || LocalRegion.this.basicGetEntry(this.key) == null) {
-        this.entryIsDestroyed = true;
-      }
-      return this.entryIsDestroyed;
-    }
-
-    @Override
-    public Object getKey() {
-      return basicGetEntry().getKey();
-    }
-
-    @Override
-    public Object getValue() {
-      return getValue(false);
-    }
-
-    public Object getValue(boolean ignoreCopyOnRead) {
-      Object value = getDeserialized(this.basicGetEntry(), false, ignoreCopyOnRead, false, false);
-      if (value == null) {
-        throw new EntryDestroyedException(getKey().toString());
-      } else if (Token.isInvalid(value)) {
-        return null;
-      }
-
-      return value;
-    }
-
-    /**
-     * To get the value from region in serialized form
-     *
-     * @return {@link VMCachedDeserializable}
-     */
-    public Object getRawValue() {
-      Object value = basicGetEntry().getValue((RegionEntryContext) getRegion());
-      if (value == null) {
-        throw new EntryDestroyedException(this.getRegionEntry().getKey().toString());
-      } else if (Token.isInvalid(value)) {
-        return null;
-      }
-
-      return value;
-    }
-
-    @Override
-    public Region getRegion() {
-      basicGetEntry();
-      return LocalRegion.this;
-    }
-
-    @Override
-    public CacheStatistics getStatistics() {
-      // prefer entry destroyed exception over statistics disabled exception
-      basicGetEntry();
-      if (!LocalRegion.this.statisticsEnabled) {
-        throw new StatisticsDisabledException(
-            String.format("Statistics disabled for region '%s'",
-                getFullPath()));
-      }
-      return new CacheStatisticsImpl(this.basicGetEntry(), LocalRegion.this);
-    }
-
-    @Override
-    public Object getUserAttribute() {
-      this.basicGetEntry();
-      return entryUserAttributes.get(basicGetEntry().getKey());
-    }
-
-    @Override
-    public Object setUserAttribute(Object userAttribute) {
-      return entryUserAttributes.put(basicGetEntry().getKey(), userAttribute);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (!(obj instanceof LocalRegion.NonTXEntry)) {
-        return false;
-      }
-      LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) obj;
-      return this.basicGetEntry().equals(entry.getRegionEntry())
-          && this.getRegion() == entry.getRegion();
-    }
-
-    @Override
-    public int hashCode() {
-      return basicGetEntry().hashCode() ^ getRegion().hashCode();
-    }
-
-    @Override
-    public String toString() {
-      return new StringBuilder("NonTXEntry@")
-          .append(Integer.toHexString(System.identityHashCode(this))).append(' ')
-          .append(this.getRegionEntry()).toString();
-    }
-
-    /**
-     * @since GemFire 5.0
-     */
-    @Override
-    public Object setValue(Object value) {
-      return put(getKey(), value);
-    }
-  }
-
   /**
    * For internal use only.
    */
@@ -11716,6 +11565,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   protected void setMemoryThresholdReached(boolean reached) {
     this.memoryThresholdReached.set(reached);
+  }
+
+  public boolean isStatisticsEnabled() {
+    return statisticsEnabled;
   }
 
 }

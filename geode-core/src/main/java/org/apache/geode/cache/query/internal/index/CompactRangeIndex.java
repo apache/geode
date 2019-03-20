@@ -65,6 +65,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeap;
@@ -1510,11 +1511,11 @@ public class CompactRangeIndex extends AbstractIndex {
         setPdxStringFlag(indexKey);
       }
       indexKey = getPdxStringForIndexedPdxKeys(indexKey);
-      LocalRegion.NonTXEntry temp = null;
+      NonTXEntry temp = null;
       if (this.isFirstItrOnEntry && this.additionalProj != null) {
-        temp = (LocalRegion.NonTXEntry) additionalProj.evaluate(this.initContext);
+        temp = (NonTXEntry) additionalProj.evaluate(this.initContext);
       } else {
-        temp = (LocalRegion.NonTXEntry) (((RuntimeIterator) currentRuntimeIters.get(0))
+        temp = (NonTXEntry) (((RuntimeIterator) currentRuntimeIters.get(0))
             .evaluate(this.initContext));
       }
       RegionEntry re = temp.getRegionEntry();

@@ -45,7 +45,6 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
 /**

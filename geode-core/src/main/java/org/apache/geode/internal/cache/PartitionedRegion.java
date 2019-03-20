@@ -4237,7 +4237,7 @@ public class PartitionedRegion extends LocalRegion
         Map<Object, VersionTag> versions = new HashMap<Object, VersionTag>();
 
         for (Iterator<Map.Entry> it = br.entrySet().iterator(); it.hasNext();) {
-          LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) it.next();
+          NonTXEntry entry = (NonTXEntry) it.next();
           RegionEntry re = entry.getRegionEntry();
           Object value = re.getValue(br); // OFFHEAP: incrc, deserialize, decrc
           VersionStamp versionStamp = re.getVersionStamp();

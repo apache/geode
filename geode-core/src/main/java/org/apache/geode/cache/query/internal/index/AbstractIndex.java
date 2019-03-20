@@ -67,6 +67,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -1167,14 +1168,14 @@ public abstract class AbstractIndex implements IndexProtocol {
             "Index creation canceled due to low memory");
       }
 
-      LocalRegion.NonTXEntry temp;
+      NonTXEntry temp;
 
       // Evaluate NonTXEntry for index on entries or additional projections
       // on Entry or just entry value.
       if (this.isFirstItrOnEntry && this.additionalProj != null) {
-        temp = (LocalRegion.NonTXEntry) this.additionalProj.evaluate(this.initContext);
+        temp = (NonTXEntry) this.additionalProj.evaluate(this.initContext);
       } else {
-        temp = (LocalRegion.NonTXEntry) ((RuntimeIterator) currrentRuntimeIters.get(0))
+        temp = (NonTXEntry) ((RuntimeIterator) currrentRuntimeIters.get(0))
             .evaluate(this.initContext);
       }
 
@@ -1436,7 +1437,7 @@ public abstract class AbstractIndex implements IndexProtocol {
     // We need NonTxEntry to call getValue() on it. RegionEntry does
     // NOT have public getValue() method.
     if (value instanceof RegionEntry) {
-      value = ((LocalRegion) this.getRegion()).new NonTXEntry((RegionEntry) value);
+      value = new NonTXEntry((LocalRegion) getRegion(), (RegionEntry) value);
     }
     // Get all Independent and dependent iterators for this Index.
     List itrs = getAllDependentRuntimeIterators(context);

@@ -28,7 +28,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.annotations.Released;

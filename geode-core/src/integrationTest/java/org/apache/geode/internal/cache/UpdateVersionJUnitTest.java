@@ -26,7 +26,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.Token.Tombstone;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
