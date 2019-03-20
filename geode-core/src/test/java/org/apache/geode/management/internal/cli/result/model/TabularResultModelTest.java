@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 
 

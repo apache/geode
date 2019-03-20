@@ -41,7 +41,7 @@ import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;

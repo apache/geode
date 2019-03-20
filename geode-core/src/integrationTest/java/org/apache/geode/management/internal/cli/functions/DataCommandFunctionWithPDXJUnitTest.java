@@ -31,7 +31,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;

@@ -49,7 +49,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 
 public class DestroyMappingCommandTest {
 

@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.result.model;
+package org.apache.geode.management.cli;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,9 +28,12 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
+import org.apache.geode.management.internal.cli.result.model.DataResultModel;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 /**
  * This class is the primary container for results returned from a {@link GfshCommand}.

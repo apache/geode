@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 public class GfshParserRule extends ExternalResource {

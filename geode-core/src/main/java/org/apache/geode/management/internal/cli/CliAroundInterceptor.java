@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli;
 import java.nio.file.Path;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 
 /**

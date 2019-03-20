@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.test.junit.assertions.ResultModelAssert;
 

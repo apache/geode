@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 
 public class QueryInterceptor extends AbstractCliAroundInterceptor {
   public static final String FILE_ALREADY_EXISTS_MESSAGE =

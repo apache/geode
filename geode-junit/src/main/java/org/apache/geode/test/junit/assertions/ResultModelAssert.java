@@ -21,7 +21,7 @@ import org.assertj.core.api.AbstractAssert;
 
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class ResultModelAssert extends AbstractAssert<ResultModelAssert, ResultModel> {

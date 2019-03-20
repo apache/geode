@@ -111,7 +111,7 @@ import org.apache.geode.management.internal.beans.stats.VMStatsMonitor;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.remote.OnlineCommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 
 /**
  * This class acts as an Bridge between MemberMBean and GemFire Cache and Distributed System

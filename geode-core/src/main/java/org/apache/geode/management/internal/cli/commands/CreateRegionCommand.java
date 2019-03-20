@@ -62,7 +62,7 @@ import org.apache.geode.management.internal.cli.functions.CreateRegionFunctionAr
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.security.ResourceOperation;

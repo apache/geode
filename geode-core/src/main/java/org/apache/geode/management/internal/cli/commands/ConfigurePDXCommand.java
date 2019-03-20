@@ -29,7 +29,7 @@ import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.security.ResourcePermission;

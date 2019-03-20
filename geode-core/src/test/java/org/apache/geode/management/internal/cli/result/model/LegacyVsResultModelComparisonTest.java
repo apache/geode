@@ -23,6 +23,7 @@ import java.util.List;
 import org.junit.Test;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;

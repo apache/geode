@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class ModelCommandResult implements CommandResult {

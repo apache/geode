@@ -33,7 +33,7 @@ import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.NotAuthorizedException;

@@ -59,7 +59,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.cli.ResultModel;
 
 public class CreateMappingCommandTest {
 
