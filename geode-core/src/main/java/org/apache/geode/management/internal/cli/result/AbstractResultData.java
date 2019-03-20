@@ -171,7 +171,7 @@ public abstract class AbstractResultData implements ResultData {
     int length = byteDataArray.size();
     String options = length > 1 ? "(y/N/a)" : "(y/N)";
     for (int i = 0; i < length; i++) {
-      GfJsonObject object = byteDataArray.getInternalJsonObject(i);
+      GfJsonObject object = byteDataArray.getJsonObject(i);
 
       int fileType = object.getInt(FILE_TYPE_FIELD);
 

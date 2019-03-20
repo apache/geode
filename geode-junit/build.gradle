@@ -42,9 +42,7 @@ dependencies {
   compile('org.bouncycastle:bcpkix-jdk15on')
   compile('org.hamcrest:hamcrest-all')
   compile('org.mockito:mockito-core')
-  compile('org.skyscreamer:jsonassert') {
-    exclude module: 'android-json'
-  }
+  compile('org.skyscreamer:jsonassert')
 
   testCompile('pl.pragmatists:JUnitParams')
 
