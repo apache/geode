@@ -89,7 +89,9 @@ import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
+import org.apache.geode.management.internal.configuration.handlers.ClusterManagementServiceInfoRequestHandler;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
+import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
@@ -1428,7 +1430,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   private void startConfigurationPersistenceService() {
-    installSharedConfigHandler();
+    installRequestHandlers();
 
     if (!config.getEnableClusterConfiguration()) {
       logger.info("Cluster configuration service is disabled");
@@ -1475,11 +1477,17 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
   }
 
-  private void installSharedConfigHandler() {
+  private void installRequestHandlers() {
     if (!this.handler.isHandled(SharedConfigurationStatusRequest.class)) {
       this.handler.addHandler(SharedConfigurationStatusRequest.class,
           new SharedConfigurationStatusRequestHandler());
       logger.info("SharedConfigStatusRequestHandler installed");
+    }
+
+    if (!this.handler.isHandled(ClusterManagementServiceInfoRequest.class)) {
+      this.handler.addHandler(ClusterManagementServiceInfoRequest.class,
+          new ClusterManagementServiceInfoRequestHandler());
+      logger.info("ClusterManagementServiceInfoRequestHandler installed");
     }
   }
 
