@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.internal.index.DummyQRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -403,13 +403,13 @@ public class RestrictedMethodInvocationAuthorizerTest {
 
   @Test
   public void getKeyForNonTXEntryIsAcceptListed() throws Exception {
-    Method getKeyMethod = LocalRegion.NonTXEntry.class.getMethod("getKey");
+    Method getKeyMethod = NonTXEntry.class.getMethod("getKey");
     assertTrue(methodInvocationAuthorizer.isAcceptlisted(getKeyMethod));
   }
 
   @Test
   public void getValueForNonTXEntryIsAcceptListed() throws Exception {
-    Method getValueMethod = LocalRegion.NonTXEntry.class.getMethod("getValue");
+    Method getValueMethod = NonTXEntry.class.getMethod("getValue");
     assertTrue(methodInvocationAuthorizer.isAcceptlisted(getValueMethod));
   }
 

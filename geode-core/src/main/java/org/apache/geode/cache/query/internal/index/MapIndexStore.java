@@ -24,6 +24,7 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.cache.persistence.query.IndexMap;
@@ -192,7 +193,7 @@ public class MapIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) region).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) region, entry);
   }
 
   @Override
@@ -206,7 +207,7 @@ public class MapIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) region).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) region, entry);
   }
 
   /**
