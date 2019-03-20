@@ -31,7 +31,7 @@ class RegionPerfStats extends CachePerfStats {
   @VisibleForTesting
   RegionPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
       String regionName, Clock clock) {
-    super(statisticsFactory, regionName, clock);
+    super(statisticsFactory, "RegionStats-" + regionName, clock);
     this.cachePerfStats = cachePerfStats;
   }
 
