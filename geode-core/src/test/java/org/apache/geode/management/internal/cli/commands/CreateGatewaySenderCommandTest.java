@@ -40,10 +40,10 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 

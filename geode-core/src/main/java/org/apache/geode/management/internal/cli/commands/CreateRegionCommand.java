@@ -53,6 +53,7 @@ import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -62,7 +63,6 @@ import org.apache.geode.management.internal.cli.functions.CreateRegionFunctionAr
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.security.ResourceOperation;

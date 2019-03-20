@@ -48,8 +48,8 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.cli.ResultModel;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 public class DestroyMappingCommandTest {
 

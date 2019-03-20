@@ -56,10 +56,10 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.cli.ResultModel;
 
 public class CreateMappingCommandTest {
 

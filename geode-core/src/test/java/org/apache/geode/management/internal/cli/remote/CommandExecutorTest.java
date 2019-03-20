@@ -40,11 +40,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.NotAuthorizedException;
 

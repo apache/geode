@@ -29,12 +29,12 @@ import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding.ConfigP
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 

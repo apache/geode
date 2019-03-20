@@ -27,6 +27,7 @@ import org.springframework.shell.core.CommandMarker;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
@@ -34,7 +35,6 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.cli.ResultModel;
 
 /**
  * GfshExecutionStrategyTest - Includes tests to for GfshExecutionStrategyTest

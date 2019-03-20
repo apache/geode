@@ -40,9 +40,9 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.test.junit.rules.GfshParserRule;

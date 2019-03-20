@@ -24,7 +24,7 @@ public class InfoResultModel extends AbstractResultModel {
 
   private List<String> messages = new ArrayList<>();
 
-  InfoResultModel() {}
+  public InfoResultModel() {}
 
   @Override
   public List<String> getContent() {

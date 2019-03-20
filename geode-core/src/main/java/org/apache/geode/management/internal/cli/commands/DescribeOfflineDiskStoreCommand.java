@@ -25,9 +25,9 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.cli.ResultModel;
 
 public class DescribeOfflineDiskStoreCommand extends SingleGfshCommand {
   @CliCommand(value = CliStrings.DESCRIBE_OFFLINE_DISK_STORE,

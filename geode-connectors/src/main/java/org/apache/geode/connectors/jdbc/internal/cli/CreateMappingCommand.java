@@ -51,6 +51,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -62,7 +63,6 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 

@@ -23,7 +23,7 @@ public class DataResultModel extends AbstractResultModel {
 
   private Map<String, String> data = new LinkedHashMap<>();
 
-  DataResultModel() {}
+  public DataResultModel() {}
 
   @Override
   public Map<String, String> getContent() {

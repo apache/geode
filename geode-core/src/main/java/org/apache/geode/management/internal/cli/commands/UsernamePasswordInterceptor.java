@@ -16,10 +16,10 @@ package org.apache.geode.management.internal.cli.commands;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class UsernamePasswordInterceptor extends AbstractCliAroundInterceptor {

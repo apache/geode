@@ -27,10 +27,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
-import org.apache.geode.management.cli.ResultModel;
 
 /**
  * after the export logs, will need to copy the tempFile to the desired location and delete the temp

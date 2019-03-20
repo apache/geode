@@ -43,6 +43,7 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.JmxManagerLocatorResponse;
 import org.apache.geode.management.internal.SSLUtil;
@@ -52,7 +53,6 @@ import org.apache.geode.management.internal.cli.converters.ConnectionEndpointCon
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;

@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -50,7 +51,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;

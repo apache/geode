@@ -31,11 +31,11 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.util.JdkTool;
 
 public class StartJConsoleCommand extends OfflineGfshCommand {

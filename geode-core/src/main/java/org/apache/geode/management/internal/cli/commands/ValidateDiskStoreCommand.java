@@ -29,10 +29,10 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.util.DiskStoreValidater;
 
 public class ValidateDiskStoreCommand extends GfshCommand {

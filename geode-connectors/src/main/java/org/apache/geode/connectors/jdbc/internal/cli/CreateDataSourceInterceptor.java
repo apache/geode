@@ -16,9 +16,9 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.commands.UsernamePasswordInterceptor;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class CreateDataSourceInterceptor extends UsernamePasswordInterceptor {

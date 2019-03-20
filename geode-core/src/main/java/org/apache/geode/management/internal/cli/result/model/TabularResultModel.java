@@ -29,7 +29,7 @@ public class TabularResultModel extends AbstractResultModel {
    */
   private Map<String, List<String>> table = new LinkedHashMap<>();
 
-  TabularResultModel() {}
+  public TabularResultModel() {}
 
   public TabularResultModel accumulate(String column, String value) {
     if (table.containsKey(column)) {

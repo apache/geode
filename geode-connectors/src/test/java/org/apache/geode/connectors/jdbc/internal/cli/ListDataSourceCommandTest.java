@@ -38,8 +38,8 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
 import org.apache.geode.management.cli.ResultModel;
+import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 

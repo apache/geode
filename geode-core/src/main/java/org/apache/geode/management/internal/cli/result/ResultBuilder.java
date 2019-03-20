@@ -20,10 +20,10 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-import org.apache.geode.management.cli.ResultModel;
 
 /**
  * Provides methods for creating {@link Result} objects to return from Gfsh command functions

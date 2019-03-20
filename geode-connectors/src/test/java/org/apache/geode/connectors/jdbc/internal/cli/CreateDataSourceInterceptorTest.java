@@ -22,8 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.cli.ResultModel;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class CreateDataSourceInterceptorTest {

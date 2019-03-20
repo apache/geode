@@ -25,11 +25,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListAsyncEventQueuesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.cli.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
