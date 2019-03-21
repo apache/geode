@@ -13,7 +13,7 @@ public class ConnectionAccounting {
   }
 
   public int decrementAndGetConnectionCount() {
-    return count.decrementAndGet();
+    return decrementAndGetConnectionCount(1);
   }
 
   public boolean tryReserveConnection() {
@@ -48,7 +48,7 @@ public class ConnectionAccounting {
     return count.get();
   }
 
-  public int decrementAndGetConnectionCount(int decrementBy) {
+  private int decrementAndGetConnectionCount(int decrementBy) {
     return count.addAndGet(-decrementBy);
   }
 
@@ -58,5 +58,17 @@ public class ConnectionAccounting {
 
   public int getMaxConnections() {
     return this.max;
+  }
+
+  public boolean decrementAndIsUnderMinimum() {
+    return decrementAndIsUnderMinimum(1);
+  }
+
+  public boolean decrementAndIsUnderMinimum(int decrementBy) {
+    return decrementAndGetConnectionCount(decrementBy) < min;
+  }
+
+  public boolean isOverMinimum() {
+    return count.get() > min;
   }
 }
