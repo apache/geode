@@ -80,7 +80,6 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheRuntimeException;
-import org.apache.geode.cache.CacheStatistics;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CustomExpiry;
@@ -108,7 +107,6 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionReinitializedException;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
@@ -7898,133 +7896,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Used to create a cheap Region.Entry that can be passed to the CustomExpiry callback
-   */
-  private static class ExpiryRegionEntry implements Region.Entry {
-    private final LocalRegion region;
-    private final RegionEntry regionEntry;
-
-    ExpiryRegionEntry(LocalRegion region, RegionEntry regionEntry) {
-      this.region = region;
-      this.regionEntry = regionEntry;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + (this.regionEntry == null ? 0 : this.regionEntry.hashCode());
-      result = prime * result + (this.region == null ? 0 : this.region.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (getClass() != obj.getClass()) {
-        return false;
-      }
-      ExpiryRegionEntry other = (ExpiryRegionEntry) obj;
-      if (this.regionEntry == null) {
-        if (other.regionEntry != null) {
-          return false;
-        }
-      } else if (!this.regionEntry.equals(other.regionEntry)) {
-        return false;
-      }
-      if (this.region == null) {
-        if (other.region != null) {
-          return false;
-        }
-      } else if (!this.region.equals(other.region))
-        return false;
-      return true;
-    }
-
-    @Override
-    public String toString() {
-      return "region=" + this.region.getFullPath() + ", key=" + getKey() + " value=" + getValue();
-    }
-
-    @Override
-    public Region getRegion() {
-      return this.region;
-    }
-
-    /**
-     * Returns the entry's RegionEntry if it "checks" out. The check is to see if the region entry
-     * still exists.
-     *
-     * @throws EntryNotFoundException if the RegionEntry has been removed.
-     */
-    private RegionEntry getCheckedRegionEntry() throws EntryNotFoundException {
-      if (this.regionEntry.isDestroyedOrRemoved()) {
-        throw new EntryNotFoundException(
-            "Entry for key " + this.regionEntry.getKey() + " no longer exists");
-      }
-      return this.regionEntry;
-    }
-
-    @Override
-    public Object getValue() {
-      Object value =
-          this.region.getDeserialized(getCheckedRegionEntry(), false, false, false, false);
-      if (value == null) {
-        throw new EntryDestroyedException(getKey().toString());
-      } else if (Token.isInvalid(value)) {
-        return null;
-      }
-      return value;
-    }
-
-    @Override
-    public boolean isLocal() {
-      return true; // we only create expiry tasks for local entries
-    }
-
-    @Override
-    public CacheStatistics getStatistics() {
-      LocalRegion lr = this.region;
-      if (!lr.statisticsEnabled) {
-        throw new StatisticsDisabledException(
-            String.format("Statistics disabled for region '%s'",
-                lr.getFullPath()));
-      }
-      return new CacheStatisticsImpl(getCheckedRegionEntry(), lr);
-    }
-
-    @Override
-    public Object getUserAttribute() {
-      return region.getEntryUserAttributes().get(getKey());
-    }
-
-    @Override
-    public Object setUserAttribute(Object userAttribute) {
-      return region.getEntryUserAttributes().put(getKey(), userAttribute);
-    }
-
-    @Override
-    public boolean isDestroyed() {
-      return this.regionEntry.isDestroyedOrRemoved();
-    }
-
-    @Override
-    public Object setValue(Object value) {
-      return this.region.put(getKey(), value);
-    }
-
-    @Override
-    public Object getKey() {
-      return this.regionEntry.getKey();
-    }
-  }
-
-  /**
    * If custom expiration returns non-null expiration attributes then create a CustomEntryExpiryTask
    * for this region and the given entry and return it. Otherwise if the region is configured for
    * expiration then create an EntryExpiryTask for this region and the given entry and return it.
@@ -11592,5 +11463,4 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public boolean isStatisticsEnabled() {
     return statisticsEnabled;
   }
-
 }
