@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.assertj.core.api.ListAssert;
+
 class TabularResultModelSliceAssert<T> {
   protected TabularResultModelAssert parent;
   protected List<T> values;
@@ -84,5 +86,14 @@ class TabularResultModelSliceAssert<T> {
   public final TabularResultModelAssert isSubsetOf(T... values) {
     assertThat(this.values).isSubsetOf(values);
     return parent;
+  }
+
+  /**
+   * Provides the flexibility to verify the selected row or column using the full power of
+   * ListAssert (with the tradeoff that you will not be able to chain verifications for other rows
+   * or columns in the table after this).
+   */
+  public final ListAssert<T> asList() {
+    return new ListAssert<>(this.values);
   }
 }
