@@ -190,4 +190,48 @@ public class LocalRegionMetricsTest {
     assertThat(putTimer).isNotNull();
     assertThat(putTimer.count()).isEqualTo(1L);
   }
+
+  @Test
+  public void putIfAbsent_timesHowLongItTook() {
+    when(cache.getMeterRegistry()).thenReturn(meterRegistry);
+    when(internalDataView
+        .putEntry(any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean()))
+            .thenReturn(true);
+
+    LocalRegion localRegion =
+        new LocalRegion(myRegion, regionAttributes, null, cache, internalRegionArgs,
+            internalDataView, (a, b, c) -> regionMap, entryEventFactory);
+
+    localRegion.putIfAbsent("", "");
+
+    Timer putIfAbsentTimer = meterRegistry.find("cache.region.operations.puts")
+        .tag("region.name", myRegion)
+        .tag("put.type", "put-if-absent")
+        .timer();
+
+    assertThat(putIfAbsentTimer).isNotNull();
+    assertThat(putIfAbsentTimer.count()).isEqualTo(1L);
+  }
+
+  @Test
+  public void putIfAbsentWithCallback_timesHowLongItTook() {
+    when(cache.getMeterRegistry()).thenReturn(meterRegistry);
+    when(internalDataView
+        .putEntry(any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean()))
+            .thenReturn(true);
+
+    LocalRegion localRegion =
+        new LocalRegion(myRegion, regionAttributes, null, cache, internalRegionArgs,
+            internalDataView, (a, b, c) -> regionMap, entryEventFactory);
+
+    localRegion.putIfAbsent("", "", "");
+
+    Timer putIfAbsentTimer = meterRegistry.find("cache.region.operations.puts")
+        .tag("region.name", myRegion)
+        .tag("put.type", "put-if-absent")
+        .timer();
+
+    assertThat(putIfAbsentTimer).isNotNull();
+    assertThat(putIfAbsentTimer.count()).isEqualTo(1L);
+  }
 }
