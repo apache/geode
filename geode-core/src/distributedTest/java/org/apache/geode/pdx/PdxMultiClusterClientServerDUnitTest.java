@@ -50,10 +50,13 @@ public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
   public static final String REGION_NAME = "testSimplePdx";
   public static final int SITE_A_DSID = 1;
   public static final int SITE_B_DSID = 2;
+  public static final int SITE_C_DSID = 3;
   private VM locatorA;
   private VM locatorB;
+  private VM locatorC;
   private VM serverA;
   private VM serverB;
+  private VM serverC;
 
   @Before
   public void setupVMs() {
@@ -61,6 +64,8 @@ public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
     locatorB = VM.getVM(1);
     serverA = VM.getVM(2);
     serverB = VM.getVM(3);
+    locatorC = VM.getVM(4);
+    serverC = VM.getVM(5);
   }
 
   @Test
@@ -132,6 +137,43 @@ public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
     // Make sure both servers can deserialize the type
     serverB.invoke(() -> assertEquals(new SimpleClass(5, (byte) 6),
         getCache().getRegion("regionB").get("key")));
+    serverA.invoke(() -> assertEquals(new SimpleClass(5, (byte) 6),
+        getCache().getRegion("regionA").get("key")));
+  }
+
+  /**
+   * If a client has multiple pools, but one of the pools has no available servers, creating
+   * a new type should still succeed.
+   */
+  @Test
+  public void sendingTypeIgnoresClustersThatAreNotRunning() {
+
+    ClientCache client = createScenario();
+    int siteCLocatorPort = createLocator(locatorC, SITE_C_DSID);
+
+    createServerRegion(serverC, siteCLocatorPort, "regionC", SITE_C_DSID);
+
+    Pool poolC =
+        PoolManager.createFactory().addLocator("localhost", siteCLocatorPort).create("poolC");
+
+    client.createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .setPoolName("poolC")
+        .create("regionC");
+
+    Region regionA = client.getRegion("regionA");
+    Region regionC = client.getRegion("regionC");
+
+    createType(serverA, "regionA");
+
+    serverB.invoke(JUnit4CacheTestCase::closeCache);
+
+    // Put from the client serverA. This will try to send the type to serverB and serverC
+    regionA.put("key", new SimpleClass(5, (byte) 6));
+    regionC.put("key", new SimpleClass(5, (byte) 6));
+
+    // Make sure both remaining servers can deserialize the type
+    serverC.invoke(() -> assertEquals(new SimpleClass(5, (byte) 6),
+        getCache().getRegion("regionC").get("key")));
     serverA.invoke(() -> assertEquals(new SimpleClass(5, (byte) 6),
         getCache().getRegion("regionA").get("key")));
   }
