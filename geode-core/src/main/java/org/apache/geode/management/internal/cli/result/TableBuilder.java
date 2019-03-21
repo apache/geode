@@ -363,7 +363,6 @@ public class TableBuilder {
           }
         }
       } else {
-        // saj hook
         for (int i = 0; i < this.columns.size(); i++) {
           boolean lastColumn = !(i < (this.columns.size() - 1));
           stringBuffer

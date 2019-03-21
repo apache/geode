@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static java.util.stream.Collectors.toSet;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.io.IOException;
@@ -1593,7 +1594,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public void updatePRConfig(PartitionRegionConfig prConfig, boolean putOnlyIfUpdated) {
-//    final Set<Node> nodes = prConfig.getNodes(); saj SAJ
+    // final Set<Node> nodes = prConfig.getNodes(); saj SAJ
     final PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(this);
     RegionLock colocatedLock = null;
     boolean colocatedLockAcquired = false;
@@ -10012,39 +10013,41 @@ public class PartitionedRegion extends LocalRegion
     return br.getEntryExpiryTask(key);
   }
 
-  void updatePRNodeInformation() {
+  PartitionRegionConfig updatePRNodeInformation() {
+    if (cache.getDistributedSystem().getProperties().get(ENABLE_CLUSTER_CONFIGURATION) != "true") {
+      return null;
+    }
     CacheLoader cacheLoader = basicGetLoader();
     CacheWriter cacheWriter = basicGetWriter();
-    Region<String, PartitionRegionConfig> partionedRegionRoot = getPRRoot();
-    if (partionedRegionRoot != null) {
+    PartitionRegionConfig newConfig = null;
+    Region<String, PartitionRegionConfig> partitionedRegionRoot = getPRRoot();
+    if (partitionedRegionRoot != null) {
       RegionLock rl = getRegionLock();
       try {
         rl.lock();
-        PartitionRegionConfig prConfig = partionedRegionRoot.get(getRegionIdentifier());
+        PartitionRegionConfig prConfig = partitionedRegionRoot.get(getRegionIdentifier());
         if (prConfig != null) {
-
-//          PartitionRegionConfig
-//              newConfig =
-//              new PartitionRegionConfig(prConfig.getPRId(), prConfig.getFullPath(),
-//                  prConfig.getPartitionAttrs(), prConfig.getScope(),
-//                  prConfig.getEvictionAttributes(),
-//                  this.getRegionIdleTimeout(), this.getRegionTimeToLive(),
-//                  this.getEntryIdleTimeout(),
-//                  this.getEntryTimeToLive(), prConfig.getGatewaySenderIds());
+          newConfig =
+              new PartitionRegionConfig(prConfig.getPRId(), prConfig.getFullPath(),
+                  prConfig.getPartitionAttrs(), prConfig.getScope(),
+                  prConfig.getEvictionAttributes(),
+                  this.getRegionIdleTimeout(), this.getRegionTimeToLive(),
+                  this.getEntryIdleTimeout(),
+                  this.getEntryTimeToLive(), prConfig.getGatewaySenderIds());
 
           for (Node node : prConfig.getNodes()) {
             if (node.getMemberId().equals(getMyId())) {
               node.setLoaderAndWriter(cacheLoader, cacheWriter);
             }
-            prConfig.addNode(node);
+            newConfig.addNode(node);
           }
-          //partionedRegionRoot.put(getRegionIdentifier(), prConfig);
-          updatePRConfig(prConfig, false);
+          updatePRConfig(newConfig, false);
         }
       } finally {
         rl.unlock();
       }
     }
+    return newConfig;
   }
 
   public Logger getLogger() {

@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -30,6 +32,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,6 +47,7 @@ import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.util.VersionedArrayList;
@@ -54,29 +58,34 @@ public class PartitionedRegionTest {
 
   String regionName = "prTestRegion";
 
+  InternalCache internalCache;
+
   PartitionedRegion partitionedRegion;
+
+  Properties gemfireProperties = new Properties();
 
   @Before
   public void setup() {
-    InternalCache internalCache = Fakes.cache();
+    internalCache = Fakes.cache();
 
     InternalResourceManager resourceManager =
         mock(InternalResourceManager.class, RETURNS_DEEP_STUBS);
     when(internalCache.getInternalResourceManager()).thenReturn(resourceManager);
-
     AttributesFactory attributesFactory = new AttributesFactory();
     attributesFactory.setPartitionAttributes(
         new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
     partitionedRegion = new PartitionedRegion(regionName, attributesFactory.create(),
         null, internalCache, mock(InternalRegionArguments.class));
-
+    DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+    when(internalCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+    when(mockDistributedSystem.getProperties()).thenReturn(gemfireProperties);
   }
 
   @Test
   @Parameters(method = "parametersToTestUpdatePRNodeInformation")
   public void verifyPRConfigUpdatedAfterLoaderUpdate(CacheLoader mockLoader, CacheWriter mockWriter,
       byte configByte) {
-
+    gemfireProperties.put(ENABLE_CLUSTER_CONFIGURATION, "true");
     LocalRegion prRoot = mock(LocalRegion.class);
     PartitionRegionConfig mockConfig = mock(PartitionRegionConfig.class);
     PartitionedRegion prSpy = spy(partitionedRegion);
@@ -98,18 +107,18 @@ public class PartitionedRegionTest {
     prNodes.add(ourNode);
     prNodes.add(otherNode2);
     when(mockConfig.getNodes()).thenReturn(prNodes.getListCopy());
+    when(mockConfig.getPartitionAttrs()).thenReturn(mock(PartitionAttributesImpl.class));
 
     doReturn(mockLoader).when(prSpy).basicGetLoader();
     doReturn(mockWriter).when(prSpy).basicGetWriter();
-    PartitionedRegion.RegionLock
-        mockLock = mock(PartitionedRegion.RegionLock.class);
+    PartitionedRegion.RegionLock mockLock = mock(PartitionedRegion.RegionLock.class);
     doReturn(mockLock).when(prSpy).getRegionLock();
 
-    prSpy.updatePRNodeInformation();
+    PartitionRegionConfig newConfig = prSpy.updatePRNodeInformation();
 
     verify(prRoot).get(prSpy.getRegionIdentifier());
-    verify(prSpy).updatePRConfig(mockConfig, false);
-    verify(prRoot).put(prSpy.getRegionIdentifier(), mockConfig);
+    verify(prSpy).updatePRConfig(newConfig, false);
+    verify(prRoot).put(prSpy.getRegionIdentifier(), newConfig);
   }
 
   private Object[] parametersToTestUpdatePRNodeInformation() {
@@ -121,6 +130,80 @@ public class PartitionedRegionTest {
         new Object[] {mockLoader, mockWriter, (byte) 0x03},
         new Object[] {null, null, (byte) 0x00}
     };
+  }
+
+  @Test
+  public void verifyPRConfigNotUpdatedWithClusterConfigDisabled() {
+    gemfireProperties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    LocalRegion prRoot = mock(LocalRegion.class);
+    PartitionRegionConfig mockConfig = mock(PartitionRegionConfig.class);
+    PartitionedRegion prSpy = spy(partitionedRegion);
+
+    doReturn(prRoot).when(prSpy).getPRRoot();
+    when(prRoot.get(prSpy.getRegionIdentifier())).thenReturn(mockConfig);
+
+    InternalDistributedMember ourMember = prSpy.getDistributionManager().getId();
+    InternalDistributedMember otherMember = mock(InternalDistributedMember.class);
+    Node ourNode = mock(Node.class);
+    Node otherNode1 = mock(Node.class);
+    Node otherNode2 = mock(Node.class);
+    when(ourNode.getMemberId()).thenReturn(ourMember);
+    when(otherNode1.getMemberId()).thenReturn(otherMember);
+    when(otherNode2.getMemberId()).thenReturn(otherMember);
+
+    VersionedArrayList prNodes = new VersionedArrayList();
+    prNodes.add(otherNode1);
+    prNodes.add(ourNode);
+    prNodes.add(otherNode2);
+    when(mockConfig.getNodes()).thenReturn(prNodes.getListCopy());
+    when(mockConfig.getPartitionAttrs()).thenReturn(mock(PartitionAttributesImpl.class));
+
+    doReturn(mock(CacheLoader.class)).when(prSpy).basicGetLoader();
+    doReturn(mock(CacheWriter.class)).when(prSpy).basicGetWriter();
+    PartitionedRegion.RegionLock mockLock = mock(PartitionedRegion.RegionLock.class);
+    doReturn(mockLock).when(prSpy).getRegionLock();
+
+    PartitionRegionConfig newConfig = prSpy.updatePRNodeInformation();
+
+    verify(prSpy, times(0)).updatePRConfig(any(), anyBoolean());
+    assertThat(newConfig).isNull();
+  }
+
+  @Test
+  public void verifyPRConfigNotUpdatedWhenNoProperties() {
+    gemfireProperties.clear();
+    LocalRegion prRoot = mock(LocalRegion.class);
+    PartitionRegionConfig mockConfig = mock(PartitionRegionConfig.class);
+    PartitionedRegion prSpy = spy(partitionedRegion);
+
+    doReturn(prRoot).when(prSpy).getPRRoot();
+    when(prRoot.get(prSpy.getRegionIdentifier())).thenReturn(mockConfig);
+
+    InternalDistributedMember ourMember = prSpy.getDistributionManager().getId();
+    InternalDistributedMember otherMember = mock(InternalDistributedMember.class);
+    Node ourNode = mock(Node.class);
+    Node otherNode1 = mock(Node.class);
+    Node otherNode2 = mock(Node.class);
+    when(ourNode.getMemberId()).thenReturn(ourMember);
+    when(otherNode1.getMemberId()).thenReturn(otherMember);
+    when(otherNode2.getMemberId()).thenReturn(otherMember);
+
+    VersionedArrayList prNodes = new VersionedArrayList();
+    prNodes.add(otherNode1);
+    prNodes.add(ourNode);
+    prNodes.add(otherNode2);
+    when(mockConfig.getNodes()).thenReturn(prNodes.getListCopy());
+    when(mockConfig.getPartitionAttrs()).thenReturn(mock(PartitionAttributesImpl.class));
+
+    doReturn(mock(CacheLoader.class)).when(prSpy).basicGetLoader();
+    doReturn(mock(CacheWriter.class)).when(prSpy).basicGetWriter();
+    PartitionedRegion.RegionLock mockLock = mock(PartitionedRegion.RegionLock.class);
+    doReturn(mockLock).when(prSpy).getRegionLock();
+
+    PartitionRegionConfig newConfig = prSpy.updatePRNodeInformation();
+
+    verify(prSpy, times(0)).updatePRConfig(any(), anyBoolean());
+    assertThat(newConfig).isNull();
   }
 
   @Test
