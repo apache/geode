@@ -17,13 +17,16 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.util.ServiceLoader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
 /**
- * Resolves entities for XSDs or DTDs with SYSTEM IDs rooted at http://geode.apache.org/schema from
+ * Resolves entities for XSDs or DTDs with SYSTEM IDs rooted at http(s)://geode.apache.org/schema
+ * from
  * the classpath at /META-INF/schemas/geode.apache.org/.
  *
  * Loaded by {@link ServiceLoader} on {@link EntityResolver2} class. See file
@@ -34,7 +37,7 @@ import org.xml.sax.ext.EntityResolver2;
  */
 public class GeodeEntityResolver extends DefaultEntityResolver2 {
 
-  private static final String SYSTEM_ID_ROOT = "http://geode.apache.org/";
+  private static final Pattern SYSTEM_ID_ROOT = Pattern.compile("^https?://geode.apache.org/");
 
   private static final String CLASSPATH_ROOT = "/META-INF/schemas/geode.apache.org/";
 
@@ -45,9 +48,9 @@ public class GeodeEntityResolver extends DefaultEntityResolver2 {
       return null;
     }
 
-    if (systemId.startsWith(SYSTEM_ID_ROOT)) {
-      return getClassPathInputSource(publicId, systemId,
-          CLASSPATH_ROOT + systemId.substring(SYSTEM_ID_ROOT.length()));
+    Matcher matcher = SYSTEM_ID_ROOT.matcher(systemId);
+    if (matcher.find()) {
+      return getClassPathInputSource(publicId, systemId, matcher.replaceFirst(CLASSPATH_ROOT));
     }
 
     return null;
