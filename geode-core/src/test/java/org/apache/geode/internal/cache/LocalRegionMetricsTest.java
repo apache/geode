@@ -234,4 +234,48 @@ public class LocalRegionMetricsTest {
     assertThat(putIfAbsentTimer).isNotNull();
     assertThat(putIfAbsentTimer.count()).isEqualTo(1L);
   }
+
+  @Test
+  public void replace_timesHowLongItTook() {
+    when(cache.getMeterRegistry()).thenReturn(meterRegistry);
+    when(internalDataView
+        .putEntry(any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean()))
+            .thenReturn(true);
+
+    LocalRegion localRegion =
+        new LocalRegion(myRegion, regionAttributes, null, cache, internalRegionArgs,
+            internalDataView, (a, b, c) -> regionMap, entryEventFactory);
+
+    localRegion.replace("", "");
+
+    Timer replaceTimer = meterRegistry.find("cache.region.operations.puts")
+        .tag("region.name", myRegion)
+        .tag("put.type", "replace")
+        .timer();
+
+    assertThat(replaceTimer).isNotNull();
+    assertThat(replaceTimer.count()).isEqualTo(1L);
+  }
+
+  @Test
+  public void replaceWithOldAndNewValues_timesHowLongItTook() {
+    when(cache.getMeterRegistry()).thenReturn(meterRegistry);
+    when(internalDataView
+        .putEntry(any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean()))
+            .thenReturn(true);
+
+    LocalRegion localRegion =
+        new LocalRegion(myRegion, regionAttributes, null, cache, internalRegionArgs,
+            internalDataView, (a, b, c) -> regionMap, entryEventFactory);
+
+    localRegion.replace("", "", "");
+
+    Timer replaceTimer = meterRegistry.find("cache.region.operations.puts")
+        .tag("region.name", myRegion)
+        .tag("put.type", "replace")
+        .timer();
+
+    assertThat(replaceTimer).isNotNull();
+    assertThat(replaceTimer.count()).isEqualTo(1L);
+  }
 }

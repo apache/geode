@@ -384,6 +384,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private final Timer putsCreateTimer;
   private final Timer putsPutTimer;
   private final Timer putsPutIfAbsentTimer;
+  private final Timer putsReplaceTimer;
 
   // Indicates that the entries are in fact initialized. It turns out
   // you can't trust the assignment of a volatile (as indicated above)
@@ -735,6 +736,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     putsPutIfAbsentTimer = Timer.builder("cache.region.operations.puts")
         .tag("region.name", regionName)
         .tag("put.type", "put-if-absent")
+        .register(cache.getMeterRegistry());
+
+    putsReplaceTimer = Timer.builder("cache.region.operations.puts")
+        .tag("region.name", regionName)
+        .tag("put.type", "replace")
         .register(cache.getMeterRegistry());
   }
 
@@ -11029,15 +11035,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public boolean replace(Object key, Object oldValue, Object newValue) {
-    return replace(key, oldValue, newValue, null);
+    return putsReplaceTimer.record(() -> replace(key, oldValue, newValue, null));
   }
 
   /**
    * Same as {@link #replace(Object, Object, Object)} except a callback argument is supplied to be
    * passed on to <tt>CacheListener</tt>s and/or <tt>CacheWriter</tt>s.
    */
-  public boolean replace(Object key, Object expectedOldValue, Object newValue, Object callbackArg) {
-
+  private boolean replace(Object key, Object expectedOldValue, Object newValue,
+      Object callbackArg) {
     checkIfConcurrentMapOpsAllowed();
     if (newValue == null) {
       throw new NullPointerException();
@@ -11087,7 +11093,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public Object replace(Object key, Object value) {
-    return replaceWithCallbackArgument(key, value, null);
+    return putsReplaceTimer.record(() -> replaceWithCallbackArgument(key, value, null));
   }
 
   /**
