@@ -53,6 +53,7 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+import io.micrometer.core.instrument.Timer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -379,6 +380,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   final boolean EXPIRY_UNITS_MS;
 
   private final EntryEventFactory entryEventFactory;
+  private final Timer putCreateTimer;
   private final RegionMapConstructor regionMapConstructor;
 
   // Indicates that the entries are in fact initialized. It turns out
@@ -717,6 +719,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     eventTracker = createEventTracker();
 
     versionVector = createRegionVersionVector();
+
+    putCreateTimer = Timer.builder("cache.region.operations.puts")
+        .tag("region.name", regionName)
+        .tag("put.type", "create")
+        .register(cache.getMeterRegistry());
   }
 
   private void addCacheServiceProfiles(InternalRegionArguments internalRegionArgs) {
@@ -1096,13 +1103,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void create(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    @Released
-    EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
-    try {
-      validatedCreate(event, startPut);
-    } finally {
-      event.release();
-    }
+    putCreateTimer.record(() -> {
+      @Released
+      EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
+      try {
+        validatedCreate(event, startPut);
+      } finally {
+        event.release();
+      }
+    });
   }
 
   private void validatedCreate(EntryEventImpl event, long startPut)
