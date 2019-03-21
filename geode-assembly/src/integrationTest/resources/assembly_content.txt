@@ -912,7 +912,6 @@ lib/geode-protobuf-0.0.0.jar
 lib/geode-protobuf-messages-0.0.0.jar
 lib/geode-rebalancer-0.0.0.jar
 lib/geode-wan-0.0.0.jar
-lib/geode-web-0.0.0.jar
 lib/gfsh-dependencies.jar
 lib/grumpy-core-0.2.2.jar
 lib/httpclient-4.5.6.jar

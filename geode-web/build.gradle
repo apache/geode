@@ -21,77 +21,46 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compileOnly('javax.servlet:javax.servlet-api')
-  testCompile('javax.servlet:javax.servlet-api')
-  compileOnly(project(path: ':geode-core', configuration: 'classesOutput'))
+  api(platform(project(':boms:geode-all-bom')))
+
+  //Note - marking these deps as providedCompile means that we will exclude them and all of their
+  //transitive dependencies from geode-web.war. Since geode-web.war is ony run within
+  //a container that has geode-core on the classpath, is prevents duplicating jars. geode-core
+  //in particular should not be duplicated in the war.
+  providedCompile(project(path: ':geode-core')) {
+    //spring-web is excluded from the providedCompile configuration to ensure
+    //that it is included as part of the war. spring-web must be loaded with the war's
+    //classloader to interoperate correctly with it's optional dependences that are included
+    //in this war, in particular commons-fileupload.
+    exclude module: 'spring-web'
+  }
+  providedCompile(platform(project(':boms:geode-all-bom')))
+  providedCompile('javax.servlet:javax.servlet-api')
+  providedCompile('org.apache.logging.log4j:log4j-api')
+
+  implementation('org.springframework:spring-webmvc')
 
   runtimeOnly('org.springframework:spring-aspects') {
     exclude module: 'aspectjweaver'
-    exclude module: 'aopalliance'
-    exclude module: 'spring-core'
   }
-  runtimeOnly('org.springframework:spring-oxm') {
-    exclude module: 'commons-logging'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-core'
-  }
-  runtimeOnly('org.springframework:spring-webmvc') {
-    exclude module: 'aopalliance'
-    exclude module: 'aspectjweaver'
-    exclude module: 'spring-core'
-  }
-  runtimeOnly('commons-fileupload:commons-fileupload') {
-    exclude module: 'commons-io'
-  }
-  
-  testCompile(project(':geode-core'))
-  testCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  // have to use output since we exclude the dependent classes from jar :(
-  testCompile(project(path: ':geode-core', configuration: 'classesOutput'))
-  testCompile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
+  runtimeOnly('org.springframework:spring-oxm')
+  runtimeOnly('commons-fileupload:commons-fileupload')
+
+  testCompile(project(':geode-junit'))
   testCompile('org.springframework:spring-test')
-  testCompile('org.springframework:spring-webmvc') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-  }
 
 
   integrationTestCompile(project(':geode-dunit'));
 
   integrationTestRuntime(files(war.destinationDir))
-  integrationTestRuntime('org.springframework:spring-webmvc') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-  }
-
 
   distributedTestCompile(project(':geode-common'))
   distributedTestCompile(project(':geode-dunit'))
   distributedTestCompile('pl.pragmatists:JUnitParams')
 
   distributedTestRuntime(files(war.destinationDir))
-  distributedTestRuntime('org.springframework:spring-webmvc') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-  }
 
   upgradeTestCompile(project(':geode-dunit')) {
-    exclude module: 'geode-core'
-  }
-}
-
-//Remove the gradle output directories from the eclipse classpath. These
-//are added by the classesOutput configuration, above. Unfortunately, using
-//minusConfigurations does not work here, because it removes the entire
-//geode-core project
-eclipse.classpath.file {
-  whenMerged { classpath ->
-    classpath.entries.removeAll { entry -> entry.path.contains('geode-core/build') }
   }
 }
 
@@ -99,8 +68,5 @@ distributedTest.dependsOn(war)
 integrationTest.dependsOn(war)
 
 war {
-  dependsOn ':geode-core:webJar'
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  classpath configurations.runtimeClasspath
-  classpath project(':geode-core').webJar.archivePath
 }
