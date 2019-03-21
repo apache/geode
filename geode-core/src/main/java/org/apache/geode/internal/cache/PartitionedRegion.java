@@ -736,7 +736,8 @@ public class PartitionedRegion extends LocalRegion
    */
   public PartitionedRegion(String regionName, RegionAttributes regionAttributes,
       LocalRegion parentRegion, InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs);
+    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs,
+        new PartitionedRegionDataView());
 
     this.node = initializeNode();
     this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath());
@@ -9421,11 +9422,6 @@ public class PartitionedRegion extends LocalRegion
               entryKey));
     }
     return br;
-  }
-
-  @Override
-  protected InternalDataView buildDataView() {
-    return new PartitionedRegionDataView();
   }
 
   @Override
