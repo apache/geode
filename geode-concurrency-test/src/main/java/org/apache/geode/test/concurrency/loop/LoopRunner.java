@@ -19,10 +19,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.test.concurrency.ParallelExecutor;
 import org.apache.geode.test.concurrency.Runner;
@@ -66,25 +68,36 @@ public class LoopRunner implements Runner {
 
   private static class DelegatingExecutor implements ParallelExecutor {
     private final ExecutorService executorService;
-    List<Future<?>> futures;
+    private List<Future<?>> futures;
+    private final AtomicInteger callablesStarting = new AtomicInteger(0);
+    private final CountDownLatch start = new CountDownLatch(1);
 
     public DelegatingExecutor(ExecutorService executorService) {
       this.executorService = executorService;
-      futures = new ArrayList<Future<?>>();
+      futures = new ArrayList<>();
     }
 
     @Override
     public <T> Future<T> inParallel(Callable<T> callable) {
-      Future<T> future = executorService.submit(callable);
+      callablesStarting.getAndIncrement();
+      Future<T> future = executorService.submit(() -> {
+        callablesStarting.getAndDecrement();
+        start.await();
+        return callable.call();
+      });
       futures.add(future);
       return future;
     }
 
     @Override
     public void execute() throws ExecutionException, InterruptedException {
+      while (callablesStarting.get() > 0);
+
+      start.countDown();
       for (Future future : futures) {
         future.get();
       }
+      futures.clear();
     }
   }
 }
