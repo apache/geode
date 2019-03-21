@@ -23,6 +23,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.Statistics;
@@ -102,6 +104,7 @@ public class Fakes {
     when(cache.getTxManager()).thenReturn(txManager);
     when(cache.getLogger()).thenReturn(logger);
     when(cache.getQueryMonitor()).thenReturn(queryMonitor);
+    when(cache.getMeterRegistry()).thenReturn(new SimpleMeterRegistry());
 
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);
