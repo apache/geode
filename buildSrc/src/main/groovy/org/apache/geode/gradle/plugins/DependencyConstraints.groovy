@@ -44,6 +44,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("micrometer.version", "1.1.3")
     deps.put("shiro.version", "1.4.0")
     deps.put("slf4j-api.version", "1.7.25")
+    deps.put("android-json.version", "0.0.20131108.vaadin1")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -101,6 +102,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.mockrunner', name: 'mockrunner-servlet', version: '1.1.2')
         api(group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0')
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '2.2')
+        api(group: 'com.vaadin.external.google', name: 'android-json', version: '0.0.20131108.vaadin1')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '3.2.0')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3')
         api(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
