@@ -11,6 +11,7 @@ public class ConnectionAccounting {
   private final int min;
   private final int max;
   private final AtomicInteger count = new AtomicInteger();
+//  private final NotAtomicInteger count = new NotAtomicInteger();
 
   public ConnectionAccounting(int min, int max) {
     this.min = min;
