@@ -68,7 +68,7 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         newTypeId = GetPDXIdForTypeOp.execute((ExecutablePool) pool, newType);
         newType.setTypeId(newTypeId);
-        sendTypeToAllPools(newType, newTypeId, getAllPoolsExcept(pool));
+        copyTypeToOtherPools(newType, newTypeId, pool);
         return newTypeId;
       } catch (ServerConnectivityException e) {
         // ignore, try the next pool.
@@ -76,6 +76,15 @@ public class ClientTypeRegistration implements TypeRegistration {
       }
     }
     throw returnCorrectExceptionForFailure(pools, newTypeId, lastException);
+  }
+
+  private void copyTypeToOtherPools(PdxType newType, int newTypeId, Pool pool) {
+    try {
+      sendTypeToAllPools(newType, newTypeId, getAllPoolsExcept(pool));
+    } catch (Exception e) {
+      logger.debug("Received an exception sending pdx type to pool {}, {}", pool, e.getMessage(),
+          e);
+    }
   }
 
   private Collection<Pool> getAllPoolsExcept(Pool pool) {
@@ -181,8 +190,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     for (Pool pool : pools) {
       try {
         int result = GetPDXIdForEnumOp.execute((ExecutablePool) pool, enumInfo);
-
-        sendEnumToAllPools(enumInfo, result, getAllPoolsExcept(pool));
+        copyEnumToOtherPools(enumInfo, result, pool);
         return result;
       } catch (ServerConnectivityException e) {
         // ignore, try the next pool.
@@ -190,6 +198,16 @@ public class ClientTypeRegistration implements TypeRegistration {
       }
     }
     throw returnCorrectExceptionForFailure(pools, -1, lastException);
+  }
+
+
+  private void copyEnumToOtherPools(EnumInfo enumInfo, int newTypeId, Pool pool) {
+    try {
+      sendEnumToAllPools(enumInfo, newTypeId, getAllPoolsExcept(pool));
+    } catch (Exception e) {
+      logger.debug("Received an exception sending pdx enum to pool {}, {}", pool, e.getMessage(),
+          e);
+    }
   }
 
   private void sendEnumIdToPool(EnumInfo enumInfo, int id, Pool pool) {

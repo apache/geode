@@ -136,6 +136,25 @@ public class PdxMultiClusterClientServerDUnitTest extends JUnit4CacheTestCase {
         getCache().getRegion("regionA").get("key")));
   }
 
+  /**
+   * If a client has multiple pools, but one of the pools has no available servers, creating
+   * a new type should still succeed.
+   */
+  @Test
+  public void sendingTypeIgnoresClustersThatAreNotRunning() {
+
+    ClientCache client = createScenario();
+
+    Region regionA = client.getRegion("regionA");
+
+    createType(serverA, "regionA");
+
+    serverB.invoke(JUnit4CacheTestCase::closeCache);
+
+    // Put from the client serverA. This will try to send the type to serverB
+    regionA.put("key", new SimpleClass(5, (byte) 6));
+  }
+
   private void createType(VM vm, String region) {
     vm.invoke(() -> {
       getCache().getRegion(region).put("createType", new SimpleClass(5, (byte) 6));
