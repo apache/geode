@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -40,6 +41,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.shiro.subject.Subject;
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,6 +83,7 @@ public class CacheClientNotifierIntegrationTest {
     final CountDownLatch notifyClientLatch = new CountDownLatch(1);
 
     InternalCache mockInternalCache = createMockInternalCache();
+    assertThat(mockInternalCache.getMeterRegistry()).isNotNull();
 
     CacheClientNotifier cacheClientNotifier =
         CacheClientNotifier.getInstance(mockInternalCache, mock(CacheServerStats.class),
@@ -213,6 +216,7 @@ public class CacheClientNotifierIntegrationTest {
     InternalCache mockInternalCache = mock(InternalCache.class);
     doReturn(mock(SystemTimer.class)).when(mockInternalCache).getCCPTimer();
     doReturn(mock(CancelCriterion.class)).when(mockInternalCache).getCancelCriterion();
+    doReturn(new SimpleMeterRegistry()).when(mockInternalCache).getMeterRegistry();
 
     InternalDistributedSystem mockInteralDistributedSystem = createMockInternalDistributedSystem();
     doReturn(mockInteralDistributedSystem).when(mockInternalCache).getInternalDistributedSystem();
