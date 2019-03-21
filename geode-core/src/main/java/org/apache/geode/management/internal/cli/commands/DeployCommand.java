@@ -165,18 +165,17 @@ public class DeployCommand extends GfshCommand {
     private final DecimalFormat numFormatter = new DecimalFormat("###,##0.00");
 
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public Object preExecution(GfshParseResult parseResult) {
       String[] jars = (String[]) parseResult.getParamValue("jar");
       String dir = (String) parseResult.getParamValue("dir");
 
       if (ArrayUtils.isEmpty(jars) && StringUtils.isBlank(dir)) {
-        return ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             "Parameter \"jar\" or \"dir\" is required. Use \"help <command name>\" for assistance.");
       }
 
       if (ArrayUtils.isNotEmpty(jars) && StringUtils.isNotBlank(dir)) {
-        return ResultBuilder
-            .createUserErrorResult("Parameters \"jar\" and \"dir\" can not both be specified.");
+        return ResultModel.createError("Parameters \"jar\" and \"dir\" can not both be specified.");
       }
 
       FileResult fileResult = new FileResult();
@@ -184,14 +183,14 @@ public class DeployCommand extends GfshCommand {
         for (String jar : jars) {
           File jarFile = new File(jar);
           if (!jarFile.exists()) {
-            return ResultBuilder.createUserErrorResult(jar + " not found.");
+            return ResultModel.createError(jar + " not found.");
           }
           fileResult.addFile(jarFile);
         }
       } else {
         File fileDir = new File(dir);
         if (!fileDir.isDirectory()) {
-          return ResultBuilder.createUserErrorResult(dir + " is not a directory");
+          return ResultModel.createError(dir + " is not a directory");
         }
         File[] childJarFile = fileDir.listFiles(CliUtil.JAR_FILE_FILTER);
         for (File file : childJarFile) {

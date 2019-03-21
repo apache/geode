@@ -39,15 +39,12 @@ public class FileResultModel {
   private byte[] data;
   private int length;
 
-  public FileResultModel() {}
-
   /**
    * @param fileName only the name of the file, should not include directory information
    */
   public FileResultModel(String fileName, String content) {
     this.filename = fileName;
     this.data = content.getBytes();
-    this.length = data.length;
     this.type = FILE_TYPE_TEXT;
   }
 
@@ -57,13 +54,13 @@ public class FileResultModel {
     }
 
     this.filename = file.getName();
+    this.type = fileType;
+
     try {
       this.data = FileUtils.readFileToByteArray(file);
     } catch (IOException e) {
       throw new RuntimeException("Unable to read file: " + file.getAbsolutePath(), e);
     }
-    this.length = data.length;
-    this.type = fileType;
   }
 
   public String getFilename() {
@@ -91,11 +88,7 @@ public class FileResultModel {
   }
 
   public int getLength() {
-    return length;
-  }
-
-  public void setLength(int length) {
-    this.length = length;
+    return this.data.length;
   }
 
   /**
