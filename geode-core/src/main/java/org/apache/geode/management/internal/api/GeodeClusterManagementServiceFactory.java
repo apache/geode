@@ -91,7 +91,7 @@ public class GeodeClusterManagementServiceFactory
     if (clientCache != null) {
       return getClusterManagementServiceOnClient(username, password, clientCache);
     }
-    // } catch( CacheClosedException e) {
+
     throw new IllegalStateException("ClusterManagementService.create() " +
         "must be executed on one of locator, server or client cache VMs");
   }
@@ -109,7 +109,7 @@ public class GeodeClusterManagementServiceFactory
     HostnameVerifier hostnameVerifier = null;
     if (memberInformation.isWebSSL()) {
       SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
-          ((GemFireCacheImpl) cache).getSystem().getConfig(), SecurableCommunicationChannel.WEB);
+          cache.getSystem().getConfig(), SecurableCommunicationChannel.WEB);
       if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
         throw new IllegalStateException(
             "The server needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
