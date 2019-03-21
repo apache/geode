@@ -39,6 +39,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DSClock;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.statistics.StatisticsManager;
 
@@ -79,7 +80,6 @@ public class LocalRegionMetricsTest {
     when(cache.getDistributedSystem()).thenReturn(internalDistributedSystem);
     when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
 
-    when(entryEvent.setCreate(anyBoolean())).thenReturn(entryEvent);
     when(entryEventFactory.create(any(), any(), any(), any(), any(), anyBoolean(), any()))
         .thenReturn(entryEvent);
 
@@ -102,7 +102,7 @@ public class LocalRegionMetricsTest {
   @Test
   public void create_timesHowLongItTook() {
     when(cache.getMeterRegistry()).thenReturn(meterRegistry);
-
+    when(entryEvent.setCreate(anyBoolean())).thenReturn(entryEvent);
     when(internalDataView
         .putEntry(any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean()))
             .thenReturn(true);
@@ -125,7 +125,7 @@ public class LocalRegionMetricsTest {
   @Test
   public void createWithCallbackArgument_timesHowLongItTook() {
     when(cache.getMeterRegistry()).thenReturn(meterRegistry);
-
+    when(entryEvent.setCreate(anyBoolean())).thenReturn(entryEvent);
     when(internalDataView
         .putEntry(any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean()))
             .thenReturn(true);
@@ -143,5 +143,51 @@ public class LocalRegionMetricsTest {
 
     assertThat(createTimer).isNotNull();
     assertThat(createTimer.count()).isEqualTo(1L);
+  }
+
+  @Test
+  public void put_timesHowLongItTook() {
+    when(cache.getMeterRegistry()).thenReturn(meterRegistry);
+    when(internalDataView
+        .putEntry(any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean()))
+            .thenReturn(true);
+    when(internalDistributedSystem.getConfig()).thenReturn(mock(DistributionConfig.class));
+
+    LocalRegion localRegion =
+        new LocalRegion(myRegion, regionAttributes, null, cache, internalRegionArgs,
+            internalDataView, (a, b, c) -> regionMap, entryEventFactory);
+
+    localRegion.put("", "");
+
+    Timer putTimer = meterRegistry.find("cache.region.operations.puts")
+        .tag("region.name", myRegion)
+        .tag("put.type", "put")
+        .timer();
+
+    assertThat(putTimer).isNotNull();
+    assertThat(putTimer.count()).isEqualTo(1L);
+  }
+
+  @Test
+  public void putWithCallback_timesHowLongItTook() {
+    when(cache.getMeterRegistry()).thenReturn(meterRegistry);
+    when(internalDataView
+        .putEntry(any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean()))
+            .thenReturn(true);
+    when(internalDistributedSystem.getConfig()).thenReturn(mock(DistributionConfig.class));
+
+    LocalRegion localRegion =
+        new LocalRegion(myRegion, regionAttributes, null, cache, internalRegionArgs,
+            internalDataView, (a, b, c) -> regionMap, entryEventFactory);
+
+    localRegion.put("", "", "");
+
+    Timer putTimer = meterRegistry.find("cache.region.operations.puts")
+        .tag("region.name", myRegion)
+        .tag("put.type", "put")
+        .timer();
+
+    assertThat(putTimer).isNotNull();
+    assertThat(putTimer.count()).isEqualTo(1L);
   }
 }

@@ -380,8 +380,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   final boolean EXPIRY_UNITS_MS;
 
   private final EntryEventFactory entryEventFactory;
-  private final Timer putCreateTimer;
   private final RegionMapConstructor regionMapConstructor;
+  private final Timer putsCreateTimer;
+  private final Timer putsPutTimer;
 
   // Indicates that the entries are in fact initialized. It turns out
   // you can't trust the assignment of a volatile (as indicated above)
@@ -720,9 +721,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     versionVector = createRegionVersionVector();
 
-    putCreateTimer = Timer.builder("cache.region.operations.puts")
+    putsCreateTimer = Timer.builder("cache.region.operations.puts")
         .tag("region.name", regionName)
         .tag("put.type", "create")
+        .register(cache.getMeterRegistry());
+
+    putsPutTimer = Timer.builder("cache.region.operations.puts")
+        .tag("region.name", regionName)
+        .tag("put.type", "put")
         .register(cache.getMeterRegistry());
   }
 
@@ -1103,7 +1109,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void create(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    putCreateTimer.record(() -> {
+    putsCreateTimer.record(() -> {
       @Released
       EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
       try {
@@ -1651,13 +1657,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Object put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    @Released
-    EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
-    try {
-      return validatedPut(event, startPut);
-    } finally {
-      event.release();
-    }
+    return putsPutTimer.record(() -> {
+      @Released
+      EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
+      try {
+        return validatedPut(event, startPut);
+      } finally {
+        event.release();
+      }
+    });
   }
 
   Object validatedPut(EntryEventImpl event, long startPut)
