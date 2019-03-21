@@ -80,7 +80,7 @@ public class ClientClusterManagementServiceDunitTest {
 
     client.invoke(() -> {
       ClusterManagementService service = ClusterManagementServiceProvider.getService();
-      assertThat(((ClientClusterManagementService) service).ping()).isEqualTo("pong");
+      assertThat(((ClientClusterManagementService) service).isConnected()).isTrue();
     });
     client.stop();
   }

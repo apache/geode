@@ -17,6 +17,8 @@ package org.apache.geode.management.internal.configuration.handlers;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -42,7 +44,19 @@ public class ClusterManagementServiceInfoRequestHandler implements TcpHandler {
 
     DistributionConfigImpl config = locator.getConfig();
     info.setHttpPort(config.getHttpServicePort());
-    info.setHostName(config.getHttpServiceBindAddress());
+
+    String hostName = null;
+    if (StringUtils.isNotBlank(config.getHttpServiceBindAddress())) {
+      hostName = config.getHttpServiceBindAddress();
+    } else if (StringUtils.isNotBlank(config.getServerBindAddress())) {
+      hostName = config.getServerBindAddress();
+    } else if (StringUtils.isNotBlank(locator.getHostnameForClients())) {
+      hostName = locator.getHostnameForClients();
+    } else {
+      hostName = locator.getBindAddress().getHostName();
+    }
+
+    info.setHostName(hostName);
 
     return info;
   }
