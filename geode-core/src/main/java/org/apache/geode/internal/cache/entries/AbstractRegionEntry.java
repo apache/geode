@@ -257,6 +257,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       throws RegionClearedException {
     assert region.getVersionVector() != null;
     assert version != null;
+
     if (isTombstone()) {
       // unschedule the old tombstone
       region.unscheduleTombstone(this);
