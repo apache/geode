@@ -164,6 +164,10 @@ public class DeployCommand extends GfshCommand {
   public static class Interceptor extends AbstractCliAroundInterceptor {
     private final DecimalFormat numFormatter = new DecimalFormat("###,##0.00");
 
+    /**
+     *
+     * @return FileResult object or ResultModel in case of errors
+     */
     @Override
     public Object preExecution(GfshParseResult parseResult) {
       String[] jars = (String[]) parseResult.getParamValue("jar");

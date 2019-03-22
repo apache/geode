@@ -40,6 +40,11 @@ public class FileResultModel {
   private int length;
 
   /**
+   * This unused constructor is actually used for deserialization
+   */
+  public FileResultModel() {}
+
+  /**
    * @param fileName only the name of the file, should not include directory information
    */
   public FileResultModel(String fileName, String content) {
