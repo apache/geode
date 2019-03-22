@@ -76,7 +76,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private final String poolName;
   private final PoolStats poolStats;
   protected final long prefillRetry; // ms
-  private final AvailableConnectionManager availableConnectionManager = new AvailableConnectionManager();
+  private final AvailableConnectionManager availableConnectionManager =
+      new AvailableConnectionManager();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
   private final EndpointManager endpointManager;
   private final long idleTimeout; // make this an int
@@ -290,7 +291,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
   @Override
   public Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
-    PooledConnection connection = availableConnectionManager.findConnection((c) -> c.getServer().equals(server));
+    PooledConnection connection =
+        availableConnectionManager.findConnection((c) -> c.getServer().equals(server));
 
     if (null != connection) {
       return connection;
@@ -319,7 +321,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
       throws AllConnectionsInUseException {
 
     try {
-      PooledConnection connection = availableConnectionManager.findConnection((c) -> !excludedServers.contains(c.getServer()));
+      PooledConnection connection = availableConnectionManager
+          .findConnection((c) -> !excludedServers.contains(c.getServer()));
       if (null != connection) {
         return connection;
       }
@@ -392,8 +395,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
     for (Iterator itr = badConnections.iterator(); itr.hasNext();) {
       PooledConnection conn = (PooledConnection) itr.next();
-      //TODO is this right?
-      if(!conn.isDestroyed()) {
+      // TODO is this right?
+      if (!conn.isDestroyed()) {
         conn.setShouldDestroy();
         availableConnectionManager.removeConnection(conn);
         destroyAndMaybePrefill();

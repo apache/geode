@@ -3,10 +3,10 @@ package org.apache.geode.cache.client.internal.pooling;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Predicate;
 
-import org.apache.geode.cache.client.Pool;
 
 public class AvailableConnectionManager {
-  private final ConcurrentLinkedDeque<PooledConnection> availableConnections = new ConcurrentLinkedDeque<>();
+  private final ConcurrentLinkedDeque<PooledConnection> availableConnections =
+      new ConcurrentLinkedDeque<>();
 
   public PooledConnection getConnection() {
     while (true) {
