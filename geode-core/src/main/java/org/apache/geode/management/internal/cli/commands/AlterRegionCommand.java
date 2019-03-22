@@ -153,7 +153,7 @@ public class AlterRegionCommand extends SingleGfshCommand {
 
     if (cacheWriter != null) {
       regionAttributesType.setCacheWriter(
-          new DeclarableType(cacheLoader.getClassName(), cacheLoader.getInitProperties()));
+          new DeclarableType(cacheWriter.getClassName(), cacheWriter.getInitProperties()));
     }
 
     if (cacheListeners != null) {

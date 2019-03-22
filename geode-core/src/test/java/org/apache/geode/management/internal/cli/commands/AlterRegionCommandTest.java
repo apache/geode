@@ -22,7 +22,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -56,25 +55,25 @@ public class AlterRegionCommandTest {
   public GfshParserRule parser = new GfshParserRule();
 
   private AlterRegionCommand command;
-  private InternalCache cache;
-  private InternalConfigurationPersistenceService ccService;
   private CacheConfig cacheConfig;
   private RegionConfig existingRegionConfig;
 
   @Before
   public void before() {
     command = spy(AlterRegionCommand.class);
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     command.setCache(cache);
     when(cache.getSecurityService()).thenReturn(mock(SecurityService.class));
-    ccService = mock(InternalConfigurationPersistenceService.class);
+    InternalConfigurationPersistenceService ccService =
+        mock(InternalConfigurationPersistenceService.class);
     doReturn(ccService).when(command).getConfigurationPersistenceService();
     Set<DistributedMember> members =
         Stream.of(mock(DistributedMember.class)).collect(Collectors.toSet());
     doReturn(members).when(command).findMembers(any(), any());
     CliFunctionResult result =
         new CliFunctionResult("member", CliFunctionResult.StatusState.OK, "regionA altered");
-    doReturn(Arrays.asList(result)).when(command).executeAndGetFunctionResult(any(), any(), any());
+    doReturn(Collections.singletonList(result)).when(command).executeAndGetFunctionResult(any(),
+        any(), any());
 
     cacheConfig = new CacheConfig();
     existingRegionConfig = new RegionConfig();
@@ -85,17 +84,51 @@ public class AlterRegionCommandTest {
   }
 
   @Test
-  public void cacheWriterEmpty() {
-    String command = "alter region --name=/Person --cache-writer='' --cache-loader=' '";
-    GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("cache-writer")).isEqualTo(ClassName.EMPTY);
-    assertThat(result.getParamValue("cache-listener")).isNull();
-    assertThat(result.getParamValue("cache-loader")).isEqualTo(ClassName.EMPTY);
-    assertThat(result.getParamValue("entry-idle-time-custom-expiry")).isNull();
+  public void alterWithCacheWriter() {
+    RegionConfig deltaConfig =
+        getDeltaRegionConfig("alter region --name=regionA --cache-writer=CommandWriter");
+    RegionAttributesType deltaAttributes = deltaConfig.getRegionAttributes();
+    assertThat(deltaAttributes.getCacheLoader()).isNull();
+    assertThat(deltaAttributes.getCacheListeners()).isNotNull().isEmpty();
+    assertThat(deltaAttributes.getCacheWriter().getClassName()).isEqualTo("CommandWriter");
+
+    RegionAttributesType existingAttributes = new RegionAttributesType();
+    existingAttributes.setCacheLoader(new DeclarableType("CacheLoader"));
+    existingAttributes.setCacheWriter(new DeclarableType("CacheWriter"));
+    existingAttributes.getCacheListeners().add(new DeclarableType("CacheListener"));
+
+    existingRegionConfig.setRegionAttributes(existingAttributes);
+    command.updateConfigForGroup("cluster", cacheConfig, deltaConfig);
+
+    // CacheListeners and CacheLoader are unchanged
+    assertThat(existingAttributes.getCacheListeners()).hasSize(1);
+    assertThat(existingAttributes.getCacheLoader().getClassName()).isEqualTo("CacheLoader");
+    assertThat(existingAttributes.getCacheListeners().get(0).getClassName())
+        .isEqualTo("CacheListener");
+
+    // CacheWriter is changed
+    assertThat(existingAttributes.getCacheWriter().getClassName()).isEqualTo("CommandWriter");
   }
 
   @Test
-  public void cacheWriterInvalid() {
+  public void alterWithNoCacheWriter() {
+    RegionConfig deltaConfig =
+        getDeltaRegionConfig("alter region --name=regionA --cache-writer=' '");
+    RegionAttributesType deltaAttributes = deltaConfig.getRegionAttributes();
+    assertThat(deltaAttributes.getCacheWriter()).isEqualTo(DeclarableType.EMPTY);
+
+    RegionAttributesType existingAttributes = new RegionAttributesType();
+    existingAttributes.setCacheWriter(new DeclarableType("CacheWriter"));
+
+    existingRegionConfig.setRegionAttributes(existingAttributes);
+    command.updateConfigForGroup("cluster", cacheConfig, deltaConfig);
+
+    // CacheWriter is changed
+    assertThat(existingAttributes.getCacheWriter()).isNull();
+  }
+
+  @Test
+  public void alterWithInvalidCacheWriter() {
     String command = "alter region --name=/Person --cache-writer='1abc'";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNull();
@@ -494,9 +527,7 @@ public class AlterRegionCommandTest {
   }
 
   private RegionConfig getDeltaRegionConfig(String commandString) {
-    RegionConfig regionConfig =
-        (RegionConfig) parser.executeAndAssertThat(command, commandString)
-            .getResultModel().getConfigObject();
-    return regionConfig;
+    return (RegionConfig) parser.executeAndAssertThat(command, commandString).getResultModel()
+        .getConfigObject();
   }
 }
