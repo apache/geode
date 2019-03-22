@@ -16,6 +16,9 @@ package org.apache.geode.cache;
 
 import java.util.Properties;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
@@ -267,6 +270,25 @@ public class CacheFactory {
    */
   public CacheFactory setPdxIgnoreUnreadFields(boolean ignore) {
     internalCacheBuilder.setPdxIgnoreUnreadFields(ignore);
+    return this;
+  }
+
+  /**
+   * Adds the given meter registry to the cache's composite registry for publishing cache metrics
+   * to external monitoring systems.
+   *
+   * <p>
+   * Experimental: Micrometer metrics is a new addition to Geode and the API may change.
+   *
+   * @param subregistry the registry to add
+   * @return this CacheFactory
+   *
+   * @see <a href="https://micrometer.io/docs">Micrometer Documentation</a>
+   * @see <a href="https://micrometer.io/docs/concepts">Micrometer Concepts</a>
+   */
+  @Experimental("Micrometer metrics is a new addition to Geode and the API may change")
+  public CacheFactory addMeterSubregistry(MeterRegistry subregistry) {
+    internalCacheBuilder.addMeterSubregistry(subregistry);
     return this;
   }
 

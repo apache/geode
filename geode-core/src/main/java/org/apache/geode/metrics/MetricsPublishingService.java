@@ -67,6 +67,9 @@ import org.apache.geode.annotations.Experimental;
  * <p>
  * {@code com.application.MyMetricsPublishingService}
  *
+ * <p>
+ * Experimental: Micrometer metrics is a new addition to Geode and the API may change.
+ *
  * @see <a href="https://micrometer.io/docs">Micrometer Documentation</a>
  * @see <a href="https://micrometer.io/docs/concepts">Micrometer Concepts</a>
  */

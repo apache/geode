@@ -18,8 +18,10 @@ import static java.util.Objects.requireNonNull;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -61,6 +63,8 @@ public class InternalCacheBuilder {
 
   private static final boolean IS_EXISTING_OK_DEFAULT = true;
   private static final boolean IS_CLIENT_DEFAULT = false;
+
+  private final Set<MeterRegistry> meterSubregistries = new HashSet<>();
 
   private final Properties configProperties;
   private final CacheConfig cacheConfig;
@@ -197,6 +201,10 @@ public class InternalCacheBuilder {
             CompositeMeterRegistry compositeMeterRegistry = compositeMeterRegistryFactory
                 .create(systemId, memberName, hostName);
 
+            for (MeterRegistry meterSubregistry : meterSubregistries) {
+              compositeMeterRegistry.add(meterSubregistry);
+            }
+
             metricsSessionInitializer.accept(compositeMeterRegistry);
 
             cache =
@@ -331,6 +339,14 @@ public class InternalCacheBuilder {
    */
   public InternalCacheBuilder setTypeRegistry(TypeRegistry typeRegistry) {
     this.typeRegistry = typeRegistry;
+    return this;
+  }
+
+  /**
+   * @see CacheFactory#addMeterSubregistry(MeterRegistry)
+   */
+  public InternalCacheBuilder addMeterSubregistry(MeterRegistry subregistry) {
+    meterSubregistries.add(subregistry);
     return this;
   }
 
