@@ -120,7 +120,8 @@ public class ConnectionAccountingConcurrentTest {
     executor.inParallel(() -> {
       if (accountant.tryDestroy()) {
         accountant.cancelTryDestroy();
-        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(max).isLessThanOrEqualTo(overfillMax);
+        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(max)
+            .isLessThanOrEqualTo(overfillMax);
       }
     }, max + 1);
 
