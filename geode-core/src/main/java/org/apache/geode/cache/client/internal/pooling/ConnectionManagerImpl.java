@@ -28,12 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SplittableRandom;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -78,8 +76,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private final String poolName;
   private final PoolStats poolStats;
   protected final long prefillRetry; // ms
-  private final ConcurrentLinkedDeque<PooledConnection> availableConnections =
-      new ConcurrentLinkedDeque<>();
+  private final AvailableConnectionManager availableConnectionManager = new AvailableConnectionManager();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
   private final EndpointManager endpointManager;
   private final long idleTimeout; // make this an int
@@ -236,6 +233,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
+  // TODO reevaluate this
   @Override
   public Connection borrowConnection(long acquireTimeout)
       throws AllConnectionsInUseException, NoAvailableServersException {
@@ -243,7 +241,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
-        PooledConnection connection = availableConnections.pollFirst();
+        PooledConnection connection = availableConnectionManager.getConnection();
         if (null != connection) {
           try {
             connection.activate();
@@ -297,7 +295,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
   @Override
   public Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
-    PooledConnection connection = findConnection((c) -> c.getServer().equals(server));
+    PooledConnection connection = availableConnectionManager.findConnection((c) -> c.getServer().equals(server));
+
     if (null != connection) {
       return connection;
     }
@@ -325,7 +324,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       throws AllConnectionsInUseException {
 
     try {
-      PooledConnection connection = findConnection((c) -> !excludedServers.contains(c.getServer()));
+      PooledConnection connection = availableConnectionManager.findConnection((c) -> !excludedServers.contains(c.getServer()));
       if (null != connection) {
         return connection;
       }
@@ -345,32 +344,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     throw new NoAvailableServersException();
-  }
-
-  /**
-   * @param predicate to test connection against
-   * @return A PooledConnection if one matches the predicate, otherwise null.
-   */
-  private PooledConnection findConnection(Predicate<PooledConnection> predicate) {
-    for (int i = availableConnections.size(); i > 0; --i) {
-      PooledConnection connection = availableConnections.pollFirst();
-      if (null == connection) {
-        break;
-      }
-
-      if (predicate.test(connection)) {
-        try {
-          connection.activate();
-          return connection;
-        } catch (ConnectionDestroyedException ignored) {
-          continue;
-        }
-      }
-
-      availableConnections.offerLast(connection);
-    }
-
-    return null;
   }
 
   protected/* GemStoneAddition */ String getPoolName() {
@@ -424,10 +397,13 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
     for (Iterator itr = badConnections.iterator(); itr.hasNext();) {
       PooledConnection conn = (PooledConnection) itr.next();
-      conn.setShouldDestroy();
-      availableConnections.remove(conn);
-      destroyAndMaybePrefill();
-      conn.internalDestroy();
+      //TODO is this right?
+      if(!conn.isDestroyed()) {
+        conn.setShouldDestroy();
+        availableConnectionManager.removeConnection(conn);
+        destroyAndMaybePrefill();
+        conn.internalDestroy();
+      }
     }
   }
 
@@ -451,18 +427,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
     if (pooledConn.shouldDestroy()) {
       destroyConnection(pooledConn);
-    } else {
-      // thread local connections are already passive at this point
-      if (pooledConn.isActive()) {
-        pooledConn.passivate(accessed);
-      }
-      if (!destroyIfOverLimit(pooledConn)) {
-        if (addToTail) {
-          availableConnections.addLast(pooledConn);
-        } else {
-          availableConnections.addFirst(pooledConn);
-        }
-      }
+    } else if (!destroyIfOverLimit(pooledConn)) {
+      availableConnectionManager.returnConnection(pooledConn, accessed, addToTail);
     }
   }
 
