@@ -1,39 +1,75 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.apache.geode.cache.client.internal.pooling;
 
+import static org.apache.geode.test.concurrency.Utilities.availableProcessors;
+import static org.apache.geode.test.concurrency.Utilities.repeat;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
-import org.apache.geode.test.concurrency.RunnableWithException;
-import org.apache.geode.test.concurrency.loop.LoopRunnerConfig;
 
 @RunWith(ConcurrentTestRunner.class)
-@LoopRunnerConfig(count = 10000)
 public class ConnectionAccountingConcurrentTest {
 
   @Test
-  public void tryCreateStaysWithinMax(ParallelExecutor executor) throws ExecutionException, InterruptedException {
-    int max = 2;
+  public void creates(ParallelExecutor executor) throws Exception {
+    final int count = availableProcessors();
+    ConnectionAccounting accountant = new ConnectionAccounting(0, 1);
+
+    executor.inParallel(() -> {
+      accountant.create();
+      assertThat(accountant.getCount()).isGreaterThan(0).isLessThanOrEqualTo(count);
+    }, count);
+
+    executor.execute();
+
+    assertThat(accountant.getCount()).isEqualTo(count);
+  }
+
+  @Test
+  public void tryCreateStaysWithinMax(ParallelExecutor executor) throws Exception {
+    final int max = availableProcessors();
     ConnectionAccounting accountant = new ConnectionAccounting(1, max);
 
-    RunnableWithException tryCreate = () -> {
+    executor.inParallel(() -> {
       if (accountant.tryCreate()) {
-        assertThat(accountant.getCount()).isLessThanOrEqualTo(max).isGreaterThan(0);
-        accountant.cancelTryCreate();
+        assertThat(accountant.getCount()).isGreaterThan(0).isLessThanOrEqualTo(max);
       }
-    };
+    }, max + 1);
 
-    executor.inParallel(tryCreate);
-    executor.inParallel(tryCreate);
-    executor.inParallel(tryCreate);
+    executor.execute();
+
+    assertThat(accountant.getCount()).isEqualTo(max);
+  }
+
+  @Test
+  public void cancelTryCreateStaysWithinMax(ParallelExecutor executor) throws Exception {
+    final int max = availableProcessors();
+    ConnectionAccounting accountant = new ConnectionAccounting(1, max);
+
+    executor.inParallel(() -> {
+      if (accountant.tryCreate()) {
+        accountant.cancelTryCreate();
+        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(max);
+      }
+    }, max + 1);
 
     executor.execute();
 
@@ -41,30 +77,92 @@ public class ConnectionAccountingConcurrentTest {
   }
 
   @Test
-  public void tryDestroyNeverGoesBelowMax(ParallelExecutor executor) throws ExecutionException, InterruptedException {
-    int max = 2;
-    int overfillMax = 4;
+  public void destroys(ParallelExecutor executor) throws Exception {
+    final int count = availableProcessors();
+    ConnectionAccounting accountant = new ConnectionAccounting(0, 1);
+    repeat(() -> accountant.create(), count);
+
+    executor.inParallel(() -> {
+      accountant.destroyAndIsUnderMinimum(1);
+      assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThan(count);
+    }, count);
+
+    executor.execute();
+
+    assertThat(accountant.getCount()).isEqualTo(0);
+  }
+
+  @Test
+  public void tryDestroyNeverGoesBelowMax(ParallelExecutor executor) throws Exception {
+    final int overfillMax = Math.max(availableProcessors(), 4);
+    final int max = overfillMax / 2;
     ConnectionAccounting accountant = new ConnectionAccounting(1, max);
+    repeat(() -> accountant.create(), overfillMax);
 
-    // prefill
-    accountant.create();
-    accountant.create();
-    accountant.create();
-    accountant.create();
-
-    RunnableWithException tryDestroy = () -> {
+    executor.inParallel(() -> {
       if (accountant.tryDestroy()) {
-        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(max).isLessThanOrEqualTo(overfillMax);
-        accountant.cancelTryDestroy();
+        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(max).isLessThan(overfillMax);
       }
-    };
+    }, overfillMax + 1);
 
-    executor.inParallel(tryDestroy);
-    executor.inParallel(tryDestroy);
-    executor.inParallel(tryDestroy);
+    executor.execute();
+
+    assertThat(accountant.getCount()).isEqualTo(max);
+  }
+
+  @Test
+  public void cancelTryDestroyStaysAboveMax(ParallelExecutor executor) throws Exception {
+    final int overfillMax = Math.max(availableProcessors(), 4);
+    final int max = overfillMax / 2;
+    ConnectionAccounting accountant = new ConnectionAccounting(1, max);
+    repeat(() -> accountant.create(), overfillMax);
+
+    executor.inParallel(() -> {
+      if (accountant.tryDestroy()) {
+        accountant.cancelTryDestroy();
+        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(max).isLessThanOrEqualTo(overfillMax);
+      }
+    }, max + 1);
 
     executor.execute();
 
     assertThat(accountant.getCount()).isEqualTo(overfillMax);
   }
+
+
+  @Test
+  public void mixItUp(ParallelExecutor executor) throws Exception {
+    final int overfill = Math.max(availableProcessors(), 8);
+    final int max = overfill / 4;
+    final int overfillMax = overfill + max;
+    ConnectionAccounting accountant = new ConnectionAccounting(1, max);
+    repeat(() -> accountant.create(), overfill);
+
+    executor.inParallel(() -> {
+      if (accountant.tryDestroy()) {
+        accountant.cancelTryDestroy();
+      }
+    }, max);
+
+    executor.inParallel(() -> {
+      if (accountant.tryCreate()) {
+        accountant.cancelTryCreate();
+      }
+    }, max);
+
+    executor.inParallel(() -> {
+      accountant.create();
+    }, max);
+
+    executor.inParallel(() -> {
+      if (accountant.tryCreate()) {
+        accountant.destroyAndIsUnderMinimum(1);
+      }
+    }, max);
+
+    executor.execute();
+
+    assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(overfillMax);
+  }
+
 }

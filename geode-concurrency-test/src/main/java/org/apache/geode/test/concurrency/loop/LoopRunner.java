@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.test.concurrency.loop;
 
 import java.lang.reflect.Method;
@@ -99,5 +100,6 @@ public class LoopRunner implements Runner {
       }
       futures.clear();
     }
+
   }
 }

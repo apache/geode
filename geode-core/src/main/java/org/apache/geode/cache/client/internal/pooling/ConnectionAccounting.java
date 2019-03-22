@@ -1,3 +1,18 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.apache.geode.cache.client.internal.pooling;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,7 +26,7 @@ public class ConnectionAccounting {
   private final int min;
   private final int max;
   private final AtomicInteger count = new AtomicInteger();
-//  private final NotAtomicInteger count = new NotAtomicInteger();
+//   private final NotAtomicInteger count = new NotAtomicInteger();
 
   public ConnectionAccounting(int min, int max) {
     this.min = min;
@@ -31,8 +46,10 @@ public class ConnectionAccounting {
   }
 
   /**
-   * Should be called why a new connection would be nice to have when count is under max. Caller should only
-   * create a connection if this method returns {@code true}. If connection creation fails then {@link #cancelTryCreate} must
+   * Should be called why a new connection would be nice to have when count is under max. Caller
+   * should only
+   * create a connection if this method returns {@code true}. If connection creation fails then
+   * {@link #cancelTryCreate} must
    * be called to revert the count increase.
    *
    * @return {@code true} if count was under max and we increased it, otherwise {@code false}.
@@ -62,8 +79,10 @@ public class ConnectionAccounting {
   }
 
   /**
-   * Should be called when a connection is being returned and the caller should destroy the connection if
-   * {@code true} was returned. If connection destroy fails then {@link #cancelTryDestroy()} must be called.
+   * Should be called when a connection is being returned and the caller should destroy the
+   * connection if
+   * {@code true} was returned. If connection destroy fails then {@link #cancelTryDestroy()} must be
+   * called.
    *
    * @return {@code true} if count was over max and we decreased it, otherwise {@code false}.
    */
@@ -85,11 +104,13 @@ public class ConnectionAccounting {
   }
 
   /**
-   * Should be called after any connection destroy done regardless of max. Should not be called after {@link #tryDestroy()}.
+   * Should be called after any connection destroy done regardless of max. Should not be called
+   * after {@link #tryDestroy()}.
    *
    * @param destroyCount number of connections being destroyed.
    *
-   * @return {@code true} if after decreasing count it is under the minimum, otherwise {@code false}.
+   * @return {@code true} if after decreasing count it is under the minimum, otherwise
+   *         {@code false}.
    */
   public boolean destroyAndIsUnderMinimum(int destroyCount) {
     return count.addAndGet(-destroyCount) < min;

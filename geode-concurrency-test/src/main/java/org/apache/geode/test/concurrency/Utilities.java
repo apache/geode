@@ -13,38 +13,26 @@
  * the License.
  */
 
-package org.apache.geode.cache.client.internal.pooling;
+package org.apache.geode.test.concurrency;
 
-public class NotAtomicInteger {
-  int value = 0;
+public interface Utilities {
 
-  public int get() {
-    return value;
+  /**
+   * @return Result of {@code Runtime.getRuntime().availableProcessors()}.
+   */
+  static int availableProcessors() {
+    return Runtime.getRuntime().availableProcessors();
   }
 
-  public boolean compareAndSet(int currentCount, int i) {
-    if (value == currentCount) {
-      value = i;
-      return true;
+  /**
+   * Repeat {@code task} for {@code count} times serially.
+   *
+   * @param task to repeat
+   * @param count number of times
+   */
+  static void repeat(Runnable task, int count) {
+    for (; count > 0; count--) {
+      task.run();
     }
-
-    return false;
-  }
-
-  public int getAndDecrement() {
-    int current = value;
-    value--;
-    return current;
-  }
-
-  public int getAndIncrement() {
-    int current = value;
-    value--;
-    return current;
-  }
-
-  public int addAndGet(int i) {
-    value += i;
-    return value;
   }
 }
