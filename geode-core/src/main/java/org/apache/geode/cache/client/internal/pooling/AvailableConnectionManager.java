@@ -9,7 +9,18 @@ public class AvailableConnectionManager {
   private final ConcurrentLinkedDeque<PooledConnection> availableConnections = new ConcurrentLinkedDeque<>();
 
   public PooledConnection getConnection() {
-    return availableConnections.pollFirst();
+    while (true) {
+      PooledConnection connection = availableConnections.pollFirst();
+      if (null == connection) {
+        return null;
+      }
+      try {
+        connection.activate();
+        return connection;
+      } catch (ConnectionDestroyedException ignored) {
+        // loop around and try the next one
+      }
+    }
   }
 
   public boolean removeConnection(PooledConnection connection) {

@@ -243,12 +243,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       while (true) {
         PooledConnection connection = availableConnectionManager.getConnection();
         if (null != connection) {
-          try {
-            connection.activate();
-            return connection;
-          } catch (ConnectionDestroyedException ignored) {
-            continue;
-          }
+          return connection;
         }
 
         if (connectionAccounting.tryCreate()) {
@@ -593,15 +588,13 @@ public class ConnectionManagerImpl implements ConnectionManager {
     if (connectionAccounting.tryPrefill()) {
       PooledConnection connection = null;
       try {
-        Connection plainConnection =
-            connectionFactory.createClientToServerConnection(Collections.emptySet());
-        if (plainConnection == null) {
+        connection = addConnection(
+            connectionFactory.createClientToServerConnection(Collections.emptySet()));
+        if (connection == null) {
           return false;
         }
-        connection = addConnection(plainConnection);
-        connection.passivate(false);
         getPoolStats().incPrefillConnect();
-        availableConnections.add(connection);
+        availableConnectionManager.returnConnection(connection, false, true);
         if (logger.isDebugEnabled()) {
           logger.debug("Prefilled connection {} connection count is now {}", connection,
               connectionAccounting.getCount());
