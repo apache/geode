@@ -29,11 +29,11 @@ import org.apache.geode.test.concurrency.ParallelExecutor;
 
 @RunWith(ConcurrentTestRunner.class)
 public class ConnectionAccountingConcurrentTest {
+  private final int count = availableProcessors() * 2;
 
   @Test
   public void tryPrefillStaysBelowOrAtMin(ParallelExecutor executor)
       throws ExecutionException, InterruptedException {
-    final int count = availableProcessors();
     final int min = count - 1;
     ConnectionAccounting accountant = new ConnectionAccounting(min, min + 4);
 
@@ -50,7 +50,6 @@ public class ConnectionAccountingConcurrentTest {
   @Test
   public void cancelTryPrefillStaysUnderMin(ParallelExecutor executor)
       throws ExecutionException, InterruptedException {
-    final int count = availableProcessors();
     final int min = count - 1;
     ConnectionAccounting accountant = new ConnectionAccounting(min, min + 4);
 
@@ -68,7 +67,6 @@ public class ConnectionAccountingConcurrentTest {
 
   @Test
   public void creates(ParallelExecutor executor) throws Exception {
-    final int count = availableProcessors();
     ConnectionAccounting accountant = new ConnectionAccounting(0, 1);
 
     executor.inParallel(() -> {
@@ -83,31 +81,29 @@ public class ConnectionAccountingConcurrentTest {
 
   @Test
   public void tryCreateStaysWithinMax(ParallelExecutor executor) throws Exception {
-    final int max = availableProcessors();
-    ConnectionAccounting accountant = new ConnectionAccounting(1, max);
+    ConnectionAccounting accountant = new ConnectionAccounting(1, count);
 
     executor.inParallel(() -> {
       if (accountant.tryCreate()) {
-        assertThat(accountant.getCount()).isGreaterThan(0).isLessThanOrEqualTo(max);
+        assertThat(accountant.getCount()).isGreaterThan(0).isLessThanOrEqualTo(count);
       }
-    }, max + 1);
+    }, count + 1);
 
     executor.execute();
 
-    assertThat(accountant.getCount()).isEqualTo(max);
+    assertThat(accountant.getCount()).isEqualTo(count);
   }
 
   @Test
   public void cancelTryCreateStaysWithinMax(ParallelExecutor executor) throws Exception {
-    final int max = availableProcessors();
-    ConnectionAccounting accountant = new ConnectionAccounting(1, max);
+    ConnectionAccounting accountant = new ConnectionAccounting(1, count);
 
     executor.inParallel(() -> {
       if (accountant.tryCreate()) {
         accountant.cancelTryCreate();
-        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(max);
+        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(count);
       }
-    }, max + 1);
+    }, count + 1);
 
     executor.execute();
 
@@ -116,7 +112,6 @@ public class ConnectionAccountingConcurrentTest {
 
   @Test
   public void destroyAndIsUnderMinimum(ParallelExecutor executor) throws Exception {
-    final int count = availableProcessors();
     ConnectionAccounting accountant = new ConnectionAccounting(2, 4);
     repeat(() -> accountant.create(), count);
 
@@ -135,7 +130,7 @@ public class ConnectionAccountingConcurrentTest {
 
   @Test
   public void tryDestroyNeverGoesBelowMax(ParallelExecutor executor) throws Exception {
-    final int overfillMax = Math.max(availableProcessors(), 4);
+    final int overfillMax = Math.max(count, 4);
     final int max = overfillMax / 2;
     ConnectionAccounting accountant = new ConnectionAccounting(1, max);
     repeat(() -> accountant.create(), overfillMax);
@@ -153,7 +148,7 @@ public class ConnectionAccountingConcurrentTest {
 
   @Test
   public void cancelTryDestroyStaysAboveMax(ParallelExecutor executor) throws Exception {
-    final int overfillMax = Math.max(availableProcessors(), 4);
+    final int overfillMax = Math.max(count, 4);
     final int max = overfillMax / 2;
     ConnectionAccounting accountant = new ConnectionAccounting(1, max);
     repeat(() -> accountant.create(), overfillMax);
@@ -174,7 +169,7 @@ public class ConnectionAccountingConcurrentTest {
 
   @Test
   public void mixItUp(ParallelExecutor executor) throws Exception {
-    final int overfill = Math.max(availableProcessors(), 8);
+    final int overfill = Math.max(count, 8);
     final int max = overfill / 4;
     final int overfillMax = overfill + max;
     ConnectionAccounting accountant = new ConnectionAccounting(1, max);
