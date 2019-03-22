@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -352,7 +352,7 @@ public class InternalCacheBuilder {
 
   private Optional<InternalDistributedSystem> findInternalDistributedSystem() {
     InternalDistributedSystem internalDistributedSystem = null;
-    if (configProperties.isEmpty() && !ALLOW_MULTIPLE_SYSTEMS) {
+    if (configProperties.isEmpty() && !allowMultipleSystems()) {
       // any ds will do
       internalDistributedSystem = singletonSystemSupplier.get();
       validateUsabilityOfSecurityCallbacks(internalDistributedSystem, cacheConfig);
@@ -370,7 +370,7 @@ public class InternalCacheBuilder {
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,
       Supplier<? extends InternalCache> singletonCacheSupplier) {
-    InternalCache cache = ALLOW_MULTIPLE_SYSTEMS
+    InternalCache cache = allowMultipleSystems()
         ? systemCacheSupplier.get()
         : singletonCacheSupplier.get();
 
@@ -420,6 +420,10 @@ public class InternalCacheBuilder {
       throw new GemFireSecurityException(
           "Existing DistributedSystem connection cannot use specified PostProcessor");
     }
+  }
+
+  private static boolean allowMultipleSystems() {
+    return Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY);
   }
 
   @VisibleForTesting

@@ -96,8 +96,6 @@ public class InternalCacheBuilderTest {
 
     when(nullSingletonSystemSupplier.get()).thenReturn(null);
     when(nullSingletonCacheSupplier.get()).thenReturn(null);
-
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = false;
   }
 
   @Test

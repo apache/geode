@@ -642,7 +642,8 @@ public class InternalDistributedSystemJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     Config config1 = new DistributionConfigImpl(props, false);
-    InternalDistributedSystem sys = InternalDistributedSystem.newInstance(config1.toProperties());
+    InternalDistributedSystem sys =
+        new InternalDistributedSystem.Builder(config1.toProperties()).build();
     try {
 
       props.put(MCAST_PORT, "1");

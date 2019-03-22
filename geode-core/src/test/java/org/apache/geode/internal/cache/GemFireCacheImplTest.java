@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,7 +33,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheClosedException;
@@ -51,12 +54,13 @@ import org.apache.geode.test.fake.Fakes;
  */
 public class GemFireCacheImplTest {
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   private GemFireCacheImpl gemFireCacheImpl;
 
   @After
   public void tearDown() {
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = false;
-
     if (gemFireCacheImpl != null) {
       gemFireCacheImpl.close();
     }
@@ -322,9 +326,7 @@ public class GemFireCacheImplTest {
 
   @Test
   public void clientCacheWouldNotRequestClusterConfig() {
-    // we will need to set the value to true so that we can use a mock gemFireCacheImpl
-    boolean oldValue = InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = true;
+    System.setProperty(ALLOW_MULTIPLE_SYSTEMS_PROPERTY, "true");
 
     InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
     gemFireCacheImpl = mock(GemFireCacheImpl.class);
@@ -336,9 +338,6 @@ public class GemFireCacheImplTest {
 
     verify(gemFireCacheImpl, times(0)).requestSharedConfiguration();
     verify(gemFireCacheImpl, times(0)).applyJarAndXmlFromClusterConfig();
-
-    // reset it back to the old value
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = oldValue;
   }
 
   @Test

@@ -135,8 +135,9 @@ public class GMSHealthMonitorJUnitTest {
     nonDefault.put(LOCATORS, "localhost[10344]");
     DistributionManager dm = mock(DistributionManager.class);
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
-    InternalDistributedSystem system =
-        InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
+    InternalDistributedSystem system = new InternalDistributedSystem.BuilderForTesting(nonDefault)
+        .setDistributionManager(dm)
+        .build();
 
     when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
     when(mockConfig.getMemberTimeout()).thenReturn(memberTimeout);
