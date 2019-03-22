@@ -29,6 +29,47 @@ public class ConnectionAccountingTest {
   }
 
   @Test
+  public void canPrefillWhenUnderMin() {
+    ConnectionAccounting a = new ConnectionAccounting(1, 2);
+    assertThat(a.tryPrefill()).isTrue();
+    assertThat(a.getCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void cantPrefillWhenAtMin() {
+    ConnectionAccounting a = new ConnectionAccounting(1, 2);
+    a.create();
+    assertThat(a.getCount()).isEqualTo(1);
+
+    assertThat(a.tryPrefill()).isFalse();
+    assertThat(a.getCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void cantPrefillWhenAboveMin() {
+    ConnectionAccounting a = new ConnectionAccounting(1, 2);
+    a.create();
+    a.create();
+    assertThat(a.getCount()).isEqualTo(2);
+
+    assertThat(a.tryPrefill()).isFalse();
+    assertThat(a.getCount()).isEqualTo(2);
+  }
+
+  @Test
+  public void cancelPrefillDecrements() {
+    ConnectionAccounting a = new ConnectionAccounting(2, 3);
+    a.create();
+    assertThat(a.getCount()).isEqualTo(1);
+
+    assertThat(a.tryPrefill()).isTrue();
+    assertThat(a.getCount()).isEqualTo(2);
+
+    a.cancelTryPrefill();
+    assertThat(a.getCount()).isEqualTo(1);
+  }
+
+  @Test
   public void canCreateWhenUnderMax() {
     ConnectionAccounting a = new ConnectionAccounting(0, 1);
     assertThat(a.getCount()).isEqualTo(0);
@@ -144,4 +185,39 @@ public class ConnectionAccountingTest {
     assertThat(a.getCount()).isEqualTo(0);
   }
 
+  @Test
+  public void isUnderMinTrueWhenUnderMin() {
+    ConnectionAccounting a = new ConnectionAccounting(1, 2);
+    assertThat(a.isUnderMinimum()).isTrue();
+  }
+
+  @Test
+  public void isUnderMinFalseWhenAtOrOverMin() {
+    ConnectionAccounting a = new ConnectionAccounting(0, 2);
+    assertThat(a.isUnderMinimum()).isFalse();
+
+    a.create();
+    assertThat(a.getCount()).isEqualTo(1);
+    assertThat(a.isUnderMinimum()).isFalse();
+  }
+
+  @Test
+  public void isOverMinFalseWhenUnderOrAtMin() {
+    ConnectionAccounting a = new ConnectionAccounting(1, 2);
+    assertThat(a.isOverMinimum()).isFalse();
+
+    a.create();
+    assertThat(a.getCount()).isEqualTo(1);
+    assertThat(a.isOverMinimum()).isFalse();
+  }
+
+  @Test
+  public void isOverMinTrueWhenOverMin() {
+    ConnectionAccounting a = new ConnectionAccounting(1, 2);
+    a.create();
+    a.create();
+    assertThat(a.getCount()).isEqualTo(2);
+
+    assertThat(a.isOverMinimum()).isTrue();
+  }
 }

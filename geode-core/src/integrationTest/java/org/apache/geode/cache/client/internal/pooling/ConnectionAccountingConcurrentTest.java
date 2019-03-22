@@ -19,6 +19,8 @@ import static org.apache.geode.test.concurrency.Utilities.availableProcessors;
 import static org.apache.geode.test.concurrency.Utilities.repeat;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.ExecutionException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,6 +29,42 @@ import org.apache.geode.test.concurrency.ParallelExecutor;
 
 @RunWith(ConcurrentTestRunner.class)
 public class ConnectionAccountingConcurrentTest {
+
+  @Test
+  public void tryPrefillStaysBelowOrAtMin(ParallelExecutor executor)
+      throws ExecutionException, InterruptedException {
+    final int count = availableProcessors();
+    final int min = count - 1;
+    ConnectionAccounting accountant = new ConnectionAccounting(min, min + 4);
+
+    executor.inParallel(() -> {
+      accountant.tryPrefill();
+      assertThat(accountant.getCount()).isGreaterThan(0).isLessThanOrEqualTo(min);
+    }, count);
+
+    executor.execute();
+
+    assertThat(accountant.getCount()).isEqualTo(min);
+  }
+
+  @Test
+  public void cancelTryPrefillStaysUnderMin(ParallelExecutor executor)
+      throws ExecutionException, InterruptedException {
+    final int count = availableProcessors();
+    final int min = count - 1;
+    ConnectionAccounting accountant = new ConnectionAccounting(min, min + 4);
+
+    executor.inParallel(() -> {
+      if (accountant.tryPrefill()) {
+        accountant.cancelTryPrefill();
+        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThanOrEqualTo(min);
+      }
+    }, count);
+
+    executor.execute();
+
+    assertThat(accountant.getCount()).isEqualTo(0);
+  }
 
   @Test
   public void creates(ParallelExecutor executor) throws Exception {
@@ -77,14 +115,17 @@ public class ConnectionAccountingConcurrentTest {
   }
 
   @Test
-  public void destroys(ParallelExecutor executor) throws Exception {
+  public void destroyAndIsUnderMinimum(ParallelExecutor executor) throws Exception {
     final int count = availableProcessors();
-    ConnectionAccounting accountant = new ConnectionAccounting(0, 1);
+    ConnectionAccounting accountant = new ConnectionAccounting(2, 4);
     repeat(() -> accountant.create(), count);
 
     executor.inParallel(() -> {
-      accountant.destroyAndIsUnderMinimum(1);
-      assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThan(count);
+      if (accountant.destroyAndIsUnderMinimum(1)) {
+        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThan(2);
+      } else {
+        assertThat(accountant.getCount()).isGreaterThanOrEqualTo(0).isLessThan(count);
+      }
     }, count);
 
     executor.execute();
@@ -158,6 +199,12 @@ public class ConnectionAccountingConcurrentTest {
     executor.inParallel(() -> {
       if (accountant.tryCreate()) {
         accountant.destroyAndIsUnderMinimum(1);
+      }
+    }, max);
+
+    executor.inParallel(() -> {
+      if (accountant.tryPrefill()) {
+        accountant.cancelTryPrefill();
       }
     }, max);
 

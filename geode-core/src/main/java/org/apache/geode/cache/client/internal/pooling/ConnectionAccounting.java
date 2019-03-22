@@ -18,7 +18,7 @@ package org.apache.geode.cache.client.internal.pooling;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Responsible for counting connections. Transient refactoring to towards cleaner implementation of
+ * Responsible for counting connections. Transient refactoring towards cleaner implementation of
  * {@link ConnectionManager}.
  *
  */
@@ -26,7 +26,6 @@ public class ConnectionAccounting {
   private final int min;
   private final int max;
   private final AtomicInteger count = new AtomicInteger();
-  // private final NotAtomicInteger count = new NotAtomicInteger();
 
   public ConnectionAccounting(int min, int max) {
     this.min = min;
@@ -46,22 +45,32 @@ public class ConnectionAccounting {
   }
 
   /**
-   * Should be called why a new connection would be nice to have when count is under max. Caller
-   * should only
+   * Should be called when prefilling connections to reach min connections. Caller should only
    * create a connection if this method returns {@code true}. If connection creation fails then
-   * {@link #cancelTryCreate} must
-   * be called to revert the count increase.
+   * {@link #cancelTryPrefill} must be called to revert the count increase.
+   *
+   * @return {@code true} if count was under min and we increased it, otherwise {@code false}.
+   */
+  public boolean tryPrefill() {
+    return tryReserve(min);
+  }
+
+  /**
+   * Should only be called if connection creation failed after calling {@link #tryPrefill()} ()}.
+   */
+  public void cancelTryPrefill() {
+    count.getAndDecrement();
+  }
+
+  /**
+   * Should be called when a new connection would be nice to have when count is under max. Caller
+   * should only create a connection if this method returns {@code true}. If connection creation
+   * fails then {@link #cancelTryCreate} must be called to revert the count increase.
    *
    * @return {@code true} if count was under max and we increased it, otherwise {@code false}.
    */
   public boolean tryCreate() {
-    int currentCount;
-    while ((currentCount = count.get()) < max) {
-      if (count.compareAndSet(currentCount, currentCount + 1)) {
-        return true;
-      }
-    }
-    return false;
+    return tryReserve(max);
   }
 
   /**
@@ -80,9 +89,8 @@ public class ConnectionAccounting {
 
   /**
    * Should be called when a connection is being returned and the caller should destroy the
-   * connection if
-   * {@code true} was returned. If connection destroy fails then {@link #cancelTryDestroy()} must be
-   * called.
+   * connection if {@code true} was returned. If connection destroy fails then
+   * {@link #cancelTryDestroy()} must be called.
    *
    * @return {@code true} if count was over max and we decreased it, otherwise {@code false}.
    */
@@ -122,5 +130,15 @@ public class ConnectionAccounting {
 
   public boolean isOverMinimum() {
     return count.get() > min;
+  }
+
+  private boolean tryReserve(int upperBound) {
+    int currentCount;
+    while ((currentCount = count.get()) < upperBound) {
+      if (count.compareAndSet(currentCount, currentCount + 1)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

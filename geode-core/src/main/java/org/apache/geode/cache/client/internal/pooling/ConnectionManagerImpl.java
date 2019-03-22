@@ -624,7 +624,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       return false;
     }
 
-    if (connectionAccounting.tryCreate()) {
+    if (connectionAccounting.tryPrefill()) {
       PooledConnection connection = null;
       try {
         Connection plainConnection =
@@ -647,7 +647,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         return false;
       } finally {
         if (connection == null) {
-          connectionAccounting.cancelTryCreate();
+          connectionAccounting.cancelTryPrefill();
 
           if (logger.isDebugEnabled()) {
             logger.debug("Unable to prefill pool to minimum, connection count is now {}",
