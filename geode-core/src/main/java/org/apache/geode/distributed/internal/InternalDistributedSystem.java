@@ -2730,6 +2730,11 @@ public class InternalDistributedSystem extends DistributedSystem
                     .create(reconnectDS);
 
                 if (!cache.isClosed()) {
+                  TypeRegistry typeRegistry = cache.getPdxRegistry();
+                  if (typeRegistry != null) {
+                    typeRegistry.flushCache();
+                    logger.info("Flushing TypeRegistry");
+                  }
                   createAndStartCacheServers(cacheServerCreation, cache);
                   if (cache.getCachePerfStats().getReliableRegionsMissing() == 0) {
                     reconnectAttemptCounter = 0;
