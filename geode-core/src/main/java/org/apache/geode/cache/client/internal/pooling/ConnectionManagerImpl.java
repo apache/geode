@@ -39,7 +39,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -183,12 +182,38 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
-  private PooledConnection createPooledConnection(final ServerLocation serverLocation,
-      final Set<ServerLocation> excludedServers) {
-    if (null == serverLocation) {
+  private PooledConnection createPooledConnection()
+      throws NoAvailableServersException, ServerOperationException {
+    return createPooledConnection(Collections.emptySet());
+  }
+
+  private PooledConnection createPooledConnection(Set<ServerLocation> excludedServers)
+      throws NoAvailableServersException, ServerOperationException {
+    try {
       return addConnection(connectionFactory.createClientToServerConnection(excludedServers));
-    } else {
-      return addConnection(connectionFactory.createClientToServerConnection(serverLocation, false));
+    } catch (GemFireSecurityException e) {
+      throw new ServerOperationException(e);
+    } catch (ServerRefusedConnectionException e) {
+      throw new NoAvailableServersException(e);
+    }
+  }
+
+  private PooledConnection createPooledConnection(ServerLocation serverLocation)
+      throws ServerRefusedConnectionException, GemFireSecurityException {
+    return addConnection(connectionFactory.createClientToServerConnection(serverLocation, false));
+  }
+
+  /**
+   * Always creates a connection and may cause {@link #connectionCount} to exceed
+   * {@link #maxConnections}.
+   */
+  private PooledConnection forceCreateConnection(ServerLocation serverLocation)
+      throws ServerRefusedConnectionException, ServerOperationException {
+    connectionAccounting.create();
+    try {
+      return createPooledConnection(serverLocation);
+    } catch (GemFireSecurityException e) {
+      throw new ServerOperationException(e);
     }
   }
 
@@ -196,11 +221,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * Always creates a connection and may cause {@link #connectionCount} to exceed
    * {@link #maxConnections}.
    */
-  private PooledConnection forceCreateConnection(final ServerLocation serverLocation,
-      final Set<ServerLocation> excludedServers)
-      throws ServerOperationException, NoAvailableServersException {
+  private PooledConnection forceCreateConnection(Set<ServerLocation> excludedServers)
+      throws NoAvailableServersException, ServerOperationException {
     connectionAccounting.create();
-    return createPooledConnection(serverLocation, excludedServers);
+    return createPooledConnection(excludedServers);
   }
 
   private boolean checkShutdownInterruptedOrTimeout(final long timeout)
@@ -237,7 +261,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   // TODO reevaluate this
   @Override
   public Connection borrowConnection(long acquireTimeout)
-      throws AllConnectionsInUseException, NoAvailableServersException {
+      throws AllConnectionsInUseException, NoAvailableServersException, ServerOperationException {
     long waitStart = NOT_WAITING;
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
@@ -249,21 +273,16 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
         if (connectionAccounting.tryCreate()) {
           try {
-            connection = createPooledConnection(null, Collections.emptySet());
+            connection = createPooledConnection();
             if (null != connection) {
               return connection;
             }
-          } catch (GemFireSecurityException | GatewayConfigurationException e) {
-            throw new ServerOperationException(e);
-          } catch (ServerRefusedConnectionException srce) {
-            throw new NoAvailableServersException(srce);
+            throw new NoAvailableServersException();
           } finally {
             if (connection == null) {
               connectionAccounting.cancelTryCreate();
             }
           }
-
-          throw new NoAvailableServersException();
         }
 
         if (checkShutdownInterruptedOrTimeout(timeout)) {
@@ -293,7 +312,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
     PooledConnection connection =
         availableConnectionManager.findConnection((c) -> c.getServer().equals(server));
-
     if (null != connection) {
       return connection;
     }
@@ -302,13 +320,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
       throw new AllConnectionsInUseException();
     }
 
-    try {
-      connection = forceCreateConnection(server, Collections.emptySet());
-      if (null != connection) {
-        return connection;
-      }
-    } catch (GemFireSecurityException e) {
-      throw new ServerOperationException(e);
+    connection = forceCreateConnection(server);
+    if (null != connection) {
+      return connection;
     }
 
     throw new ServerConnectivityException(
@@ -327,21 +341,15 @@ public class ConnectionManagerImpl implements ConnectionManager {
         return connection;
       }
 
-      try {
-        connection = forceCreateConnection(null, excludedServers);
-        if (null != connection) {
-          return connection;
-        }
-      } catch (GemFireSecurityException e) {
-        throw new ServerOperationException(e);
-      } catch (ServerRefusedConnectionException e) {
-        throw new NoAvailableServersException(e);
+      connection = forceCreateConnection(excludedServers);
+      if (null != connection) {
+        return connection;
       }
+
+      throw new NoAvailableServersException();
     } finally {
       returnConnection(oldConnection, true, true);
     }
-
-    throw new NoAvailableServersException();
   }
 
   protected/* GemStoneAddition */ String getPoolName() {
@@ -591,8 +599,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     if (connectionAccounting.tryPrefill()) {
       PooledConnection connection = null;
       try {
-        connection = addConnection(
-            connectionFactory.createClientToServerConnection(Collections.emptySet()));
+        connection = createPooledConnection();
         if (connection == null) {
           return false;
         }
@@ -739,49 +746,42 @@ public class ConnectionManagerImpl implements ConnectionManager {
    */
   public boolean createLifetimeReplacementConnection(ServerLocation currentServer,
       boolean idlePossible) {
-    HashSet excludedServers = new HashSet();
-    ServerLocation sl = this.connectionFactory.findBestServer(currentServer, excludedServers);
-
-    while (sl != null) {
-      if (sl.equals(currentServer)) {
-        this.allConnectionsMap.extendLifeOfCnxToServer(currentServer);
+    HashSet<ServerLocation> excludedServers = new HashSet<>();
+    while (true) {
+      ServerLocation sl = connectionFactory.findBestServer(currentServer, excludedServers);
+      if (sl == null || sl.equals(currentServer)) {
+        // we didn't find a server to create a replacement cnx on so
+        // extends the currentServers life
+        allConnectionsMap.extendLifeOfCnxToServer(currentServer);
         break;
-      } else {
-        if (!this.allConnectionsMap.hasExpiredCnxToServer(currentServer)) {
-          break;
-        }
-        Connection con = null;
-        try {
-          con = this.connectionFactory.createClientToServerConnection(sl, false);
-        } catch (GemFireSecurityException e) {
-          securityLogWriter.warning(
-              String.format("Security exception connecting to server '%s': %s",
-                  new Object[] {sl, e}));
-        } catch (ServerRefusedConnectionException srce) {
-          logger.warn("Server '{}' refused new connection: {}",
-              new Object[] {sl, srce});
-        }
-        if (con == null) {
-          excludedServers.add(sl);
-          sl = this.connectionFactory.findBestServer(currentServer, excludedServers);
-        } else {
+      }
+      if (!allConnectionsMap.hasExpiredCnxToServer(currentServer)) {
+        break;
+      }
+      Connection con = null;
+      try {
+        con = connectionFactory.createClientToServerConnection(sl, false);
+        if (con != null) {
           getPoolStats().incLoadConditioningConnect();
-          if (!this.allConnectionsMap.hasExpiredCnxToServer(currentServer)) {
+          if (allConnectionsMap.hasExpiredCnxToServer(currentServer)) {
+            offerReplacementConnection(con, currentServer);
+          } else {
             getPoolStats().incLoadConditioningReplaceTimeouts();
             con.destroy();
-            break;
           }
-          offerReplacementConnection(con, currentServer);
           break;
         }
+      } catch (GemFireSecurityException e) {
+        securityLogWriter.warning(
+            String.format("Security exception connecting to server '%s': %s",
+                new Object[] {sl, e}));
+      } catch (ServerRefusedConnectionException srce) {
+        logger.warn("Server '{}' refused new connection: {}",
+            new Object[] {sl, srce});
       }
+      excludedServers.add(sl);
     }
-    if (sl == null) {
-      // we didn't find a server to create a replacement cnx on so
-      // extends the currentServers life
-      this.allConnectionsMap.extendLifeOfCnxToServer(currentServer);
-    }
-    return this.allConnectionsMap.checkForReschedule(true);
+    return allConnectionsMap.checkForReschedule(true);
   }
 
   protected class ConnectionMap {
