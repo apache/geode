@@ -32,7 +32,6 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.logging.LogService;
@@ -71,8 +70,6 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
         "configure pdx --read-serialized=true --auto-serializable-classes=ClusterConfigServerRestartWithJarDeployFunction.*");
 
     Properties props = new Properties();
-    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.management.internal.configuration.**");
     MemberVM server1 = rule.startServerVM(1, props, locator0.getPort());
     MemberVM server2 = rule.startServerVM(2, props, locator0.getPort());
 
