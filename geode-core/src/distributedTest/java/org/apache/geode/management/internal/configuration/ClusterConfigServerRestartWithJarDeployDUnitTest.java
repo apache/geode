@@ -75,15 +75,15 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
 
     File functionJar = getFunctionJar();
     gfsh.executeAndAssertThat("deploy --jar=" + functionJar.getAbsolutePath()).statusIsSuccess();
-    functionJar = getFunctionJar();
-    gfsh.executeAndAssertThat("deploy --jar=" + functionJar.getAbsolutePath()).statusIsSuccess();
 
     callFunction(server1);
 
     server2.forceDisconnect();
 
     await().untilAsserted(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
-        .tableHasColumnOnlyWithValues("Name", "locator-0", "server-1", "server-2"));
+        .hasTableSection()
+        .hasColumn("Name")
+        .containsExactlyInAnyOrder("locator-0", "server-1", "server-2"));
 
     callFunction(server1);
   }
