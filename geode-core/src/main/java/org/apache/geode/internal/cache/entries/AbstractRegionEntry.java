@@ -258,14 +258,11 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     assert region.getVersionVector() != null;
     assert version != null;
 
-    if (isTombstone()) {
-      // unschedule the old tombstone
-      region.unscheduleTombstone(this);
-    }
+    boolean wasTombstone = isTombstone();
     setRecentlyUsed(region);
     boolean newEntry = getValueAsToken() == Token.REMOVED_PHASE1;
     basicMakeTombstone(region);
-    region.scheduleTombstone(this, version);
+    region.scheduleTombstone(this, version, wasTombstone);
     if (newEntry) {
       // bug #46631 - entry count is decremented by scheduleTombstone but this is a new entry
       region.getCachePerfStats().incEntryCount(1);

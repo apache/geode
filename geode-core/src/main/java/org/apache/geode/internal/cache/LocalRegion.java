@@ -3296,7 +3296,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     scheduleTombstone(entry, destroyedVersion, false);
   }
 
-  private void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion,
+  @Override
+  public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion,
       boolean reschedule) {
     if (destroyedVersion == null) {
       throw new NullPointerException("destroyed version tag cannot be null");
