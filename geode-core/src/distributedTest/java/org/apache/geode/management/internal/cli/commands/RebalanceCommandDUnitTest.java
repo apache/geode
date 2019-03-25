@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
@@ -37,8 +36,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -116,30 +113,21 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithTimeOut() {
     String command = "rebalance --time-out=1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
   }
 
   @Test
   public void testWithTimeOutAndRegion() {
     String command = "rebalance --time-out=1 --include-region=" + "/" + SHARED_REGION_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
   }
 
   @Test
   public void testWithSimulateAndRegion() {
     String command = "rebalance --simulate=true --include-region=" + "/" + SHARED_REGION_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertAllRegionsUnchanged();
   }
@@ -147,10 +135,7 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithSimulate() {
     String command = "rebalance --simulate=true";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertAllRegionsUnchanged();
   }
@@ -159,10 +144,7 @@ public class RebalanceCommandDUnitTest {
   public void testWithTwoRegions() {
     String command =
         "rebalance --include-region=" + "/" + SHARED_REGION_NAME + ",/" + REGION2_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertRegionBalanced(SHARED_REGION_NAME);
     assertThat(server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME)))
@@ -183,10 +165,7 @@ public class RebalanceCommandDUnitTest {
 
     String command =
         "rebalance --include-region=" + "/" + SHARED_REGION_NAME + ",/" + REGION2_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertRegionBalanced(SHARED_REGION_NAME);
     assertRegionBalanced(REGION2_NAME);
@@ -198,10 +177,7 @@ public class RebalanceCommandDUnitTest {
   public void testWithBadRegionNames() {
     String command =
         "rebalance --include-region=" + "/" + "randomGarbageString" + ",/" + "otherRandomGarbage";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsError();
     assertAllRegionsUnchanged();
   }
 
@@ -209,10 +185,7 @@ public class RebalanceCommandDUnitTest {
   public void testWithOneGoodAndOneBadRegionName() {
     String command =
         "rebalance --include-region=" + "/" + SHARED_REGION_NAME + ",/" + "otherRandomGarbage";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
     assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);
@@ -223,10 +196,7 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithNonSharedRegions() {
     String command = "rebalance --include-region=" + "/" + REGION1_NAME + ",/" + REGION2_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsError();
 
     assertAllRegionsUnchanged();
   }
@@ -234,20 +204,14 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithSimulateAndTimeout() {
     String command = "rebalance --simulate=true --time-out=1";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertAllRegionsUnchanged();
   }
 
   @Test
   public void testWithNoArgs() {
     String command = "rebalance";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
     assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);
@@ -258,10 +222,7 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithExcludedRegion() {
     String command = "rebalance --exclude-region=" + "/" + REGION2_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
     assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);
@@ -272,20 +233,14 @@ public class RebalanceCommandDUnitTest {
   @Test
   public void testWithExcludedSharedRegion() {
     String command = "rebalance --exclude-region=" + "/" + SHARED_REGION_NAME;
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertAllRegionsUnchanged();
   }
 
   @Test
   public void testWithExcludedBadRegion() {
     String command = "rebalance --exclude-region=/asdf";
-    CommandResult cmdResult = gfsh.executeCommand(command);
-
-    assertThat(cmdResult).isNotNull();
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
     assertRegionBalanced(SHARED_REGION_NAME);
     assertThat(server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME)))
         .isEqualTo(server1Region1InitialSize);

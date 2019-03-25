@@ -59,7 +59,6 @@ import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;

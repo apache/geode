@@ -89,10 +89,10 @@ public class GfJsonArrayTest {
     gfJsonArray.put(obj);
     gfJsonArray.put(1, obj);
 
-    assertThat(gfJsonArray.getInternalJsonObject(0).getInt("key")).isEqualTo(1);
-    assertThat(gfJsonArray.getInternalJsonObject(0).getString("value")).isEqualTo("a");
-    assertThat(gfJsonArray.getInternalJsonObject(1).getInt("key")).isEqualTo(1);
-    assertThat(gfJsonArray.getInternalJsonObject(1).getString("value")).isEqualTo("a");
+    assertThat(gfJsonArray.getJsonObject(0).getInt("key")).isEqualTo(1);
+    assertThat(gfJsonArray.getJsonObject(0).getString("value")).isEqualTo("a");
+    assertThat(gfJsonArray.getJsonObject(1).getInt("key")).isEqualTo(1);
+    assertThat(gfJsonArray.getJsonObject(1).getString("value")).isEqualTo("a");
   }
 
   @Test

@@ -73,7 +73,7 @@ public class JSONFormatVerifyUtility {
     Assert.assertEquals("VerifyPdxInstanceToJson: Map type values are not matched",
         testObject.getM_empByCity().get("Ahmedabad").get(0).getFname(),
         jsonObject.getJSONObject(testObject.getM_empByCityFN()).getJSONArray("Ahmedabad")
-            .getInternalJsonObject(0).getString("fname"));
+            .getJsonObject(0).getString("fname"));
 
     // validation Enum
     Assert.assertEquals("VerifyPdxInstanceToJson: Enum type values are not matched",

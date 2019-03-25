@@ -259,6 +259,11 @@ public class ResultModel {
         .map(TabularResultModel.class::cast).collect(Collectors.toList());
   }
 
+  @JsonIgnore
+  public int getSectionSize() {
+    return sections.size();
+  }
+
   public TabularResultModel getTableSection(String name) {
     return (TabularResultModel) getSection(name);
   }

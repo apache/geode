@@ -68,7 +68,7 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         newTypeId = GetPDXIdForTypeOp.execute((ExecutablePool) pool, newType);
         newType.setTypeId(newTypeId);
-        sendTypeToAllPools(newType, newTypeId, getAllPoolsExcept(pool));
+        copyTypeToOtherPools(newType, newTypeId, pool);
         return newTypeId;
       } catch (ServerConnectivityException e) {
         // ignore, try the next pool.
@@ -76,6 +76,22 @@ public class ClientTypeRegistration implements TypeRegistration {
       }
     }
     throw returnCorrectExceptionForFailure(pools, newTypeId, lastException);
+  }
+
+  /**
+   * Send a type to all pools. This used to make sure that any types
+   * used by this client make it to all clusters this client is connected to.
+   */
+  private void copyTypeToOtherPools(PdxType newType, int newTypeId, Pool exception) {
+    Collection<Pool> pools = getAllPoolsExcept(exception);
+    for (Pool pool : pools) {
+      try {
+        sendTypeToPool(newType, newTypeId, pool);
+      } catch (ServerConnectivityException e) {
+        logger.debug("Received an exception sending pdx type to pool {}, {}", pool, e.getMessage(),
+            e);
+      }
+    }
   }
 
   private Collection<Pool> getAllPoolsExcept(Pool pool) {
@@ -181,8 +197,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     for (Pool pool : pools) {
       try {
         int result = GetPDXIdForEnumOp.execute((ExecutablePool) pool, enumInfo);
-
-        sendEnumToAllPools(enumInfo, result, getAllPoolsExcept(pool));
+        copyEnumToOtherPools(enumInfo, result, pool);
         return result;
       } catch (ServerConnectivityException e) {
         // ignore, try the next pool.
@@ -190,6 +205,21 @@ public class ClientTypeRegistration implements TypeRegistration {
       }
     }
     throw returnCorrectExceptionForFailure(pools, -1, lastException);
+  }
+
+  /**
+   * Send an enum to all pools. This used to make sure that any enums
+   * used by this client make it to all clusters this client is connected to.
+   */
+  private void copyEnumToOtherPools(EnumInfo enumInfo, int newTypeId, Pool exception) {
+    Collection<Pool> pools = getAllPoolsExcept(exception);
+    for (Pool pool : pools) {
+      try {
+        sendEnumIdToPool(enumInfo, newTypeId, pool);
+      } catch (ServerConnectivityException e) {
+        logger.debug("Received an exception sending pdx enum to pool {}, {}", pool, e.getMessage());
+      }
+    }
   }
 
   private void sendEnumIdToPool(EnumInfo enumInfo, int id, Pool pool) {
@@ -295,51 +325,39 @@ public class ClientTypeRegistration implements TypeRegistration {
     return true;
   }
 
+  /**
+   * Add an type as part of an import. The type is sent to all pools in case
+   * the pools are connected to different clusters, but if one pool fails
+   * the import will fail.
+   */
   @Override
   public void addImportedType(int typeId, PdxType importedType) {
-    sendTypeToAllPools(importedType, typeId, getAllPools());
-  }
-
-  private void sendTypeToAllPools(PdxType importedType, int typeId,
-      Collection<Pool> pools) {
-    ServerConnectivityException lastException = null;
+    Collection<Pool> pools = getAllPools();
     for (Pool pool : pools) {
       try {
         sendTypeToPool(importedType, typeId, pool);
       } catch (ServerConnectivityException e) {
-        lastException = e;
-        break;
+        throw returnCorrectExceptionForFailure(pools, typeId, e);
       }
     }
-    if (lastException == null) {
-      return;
-    }
-    throw returnCorrectExceptionForFailure(pools, typeId, lastException);
   }
 
+  /**
+   * Add an enum as part of an import. The enum is sent to all pools in case
+   * the pools are connected to different clusters, but if one pool fails
+   * the import will fail.
+   */
   @Override
   public void addImportedEnum(int enumId, EnumInfo importedInfo) {
     Collection<Pool> pools = getAllPools();
 
-    sendEnumToAllPools(importedInfo, enumId, pools);
-    return;
-  }
-
-  private void sendEnumToAllPools(EnumInfo importedInfo, int enumId, Collection<Pool> pools) {
-    ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
         sendEnumIdToPool(importedInfo, enumId, pool);
       } catch (ServerConnectivityException e) {
-        lastException = e;
-        break;
+        throw returnCorrectExceptionForFailure(pools, enumId, e);
       }
     }
-    if (lastException == null) {
-      return;
-    }
-
-    throw returnCorrectExceptionForFailure(pools, enumId, lastException);
   }
 
   private RuntimeException returnCorrectExceptionForFailure(final Collection<Pool> pools,

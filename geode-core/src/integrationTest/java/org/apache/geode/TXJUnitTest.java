@@ -97,6 +97,7 @@ import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
@@ -2495,7 +2496,7 @@ public class TXJUnitTest {
     assertNull(reg1.getEntry("key1").getValue());
     {
       // Special check to assert Invaldate token
-      LocalRegion.NonTXEntry nonTXe = (LocalRegion.NonTXEntry) reg1.getEntry("key1");
+      NonTXEntry nonTXe = (NonTXEntry) reg1.getEntry("key1");
       assertTrue(nonTXe.getRegionEntry().isInvalid());
     }
     assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());
@@ -2540,7 +2541,7 @@ public class TXJUnitTest {
     assertNull(reg1.getEntry("key1").getValue());
     {
       // Special check to assert Local Invaldate token
-      LocalRegion.NonTXEntry nonTXe = (LocalRegion.NonTXEntry) reg1.getEntry("key1");
+      NonTXEntry nonTXe = (NonTXEntry) reg1.getEntry("key1");
       assertTrue(nonTXe.getRegionEntry().isInvalid());
     }
     assertEquals(0, TxEventTestUtil.getPutEvents(this.te.getEvents()).size());

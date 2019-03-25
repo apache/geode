@@ -25,6 +25,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,14 +100,15 @@ public class DescribeRegionJUnitTest {
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess()
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
-    Map<String, List<String>> shared =
-        commandAssert.getCommandResult().getMapFromTableContent("0", "0");
-    Map<String, List<String>> memberSpecific =
-        commandAssert.getCommandResult().getMapFromTableContent("0", "1");
-
-    assertThat(shared.get("Name")).contains("regKey", "evictKey", "partKey");
-    assertThat(shared.get("Value")).contains("regVal", "evictVal", "partVal");
-    assertThat(memberSpecific).isEmpty();
+    commandAssert.hasDataSection("region-1").hasContent().containsEntry("Name", "testRegion")
+        .containsEntry("Data Policy", "normal")
+        .containsEntry("Hosting Members", "mockA");
+    commandAssert.hasTableSection("non-default-1").hasRowSize(3).hasColumns()
+        .containsExactly("Type", "Name", "Value")
+        .hasAnyRow().containsExactly("Region", "regKey", "regVal")
+        .hasAnyRow().containsExactly("Eviction", "evictKey", "evictVal")
+        .hasAnyRow().containsExactly("Partition", "partKey", "partVal");
+    commandAssert.hasTableSection("member-non-default-1").isEmpty();
   }
 
   @Test
@@ -130,14 +132,17 @@ public class DescribeRegionJUnitTest {
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess()
             .doesNotContainOutput("Non-Default Attributes Specific To");
 
-    Map<String, List<String>> shared =
-        commandAssert.getCommandResult().getMapFromTableContent("0", "0");
-    Map<String, List<String>> memberSpecific =
-        commandAssert.getCommandResult().getMapFromTableContent("0", "1");
-
-    assertThat(shared.get("Name")).contains("regKey", "evictKey", "partKey");
-    assertThat(shared.get("Value")).contains("regVal", "evictVal", "partVal");
-    assertThat(memberSpecific).isEmpty();
+    commandAssert.hasDataSection("region-1").hasContent().containsEntry("Name", "testRegion")
+        .containsEntry("Data Policy", "normal")
+        .extracting(DescribeRegionJUnitTest::extractHostingMembers)
+        .asList()
+        .containsExactlyInAnyOrder("mockA", "mockB");;
+    commandAssert.hasTableSection("non-default-1").hasRowSize(3).hasColumns()
+        .containsExactly("Type", "Name", "Value")
+        .hasAnyRow().containsExactly("Region", "regKey", "regVal")
+        .hasAnyRow().containsExactly("Eviction", "evictKey", "evictVal")
+        .hasAnyRow().containsExactly("Partition", "partKey", "partVal");
+    commandAssert.hasTableSection("member-non-default-1").isEmpty();
   }
 
   @Test
@@ -168,22 +173,27 @@ public class DescribeRegionJUnitTest {
     CommandResultAssert commandAssert =
         gfsh.executeAndAssertThat(command, COMMAND + " --name=" + regionName).statusIsSuccess();
 
-    Map<String, List<String>> shared =
-        commandAssert.getCommandResult().getMapFromTableContent("0", "0");
-    Map<String, List<String>> memberSpecific =
-        commandAssert.getCommandResult().getMapFromTableContent("0", "1");
-
-    assertThat(shared.get("Type")).containsExactly("Eviction");
-    assertThat(shared.get("Name")).containsExactly("sharedEvictionKey");
-    assertThat(shared.get("Value")).containsExactly("sharedEvictionValue");
-
-    assertThat(memberSpecific.get("Member")).containsExactly("mockA", "", "mockB", "");
-    assertThat(memberSpecific.get("Type")).containsExactly("Region", "Partition", "Region",
-        "Partition");
-    assertThat(memberSpecific.get("Name")).containsExactly("uniqueRegionKey_A",
-        "sharedPartitionKey", "uniqueRegionKey_B", "sharedPartitionKey");
-    assertThat(memberSpecific.get("Value")).containsExactly("uniqueRegionValue_A",
-        "uniquePartitionValue_A", "uniqueRegionValue_B", "uniquePartitionValue_B");
+    commandAssert.hasDataSection("region-1").hasContent().containsEntry("Name", "testRegion")
+        .containsEntry("Data Policy", "normal")
+        .extracting(DescribeRegionJUnitTest::extractHostingMembers)
+        .asList()
+        .containsExactlyInAnyOrder("mockA", "mockB");
+    commandAssert.hasTableSection("non-default-1").hasRowSize(1).hasColumns()
+        .containsExactly("Type", "Name", "Value").hasAnyRow()
+        .containsExactly("Eviction", "sharedEvictionKey", "sharedEvictionValue");
+    commandAssert.hasTableSection("member-non-default-1").hasRowSize(4).hasColumns()
+        .containsExactly("Member", "Type", "Name", "Value")
+        .hasAnyRow().containsExactly("mockA", "Region", "uniqueRegionKey_A", "uniqueRegionValue_A")
+        .hasAnyRow()
+        .containsExactly("", "Partition", "sharedPartitionKey", "uniquePartitionValue_A")
+        .hasAnyRow().containsExactly("mockB", "Region", "uniqueRegionKey_B", "uniqueRegionValue_B")
+        .hasAnyRow()
+        .containsExactly("", "Partition", "sharedPartitionKey", "uniquePartitionValue_B");
   }
 
+  static List<String> extractHostingMembers(Map<String, String> map) {
+    String key = "Hosting Members";
+    assertThat(map).containsKeys(key);
+    return Arrays.asList(map.get(key).split("\n"));
+  }
 }

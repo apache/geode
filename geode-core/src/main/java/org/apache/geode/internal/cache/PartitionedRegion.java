@@ -736,7 +736,8 @@ public class PartitionedRegion extends LocalRegion
    */
   public PartitionedRegion(String regionName, RegionAttributes regionAttributes,
       LocalRegion parentRegion, InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs);
+    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs,
+        new PartitionedRegionDataView());
 
     this.node = initializeNode();
     this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath());
@@ -4237,7 +4238,7 @@ public class PartitionedRegion extends LocalRegion
         Map<Object, VersionTag> versions = new HashMap<Object, VersionTag>();
 
         for (Iterator<Map.Entry> it = br.entrySet().iterator(); it.hasNext();) {
-          LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) it.next();
+          NonTXEntry entry = (NonTXEntry) it.next();
           RegionEntry re = entry.getRegionEntry();
           Object value = re.getValue(br); // OFFHEAP: incrc, deserialize, decrc
           VersionStamp versionStamp = re.getVersionStamp();
@@ -9421,11 +9422,6 @@ public class PartitionedRegion extends LocalRegion
               entryKey));
     }
     return br;
-  }
-
-  @Override
-  protected InternalDataView buildDataView() {
-    return new PartitionedRegionDataView();
   }
 
   @Override

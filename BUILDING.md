@@ -35,26 +35,33 @@ Note: on Windows invoke the `gfsh.bat` script to print the version string.
 
 The following steps have been tested with:
 
-* **IntelliJ IDEA 2018.2.2**
+* **IntelliJ IDEA 2018.3.5**
 
-1. Run `./gradlew --parallel devBuild` from Geode repository root to create compiler generated source
+1. Run `./gradlew --parallel generate` from Geode repository root to create compiler generated source.
+   1. Alternatively (and to ensure these sources stay up-to-date):
+      - Perform step 2
+      - In the **Gradle** dockable, expand the **geode** (the root project) -> **Tasks** -> **build**
+      - Right-click **generate** task, select **Execute Before Sync** and **Execute Before Build**
+      - Click **Refresh All Gradle Projects** at the top of the Gradle dockable
 
-2. Import project into IntelliJ IDEA
+      ![After](https://cwiki.apache.org/confluence/download/attachments/103096184/geode-generate-before-sync.png?api=v2)
+
+2. Import project into IntelliJ IDEA.
 
    From the **Welcome to IntelliJ IDEA** window:
 
    1. **Import Project ->** select *build.gradle* file from Geode repository root and press **Open**.
-   2. Enable **Use auto-import**
+   2. Optionally, enable **Use auto-import**
    3. Enable **Create separate module per source set**
    4. Select **Use Project JDK 1.8.0_*nnn*** where *nnn* is latest build required for Geode
 
-3. Change Code Style Scheme to GeodeStyle
+3. Change Code Style Scheme to GeodeStyle.
 
    Navigate to **IntelliJ IDEA -> Preferences... -> Editor -> Code Style**. Select *GeodeStyle* in Scheme drop-down box if it already exists.
 
    To define the *GeodeStyle* in **Scheme**, select the gear icon next to the drop-down box, click **Import Scheme ->** and select **IntelliJ IDEA code style XML**. Select *etc/intellij-java-modified-google-style.xml* from Geode repository root, enter **To:** *GeodeStyle*, check **Current scheme** and press **OK**.
 
-4. Make Apache the default Copyright
+4. Make Apache the default Copyright.
 
    Navigate to **IntelliJ IDEA -> Preferences... -> Editor -> Copyright**. Select *Apache* in drop-down box **Default project copyright**.
 
@@ -79,7 +86,7 @@ The following steps have been tested with:
 
    Navigate to **IntelliJ IDEA -> Preferences... -> Editor -> Copyright -> Formatting**. Uncheck **Add blank line after** and press **OK**.
 
-5. Rebuild Project
+5. Rebuild the Project.
 
    Navigate to **Build -> Rebuild Project** and the full project should compile without errors.
 

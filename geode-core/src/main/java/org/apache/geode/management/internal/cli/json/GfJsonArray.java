@@ -84,7 +84,7 @@ public class GfJsonArray extends AbstractJSONFormatter {
     }
   }
 
-  public GfJsonObject getInternalJsonObject(int index) throws GfJsonException {
+  public GfJsonObject getJsonObject(int index) throws GfJsonException {
     try {
       return new GfJsonObject(jsonArray.get(index));
     } catch (IllegalArgumentException e) {

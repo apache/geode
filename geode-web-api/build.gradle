@@ -24,8 +24,6 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
 
-  integrationTestCompile(project(':geode-json'))
-  
   compileOnly(project(':geode-core'))
 
   compileOnly('javax.servlet:javax.servlet-api')
@@ -66,6 +64,7 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'spring-beans'
   }
+  compileOnly('org.apache.logging.log4j:log4j-api')
 
 
   testCompile(project(':geode-junit')) {

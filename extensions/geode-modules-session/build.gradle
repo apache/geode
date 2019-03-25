@@ -48,6 +48,7 @@ dependencies {
   integrationTestCompile('org.eclipse.jetty:jetty-http:' + DependencyConstraints.get('jetty.version') + ':tests')
   integrationTestCompile('org.eclipse.jetty:jetty-server')
   integrationTestCompile('org.eclipse.jetty:jetty-servlet:' + DependencyConstraints.get('jetty.version') + ':tests')
+  integrationTestCompile('org.eclipse.jetty:jetty-servlet:' + DependencyConstraints.get('jetty.version'))
   integrationTestCompile('org.eclipse.jetty:jetty-util')
   integrationTestCompile('org.httpunit:httpunit') {
     exclude group: 'javax.servlet'

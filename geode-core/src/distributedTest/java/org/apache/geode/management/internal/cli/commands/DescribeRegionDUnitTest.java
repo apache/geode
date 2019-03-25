@@ -18,6 +18,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION__NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -38,11 +39,11 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.RegionsTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
@@ -167,20 +168,16 @@ public class DescribeRegionDUnitTest {
 
   @Test
   public void describeRegionWithCustomExpiry() {
-    CommandResult result = gfsh.executeAndAssertThat("describe region --name=" + PR1)
-        .statusIsSuccess().getCommandResult();
+    CommandResultAssert result = gfsh.executeAndAssertThat("describe region --name=" + PR1)
+        .statusIsSuccess();
 
-    List<String> names = result.getColumnFromTableContent("Name", "0", "0");
-    assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
+    result.hasTableSection("non-default-1")
+        .hasColumn("Name").containsOnlyOnce(RegionAttributesNames.ENTRY_IDLE_TIME_CUSTOM_EXPIRY)
+        .hasColumn("Value").containsOnlyOnce(TestCustomIdleExpiry.class.getName());
 
-    List<String> values = result.getColumnFromTableContent("Value", "0", "0");
-    assertThat(values).containsOnlyOnce(TestCustomIdleExpiry.class.getName());
-
-    names = result.getColumnFromTableContent("Name", "0", "1");
-    assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY);
-
-    values = result.getColumnFromTableContent("Value", "0", "1");
-    assertThat(values).containsOnlyOnce(TestCustomTTLExpiry.class.getName());
+    result.hasTableSection("member-non-default-1")
+        .hasColumn("Name").containsOnlyOnce(RegionAttributesNames.ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY)
+        .hasColumn("Value").containsOnlyOnce(TestCustomTTLExpiry.class.getName());
   }
 
   /**
@@ -211,30 +208,34 @@ public class DescribeRegionDUnitTest {
 
     String command = csb.toString();
 
-    CommandResult commandResult =
-        gfsh.executeAndAssertThat(command).statusIsSuccess().getCommandResult();
+    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandResultAssert.hasDataSection("region-1").hasContent()
+        .containsEntry("Name", HOSTING_AND_ACCESSOR_REGION_NAME)
+        .containsEntry("Data Policy", "partition")
+        .containsEntry("Accessor Members", "server-5");
 
-    Map<String, String> hostingMembers = commandResult.getMapFromSection("1");
-    Map<String, List<String>> hostingMembersTable = commandResult.getMapFromTableContent("1", "0");
+    commandResultAssert.hasTableSection("non-default-1")
+        .hasColumn("Type").containsExactly("Region", "", "Partition")
+        .hasColumn("Name").contains("data-policy", "size", "local-max-memory")
+        .hasColumn("Value").contains("PARTITION", "0", "0");
 
-    assertThat(hostingMembers.get("Name")).isEqualTo(HOSTING_AND_ACCESSOR_REGION_NAME);
-    assertThat(hostingMembers.get("Data Policy")).isEqualTo("partition");
-    assertThat(hostingMembers.get("Hosting Members")).contains("server-1", "server-2", "server-3",
-        "server-4");
-    assertThat(hostingMembersTable.get("Type")).contains("Region");
-    assertThat(hostingMembersTable.get("Name")).contains("data-policy", "size");
-    assertThat(hostingMembersTable.get("Value")).contains("PARTITION", "0");
+    commandResultAssert.hasDataSection("region-2").hasContent()
+        .containsEntry("Name", HOSTING_AND_ACCESSOR_REGION_NAME)
+        .containsEntry("Data Policy", "partition")
+        .extracting(DescribeRegionDUnitTest::extractHostingMembers)
+        .asList()
+        .containsExactlyInAnyOrder("server-1", "server-2", "server-3", "server-4");
 
-    Map<String, String> accessorMembers = commandResult.getMapFromSection("0");
-    Map<String, List<String>> accessorMembersTable = commandResult.getMapFromTableContent("0", "0");
+    commandResultAssert.hasTableSection("non-default-2")
+        .hasColumn("Type").containsExactly("Region", "")
+        .hasColumn("Name").containsExactly("size", "data-policy")
+        .hasColumn("Value").containsExactly("0", "PARTITION");
+  }
 
-    assertThat(accessorMembers.get("Name")).isEqualTo(HOSTING_AND_ACCESSOR_REGION_NAME);
-    assertThat(accessorMembers.get("Data Policy")).isEqualTo("partition");
-    assertThat(accessorMembers.get("Accessor Members")).isEqualTo("server-5");
-    assertThat(accessorMembersTable.get("Type")).contains("Region", "Partition");
-    assertThat(accessorMembersTable.get("Name")).contains("data-policy", "size",
-        "local-max-memory");
-    assertThat(accessorMembersTable.get("Value")).contains("PARTITION", "0", "0");
+  static List<String> extractHostingMembers(Map<String, String> map) {
+    String key = "Hosting Members";
+    assertThat(map).containsKeys(key);
+    return Arrays.asList(map.get(key).split("\n"));
   }
 
   private static void createHostingAndAccessorRegion() {

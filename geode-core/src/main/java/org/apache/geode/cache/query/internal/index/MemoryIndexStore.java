@@ -40,6 +40,7 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
@@ -505,7 +506,7 @@ public class MemoryIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return new CachedEntryWrapper(((LocalRegion) this.region).new NonTXEntry(entry));
+    return new CachedEntryWrapper(new NonTXEntry((LocalRegion) region, entry));
   }
 
   @Override
@@ -526,7 +527,7 @@ public class MemoryIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) this.region).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) region, entry);
   }
 
   private Object getTargetObjectForUpdate(RegionEntry entry) {
@@ -546,7 +547,7 @@ public class MemoryIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) this.region).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) region, entry);
   }
 
   @Override
@@ -836,7 +837,7 @@ public class MemoryIndexStore implements IndexStore {
 
     private Object key, value;
 
-    public CachedEntryWrapper(LocalRegion.NonTXEntry entry) {
+    public CachedEntryWrapper(NonTXEntry entry) {
       if (IndexManager.testHook != null) {
         IndexManager.testHook.hook(201);
       }
