@@ -15,7 +15,7 @@ import java.util.function.Predicate;
  *
  */
 public class AvailableConnectionManager {
-  private final ConcurrentLinkedDeque<PooledConnection> availableConnections =
+  private final ConcurrentLinkedDeque<PooledConnection> connections =
       new ConcurrentLinkedDeque<>();
 
   /**
@@ -27,7 +27,7 @@ public class AvailableConnectionManager {
    */
   public PooledConnection useFirst() {
     PooledConnection connection;
-    while (null != (connection = availableConnections.pollFirst())) {
+    while (null != (connection = connections.pollFirst())) {
       if (connection.activate()) {
         return connection;
       }
@@ -42,7 +42,7 @@ public class AvailableConnectionManager {
    * @return true if a connection was removed; otherwise false
    */
   public boolean remove(PooledConnection connection) {
-    return availableConnections.remove(connection);
+    return connections.remove(connection);
   }
 
   /**
@@ -84,7 +84,7 @@ public class AvailableConnectionManager {
    */
   public PooledConnection useFirst(Predicate<PooledConnection> predicate) {
     final EqualsWithPredicate equalsWithPredicate = new EqualsWithPredicate(predicate);
-    while (availableConnections.removeFirstOccurrence(equalsWithPredicate)) {
+    while (connections.removeFirstOccurrence(equalsWithPredicate)) {
       PooledConnection connection = equalsWithPredicate.getConnectionThatMatched();
       if (connection.activate()) {
         return connection;
@@ -102,7 +102,7 @@ public class AvailableConnectionManager {
    */
   public void addFirst(PooledConnection connection, boolean accessed) {
     passivate(connection, accessed);
-    availableConnections.addFirst(connection);
+    connections.addFirst(connection);
   }
 
   /**
@@ -114,7 +114,7 @@ public class AvailableConnectionManager {
    */
   public void addLast(PooledConnection connection, boolean accessed) {
     passivate(connection, accessed);
-    availableConnections.addLast(connection);
+    connections.addLast(connection);
   }
 
   private void passivate(PooledConnection connection, boolean accessed) {
