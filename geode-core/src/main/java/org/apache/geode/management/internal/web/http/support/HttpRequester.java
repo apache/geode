@@ -41,7 +41,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -95,7 +94,7 @@ public class HttpRequester {
         converters.remove(converter);
       }
     }
-    converters.add(new SerializableObjectHttpMessageConverter());
+    // converters.add(new SerializableObjectHttpMessageConverter());
 
     this.restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
       @Override
