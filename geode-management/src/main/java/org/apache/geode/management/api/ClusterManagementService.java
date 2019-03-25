@@ -25,7 +25,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 @Experimental
 public interface ClusterManagementService {
 
-  String FEATURE_FLAG = "enable-experimental-cluster-management-service";
+  String FEATURE_FLAG = "gemfire.enable-experimental-cluster-management-service";
 
   /**
    * This method will create the element on all the applicable members in the cluster and persist
