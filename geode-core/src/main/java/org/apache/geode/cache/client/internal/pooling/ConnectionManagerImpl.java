@@ -266,7 +266,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     try {
       long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
       while (true) {
-        PooledConnection connection = availableConnectionManager.getConnection();
+        PooledConnection connection = availableConnectionManager.useFirst();
         if (null != connection) {
           return connection;
         }
@@ -311,7 +311,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   public Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
     PooledConnection connection =
-        availableConnectionManager.findConnection((c) -> c.getServer().equals(server));
+        availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
     if (null != connection) {
       return connection;
     }
@@ -336,7 +336,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
     try {
       PooledConnection connection = availableConnectionManager
-          .findConnection((c) -> !excludedServers.contains(c.getServer()));
+          .useFirst((c) -> !excludedServers.contains(c.getServer()));
       if (null != connection) {
         return connection;
       }
@@ -406,7 +406,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       // TODO is this right?
       if (!conn.isDestroyed()) {
         conn.setShouldDestroy();
-        availableConnectionManager.removeConnection(conn);
+        availableConnectionManager.remove(conn);
         destroyAndMaybePrefill();
         conn.internalDestroy();
       }
@@ -423,7 +423,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     returnConnection(connection, accessed, false);
   }
 
-  private void returnConnection(Connection connection, boolean accessed, boolean addToTail) {
+  private void returnConnection(Connection connection, boolean accessed, boolean addLast) {
     assert connection instanceof PooledConnection;
     PooledConnection pooledConn = (PooledConnection) connection;
 
@@ -434,7 +434,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
     if (pooledConn.shouldDestroy()) {
       destroyConnection(pooledConn);
     } else if (!destroyIfOverLimit(pooledConn)) {
-      availableConnectionManager.returnConnection(pooledConn, accessed, addToTail);
+      if (addLast) {
+        availableConnectionManager.addLast(pooledConn, accessed);
+      } else {
+        availableConnectionManager.addFirst(pooledConn, accessed);
+      }
     }
   }
 
@@ -604,7 +608,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
           return false;
         }
         getPoolStats().incPrefillConnect();
-        availableConnectionManager.returnConnection(connection, false, true);
+        availableConnectionManager.addLast(connection, false);
         if (logger.isDebugEnabled()) {
           logger.debug("Prefilled connection {} connection count is now {}", connection,
               connectionAccounting.getCount());
