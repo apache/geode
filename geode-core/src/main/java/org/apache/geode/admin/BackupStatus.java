@@ -22,7 +22,7 @@ import org.apache.geode.distributed.DistributedMember;
 
 /**
  * The status of a backup operation, returned by
- * {@link AdminDistributedSystem#backupAllMembers(java.io.File,java.io.File)}.
+ * {@code AdminDistributedSystem#backupAllMembers(java.io.File,java.io.File)}.
  *
  * @since GemFire 6.5
  * @deprecated as of 7.0 use the <code><a href=

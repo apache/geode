@@ -115,7 +115,6 @@ jar {
   from sourceSets.jca.output
 
   exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
-  exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
 
   inputs.property("moduleName", moduleName)
   manifest {
@@ -219,14 +218,6 @@ dependencies {
   //Commons lang is used in many different places in core
   implementation('org.apache.commons:commons-lang3')
   
-  //Commons modeler is used by the (deprecated) admin API
-  implementation('commons-modeler:commons-modeler') {
-    exclude module: 'commons-logging-api'
-    exclude module: 'mx4j-jmx'
-    exclude module: 'xml-apis'
-    ext.optional = true
-  }
-    
   //micrometer is used for micrometer based metrics from geode geode
   api('io.micrometer:micrometer-core')
 
@@ -234,29 +225,10 @@ dependencies {
   //FastUtil contains optimized collections that are used in multiple places in core
   implementation('it.unimi.dsi:fastutil')
 
-  //Mail API is used by the deprecated admin API
-  implementation('javax.mail:javax.mail-api') {
-    ext.optional = true
-  }
 
   //The resource-API is used by the JCA support.
   api('javax.resource:javax.resource-api')
 
-
-  //MX4J is used by the old admin API
-  implementation('mx4j:mx4j') {
-    ext.optional = true
-  }
-
-  //MX4J remote is used by the old admin API 
-  implementation('mx4j:mx4j-remote') {
-    ext.optional = true
-  }
-
-  //MX4J tools is used by the old admin API
-  implementation('mx4j:mx4j-tools') {
-    ext.optional = true
-  }
 
   //JNA is used for locking memory and preallocating disk files.
   implementation('net.java.dev.jna:jna')

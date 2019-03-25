@@ -17,7 +17,7 @@ package org.apache.geode.internal.admin;
 
 /**
  * A simple value object to contain information needed to connect to a remote
- * {@link GfManagerAgent}. This class may not be necessary. Perhaps a URL would suffice...
+ * {@code GfManagerAgent}. This class may not be necessary. Perhaps a URL would suffice...
  */
 public interface TransportConfig {
 }

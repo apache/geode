@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -37,7 +38,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 public class RemoteGfManagerAgentTest {
 
   private RemoteGfManagerAgent mockConnectedAgent(GfManagerAgentConfig config) {
-    RemoteGfManagerAgent agent = spy(new RemoteGfManagerAgent(config));
+    RemoteGfManagerAgent agent = Mockito.spy(new RemoteGfManagerAgent(config));
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     when(system.isConnected()).thenReturn(true);
     when(system.getCancelCriterion()).thenReturn(mock(Services.Stopper.class));

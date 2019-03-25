@@ -26,6 +26,7 @@ import org.apache.geode.cache.persistence.RevokeFailedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
@@ -110,7 +111,7 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
 
   @Override
   public int getDSFID() {
-    return PREPARE_REVOKE_PERSISTENT_ID_REQUEST;
+    return DataSerializableFixedID.PREPARE_REVOKE_PERSISTENT_ID_REQUEST;
   }
 
   @Override

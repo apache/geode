@@ -17,10 +17,7 @@ package org.apache.geode.admin;
 import org.apache.geode.cache.CacheRuntimeException;
 
 /**
- * Thrown by the administration API when the region administered by a {@link SystemMemberRegion} has
- * been closed or destroyed in system member.
- * <P>
- * Also thrown by {@link org.apache.geode.DataSerializer#readRegion(java.io.DataInput)} if the named
+ * Thrown by {@link org.apache.geode.DataSerializer#readRegion(java.io.DataInput)} if the named
  * region no longer exists.
  *
  * @since GemFire 3.5

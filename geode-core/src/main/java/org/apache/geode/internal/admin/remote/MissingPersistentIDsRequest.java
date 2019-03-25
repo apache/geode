@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
@@ -114,7 +115,7 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
 
   @Override
   public int getDSFID() {
-    return MISSING_PERSISTENT_IDS_REQUEST;
+    return DataSerializableFixedID.MISSING_PERSISTENT_IDS_REQUEST;
   }
 
   private static class MissingPersistentIDProcessor extends AdminMultipleReplyProcessor {

@@ -192,8 +192,6 @@ public class InetAddressUtil {
    * @param throwable Throwable to log stack trace for
    */
   private static void logStackTrace(Throwable throwable) {
-    AdminDistributedSystemImpl adminDS = AdminDistributedSystemImpl.getConnectedInstance();
-
     logger.warn(throwable.getMessage(), throwable);
   }
 
