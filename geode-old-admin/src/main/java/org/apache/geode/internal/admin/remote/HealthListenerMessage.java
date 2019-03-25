@@ -25,6 +25,7 @@ import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.internal.admin.GeodeAdminDistributedSystemService;
 
 /**
  * A message that is sent to a particular agent who was registered a health listener on a GemFireVM.
@@ -46,7 +47,8 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    RemoteGfManagerAgent agent = dm.getAgent();
+    RemoteGfManagerAgent agent =
+        dm.getSystem().getService(GeodeAdminDistributedSystemService.class).getAgent();
     if (agent != null) {
       RemoteGemFireVM mgr = agent.getMemberById(this.getSender());
       if (mgr != null) {

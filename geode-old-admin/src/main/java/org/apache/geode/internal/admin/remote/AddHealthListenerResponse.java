@@ -22,7 +22,9 @@ import java.io.IOException;
 
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.HealthMonitors;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.GeodeAdminDistributedSystemService;
 
 /**
  * The response to adding a health listener.
@@ -41,8 +43,10 @@ public class AddHealthListenerResponse extends AdminResponse {
       InternalDistributedMember recipient, GemFireHealthConfig cfg) {
     AddHealthListenerResponse m = new AddHealthListenerResponse();
     m.setRecipient(recipient);
-    dm.createHealthMonitor(recipient, cfg);
-    m.listenerId = dm.getHealthMonitor(recipient).getId();
+    HealthMonitors healthMonitors =
+        dm.getSystem().getService(GeodeAdminDistributedSystemService.class).getHealthMonitors();
+    healthMonitors.createHealthMonitor(recipient, cfg);
+    m.listenerId = healthMonitors.getHealthMonitor(recipient).getId();
     return m;
   }
 

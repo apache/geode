@@ -23,6 +23,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.GeodeAdminDistributedSystemService;
+import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 
 /**
  * Contains the logic for evaluating the health of an entire GemFire distributed system according to
@@ -73,7 +75,9 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
 
     String desc = null;
     if (dm instanceof ClusterDistributionManager) {
-      desc = ((ClusterDistributionManager) dm).getDistributionConfigDescription();
+      RemoteGfManagerAgent agent =
+          dm.getSystem().getService(GeodeAdminDistributedSystemService.class).getAgent();
+      desc = agent == null ? "" : agent.getTransport().toString();
     }
 
     if (desc != null) {

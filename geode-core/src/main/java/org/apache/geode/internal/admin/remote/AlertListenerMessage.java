@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.management.internal.AlertDetails;
 
 /**
@@ -88,34 +87,18 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
       listener.received(this);
     }
 
-    RemoteGfManagerAgent agent = dm.getAgent();
-    if (agent != null) {
-      RemoteGemFireVM manager = agent.getMemberById(getSender());
-      if (manager == null) {
-        return;
-      }
-      Alert alert = new RemoteAlert(manager, alertLevel, date, connectionName, threadName, threadId,
-          message, exceptionText, getSender());
+    /*
+     * The other recipient type is a JMX Manager which needs AlertDetails so that it can send out
+     * JMX notifications for the alert.
+     */
+    AlertDetails alertDetail = new AlertDetails(alertLevel, date, connectionName, threadName,
+        threadId, message, exceptionText, getSender());
 
-      if (listener != null) {
-        listener.created(alert);
-      }
-
-      agent.callAlertListener(alert);
-    } else {
-      /*
-       * The other recipient type is a JMX Manager which needs AlertDetails so that it can send out
-       * JMX notifications for the alert.
-       */
-      AlertDetails alertDetail = new AlertDetails(alertLevel, date, connectionName, threadName,
-          threadId, message, exceptionText, getSender());
-
-      if (listener != null) {
-        listener.created(alertDetail);
-      }
-
-      dm.getSystem().handleResourceEvent(ResourceEvent.SYSTEM_ALERT, alertDetail);
+    if (listener != null) {
+      listener.created(alertDetail);
     }
+
+    dm.getSystem().handleResourceEvent(ResourceEvent.SYSTEM_ALERT, alertDetail);
   }
 
   @Override
@@ -181,8 +164,6 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   public interface Listener {
 
     void received(AlertListenerMessage message);
-
-    void created(Alert alert);
 
     void created(AlertDetails alertDetails);
   }

@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.GeodeAdminDistributedSystemService;
 
 /**
  * The response to reseting the health status.
@@ -41,7 +42,8 @@ public class ResetHealthStatusResponse extends AdminResponse {
     ResetHealthStatusResponse m = new ResetHealthStatusResponse();
     m.setRecipient(recipient);
     {
-      HealthMonitor hm = dm.getHealthMonitor(recipient);
+      HealthMonitor hm = dm.getSystem().getService(GeodeAdminDistributedSystemService.class)
+          .getHealthMonitor(recipient);
       if (hm.getId() == id) {
         hm.resetStatus();
       }

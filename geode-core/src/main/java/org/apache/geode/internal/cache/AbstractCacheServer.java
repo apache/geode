@@ -16,21 +16,12 @@ package org.apache.geode.internal.cache;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.admin.ClientMembershipMessage;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
-import org.apache.geode.management.membership.ClientMembership;
-import org.apache.geode.management.membership.ClientMembershipEvent;
-import org.apache.geode.management.membership.ClientMembershipListener;
 
 /**
  * Abstract class that contains common code that all true implementations of {@link CacheServer} can
@@ -111,12 +102,6 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
   protected ClientSubscriptionConfig clientSubscriptionConfig;
 
-  /**
-   * Listens to client membership events and notifies any admin members as clients of this server
-   * leave/crash.
-   */
-  protected final ClientMembershipListener listener;
-
   ////////////////////// Constructors //////////////////////
 
   /**
@@ -144,71 +129,6 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
     this.loadProbe = CacheServer.DEFAULT_LOAD_PROBE;
     this.loadPollInterval = CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
     this.clientSubscriptionConfig = new ClientSubscriptionConfigImpl();
-
-    if (!attachListener) {
-      this.listener = null;
-      return;
-    }
-    listener = new ClientMembershipListener() {
-
-      @Override
-      public void memberJoined(ClientMembershipEvent event) {
-        if (event.isClient()) {
-          createAndSendMessage(event, ClientMembershipMessage.JOINED);
-        }
-      }
-
-      @Override
-      public void memberLeft(ClientMembershipEvent event) {
-        if (event.isClient()) {
-          createAndSendMessage(event, ClientMembershipMessage.LEFT);
-        }
-      }
-
-      @Override
-      public void memberCrashed(ClientMembershipEvent event) {
-        if (event.isClient()) {
-          createAndSendMessage(event, ClientMembershipMessage.CRASHED);
-        }
-      }
-
-      /**
-       * Method to create & send the ClientMembershipMessage to admin members. The message is sent
-       * only if there are any admin members in the distribution system.
-       *
-       * @param event describes a change in client membership
-       * @param type type of event - one of ClientMembershipMessage.JOINED,
-       *        ClientMembershipMessage.LEFT, ClientMembershipMessage.CRASHED
-       */
-      private void createAndSendMessage(ClientMembershipEvent event, int type) {
-        InternalDistributedSystem ds = null;
-        Cache cacheInstance = AbstractCacheServer.this.cache;
-        if (cacheInstance != null && !(cacheInstance instanceof CacheCreation)) {
-          ds = (InternalDistributedSystem) cacheInstance.getDistributedSystem();
-        } else {
-          ds = InternalDistributedSystem.getAnyInstance();
-        }
-
-        // ds could be null
-        if (ds != null && ds.isConnected()) {
-          DistributionManager dm = ds.getDistributionManager();
-          Set adminMemberSet = dm.getAdminMemberSet();
-
-          /* check if there are any admin members at all */
-          if (!adminMemberSet.isEmpty()) {
-            DistributedMember member = event.getMember();
-
-            ClientMembershipMessage msg = new ClientMembershipMessage(event.getMemberId(),
-                member == null ? null : member.getHost(), type);
-
-            msg.setRecipients(adminMemberSet);
-            dm.putOutgoing(msg);
-          }
-        }
-      }
-    };
-
-    ClientMembership.registerClientMembershipListener(listener);
   }
 
   ///////////////////// Instance Methods /////////////////////

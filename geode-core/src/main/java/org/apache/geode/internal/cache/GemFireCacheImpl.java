@@ -90,7 +90,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
@@ -1181,7 +1180,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           e);
     }
 
-    SystemMemberCacheEventProcessor.send(this, Operation.CACHE_CREATE);
     this.resourceAdvisor.initializationGate();
 
     // Register function that we need to execute to fetch available REST service endpoints in DS
@@ -2247,13 +2245,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           if (isDebugEnabled) {
             logger.debug("{}: notifying admins of close...", this);
-          }
-          try {
-            SystemMemberCacheEventProcessor.send(this, Operation.CACHE_CLOSE);
-          } catch (CancelException ignore) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("Ignored cancellation while notifying admins");
-            }
           }
 
           if (isDebugEnabled) {

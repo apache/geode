@@ -52,7 +52,6 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
-import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
@@ -70,8 +69,6 @@ import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
-import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InitialImageOperation;
@@ -457,10 +454,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /** The remote transport configuration for this dm */
   private RemoteTransportConfig transport;
 
-  /**
-   * The administration agent associated with this distribution manager.
-   */
-  private volatile RemoteGfManagerAgent agent;
+
 
   private SerialQueuedExecutorPool serialQueuedExecutorPool;
 
@@ -1883,7 +1877,6 @@ public class ClusterDistributionManager implements DistributionManager {
   private void uncleanShutdown(boolean beforeJoined) {
     try {
       this.closeInProgress = true; // set here also to fix bug 36736
-      removeAllHealthMonitors();
       shutdownInProgress = true;
       if (membershipManager != null) {
         membershipManager.setShutdown();
@@ -2987,117 +2980,8 @@ public class ClusterDistributionManager implements DistributionManager {
     return this.threadMonitor;
   }
 
-  /**
-   * Sets the administration agent associated with this distribution manager.
-   */
-  public void setAgent(RemoteGfManagerAgent agent) {
-    // Don't let the agent be set twice. There should be a one-to-one
-    // correspondence between admin agent and distribution manager.
-    if (agent != null) {
-      if (this.agent != null) {
-        throw new IllegalStateException(
-            "There is already an Admin Agent associated with this distribution manager.");
-      }
-
-    } else {
-      if (this.agent == null) {
-        throw new IllegalStateException(
-            "There was never an Admin Agent associated with this distribution manager.");
-      }
-    }
-    this.agent = agent;
-  }
-
-  /**
-   * Returns the agent that owns this distribution manager. (in ConsoleDistributionManager)
-   */
-  public RemoteGfManagerAgent getAgent() {
-    return this.agent;
-  }
-
-  /**
-   * Returns a description of the distribution configuration used for this distribution manager. (in
-   * ConsoleDistributionManager)
-   *
-   * @return <code>null</code> if no admin {@linkplain #getAgent agent} is associated with this
-   *         distribution manager
-   */
-  public String getDistributionConfigDescription() {
-    if (this.agent == null) {
-      return null;
-
-    } else {
-      return this.agent.getTransport().toString();
-    }
-  }
-
-  /* -----------------------------Health Monitor------------------------------ */
-  private final ConcurrentMap<InternalDistributedMember, HealthMonitor> hmMap =
-      new ConcurrentHashMap<>();
 
   private volatile InternalCache cache;
-
-  /**
-   * Returns the health monitor for this distribution manager and owner.
-   *
-   * @param owner the agent that owns the returned monitor
-   * @return the health monitor created by the owner; <code>null</code> if the owner has now created
-   *         a monitor.
-   * @since GemFire 3.5
-   */
-  @Override
-  public HealthMonitor getHealthMonitor(InternalDistributedMember owner) {
-    return this.hmMap.get(owner);
-  }
-
-  /**
-   * Returns the health monitor for this distribution manager.
-   *
-   * @param owner the agent that owns the created monitor
-   * @param cfg the configuration to use when creating the monitor
-   * @since GemFire 3.5
-   */
-  @Override
-  public void createHealthMonitor(InternalDistributedMember owner, GemFireHealthConfig cfg) {
-    if (closeInProgress) {
-      return;
-    }
-    {
-      final HealthMonitor hm = getHealthMonitor(owner);
-      if (hm != null) {
-        hm.stop();
-        this.hmMap.remove(owner);
-      }
-    }
-    {
-      HealthMonitorImpl newHm = new HealthMonitorImpl(owner, cfg, this);
-      newHm.start();
-      this.hmMap.put(owner, newHm);
-    }
-  }
-
-  /**
-   * Remove a monitor that was previously created.
-   *
-   * @param owner the agent that owns the monitor to remove
-   */
-  @Override
-  public void removeHealthMonitor(InternalDistributedMember owner, int theId) {
-    final HealthMonitor hm = getHealthMonitor(owner);
-    if (hm != null && hm.getId() == theId) {
-      hm.stop();
-      this.hmMap.remove(owner);
-    }
-  }
-
-  private void removeAllHealthMonitors() {
-    Iterator it = this.hmMap.values().iterator();
-    while (it.hasNext()) {
-      HealthMonitor hm = (HealthMonitor) it.next();
-      hm.stop();
-      it.remove();
-    }
-  }
 
   @Override
   public Set<InternalDistributedMember> getAdminMemberSet() {
@@ -3440,22 +3324,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
     @Override
     public void memberDeparted(InternalDistributedMember theId, boolean crashed, String reason) {
-      boolean wasAdmin = getAdminMemberSet().contains(theId);
-      if (wasAdmin) {
-        // Pretend we received an AdminConsoleDisconnectMessage from the console that
-        // is no longer in the JavaGroup view.
-        // It must have died without sending a ShutdownMessage.
-        // This fixes bug 28454.
-        AdminConsoleDisconnectMessage message = new AdminConsoleDisconnectMessage();
-        message.setSender(theId);
-        message.setCrashed(crashed);
-        message.setAlertListenerExpected(true);
-        message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener so
-                                                            // don't issue a warning
-        message.setRecipient(localAddress);
-        message.setReason(reason); // added for #37950
-        handleIncomingDMsg(message);
-      }
+
       dm.handleManagerDeparture(theId, crashed, reason);
     }
 

@@ -23,7 +23,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
@@ -462,12 +461,6 @@ public interface DistributionManager extends ReplySender {
   InternalCache getExistingCache();
 
   void setCache(InternalCache instance);
-
-  HealthMonitor getHealthMonitor(InternalDistributedMember owner);
-
-  void removeHealthMonitor(InternalDistributedMember owner, int theId);
-
-  void createHealthMonitor(InternalDistributedMember owner, GemFireHealthConfig cfg);
 
   boolean exceptionInThreads();
 

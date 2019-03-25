@@ -76,8 +76,6 @@ import org.apache.geode.internal.cache.tier.sockets.ProtobufServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.membership.ClientMembership;
-import org.apache.geode.management.membership.ClientMembershipListener;
 
 /**
  * An implementation of the{@code CacheServer} interface that delegates most of the heavy lifting to
@@ -366,27 +364,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     this.cache.getLogger()
         .config(String.format("CacheServer Configuration:  %s", getConfig()));
 
-    /*
-     * If the stopped cache server is restarted, we'll need to re-register the client membership
-     * listener. If the listener is already registered it won't be registered as would the case when
-     * start() is invoked for the first time.
-     */
-    ClientMembershipListener[] membershipListeners =
-        ClientMembership.getClientMembershipListeners();
-
-    boolean membershipListenerRegistered = false;
-    for (ClientMembershipListener membershipListener : membershipListeners) {
-      // just checking by reference as the listener instance is final
-      if (listener == membershipListener) {
-        membershipListenerRegistered = true;
-        break;
-      }
-    }
-
-    if (!membershipListenerRegistered) {
-      ClientMembership.registerClientMembershipListener(listener);
-    }
-
     if (!isGatewayReceiver) {
       InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
@@ -477,9 +454,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     // BridgeServer is still available, just not running, so we don't take
     // it out of the cache's list...
     // cache.removeBridgeServer(this);
-
-    /* Assuming start won't be called after stop */
-    ClientMembership.unregisterClientMembershipListener(listener);
 
     TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
     txMgr.removeHostedTXStatesForClients();

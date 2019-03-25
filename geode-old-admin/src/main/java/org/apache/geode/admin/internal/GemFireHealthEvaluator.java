@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.logging.LogService;
 
@@ -72,7 +72,7 @@ public class GemFireHealthEvaluator {
    * @param config The configuration that determines whether or GemFire is healthy
    * @param dm The distribution manager
    */
-  public GemFireHealthEvaluator(GemFireHealthConfig config, ClusterDistributionManager dm) {
+  public GemFireHealthEvaluator(GemFireHealthConfig config, DistributionManager dm) {
     if (config == null) {
       throw new NullPointerException(
           "Null GemFireHealthConfig");

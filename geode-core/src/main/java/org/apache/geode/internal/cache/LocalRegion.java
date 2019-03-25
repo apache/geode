@@ -68,7 +68,6 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -6485,7 +6484,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CREATE, event);
     }
     releaseAfterRegionCreateEventLatch();
-    SystemMemberCacheEventProcessor.send(getCache(), this, Operation.REGION_CREATE);
+
     initializingRegion.remove();
   }
 
@@ -7321,10 +7320,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       RegionEventImpl regionEventImpl = (RegionEventImpl) regionEvent;
       regionEventImpl.region.dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_DESTROY,
           regionEventImpl);
-      if (!cache.forcedDisconnect()) {
-        SystemMemberCacheEventProcessor.send(getCache(), regionEventImpl.getRegion(),
-            regionEventImpl.getOperation());
-      }
+
     }
   }
 

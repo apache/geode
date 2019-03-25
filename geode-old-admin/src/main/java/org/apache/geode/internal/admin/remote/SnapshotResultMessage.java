@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.CacheSnapshot;
+import org.apache.geode.internal.admin.GeodeAdminDistributedSystemService;
 
 public class SnapshotResultMessage extends PooledDistributionMessage implements AdminMessageType {
   private CacheSnapshot results;
@@ -41,7 +42,8 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
 
   @Override
   public void process(ClusterDistributionManager dm) {
-    RemoteGfManagerAgent agent = dm.getAgent();
+    RemoteGfManagerAgent agent =
+        dm.getSystem().getService(GeodeAdminDistributedSystemService.class).getAgent();
     if (agent != null) {
       agent.enqueueSnapshotResults(this);
     }

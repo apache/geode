@@ -15,7 +15,6 @@
 package org.apache.geode.internal.admin.remote;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;

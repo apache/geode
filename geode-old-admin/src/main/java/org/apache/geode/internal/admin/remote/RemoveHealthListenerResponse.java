@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.GeodeAdminDistributedSystemService;
 
 /**
  * The response to adding a health listener.
@@ -39,7 +40,8 @@ public class RemoveHealthListenerResponse extends AdminResponse {
       InternalDistributedMember recipient, int id) {
     RemoveHealthListenerResponse m = new RemoveHealthListenerResponse();
     m.setRecipient(recipient);
-    dm.removeHealthMonitor(recipient, id);
+    dm.getSystem().getService(GeodeAdminDistributedSystemService.class)
+        .removeHealthMonitor(recipient, id);
     return m;
   }
 

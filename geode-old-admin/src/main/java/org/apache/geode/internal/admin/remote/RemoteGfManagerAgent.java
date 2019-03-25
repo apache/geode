@@ -57,6 +57,7 @@ import org.apache.geode.internal.admin.ApplicationVM;
 import org.apache.geode.internal.admin.CacheCollector;
 import org.apache.geode.internal.admin.CacheSnapshot;
 import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.GeodeAdminDistributedSystemService;
 import org.apache.geode.internal.admin.GfManagerAgent;
 import org.apache.geode.internal.admin.GfManagerAgentConfig;
 import org.apache.geode.internal.admin.JoinLeaveListener;
@@ -390,7 +391,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           }
 
           if (dm instanceof ClusterDistributionManager) {
-            ((ClusterDistributionManager) dm).setAgent(null);
+            dm.getSystem().getService(GeodeAdminDistributedSystemService.class).setAgent(null);
           }
 
         } catch (IllegalArgumentException ignore) {
@@ -765,7 +766,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   /**
    * Sends the given <code>alert</code> to this agent's {@link AlertListener}.
    */
-  void callAlertListener(Alert alert) {
+  public void callAlertListener(Alert alert) {
     if (!isListening()) {
       return;
     }
@@ -819,7 +820,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
     DistributionManager dm = system.getDistributionManager();
     if (dm instanceof ClusterDistributionManager) {
-      ((ClusterDistributionManager) dm).setAgent(this);
+
+      dm.getSystem().getService(GeodeAdminDistributedSystemService.class).setAgent(this);
     }
 
     synchronized (this) {

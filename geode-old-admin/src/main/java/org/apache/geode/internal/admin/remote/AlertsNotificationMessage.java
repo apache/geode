@@ -23,6 +23,7 @@ import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.admin.jmx.internal.StatAlertsAggregator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.internal.admin.GeodeAdminDistributedSystemService;
 import org.apache.geode.internal.admin.StatAlert;
 
 /**
@@ -66,7 +67,8 @@ public class AlertsNotificationMessage extends PooledDistributionMessage {
     if (ds instanceof StatAlertsAggregator) {
       StatAlertsAggregator aggregator = (StatAlertsAggregator) ds;
 
-      RemoteGemFireVM remoteVM = dm.getAgent().getMemberById(getSender());
+      RemoteGemFireVM remoteVM = dm.getSystem().getService(GeodeAdminDistributedSystemService.class)
+          .getAgent().getMemberById(getSender());
 
       aggregator.processNotifications(this._alerts, remoteVM);
     }

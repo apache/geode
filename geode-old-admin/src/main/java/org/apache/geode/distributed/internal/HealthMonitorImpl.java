@@ -36,7 +36,7 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
 
   private final InternalDistributedMember owner;
   private final int id;
-  private final ClusterDistributionManager dm;
+  private final DistributionManager dm;
   private final GemFireHealthEvaluator eval;
 
   /**
@@ -56,7 +56,7 @@ public class HealthMonitorImpl implements HealthMonitor, Runnable {
    * Creates a health monitor given its owner, configuration, and its dm
    */
   public HealthMonitorImpl(InternalDistributedMember owner, GemFireHealthConfig config,
-      ClusterDistributionManager dm) {
+      DistributionManager dm) {
     this.owner = owner;
     this.id = getNewId();
     this.dm = dm;

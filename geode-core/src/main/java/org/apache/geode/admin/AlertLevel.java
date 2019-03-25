@@ -15,10 +15,10 @@
 package org.apache.geode.admin;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.logging.InternalLogWriter;
 
 /**
- * Type-safe enumeration for {@link org.apache.geode.admin.Alert Alert} level.
+ * Type-safe enumeration for {@code org.apache.geode.admin.Alert Alert} level.
  *
  * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href=
@@ -30,14 +30,16 @@ public class AlertLevel implements java.io.Serializable {
   private static final long serialVersionUID = -4752438966587392126L;
 
   @Immutable
-  public static final AlertLevel WARNING = new AlertLevel(Alert.WARNING, "WARNING", 0);
+  public static final AlertLevel WARNING =
+      new AlertLevel(InternalLogWriter.WARNING_LEVEL, "WARNING", 0);
   @Immutable
-  public static final AlertLevel ERROR = new AlertLevel(Alert.ERROR, "ERROR", 1);
+  public static final AlertLevel ERROR = new AlertLevel(InternalLogWriter.ERROR_LEVEL, "ERROR", 1);
   @Immutable
-  public static final AlertLevel SEVERE = new AlertLevel(Alert.SEVERE, "SEVERE", 2);
+  public static final AlertLevel SEVERE =
+      new AlertLevel(InternalLogWriter.SEVERE_LEVEL, "SEVERE", 2);
 
   @Immutable
-  public static final AlertLevel OFF = new AlertLevel(Alert.OFF, "OFF", 3);
+  public static final AlertLevel OFF = new AlertLevel(InternalLogWriter.NONE_LEVEL, "OFF", 3);
 
   /** The severity level of this AlertLevel. Greater is more severe. */
   private final transient int severity;
@@ -75,13 +77,13 @@ public class AlertLevel implements java.io.Serializable {
    */
   public static AlertLevel forSeverity(int severity) {
     switch (severity) {
-      case Alert.WARNING:
+      case InternalLogWriter.WARNING_LEVEL:
         return AlertLevel.WARNING;
-      case Alert.ERROR:
+      case InternalLogWriter.ERROR_LEVEL:
         return AlertLevel.ERROR;
-      case Alert.SEVERE:
+      case InternalLogWriter.SEVERE_LEVEL:
         return AlertLevel.SEVERE;
-      case Alert.OFF:
+      case InternalLogWriter.NONE_LEVEL:
         return AlertLevel.OFF;
       default:
         throw new IllegalArgumentException(String.format("Unknown alert severity: %s",

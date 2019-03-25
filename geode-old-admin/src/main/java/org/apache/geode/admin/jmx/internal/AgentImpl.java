@@ -403,9 +403,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * @return the object name of the system that the Agent is now connected to
    */
   @Override
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-      value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-      justification = "This is only a style warning.")
   public ObjectName connectToSystem() throws AdminException, MalformedObjectNameException {
     synchronized (CONN_SYNC) {
       try {
@@ -451,9 +448,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * Disconnects from the current DistributedSystem (if connected to one).
    */
   @Override
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-      value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-      justification = "This is only a style warning.")
   public void disconnectFromSystem() {
     synchronized (CONN_SYNC) {
       try {
@@ -863,8 +857,6 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   /**
    * Creates a LogWriterI18n for this Agent to use in logging.
    */
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
-      justification = "Return value for file delete is not important here.")
   private void initLogWriter() throws org.apache.geode.admin.AdminException {
     loggingSession.createSession(this);
 
@@ -1564,8 +1556,6 @@ class ConnectionNotificationAdapter implements NotificationListener {
    *        the object. (NOTE: copied from javax.management.NotificationListener)
    */
   @Override
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "BC_UNCONFIRMED_CAST",
-      justification = "Only JMXConnectionNotification instances are used.")
   public void handleNotification(Notification notification, Object handback) {
     if (handback instanceof AgentImpl) {
       AgentImpl agent = (AgentImpl) handback;

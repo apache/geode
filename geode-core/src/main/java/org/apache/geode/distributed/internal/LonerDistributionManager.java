@@ -38,7 +38,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
@@ -1456,24 +1455,6 @@ public class LonerDistributionManager implements DistributionManager {
           "The cache has been closed.", null);
     }
     return result;
-  }
-
-  @Override
-  public HealthMonitor getHealthMonitor(InternalDistributedMember owner) {
-    throw new UnsupportedOperationException(
-        "getHealthMonitor is not supported by " + getClass().getSimpleName());
-  }
-
-  @Override
-  public void removeHealthMonitor(InternalDistributedMember owner, int theId) {
-    throw new UnsupportedOperationException(
-        "removeHealthMonitor is not supported by " + getClass().getSimpleName());
-  }
-
-  @Override
-  public void createHealthMonitor(InternalDistributedMember owner, GemFireHealthConfig cfg) {
-    throw new UnsupportedOperationException(
-        "createHealthMonitor is not supported by " + getClass().getSimpleName());
   }
 
   @Override
