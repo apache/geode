@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.configuration;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -80,10 +79,7 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
 
     server2.forceDisconnect();
 
-    await().untilAsserted(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
-        .hasTableSection()
-        .hasColumn("Name")
-        .containsExactlyInAnyOrder("locator-0", "server-1", "server-2"));
+    server2.waitTilServerFullyReconnected();
 
     callFunction(server1);
   }
