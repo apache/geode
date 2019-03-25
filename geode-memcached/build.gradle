@@ -18,12 +18,15 @@
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':geode-core'))
+  api(platform(project(':boms:geode-all-bom')))
+  implementation(project(':geode-core'))
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('com.github.stephenc.findbugs:findbugs-annotations')
 
   testCompile('org.mockito:mockito-core')
   testCompile(project(':geode-junit'))
 
+  integrationTestCompile(project(':geode-core'))
   integrationTestCompile('net.spy:spymemcached')
   integrationTestCompile(project(':geode-junit'))
 
