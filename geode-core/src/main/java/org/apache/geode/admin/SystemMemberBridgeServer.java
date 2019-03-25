@@ -190,7 +190,7 @@ public interface SystemMemberBridgeServer {
   int getMaxConnections();
 
   /**
-   * Sets the maxium number of client connections allowed. When the maximum is reached the server
+   * Sets the maximum number of client connections allowed. When the maximum is reached the server
    * will stop accepting connections.
    *
    * @throws AdminException if this cache server is running
@@ -199,7 +199,7 @@ public interface SystemMemberBridgeServer {
   void setMaxConnections(int maxCons) throws AdminException;
 
   /**
-   * Returns the maxium number of threads allowed in this server to service client requests. The
+   * Returns the maximum number of threads allowed in this server to service client requests. The
    * default of <code>0</code> causes the server to dedicate a thread for every client connection.
    *
    * @since GemFire 5.7
@@ -207,7 +207,7 @@ public interface SystemMemberBridgeServer {
   int getMaxThreads();
 
   /**
-   * Sets the maxium number of threads allowed in this server to service client requests. The
+   * Sets the maximum number of threads allowed in this server to service client requests. The
    * default of <code>0</code> causes the server to dedicate a thread for every client connection.
    *
    * @throws AdminException if this cache server is running
