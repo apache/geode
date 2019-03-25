@@ -2016,14 +2016,6 @@ org/apache/geode/internal/cache/wan/serial/BatchDestroyOperation$DestroyMessage,
 fromData,45
 toData,40
 
-org/apache/geode/internal/memcached/KeyWrapper,2
-fromData,9
-toData,9
-
-org/apache/geode/internal/memcached/ValueWrapper,2
-fromData,29
-toData,29
-
 org/apache/geode/internal/modules/util/RegionConfiguration,2
 fromData,77
 toData,74

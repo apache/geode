@@ -1,0 +1,8 @@
+org/apache/geode/internal/memcached/KeyWrapper,2
+fromData,9
+toData,9
+
+org/apache/geode/internal/memcached/ValueWrapper,2
+fromData,29
+toData,29
+

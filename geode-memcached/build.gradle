@@ -20,9 +20,12 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   compile(project(':geode-core'))
-  distributedTestCompile(project(':geode-dunit'))
+
   testCompile('org.mockito:mockito-core')
-  testCompile(project(':geode-junit'));
+  testCompile(project(':geode-junit'))
+
   integrationTestCompile('net.spy:spymemcached')
-  integrationTestCompile(project(':geode-junit'));
+  integrationTestCompile(project(':geode-junit'))
+
+  distributedTestCompile(project(':geode-dunit'))
 }
