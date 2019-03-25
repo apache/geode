@@ -10017,14 +10017,14 @@ public class PartitionedRegion extends LocalRegion
     if (cache.getDistributedSystem().getProperties().get(ENABLE_CLUSTER_CONFIGURATION) != "true") {
       return null;
     }
-    CacheLoader cacheLoader = basicGetLoader();
-    CacheWriter cacheWriter = basicGetWriter();
     PartitionRegionConfig newConfig = null;
     Region<String, PartitionRegionConfig> partitionedRegionRoot = getPRRoot();
     if (partitionedRegionRoot != null) {
       RegionLock rl = getRegionLock();
+      rl.lock();
       try {
-        rl.lock();
+        CacheLoader cacheLoader = basicGetLoader();
+        CacheWriter cacheWriter = basicGetWriter();
         PartitionRegionConfig prConfig = partitionedRegionRoot.get(getRegionIdentifier());
         if (prConfig != null) {
           newConfig =
