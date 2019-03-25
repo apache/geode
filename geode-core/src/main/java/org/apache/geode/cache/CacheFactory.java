@@ -278,6 +278,32 @@ public class CacheFactory {
    * to external monitoring systems.
    *
    * <p>
+   * Example adding a meter sub-registry:
+   *
+   * <pre>
+   * MeterRegistry prometheusRegistry = new PrometheusMeterRegistry(...);
+   *
+   * Cache cache = new CacheFactory()
+   *     .addMeterSubregistry(prometheusRegistry)
+   *     .create();
+   * </pre>
+   *
+   * <p>
+   * Example adding multiple meter sub-registries:
+   *
+   * <pre>
+   * MeterRegistry prometheusRegistry = new PrometheusMeterRegistry(...);
+   * MeterRegistry influxRegistry = new InfluxMeterRegistry(...);
+   * MeterRegistry newRelicRegistry = new NewRelicMeterRegistry(...);
+   *
+   * Cache cache = new CacheFactory()
+   *     .addMeterSubregistry(prometheusRegistry)
+   *     .addMeterSubregistry(influxRegistry)
+   *     .addMeterSubregistry(newRelicRegistry)
+   *     .create();
+   * </pre>
+   *
+   * <p>
    * Experimental: Micrometer metrics is a new addition to Geode and the API may change.
    *
    * @param subregistry the registry to add
