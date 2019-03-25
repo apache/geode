@@ -324,7 +324,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createPartitionRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
-    startupRule.startServerVM(2, x -> x.withConnectionToLocator(locator.getPort()));
+    startupRule.startServerVM(3, x -> x.withConnectionToLocator(locator.getPort()));
   }
 
   @Test
