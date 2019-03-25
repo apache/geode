@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.api;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -47,6 +49,8 @@ import org.apache.geode.management.internal.JavaClientClusterManagementServiceFa
 import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
+import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
+import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 
 /**
  * An implementation of {@link ClusterManagementServiceFactory} which can be used in any
@@ -80,44 +84,85 @@ public class GeodeClusterManagementServiceFactory
 
     Cache cache = CacheFactory.getAnyInstance();
     if (cache != null && cache.isServer()) {
-      GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
-
-      Set<InternalDistributedMember> locatorsWithClusterConfig =
-          cacheImpl.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration()
-              .keySet();
-
-      MemberInformation memberInformation = getHttpServiceAddress(locatorsWithClusterConfig);
-
-      SSLContext sslContext = null;
-      HostnameVerifier hostnameVerifier = null;
-      if (memberInformation.isWebSSL()) {
-        SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
-            ((GemFireCacheImpl) cache).getSystem().getConfig(), SecurableCommunicationChannel.WEB);
-        if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
-          throw new IllegalStateException(
-              "The server needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
-        }
-
-        sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
-        hostnameVerifier = new NoopHostnameVerifier();
-      }
-
-      return create(getHostName(memberInformation), memberInformation.getHttpServicePort(),
-          sslContext, hostnameVerifier, username, password);
+      return getClusterManagementServiceOnServer(username, password, (GemFireCacheImpl) cache);
     }
 
     ClientCache clientCache = ClientCacheFactory.getAnyInstance();
     if (clientCache != null) {
-      throw new IllegalStateException(
-          "Under construction. To retrieve an instance of ClusterManagementService from a Geode client, please use other methods");
+      return getClusterManagementServiceOnClient(username, password, clientCache);
     }
-    // } catch( CacheClosedException e) {
+
     throw new IllegalStateException("ClusterManagementService.create() " +
         "must be executed on one of locator, server or client cache VMs");
   }
 
+  private ClusterManagementService getClusterManagementServiceOnServer(String username,
+      String password,
+      GemFireCacheImpl cache) {
+    Set<InternalDistributedMember> locatorsWithClusterConfig =
+        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration()
+            .keySet();
 
-  private MemberInformation getHttpServiceAddress(Set<InternalDistributedMember> locators) {
+    MemberInformation memberInformation = getLocatorInformation(locatorsWithClusterConfig);
+
+    SSLContext sslContext = null;
+    HostnameVerifier hostnameVerifier = null;
+    if (memberInformation.isWebSSL()) {
+      SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+          cache.getSystem().getConfig(), SecurableCommunicationChannel.WEB);
+      if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
+        throw new IllegalStateException(
+            "The server needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
+      }
+
+      sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
+      hostnameVerifier = new NoopHostnameVerifier();
+    }
+
+    return create(getHostName(memberInformation), memberInformation.getHttpServicePort(),
+        sslContext, hostnameVerifier, username, password);
+  }
+
+  private ClusterManagementService getClusterManagementServiceOnClient(String username,
+      String password,
+      ClientCache clientCache) {
+    List<InetSocketAddress> locators = clientCache.getDefaultPool().getLocators();
+
+    if (locators.size() == 0) {
+      throw new IllegalStateException(
+          "the client needs to have a client pool connected with a locator.");
+    }
+    TcpClient client = new TcpClient();
+    ClusterManagementServiceInfo cmsInfo = null;
+    for (InetSocketAddress locator : locators) {
+      try {
+        cmsInfo =
+            (ClusterManagementServiceInfo) client.requestToServer(locator,
+                new ClusterManagementServiceInfoRequest(), 1000, true);
+
+        // do not try anymore if we found one that has cms running
+        if (cmsInfo.isRunning()) {
+          break;
+        }
+      } catch (Exception e) {
+        logger.info(
+            "unable to discover the ClusterManagementService on locator " + locator.toString());
+      }
+    }
+
+    // if cmsInfo is still null at this point, i.e. we failed to retrieve the cms information from
+    // any locator
+    if (cmsInfo == null || !cmsInfo.isRunning()) {
+      throw new IllegalStateException(
+          "Unable to discover a locator that has ClusterManagementService running.");
+    }
+
+    return create(cmsInfo.getHostName(), cmsInfo.getHttpPort(), null, new NoopHostnameVerifier(),
+        username, password);
+  }
+
+
+  private MemberInformation getLocatorInformation(Set<InternalDistributedMember> locators) {
     for (InternalDistributedMember locator : locators) {
       try {
         ResultCollector resultCollector =
