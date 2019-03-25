@@ -1231,9 +1231,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   @Override
-  public void activate(Connection conn) {
+  public boolean activate(Connection conn) {
     assert conn instanceof PooledConnection;
-    ((PooledConnection) conn).activate();
+    return ((PooledConnection) conn).activate();
   }
 
   @Override

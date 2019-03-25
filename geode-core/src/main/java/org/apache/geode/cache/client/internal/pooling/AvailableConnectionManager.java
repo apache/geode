@@ -28,11 +28,8 @@ public class AvailableConnectionManager {
   public PooledConnection useFirst() {
     PooledConnection connection;
     while (null != (connection = availableConnections.pollFirst())) {
-      try {
-        connection.activate();
+      if (connection.activate()) {
         return connection;
-      } catch (ConnectionDestroyedException ignored) {
-        // loop around and try the next one
       }
     }
     return null;
@@ -89,11 +86,8 @@ public class AvailableConnectionManager {
     final EqualsWithPredicate equalsWithPredicate = new EqualsWithPredicate(predicate);
     while (availableConnections.removeFirstOccurrence(equalsWithPredicate)) {
       PooledConnection connection = equalsWithPredicate.getConnectionThatMatched();
-      try {
-        connection.activate();
+      if (connection.activate()) {
         return connection;
-      } catch (ConnectionDestroyedException ignored) {
-        // loop around and try again
       }
     }
     return null;

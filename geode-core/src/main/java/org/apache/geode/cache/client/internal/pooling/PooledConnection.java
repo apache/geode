@@ -202,7 +202,10 @@ public class PooledConnection implements Connection {
     return true;
   }
 
-  public void activate() {
+  /**
+   * @return true if connection activated, false if could not be activated because it is destroyed
+   */
+  public boolean activate() {
     synchronized (this) {
       try {
         while (this.waitingToSwitch) {
@@ -211,14 +214,14 @@ public class PooledConnection implements Connection {
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       }
-      getConnection(); // it checks if we are destroyed
+      if (isDestroyed() || shouldDestroy()) {
+        return false;
+      }
       if (active) {
         throw new InternalGemFireException("Connection already active");
       }
-      if (shouldDestroy()) {
-        throw new ConnectionDestroyedException();
-      }
       active = true;
+      return true;
     }
   }
 

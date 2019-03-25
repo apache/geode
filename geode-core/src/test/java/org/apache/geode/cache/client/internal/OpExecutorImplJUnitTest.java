@@ -608,7 +608,9 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void activate(Connection conn) {}
+    public boolean activate(Connection conn) {
+      return true;
+    }
 
     @Override
     public void passivate(Connection conn, boolean accessed) {}

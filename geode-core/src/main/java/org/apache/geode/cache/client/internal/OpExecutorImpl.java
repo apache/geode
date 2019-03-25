@@ -153,9 +153,7 @@ public class OpExecutorImpl implements ExecutablePool {
       // while we're performing the op. It will be reset
       // if the op succeeds.
       localConnection.set(null);
-      try {
-        this.connectionManager.activate(conn);
-      } catch (ConnectionDestroyedException ex) {
+      if (!this.connectionManager.activate(conn)) {
         conn = connectionManager.borrowConnection(serverTimeout);
       }
     }
@@ -445,15 +443,13 @@ public class OpExecutorImpl implements ExecutablePool {
     }
     boolean borrow = true;
     if (conn != null) {
-      try {
-        this.connectionManager.activate(conn);
+      if (this.connectionManager.activate(conn)) {
         borrow = false;
         if (!conn.getServer().equals(server)) {
           // poolLoadConditioningMonitor can replace the connection's
           // endpoint from underneath us. fixes bug 45151
           borrow = true;
         }
-      } catch (ConnectionDestroyedException e) {
       }
     }
     if (conn == null || borrow) {
