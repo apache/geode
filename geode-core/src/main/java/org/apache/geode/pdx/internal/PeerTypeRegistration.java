@@ -131,7 +131,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     TypeRegistry typeRegistry = cache.getPdxRegistry();
     if (typeRegistry != null) {
       typeRegistry.flushCache();
-      logger.info("Flushing TypeRegistry");
+      logger.debug("Flushing TypeRegistry");
     }
 
     AttributesFactory<Object, Object> factory = new AttributesFactory<Object, Object>();
