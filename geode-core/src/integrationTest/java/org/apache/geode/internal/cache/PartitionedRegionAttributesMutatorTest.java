@@ -242,9 +242,6 @@ public class PartitionedRegionAttributesMutatorTest {
   }
 
   private static PartitionedRegion createRegionSpy() {
-    if (ClusterStartupRule.getCache() == null) {
-      System.out.println("SAJ: no cache");
-    }
     return Mockito
         .spy((PartitionedRegion) ClusterStartupRule.getCache()
             .createRegionFactory(RegionShortcut.PARTITION)

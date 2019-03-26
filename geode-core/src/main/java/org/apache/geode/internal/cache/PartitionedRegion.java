@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static java.util.stream.Collectors.toSet;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
 import java.io.IOException;
@@ -1224,8 +1223,8 @@ public class PartitionedRegion extends LocalRegion
 
   public void updatePRConfigWithNewSetOfGatewaySenders(Set<String> gatewaySendersToAdd) {
     final RegionLock rl = getRegionLock();
+    rl.lock();
     try {
-      rl.lock();
       PartitionRegionHelper.assignBucketsToPartitions(this);
       PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
       prConfig.setGatewaySenderIds(gatewaySendersToAdd);
@@ -1237,8 +1236,8 @@ public class PartitionedRegion extends LocalRegion
 
   public void updatePRConfigWithNewGatewaySender(String aeqId) {
     final RegionLock rl = getRegionLock();
+    rl.lock();
     try {
-      rl.lock();
       PartitionRegionHelper.assignBucketsToPartitions(this);
       PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
       Set<String> newGateWayIds;
@@ -1368,9 +1367,8 @@ public class PartitionedRegion extends LocalRegion
         this.node.setPRType(Node.ACCESSOR_DATASTORE);
       }
       this.node.setPersistence(getAttributes().getDataPolicy() == DataPolicy.PERSISTENT_PARTITION);
-      byte loaderByte = (byte) (getAttributes().getCacheLoader() != null ? 0x01 : 0x00);
-      byte writerByte = (byte) (getAttributes().getCacheWriter() != null ? 0x02 : 0x00);
-      this.node.setLoaderWriterByte((byte) (loaderByte + writerByte));
+      this.node.setLoaderAndWriter(getAttributes().getCacheLoader(),
+          getAttributes().getCacheWriter());
     } else {
       if (this.fixedPAttrs != null) {
         this.node.setPRType(Node.FIXED_PR_ACCESSOR);
@@ -1594,7 +1592,6 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public void updatePRConfig(PartitionRegionConfig prConfig, boolean putOnlyIfUpdated) {
-    // final Set<Node> nodes = prConfig.getNodes(); saj SAJ
     final PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(this);
     RegionLock colocatedLock = null;
     boolean colocatedLockAcquired = false;
@@ -10014,9 +10011,6 @@ public class PartitionedRegion extends LocalRegion
   }
 
   PartitionRegionConfig updatePRNodeInformation() {
-    if (cache.getDistributedSystem().getProperties().get(ENABLE_CLUSTER_CONFIGURATION) != "true") {
-      return null;
-    }
     PartitionRegionConfig newConfig = null;
     Region<String, PartitionRegionConfig> partitionedRegionRoot = getPRRoot();
     if (partitionedRegionRoot != null) {

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -85,7 +84,6 @@ public class PartitionedRegionTest {
   @Parameters(method = "parametersToTestUpdatePRNodeInformation")
   public void verifyPRConfigUpdatedAfterLoaderUpdate(CacheLoader mockLoader, CacheWriter mockWriter,
       byte configByte) {
-    gemfireProperties.put(ENABLE_CLUSTER_CONFIGURATION, "true");
     LocalRegion prRoot = mock(LocalRegion.class);
     PartitionRegionConfig mockConfig = mock(PartitionRegionConfig.class);
     PartitionedRegion prSpy = spy(partitionedRegion);
@@ -94,13 +92,14 @@ public class PartitionedRegionTest {
     when(prRoot.get(prSpy.getRegionIdentifier())).thenReturn(mockConfig);
 
     InternalDistributedMember ourMember = prSpy.getDistributionManager().getId();
-    InternalDistributedMember otherMember = mock(InternalDistributedMember.class);
+    InternalDistributedMember otherMember1 = mock(InternalDistributedMember.class);
+    InternalDistributedMember otherMember2 = mock(InternalDistributedMember.class);
     Node ourNode = mock(Node.class);
     Node otherNode1 = mock(Node.class);
     Node otherNode2 = mock(Node.class);
     when(ourNode.getMemberId()).thenReturn(ourMember);
-    when(otherNode1.getMemberId()).thenReturn(otherMember);
-    when(otherNode2.getMemberId()).thenReturn(otherMember);
+    when(otherNode1.getMemberId()).thenReturn(otherMember1);
+    when(otherNode2.getMemberId()).thenReturn(otherMember2);
 
     VersionedArrayList prNodes = new VersionedArrayList();
     prNodes.add(otherNode1);
@@ -133,43 +132,6 @@ public class PartitionedRegionTest {
   }
 
   @Test
-  public void verifyPRConfigNotUpdatedWithClusterConfigDisabled() {
-    gemfireProperties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    LocalRegion prRoot = mock(LocalRegion.class);
-    PartitionRegionConfig mockConfig = mock(PartitionRegionConfig.class);
-    PartitionedRegion prSpy = spy(partitionedRegion);
-
-    doReturn(prRoot).when(prSpy).getPRRoot();
-    when(prRoot.get(prSpy.getRegionIdentifier())).thenReturn(mockConfig);
-
-    InternalDistributedMember ourMember = prSpy.getDistributionManager().getId();
-    InternalDistributedMember otherMember = mock(InternalDistributedMember.class);
-    Node ourNode = mock(Node.class);
-    Node otherNode1 = mock(Node.class);
-    Node otherNode2 = mock(Node.class);
-    when(ourNode.getMemberId()).thenReturn(ourMember);
-    when(otherNode1.getMemberId()).thenReturn(otherMember);
-    when(otherNode2.getMemberId()).thenReturn(otherMember);
-
-    VersionedArrayList prNodes = new VersionedArrayList();
-    prNodes.add(otherNode1);
-    prNodes.add(ourNode);
-    prNodes.add(otherNode2);
-    when(mockConfig.getNodes()).thenReturn(prNodes.getListCopy());
-    when(mockConfig.getPartitionAttrs()).thenReturn(mock(PartitionAttributesImpl.class));
-
-    doReturn(mock(CacheLoader.class)).when(prSpy).basicGetLoader();
-    doReturn(mock(CacheWriter.class)).when(prSpy).basicGetWriter();
-    PartitionedRegion.RegionLock mockLock = mock(PartitionedRegion.RegionLock.class);
-    doReturn(mockLock).when(prSpy).getRegionLock();
-
-    PartitionRegionConfig newConfig = prSpy.updatePRNodeInformation();
-
-    verify(prSpy, times(0)).updatePRConfig(any(), anyBoolean());
-    assertThat(newConfig).isNull();
-  }
-
-  @Test
   public void verifyPRConfigNotUpdatedWhenNoProperties() {
     gemfireProperties.clear();
     LocalRegion prRoot = mock(LocalRegion.class);
@@ -180,13 +142,14 @@ public class PartitionedRegionTest {
     when(prRoot.get(prSpy.getRegionIdentifier())).thenReturn(mockConfig);
 
     InternalDistributedMember ourMember = prSpy.getDistributionManager().getId();
-    InternalDistributedMember otherMember = mock(InternalDistributedMember.class);
+    InternalDistributedMember otherMember1 = mock(InternalDistributedMember.class);
+    InternalDistributedMember otherMember2 = mock(InternalDistributedMember.class);
     Node ourNode = mock(Node.class);
     Node otherNode1 = mock(Node.class);
     Node otherNode2 = mock(Node.class);
     when(ourNode.getMemberId()).thenReturn(ourMember);
-    when(otherNode1.getMemberId()).thenReturn(otherMember);
-    when(otherNode2.getMemberId()).thenReturn(otherMember);
+    when(otherNode1.getMemberId()).thenReturn(otherMember1);
+    when(otherNode2.getMemberId()).thenReturn(otherMember2);
 
     VersionedArrayList prNodes = new VersionedArrayList();
     prNodes.add(otherNode1);

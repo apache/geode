@@ -107,16 +107,11 @@ public class Node extends ExternalizableDSFID {
     this.prType = type;
   }
 
-  public void setLoaderWriterByte(byte b) {
-    this.cacheLoaderWriterByte = b;
-  }
-
   void setLoaderAndWriter(CacheLoader loader, CacheWriter writer) {
     byte loaderByte = (byte) (loader != null ? 0x01 : 0x00);
     byte writerByte = (byte) (writer != null ? 0x02 : 0x00);
     this.cacheLoaderWriterByte = (byte) (loaderByte + writerByte);
   }
-
 
   public boolean isCacheLoaderAttached() {
     if (this.cacheLoaderWriterByte == 0x01 || this.cacheLoaderWriterByte == 0x03) {
