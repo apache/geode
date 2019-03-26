@@ -20,7 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -32,7 +32,7 @@ public class ConnectCommandWithSecurityTest {
   @ClassRule
   public static LocatorStarterRule locator = new LocatorStarterRule()
       .withHttpService()
-      .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
+      .withSecurityManager(SimpleSecurityManager.class).withAutoStart();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

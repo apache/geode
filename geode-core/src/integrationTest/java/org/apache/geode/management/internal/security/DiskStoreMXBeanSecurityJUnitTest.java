@@ -23,8 +23,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.DiskStoreMXBean;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
@@ -35,7 +35,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   private DiskStoreMXBean bean;
 
   public ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
+      .withSecurityManager(SimpleSecurityManager.class).withAutoStart();
 
   public MBeanServerConnectionRule connectionRule =
       new MBeanServerConnectionRule(server::getJmxPort);

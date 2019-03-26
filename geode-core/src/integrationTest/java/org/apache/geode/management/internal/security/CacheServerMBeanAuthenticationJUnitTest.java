@@ -21,8 +21,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.CacheServerMXBean;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -32,7 +32,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName()).withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =

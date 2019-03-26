@@ -25,12 +25,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -51,7 +51,7 @@ public class MultiGfshDUnitTest {
   @Before
   public void setup() throws Exception {
     server = lsRule.startServerVM(0,
-        x -> x.withJMXManager().withSecurityManager(SimpleTestSecurityManager.class));
+        x -> x.withJMXManager().withSecurityManager(SimpleSecurityManager.class));
   }
 
   @Test

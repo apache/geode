@@ -34,12 +34,12 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -62,7 +62,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   @BeforeClass
   public static void beforeClass() {
     Properties locatorProps = new Properties();
-    locatorProps.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    locatorProps.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     locator = lsRule.startLocatorVM(0, locatorProps);
 
     Properties serverProps = new Properties();

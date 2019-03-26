@@ -26,13 +26,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -43,7 +43,7 @@ public class GfshCommandsSecurityTestBase {
   @ClassRule
   public static ServerStarterRule serverStarter =
       new ServerStarterRule().withJMXManager().withHttpService()
-          .withSecurityManager(SimpleTestSecurityManager.class)
+          .withSecurityManager(SimpleSecurityManager.class)
           .withRegion(RegionShortcut.REPLICATE_PERSISTENT, "persistentRegion")
           .withEmbeddedLocator();
 
