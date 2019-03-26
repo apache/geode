@@ -106,30 +106,11 @@ public class GeodeClusterManagementServiceFactory
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration()
             .keySet();
 
-    MemberInformation memberInformation = getLocatorInformation(locatorsWithClusterConfig);
+    ClusterManagementServiceInfo cmsInfo =
+        getClusterManagementServiceInfo(locatorsWithClusterConfig);
 
-    SSLContext sslContext = null;
-    HostnameVerifier hostnameVerifier = null;
-    if (memberInformation.isWebSSL()) {
-      sslContext = getSslContext(cache.getSystem().getConfig());
-      hostnameVerifier = new NoopHostnameVerifier();
-    }
-
-    return create(getHostName(memberInformation), memberInformation.getHttpServicePort(),
-        sslContext, hostnameVerifier, username, password);
-  }
-
-  private SSLContext getSslContext(DistributionConfig config) {
-    SSLContext sslContext;
-    SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
-        config, SecurableCommunicationChannel.WEB);
-    if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
-      throw new IllegalStateException(
-          "This member needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
-    }
-
-    sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
-    return sslContext;
+    return createClusterManagementService(username, password, cache.getSystem().getConfig(),
+        cmsInfo);
   }
 
   private ClusterManagementService getClusterManagementServiceOnClient(String username,
@@ -166,19 +147,38 @@ public class GeodeClusterManagementServiceFactory
       throw new IllegalStateException(
           "Unable to discover a locator that has ClusterManagementService running.");
     }
+    return createClusterManagementService(username, password, config, cmsInfo);
 
+  }
+
+  private ClusterManagementService createClusterManagementService(String username, String password,
+      DistributionConfig config,
+      ClusterManagementServiceInfo cmsInfo) {
     // if user didn't pass in a username and the locator requires credentials, use the credentials
     // user used to create the client cache
     if (cmsInfo.isSecured() && username == null) {
       Properties securityProps = config.getSecurityProps();
       username = securityProps.getProperty(AuthInitialize.SECURITY_USERNAME);
       password = securityProps.getProperty(AuthInitialize.SECURITY_PASSWORD);
+      if (StringUtils.isBlank(username)) {
+        String message = String.format("You will need to either call getService with username and "
+            + "password or specify security-username and security-password in the properties when "
+            + "starting this geode server/client.");
+        throw new IllegalStateException(message);
+      }
     }
 
     SSLContext sslContext = null;
     HostnameVerifier hostnameVerifier = null;
     if (cmsInfo.isSSL()) {
-      sslContext = getSslContext(config);
+      SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+          config, SecurableCommunicationChannel.WEB);
+      if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
+        throw new IllegalStateException(
+            "This server/client needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
+      }
+
+      sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
       hostnameVerifier = new NoopHostnameVerifier();
     }
 
@@ -187,7 +187,10 @@ public class GeodeClusterManagementServiceFactory
   }
 
 
-  private MemberInformation getLocatorInformation(Set<InternalDistributedMember> locators) {
+  private ClusterManagementServiceInfo getClusterManagementServiceInfo(
+      Set<InternalDistributedMember> locators) {
+    ClusterManagementServiceInfo info = new ClusterManagementServiceInfo();
+    MemberInformation memberInfo = null;
     for (InternalDistributedMember locator : locators) {
       try {
         ResultCollector resultCollector =
@@ -198,16 +201,22 @@ public class GeodeClusterManagementServiceFactory
         if (memberInformations.isEmpty()) {
           continue;
         }
-
-        // return the first available one. Later for HA, we can return the entire list
-        return memberInformations.get(0);
+        memberInfo = memberInformations.get(0);
+        break;
       } catch (FunctionException e) {
         logger.warn("Unable to execute GetMemberInformationFunction on " + locator.getId());
-        throw new IllegalStateException(e);
       }
     }
 
-    throw new IllegalStateException("Unable to determine ClusterManagementService endpoint");
+    if (memberInfo == null) {
+      throw new IllegalStateException("Unable to determine ClusterManagementService endpoint");
+    }
+
+    info.setHostName(getHostName(memberInfo));
+    info.setHttpPort(memberInfo.getHttpServicePort());
+    info.setSSL(memberInfo.isWebSSL());
+    info.setSecured(memberInfo.isSecured());
+    return info;
   }
 
   private String getHostName(MemberInformation memberInformation) {

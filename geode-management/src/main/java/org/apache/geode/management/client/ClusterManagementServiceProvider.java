@@ -70,15 +70,22 @@ public class ClusterManagementServiceProvider {
   private static Map<String, ClusterManagementServiceFactory> serviceFactories = null;
 
   /**
-   * use this to get the ClusterManagementService from the locator, or from a server that connects
-   * to a locator with no security manager.
+   * retrieve an instance of ClusterManagementService in Geode context (locator, server, geode cache
+   * client)
+   * Note: When connecting to the locator with security and/or SSL turned on, this call will use the
+   * security-username and security-password and/or ssl-* properties specified in the gemfire
+   * properties when starting the server or Geode client cache.
    */
   public static ClusterManagementService getService() {
     return getServiceFactory(GEODE_CONTEXT).create();
   }
 
   /**
-   * use this retrieve a ClusterManagementService from a server that connects to a secured locator
+   * use this retrieve a ClusterManagementService in Geode context (locator, server, geode cache
+   * client)
+   * with explicitly specified username and password
+   * Note: this will use the ssl-* properties to make the connection if the locator has SSL turned
+   * on
    */
   public static ClusterManagementService getService(String username, String password) {
     return getServiceFactory(GEODE_CONTEXT).create(username, password);
@@ -86,7 +93,8 @@ public class ClusterManagementServiceProvider {
 
   /**
    * Retrieve a {@code ClusterManagementService} instance configured with an explicit service
-   * endpoint. this is good for end point with no ssl nor security turned on.
+   * endpoint in plain java program context.
+   * this is good for end point with no ssl nor security turned on.
    * <p/>
    * For example:
    *
@@ -102,7 +110,8 @@ public class ClusterManagementServiceProvider {
 
   /**
    * Retrieve a {@code ClusterManagementService} instance configured with an explicit service
-   * endpoint. This service will allow you to connect to ssl enabled and security enabled end point
+   * endpoint in plain java program context.
+   * This service will allow you to connect to ssl enabled and security enabled end point
    * with the specified sslContext and hostnameVerifier
    *
    * @param host the locator's host name
