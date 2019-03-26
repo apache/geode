@@ -1,5 +1,6 @@
 package org.apache.geode.cache.client.internal.pooling;
 
+import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.function.Predicate;
 
@@ -15,7 +16,7 @@ import java.util.function.Predicate;
  *
  */
 public class AvailableConnectionManager {
-  private final ConcurrentLinkedDeque<PooledConnection> connections =
+  private final Deque<PooledConnection> connections =
       new ConcurrentLinkedDeque<>();
 
   /**
@@ -96,7 +97,7 @@ public class AvailableConnectionManager {
   }
 
   // used by unit tests
-  ConcurrentLinkedDeque<PooledConnection> getDeque() {
+  Deque<PooledConnection> getDeque() {
     return connections;
   }
 
