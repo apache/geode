@@ -46,35 +46,6 @@ public class AvailableConnectionManager {
   }
 
   /**
-   * This class exists so that we can use ConcurrentLinkedDeque removeFirstOccurrence.
-   * We want to efficiently scan the deque for an item that matches the predicate
-   * without changing the position of items that do not match. We also need
-   * to know the identity of the first item that did match.
-   */
-  private static class EqualsWithPredicate {
-    private final Predicate<PooledConnection> predicate;
-    private PooledConnection connectionThatMatched;
-
-    EqualsWithPredicate(Predicate<PooledConnection> predicate) {
-      this.predicate = predicate;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      PooledConnection pooledConnection = (PooledConnection) o;
-      if (predicate.test(pooledConnection)) {
-        this.connectionThatMatched = pooledConnection;
-        return true;
-      }
-      return false;
-    }
-
-    public PooledConnection getConnectionThatMatched() {
-      return this.connectionThatMatched;
-    }
-  }
-
-  /**
    * Remove, activate, and return the first connection that matches the predicate.
    * Connections that can not be activated will be removed
    * from the manager but not returned.
@@ -121,6 +92,40 @@ public class AvailableConnectionManager {
     // thread local connections are already passive at this point
     if (connection.isActive()) {
       connection.passivate(accessed);
+    }
+  }
+
+  // used by unit tests
+  ConcurrentLinkedDeque<PooledConnection> getDeque() {
+    return connections;
+  }
+
+  /**
+   * This class exists so that we can use ConcurrentLinkedDeque removeFirstOccurrence.
+   * We want to efficiently scan the deque for an item that matches the predicate
+   * without changing the position of items that do not match. We also need
+   * to know the identity of the first item that did match.
+   */
+  private static class EqualsWithPredicate {
+    private final Predicate<PooledConnection> predicate;
+    private PooledConnection connectionThatMatched;
+
+    EqualsWithPredicate(Predicate<PooledConnection> predicate) {
+      this.predicate = predicate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      PooledConnection pooledConnection = (PooledConnection) o;
+      if (predicate.test(pooledConnection)) {
+        this.connectionThatMatched = pooledConnection;
+        return true;
+      }
+      return false;
+    }
+
+    public PooledConnection getConnectionThatMatched() {
+      return this.connectionThatMatched;
     }
   }
 }
