@@ -795,7 +795,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     volatile boolean closing;
 
     public synchronized boolean isIdleExpirePossible() {
-      return this.allConnections.size() > connectionAccounting.getMin();
+      return this.allConnections.size() > connectionAccounting.getMinimum();
     }
 
     @Override
@@ -1094,11 +1094,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
         long minRemainingIdle = Long.MAX_VALUE;
         int conCount = connectionAccounting.getCount();
-        toClose = new ArrayList<>(conCount - connectionAccounting.getMin());
+        toClose = new ArrayList<>(conCount - connectionAccounting.getMinimum());
 
         // because we expire thread local connections we need to scan allConnections
         for (Iterator it = allConnections.iterator(); it.hasNext()
-            && conCount > connectionAccounting.getMin();) {
+            && conCount > connectionAccounting.getMinimum();) {
           PooledConnection pc = (PooledConnection) it.next();
           if (pc.shouldDestroy()) {
             // ignore these connections
@@ -1122,7 +1122,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
             }
           }
         }
-        if (conCount > connectionAccounting.getMin()
+        if (conCount > connectionAccounting.getMinimum()
             && minRemainingIdle < Long.MAX_VALUE) {
           try {
             backgroundProcessor.schedule(new IdleExpireConnectionsTask(), minRemainingIdle,

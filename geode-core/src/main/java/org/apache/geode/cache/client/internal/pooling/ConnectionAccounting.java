@@ -18,26 +18,30 @@ package org.apache.geode.cache.client.internal.pooling;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Responsible for counting connections. Transient refactoring towards cleaner implementation of
- * {@link ConnectionManager}.
- *
+ * Responsible for counting connections.
+ * The count maintained by this class will eventually be
+ * consistent with the actual number of connections.
+ * Since the count is changed before and after the actual
+ * connections are created and destroyed, and not changed while
+ * holding a lock, the count should be treated as an estimate of
+ * the current number of connections.
  */
 public class ConnectionAccounting {
-  private final int min;
-  private final int max;
+  private final int minimum;
+  private final int maximum;
   private final AtomicInteger count = new AtomicInteger();
 
   public ConnectionAccounting(int min, int max) {
-    this.min = min;
-    this.max = max;
+    this.minimum = min;
+    this.maximum = max;
   }
 
-  public int getMin() {
-    return min;
+  public int getMinimum() {
+    return minimum;
   }
 
-  public int getMax() {
-    return max;
+  public int getMaximum() {
+    return maximum;
   }
 
   public int getCount() {
@@ -45,14 +49,14 @@ public class ConnectionAccounting {
   }
 
   /**
-   * Should be called when prefilling connections to reach min connections. Caller should only
+   * Should be called when prefilling connections to reach minimum connections. Caller should only
    * create a connection if this method returns {@code true}. If connection creation fails then
    * {@link #cancelTryPrefill} must be called to revert the count increase.
    *
-   * @return {@code true} if count was under min and we increased it, otherwise {@code false}.
+   * @return {@code true} if count was under minimum and we increased it, otherwise {@code false}.
    */
   public boolean tryPrefill() {
-    return tryReserve(min);
+    return tryReserve(minimum);
   }
 
   /**
@@ -63,14 +67,15 @@ public class ConnectionAccounting {
   }
 
   /**
-   * Should be called when a new connection would be nice to have when count is under max. Caller
+   * Should be called when a new connection would be nice to have when count is under maximum.
+   * Caller
    * should only create a connection if this method returns {@code true}. If connection creation
    * fails then {@link #cancelTryCreate} must be called to revert the count increase.
    *
-   * @return {@code true} if count was under max and we increased it, otherwise {@code false}.
+   * @return {@code true} if count was under maximum and we increased it, otherwise {@code false}.
    */
   public boolean tryCreate() {
-    return tryReserve(max);
+    return tryReserve(maximum);
   }
 
   /**
@@ -81,7 +86,8 @@ public class ConnectionAccounting {
   }
 
   /**
-   * Count a created connection regardless of max. Should not be called after {@link #tryCreate()}.
+   * Count a created connection regardless of maximum. Should not be called after
+   * {@link #tryCreate()}.
    */
   public void create() {
     count.getAndIncrement();
@@ -89,14 +95,14 @@ public class ConnectionAccounting {
 
   /**
    * Should be called when a connection is being returned and the caller should destroy the
-   * connection if {@code true} was returned. If connection destroy fails then
+   * connection if {@code true} is returned. If connection destroy fails then
    * {@link #cancelTryDestroy()} must be called.
    *
-   * @return {@code true} if count was over max and we decreased it, otherwise {@code false}.
+   * @return {@code true} if count was over maximum and we decreased it, otherwise {@code false}.
    */
   public boolean tryDestroy() {
     int currentCount;
-    while ((currentCount = count.get()) > max) {
+    while ((currentCount = count.get()) > maximum) {
       if (count.compareAndSet(currentCount, currentCount - 1)) {
         return true;
       }
@@ -112,7 +118,7 @@ public class ConnectionAccounting {
   }
 
   /**
-   * Should be called after any connection destroy done regardless of max. Should not be called
+   * Should be called after any connection destroys are done. Should not be called
    * after {@link #tryDestroy()}.
    *
    * @param destroyCount number of connections being destroyed.
@@ -121,15 +127,16 @@ public class ConnectionAccounting {
    *         {@code false}.
    */
   public boolean destroyAndIsUnderMinimum(int destroyCount) {
-    return count.addAndGet(-destroyCount) < min;
+    int newCount = count.addAndGet(-destroyCount);
+    return newCount < minimum;
   }
 
   public boolean isUnderMinimum() {
-    return count.get() < min;
+    return count.get() < minimum;
   }
 
   public boolean isOverMinimum() {
-    return count.get() > min;
+    return count.get() > minimum;
   }
 
   private boolean tryReserve(int upperBound) {

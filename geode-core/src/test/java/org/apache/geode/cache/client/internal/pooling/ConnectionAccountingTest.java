@@ -23,8 +23,8 @@ public class ConnectionAccountingTest {
   @Test
   public void constructorSetsMinMax() {
     ConnectionAccounting a = new ConnectionAccounting(1, 2);
-    assertThat(a.getMin()).isEqualTo(1);
-    assertThat(a.getMax()).isEqualTo(2);
+    assertThat(a.getMinimum()).isEqualTo(1);
+    assertThat(a.getMaximum()).isEqualTo(2);
     assertThat(a.getCount()).isEqualTo(0);
   }
 
@@ -96,7 +96,7 @@ public class ConnectionAccountingTest {
 
     a.create();
     assertThat(a.getCount()).isEqualTo(2);
-    assertThat(a.getMax()).isEqualTo(1);
+    assertThat(a.getMaximum()).isEqualTo(1);
   }
 
   @Test
