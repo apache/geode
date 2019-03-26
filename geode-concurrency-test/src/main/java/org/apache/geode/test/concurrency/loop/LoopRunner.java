@@ -15,6 +15,7 @@
 
 package org.apache.geode.test.concurrency.loop;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +48,8 @@ public class LoopRunner implements Runner {
         try {
           Object test = child.getDeclaringClass().newInstance();
           child.invoke(test, executor);
-        } catch (Exception e) {
+        } catch (Throwable e) {
+          e = (e instanceof InvocationTargetException) ? e.getCause() : e;
           return Collections.singletonList(e);
         }
       }
