@@ -25,7 +25,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.statistics.GemFireStatSampler;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an
@@ -80,10 +79,6 @@ public class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
         logger.warn("Unable to remove console with id {} from alert listeners.",
             getSender());
       }
-    }
-    GemFireStatSampler sampler = sys.getStatSampler();
-    if (sampler != null) {
-      sampler.removeListenersByRecipient(getSender());
     }
     dm.handleConsoleShutdown(getSender(), crashed,
         String.format("Reason for automatic admin disconnect : %s", reason));

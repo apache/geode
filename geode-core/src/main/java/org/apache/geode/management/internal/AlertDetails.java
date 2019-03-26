@@ -19,8 +19,8 @@ import java.text.DateFormat;
 import java.util.Date;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.logging.DateFormatter;
+import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogWriterImpl;
 
 public class AlertDetails {
@@ -143,13 +143,13 @@ public class AlertDetails {
    * @return A string representation of the alert level
    */
   public static String getAlertLevelAsString(final int intLevel) {
-    if (intLevel == Alert.SEVERE) {
+    if (intLevel == InternalLogWriter.SEVERE_LEVEL) {
       return "severe";
-    } else if (intLevel == Alert.ERROR) {
+    } else if (intLevel == InternalLogWriter.ERROR_LEVEL) {
       return "error";
-    } else if (intLevel == Alert.WARNING) {
+    } else if (intLevel == InternalLogWriter.WARNING_LEVEL) {
       return "warning";
-    } else if (intLevel == Alert.OFF) {
+    } else if (intLevel == InternalLogWriter.NONE_LEVEL) {
       return "none";
     }
 

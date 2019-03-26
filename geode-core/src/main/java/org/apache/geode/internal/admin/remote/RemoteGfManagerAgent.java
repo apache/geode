@@ -651,9 +651,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
             // bug 31562.
             RemoteGfManagerAgent agent = RemoteGfManagerAgent.this;
             RemoteApplicationVM result = new RemoteApplicationVM(agent, id, alertLevel);
-            result.startStatDispatcher();
             if (agent.abortCurrentJoin) {
-              result.stopStatListening();
               return null;
             }
             return result;
@@ -1444,7 +1442,6 @@ class RemoteGfManagerAgent implements GfManagerAgent {
             l.nodeLeft(RemoteGfManagerAgent.this, member);
           }
         }
-        member.stopStatListening();
       }
     }
   }

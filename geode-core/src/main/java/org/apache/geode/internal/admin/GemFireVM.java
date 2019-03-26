@@ -98,17 +98,6 @@ public interface GemFireVM {
   DLockInfo[] getDistributedLockInfo();
 
   /**
-   * Adds a {@link StatListener} for the given resource and attribute. Changes in value will be
-   * streamed back from the vm.
-   */
-  void addStatListener(StatListener observer, StatResource observedResource, Stat observedStat);
-
-  /**
-   * Removes {@link StatListener}
-   */
-  void removeStatListener(StatListener observer);
-
-  /**
    * Adds a {@link HealthListener} with the given configuration to the vm. If a health listener has
    * already been added it will be removed and a new one added.
    *
@@ -180,17 +169,6 @@ public interface GemFireVM {
    * the main log if child logging is disabled.
    */
   String[] getSystemLogs();
-
-  /**
-   * Sets the additional classpath settings to be used in the remote vm when processing admin
-   * messages from the console. It can be changed in between messages.
-   */
-  void setInspectionClasspath(String classpath);
-
-  /**
-   * Returns classpath info set by {@link GemFireVM#setInspectionClasspath}
-   */
-  String getInspectionClasspath();
 
   /**
    * Returns the root cache region or null if the root region hasn't been created.

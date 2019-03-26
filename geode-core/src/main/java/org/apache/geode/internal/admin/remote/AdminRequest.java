@@ -38,7 +38,6 @@ public abstract class AdminRequest extends PooledDistributionMessage {
 
   private static final Logger logger = LogService.getLogger();
 
-  private String modifiedClasspath = "";
   protected transient String friendlyName = "";
 
 
@@ -127,14 +126,10 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   @Override
   protected void process(ClusterDistributionManager dm) {
     AdminResponse response = null;
-    InspectionClasspathManager cpMgr = InspectionClasspathManager.getInstance();
     try {
-      cpMgr.jumpToModifiedClassLoader(modifiedClasspath);
       response = createResponse(dm);
     } catch (Exception ex) {
       response = AdminFailureResponse.create(this.getSender(), ex);
-    } finally {
-      cpMgr.revertToOldClassLoader();
     }
     if (response != null) { // cancellations result in null response
       response.setMsgId(this.getMsgId());
@@ -153,22 +148,16 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     out.writeInt(this.msgId);
-    DataSerializer.writeString(this.modifiedClasspath, out);
+    // For backwards compatibility reasons, continue to write an empty string
+    DataSerializer.writeString("", out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.msgId = in.readInt();
-    this.modifiedClasspath = DataSerializer.readString(in);
-  }
-
-  public void setModifiedClasspath(String path) {
-    if (path == null) {
-      this.modifiedClasspath = "";
-    } else {
-      this.modifiedClasspath = path;
-    }
+    // For backwards compatibility reasons, continue to read an empty string
+    DataSerializer.readString(in);
   }
 
   public InternalDistributedMember getRecipient() {

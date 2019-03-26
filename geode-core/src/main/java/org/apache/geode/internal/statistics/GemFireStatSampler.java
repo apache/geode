@@ -15,8 +15,6 @@
 package org.apache.geode.internal.statistics;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +27,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.admin.ListenerIdMap;
-import org.apache.geode.internal.admin.remote.StatListenerMessage;
 import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -49,14 +44,9 @@ public class GemFireStatSampler extends HostStatSampler {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final ListenerIdMap listeners = new ListenerIdMap();
-
   // TODO: change the listener maps to be copy-on-write
 
   private final Map<LocalStatListenerImpl, Boolean> localListeners = new ConcurrentHashMap<>();
-
-  private final Map<InternalDistributedMember, List<RemoteStatListenerImpl>> recipientToListeners =
-      new HashMap<>();
 
   private final long systemId;
   private final StatisticsConfig statisticsConfig;
@@ -109,48 +99,6 @@ public class GemFireStatSampler extends HostStatSampler {
   public String getProductDescription() {
     return "GemFire " + GemFireVersion.getGemFireVersion() + " #" + GemFireVersion.getBuildId()
         + " as of " + GemFireVersion.getSourceDate();
-  }
-
-  public int addListener(InternalDistributedMember recipient, long resourceId, String statName) {
-    int result = getNextListenerId();
-    synchronized (listeners) {
-      while (listeners.get(result) != null) {
-        // previous one was still being used
-        result = getNextListenerId();
-      }
-      RemoteStatListenerImpl remoteStatListener =
-          RemoteStatListenerImpl.create(result, recipient, resourceId, statName, this);
-      listeners.put(result, remoteStatListener);
-      List<RemoteStatListenerImpl> remoteStatListenerList =
-          recipientToListeners.computeIfAbsent(recipient, k -> new ArrayList<>());
-      remoteStatListenerList.add(remoteStatListener);
-    }
-    return result;
-  }
-
-  public boolean removeListener(int listenerId) {
-    synchronized (listeners) {
-      RemoteStatListenerImpl remoteStatListener =
-          (RemoteStatListenerImpl) listeners.remove(listenerId);
-      if (remoteStatListener != null) {
-        List<RemoteStatListenerImpl> remoteStatListenerList =
-            recipientToListeners.get(remoteStatListener.getRecipient());
-        remoteStatListenerList.remove(remoteStatListener);
-      }
-      return remoteStatListener != null;
-    }
-  }
-
-  public void removeListenersByRecipient(InternalDistributedMember recipient) {
-    synchronized (listeners) {
-      List<RemoteStatListenerImpl> remoteStatListenerList = recipientToListeners.get(recipient);
-      if (remoteStatListenerList != null && remoteStatListenerList.size() != 0) {
-        for (RemoteStatListenerImpl sl : remoteStatListenerList) {
-          listeners.remove(sl.getListenerId());
-        }
-        recipientToListeners.remove(recipient);
-      }
-    }
   }
 
   public void addLocalStatListener(LocalStatListener l, Statistics stats, String statName) {
@@ -211,37 +159,6 @@ public class GemFireStatSampler extends HostStatSampler {
   @Override
   protected void checkListeners() {
     checkLocalListeners();
-    synchronized (listeners) {
-      if (listeners.size() == 0) {
-        return;
-      }
-      long timeStamp = System.currentTimeMillis();
-      for (Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>> internalDistributedMemberListEntry : recipientToListeners
-          .entrySet()) {
-        if (stopRequested()) {
-          return;
-        }
-        Map.Entry<InternalDistributedMember, List<RemoteStatListenerImpl>> entry =
-            internalDistributedMemberListEntry;
-        List<RemoteStatListenerImpl> remoteStatListenerList = entry.getValue();
-        if (remoteStatListenerList.size() > 0) {
-          InternalDistributedMember recipient = entry.getKey();
-          StatListenerMessage statListenerMessage =
-              StatListenerMessage.create(timeStamp, remoteStatListenerList.size());
-          statListenerMessage.setRecipient(recipient);
-          for (RemoteStatListenerImpl statListener : remoteStatListenerList) {
-            if (getStatisticsManager().statisticsExists(statListener.getStatId())) {
-              statListener.checkForChange(statListenerMessage);
-            } else {
-              // its stale; indicate this with a negative listener id
-              // fix for bug 29405
-              statListenerMessage.addChange(-statListener.getListenerId(), 0);
-            }
-          }
-          distributionManager.putOutgoing(statListenerMessage);
-        }
-      }
-    }
   }
 
   @Override
@@ -428,108 +345,4 @@ public class GemFireStatSampler extends HostStatSampler {
     }
   }
 
-  /**
-   * Used to register a StatListener.
-   */
-  protected abstract static class RemoteStatListenerImpl extends StatListenerImpl {
-    private int listenerId;
-    private InternalDistributedMember recipient;
-
-    @Override
-    public int hashCode() {
-      return listenerId;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (o == null) {
-        return false;
-      }
-      if (o instanceof RemoteStatListenerImpl) {
-        return listenerId == ((RemoteStatListenerImpl) o).listenerId;
-      } else {
-        return false;
-      }
-    }
-
-    public int getListenerId() {
-      return listenerId;
-    }
-
-    public InternalDistributedMember getRecipient() {
-      return recipient;
-    }
-
-    static RemoteStatListenerImpl create(int listenerId, InternalDistributedMember recipient,
-        long resourceId, String statName, HostStatSampler sampler) {
-      RemoteStatListenerImpl result = null;
-      Statistics stats = sampler.getStatisticsManager().findStatisticsByUniqueId(resourceId);
-      if (stats == null) {
-        throw new RuntimeException(
-            "Could not find statistics instance with unique id " + resourceId);
-      }
-      StatisticDescriptorImpl stat = (StatisticDescriptorImpl) stats.nameToDescriptor(statName);
-      switch (stat.getTypeCode()) {
-        case StatisticDescriptorImpl.BYTE:
-        case StatisticDescriptorImpl.SHORT:
-        case StatisticDescriptorImpl.INT:
-        case StatisticDescriptorImpl.LONG:
-          result = new LongStatListenerImpl();
-          break;
-        case StatisticDescriptorImpl.FLOAT:
-          result = new FloatStatListenerImpl();
-          break;
-        case StatisticDescriptorImpl.DOUBLE:
-          result = new DoubleStatListenerImpl();
-          break;
-        default:
-          throw new RuntimeException(
-              String.format("Illegal field type %s for statistic",
-                  stats.getType()));
-      }
-      result.stats = stats;
-      result.stat = stat;
-      result.listenerId = listenerId;
-      result.recipient = recipient;
-      return result;
-    }
-
-    /**
-     * Checks to see if the value of the stat has changed. If it has then it adds that change to the
-     * specified message.
-     */
-    public void checkForChange(StatListenerMessage msg) {
-      long currentValue = stats.getRawBits(stat);
-      if (oldValueInitialized) {
-        if (currentValue == oldValue) {
-          return;
-        }
-      } else {
-        oldValueInitialized = true;
-      }
-      oldValue = currentValue;
-      msg.addChange(listenerId, getBitsAsDouble(currentValue));
-    }
-  }
-
-  protected static class LongStatListenerImpl extends RemoteStatListenerImpl {
-    @Override
-    protected double getBitsAsDouble(long bits) {
-      return bits;
-    }
-  }
-
-  protected static class FloatStatListenerImpl extends RemoteStatListenerImpl {
-    @Override
-    protected double getBitsAsDouble(long bits) {
-      return Float.intBitsToFloat((int) bits);
-    }
-  }
-
-  protected static class DoubleStatListenerImpl extends RemoteStatListenerImpl {
-    @Override
-    protected double getBitsAsDouble(long bits) {
-      return Double.longBitsToDouble(bits);
-    }
-  }
 }

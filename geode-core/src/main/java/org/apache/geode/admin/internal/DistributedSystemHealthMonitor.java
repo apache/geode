@@ -38,9 +38,7 @@ import org.apache.geode.internal.admin.DLockInfo;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.GfManagerAgent;
 import org.apache.geode.internal.admin.HealthListener;
-import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatAlertDefinition;
-import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
@@ -271,19 +269,6 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   }
 
   @Override
-  public void addStatListener(StatListener observer, StatResource observedResource,
-      Stat observedStat) {
-    throw new UnsupportedOperationException(
-        "Not a real GemFireVM");
-  }
-
-  @Override
-  public void removeStatListener(StatListener observer) {
-    throw new UnsupportedOperationException(
-        "Not a real GemFireVM");
-  }
-
-  @Override
   public void addHealthListener(HealthListener observer, GemFireHealthConfig cfg) {
 
   }
@@ -336,18 +321,6 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
 
   @Override
   public String[] getSystemLogs() {
-    throw new UnsupportedOperationException(
-        "Not a real GemFireVM");
-  }
-
-  @Override
-  public void setInspectionClasspath(String classpath) {
-    throw new UnsupportedOperationException(
-        "Not a real GemFireVM");
-  }
-
-  @Override
-  public String getInspectionClasspath() {
     throw new UnsupportedOperationException(
         "Not a real GemFireVM");
   }

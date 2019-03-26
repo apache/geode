@@ -145,15 +145,6 @@ public class AdminWaiters {
     // that depart.
   }
 
-  public static void cancelRequest(int msgId, ClusterDistributionManager dm) {
-    AdminReplyProcessor processor = (AdminReplyProcessor) ReplyProcessor21.getProcessor(msgId);
-    if (processor != null) {
-      InternalDistributedMember recipient = processor.getResponder();
-      dm.putOutgoing(CancellationMessage.create(recipient, msgId));
-      processor.cancel();
-    }
-  }
-
   private static long getWaitTimeout() {
     String prop = System.getProperty("remote.call.timeout", "1800");
     try {
