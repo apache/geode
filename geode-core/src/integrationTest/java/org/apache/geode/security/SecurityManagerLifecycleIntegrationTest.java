@@ -31,41 +31,36 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class SecurityManagerLifecycleIntegrationTest {
 
-  private Properties securityProps;
   private InternalCache cache;
   private SecurityService securityService;
 
   @Before
   public void before() {
-    this.securityProps = new Properties();
-    this.securityProps.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
+    Properties configProperties = new Properties();
+    configProperties.setProperty(SECURITY_MANAGER, SpySecurityManager.class.getName());
+    configProperties.setProperty(MCAST_PORT, "0");
+    configProperties.setProperty(LOCATORS, "");
 
-    Properties props = new Properties();
-    props.putAll(this.securityProps);
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
+    cache = (InternalCache) new CacheFactory(configProperties).create();
 
-    this.cache = (InternalCache) new CacheFactory(props).create();
-
-    this.securityService = this.cache.getSecurityService();
+    securityService = cache.getSecurityService();
   }
 
   @After
   public void after() {
-    if (this.cache != null && !this.cache.isClosed()) {
-      this.cache.close();
+    if (cache != null && !cache.isClosed()) {
+      cache.close();
     }
   }
 
   @Test
   public void initAndCloseTest() {
-    SpySecurityManager ssm = (SpySecurityManager) this.securityService.getSecurityManager();
+    SpySecurityManager ssm = (SpySecurityManager) securityService.getSecurityManager();
     assertThat(ssm.getInitInvocationCount()).isEqualTo(1);
-    this.cache.close();
+    cache.close();
     assertThat(ssm.getCloseInvocationCount()).isEqualTo(1);
   }
-
 }
