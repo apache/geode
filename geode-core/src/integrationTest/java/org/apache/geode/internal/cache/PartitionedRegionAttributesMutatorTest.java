@@ -95,30 +95,6 @@ public class PartitionedRegionAttributesMutatorTest {
   }
 
   @Test
-  public void testChangeCacheLoaderWithoutClusterConfigDoesNotUpdateNodeInfo() {
-    startCluster();
-    server.invoke(() -> {
-      PartitionedRegion pr = createRegionSpy();
-      CacheLoader loader = createTestCacheLoader();
-      pr.getAttributesMutator().setCacheLoader(loader);
-      verify(pr).updatePRNodeInformation();
-      verify(pr, times(0)).updatePRConfig(any(), anyBoolean());
-    });
-  }
-
-  @Test
-  public void testChangeCacheWriterWithoutClusterConfigDoesNotUpdateNodeInfo() {
-    startCluster();
-    server.invoke(() -> {
-      PartitionedRegion pr = createRegionSpy();
-      CacheWriter writer = createTestCacheWriter();
-      pr.getAttributesMutator().setCacheWriter(writer);
-      verify(pr).updatePRNodeInformation();
-      verify(pr, times(0)).updatePRConfig(any(), anyBoolean());
-    });
-  }
-
-  @Test
   public void testChangeCacheLoaderWithClusterConfigUpdatesNodeInfo() {
     startCluster();
     server.invoke(() -> {
