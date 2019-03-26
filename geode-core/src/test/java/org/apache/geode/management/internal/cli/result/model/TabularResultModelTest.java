@@ -113,7 +113,7 @@ public class TabularResultModelTest {
     assertThat(table1.getValuesInRow(1)).containsExactly("v2", "k2", "t2");
     assertThat(table1.getValuesInRow(2)).containsExactly("v3", "k3", "t3");
 
-    new TabularResultModelAssert(table1).hasRowContaining("v1", "k1", "t1")
-        .hasRowContaining("v3", "k3", "t3");
+    new TabularResultModelAssert(table1).hasAnyRow().contains("v1", "k1", "t1")
+        .hasAnyRow().contains("v3", "k3", "t3");
   }
 }

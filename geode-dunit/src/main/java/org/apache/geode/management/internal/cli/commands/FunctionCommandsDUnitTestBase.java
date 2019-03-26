@@ -138,7 +138,7 @@ public class FunctionCommandsDUnitTestBase {
         "execute function --id=" + TEST_FUNCTION1 + " --region=/" + REGION_ONE).statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
-        .hasRowContaining("OK", "[false, false]");
+        .hasAnyRow().contains("OK", "[false, false]");
   }
 
   @Test
@@ -161,7 +161,7 @@ public class FunctionCommandsDUnitTestBase {
         .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
-        .hasRowContaining("OK", "[ARG1, ARG1]");
+        .hasAnyRow().contains("OK", "[ARG1, ARG1]");
   }
 
   @Test
@@ -171,7 +171,7 @@ public class FunctionCommandsDUnitTestBase {
         .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
-        .hasRowContaining("server-1", "OK", "[false]");
+        .hasAnyRow().contains("server-1", "OK", "[false]");
   }
 
   @Test
@@ -185,8 +185,8 @@ public class FunctionCommandsDUnitTestBase {
     gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1).statusIsSuccess()
         .hasTableSection()
         .hasRowSize(2)
-        .hasRowContaining("server-1", "OK", "[false]")
-        .hasRowContaining("server-2", "OK", "[false]");
+        .hasAnyRow().contains("server-1", "OK", "[false]")
+        .hasAnyRow().contains("server-2", "OK", "[false]");
   }
 
   @Test
@@ -195,8 +195,8 @@ public class FunctionCommandsDUnitTestBase {
         + Strings.join(server1.getName(), server2.getName()).with(",")).statusIsSuccess()
         .hasTableSection()
         .hasRowSize(2)
-        .hasRowContaining("server-1", "OK", "[false]")
-        .hasRowContaining("server-2", "OK", "[false]");
+        .hasAnyRow().contains("server-1", "OK", "[false]")
+        .hasAnyRow().contains("server-2", "OK", "[false]");
   }
 
   @Test
@@ -206,8 +206,8 @@ public class FunctionCommandsDUnitTestBase {
         .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(2)
-        .hasRowContaining("server-1", "OK", "[ARG1]")
-        .hasRowContaining("server-2", "OK", "[ARG1]");
+        .hasAnyRow().contains("server-1", "OK", "[ARG1]")
+        .hasAnyRow().contains("server-2", "OK", "[ARG1]");
   }
 
   @Test
@@ -216,8 +216,8 @@ public class FunctionCommandsDUnitTestBase {
         .statusIsError()
         .hasTableSection()
         .hasRowSize(2)
-        .hasRowContaining("server-1", "OK", "[false]")
-        .hasRowContaining("server-2", "ERROR",
+        .hasAnyRow().contains("server-1", "OK", "[false]")
+        .hasAnyRow().contains("server-2", "ERROR",
             "Function : executeFunctionOnOneMemberToReturnArgs is not registered on member.");
   }
 
@@ -227,7 +227,7 @@ public class FunctionCommandsDUnitTestBase {
         .statusIsSuccess()
         .hasTableSection()
         .hasRowSize(1)
-        .hasRowContaining("server-1", "OK", "[false]");
+        .hasAnyRow().contains("server-1", "OK", "[false]");
   }
 
   @Test
@@ -301,7 +301,7 @@ public class FunctionCommandsDUnitTestBase {
         .statusIsError()
         .hasTableSection()
         .hasRowSize(2)
-        .hasRowContaining("server-1", "ERROR", errorMessage)
-        .hasRowContaining("server-2", "ERROR", errorMessage);
+        .hasAnyRow().contains("server-1", "ERROR", errorMessage)
+        .hasAnyRow().contains("server-2", "ERROR", errorMessage);
   }
 }

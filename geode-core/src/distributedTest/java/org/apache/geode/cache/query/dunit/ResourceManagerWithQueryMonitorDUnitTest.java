@@ -57,6 +57,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
@@ -1296,7 +1297,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     public boolean rejectedObjects = false;
 
     @Override
-    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
+        final ExecutionContext executionContext) {
       switch (spot) {
         case BEFORE_QUERY_EXECUTION:
           try {
@@ -1327,7 +1329,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     private int numObjectsBeforeCancel = 5;
 
     @Override
-    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
+        final ExecutionContext executionContext) {
       switch (spot) {
         case LOW_MEMORY_WHEN_DESERIALIZING_STREAMINGOPERATION:
           rejectedObjects = true;
@@ -1350,7 +1353,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     public boolean rejectedObjects = false;
 
     @Override
-    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored) {
+    public void doTestHook(final SPOTS spot, final DefaultQuery _ignored,
+        final ExecutionContext executionContext) {
       switch (spot) {
         case BEFORE_BUILD_CUMULATIVE_RESULT:
           if (triggeredOOME == false) {

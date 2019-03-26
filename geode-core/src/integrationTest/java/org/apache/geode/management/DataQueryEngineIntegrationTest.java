@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +32,7 @@ import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.DataQueryEngine;
 import org.apache.geode.management.internal.beans.QueryDataFunction;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.model.EmptyObject;
 import org.apache.geode.management.model.Item;
 import org.apache.geode.management.model.Order;
@@ -105,7 +105,7 @@ public class DataQueryEngineIntegrationTest {
 
     assertThat(queryResult).isEqualToIgnoringWhitespace(expectedResult);
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   /**
@@ -135,7 +135,7 @@ public class DataQueryEngineIntegrationTest {
     assertThat(queryResult).isEqualToIgnoringWhitespace(expectedResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   /**
@@ -165,7 +165,7 @@ public class DataQueryEngineIntegrationTest {
     assertThat(queryResult).isEqualToIgnoringWhitespace(expectedResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   @Test
@@ -189,7 +189,7 @@ public class DataQueryEngineIntegrationTest {
     System.out.println("Query Result: " + queryResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   @Test
@@ -215,7 +215,7 @@ public class DataQueryEngineIntegrationTest {
     System.out.println("Query Result: " + queryResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   @Test
@@ -241,7 +241,7 @@ public class DataQueryEngineIntegrationTest {
     System.out.println("Query Result: " + queryResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
 
   }
 
@@ -254,7 +254,7 @@ public class DataQueryEngineIntegrationTest {
     System.out.println(queryResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   @Test
@@ -267,7 +267,7 @@ public class DataQueryEngineIntegrationTest {
     assertThat(queryResult).isEqualToIgnoringWhitespace(expectedResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   @Test
@@ -281,7 +281,7 @@ public class DataQueryEngineIntegrationTest {
     assertThat(queryResult).isEqualToIgnoringWhitespace(expectedResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   @Test
@@ -304,7 +304,7 @@ public class DataQueryEngineIntegrationTest {
     assertThat(queryResult).isEqualToIgnoringWhitespace(expectedResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   @Test
@@ -322,7 +322,7 @@ public class DataQueryEngineIntegrationTest {
     assertThat(queryResult).isEqualToIgnoringWhitespace(expectedResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
   @Test
@@ -340,7 +340,7 @@ public class DataQueryEngineIntegrationTest {
     assertThat(queryResult).isEqualToIgnoringWhitespace(expectedResult);
 
     // If not correct JSON format this will throw a JSONException
-    new JSONObject(queryResult);
+    new GfJsonObject(queryResult);
   }
 
 

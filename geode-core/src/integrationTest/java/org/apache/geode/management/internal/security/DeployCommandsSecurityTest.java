@@ -27,9 +27,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.NotAuthorizedException;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
@@ -42,7 +42,7 @@ public class DeployCommandsSecurityTest {
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule()
-      .withSecurityManager(SimpleTestSecurityManager.class).withJMXManager().withAutoStart();
+      .withSecurityManager(SimpleSecurityManager.class).withJMXManager().withAutoStart();
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();

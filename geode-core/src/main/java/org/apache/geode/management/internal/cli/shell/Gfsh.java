@@ -706,7 +706,8 @@ public class Gfsh extends JLineShell {
           if (!isScriptRunning) {
             // Normal Command
             while (commandResult.hasNextLine()) {
-              write(commandResult.nextLine(), isError);
+              String nextLine = commandResult.nextLine();
+              write(nextLine, isError);
             }
           } else if (!suppressScriptCmdOutput) {
             // Command is part of script. Show output only when quite=false

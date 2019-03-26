@@ -68,6 +68,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
@@ -192,7 +193,7 @@ public class HashIndex extends AbstractIndex {
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook(
             DefaultQuery.TestHook.SPOTS.BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION,
-            null);
+            null, null);
       }
       Object newKey = TypeUtils.indexKeyFor(key);
       if (newKey.equals(QueryService.UNDEFINED)) {
@@ -758,7 +759,7 @@ public class HashIndex extends AbstractIndex {
     } else if (this.indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) getRegion()).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) getRegion(), entry);
   }
 
   private Object getTargetObjectForUpdate(RegionEntry entry) {
@@ -782,7 +783,7 @@ public class HashIndex extends AbstractIndex {
     } else if (this.indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) getRegion()).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) getRegion(), entry);
   }
 
   @Override
@@ -1209,11 +1210,11 @@ public class HashIndex extends AbstractIndex {
       if (indexKey == null) {
         indexKey = IndexManager.NULL;
       }
-      LocalRegion.NonTXEntry temp = null;
+      NonTXEntry temp = null;
       if (this.isFirstItrOnEntry && this.additionalProj != null) {
-        temp = (LocalRegion.NonTXEntry) additionalProj.evaluate(this.initContext);
+        temp = (NonTXEntry) additionalProj.evaluate(this.initContext);
       } else {
-        temp = (LocalRegion.NonTXEntry) (((RuntimeIterator) currentRuntimeIters.get(0))
+        temp = (NonTXEntry) (((RuntimeIterator) currentRuntimeIters.get(0))
             .evaluate(this.initContext));
       }
       re = temp.getRegionEntry();

@@ -149,13 +149,15 @@ task jcaJar(type: Jar, dependsOn: raJar) {
 
 configurations {
   classesOutput {
-    extendsFrom compile
+    extendsFrom api
     description 'a dependency that exposes the compiled classes'
   }
 }
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+
+  //These bom dependencies are used to constrain the versions of the dependencies listed below
+  api(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
   // As plugin configurations that do not extend from compile,
   // we must explicitly impose version constraints on these configurations.
@@ -163,93 +165,162 @@ dependencies {
   jcaAnnotationProcessor(platform(project(':boms:geode-all-bom')))
   jmhCompile(platform(project(':boms:geode-all-bom')))
 
+  
+  //A dependency that contains the compiled output of the source. What is this for?
   classesOutput sourceSets.main.output
 
 
   // Source Dependencies
+  //------------------------------------------------------------
+
+  //  The antlr configuration is used by the antlr plugin, which compiles grammar
+  // files used by the query engine
   antlr 'antlr:antlr'
 
   // External
+  //------------------------------------------------------------
+
+
+  //tools.jar seems to be used by gfsh is some cases to control processes using
+  //the sun attach API? But this code path may not even be used?
   compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
-  compile('com.github.stephenc.findbugs:findbugs-annotations')
-  compile('org.jgroups:jgroups')
-  compile('antlr:antlr')
-  compile('com.fasterxml.jackson.core:jackson-annotations')
-  compile('com.fasterxml.jackson.core:jackson-databind')
-  compile('commons-io:commons-io')
-  compile('commons-validator:commons-validator')
-  compile('commons-digester:commons-digester')
-  compile('com.sun.activation:javax.activation')
-  compile('javax.xml.bind:jaxb-api')
-  compile('com.sun.xml.bind:jaxb-impl')
-  compile('com.sun.istack:istack-commons-runtime') {
+
+  //Find bugs is used in multiple places in the code to suppress findbugs warnings
+  implementation('com.github.stephenc.findbugs:findbugs-annotations')
+
+  //Jgroups is a core component of our membership system.
+  implementation('org.jgroups:jgroups')
+
+  //Antlr is used by the query engine.
+  implementation('antlr:antlr')
+
+  //Jackson annotations is used in gfsh
+  implementation('com.fasterxml.jackson.core:jackson-annotations')
+
+  //Jackson databind is used in gfsh, and also in pdx
+  implementation('com.fasterxml.jackson.core:jackson-databind')
+
+  //Commons IO is used in persistence and management
+  implementation('commons-io:commons-io')
+
+  //Commons validator is used to validate inet addresses in membership
+  implementation('commons-validator:commons-validator')
+
+  //javax.activation is runtime dependency for gfsh with java 11 (used by gfsh-over-http)
+  runtimeOnly('com.sun.activation:javax.activation')
+
+  //jaxb is used by cluster configuration
+  implementation('javax.xml.bind:jaxb-api')
+
+  //jaxb is used by cluster configuration
+  implementation('com.sun.xml.bind:jaxb-impl')
+
+  //istack appears to be used only by jaxb, not in our code. jaxb doesn't
+  //declare this as required dependency though. It's unclear if this is needed
+  //Runtime
+  runtimeOnly('com.sun.istack:istack-commons-runtime') {
     exclude group: '*'
   }
 
-  compile('org.apache.commons:commons-lang3')
-  compile('commons-modeler:commons-modeler') {
-    exclude module: 'commons-digester'
+  //Commons lang is used in many different places in core
+  implementation('org.apache.commons:commons-lang3')
+  
+  //Commons modeler is used by the (deprecated) admin API
+  implementation('commons-modeler:commons-modeler') {
     exclude module: 'commons-logging-api'
     exclude module: 'mx4j-jmx'
     exclude module: 'xml-apis'
     ext.optional = true
   }
-  compile('io.micrometer:micrometer-core')
     
-  compile('it.unimi.dsi:fastutil')
-  compile('javax.mail:javax.mail-api') {
-    ext.optional = true
-  }
-  compile('javax.resource:javax.resource-api')
-  compile('mx4j:mx4j') {
-    ext.optional = true
-  }
-  compile('mx4j:mx4j-remote') {
-    ext.optional = true
-  }
-  compile('mx4j:mx4j-tools') {
-    ext.optional = true
-  }
-  compile('net.java.dev.jna:jna')
+  //micrometer is used for micrometer based metrics from geode geode
+  api('io.micrometer:micrometer-core')
 
-  compile('net.sf.jopt-simple:jopt-simple')
 
-  compile('org.apache.logging.log4j:log4j-api')
-  compile('org.apache.logging.log4j:log4j-core')
+  //FastUtil contains optimized collections that are used in multiple places in core
+  implementation('it.unimi.dsi:fastutil')
 
+  //Mail API is used by the deprecated admin API
+  implementation('javax.mail:javax.mail-api') {
+    ext.optional = true
+  }
+
+  //The resource-API is used by the JCA support.
+  api('javax.resource:javax.resource-api')
+
+
+  //MX4J is used by the old admin API
+  implementation('mx4j:mx4j') {
+    ext.optional = true
+  }
+
+  //MX4J remote is used by the old admin API 
+  implementation('mx4j:mx4j-remote') {
+    ext.optional = true
+  }
+
+  //MX4J tools is used by the old admin API
+  implementation('mx4j:mx4j-tools') {
+    ext.optional = true
+  }
+
+  //JNA is used for locking memory and preallocating disk files.
+  implementation('net.java.dev.jna:jna')
+
+  //JOptSimple is used by gfsh. A couple of usages have leaked into DiskStore
+  implementation('net.sf.jopt-simple:jopt-simple')
+
+  //Log4j is used everywhere
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.apache.logging.log4j:log4j-core')
+
+  //Jansi is used by the CLI (maybe? it is a runtime dependency)
   runtimeOnly('org.fusesource.jansi:jansi') {
     ext.optional = true
   }
-  runtimeOnly('org.slf4j:slf4j-api')
 
+  //This routes slf4j logs to log4j. Shiro and micrometer use slf4j
   runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
     exclude module: 'slf4j-api'
     ext.optional = true
   }
+  //This routes commons logging logs to log4j. Several apache commons dependencies use commons logging
   runtimeOnly('org.apache.logging.log4j:log4j-jcl') {
     ext.optional = true
   }
+  //This routes jdk logs to log4j. Several dependencies use JDK logs (jackson, jaxb, ...)
   runtimeOnly('org.apache.logging.log4j:log4j-jul') {
     ext.optional = true
   }
-  compile('org.eclipse.jetty:jetty-webapp') {
+  //Jetty is used by the http service, which is used for the developer and management rest APIs
+  implementation('org.eclipse.jetty:jetty-webapp') {
     ext.optional = true
   }
-  compile('org.eclipse.jetty:jetty-server')
+  //Jetty is used by the http service, which is used for the developer and management rest APIs
+  implementation('org.eclipse.jetty:jetty-server')
+
+
+  //Spring webmvc is used by the REST management API
   compileOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true
   }
+  //Spring webmvc is used by the REST management API
   testCompile('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'spring-aop'
     ext.optional = true
   }
-  compile('org.springframework:spring-core') {
+  //Spring core is used by the REST API, and the gfsh cli
+  implementation('org.springframework:spring-core') {
     ext.optional = true
   }
-  compile('org.springframework.shell:spring-shell') {
+
+  //Spring shell is used by the gfsh cli. It's unclear why we can exclude
+  //So many transitive dependencies - are these really optional?
+  //GfshCommand is a public API class that depends on spring shell
+  api('org.springframework.shell:spring-shell') {
     exclude module: 'aopalliance'
     exclude module: 'asm'
     exclude module: 'cglib'
@@ -258,19 +329,31 @@ dependencies {
     exclude module: 'spring-context-support'
     exclude module: 'spring-core'
   }
-  compile('org.iq80.snappy:snappy') {
+
+  //Snappy is used for compressing values, if enabled
+  implementation('org.iq80.snappy:snappy') {
     ext.optional = true
   }
 
-  compile('org.apache.shiro:shiro-core')
+  //Shiro is used for security checks throughout geode-core
+  //API - Shiro is exposed in geode's ResourcePermission class
+  api('org.apache.shiro:shiro-core')
 
-  compile('io.github.classgraph:classgraph')
+  //Classgraph is used by the gfsh cli, and also for function deployment (which happens in a server
+  //in response to a gfsh command)
+  implementation('io.github.classgraph:classgraph')
 
-  compile('com.healthmarketscience.rmiio:rmiio')
+  //RMIIO is used for uploading jar files and copying them between locator an servers
+  implementation('com.healthmarketscience.rmiio:rmiio')
 
-  compile(project(':geode-common'))
-  compile(project(':geode-json'))
-  compile(project(':geode-management'))
+  //Geode-common has annotations and other pieces used geode-core
+  //Currently it has ExpirationAction in it, which is an API dependency in core, but
+  //probably does not belong in this project
+  api(project(':geode-common'))
+  
+  //geode-management currently has pieces of the public API
+  //copied into it, so it is an API dependency
+  api(project(':geode-management'))
 
   jcaAnnotationProcessor 'org.apache.logging.log4j:log4j-core'
 

@@ -736,7 +736,8 @@ public class PartitionedRegion extends LocalRegion
    */
   public PartitionedRegion(String regionName, RegionAttributes regionAttributes,
       LocalRegion parentRegion, InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs);
+    super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs,
+        new PartitionedRegionDataView());
 
     this.node = initializeNode();
     this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath());
@@ -1878,12 +1879,15 @@ public class PartitionedRegion extends LocalRegion
    * @since GemFire 5.1
    */
   @Override
-  public Object executeQuery(DefaultQuery query, Object[] parameters, Set buckets)
+  public Object executeQuery(final DefaultQuery query,
+      final ExecutionContext executionContext,
+      final Object[] parameters,
+      final Set buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     for (;;) {
       try {
-        return doExecuteQuery(query, parameters, buckets);
+        return doExecuteQuery(query, executionContext, parameters, buckets);
       } catch (ForceReattemptException ignore) {
         // fall through and loop
       }
@@ -1895,7 +1899,10 @@ public class PartitionedRegion extends LocalRegion
    *
    * @throws ForceReattemptException if one of the buckets moved out from under us
    */
-  private Object doExecuteQuery(DefaultQuery query, Object[] parameters, Set buckets)
+  private Object doExecuteQuery(final DefaultQuery query,
+      final ExecutionContext executionContext,
+      final Object[] parameters,
+      final Set buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException, ForceReattemptException {
     if (logger.isDebugEnabled()) {
@@ -1948,7 +1955,7 @@ public class PartitionedRegion extends LocalRegion
     SelectResults results = selectExpr.getEmptyResultSet(parameters, getCache(), query);
 
     PartitionedRegionQueryEvaluator prqe = new PartitionedRegionQueryEvaluator(this.getSystem(),
-        this, query, parameters, results, allBuckets);
+        this, query, executionContext, parameters, results, allBuckets);
     for (;;) {
       this.getCancelCriterion().checkCancelInProgress(null);
       boolean interrupted = Thread.interrupted();
@@ -4231,7 +4238,7 @@ public class PartitionedRegion extends LocalRegion
         Map<Object, VersionTag> versions = new HashMap<Object, VersionTag>();
 
         for (Iterator<Map.Entry> it = br.entrySet().iterator(); it.hasNext();) {
-          LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) it.next();
+          NonTXEntry entry = (NonTXEntry) it.next();
           RegionEntry re = entry.getRegionEntry();
           Object value = re.getValue(br); // OFFHEAP: incrc, deserialize, decrc
           VersionStamp versionStamp = re.getVersionStamp();
@@ -9415,11 +9422,6 @@ public class PartitionedRegion extends LocalRegion
               entryKey));
     }
     return br;
-  }
-
-  @Override
-  protected InternalDataView buildDataView() {
-    return new PartitionedRegionDataView();
   }
 
   @Override

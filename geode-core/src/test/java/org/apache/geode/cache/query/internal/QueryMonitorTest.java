@@ -61,46 +61,46 @@ public class QueryMonitorTest {
   @After
   public void afterClass() {
     /*
-     * If the query cancelation task is run, it will set the queryCanceled
+     * If the query cancelation task is run, it will set the isCanceled
      * thread local on the query to true.
      *
      * We need to clean up that state between tests because they can run on this same thread.
      * In production, this cleanup is done in DefaultQuery after the query executes.
      */
-    DefaultQuery.queryCanceled.get().set(false);
+    ExecutionContext.isCanceled.get().set(false);
     monitor.setLowMemory(false, 100);
   }
 
   @Test
   public void monitorQueryThreadCqQueryIsNotMonitored() {
-    DefaultQuery query = mock(DefaultQuery.class);
-    when(query.isCqQuery()).thenReturn(true);
-    monitor.monitorQueryThread(query);
+    final ExecutionContext executionContext = mock(ExecutionContext.class);
+    when(executionContext.isCqQueryContext()).thenReturn(true);
+    monitor.monitorQueryExecution(executionContext);
 
-    // Verify that the expiration task was not scheduled for the CQ query
+    // Verify that the expiration task was not scheduled for the CQ executionContext
     Mockito.verify(scheduledThreadPoolExecutor, never()).schedule(captor.capture(), anyLong(),
         isA(TimeUnit.class));
   }
 
   @Test
   public void monitorQueryThreadLowMemoryExceptionThrown() {
-    DefaultQuery query = mock(DefaultQuery.class);
+    final ExecutionContext executionContext = mock(ExecutionContext.class);
     monitor.setLowMemory(true, 100);
 
-    assertThatThrownBy(() -> monitor.monitorQueryThread(query))
+    assertThatThrownBy(() -> monitor.monitorQueryExecution(executionContext))
         .isExactlyInstanceOf(QueryExecutionLowMemoryException.class);
   }
 
   @Test
   public void monitorQueryThreadExpirationTaskScheduled() {
-    DefaultQuery query = mock(DefaultQuery.class);
+    final ExecutionContext executionContext = mock(ExecutionContext.class);
 
-    monitor.monitorQueryThread(query);
+    monitor.monitorQueryExecution(executionContext);
     Mockito.verify(scheduledThreadPoolExecutor, times(1)).schedule(captor.capture(), anyLong(),
         isA(TimeUnit.class));
     captor.getValue().run();
 
-    Mockito.verify(query, times(1))
+    Mockito.verify(executionContext, times(1))
         .setQueryCanceledException(isA(QueryExecutionTimeoutException.class));
     assertThatThrownBy(QueryMonitor::throwExceptionIfQueryOnCurrentThreadIsCanceled)
         .isExactlyInstanceOf(QueryExecutionCanceledException.class);

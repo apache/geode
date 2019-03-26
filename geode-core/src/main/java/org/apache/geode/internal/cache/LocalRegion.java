@@ -69,6 +69,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -79,7 +80,6 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheRuntimeException;
-import org.apache.geode.cache.CacheStatistics;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CustomExpiry;
@@ -107,7 +107,6 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionReinitializedException;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
@@ -157,7 +156,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -264,20 +262,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return initializationLatchAfterGetInitialImage;
   }
 
-  /**
-   * Internal interface used to simulate failures when performing entry operations
-   *
-   * @since GemFire 5.7
-   */
-  public interface TestCallable {
-    void call(LocalRegion r, Operation op, RegionEntry re);
-  }
-
-  // view types for iterators
-  public enum IteratorType {
-    KEYS, VALUES, ENTRIES
-  }
-
   // initialization level
   public static final int AFTER_INITIAL_IMAGE = 0;
 
@@ -297,7 +281,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private Object regionUserAttribute;
 
   // TODO: shouldn't this be an identity map whose key is a RegionEntry?
-  Map entryUserAttributes;
+  private final Map<Object, Object> entryUserAttributes = new ConcurrentHashMap<>();
 
   private final String regionName;
 
@@ -377,6 +361,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 5.0
    */
   final boolean EXPIRY_UNITS_MS;
+
+  private final EntryEventFactory entryEventFactory;
+  private final RegionMapConstructor regionMapConstructor;
 
   // Indicates that the entries are in fact initialized. It turns out
   // you can't trust the assignment of a volatile (as indicated above)
@@ -510,38 +497,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  /**
-   * There seem to be cases where a region can be created and yet the distributed system is not yet
-   * in place...
-   */
-  protected class Stopper extends CancelCriterion {
-
-    @Override
-    public String cancelInProgress() {
-      // This grossness is necessary because there are instances where the
-      // region can exist without having a cache (XML creation)
-      checkFailure();
-      Cache cache = LocalRegion.this.getCache();
-      if (cache == null) {
-        return "The cache is not available";
-      }
-      return cache.getCancelCriterion().cancelInProgress();
-    }
-
-    @Override
-    public RuntimeException generateCancelledException(Throwable e) {
-      // This grossness is necessary because there are instances where the
-      // region can exist without having a cache (XML creation)
-      checkFailure();
-      Cache cache = LocalRegion.this.getCache();
-      if (cache == null) {
-        return new CacheClosedException("No cache", e);
-      }
-      return cache.getCancelCriterion().generateCancelledException(e);
-    }
-
-  }
-
   protected final CancelCriterion stopper = createStopper();
 
   // TODO: change createStopper to be private (fix EventTrackerTest)
@@ -593,19 +548,35 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return buf.toString();
   }
 
-  /**
-   * Creates new region
-   */
   protected LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
       InternalCache cache, InternalRegionArguments internalRegionArgs) throws DiskAccessException {
+    this(regionName, attrs, parentRegion, cache, internalRegionArgs, new LocalRegionDataView(),
+        RegionMapFactory::createVM, new DefaultEntryEventFactory());
+  }
+
+  protected LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
+      InternalCache cache, InternalRegionArguments internalRegionArgs,
+      InternalDataView internalDataView) throws DiskAccessException {
+    this(regionName, attrs, parentRegion, cache, internalRegionArgs, internalDataView,
+        RegionMapFactory::createVM, new DefaultEntryEventFactory());
+  }
+
+  @VisibleForTesting
+  LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
+      InternalCache cache, InternalRegionArguments internalRegionArgs,
+      InternalDataView internalDataView,
+      RegionMapConstructor regionMapConstructor, EntryEventFactory entryEventFactory)
+      throws DiskAccessException {
     super(cache, attrs, regionName, internalRegionArgs);
 
     // Initialized here (and defers to parent) to fix GEODE-128
     this.EXPIRY_UNITS_MS = parentRegion != null ? parentRegion.EXPIRY_UNITS_MS
         : Boolean.getBoolean(EXPIRY_MS_PROPERTY);
+    this.regionMapConstructor = regionMapConstructor;
+    this.entryEventFactory = entryEventFactory;
 
     Assert.assertTrue(regionName != null, "regionName must not be null");
-    this.sharedDataView = buildDataView();
+    this.sharedDataView = internalDataView;
     this.regionName = regionName;
     this.parentRegion = parentRegion;
     this.fullPath = calcFullPath(regionName, parentRegion);
@@ -643,7 +614,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         this.cachePerfStats = cache.getCachePerfStats();
       } else {
         this.hasOwnStats = true;
-        this.cachePerfStats = new RegionPerfStats(cache, cache.getCachePerfStats(), regionName);
+        this.cachePerfStats = new RegionPerfStats(
+            cache.getInternalDistributedSystem().getStatisticsManager(), cache.getCachePerfStats(),
+            regionName);
       }
     }
 
@@ -722,13 +695,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       ma.loadFactor = this.loadFactor;
       ma.initialCapacity = this.initialCapacity;
       ma.concurrencyLevel = this.concurrencyLevel;
-      result = RegionMapFactory.createVM(this, ma, internalRegionArgs);
+      result = regionMapConstructor.create(this, ma, internalRegionArgs);
     }
     return result;
-  }
-
-  protected InternalDataView buildDataView() {
-    return new LocalRegionDataView();
   }
 
   /**
@@ -1121,9 +1090,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkReadiness();
     checkForLimitedOrNoAccess();
 
-    return EntryEventImpl
+    return entryEventFactory
         .create(this, Operation.CREATE, key, value, aCallbackArgument, false, getMyId())
-        /* to distinguish genuine create */.setCreate(true);
+        .setCreate(true);
   }
 
   /**
@@ -1175,7 +1144,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkReadiness();
     checkForLimitedOrNoAccess();
 
-    return EntryEventImpl.create(this, Operation.DESTROY, key, null/* newValue */,
+    return entryEventFactory.create(this, Operation.DESTROY, key, null,
         aCallbackArgument, false, getMyId());
   }
 
@@ -1670,7 +1639,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // an id will be generated by default. Null was passed in anyway.
     // generate EventID
     @Retained
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key, value,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.UPDATE, key, value,
         aCallbackArgument, false, getMyId());
     boolean eventReturned = false;
     try {
@@ -1845,7 +1814,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       return null;
     }
 
-    return new NonTXEntry(re);
+    return new NonTXEntry(this, re);
   }
 
   protected boolean isClosed() {
@@ -2199,7 +2168,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   void validatedInvalidate(Object key, Object aCallbackArgument)
       throws TimeoutException, EntryNotFoundException {
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.INVALIDATE, key, null,
+    EntryEventImpl event = entryEventFactory.create(this, Operation.INVALIDATE, key, null,
         aCallbackArgument, false, getMyId());
     try {
       if (generateEventID()) {
@@ -2217,7 +2186,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkReadiness();
     checkForNoAccess();
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY, key, null,
+    EntryEventImpl event = entryEventFactory.create(this, Operation.LOCAL_DESTROY, key, null,
         aCallbackArgument, false, getMyId());
     if (generateEventID()) {
       event.setNewEventId(this.cache.getDistributedSystem());
@@ -2289,8 +2258,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkForNoAccess();
 
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_INVALIDATE, key,
-        null/* newValue */, aCallbackArgument, false, getMyId());
+    EntryEventImpl event = entryEventFactory.create(this, Operation.LOCAL_INVALIDATE, key,
+        null, aCallbackArgument, false, getMyId());
     try {
       if (generateEventID()) {
         event.setNewEventId(this.cache.getDistributedSystem());
@@ -2838,8 +2807,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
 
       @Released
-      EntryEventImpl event = EntryEventImpl.create(this, op, key, value, aCallbackArgument, false,
-          getMyId(), generateCallbacks);
+      EntryEventImpl event =
+          entryEventFactory.create(this, op, key, value, aCallbackArgument, false,
+              getMyId(), generateCallbacks);
       try {
 
         // bug #47716 - do not put an invalid entry into the cache if there's
@@ -3295,7 +3265,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     scheduleTombstone(entry, destroyedVersion, false);
   }
 
-  private void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion,
+  @Override
+  public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion,
       boolean reschedule) {
     if (destroyedVersion == null) {
       throw new NullPointerException("destroyed version tag cannot be null");
@@ -4162,8 +4133,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkReadiness();
     validateKey(key);
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY, key, false,
-        getMyId(), false /* generateCallbacks */, true);
+    EntryEventImpl event = entryEventFactory.create(this, Operation.LOCAL_DESTROY, key, false,
+        getMyId(), false, true);
     try {
       basicDestroy(event, false, null); // expectedOldValue
     } catch (CacheWriterException e) {
@@ -5094,9 +5065,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // Bug 40842: clearing index of the old value performed in AbstractRegionMap
     }
     if (didDestroy) {
-      if (this.entryUserAttributes != null) {
-        this.entryUserAttributes.remove(key);
-      }
+      entryUserAttributes.remove(key);
     }
   }
 
@@ -5106,9 +5075,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public void txApplyPutHandleDidDestroy(Object key) {
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.remove(key);
-    }
+    entryUserAttributes.remove(key);
   }
 
   /**
@@ -5191,9 +5158,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
     }
     if (didDestroy) {
-      if (this.entryUserAttributes != null) {
-        this.entryUserAttributes.remove(key);
-      }
+      entryUserAttributes.remove(key);
     }
     if (this.statisticsEnabled && !clearConflict) {
       addExpiryTaskIfAbsent(regionEntry);
@@ -5219,9 +5184,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.CREATE, key, value,
-        theCallbackArg, false /* origin remote */, client.getDistributedMember(),
-        true /* generateCallbacks */, eventId);
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.CREATE, key, value,
+        theCallbackArg, false, client.getDistributedMember(),
+        true, eventId);
 
     try {
       event.setContext(client);
@@ -5294,9 +5259,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key,
-        null /* new value */, theCallbackArg, false /* origin remote */,
-        memberId.getDistributedMember(), true /* generateCallbacks */, eventID);
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.UPDATE, key,
+        null, theCallbackArg, false,
+        memberId.getDistributedMember(), true, eventID);
 
     try {
       event.setContext(memberId);
@@ -5430,8 +5395,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // Create an event and put the entry
       @Released
       EntryEventImpl event =
-          EntryEventImpl.create(this, Operation.INVALIDATE, key, null /* newValue */,
-              callbackArgument /* callbackArg */, true /* originRemote */, serverId);
+          entryEventFactory.create(this, Operation.INVALIDATE, key, null,
+              callbackArgument, true, serverId);
       try {
 
         event.setVersionTag(versionTag);
@@ -5479,8 +5444,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // Create an event and destroy the entry
       @Released
       EntryEventImpl event =
-          EntryEventImpl.create(this, Operation.DESTROY, key, null /* newValue */,
-              callbackArgument /* callbackArg */, true /* originRemote */, serverId);
+          entryEventFactory.create(this, Operation.DESTROY, key, null,
+              callbackArgument, true, serverId);
       try {
         event.setFromServer(true);
         event.setVersionTag(versionTag);
@@ -5554,7 +5519,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     // Create an event and put the entry
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.DESTROY, key, null,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.DESTROY, key, null,
         theCallbackArg, false, memberId.getDistributedMember(), true, clientEvent.getEventId());
 
     try {
@@ -5592,7 +5557,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     // Create an event and put the entry
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.INVALIDATE, key, null,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.INVALIDATE, key, null,
         theCallbackArg, false, memberId.getDistributedMember(), true, clientEvent.getEventId());
 
     try {
@@ -5619,7 +5584,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     // Create an event and update version stamp of the entry
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE_VERSION_STAMP, key, null,
+    EntryEventImpl event = entryEventFactory.create(this, Operation.UPDATE_VERSION_STAMP, key, null,
         null, false, memberId.getDistributedMember(), false, clientEvent.getEventId());
 
     event.setContext(memberId);
@@ -5781,6 +5746,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     return new MemoryThresholdInfo(isMemoryThresholdReached(),
         Collections.singleton(this.cache.getMyId()));
+  }
+
+  @Override
+  public Map<Object, Object> getEntryUserAttributes() {
+    return entryUserAttributes;
   }
 
   /**
@@ -6695,8 +6665,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Retained
   protected EntryEventImpl generateEvictDestroyEvent(final Object key) {
     @Retained
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.EVICT_DESTROY, key,
-        null/* newValue */, null, false, getMyId());
+    EntryEventImpl event = entryEventFactory.create(this, Operation.EVICT_DESTROY, key,
+        null, null, false, getMyId());
 
     // Fix for bug#36963
     if (generateEventID()) {
@@ -6834,9 +6804,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (!inTokenMode || duringRI) {
       updateStatsForDestroy();
     }
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.remove(event.getKey());
-    }
+    entryUserAttributes.remove(event.getKey());
   }
 
   /**
@@ -6950,9 +6918,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     } else if (!alreadyDestroyedOrRemoved) {
       updateStatsForDestroy();
     }
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.remove(key);
-    }
+    entryUserAttributes.remove(key);
   }
 
   void basicInvalidateRegion(RegionEventImpl event) {
@@ -7463,15 +7429,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  /**
-   * Used by {@link #foreachRegionEntry}.
-   *
-   * @since GemFire prPersistSprint2
-   */
-  public interface RegionEntryCallback {
-    void handleRegionEntry(RegionEntry regionEntry);
-  }
-
   protected void checkIfReplicatedAndLocalDestroy(EntryEventImpl event) {
     // disallow local invalidation for replicated regions
     if (getScope().isDistributed() && getDataPolicy().withReplication() && !event.isDistributed()
@@ -7530,7 +7487,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
         // EventID will not be generated by this constructor
         @Released
-        EntryEventImpl event = EntryEventImpl.create(this, operation, keyObject, null, null,
+        EntryEventImpl event = entryEventFactory.create(this, operation, keyObject, null, null,
             rgnEvent.isOriginRemote(), rgnEvent.getDistributedMember());
 
         try {
@@ -7880,141 +7837,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Used to create a cheap Region.Entry that can be passed to the CustomExpiry callback
-   */
-  private static class ExpiryRegionEntry implements Region.Entry {
-    private final LocalRegion region;
-    private final RegionEntry regionEntry;
-
-    ExpiryRegionEntry(LocalRegion region, RegionEntry regionEntry) {
-      this.region = region;
-      this.regionEntry = regionEntry;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + (this.regionEntry == null ? 0 : this.regionEntry.hashCode());
-      result = prime * result + (this.region == null ? 0 : this.region.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null) {
-        return false;
-      }
-      if (getClass() != obj.getClass()) {
-        return false;
-      }
-      ExpiryRegionEntry other = (ExpiryRegionEntry) obj;
-      if (this.regionEntry == null) {
-        if (other.regionEntry != null) {
-          return false;
-        }
-      } else if (!this.regionEntry.equals(other.regionEntry)) {
-        return false;
-      }
-      if (this.region == null) {
-        if (other.region != null) {
-          return false;
-        }
-      } else if (!this.region.equals(other.region))
-        return false;
-      return true;
-    }
-
-    @Override
-    public String toString() {
-      return "region=" + this.region.getFullPath() + ", key=" + getKey() + " value=" + getValue();
-    }
-
-    @Override
-    public Region getRegion() {
-      return this.region;
-    }
-
-    /**
-     * Returns the entry's RegionEntry if it "checks" out. The check is to see if the region entry
-     * still exists.
-     *
-     * @throws EntryNotFoundException if the RegionEntry has been removed.
-     */
-    private RegionEntry getCheckedRegionEntry() throws EntryNotFoundException {
-      if (this.regionEntry.isDestroyedOrRemoved()) {
-        throw new EntryNotFoundException(
-            "Entry for key " + this.regionEntry.getKey() + " no longer exists");
-      }
-      return this.regionEntry;
-    }
-
-    @Override
-    public Object getValue() {
-      Object value =
-          this.region.getDeserialized(getCheckedRegionEntry(), false, false, false, false);
-      if (value == null) {
-        throw new EntryDestroyedException(getKey().toString());
-      } else if (Token.isInvalid(value)) {
-        return null;
-      }
-      return value;
-    }
-
-    @Override
-    public boolean isLocal() {
-      return true; // we only create expiry tasks for local entries
-    }
-
-    @Override
-    public CacheStatistics getStatistics() {
-      LocalRegion lr = this.region;
-      if (!lr.statisticsEnabled) {
-        throw new StatisticsDisabledException(
-            String.format("Statistics disabled for region '%s'",
-                lr.getFullPath()));
-      }
-      return new CacheStatisticsImpl(getCheckedRegionEntry(), lr);
-    }
-
-    @Override
-    public Object getUserAttribute() {
-      Map userAttr = this.region.entryUserAttributes;
-      if (userAttr == null) {
-        return null;
-      }
-      return userAttr.get(getKey());
-    }
-
-    @Override
-    public Object setUserAttribute(Object userAttribute) {
-      LocalRegion lr = this.region;
-      if (lr.entryUserAttributes == null) {
-        lr.entryUserAttributes = new ConcurrentHashMap();
-      }
-      return lr.entryUserAttributes.put(getKey(), userAttribute);
-    }
-
-    @Override
-    public boolean isDestroyed() {
-      return this.regionEntry.isDestroyedOrRemoved();
-    }
-
-    @Override
-    public Object setValue(Object value) {
-      return this.region.put(getKey(), value);
-    }
-
-    @Override
-    public Object getKey() {
-      return this.regionEntry.getKey();
-    }
-  }
-
-  /**
    * If custom expiration returns non-null expiration attributes then create a CustomEntryExpiryTask
    * for this region and the given entry and return it. Otherwise if the region is configured for
    * expiration then create an EntryExpiryTask for this region and the given entry and return it.
@@ -8294,11 +8116,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public Object basicGetEntryUserAttribute(Object entryKey) {
-    Map userAttr = this.entryUserAttributes;
-    if (userAttr == null) {
-      return null;
-    }
-    return userAttr.get(entryKey);
+    return entryUserAttributes.get(entryKey);
   }
 
   public TXStateProxy getTXState() {
@@ -8528,330 +8346,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           logger.error("Exception occurred in CacheListener", t);
         }
       }
-    }
-  }
-
-  /*****************************************************************************
-   * INNER CLASSES
-   ****************************************************************************/
-
-  class EventDispatcher implements Runnable {
-    /**
-     * released by the release method
-     */
-    @Retained
-    InternalCacheEvent event;
-
-    EnumListenerEvent op;
-
-    EventDispatcher(InternalCacheEvent event, EnumListenerEvent op) {
-      if (LocalRegion.this.offHeap && event instanceof EntryEventImpl) {
-        // Make a copy that has its own off-heap refcount so fix bug 48837
-        event = new EntryEventImpl((EntryEventImpl) event);
-      }
-      this.event = event;
-      this.op = op;
-    }
-
-    @Override
-    public void run() {
-      try {
-        dispatchEvent(LocalRegion.this, this.event, this.op);
-      } finally {
-        this.release();
-      }
-    }
-
-    public void release() {
-      if (LocalRegion.this.offHeap && this.event instanceof EntryEventImpl) {
-        ((Releasable) this.event).release();
-      }
-    }
-  }
-
-  /** Set view of subregions */
-  private class SubregionsSet extends AbstractSet {
-    final boolean recursive;
-
-    SubregionsSet(boolean recursive) {
-      this.recursive = recursive;
-    }
-
-    @Override
-    public Iterator iterator() {
-      // iterates breadth-first (if recursive)
-      return new Iterator() {
-        Iterator currentIterator = LocalRegion.this.subregions.values().iterator();
-
-        List queue; // FIFO queue of iterators
-
-        Object nextElement = null;
-
-        @Override
-        public void remove() {
-          throw new UnsupportedOperationException(
-              "This iterator does not support modification");
-        }
-
-        @Override
-        public boolean hasNext() {
-          if (this.nextElement != null) {
-            return true;
-          } else {
-            Object element = next(true);
-            if (element != null) {
-              this.nextElement = element;
-              return true;
-            } else {
-              return false;
-            }
-          }
-        }
-
-        private boolean doHasNext() {
-          return this.currentIterator != null && this.currentIterator.hasNext();
-        }
-
-        @Override
-        public Object next() {
-          return next(false);
-        }
-
-        /**
-         * @param nullOK if true, return null instead of throwing NoSuchElementException
-         * @return the next element
-         */
-        private Object next(boolean nullOK) {
-          if (this.nextElement != null) {
-            Object next = this.nextElement;
-            this.nextElement = null;
-            return next;
-          }
-
-          LocalRegion region;
-          do {
-            region = null;
-            if (!doHasNext()) {
-              if (this.queue == null || this.queue.isEmpty()) {
-                if (nullOK) {
-                  return null;
-                } else {
-                  throw new NoSuchElementException();
-                }
-              } else {
-                this.currentIterator = (Iterator) queue.remove(0);
-                continue;
-              }
-            }
-            region = (LocalRegion) currentIterator.next();
-          } while (region == null || !region.isInitialized() || region.isDestroyed());
-
-          if (recursive) {
-            Iterator nextIterator = region.subregions.values().iterator();
-            if (nextIterator.hasNext()) {
-              if (this.queue == null) {
-                this.queue = new ArrayList();
-              }
-              this.queue.add(nextIterator);
-            }
-          }
-          if (!doHasNext()) {
-            if (this.queue == null || this.queue.isEmpty()) {
-              this.currentIterator = null;
-            } else {
-              this.currentIterator = (Iterator) this.queue.remove(0);
-            }
-          }
-          return region;
-        }
-      };
-    }
-
-    @Override
-    public int size() {
-      if (this.recursive) {
-        return allSubregionsSize() - 1 /* don't count this region */;
-      } else {
-        return LocalRegion.this.subregions.size();
-      }
-    }
-
-    @Override
-    public Object[] toArray() {
-      List temp = new ArrayList(this.size());
-      // do NOT use addAll or this results in stack overflow - must use iterator()
-      for (Iterator iter = iterator(); iter.hasNext();) {
-        temp.add(iter.next());
-      }
-      return temp.toArray();
-    }
-
-    @Override
-    public Object[] toArray(Object[] array) {
-      List temp = new ArrayList(this.size());
-      // do NOT use addAll or this results in stack overflow - must use iterator()
-      for (Iterator iter = iterator(); iter.hasNext();) {
-        temp.add(iter.next());
-      }
-      return temp.toArray(array);
-    }
-  }
-
-  public class NonTXEntry implements Region.Entry {
-
-    private final Object key;
-
-    private boolean entryIsDestroyed = false;
-
-    @Override
-    public boolean isLocal() {
-      return true;
-    }
-
-    /**
-     * Create an Entry given a key. The returned Entry may or may not be destroyed
-     */
-    public NonTXEntry(RegionEntry regionEntry) {
-      if (regionEntry == null) {
-        throw new IllegalArgumentException(
-            "regionEntry should not be null");
-      }
-      // for a soplog region, since the entry may not be in memory,
-      // we will have to fetch it from soplog, if the entry is in
-      // memory this is a quick lookup, so rather than RegionEntry
-      // we keep reference to key
-      this.key = regionEntry.getKey();
-    }
-
-    /** Internal method for getting the underlying RegionEntry */
-    public RegionEntry getRegionEntry() {
-      RegionEntry regionEntry = LocalRegion.this.getRegionMap().getEntry(this.key);
-      if (regionEntry == null) {
-        throw new EntryDestroyedException(this.key.toString());
-      }
-      return regionEntry;
-    }
-
-    private RegionEntry basicGetEntry() {
-      RegionEntry re = LocalRegion.this.basicGetEntry(this.key);
-      if (re == null) {
-        throw new EntryDestroyedException(this.key.toString());
-      }
-      return re;
-    }
-
-    @Override
-    public boolean isDestroyed() {
-      if (this.entryIsDestroyed) {
-        return true;
-      }
-      if (LocalRegion.this.isDestroyed || LocalRegion.this.basicGetEntry(this.key) == null) {
-        this.entryIsDestroyed = true;
-      }
-      return this.entryIsDestroyed;
-    }
-
-    @Override
-    public Object getKey() {
-      return basicGetEntry().getKey();
-    }
-
-    @Override
-    public Object getValue() {
-      return getValue(false);
-    }
-
-    public Object getValue(boolean ignoreCopyOnRead) {
-      Object value = getDeserialized(this.basicGetEntry(), false, ignoreCopyOnRead, false, false);
-      if (value == null) {
-        throw new EntryDestroyedException(getKey().toString());
-      } else if (Token.isInvalid(value)) {
-        return null;
-      }
-
-      return value;
-    }
-
-    /**
-     * To get the value from region in serialized form
-     *
-     * @return {@link VMCachedDeserializable}
-     */
-    public Object getRawValue() {
-      Object value = basicGetEntry().getValue((RegionEntryContext) getRegion());
-      if (value == null) {
-        throw new EntryDestroyedException(this.getRegionEntry().getKey().toString());
-      } else if (Token.isInvalid(value)) {
-        return null;
-      }
-
-      return value;
-    }
-
-    @Override
-    public Region getRegion() {
-      basicGetEntry();
-      return LocalRegion.this;
-    }
-
-    @Override
-    public CacheStatistics getStatistics() {
-      // prefer entry destroyed exception over statistics disabled exception
-      basicGetEntry();
-      if (!LocalRegion.this.statisticsEnabled) {
-        throw new StatisticsDisabledException(
-            String.format("Statistics disabled for region '%s'",
-                getFullPath()));
-      }
-      return new CacheStatisticsImpl(this.basicGetEntry(), LocalRegion.this);
-    }
-
-    @Override
-    public Object getUserAttribute() {
-      this.basicGetEntry();
-      Map userAttributes = LocalRegion.this.entryUserAttributes;
-      if (userAttributes == null) {
-        return null;
-      }
-      return userAttributes.get(basicGetEntry().getKey());
-    }
-
-    @Override
-    public Object setUserAttribute(Object userAttribute) {
-      if (LocalRegion.this.entryUserAttributes == null) {
-        LocalRegion.this.entryUserAttributes = new ConcurrentHashMap();
-      }
-      return LocalRegion.this.entryUserAttributes.put(basicGetEntry().getKey(), userAttribute);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (!(obj instanceof LocalRegion.NonTXEntry)) {
-        return false;
-      }
-      LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) obj;
-      return this.basicGetEntry().equals(entry.getRegionEntry())
-          && this.getRegion() == entry.getRegion();
-    }
-
-    @Override
-    public int hashCode() {
-      return basicGetEntry().hashCode() ^ getRegion().hashCode();
-    }
-
-    @Override
-    public String toString() {
-      return new StringBuilder("NonTXEntry@")
-          .append(Integer.toHexString(System.identityHashCode(this))).append(' ')
-          .append(this.getRegionEntry()).toString();
-    }
-
-    /**
-     * @since GemFire 5.0
-     */
-    @Override
-    public Object setValue(Object value) {
-      return put(getKey(), value);
     }
   }
 
@@ -9112,9 +8606,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // on the map , but that should be OK, as the expiration thread will
     // silently move ahead if the entry to be expired no longer existed
     this.cancelAllEntryExpiryTasks();
-    if (this.entryUserAttributes != null) {
-      this.entryUserAttributes.clear();
-    }
+    entryUserAttributes.clear();
 
     // if all current content has been removed then the version vector
     // does not need to retain any exceptions and the GC versions can
@@ -9296,7 +8788,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           validateKey(key);
 
           @Released
-          EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_LOAD_CREATE, key,
+          EntryEventImpl event = entryEventFactory.create(this, Operation.LOCAL_LOAD_CREATE, key,
               value, callback, false, getMyId(), true);
 
           try {
@@ -9398,9 +8890,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null,
-        null /* new value */, callbackArg, false /* origin remote */,
-        memberId.getDistributedMember(), !skipCallbacks /* generateCallbacks */, eventId);
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.PUTALL_CREATE, null,
+        null, callbackArg, false,
+        memberId.getDistributedMember(), !skipCallbacks, eventId);
 
     try {
       event.setContext(memberId);
@@ -9436,9 +8928,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVEALL_DESTROY, null,
-        null /* new value */, callbackArg, false /* origin remote */,
-        memberId.getDistributedMember(), true /* generateCallbacks */, eventId);
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.REMOVEALL_DESTROY, null,
+        null, callbackArg, false,
+        memberId.getDistributedMember(), true, eventId);
 
     try {
       event.setContext(memberId);
@@ -9461,7 +8953,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     long startPut = CachePerfStats.getStatTime();
 
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null, null, null,
+    EntryEventImpl event = entryEventFactory.create(this, Operation.PUTALL_CREATE, null, null, null,
         true, getMyId(), !skipCallbacks);
 
     try {
@@ -10024,7 +9516,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // PutAll operation, even if there is no distribution, so that individual
     // events can be tracked and handed off to callbacks in postPutAll
     // No need for release since disallowOffHeapValues called.
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null, null,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.PUTALL_CREATE, null, null,
         callbackArg, true, getMyId());
 
     event.disallowOffHeapValues();
@@ -10048,7 +9540,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // removeAll operation, even if there is no distribution, so that individual
     // events can be tracked and handed off to callbacks in postRemoveAll
     // No need for release since disallowOffHeapValues called.
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVEALL_DESTROY, null,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.REMOVEALL_DESTROY, null,
         null, callbackArg, false, getMyId());
     event.disallowOffHeapValues();
     return new DistributedRemoveAllOperation(event, keys.size(), false);
@@ -10082,7 +9574,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Released
     EntryEventImpl event =
-        EntryEventImpl.createPutAllEvent(putallOp, this, Operation.PUTALL_CREATE, key, value);
+        entryEventFactory.createPutAllEvent(putallOp, this, Operation.PUTALL_CREATE, key, value);
 
     try {
       if (tagHolder != null) {
@@ -10118,7 +9610,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     validateKey(key);
 
     @Released
-    EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, this, key);
+    EntryEventImpl event = entryEventFactory.createRemoveAllEvent(op, this, key);
 
     try {
       if (tagHolder != null) {
@@ -10884,7 +10376,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void destroyRecoveredEntry(Object key) {
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY, key, null, null,
+    EntryEventImpl event = entryEventFactory.create(this, Operation.LOCAL_DESTROY, key, null, null,
         false, getMyId(), false);
     try {
       event.inhibitCacheListenerNotification(true);
@@ -10989,566 +10481,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // No op
   }
 
-  static class RegionPerfStats extends CachePerfStats {
-    CachePerfStats cachePerfStats;
-
-    RegionPerfStats(InternalCache cache, CachePerfStats superStats, String regionName) {
-      super(cache.getDistributedSystem(), regionName);
-      this.cachePerfStats = superStats;
-    }
-
-    @Override
-    public void incReliableQueuedOps(int inc) {
-      this.stats.incInt(reliableQueuedOpsId, inc);
-      this.cachePerfStats.incReliableQueuedOps(inc);
-    }
-
-    @Override
-    public void incReliableQueueSize(int inc) {
-      this.stats.incInt(reliableQueueSizeId, inc);
-      this.cachePerfStats.incReliableQueueSize(inc);
-    }
-
-    @Override
-    public void incReliableQueueMax(int inc) {
-      this.stats.incInt(reliableQueueMaxId, inc);
-      this.cachePerfStats.incReliableQueueMax(inc);
-    }
-
-    @Override
-    public void incReliableRegions(int inc) {
-      this.stats.incInt(reliableRegionsId, inc);
-      this.cachePerfStats.incReliableRegions(inc);
-    }
-
-    @Override
-    public void incReliableRegionsMissing(int inc) {
-      this.stats.incInt(reliableRegionsMissingId, inc);
-      this.cachePerfStats.incReliableRegionsMissing(inc);
-    }
-
-    @Override
-    public void incReliableRegionsQueuing(int inc) {
-      this.stats.incInt(reliableRegionsQueuingId, inc);
-      this.cachePerfStats.incReliableRegionsQueuing(inc);
-    }
-
-    @Override
-    public void incReliableRegionsMissingFullAccess(int inc) {
-      this.stats.incInt(reliableRegionsMissingFullAccessId, inc);
-      this.cachePerfStats.incReliableRegionsMissingFullAccess(inc);
-    }
-
-    @Override
-    public void incReliableRegionsMissingLimitedAccess(int inc) {
-      this.stats.incInt(reliableRegionsMissingLimitedAccessId, inc);
-      this.cachePerfStats.incReliableRegionsMissingLimitedAccess(inc);
-    }
-
-    @Override
-    public void incReliableRegionsMissingNoAccess(int inc) {
-      this.stats.incInt(reliableRegionsMissingNoAccessId, inc);
-      this.cachePerfStats.incReliableRegionsMissingNoAccess(inc);
-    }
-
-    @Override
-    public void incQueuedEvents(int inc) {
-      this.stats.incLong(eventsQueuedId, inc);
-      this.cachePerfStats.incQueuedEvents(inc);
-    }
-
-    /**
-     * @return the timestamp that marks the start of the operation
-     */
-    @Override
-    public long startLoad() {
-      this.stats.incInt(loadsInProgressId, 1);
-      return this.cachePerfStats.startLoad();
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     */
-    @Override
-    public void endLoad(long start) {
-      // note that load times are used in health checks and
-      // should not be disabled by enableClockStats==false
-
-      // don't use getStatTime so always enabled
-      long ts = NanoTimer.getTime();
-      this.stats.incLong(loadTimeId, ts - start);
-      this.stats.incInt(loadsInProgressId, -1);
-      this.stats.incInt(loadsCompletedId, 1);
-
-      // need to think about timings
-      this.cachePerfStats.endLoad(start);
-    }
-
-    /**
-     * @return the timestamp that marks the start of the operation
-     */
-    @Override
-    public long startNetload() {
-      this.stats.incInt(netloadsInProgressId, 1);
-      this.cachePerfStats.startNetload();
-      return getStatTime();
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     */
-    @Override
-    public void endNetload(long start) {
-      if (enableClockStats) {
-        this.stats.incLong(netloadTimeId, getStatTime() - start);
-      }
-      this.stats.incInt(netloadsInProgressId, -1);
-      this.stats.incInt(netloadsCompletedId, 1);
-      this.cachePerfStats.endNetload(start);
-    }
-
-    /**
-     * @return the timestamp that marks the start of the operation
-     */
-    @Override
-    public long startNetsearch() {
-      this.stats.incInt(netsearchesInProgressId, 1);
-      return this.cachePerfStats.startNetsearch();
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     */
-    @Override
-    public void endNetsearch(long start) {
-      // note that netsearch is used in health checks and timings should
-      // not be disabled by enableClockStats==false
-
-      // don't use getStatTime so always enabled
-      long ts = NanoTimer.getTime();
-      this.stats.incLong(netsearchTimeId, ts - start);
-      this.stats.incInt(netsearchesInProgressId, -1);
-      this.stats.incInt(netsearchesCompletedId, 1);
-      this.cachePerfStats.endNetsearch(start);
-    }
-
-    /**
-     * @return the timestamp that marks the start of the operation
-     */
-    @Override
-    public long startCacheWriterCall() {
-      this.stats.incInt(cacheWriterCallsInProgressId, 1);
-      this.cachePerfStats.startCacheWriterCall();
-      return getStatTime();
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     */
-    @Override
-    public void endCacheWriterCall(long start) {
-      if (enableClockStats) {
-        this.stats.incLong(cacheWriterCallTimeId, getStatTime() - start);
-      }
-      this.stats.incInt(cacheWriterCallsInProgressId, -1);
-      this.stats.incInt(cacheWriterCallsCompletedId, 1);
-      this.cachePerfStats.endCacheWriterCall(start);
-    }
-
-    /**
-     * @return the timestamp that marks the start of the operation
-     * @since GemFire 3.5
-     */
-    @Override
-    public long startCacheListenerCall() {
-      this.stats.incInt(cacheListenerCallsInProgressId, 1);
-      this.cachePerfStats.startCacheListenerCall();
-      return getStatTime();
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     * @since GemFire 3.5
-     */
-    @Override
-    public void endCacheListenerCall(long start) {
-      if (enableClockStats) {
-        this.stats.incLong(cacheListenerCallTimeId, getStatTime() - start);
-      }
-      this.stats.incInt(cacheListenerCallsInProgressId, -1);
-      this.stats.incInt(cacheListenerCallsCompletedId, 1);
-      this.cachePerfStats.endCacheListenerCall(start);
-    }
-
-    /**
-     * @return the timestamp that marks the start of the operation
-     */
-    @Override
-    public long startGetInitialImage() {
-      this.stats.incInt(getInitialImagesInProgressId, 1);
-      this.cachePerfStats.startGetInitialImage();
-      return getStatTime();
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     */
-    @Override
-    public void endGetInitialImage(long start) {
-      if (enableClockStats) {
-        this.stats.incLong(getInitialImageTimeId, getStatTime() - start);
-      }
-      this.stats.incInt(getInitialImagesInProgressId, -1);
-      this.stats.incInt(getInitialImagesCompletedId, 1);
-      this.cachePerfStats.endGetInitialImage(start);
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     */
-    @Override
-    public void endNoGIIDone(long start) {
-      if (enableClockStats) {
-        this.stats.incLong(getInitialImageTimeId, getStatTime() - start);
-      }
-      this.stats.incInt(getInitialImagesInProgressId, -1);
-      this.cachePerfStats.endNoGIIDone(start);
-    }
-
-    @Override
-    public void incGetInitialImageKeysReceived() {
-      this.stats.incInt(getInitialImageKeysReceivedId, 1);
-      this.cachePerfStats.incGetInitialImageKeysReceived();
-    }
-
-    @Override
-    public long startIndexUpdate() {
-      this.stats.incInt(indexUpdateInProgressId, 1);
-      this.cachePerfStats.startIndexUpdate();
-      return getStatTime();
-    }
-
-    @Override
-    public void endIndexUpdate(long start) {
-      long ts = getStatTime();
-      this.stats.incLong(indexUpdateTimeId, ts - start);
-      this.stats.incInt(indexUpdateInProgressId, -1);
-      this.stats.incInt(indexUpdateCompletedId, 1);
-      this.cachePerfStats.endIndexUpdate(start);
-    }
-
-    @Override
-    public void incRegions(int inc) {
-      this.stats.incInt(regionsId, inc);
-      this.cachePerfStats.incRegions(inc);
-
-    }
-
-    @Override
-    public void incPartitionedRegions(int inc) {
-      this.stats.incInt(partitionedRegionsId, inc);
-      this.cachePerfStats.incPartitionedRegions(inc);
-    }
-
-    @Override
-    public void incDestroys() {
-      this.stats.incLong(destroysId, 1L);
-      this.cachePerfStats.incDestroys();
-    }
-
-    @Override
-    public void incCreates() {
-      this.stats.incLong(createsId, 1L);
-      this.cachePerfStats.incCreates();
-    }
-
-    @Override
-    public void incInvalidates() {
-      this.stats.incLong(invalidatesId, 1L);
-      this.cachePerfStats.incInvalidates();
-    }
-
-    @Override
-    public void incTombstoneCount(int amount) {
-      this.stats.incInt(tombstoneCountId, amount);
-      this.cachePerfStats.incTombstoneCount(amount);
-    }
-
-    @Override
-    public void incTombstoneGCCount() {
-      this.stats.incInt(tombstoneGCCountId, 1);
-      this.cachePerfStats.incTombstoneGCCount();
-    }
-
-    @Override
-    public void incClearTimeouts() {
-      this.stats.incInt(clearTimeoutsId, 1);
-      this.cachePerfStats.incClearTimeouts();
-    }
-
-    @Override
-    public void incConflatedEventsCount() {
-      this.stats.incLong(conflatedEventsId, 1);
-      this.cachePerfStats.incConflatedEventsCount();
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     */
-    @Override
-    public void endGet(long start, boolean miss) {
-      if (enableClockStats) {
-        this.stats.incLong(getTimeId, getStatTime() - start);
-      }
-      this.stats.incLong(getsId, 1L);
-      if (miss) {
-        this.stats.incLong(missesId, 1L);
-      }
-      this.cachePerfStats.endGet(start, miss);
-    }
-
-    /**
-     * @param start the timestamp taken when the operation started
-     * @param isUpdate true if the put was an update (origin remote)
-     */
-    @Override
-    public long endPut(long start, boolean isUpdate) {
-      long total = 0;
-      if (isUpdate) {
-        this.stats.incLong(updatesId, 1L);
-        if (enableClockStats) {
-          total = getStatTime() - start;
-          this.stats.incLong(updateTimeId, total);
-        }
-      } else {
-        this.stats.incLong(putsId, 1L);
-        if (enableClockStats) {
-          total = getStatTime() - start;
-          this.stats.incLong(putTimeId, total);
-        }
-      }
-      this.cachePerfStats.endPut(start, isUpdate);
-      return total;
-    }
-
-    @Override
-    public void endPutAll(long start) {
-      this.stats.incInt(putAllsId, 1);
-      if (enableClockStats) {
-        this.stats.incLong(putAllTimeId, getStatTime() - start);
-      }
-      this.cachePerfStats.endPutAll(start);
-    }
-
-    @Override
-    public void endQueryExecution(long executionTime) {
-      this.stats.incInt(queryExecutionsId, 1);
-      if (enableClockStats) {
-        this.stats.incLong(queryExecutionTimeId, executionTime);
-      }
-      this.cachePerfStats.endQueryExecution(executionTime);
-    }
-
-    @Override
-    public void endQueryResultsHashCollisionProbe(long start) {
-      if (enableClockStats) {
-        this.stats.incLong(queryResultsHashCollisionProbeTimeId, getStatTime() - start);
-      }
-      this.cachePerfStats.endQueryResultsHashCollisionProbe(start);
-    }
-
-    @Override
-    public void incQueryResultsHashCollisions() {
-      this.stats.incInt(queryResultsHashCollisionsId, 1);
-      this.cachePerfStats.incQueryResultsHashCollisions();
-    }
-
-    @Override
-    public void incTxConflictCheckTime(long delta) {
-      this.stats.incLong(txConflictCheckTimeId, delta);
-      this.cachePerfStats.incTxConflictCheckTime(delta);
-    }
-
-    @Override
-    public void txSuccess(long opTime, long txLifeTime, int txChanges) {
-      this.stats.incInt(txCommitsId, 1);
-      this.stats.incInt(txCommitChangesId, txChanges);
-      this.stats.incLong(txCommitTimeId, opTime);
-      this.stats.incLong(txSuccessLifeTimeId, txLifeTime);
-      this.cachePerfStats.txSuccess(opTime, txLifeTime, txChanges);
-    }
-
-    @Override
-    public void txFailure(long opTime, long txLifeTime, int txChanges) {
-      this.stats.incInt(txFailuresId, 1);
-      this.stats.incInt(txFailureChangesId, txChanges);
-      this.stats.incLong(txFailureTimeId, opTime);
-      this.stats.incLong(txFailedLifeTimeId, txLifeTime);
-      this.cachePerfStats.txFailure(opTime, txLifeTime, txChanges);
-    }
-
-    @Override
-    public void txRollback(long opTime, long txLifeTime, int txChanges) {
-      this.stats.incInt(txRollbacksId, 1);
-      this.stats.incInt(txRollbackChangesId, txChanges);
-      this.stats.incLong(txRollbackTimeId, opTime);
-      this.stats.incLong(txRollbackLifeTimeId, txLifeTime);
-      this.cachePerfStats.txRollback(opTime, txLifeTime, txChanges);
-    }
-
-    @Override
-    public void incEventQueueSize(int items) {
-      this.stats.incInt(eventQueueSizeId, items);
-      this.cachePerfStats.incEventQueueSize(items);
-    }
-
-    @Override
-    public void incEventQueueThrottleCount(int items) {
-      this.stats.incInt(eventQueueThrottleCountId, items);
-      this.cachePerfStats.incEventQueueThrottleCount(items);
-    }
-
-    @Override
-    protected void incEventQueueThrottleTime(long nanos) {
-      this.stats.incLong(eventQueueThrottleTimeId, nanos);
-      this.cachePerfStats.incEventQueueThrottleTime(nanos);
-    }
-
-    @Override
-    protected void incEventThreads(int items) {
-      this.stats.incInt(eventThreadsId, items);
-      this.cachePerfStats.incEventThreads(items);
-    }
-
-    @Override
-    public void incEntryCount(int delta) {
-      this.stats.incLong(entryCountId, delta);
-      this.cachePerfStats.incEntryCount(delta);
-    }
-
-    @Override
-    public void incRetries() {
-      this.stats.incInt(retriesId, 1);
-      this.cachePerfStats.incRetries();
-    }
-
-    @Override
-    public void incDiskTasksWaiting() {
-      this.stats.incInt(diskTasksWaitingId, 1);
-      this.cachePerfStats.incDiskTasksWaiting();
-    }
-
-    @Override
-    public void decDiskTasksWaiting() {
-      this.stats.incInt(diskTasksWaitingId, -1);
-      this.cachePerfStats.decDiskTasksWaiting();
-    }
-
-    @Override
-    public void decDiskTasksWaiting(int count) {
-      this.stats.incInt(diskTasksWaitingId, -count);
-      this.cachePerfStats.decDiskTasksWaiting(count);
-    }
-
-    @Override
-    public void incEvictorJobsStarted() {
-      this.stats.incInt(evictorJobsStartedId, 1);
-      this.cachePerfStats.incEvictorJobsStarted();
-    }
-
-    @Override
-    public void incEvictorJobsCompleted() {
-      this.stats.incInt(evictorJobsCompletedId, 1);
-      this.cachePerfStats.incEvictorJobsCompleted();
-    }
-
-    @Override
-    public void incEvictorQueueSize(int delta) {
-      this.stats.incInt(evictorQueueSizeId, delta);
-      this.cachePerfStats.incEvictorQueueSize(delta);
-    }
-
-    @Override
-    public void incEvictWorkTime(long delta) {
-      this.stats.incLong(evictWorkTimeId, delta);
-      this.cachePerfStats.incEvictWorkTime(delta);
-    }
-
-    @Override
-    public void incClearCount() {
-      this.stats.incLong(clearsId, 1L);
-      this.cachePerfStats.incClearCount();
-    }
-
-    @Override
-    public void incPRQueryRetries() {
-      this.stats.incLong(partitionedRegionQueryRetriesId, 1);
-      this.cachePerfStats.incPRQueryRetries();
-    }
-
-    @Override
-    public void incMetaDataRefreshCount() {
-      this.stats.incLong(metaDataRefreshCountId, 1);
-      this.cachePerfStats.incMetaDataRefreshCount();
-    }
-
-    @Override
-    public void endImport(long entryCount, long start) {
-      this.stats.incLong(importedEntriesCountId, entryCount);
-      if (enableClockStats) {
-        this.stats.incLong(importTimeId, getStatTime() - start);
-      }
-      this.cachePerfStats.endImport(entryCount, start);
-    }
-
-    @Override
-    public void endExport(long entryCount, long start) {
-      this.stats.incLong(exportedEntriesCountId, entryCount);
-      if (enableClockStats) {
-        this.stats.incLong(exportTimeId, getStatTime() - start);
-      }
-      this.cachePerfStats.endExport(entryCount, start);
-    }
-
-    @Override
-    public long startCompression() {
-      this.stats.incLong(compressionCompressionsId, 1);
-      this.cachePerfStats.stats.incLong(compressionCompressionsId, 1);
-      return getStatTime();
-    }
-
-    @Override
-    public void endCompression(long startTime, long startSize, long endSize) {
-      if (enableClockStats) {
-        long time = getStatTime() - startTime;
-        this.stats.incLong(compressionCompressTimeId, time);
-        this.cachePerfStats.stats.incLong(compressionCompressTimeId, time);
-      }
-
-      this.stats.incLong(compressionPreCompressedBytesId, startSize);
-      this.stats.incLong(compressionPostCompressedBytesId, endSize);
-
-      this.cachePerfStats.stats.incLong(compressionPreCompressedBytesId, startSize);
-      this.cachePerfStats.stats.incLong(compressionPostCompressedBytesId, endSize);
-    }
-
-    @Override
-    public long startDecompression() {
-      this.stats.incLong(compressionDecompressionsId, 1);
-      this.cachePerfStats.stats.incLong(compressionDecompressionsId, 1);
-      return getStatTime();
-    }
-
-    @Override
-    public void endDecompression(long startTime) {
-      if (enableClockStats) {
-        long time = getStatTime() - startTime;
-        this.stats.incLong(compressionDecompressTimeId, time);
-        this.cachePerfStats.stats.incLong(compressionDecompressTimeId, time);
-      }
-    }
-  }
-
   /** test hook - dump the backing map for this region */
   public void dumpBackingMap() {
     synchronized (this.entries) {
@@ -11632,7 +10564,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // generate EventID
 
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.PUT_IF_ABSENT, key, value,
+    EntryEventImpl event = entryEventFactory.create(this, Operation.PUT_IF_ABSENT, key, value,
         callbackArgument, false, getMyId());
 
     try {
@@ -11692,7 +10624,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Released
     EntryEventImpl event =
-        EntryEventImpl.create(this, Operation.REMOVE, key, null, callbackArg, false, getMyId());
+        entryEventFactory.create(this, Operation.REMOVE, key, null, callbackArg, false, getMyId());
 
     try {
       if (generateEventID() && event.getEventId() == null) {
@@ -11738,7 +10670,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkForLimitedOrNoAccess();
 
     @Released
-    EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key, newValue,
+    EntryEventImpl event = entryEventFactory.create(this, Operation.REPLACE, key, newValue,
         callbackArg, false, getMyId());
 
     try {
@@ -11800,7 +10732,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     @Released
     EntryEventImpl event =
-        EntryEventImpl.create(this, Operation.REPLACE, key, value, callbackArg, false, getMyId());
+        entryEventFactory.create(this, Operation.REPLACE, key, value, callbackArg, false,
+            getMyId());
 
     try {
       if (generateEventID()) {
@@ -11843,7 +10776,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUT_IF_ABSENT, key, null,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.PUT_IF_ABSENT, key, null,
         callbackArg, false, client.getDistributedMember(), true, eventId);
 
     try {
@@ -11938,7 +10871,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key, null,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.REPLACE, key, null,
         callbackArg, false, client.getDistributedMember(), true, eventId);
 
     try {
@@ -11998,7 +10931,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key, null,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.REPLACE, key, null,
         callbackArg, false, client.getDistributedMember(), true, eventId);
 
     try {
@@ -12039,7 +10972,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           oldValue = AbstractRegion.handleNotAvailable(oldValue);
         }
         if (oldValue == null) {
-          // EntryEventImpl.setOldValue translates INVALID to null
           oldValue = Token.INVALID;
         }
         return oldValue;
@@ -12066,7 +10998,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     // Create an event and put the entry
     @Released
-    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVE, key, null,
+    final EntryEventImpl event = entryEventFactory.create(this, Operation.REMOVE, key, null,
         callbackArg, false, memberId.getDistributedMember(), true, clientEvent.getEventId());
 
     try {
@@ -12303,4 +11235,230 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     this.memoryThresholdReached.set(reached);
   }
 
+  public boolean isStatisticsEnabled() {
+    return statisticsEnabled;
+  }
+
+  public enum IteratorType {
+    KEYS, VALUES, ENTRIES
+  }
+
+  /**
+   * Used by {@link #foreachRegionEntry}.
+   *
+   * @since GemFire prPersistSprint2
+   */
+  public interface RegionEntryCallback {
+    void handleRegionEntry(RegionEntry regionEntry);
+  }
+
+  /**
+   * Internal interface used to simulate failures when performing entry operations
+   *
+   * @since GemFire 5.7
+   */
+  @VisibleForTesting
+  public interface TestCallable {
+    void call(LocalRegion r, Operation op, RegionEntry re);
+  }
+
+  @VisibleForTesting
+  interface RegionMapConstructor {
+    RegionMap create(LocalRegion owner, RegionMap.Attributes attrs,
+        InternalRegionArguments internalRegionArgs);
+  }
+
+  /** Set view of subregions */
+  private class SubregionsSet extends AbstractSet {
+    private final boolean recursive;
+
+    SubregionsSet(boolean recursive) {
+      this.recursive = recursive;
+    }
+
+    @Override
+    public Iterator iterator() {
+      // iterates breadth-first (if recursive)
+      return new Iterator() {
+        private Iterator currentIterator = LocalRegion.this.subregions.values().iterator();
+
+        /** FIFO queue of iterators */
+        private List queue;
+
+        private Object nextElement = null;
+
+        @Override
+        public void remove() {
+          throw new UnsupportedOperationException(
+              "This iterator does not support modification");
+        }
+
+        @Override
+        public boolean hasNext() {
+          if (this.nextElement != null) {
+            return true;
+          } else {
+            Object element = next(true);
+            if (element != null) {
+              this.nextElement = element;
+              return true;
+            } else {
+              return false;
+            }
+          }
+        }
+
+        private boolean doHasNext() {
+          return this.currentIterator != null && this.currentIterator.hasNext();
+        }
+
+        @Override
+        public Object next() {
+          return next(false);
+        }
+
+        /**
+         * @param nullOK if true, return null instead of throwing NoSuchElementException
+         * @return the next element
+         */
+        private Object next(boolean nullOK) {
+          if (this.nextElement != null) {
+            Object next = this.nextElement;
+            this.nextElement = null;
+            return next;
+          }
+
+          LocalRegion region;
+          do {
+            region = null;
+            if (!doHasNext()) {
+              if (this.queue == null || this.queue.isEmpty()) {
+                if (nullOK) {
+                  return null;
+                } else {
+                  throw new NoSuchElementException();
+                }
+              } else {
+                this.currentIterator = (Iterator) queue.remove(0);
+                continue;
+              }
+            }
+            region = (LocalRegion) currentIterator.next();
+          } while (region == null || !region.isInitialized() || region.isDestroyed());
+
+          if (recursive) {
+            Iterator nextIterator = region.subregions.values().iterator();
+            if (nextIterator.hasNext()) {
+              if (this.queue == null) {
+                this.queue = new ArrayList();
+              }
+              this.queue.add(nextIterator);
+            }
+          }
+          if (!doHasNext()) {
+            if (this.queue == null || this.queue.isEmpty()) {
+              this.currentIterator = null;
+            } else {
+              this.currentIterator = (Iterator) this.queue.remove(0);
+            }
+          }
+          return region;
+        }
+      };
+    }
+
+    @Override
+    public int size() {
+      if (this.recursive) {
+        return allSubregionsSize() - 1 /* don't count this region */;
+      } else {
+        return LocalRegion.this.subregions.size();
+      }
+    }
+
+    @Override
+    public Object[] toArray() {
+      List temp = new ArrayList(this.size());
+      // do NOT use addAll or this results in stack overflow - must use iterator()
+      for (Iterator iter = iterator(); iter.hasNext();) {
+        temp.add(iter.next());
+      }
+      return temp.toArray();
+    }
+
+    @Override
+    public Object[] toArray(Object[] array) {
+      List temp = new ArrayList(this.size());
+      // do NOT use addAll or this results in stack overflow - must use iterator()
+      for (Iterator iter = iterator(); iter.hasNext();) {
+        temp.add(iter.next());
+      }
+      return temp.toArray(array);
+    }
+  }
+
+  /**
+   * There seem to be cases where a region can be created and yet the distributed system is not yet
+   * in place...
+   */
+  private class Stopper extends CancelCriterion {
+
+    @Override
+    public String cancelInProgress() {
+      // This grossness is necessary because there are instances where the
+      // region can exist without having a cache (XML creation)
+      checkFailure();
+      Cache cache = LocalRegion.this.getCache();
+      if (cache == null) {
+        return "The cache is not available";
+      }
+      return cache.getCancelCriterion().cancelInProgress();
+    }
+
+    @Override
+    public RuntimeException generateCancelledException(Throwable e) {
+      // This grossness is necessary because there are instances where the
+      // region can exist without having a cache (XML creation)
+      checkFailure();
+      Cache cache = LocalRegion.this.getCache();
+      if (cache == null) {
+        return new CacheClosedException("No cache", e);
+      }
+      return cache.getCancelCriterion().generateCancelledException(e);
+    }
+  }
+
+  private class EventDispatcher implements Runnable {
+    /**
+     * released by the release method
+     */
+    @Retained
+    private final InternalCacheEvent event;
+
+    private final EnumListenerEvent op;
+
+    EventDispatcher(InternalCacheEvent event, EnumListenerEvent op) {
+      if (LocalRegion.this.offHeap && event instanceof EntryEventImpl) {
+        // Make a copy that has its own off-heap refcount so fix bug 48837
+        event = new EntryEventImpl((EntryEventImpl) event);
+      }
+      this.event = event;
+      this.op = op;
+    }
+
+    @Override
+    public void run() {
+      try {
+        dispatchEvent(LocalRegion.this, this.event, this.op);
+      } finally {
+        this.release();
+      }
+    }
+
+    public void release() {
+      if (LocalRegion.this.offHeap && this.event instanceof EntryEventImpl) {
+        ((Releasable) this.event).release();
+      }
+    }
+  }
 }

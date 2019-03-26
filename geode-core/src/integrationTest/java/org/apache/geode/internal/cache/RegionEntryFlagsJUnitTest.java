@@ -28,7 +28,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.CacheUtils;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 
 /**
  * This test verifies the flag's on-off switching for boolean flags in AbstractRegionEntry.

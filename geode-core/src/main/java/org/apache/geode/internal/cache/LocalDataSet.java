@@ -52,12 +52,13 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.cache.query.internal.QueryExecutor;
 import org.apache.geode.cache.query.internal.QueryObserver;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
@@ -141,8 +142,9 @@ public class LocalDataSet implements Region, QueryExecutor {
     QueryService qs = getCache().getLocalQueryService();
     DefaultQuery query = (DefaultQuery) qs
         .newQuery("select * from " + getFullPath() + " this where " + queryPredicate);
+    final ExecutionContext executionContext = new QueryExecutionContext(null, getCache(), query);
     Object[] params = null;
-    return (SelectResults) this.executeQuery(query, params, getBucketSet());
+    return (SelectResults) this.executeQuery(query, executionContext, params, getBucketSet());
   }
 
   @Override
@@ -170,7 +172,9 @@ public class LocalDataSet implements Region, QueryExecutor {
    * MULTI REGION PR BASED QUERIES.
    */
   @Override
-  public Object executeQuery(DefaultQuery query, Object[] parameters, Set buckets)
+  public Object executeQuery(DefaultQuery query,
+      final ExecutionContext executionContext,
+      Object[] parameters, Set buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
     long startTime = 0L;
@@ -183,7 +187,7 @@ public class LocalDataSet implements Region, QueryExecutor {
     QueryObserver indexObserver = query.startTrace();
 
     try {
-      result = this.proxy.executeQuery(query, parameters, buckets);
+      result = this.proxy.executeQuery(query, executionContext, parameters, buckets);
     } finally {
       query.endTrace(indexObserver, startTime, result);
     }

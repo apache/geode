@@ -84,11 +84,19 @@ publishing {
           def runtimeDeps = project.configurations.runtime.dependencies.collectEntries {
             [it.name, it]
           }
+          depMap.putAll(runtimeDeps)
           def runtimeOnlyDeps = project.configurations.runtimeOnly.dependencies.collectEntries {
             [it.name, it]
           }
-          depMap.putAll(runtimeDeps)
           depMap.putAll(runtimeOnlyDeps)
+          def implementationDependencies = project.configurations.implementation.dependencies.collectEntries {
+            [it.name, it]
+          }
+          depMap.putAll(implementationDependencies)
+          def apiDependencies = project.configurations.api.dependencies.collectEntries {
+            [it.name, it]
+          }
+          depMap.putAll(apiDependencies)
           asNode().dependencies.dependency.findAll {
             def dep = depMap.get(it.artifactId.text())
             return dep?.hasProperty('optional') && dep.optional

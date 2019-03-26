@@ -119,7 +119,7 @@ public class TabularResultData extends AbstractResultData {
       GfJsonArray jsonArray = contentObject.getJSONArray(columnName);
       int size = jsonArray.size();
       for (int i = 0; i < size; i++) {
-        values.add(String.valueOf(jsonArray.get(i)));
+        values.add(String.valueOf(jsonArray.getString(i)));
       }
     } catch (GfJsonException e) {
       throw new ResultDataException(e.getMessage());

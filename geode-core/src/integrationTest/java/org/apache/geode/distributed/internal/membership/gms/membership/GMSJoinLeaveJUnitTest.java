@@ -722,6 +722,7 @@ public class GMSJoinLeaveJUnitTest {
     msg.setSender(C);
     gmsJoinLeave.processMessage(msg);
     assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
+    await().until(() -> gmsJoinLeave.getView().size() == 1);
   }
 
   @Test

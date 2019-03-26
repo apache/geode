@@ -43,24 +43,25 @@ import org.apache.geode.internal.logging.LogService;
  * with {@code isLowMemory=true}. In that mode, any attempt to monitor a (new) query will
  * throw an exception.
  *
- * The {@link #monitorQueryThread(DefaultQuery)} method initiates monitoring of a query. {@link
- * #stopMonitoringQueryThread(DefaultQuery)} stops monitoring a query.
+ * The {@link #monitorQueryExecution(ExecutionContext)} method initiates monitoring of a query.
+ * {@link
+ * #stopMonitoringQueryExecution(ExecutionContext)} stops monitoring a query.
  *
  * If the {@link QueryMonitor} determines a query needs to be canceled: either because it is taking
  * too long, or because memory is running low, it does two things:
  *
  * <ul>
  * <li>registers an exception on the query via
- * {@link DefaultQuery#setQueryCanceledException(CacheRuntimeException)}</li>
- * <li>sets the {@link DefaultQuery#queryCanceled} thread-local variable to {@code true}
+ * {@link ExecutionContext#setQueryCanceledException(CacheRuntimeException)}</li>
+ * <li>sets the {@link ExecutionContext#queryCanceled} thread-local variable to {@code true}
  * so that subsequent calls to {@link #throwExceptionIfQueryOnCurrentThreadIsCanceled()} will throw
  * an exception</li>
  * </ul>
  *
  * Code outside this class, that wishes to participate in cooperative cancelation of queries calls
  * {@link #throwExceptionIfQueryOnCurrentThreadIsCanceled()} at various yield points. In catch
- * blocks, {@link DefaultQuery#getQueryCanceledException()} is interrogated to learn the cancelation
- * cause.
+ * blocks, {@link ExecutionContext#getQueryCanceledException()} is interrogated to learn the
+ * cancelation cause.
  *
  * @since GemFire 6.0
  */
@@ -89,7 +90,7 @@ public class QueryMonitor {
    * timeout deadline was reached, resulting in queue growth.
    *
    * Setting the remove-on-cancel-policy to {@code true} changes that behavior so tasks are removed
-   * immediately upon cancelation (via {@link #stopMonitoringQueryThread(DefaultQuery)}).
+   * immediately upon cancelation (via {@link #stopMonitoringQueryExecution(ExecutionContext)}).
    *
    * @param executor is responsible for processing scheduled cancelation tasks
    * @param cache is interrogated via {@link InternalCache#isQueryMonitorDisabledForLowMemory} at
@@ -116,8 +117,8 @@ public class QueryMonitor {
    * Must not be called from a thread that is not the query thread, because this class uses a
    * ThreadLocal on the query thread!
    */
-  public void monitorQueryThread(final DefaultQuery query) {
-    monitorQueryThread(query, defaultMaxQueryExecutionTime);
+  public void monitorQueryExecution(final ExecutionContext executionContext) {
+    monitorQueryExecution(executionContext, defaultMaxQueryExecutionTime);
   }
 
   /**
@@ -127,18 +128,19 @@ public class QueryMonitor {
    * Must not be called from a thread that is not the query thread, because this class uses a
    * ThreadLocal on the query thread!
    */
-  private void monitorQueryThread(final DefaultQuery query,
+  private void monitorQueryExecution(final ExecutionContext executionContext,
       final long maxQueryExecutionTime) {
 
     // cq query is not monitored
-    if (query.isCqQuery()) {
+    if (executionContext.isCqQueryContext()) {
       return;
     }
 
-    query.setCancelationTask(scheduleCancelationTask(query, maxQueryExecutionTime));
+    executionContext
+        .setCancelationTask(scheduleCancelationTask(executionContext, maxQueryExecutionTime));
 
     if (logger.isDebugEnabled()) {
-      logDebug(query, "Adding thread to QueryMonitor.");
+      logDebug(executionContext, "Adding thread to QueryMonitor.");
     }
   }
 
@@ -148,11 +150,11 @@ public class QueryMonitor {
    * Must not be called from a thread that is not the query thread, because this class uses a
    * ThreadLocal on the query thread!
    */
-  public void stopMonitoringQueryThread(final DefaultQuery query) {
-    query.getCancelationTask().ifPresent(task -> task.cancel(false));
+  public void stopMonitoringQueryExecution(final ExecutionContext executionContext) {
+    executionContext.getCancelationTask().ifPresent(task -> task.cancel(false));
 
     if (logger.isDebugEnabled()) {
-      logDebug(query, "Query completed before cancelation.");
+      logDebug(executionContext, "Query completed before cancelation.");
     }
   }
 
@@ -164,7 +166,7 @@ public class QueryMonitor {
    * @throws QueryExecutionCanceledException if the query has been canceled
    */
   public static void throwExceptionIfQueryOnCurrentThreadIsCanceled() {
-    if (DefaultQuery.queryCanceled.get().get()) {
+    if (ExecutionContext.isCanceled.get().get()) {
       throw new QueryExecutionCanceledException();
     }
   }
@@ -215,12 +217,12 @@ public class QueryMonitor {
         long delay,
         TimeUnit unit,
         ScheduledExecutorService scheduledExecutorService,
-        DefaultQuery query);
+        ExecutionContext executionContext);
 
     boolean isLowMemory();
 
     CacheRuntimeException createCancelationException(long timeLimitMillis,
-        DefaultQuery query);
+        ExecutionContext executionContext);
   }
 
   /**
@@ -257,18 +259,18 @@ public class QueryMonitor {
       public ScheduledFuture<?> schedule(final Runnable command, final long delay,
           final TimeUnit unit,
           final ScheduledExecutorService scheduledExecutorService,
-          final DefaultQuery query) {
+          final ExecutionContext executionContext) {
         return scheduledExecutorService.schedule(command, delay, unit);
       }
 
       @Override
       public CacheRuntimeException createCancelationException(final long timeLimitMillis,
-          final DefaultQuery query) {
+          final ExecutionContext executionContext) {
         final String message = String.format(
             "Query execution canceled after exceeding max execution time %sms.",
             timeLimitMillis);
         if (logger.isInfoEnabled()) {
-          logger.info(String.format("%s %s", message, query));
+          logger.info(String.format("%s %s", message, executionContext));
         }
         return new QueryExecutionTimeoutException(message);
       }
@@ -307,16 +309,16 @@ public class QueryMonitor {
       public ScheduledFuture<?> schedule(final Runnable command, final long timeLimitMillis,
           final TimeUnit unit,
           final ScheduledExecutorService scheduledExecutorService,
-          final DefaultQuery query) {
+          final ExecutionContext executionContext) {
         final CacheRuntimeException lowMemoryException =
-            createCancelationException(timeLimitMillis, query);
-        query.setQueryCanceledException(lowMemoryException);
+            createCancelationException(timeLimitMillis, executionContext);
+        executionContext.setQueryCanceledException(lowMemoryException);
         throw lowMemoryException;
       }
 
       @Override
       public CacheRuntimeException createCancelationException(final long timeLimitMillis,
-          final DefaultQuery query) {
+          final ExecutionContext executionContext) {
         return new QueryExecutionLowMemoryException(
             String.format(
                 "Query execution canceled due to memory threshold crossed in system, memory used: %s bytes.",
@@ -348,12 +350,12 @@ public class QueryMonitor {
 
   }
 
-  private ScheduledFuture<?> scheduleCancelationTask(final DefaultQuery query,
+  private ScheduledFuture<?> scheduleCancelationTask(final ExecutionContext executionContext,
       final long timeLimitMillis) {
 
-    // Make ThreadLocal queryCanceled available to closure, which will run in a separate thread
+    // Make ThreadLocal isCanceled available to closure, which will run in a separate thread
     final AtomicBoolean queryCanceledThreadLocal =
-        DefaultQuery.queryCanceled.get();
+        ExecutionContext.isCanceled.get();
 
     /*
      * This is where the GoF "State" design pattern comes home to roost.
@@ -369,19 +371,20 @@ public class QueryMonitor {
      */
     return memoryState.schedule(() -> {
       final CacheRuntimeException exception = memoryState
-          .createCancelationException(timeLimitMillis, query);
+          .createCancelationException(timeLimitMillis, executionContext);
 
-      query.setQueryCanceledException(exception);
+      executionContext.setQueryCanceledException(exception);
       queryCanceledThreadLocal.set(true);
 
-    }, timeLimitMillis, TimeUnit.MILLISECONDS, executor, query);
+    }, timeLimitMillis, TimeUnit.MILLISECONDS, executor, executionContext);
   }
 
-  private void logDebug(final DefaultQuery query, final String message) {
+  private void logDebug(final ExecutionContext executionContext, final String message) {
     final Thread queryThread = Thread.currentThread();
     logger.debug(
         message + " QueryMonitor size is: {}, Thread (id): {}, Query: {}, Thread is : {}",
-        executor.getQueue().size(), queryThread.getId(), query.getQueryString(),
+        executor.getQueue().size(), queryThread.getId(),
+        executionContext.getQuery().getQueryString(),
         queryThread);
   }
 

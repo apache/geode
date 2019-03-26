@@ -39,6 +39,8 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache30.CacheSerializableRunnable;
@@ -149,6 +151,8 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                   QueryService qs = pr1.getCache().getQueryService();
                   DefaultQuery query = (DefaultQuery) qs.newQuery(
                       "select distinct e1.value from /pr1 e1, /pr2  e2 where e1.value=e2.value");
+                  final ExecutionContext executionContext =
+                      new QueryExecutionContext(null, cache, query);
 
                   GemFireCacheImpl.getInstance().getLogger()
                       .fine(" Num BUCKET SET: " + localCust.getBucketSet());
@@ -175,7 +179,8 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                   }
 
                   SelectResults r =
-                      (SelectResults) localCust.executeQuery(query, null, localCust.getBucketSet());
+                      (SelectResults) localCust.executeQuery(query, executionContext, null,
+                          localCust.getBucketSet());
 
                   GemFireCacheImpl.getInstance().getLogger().fine("Result :" + r.asList());
 

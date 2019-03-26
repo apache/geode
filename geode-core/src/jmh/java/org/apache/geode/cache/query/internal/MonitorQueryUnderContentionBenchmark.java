@@ -54,7 +54,7 @@ public class MonitorQueryUnderContentionBenchmark {
   private static final int START_DELAY_RANGE_MILLIS = 100;
 
   /*
-   * Delay, from time startOneSimulatedQuery() is called, until monitorQueryThread() is called.
+   * Delay, from time startOneSimulatedQuery() is called, until monitorQueryExecution() is called.
    */
   private static final int QUERY_INITIAL_DELAY = 0;
 
@@ -84,7 +84,7 @@ public class MonitorQueryUnderContentionBenchmark {
   private static final int RANDOM_SEED = 151;
 
   private QueryMonitor queryMonitor;
-  private DefaultQuery query;
+  private ExecutionContext queryExecutionContext;
   private Random random;
   private ScheduledThreadPoolExecutor loadGenerationExecutorService;
 
@@ -107,7 +107,7 @@ public class MonitorQueryUnderContentionBenchmark {
 
     random = new Random(RANDOM_SEED);
 
-    query = createDefaultQuery();
+    queryExecutionContext = mock(ExecutionContext.class);
 
     generateLoad(
         loadGenerationExecutorService, () -> startOneFastQuery(loadGenerationExecutorService),
@@ -136,8 +136,8 @@ public class MonitorQueryUnderContentionBenchmark {
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   // @Warmup we don't warm up because our @Setup warms us up
   public void monitorQuery() {
-    queryMonitor.monitorQueryThread(query);
-    queryMonitor.stopMonitoringQueryThread(query);
+    queryMonitor.monitorQueryExecution(queryExecutionContext);
+    queryMonitor.stopMonitoringQueryExecution(queryExecutionContext);
   }
 
   private void generateLoad(final ScheduledExecutorService executorService,
@@ -159,10 +159,10 @@ public class MonitorQueryUnderContentionBenchmark {
   private void startOneSimulatedQuery(ScheduledExecutorService executorService,
       int startDelayRangeMillis, int completeDelayRangeMillis) {
     executorService.schedule(() -> {
-      final DefaultQuery query = createDefaultQuery();
-      queryMonitor.monitorQueryThread(query);
+      final ExecutionContext queryExecutionContext = mock(ExecutionContext.class);
+      queryMonitor.monitorQueryExecution(queryExecutionContext);
       executorService.schedule(() -> {
-        queryMonitor.stopMonitoringQueryThread(query);
+        queryMonitor.stopMonitoringQueryExecution(queryExecutionContext);
       },
           gaussianLong(completeDelayRangeMillis),
           TimeUnit.MILLISECONDS);
@@ -173,9 +173,5 @@ public class MonitorQueryUnderContentionBenchmark {
 
   private long gaussianLong(int range) {
     return (long) (random.nextGaussian() * range);
-  }
-
-  private DefaultQuery createDefaultQuery() {
-    return mock(DefaultQuery.class);
   }
 }

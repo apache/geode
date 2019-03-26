@@ -201,7 +201,7 @@ public class LocalRegionDataView implements InternalDataView {
       boolean rememberReads, boolean allowTombstones) {
     final AbstractRegionEntry re = (AbstractRegionEntry) keyInfo.getKey();
     if (re != null && (!re.isDestroyedOrRemoved()) || (allowTombstones && re.isTombstone())) {
-      return currRgn.new NonTXEntry(re);
+      return new NonTXEntry(currRgn, re);
     }
     return null;
   }

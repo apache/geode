@@ -180,7 +180,7 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
         .hasTableSection("gatewayReceivers")
         .hasRowSize(2)
         .hasColumns()
-        .containsExactlyInAnyOrder("Member", "Port", "Sender Count", "Senders Connected");
+        .containsExactly("Member", "Port", "Sender Count", "Senders Connected");
   }
 
   @Test

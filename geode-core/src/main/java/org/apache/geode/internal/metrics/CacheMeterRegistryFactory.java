@@ -15,27 +15,21 @@
 package org.apache.geode.internal.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
-import org.apache.geode.annotations.VisibleForTesting;
-
 public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory {
-
-  @VisibleForTesting
-  static final String CLUSTER_ID_TAG = "cluster.id";
-  @VisibleForTesting
-  static final String MEMBER_NAME_TAG = "member.name";
-  @VisibleForTesting
-  static final String HOST_NAME_TAG = "host.name";
 
   @Override
   public CompositeMeterRegistry create(int systemId, String memberName, String hostName) {
     CompositeMeterRegistry registry = new CompositeMeterRegistry();
 
     MeterRegistry.Config registryConfig = registry.config();
-    registryConfig.commonTags(CLUSTER_ID_TAG, String.valueOf(systemId));
-    registryConfig.commonTags(MEMBER_NAME_TAG, memberName == null ? "" : memberName);
-    registryConfig.commonTags(HOST_NAME_TAG, hostName == null ? "" : hostName);
+    registryConfig.commonTags("cluster.id", String.valueOf(systemId));
+    registryConfig.commonTags("member.name", memberName == null ? "" : memberName);
+    registryConfig.commonTags("host.name", hostName == null ? "" : hostName);
+
+    new JvmMemoryMetrics().bindTo(registry);
 
     return registry;
   }

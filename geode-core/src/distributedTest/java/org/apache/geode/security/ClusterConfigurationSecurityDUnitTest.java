@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -46,7 +47,7 @@ public class ClusterConfigurationSecurityDUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     Properties properties = new Properties();
-    properties.put(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.put(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     locator = lsRule.startLocatorVM(0, properties);
   }
 

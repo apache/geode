@@ -385,7 +385,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   private InternalLocator startedLocator;
 
-  private List<ResourceEventsListener> resourceListeners;
+  private final List<ResourceEventsListener> resourceListeners = new CopyOnWriteArrayList<>();
 
   private final boolean disableManagement = Boolean.getBoolean(DISABLE_MANAGEMENT_PROPERTY);
 
@@ -910,7 +910,6 @@ public class InternalDistributedSystem extends DistributedSystem
       throw ex;
     }
 
-    resourceListeners = new CopyOnWriteArrayList<>();
     this.reconnected = this.attemptingToReconnect;
     this.attemptingToReconnect = false;
   }

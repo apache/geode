@@ -33,13 +33,13 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -62,7 +62,7 @@ public class LuceneCommandsSecurityDUnitTest {
   public void before() throws Exception {
     // start the locator
     Properties props = new Properties();
-    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     this.locator = this.locatorServer.startLocatorVM(0, props);
 
     // start the server

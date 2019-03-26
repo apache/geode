@@ -32,8 +32,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
@@ -51,7 +51,7 @@ public class RestSecurityWithSSLTest {
 
   @Rule
   public ServerStarterRule serverStarter = new ServerStarterRule().withRestService()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName())
+      .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName())
       .withProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant())
       .withProperty(SSL_KEYSTORE, KEYSTORE_FILE.getPath())
       .withProperty(SSL_KEYSTORE_PASSWORD, "password").withProperty(SSL_KEYSTORE_TYPE, "JKS")

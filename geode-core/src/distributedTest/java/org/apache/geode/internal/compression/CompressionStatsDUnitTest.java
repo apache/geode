@@ -15,18 +15,19 @@
 
 package org.apache.geode.internal.compression;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
+import java.util.Properties;
 
 import org.junit.Test;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Host;
@@ -40,7 +41,6 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
  *
  * @since GemFire 8.0
  */
-
 public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
   /**
    * The name of our test region.
@@ -295,7 +295,6 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
     assertTrue(createCompressedRegionOnVm(vm, REGION_NAME, new StatCompressor()));
     assertTrue(createCompressedRegionOnVm(vm, REGION_NAME_2, new StatCompressor()));
-    boolean previousClockStatsValue = enableClockStatsOnVm(vm, true);
 
     CompressionStats stats = new CompressionStats();
 
@@ -307,7 +306,6 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
     destroyRegionOnVm(vm, REGION_NAME);
     destroyRegionOnVm(vm, REGION_NAME_2);
-    enableClockStatsOnVm(vm, previousClockStatsValue);
   }
 
   private void doGetsOnVm(final VM vm, final String regionName) {
@@ -659,38 +657,10 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
    * @param compressor a compressor.
    */
   private Region createRegion(String name, Compressor compressor) {
-    return getCache().createRegionFactory().setDataPolicy(DataPolicy.REPLICATE)
+    Properties configProperties = new Properties();
+    configProperties.setProperty(ENABLE_TIME_STATISTICS, "true");
+    return getCache(configProperties).createRegionFactory().setDataPolicy(DataPolicy.REPLICATE)
         .setCloningEnabled(true).setCompressor(compressor).create(name);
-  }
-
-  /**
-   * Enables clock stats on a VM.
-   *
-   * @param vm a virtual machine
-   * @param clockStatsEnabled enables clock stats if true, disables if false
-   * @return previous clock stats value
-   */
-  private boolean enableClockStatsOnVm(final VM vm, final boolean clockStatsEnabled) {
-    return (Boolean) vm.invoke(new SerializableCallable() {
-      @Override
-      public Object call() {
-        return enableClockStats(clockStatsEnabled);
-      }
-    });
-  }
-
-  /**
-   * Enables clock stats.
-   *
-   * @param clockStatsEnabled enables clock stats if true, disables if false
-   * @return previous clock stats value
-   */
-  private boolean enableClockStats(boolean clockStatsEnabled) {
-    boolean oldValue = CachePerfStats.enableClockStats;
-
-    CachePerfStats.enableClockStats = clockStatsEnabled;
-
-    return oldValue;
   }
 
   /**

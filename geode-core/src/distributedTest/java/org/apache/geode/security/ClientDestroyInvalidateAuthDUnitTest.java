@@ -29,6 +29,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -44,7 +45,7 @@ public class ClientDestroyInvalidateAuthDUnitTest {
   @Rule
   public ServerStarterRule server =
       new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-          .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
+          .withSecurityManager(SimpleSecurityManager.class).withAutoStart();
 
   @Before
   public void before() throws Exception {

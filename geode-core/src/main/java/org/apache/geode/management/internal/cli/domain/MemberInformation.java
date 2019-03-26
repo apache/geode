@@ -50,7 +50,7 @@ public class MemberInformation implements Serializable {
   private double cpuUsage;
   private Set<String> hostedRegions;
   private String offHeapMemorySize;
-  private boolean ssl;
+  private boolean webSSL;
 
   public String getName() {
     return name;
@@ -241,11 +241,11 @@ public class MemberInformation implements Serializable {
     this.offHeapMemorySize = v;
   }
 
-  public boolean isSsl() {
-    return ssl;
+  public boolean isWebSSL() {
+    return webSSL;
   }
 
-  public void setSsl(boolean ssl) {
-    this.ssl = ssl;
+  public void setWebSSL(boolean webSSL) {
+    this.webSSL = webSSL;
   }
 }

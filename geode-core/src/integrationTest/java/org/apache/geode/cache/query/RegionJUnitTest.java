@@ -35,6 +35,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
@@ -141,8 +142,8 @@ public class RegionJUnitTest {
     while (entriesIter.hasNext()) {
       Region.Entry entry = (Region.Entry) entriesIter.next();
       RegionEntry regionEntry = null;
-      if (entry instanceof LocalRegion.NonTXEntry) {
-        regionEntry = ((LocalRegion.NonTXEntry) entry).getRegionEntry();
+      if (entry instanceof NonTXEntry) {
+        regionEntry = ((NonTXEntry) entry).getRegionEntry();
       } else {
         regionEntry = ((EntrySnapshot) entry).getRegionEntry();
       }
@@ -156,8 +157,8 @@ public class RegionJUnitTest {
       Object key = keysIterator.next();
       Region.Entry rEntry = lRegion.getEntry(key);
       RegionEntry regionEntry = null;
-      if (rEntry instanceof LocalRegion.NonTXEntry) {
-        regionEntry = ((LocalRegion.NonTXEntry) rEntry).getRegionEntry();
+      if (rEntry instanceof NonTXEntry) {
+        regionEntry = ((NonTXEntry) rEntry).getRegionEntry();
       } else {
         regionEntry = ((EntrySnapshot) rEntry).getRegionEntry();
       }

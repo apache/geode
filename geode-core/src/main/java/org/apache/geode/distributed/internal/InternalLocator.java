@@ -89,7 +89,9 @@ import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
+import org.apache.geode.management.internal.configuration.handlers.ClusterManagementServiceInfoRequestHandler;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
+import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
@@ -708,14 +710,23 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         new ImmutablePair<>(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
             clusterManagementService);
 
-    myCache.getHttpService().ifPresent(x -> {
-      try {
-        x.addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,
-            cmServiceAttr);
-      } catch (Throwable e) {
-        logger.warn("Unable to start geode-management service: {}", e.getMessage());
-      }
-    });
+    if (Boolean.getBoolean(ClusterManagementService.FEATURE_FLAG)) {
+      logger.info(
+          "System Property " + ClusterManagementService.FEATURE_FLAG
+              + "=true Geode Management API is enabled.");
+      myCache.getHttpService().ifPresent(x -> {
+        try {
+          x.addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,
+              cmServiceAttr);
+        } catch (Throwable e) {
+          logger.warn("Unable to start geode-management service: {}", e.getMessage());
+        }
+      });
+    } else {
+      logger.info(
+          "System Property " + ClusterManagementService.FEATURE_FLAG
+              + "=false Geode Management API is disabled.");
+    }
   }
 
   /**
@@ -1419,7 +1430,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   private void startConfigurationPersistenceService() {
-    installSharedConfigHandler();
+    installRequestHandlers();
 
     if (!config.getEnableClusterConfiguration()) {
       logger.info("Cluster configuration service is disabled");
@@ -1466,11 +1477,17 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
   }
 
-  private void installSharedConfigHandler() {
+  private void installRequestHandlers() {
     if (!this.handler.isHandled(SharedConfigurationStatusRequest.class)) {
       this.handler.addHandler(SharedConfigurationStatusRequest.class,
           new SharedConfigurationStatusRequestHandler());
       logger.info("SharedConfigStatusRequestHandler installed");
+    }
+
+    if (!this.handler.isHandled(ClusterManagementServiceInfoRequest.class)) {
+      this.handler.addHandler(ClusterManagementServiceInfoRequest.class,
+          new ClusterManagementServiceInfoRequestHandler());
+      logger.info("ClusterManagementServiceInfoRequestHandler installed");
     }
   }
 

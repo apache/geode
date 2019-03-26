@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.Hashtable;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheStatistics;
@@ -185,10 +184,7 @@ public class TXEntry implements Region.Entry {
       return tx.setPendingValue(value);
     } else {
       checkEntryDestroyed();
-      if (this.localRegion.entryUserAttributes == null) {
-        this.localRegion.entryUserAttributes = new Hashtable();
-      }
-      return this.localRegion.entryUserAttributes.put(keyInfo, value);
+      return localRegion.getEntryUserAttributes().put(keyInfo, value);
     }
   }
 

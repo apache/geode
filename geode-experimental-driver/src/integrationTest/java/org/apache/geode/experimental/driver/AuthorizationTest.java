@@ -34,10 +34,10 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -57,7 +57,7 @@ public class AuthorizationTest {
     // Create a cache
     CacheFactory cf = new CacheFactory();
     cf.set(ConfigurationProperties.MCAST_PORT, "0");
-    cf.setSecurityManager(new SimpleTestSecurityManager());
+    cf.setSecurityManager(new SimpleSecurityManager());
     cache = cf.create();
 
     // Start a locator

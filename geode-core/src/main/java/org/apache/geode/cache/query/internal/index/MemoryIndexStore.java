@@ -40,6 +40,7 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
@@ -103,7 +104,7 @@ public class MemoryIndexStore implements IndexStore {
       if (DefaultQuery.testHook != null) {
         DefaultQuery.testHook.doTestHook(
             DefaultQuery.TestHook.SPOTS.BEFORE_ADD_OR_UPDATE_MAPPING_OR_DESERIALIZING_NTH_STREAMINGOPERATION,
-            null);
+            null, null);
       }
 
       // Check if reverse-map is present.
@@ -152,7 +153,8 @@ public class MemoryIndexStore implements IndexStore {
           IndexElemArray elemArray = new IndexElemArray();
           if (DefaultQuery.testHook != null) {
             DefaultQuery.testHook.doTestHook(
-                DefaultQuery.TestHook.SPOTS.BEGIN_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY, null);
+                DefaultQuery.TestHook.SPOTS.BEGIN_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY, null,
+                null);
           }
           elemArray.add(regionEntries);
           elemArray.add(re);
@@ -162,12 +164,12 @@ public class MemoryIndexStore implements IndexStore {
           if (DefaultQuery.testHook != null) {
             DefaultQuery.testHook
                 .doTestHook(DefaultQuery.TestHook.SPOTS.TRANSITIONED_FROM_REGION_ENTRY_TO_ELEMARRAY,
-                    null);
+                    null, null);
           }
           if (DefaultQuery.testHook != null) {
             DefaultQuery.testHook.doTestHook(
                 DefaultQuery.TestHook.SPOTS.COMPLETE_TRANSITION_FROM_REGION_ENTRY_TO_ELEMARRAY,
-                null);
+                null, null);
           }
         } else if (regionEntries instanceof IndexConcurrentHashSet) {
           // This synchronized is for avoiding conflcts with remove of
@@ -191,7 +193,7 @@ public class MemoryIndexStore implements IndexStore {
               if (DefaultQuery.testHook != null) {
                 DefaultQuery.testHook.doTestHook(
                     DefaultQuery.TestHook.SPOTS.BEGIN_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET,
-                    null);
+                    null, null);
               }
               // on a remove from the elem array, another thread could start and complete its remove
               // at this point, that is why we need to replace before adding the elem array elements
@@ -205,7 +207,7 @@ public class MemoryIndexStore implements IndexStore {
                 if (DefaultQuery.testHook != null) {
                   DefaultQuery.testHook
                       .doTestHook(DefaultQuery.TestHook.SPOTS.TRANSITIONED_FROM_ELEMARRAY_TO_TOKEN,
-                          null);
+                          null, null);
                 }
                 set.add(re);
                 set.addAll(elemArray);
@@ -221,7 +223,7 @@ public class MemoryIndexStore implements IndexStore {
                 if (DefaultQuery.testHook != null) {
                   DefaultQuery.testHook.doTestHook(
                       DefaultQuery.TestHook.SPOTS.COMPLETE_TRANSITION_FROM_ELEMARRAY_TO_CONCURRENT_HASH_SET,
-                      null);
+                      null, null);
                 }
               }
             } else {
@@ -304,7 +306,7 @@ public class MemoryIndexStore implements IndexStore {
     try {
       Object newKey = convertToIndexKey(key, entry);
       if (DefaultQuery.testHook != null) {
-        DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.ATTEMPT_REMOVE, null);
+        DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.ATTEMPT_REMOVE, null, null);
       }
       boolean retry = false;
       do {
@@ -312,7 +314,7 @@ public class MemoryIndexStore implements IndexStore {
         Object regionEntries = this.valueToEntriesMap.get(newKey);
         if (regionEntries == TRANSITIONING_TOKEN) {
           if (DefaultQuery.testHook != null) {
-            DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.ATTEMPT_RETRY, null);
+            DefaultQuery.testHook.doTestHook(DefaultQuery.TestHook.SPOTS.ATTEMPT_RETRY, null, null);
           }
           retry = true;
           continue;
@@ -332,12 +334,13 @@ public class MemoryIndexStore implements IndexStore {
             Collection entries = (Collection) regionEntries;
             if (DefaultQuery.testHook != null) {
               DefaultQuery.testHook
-                  .doTestHook(DefaultQuery.TestHook.SPOTS.BEGIN_REMOVE_FROM_ELEM_ARRAY, null);
+                  .doTestHook(DefaultQuery.TestHook.SPOTS.BEGIN_REMOVE_FROM_ELEM_ARRAY, null, null);
             }
             found = entries.remove(entry);
             if (DefaultQuery.testHook != null) {
               DefaultQuery.testHook
-                  .doTestHook(DefaultQuery.TestHook.SPOTS.REMOVE_CALLED_FROM_ELEM_ARRAY, null);
+                  .doTestHook(DefaultQuery.TestHook.SPOTS.REMOVE_CALLED_FROM_ELEM_ARRAY, null,
+                      null);
             }
             // This could be IndexElementArray and might be changing to Set
             // If the remove occurred before changing to a set, then next time it will not be
@@ -365,7 +368,8 @@ public class MemoryIndexStore implements IndexStore {
             }
             if (DefaultQuery.testHook != null) {
               DefaultQuery.testHook
-                  .doTestHook(DefaultQuery.TestHook.SPOTS.COMPLETE_REMOVE_FROM_ELEM_ARRAY, null);
+                  .doTestHook(DefaultQuery.TestHook.SPOTS.COMPLETE_REMOVE_FROM_ELEM_ARRAY, null,
+                      null);
             }
           }
         }
@@ -502,7 +506,7 @@ public class MemoryIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return new CachedEntryWrapper(((LocalRegion) this.region).new NonTXEntry(entry));
+    return new CachedEntryWrapper(new NonTXEntry((LocalRegion) region, entry));
   }
 
   @Override
@@ -523,7 +527,7 @@ public class MemoryIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) this.region).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) region, entry);
   }
 
   private Object getTargetObjectForUpdate(RegionEntry entry) {
@@ -543,7 +547,7 @@ public class MemoryIndexStore implements IndexStore {
     } else if (indexOnRegionKeys) {
       return entry.getKey();
     }
-    return ((LocalRegion) this.region).new NonTXEntry(entry);
+    return new NonTXEntry((LocalRegion) region, entry);
   }
 
   @Override
@@ -833,7 +837,7 @@ public class MemoryIndexStore implements IndexStore {
 
     private Object key, value;
 
-    public CachedEntryWrapper(LocalRegion.NonTXEntry entry) {
+    public CachedEntryWrapper(NonTXEntry entry) {
       if (IndexManager.testHook != null) {
         IndexManager.testHook.hook(201);
       }

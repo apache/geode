@@ -112,6 +112,15 @@ public class JarBuilder {
         jarOutputStream.write(compiledSource.compiledBytecode);
         jarOutputStream.closeEntry();
       }
+
+      // Add timestamp so that the jar file itself has a new MD5 signature
+      JarEntry timestampEntry = new JarEntry("timestamp");
+      long now = System.currentTimeMillis();
+      timestampEntry.setTime(now);
+      jarOutputStream.putNextEntry(timestampEntry);
+      jarOutputStream.write(Long.toString(now).getBytes());
+      jarOutputStream.closeEntry();
+
       jarOutputStream.close();
     }
   }

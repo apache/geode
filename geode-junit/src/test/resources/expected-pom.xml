@@ -137,12 +137,6 @@
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
       <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>android-json</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 </project>

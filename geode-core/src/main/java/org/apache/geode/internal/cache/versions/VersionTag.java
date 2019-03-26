@@ -408,9 +408,10 @@ public abstract class VersionTag<T extends VersionSource>
         this.previousMemberID = readMember(in);
       }
     }
-    setIsRemoteForTesting();
+    setBits(BITS_IS_REMOTE_TAG);
   }
 
+  /** for unit testing receipt of version tags from another member of the cluster */
   public void setIsRemoteForTesting() {
     setBits(BITS_IS_REMOTE_TAG);
   }

@@ -127,6 +127,13 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public void initialize() {
+    // Relevant during reconnect
+    TypeRegistry typeRegistry = cache.getPdxRegistry();
+    if (typeRegistry != null) {
+      typeRegistry.flushCache();
+      logger.debug("Flushing TypeRegistry");
+    }
+
     AttributesFactory<Object, Object> factory = new AttributesFactory<Object, Object>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     if (cache.getPdxPersistent()) {

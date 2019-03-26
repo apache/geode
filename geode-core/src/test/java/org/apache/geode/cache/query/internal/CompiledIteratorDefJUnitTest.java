@@ -32,7 +32,7 @@ public class CompiledIteratorDefJUnitTest {
     CompiledValue compiledValue = mock(CompiledValue.class);
     CompiledIteratorDef compiledIteratorDef =
         new CompiledIteratorDef("TestIterator", TypeUtils.OBJECT_TYPE, compiledValue);
-    ExecutionContext executionContext = mock(ExecutionContext.class);
+    final ExecutionContext executionContext = mock(ExecutionContext.class);
     RuntimeIterator runtimeIterator = mock(RuntimeIterator.class);
 
     when(runtimeIterator.evaluateCollection(executionContext))

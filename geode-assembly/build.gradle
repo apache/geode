@@ -144,7 +144,6 @@ dependencies {
   gfshDependencies(platform(project(':boms:geode-all-bom')))
 
   archives project(':geode-common')
-  archives project(':geode-json')
   archives project(':geode-core')
   archives project(':geode-connectors')
   archives project(':geode-lucene')
@@ -475,8 +474,6 @@ distributions {
       into ('lib') {
         from project(':geode-common').configurations.runtimeClasspath
         from project(':geode-common').configurations.archives.allArtifacts.files
-        from project(':geode-json').configurations.runtimeClasspath
-        from project(':geode-json').configurations.archives.allArtifacts.files
         from project(':geode-wan').configurations.runtimeClasspath
         from project(':geode-wan').configurations.archives.allArtifacts.files
         from project(':geode-cq').configurations.runtimeClasspath

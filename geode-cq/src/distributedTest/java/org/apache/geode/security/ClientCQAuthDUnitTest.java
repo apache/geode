@@ -28,6 +28,7 @@ import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesFactory;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -47,7 +48,7 @@ public class ClientCQAuthDUnitTest {
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule()
-      .withSecurityManager(SimpleTestSecurityManager.class)
+      .withSecurityManager(SimpleSecurityManager.class)
       .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test

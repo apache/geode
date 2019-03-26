@@ -52,10 +52,13 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.functional.StructSetOrResultsSet;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.IndexTrackingQueryObserver;
+import org.apache.geode.cache.query.internal.QueryExecutionContext;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.PRClientServerTestBase;
@@ -673,9 +676,11 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
       try {
         Query query = queryService.newQuery((String) args[0]);
+        final ExecutionContext executionContext =
+            new QueryExecutionContext(null, (InternalCache) cache, query);
         context.getResultSender()
             .lastResult((ArrayList) ((SelectResults) ((LocalDataSet) localDataSet)
-                .executeQuery((DefaultQuery) query, null, buckets)).asList());
+                .executeQuery((DefaultQuery) query, executionContext, null, buckets)).asList());
       } catch (Exception e) {
         throw new FunctionException(e);
       }
@@ -866,9 +871,13 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
     QueryService qservice = CacheFactory.getAnyInstance().getQueryService();
 
     Query query = qservice.newQuery(queryStr);
+    final ExecutionContext executionContext =
+        new QueryExecutionContext(null, (InternalCache) cache, query);
+
     SelectResults results;
     try {
       results = (SelectResults) ((LocalDataSet) localDataSet).executeQuery((DefaultQuery) query,
+          executionContext,
           null, buckets);
 
       return (ArrayList) results.asList();

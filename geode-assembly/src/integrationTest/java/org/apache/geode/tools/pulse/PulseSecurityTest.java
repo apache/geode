@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.EmbeddedPulseRule;
@@ -39,7 +39,7 @@ public class PulseSecurityTest {
 
   @ClassRule
   public static ServerStarterRule server =
-      new ServerStarterRule().withSecurityManager(SimpleTestSecurityManager.class)
+      new ServerStarterRule().withSecurityManager(SimpleSecurityManager.class)
           .withJMXManager().withHttpService()
           .withRegion(RegionShortcut.REPLICATE, "regionA");
 

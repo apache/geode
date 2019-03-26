@@ -50,6 +50,7 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -296,7 +297,7 @@ public class FetchEntriesMessage extends PartitionMessage {
         while ((mos.size() + avgItemSize) < InitialImageOperation.CHUNK_SIZE_IN_BYTES
             && it.hasNext()) {
 
-          LocalRegion.NonTXEntry entry = (LocalRegion.NonTXEntry) it.next();
+          NonTXEntry entry = (NonTXEntry) it.next();
           RegionEntry re = entry.getRegionEntry();
           synchronized (re) {
             Object value = re.getValueRetain(map, true);

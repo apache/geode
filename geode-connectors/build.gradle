@@ -70,6 +70,7 @@ dependencies {
     exclude module: 'spring-core'
     ext.optional = true
   }
+  compile('com.healthmarketscience.rmiio:rmiio')
 
   testCompile('pl.pragmatists:JUnitParams')
 

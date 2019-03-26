@@ -24,6 +24,8 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.util.CollectingServiceLoader;
+import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.metrics.MetricsSession;
 
@@ -86,7 +88,7 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
 
   public static class Builder {
 
-    private CollectingServiceLoader serviceLoader = new CollectingServiceLoader() {};
+    private CollectingServiceLoader serviceLoader = new ListCollectingServiceLoader();
     private CacheLifecycle cacheLifecycle = new CacheLifecycle() {};
 
     private Builder() {
