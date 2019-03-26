@@ -62,9 +62,8 @@ public class PartitionedRegionAttributesMutatorTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  public void startCluster(Boolean enableClusterConfig) {
+  public void startCluster() {
     Properties gemfireProperties = new Properties();
-    gemfireProperties.put("enable-cluster-configuration", enableClusterConfig.toString());
     locator = cluster.startLocatorVM(0, gemfireProperties);
     server = cluster.startServerVM(1, gemfireProperties, locator.getPort());
   }
@@ -78,7 +77,7 @@ public class PartitionedRegionAttributesMutatorTest {
   @Test
   public void testChangeCacheLoaderDuringBucketCreation()
       throws InterruptedException, TimeoutException, ExecutionException {
-    startCluster(false);
+    startCluster();
     server.invoke(() -> {
       CountDownLatch mutationMade = new CountDownLatch(1);
       CountDownLatch bucketCreated = new CountDownLatch(1);
@@ -97,7 +96,7 @@ public class PartitionedRegionAttributesMutatorTest {
 
   @Test
   public void testChangeCacheLoaderWithoutClusterConfigDoesNotUpdateNodeInfo() {
-    startCluster(false);
+    startCluster();
     server.invoke(() -> {
       PartitionedRegion pr = createRegionSpy();
       CacheLoader loader = createTestCacheLoader();
@@ -109,7 +108,7 @@ public class PartitionedRegionAttributesMutatorTest {
 
   @Test
   public void testChangeCacheWriterWithoutClusterConfigDoesNotUpdateNodeInfo() {
-    startCluster(false);
+    startCluster();
     server.invoke(() -> {
       PartitionedRegion pr = createRegionSpy();
       CacheWriter writer = createTestCacheWriter();
@@ -121,7 +120,7 @@ public class PartitionedRegionAttributesMutatorTest {
 
   @Test
   public void testChangeCacheLoaderWithClusterConfigUpdatesNodeInfo() {
-    startCluster(true);
+    startCluster();
     server.invoke(() -> {
       PartitionedRegion pr = createRegionSpy();
       CacheLoader loader = createTestCacheLoader();
@@ -133,7 +132,7 @@ public class PartitionedRegionAttributesMutatorTest {
 
   @Test
   public void testChangeCacheWriterWithClusterConfigUpdatesNodeInfo() {
-    startCluster(true);
+    startCluster();
     server.invoke(() -> {
       PartitionedRegion pr = createRegionSpy();
       CacheWriter writer = createTestCacheWriter();
@@ -146,7 +145,7 @@ public class PartitionedRegionAttributesMutatorTest {
   @Test
   public void testChangeCustomEntryTtlDuringBucketCreation()
       throws InterruptedException, ExecutionException {
-    startCluster(false);
+    startCluster();
     server.invoke(() -> {
       CountDownLatch mutationMade = new CountDownLatch(1);
       CountDownLatch bucketCreated = new CountDownLatch(1);
@@ -168,7 +167,7 @@ public class PartitionedRegionAttributesMutatorTest {
   @Test
   public void testChangeCustomEntryIdleTimeoutDuringBucketCreation()
       throws InterruptedException, ExecutionException {
-    startCluster(false);
+    startCluster();
     server.invoke(() -> {
       CountDownLatch mutationMade = new CountDownLatch(1);
       CountDownLatch bucketCreated = new CountDownLatch(1);
@@ -190,7 +189,7 @@ public class PartitionedRegionAttributesMutatorTest {
   @Test
   public void testChangeEntryIdleTimeoutDuringBucketCreation()
       throws InterruptedException, ExecutionException {
-    startCluster(false);
+    startCluster();
     server.invoke(() -> {
       CountDownLatch mutationMade = new CountDownLatch(1);
       CountDownLatch bucketCreated = new CountDownLatch(1);
@@ -213,7 +212,7 @@ public class PartitionedRegionAttributesMutatorTest {
   @Test
   public void testChangeEntryTtlDuringBucketCreation()
       throws InterruptedException, ExecutionException {
-    startCluster(false);
+    startCluster();
     server.invoke(() -> {
       CountDownLatch mutationMade = new CountDownLatch(1);
       CountDownLatch bucketCreated = new CountDownLatch(1);
