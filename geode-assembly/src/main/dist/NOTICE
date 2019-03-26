@@ -17,6 +17,12 @@ Copyright 2016 AddThis
    Apache Solr (http://lucene.apache.org/solr/)
    Copyright 2014 The Apache Software Foundation
 
+commons-codec
+
+  src/test/org/apache/commons/codec/language/DoubleMetaphoneTest.java
+  contains test data from http://aspell.net/test/orig/batch0.tab.
+  Copyright (C) 2002 Kevin Atkinson (kevina@gnu.org)
+
 commons-math3
 
   The inverse error function implementation in the Erf class is based on CUDA
