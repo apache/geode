@@ -1665,6 +1665,8 @@ public class InternalDistributedSystem extends DistributedSystem
           } // synchronized (this)
         } // synchronized (GemFireCache.class)
 
+        securityService.close();
+
         if (!isShutdownHook) {
           shutdownListeners = doDisconnects(attemptingToReconnect);
         }
