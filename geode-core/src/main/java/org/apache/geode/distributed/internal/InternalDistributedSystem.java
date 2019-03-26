@@ -2068,6 +2068,14 @@ public class InternalDistributedSystem extends DistributedSystem
     }
   }
 
+  public static void removeConnectListener(ConnectListener listener) {
+    synchronized (existingSystemsLock) {
+      synchronized (connectListeners) {
+        connectListeners.remove(listener);
+      }
+    }
+  }
+
   /**
    * Makes note of a <code>ReconnectListener</code> whose <code>onReconnect</code> method will be
    * invoked when a connection is recreated to a distributed system during auto-reconnect.
