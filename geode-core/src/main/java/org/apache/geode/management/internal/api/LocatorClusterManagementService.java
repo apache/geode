@@ -147,6 +147,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
     throw new NotImplementedException("Not implemented");
   }
 
+  @Override
+  public boolean isConnected() {
+    return true;
+  }
+
   @VisibleForTesting
   Set<DistributedMember> findMembers(String[] groups, String[] members) {
     return CliUtil.findMembers(groups, members, distributionManager);

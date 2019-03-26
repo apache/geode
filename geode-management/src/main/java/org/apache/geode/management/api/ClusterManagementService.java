@@ -74,4 +74,12 @@ public interface ClusterManagementService {
     return update(config, null);
   }
 
+  /**
+   * Test to see if this instance of ClsuterManagmentService retrieved from the client side is
+   * properly connected to the locator or not
+   *
+   * @return true if connected
+   */
+  boolean isConnected();
+
 }
