@@ -203,7 +203,7 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   /**
-   * Returns the maxium number of threads allowed in this server to service client requests.
+   * Returns the maximum number of threads allowed in this server to service client requests.
    **/
   public int getMaxThreads() {
     return cacheServer.getMaxThreads();
