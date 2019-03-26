@@ -34,8 +34,6 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
@@ -47,7 +45,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -237,28 +234,7 @@ public class SystemAdmin {
    * Returns false if the address is not usable on the current machine
    */
   public static boolean validLocalAddress(String bindAddress) {
-    InetAddress addr = null;
-    try {
-      addr = InetAddress.getByName(bindAddress);
-    } catch (UnknownHostException ex) {
-      return false;
-    }
-    try {
-      Enumeration en = NetworkInterface.getNetworkInterfaces();
-      while (en.hasMoreElements()) {
-        NetworkInterface ni = (NetworkInterface) en.nextElement();
-        Enumeration en2 = ni.getInetAddresses();
-        while (en2.hasMoreElements()) {
-          InetAddress check = (InetAddress) en2.nextElement();
-          if (check.equals(addr)) {
-            return true;
-          }
-        }
-      }
-    } catch (SocketException sex) {
-      return true; // can't query the interfaces - punt
-    }
-    return false;
+    return DistributionLocator.validLocalAddress(bindAddress);
   }
 
   @SuppressWarnings("hiding")

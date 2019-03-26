@@ -19,12 +19,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.admin.remote.MissingPersistentIDsRequest;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
@@ -144,7 +144,7 @@ public class BackupOperation {
 
     @Override
     public Set<PersistentID> getMissingPersistentMembers(DistributionManager dm) {
-      return AdminDistributedSystemImpl.getMissingPersistentMembers(dm);
+      return MissingPersistentIDsRequest.send(dm);
     }
   }
 }

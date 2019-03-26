@@ -18,6 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
@@ -125,7 +129,7 @@ public class DistributionLocator {
     String hostnameForClients = null;
     try {
       if (args.length > 1 && !args[1].equals("")) {
-        if (!SystemAdmin.validLocalAddress(args[1])) {
+        if (!validLocalAddress(args[1])) {
           System.err.println(
               String.format("'%s' is not a valid IP address for this machine",
                   args[1]));
@@ -186,6 +190,35 @@ public class DistributionLocator {
           ex);
       ExitCode.FATAL.doSystemExit();
     }
+  }
+
+  /**
+   * enumerates all available local network addresses to find a match with the given address.
+   * Returns false if the address is not usable on the current machine
+   */
+  public static boolean validLocalAddress(String bindAddress) {
+    InetAddress addr = null;
+    try {
+      addr = InetAddress.getByName(bindAddress);
+    } catch (UnknownHostException ex) {
+      return false;
+    }
+    try {
+      Enumeration en = NetworkInterface.getNetworkInterfaces();
+      while (en.hasMoreElements()) {
+        NetworkInterface ni = (NetworkInterface) en.nextElement();
+        Enumeration en2 = ni.getInetAddresses();
+        while (en2.hasMoreElements()) {
+          InetAddress check = (InetAddress) en2.nextElement();
+          if (check.equals(addr)) {
+            return true;
+          }
+        }
+      }
+    } catch (SocketException sex) {
+      return true; // can't query the interfaces - punt
+    }
+    return false;
   }
 
 }

@@ -19,7 +19,6 @@ import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
-import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LoggingThread;
 
@@ -756,7 +755,6 @@ public final class SystemFailure {
     emergencyClassesLoaded = true;
     SystemFailureTestHook.loadEmergencyClasses(); // bug 50516
     GemFireCacheImpl.loadEmergencyClasses();
-    RemoteGfManagerAgent.loadEmergencyClasses();
   }
 
   /**
@@ -784,7 +782,6 @@ public final class SystemFailure {
     if (TRACE_CLOSE) {
       System.err.println("SystemFailure: closing admins");
     }
-    RemoteGfManagerAgent.emergencyClose();
 
     // If memory was the problem, make an explicit attempt at this point to clean up.
     System.gc();

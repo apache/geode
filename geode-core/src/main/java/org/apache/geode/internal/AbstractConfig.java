@@ -36,6 +36,8 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.FlowControlParams;
 import org.apache.geode.internal.net.SocketCreator;
@@ -187,11 +189,11 @@ public abstract class AbstractConfig implements Config {
     }
 
     if (result.getClass().isArray() && name.startsWith("ssl-")) {
-      return SystemAdmin.join((Object[]) result, ",");
+      return StringUtils.join((Object[]) result, ',');
     }
 
     if (result.getClass().isArray()) {
-      return SystemAdmin.join((Object[]) result);
+      return StringUtils.join((Object[]) result, ' ');
     }
 
     if (result instanceof InetAddress) {
@@ -324,7 +326,7 @@ public abstract class AbstractConfig implements Config {
     if (!Arrays.asList(validAttNames).contains(name.toLowerCase())) {
       throw new IllegalArgumentException(
           String.format("Unknown configuration attribute name %s. Valid attribute names are: %s .",
-              name, SystemAdmin.join(validAttNames)));
+              name, StringUtils.join(validAttNames, ' ')));
     }
   }
 

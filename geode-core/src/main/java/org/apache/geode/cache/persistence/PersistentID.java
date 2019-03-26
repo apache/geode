@@ -18,7 +18,6 @@ import java.net.InetAddress;
 import java.util.UUID;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.cache.DataPolicy;
 
 /**
@@ -29,7 +28,7 @@ import org.apache.geode.cache.DataPolicy;
  * completing region initialization.
  *
  * This pattern describes what unique ids the currently recovering persistent members are waiting
- * for. See {@link AdminDistributedSystem#getMissingPersistentMembers()}
+ * for.
  *
  * @since GemFire 6.5
  *
