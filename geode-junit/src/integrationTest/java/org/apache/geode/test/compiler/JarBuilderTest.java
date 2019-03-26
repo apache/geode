@@ -53,8 +53,9 @@ public class JarBuilderTest {
     jarBuilder.buildJar(outputJar, classContents);
 
     Set<String> jarEntryNames = jarEntryNamesFromFile(outputJar);
-    assertThat(jarEntryNames)
-        .containsExactlyInAnyOrder("org/apache/geode/test/compiler/AbstractClass.class");
+    assertThat(jarEntryNames).containsExactlyInAnyOrder(
+        "timestamp",
+        "org/apache/geode/test/compiler/AbstractClass.class");
   }
 
   @Test
@@ -67,6 +68,7 @@ public class JarBuilderTest {
     Set<String> jarEntryNames = jarEntryNamesFromFile(outputJar);
 
     assertThat(jarEntryNames).containsExactlyInAnyOrder(
+        "timestamp",
         "org/apache/geode/test/compiler/AbstractClass.class",
         "org/apache/geode/test/compiler/ConcreteClass.class");
   }
@@ -78,7 +80,9 @@ public class JarBuilderTest {
     jarBuilder.buildJar(outputJar, classInFooBarPackage, classInDefaultPackage);
 
     Set<String> jarEntryNames = jarEntryNamesFromFile(outputJar);
-    assertThat(jarEntryNames).containsExactlyInAnyOrder("ClassInDefaultPackage.class",
+    assertThat(jarEntryNames).containsExactlyInAnyOrder(
+        "timestamp",
+        "ClassInDefaultPackage.class",
         "foo/bar/ClassInFooBarPackage.class");
   }
 
@@ -91,7 +95,7 @@ public class JarBuilderTest {
 
     Set<String> jarEntryNames = jarEntryNamesFromFile(outputJar);
     assertThat(jarEntryNames).containsExactlyInAnyOrder("DefaultClass.class",
-        "foo/bar/OtherClass.class");
+        "foo/bar/OtherClass.class", "timestamp");
   }
 
   @Test
