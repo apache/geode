@@ -15,19 +15,15 @@
 
 package org.apache.geode.test.concurrency;
 
+import static org.apache.geode.test.concurrency.Utilities.availableProcessors;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
 import org.junit.runner.RunWith;
-
-import org.apache.geode.test.concurrency.loop.LoopRunnerConfig;
 
 
 public class ConcurrentTestRunnerTest {
@@ -37,48 +33,17 @@ public class ConcurrentTestRunnerTest {
     assertThat(JUnitCore.runClasses(FailingTest.class).wasSuccessful()).isFalse();
   }
 
-  @Test
-  public void passingTest() {
-    final Result result = JUnitCore.runClasses(PassingTest.class);
-    assertThat(result.wasSuccessful()).isTrue();
-  }
-
-  public abstract static class BaseTest {
-    protected void test(final ParallelExecutor executor, final Map<Integer, Integer> map)
+  @RunWith(ConcurrentTestRunner.class)
+  public static class FailingTest {
+    @Test
+    public void validateConcurrentExecution(ParallelExecutor executor)
         throws ExecutionException, InterruptedException {
+      final AtomicInteger atomicInteger = new AtomicInteger(0);
       executor.inParallel(() -> {
-        map.put(1, 1);
-        assertThat(map.get(1)).isEqualTo(1);
-      });
-
-      executor.inParallel(() -> {
-        map.put(2, 2);
-        assertThat(map.get(2)).isEqualTo(2);
-      });
-
+        int oldValue = atomicInteger.get();
+        assertThat(atomicInteger.compareAndSet(oldValue, oldValue + 1)).isTrue();
+      }, availableProcessors());
       executor.execute();
-
-      assertThat(map.size()).isEqualTo(2);
-    }
-
-  }
-
-  @RunWith(ConcurrentTestRunner.class)
-  @LoopRunnerConfig(count = 100000)
-  public static class FailingTest extends BaseTest {
-    @Test
-    public void test(ParallelExecutor executor) throws ExecutionException, InterruptedException {
-      super.test(executor, new HashMap<>());
     }
   }
-
-  @RunWith(ConcurrentTestRunner.class)
-  @LoopRunnerConfig(count = 100000)
-  public static class PassingTest extends BaseTest {
-    @Test
-    public void test(ParallelExecutor executor) throws ExecutionException, InterruptedException {
-      super.test(executor, new ConcurrentHashMap<>());
-    }
-  }
-
 }
