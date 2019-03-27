@@ -77,9 +77,7 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
   }
 
   private int startCacheServer() throws IOException {
-    Properties props = new Properties();
-    props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.cache.lucene.test.TestObject");
+    Properties props = getDistributedSystemProperties();
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     final Cache cache = getCache(props);
     final CacheServer server = cache.addCacheServer();
