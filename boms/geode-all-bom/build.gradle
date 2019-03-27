@@ -17,12 +17,12 @@
 
 plugins {
   id 'geode-dependency-constraints'
-  id 'java'
   id 'maven-publish'
 }
 
 apply from: "${project.projectDir}/../../gradle/publish.gradle"
 
+jar.enabled = false
 
 publishing {
   publications {

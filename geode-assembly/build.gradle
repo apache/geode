@@ -290,8 +290,12 @@ def cp = {
 
   // then add all the dependencies of the dependent jars
   def depJars = configurations.archives.dependencies.collect {
-    it.dependencyProject.findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
-      .collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll { !(
+    it.dependencyProject.findAll {
+      !(it.name.contains('geode-web') ||
+        it.name.contains('geode-pulse'))
+    }.collect { it.configurations.runtimeClasspath.collect { it.getName() }.findAll { !(
+        it.contains('geode-all-bom') ||
+
         // exclude mx4j, once the deprecated code is deleted we can remove these entirely
         it.contains('commons-digester') ||
         it.contains('commons-modeler') ||
@@ -343,8 +347,9 @@ task configureGfshDepsJar(dependsOn: configurations.gfshDependencies.dependencie
   }
   doLast {
     def classpath = configureDepsJar.outputs.files.singleFile.text + ' ' +
-        project(':geode-core').webJar.archiveName + ' ' +
-        configurations.gfshDependencies.collect { it.getName() }.flatten().join(' ')
+        configurations.gfshDependencies.collect { it.getName() }.findAll {
+          !it.contains('geode-all-bom')
+        }.flatten().unique().join(' ')
     output.write(classpath)
   }
 }

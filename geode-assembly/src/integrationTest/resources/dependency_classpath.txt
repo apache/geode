@@ -13,7 +13,6 @@ commons-math3-3.2.jar
 commons-validator-1.6.jar
 fastutil-8.2.2.jar
 geo-0.7.1.jar
-geode-all-bom-0.0.0.jar
 geode-common-0.0.0.jar
 geode-connectors-0.0.0.jar
 geode-core-0.0.0.jar
