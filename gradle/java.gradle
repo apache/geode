@@ -81,10 +81,8 @@ subprojects {
       }
       jar.metaInf {
         from("$rootDir/LICENSE")
-        jar.doLast {
-          if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
-            from("$rootDir/NOTICE")
-          }
+        if (jar.source.filter({ it.name.contains('NOTICE') }).empty) {
+          from("$rootDir/NOTICE")
         }
       }
     }
