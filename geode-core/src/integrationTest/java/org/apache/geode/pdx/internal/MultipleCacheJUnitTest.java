@@ -14,6 +14,8 @@
  */
 package org.apache.geode.pdx.internal;
 
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,8 +38,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -67,8 +67,7 @@ public class MultipleCacheJUnitTest {
 
     locator = Locator.startLocatorAndDS(0, locatorFolder.newFile("locator.log"), null);
     configProperties = new Properties();
-    configProperties.setProperty(ConfigurationProperties.LOCATORS,
-        "locahost[" + locator.getPort() + "]");
+    configProperties.setProperty(LOCATORS, "locahost[" + locator.getPort() + "]");
   }
 
   @After
@@ -110,9 +109,9 @@ public class MultipleCacheJUnitTest {
     Cache cache2 = createCache("cache2");
 
     Region<String, String> region1 =
-        cache1.<String, String>createRegionFactory(RegionShortcut.REPLICATE).create("region");
+        cache1.<String, String>createRegionFactory(REPLICATE).create("region");
     Region<String, String> region2 =
-        cache2.<String, String>createRegionFactory(RegionShortcut.REPLICATE).create("region");
+        cache2.<String, String>createRegionFactory(REPLICATE).create("region");
 
     assertThat(region2).isNotSameAs(region1);
 
