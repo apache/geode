@@ -11,7 +11,6 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
-import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -80,7 +79,7 @@ public class ClientClusterManagementServiceDunitTest {
 
     client.invoke(() -> {
       ClusterManagementService service = ClusterManagementServiceProvider.getService();
-      assertThat(((ClientClusterManagementService) service).isConnected()).isTrue();
+      assertThat(service.isConnected()).isTrue();
     });
     client.stop();
   }
