@@ -37,7 +37,7 @@ dependencies {
   providedCompile(platform(project(':boms:geode-all-bom')))
   providedCompile('javax.servlet:javax.servlet-api')
   providedCompile('org.apache.logging.log4j:log4j-api')
-
+  
   implementation('org.springframework:spring-webmvc')
 
   runtimeOnly('org.springframework:spring-aspects') {
@@ -46,21 +46,20 @@ dependencies {
   runtimeOnly('org.springframework:spring-oxm')
   runtimeOnly('commons-fileupload:commons-fileupload')
 
-  testCompile(project(':geode-junit'))
-  testCompile('org.springframework:spring-test')
+  testImplementation(project(':geode-junit'))
+  testImplementation('org.springframework:spring-test')
 
+  integrationTestImplementation(project(':geode-dunit'));
 
-  integrationTestCompile(project(':geode-dunit'));
+  integrationTestRuntimeOnly(files(war.destinationDir))
 
-  integrationTestRuntime(files(war.destinationDir))
+  distributedTestImplementation(project(':geode-common'))
+  distributedTestImplementation(project(':geode-dunit'))
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
 
-  distributedTestCompile(project(':geode-common'))
-  distributedTestCompile(project(':geode-dunit'))
-  distributedTestCompile('pl.pragmatists:JUnitParams')
+  distributedTestRuntimeOnly(files(war.destinationDir))
 
-  distributedTestRuntime(files(war.destinationDir))
-
-  upgradeTestCompile(project(':geode-dunit')) {
+  upgradeTestImplementation(project(':geode-dunit')) {
   }
 }
 
