@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
@@ -37,7 +37,7 @@ public class GfshCommandsPostProcessorTest {
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule().withJMXManager()
       .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName())
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withAutoStart();
+      .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName()).withAutoStart();
 
   @Rule
   public GfshCommandRule gfshConnection =

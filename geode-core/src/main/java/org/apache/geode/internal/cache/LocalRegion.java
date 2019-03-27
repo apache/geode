@@ -262,20 +262,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return initializationLatchAfterGetInitialImage;
   }
 
-  /**
-   * Internal interface used to simulate failures when performing entry operations
-   *
-   * @since GemFire 5.7
-   */
-  public interface TestCallable {
-    void call(LocalRegion r, Operation op, RegionEntry re);
-  }
-
-  // view types for iterators
-  public enum IteratorType {
-    KEYS, VALUES, ENTRIES
-  }
-
   // initialization level
   public static final int AFTER_INITIAL_IMAGE = 0;
 
@@ -509,38 +495,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     } finally {
       cacheServiceProfileUpdateLock.unlock();
     }
-  }
-
-  /**
-   * There seem to be cases where a region can be created and yet the distributed system is not yet
-   * in place...
-   */
-  protected class Stopper extends CancelCriterion {
-
-    @Override
-    public String cancelInProgress() {
-      // This grossness is necessary because there are instances where the
-      // region can exist without having a cache (XML creation)
-      checkFailure();
-      Cache cache = LocalRegion.this.getCache();
-      if (cache == null) {
-        return "The cache is not available";
-      }
-      return cache.getCancelCriterion().cancelInProgress();
-    }
-
-    @Override
-    public RuntimeException generateCancelledException(Throwable e) {
-      // This grossness is necessary because there are instances where the
-      // region can exist without having a cache (XML creation)
-      checkFailure();
-      Cache cache = LocalRegion.this.getCache();
-      if (cache == null) {
-        return new CacheClosedException("No cache", e);
-      }
-      return cache.getCancelCriterion().generateCancelledException(e);
-    }
-
   }
 
   protected final CancelCriterion stopper = createStopper();
@@ -1139,11 +1093,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return entryEventFactory
         .create(this, Operation.CREATE, key, value, aCallbackArgument, false, getMyId())
         .setCreate(true);
-  }
-
-  interface RegionMapConstructor {
-    RegionMap create(LocalRegion owner, RegionMap.Attributes attrs,
-        InternalRegionArguments internalRegionArgs);
   }
 
   /**
@@ -3316,7 +3265,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     scheduleTombstone(entry, destroyedVersion, false);
   }
 
-  private void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion,
+  @Override
+  public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion,
       boolean reschedule) {
     if (destroyedVersion == null) {
       throw new NullPointerException("destroyed version tag cannot be null");
@@ -7479,15 +7429,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  /**
-   * Used by {@link #foreachRegionEntry}.
-   *
-   * @since GemFire prPersistSprint2
-   */
-  public interface RegionEntryCallback {
-    void handleRegionEntry(RegionEntry regionEntry);
-  }
-
   protected void checkIfReplicatedAndLocalDestroy(EntryEventImpl event) {
     // disallow local invalidation for replicated regions
     if (getScope().isDistributed() && getDataPolicy().withReplication() && !event.isDistributed()
@@ -8405,172 +8346,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           logger.error("Exception occurred in CacheListener", t);
         }
       }
-    }
-  }
-
-  /*****************************************************************************
-   * INNER CLASSES
-   ****************************************************************************/
-
-  class EventDispatcher implements Runnable {
-    /**
-     * released by the release method
-     */
-    @Retained
-    InternalCacheEvent event;
-
-    EnumListenerEvent op;
-
-    EventDispatcher(InternalCacheEvent event, EnumListenerEvent op) {
-      if (LocalRegion.this.offHeap && event instanceof EntryEventImpl) {
-        // Make a copy that has its own off-heap refcount so fix bug 48837
-        event = new EntryEventImpl((EntryEventImpl) event);
-      }
-      this.event = event;
-      this.op = op;
-    }
-
-    @Override
-    public void run() {
-      try {
-        dispatchEvent(LocalRegion.this, this.event, this.op);
-      } finally {
-        this.release();
-      }
-    }
-
-    public void release() {
-      if (LocalRegion.this.offHeap && this.event instanceof EntryEventImpl) {
-        ((Releasable) this.event).release();
-      }
-    }
-  }
-
-  /** Set view of subregions */
-  private class SubregionsSet extends AbstractSet {
-    final boolean recursive;
-
-    SubregionsSet(boolean recursive) {
-      this.recursive = recursive;
-    }
-
-    @Override
-    public Iterator iterator() {
-      // iterates breadth-first (if recursive)
-      return new Iterator() {
-        Iterator currentIterator = LocalRegion.this.subregions.values().iterator();
-
-        List queue; // FIFO queue of iterators
-
-        Object nextElement = null;
-
-        @Override
-        public void remove() {
-          throw new UnsupportedOperationException(
-              "This iterator does not support modification");
-        }
-
-        @Override
-        public boolean hasNext() {
-          if (this.nextElement != null) {
-            return true;
-          } else {
-            Object element = next(true);
-            if (element != null) {
-              this.nextElement = element;
-              return true;
-            } else {
-              return false;
-            }
-          }
-        }
-
-        private boolean doHasNext() {
-          return this.currentIterator != null && this.currentIterator.hasNext();
-        }
-
-        @Override
-        public Object next() {
-          return next(false);
-        }
-
-        /**
-         * @param nullOK if true, return null instead of throwing NoSuchElementException
-         * @return the next element
-         */
-        private Object next(boolean nullOK) {
-          if (this.nextElement != null) {
-            Object next = this.nextElement;
-            this.nextElement = null;
-            return next;
-          }
-
-          LocalRegion region;
-          do {
-            region = null;
-            if (!doHasNext()) {
-              if (this.queue == null || this.queue.isEmpty()) {
-                if (nullOK) {
-                  return null;
-                } else {
-                  throw new NoSuchElementException();
-                }
-              } else {
-                this.currentIterator = (Iterator) queue.remove(0);
-                continue;
-              }
-            }
-            region = (LocalRegion) currentIterator.next();
-          } while (region == null || !region.isInitialized() || region.isDestroyed());
-
-          if (recursive) {
-            Iterator nextIterator = region.subregions.values().iterator();
-            if (nextIterator.hasNext()) {
-              if (this.queue == null) {
-                this.queue = new ArrayList();
-              }
-              this.queue.add(nextIterator);
-            }
-          }
-          if (!doHasNext()) {
-            if (this.queue == null || this.queue.isEmpty()) {
-              this.currentIterator = null;
-            } else {
-              this.currentIterator = (Iterator) this.queue.remove(0);
-            }
-          }
-          return region;
-        }
-      };
-    }
-
-    @Override
-    public int size() {
-      if (this.recursive) {
-        return allSubregionsSize() - 1 /* don't count this region */;
-      } else {
-        return LocalRegion.this.subregions.size();
-      }
-    }
-
-    @Override
-    public Object[] toArray() {
-      List temp = new ArrayList(this.size());
-      // do NOT use addAll or this results in stack overflow - must use iterator()
-      for (Iterator iter = iterator(); iter.hasNext();) {
-        temp.add(iter.next());
-      }
-      return temp.toArray();
-    }
-
-    @Override
-    public Object[] toArray(Object[] array) {
-      List temp = new ArrayList(this.size());
-      // do NOT use addAll or this results in stack overflow - must use iterator()
-      for (Iterator iter = iterator(); iter.hasNext();) {
-        temp.add(iter.next());
-      }
-      return temp.toArray(array);
     }
   }
 
@@ -11462,5 +11237,228 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   public boolean isStatisticsEnabled() {
     return statisticsEnabled;
+  }
+
+  public enum IteratorType {
+    KEYS, VALUES, ENTRIES
+  }
+
+  /**
+   * Used by {@link #foreachRegionEntry}.
+   *
+   * @since GemFire prPersistSprint2
+   */
+  public interface RegionEntryCallback {
+    void handleRegionEntry(RegionEntry regionEntry);
+  }
+
+  /**
+   * Internal interface used to simulate failures when performing entry operations
+   *
+   * @since GemFire 5.7
+   */
+  @VisibleForTesting
+  public interface TestCallable {
+    void call(LocalRegion r, Operation op, RegionEntry re);
+  }
+
+  @VisibleForTesting
+  interface RegionMapConstructor {
+    RegionMap create(LocalRegion owner, RegionMap.Attributes attrs,
+        InternalRegionArguments internalRegionArgs);
+  }
+
+  /** Set view of subregions */
+  private class SubregionsSet extends AbstractSet {
+    private final boolean recursive;
+
+    SubregionsSet(boolean recursive) {
+      this.recursive = recursive;
+    }
+
+    @Override
+    public Iterator iterator() {
+      // iterates breadth-first (if recursive)
+      return new Iterator() {
+        private Iterator currentIterator = LocalRegion.this.subregions.values().iterator();
+
+        /** FIFO queue of iterators */
+        private List queue;
+
+        private Object nextElement = null;
+
+        @Override
+        public void remove() {
+          throw new UnsupportedOperationException(
+              "This iterator does not support modification");
+        }
+
+        @Override
+        public boolean hasNext() {
+          if (this.nextElement != null) {
+            return true;
+          } else {
+            Object element = next(true);
+            if (element != null) {
+              this.nextElement = element;
+              return true;
+            } else {
+              return false;
+            }
+          }
+        }
+
+        private boolean doHasNext() {
+          return this.currentIterator != null && this.currentIterator.hasNext();
+        }
+
+        @Override
+        public Object next() {
+          return next(false);
+        }
+
+        /**
+         * @param nullOK if true, return null instead of throwing NoSuchElementException
+         * @return the next element
+         */
+        private Object next(boolean nullOK) {
+          if (this.nextElement != null) {
+            Object next = this.nextElement;
+            this.nextElement = null;
+            return next;
+          }
+
+          LocalRegion region;
+          do {
+            region = null;
+            if (!doHasNext()) {
+              if (this.queue == null || this.queue.isEmpty()) {
+                if (nullOK) {
+                  return null;
+                } else {
+                  throw new NoSuchElementException();
+                }
+              } else {
+                this.currentIterator = (Iterator) queue.remove(0);
+                continue;
+              }
+            }
+            region = (LocalRegion) currentIterator.next();
+          } while (region == null || !region.isInitialized() || region.isDestroyed());
+
+          if (recursive) {
+            Iterator nextIterator = region.subregions.values().iterator();
+            if (nextIterator.hasNext()) {
+              if (this.queue == null) {
+                this.queue = new ArrayList();
+              }
+              this.queue.add(nextIterator);
+            }
+          }
+          if (!doHasNext()) {
+            if (this.queue == null || this.queue.isEmpty()) {
+              this.currentIterator = null;
+            } else {
+              this.currentIterator = (Iterator) this.queue.remove(0);
+            }
+          }
+          return region;
+        }
+      };
+    }
+
+    @Override
+    public int size() {
+      if (this.recursive) {
+        return allSubregionsSize() - 1 /* don't count this region */;
+      } else {
+        return LocalRegion.this.subregions.size();
+      }
+    }
+
+    @Override
+    public Object[] toArray() {
+      List temp = new ArrayList(this.size());
+      // do NOT use addAll or this results in stack overflow - must use iterator()
+      for (Iterator iter = iterator(); iter.hasNext();) {
+        temp.add(iter.next());
+      }
+      return temp.toArray();
+    }
+
+    @Override
+    public Object[] toArray(Object[] array) {
+      List temp = new ArrayList(this.size());
+      // do NOT use addAll or this results in stack overflow - must use iterator()
+      for (Iterator iter = iterator(); iter.hasNext();) {
+        temp.add(iter.next());
+      }
+      return temp.toArray(array);
+    }
+  }
+
+  /**
+   * There seem to be cases where a region can be created and yet the distributed system is not yet
+   * in place...
+   */
+  private class Stopper extends CancelCriterion {
+
+    @Override
+    public String cancelInProgress() {
+      // This grossness is necessary because there are instances where the
+      // region can exist without having a cache (XML creation)
+      checkFailure();
+      Cache cache = LocalRegion.this.getCache();
+      if (cache == null) {
+        return "The cache is not available";
+      }
+      return cache.getCancelCriterion().cancelInProgress();
+    }
+
+    @Override
+    public RuntimeException generateCancelledException(Throwable e) {
+      // This grossness is necessary because there are instances where the
+      // region can exist without having a cache (XML creation)
+      checkFailure();
+      Cache cache = LocalRegion.this.getCache();
+      if (cache == null) {
+        return new CacheClosedException("No cache", e);
+      }
+      return cache.getCancelCriterion().generateCancelledException(e);
+    }
+  }
+
+  private class EventDispatcher implements Runnable {
+    /**
+     * released by the release method
+     */
+    @Retained
+    private final InternalCacheEvent event;
+
+    private final EnumListenerEvent op;
+
+    EventDispatcher(InternalCacheEvent event, EnumListenerEvent op) {
+      if (LocalRegion.this.offHeap && event instanceof EntryEventImpl) {
+        // Make a copy that has its own off-heap refcount so fix bug 48837
+        event = new EntryEventImpl((EntryEventImpl) event);
+      }
+      this.event = event;
+      this.op = op;
+    }
+
+    @Override
+    public void run() {
+      try {
+        dispatchEvent(LocalRegion.this, this.event, this.op);
+      } finally {
+        this.release();
+      }
+    }
+
+    public void release() {
+      if (LocalRegion.this.offHeap && this.event instanceof EntryEventImpl) {
+        ((Releasable) this.event).release();
+      }
+    }
   }
 }

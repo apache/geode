@@ -21,7 +21,25 @@ public class ClusterManagementServiceInfo implements Serializable {
   private String hostName;
   // -1 indicates the service is not running
   private int httpPort = -1;
-  // TODO: add isSSL and isSecured information later
+
+  private boolean isSecured;
+  private boolean isSSL;
+
+  public boolean isSecured() {
+    return isSecured;
+  }
+
+  public void setSecured(boolean secured) {
+    isSecured = secured;
+  }
+
+  public boolean isSSL() {
+    return isSSL;
+  }
+
+  public void setSSL(boolean SSL) {
+    isSSL = SSL;
+  }
 
   public int getHttpPort() {
     return httpPort;

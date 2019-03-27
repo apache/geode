@@ -102,6 +102,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion);
 
+  void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion, boolean reschedule);
+
   boolean isEntryExpiryPossible();
 
   void addExpiryTaskIfAbsent(RegionEntry entry);

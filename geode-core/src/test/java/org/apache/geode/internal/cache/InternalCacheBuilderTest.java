@@ -35,7 +35,9 @@ import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.Before;
 import org.junit.Test;
@@ -619,6 +621,27 @@ public class InternalCacheBuilderTest {
         .create(givenSystem);
 
     verify(givenSystem).setCache(same(singletonCache));
+  }
+
+  @Test
+  public void addMeterRegistry_createsCache_withGivenMeterRegistry() {
+    MeterRegistry theMeterRegistry = new SimpleMeterRegistry();
+
+    CompositeMeterRegistry theCompositeMeterRegistry = new CompositeMeterRegistry();
+    when(compositeMeterRegistryFactory.create(anyInt(), any(), any()))
+        .thenReturn(theCompositeMeterRegistry);
+
+    InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
+        new Properties(), new CacheConfig(),
+        compositeMeterRegistryFactory, metricsSessionInitializer,
+        nullSingletonSystemSupplier, constructorOf(constructedSystem()),
+        nullSingletonCacheSupplier, constructorOf(constructedCache()));
+
+    internalCacheBuilder
+        .addMeterSubregistry(theMeterRegistry)
+        .create();
+
+    assertThat(theCompositeMeterRegistry.getRegistries()).containsExactly(theMeterRegistry);
   }
 
   private InternalDistributedSystem constructedSystem() {

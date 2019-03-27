@@ -32,6 +32,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -54,7 +55,7 @@ public class ClientExecuteFunctionAuthDUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     Properties properties = new Properties();
-    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     properties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
         "org.apache.geode.management.internal.security.TestFunctions*");
     server = cluster.startServerVM(0, properties);

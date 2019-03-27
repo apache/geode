@@ -72,6 +72,7 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -156,6 +157,9 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // this will clean up the SocketCreators created in this VM so that it won't contaminate
     // future tests
     SocketCreatorFactory.close();
+
+    // This is required if PDX is in use and tests are run repeatedly.
+    TypeRegistry.init();
 
     // delete the first-level children files that are created in the tests
     if (cleanWorkingDir)

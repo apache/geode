@@ -35,6 +35,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -58,7 +59,7 @@ public class ClientExecuteRegionFunctionAuthDUnitTest extends JUnit4DistributedT
 
   @Rule
   public ServerStarterRule server = new ServerStarterRule()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName())
+      .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName())
       .withRegion(RegionShortcut.REPLICATE, "RegionA");
 
   @Test

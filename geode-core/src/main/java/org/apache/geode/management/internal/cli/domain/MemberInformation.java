@@ -51,6 +51,15 @@ public class MemberInformation implements Serializable {
   private Set<String> hostedRegions;
   private String offHeapMemorySize;
   private boolean webSSL;
+  private boolean isSecured;
+
+  public boolean isSecured() {
+    return isSecured;
+  }
+
+  public void setSecured(boolean secured) {
+    isSecured = secured;
+  }
 
   public String getName() {
     return name;

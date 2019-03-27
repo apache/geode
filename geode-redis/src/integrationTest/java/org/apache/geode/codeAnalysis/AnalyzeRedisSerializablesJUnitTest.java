@@ -12,14 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.deployment;
+package org.apache.geode.codeAnalysis;
 
 
-import org.apache.geode.cache.execute.FunctionAdapter;
-import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.redis.internal.GeodeRedisService;
 
-public class ExtendsFunctionAdapter extends FunctionAdapter {
-  public void execute(FunctionContext context) {
-    context.getResultSender().lastResult("ExtendsFunctionAdapterResult");
+public class AnalyzeRedisSerializablesJUnitTest extends AnalyzeSerializablesJUnitTestBase {
+
+  @Override
+  protected String getModuleName() {
+    return "geode-redis";
+  }
+
+  @Override
+  protected Class getModuleClass() {
+    return GeodeRedisService.class;
   }
 }

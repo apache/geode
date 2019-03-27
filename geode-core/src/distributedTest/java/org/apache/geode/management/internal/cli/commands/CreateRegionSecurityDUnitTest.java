@@ -26,8 +26,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.security.AuthInitialize;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -45,7 +45,7 @@ public class CreateRegionSecurityDUnitTest {
   @BeforeClass
   public static void beforeClass() {
     locator =
-        cluster.startLocatorVM(0, x -> x.withSecurityManager(SimpleTestSecurityManager.class));
+        cluster.startLocatorVM(0, x -> x.withSecurityManager(SimpleSecurityManager.class));
     int locatorPort = locator.getPort();
     cluster.startServerVM(1,
         x -> x.withProperty(AuthInitialize.SECURITY_USERNAME, "cluster")

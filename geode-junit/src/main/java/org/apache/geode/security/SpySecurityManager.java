@@ -17,7 +17,9 @@ package org.apache.geode.security;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SpySecurityManager extends SimpleTestSecurityManager {
+import org.apache.geode.examples.SimpleSecurityManager;
+
+public class SpySecurityManager extends SimpleSecurityManager {
 
   private final AtomicInteger initInvoked = new AtomicInteger(0);
   private final AtomicInteger closeInvoked = new AtomicInteger(0);

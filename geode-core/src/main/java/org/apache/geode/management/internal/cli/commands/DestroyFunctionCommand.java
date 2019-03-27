@@ -32,12 +32,10 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.UnregisterFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -124,7 +122,7 @@ public class DestroyFunctionCommand extends GfshCommand {
    */
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       String onGroup = parseResult.getParamValueAsString(CliStrings.GROUP);
       String onMember = parseResult.getParamValueAsString(CliStrings.MEMBER);
 
@@ -134,13 +132,12 @@ public class DestroyFunctionCommand extends GfshCommand {
         Response response = readYesNo(
             "Do you really want to destroy " + functionId + " on entire DS?", Response.NO);
         if (response == Response.NO) {
-          return ResultBuilder
-              .createShellClientAbortOperationResult("Aborted destroy of " + functionId);
+          return ResultModel.createError("Aborted destroy of " + functionId);
         } else {
-          return ResultBuilder.createInfoResult("Destroying " + functionId);
+          return ResultModel.createInfo("Destroying " + functionId);
         }
       } else {
-        return ResultBuilder.createInfoResult("Destroying " + functionId);
+        return ResultModel.createInfo("Destroying " + functionId);
       }
     }
   }

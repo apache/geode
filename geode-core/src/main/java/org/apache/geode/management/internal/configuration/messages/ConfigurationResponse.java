@@ -101,14 +101,13 @@ public class ConfigurationResponse implements DataSerializableFixedID {
         if (config != null) {
           sb.append("\n***************************************************************");
           sb.append("\nConfiguration for  '" + configType + "'");
-          sb.append("\n\nJar files to deployed");
+          sb.append("\n\nJar files to be deployed:");
 
           Set<String> jarNames = config.getJarNames();
-          Iterator<String> jarIter = jarNames.iterator();
-          int jarCounter = 0;
-
-          while (jarIter.hasNext()) {
-            sb.append("\n" + ++jarCounter + "." + jarIter.next());
+          if (jarNames.size() == 0) {
+            sb.append("\n  None");
+          } else {
+            jarNames.forEach(c -> sb.append("\n  " + c));
           }
 
           try {

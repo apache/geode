@@ -14,5 +14,7 @@
  */
 package org.apache.geode.security;
 
-public class OtherSimplySecurityManager extends SimpleTestSecurityManager {
+import org.apache.geode.examples.SimpleSecurityManager;
+
+public class OtherSimplySecurityManager extends SimpleSecurityManager {
 }

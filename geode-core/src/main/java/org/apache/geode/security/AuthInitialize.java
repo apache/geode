@@ -80,7 +80,8 @@ public interface AuthInitialize extends CacheCallback {
    * @throws AuthenticationFailedException in case of failure to obtain the credentials
    *
    * @return the credentials to be used for the given <code>server</code>
-   *         It needs to contain "security-username" and "security-password"
+   *         It needs to contain "security-username" and "security-password" if you use
+   *         username/password combination as credentials
    *         When using Integrated security, all members, peer/client will use the same credentials.
    *         but we still need to use these params to support the old authenticator
    */

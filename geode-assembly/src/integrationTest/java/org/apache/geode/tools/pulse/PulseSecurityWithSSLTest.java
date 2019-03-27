@@ -50,8 +50,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.security.SecurableCommunicationChannels;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
@@ -81,7 +81,7 @@ public class PulseSecurityWithSSLTest {
     securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2");
     securityProps.setProperty(SSL_CIPHERS, "any");
 
-    locator.withSecurityManager(SimpleTestSecurityManager.class).withProperties(securityProps)
+    locator.withSecurityManager(SimpleSecurityManager.class).withProperties(securityProps)
         .startLocator();
 
     HttpResponse response = client.loginToPulse("data", "wrongPassword");
@@ -120,7 +120,7 @@ public class PulseSecurityWithSSLTest {
     securityProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE, jks.getCanonicalPath());
     securityProps.setProperty(HTTP_SERVICE_SSL_TRUSTSTORE_PASSWORD, "password");
 
-    locator.withSecurityManager(SimpleTestSecurityManager.class).withProperties(securityProps)
+    locator.withSecurityManager(SimpleSecurityManager.class).withProperties(securityProps)
         .startLocator();
 
     client.loginToPulseAndVerify("cluster", "cluster");
