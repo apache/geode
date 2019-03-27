@@ -280,7 +280,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
             throw new NoAvailableServersException();
           } finally {
             if (connection == null) {
-              connectionAccounting.cancelTryCreate();
+              int currentCount = connectionAccounting.cancelTryCreate();
+              if (currentCount < connectionAccounting.getMinimum()) {
+                startBackgroundPrefill();
+              }
             }
           }
         }
@@ -539,7 +542,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
-  /** Always called with lock held */
   protected void startBackgroundPrefill() {
     if (havePrefillTask.compareAndSet(false, true)) {
       try {
@@ -684,7 +686,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (logger.isTraceEnabled()) {
         logger.trace("Prefill Connections task running");
       }
-
       prefill();
       if (connectionAccounting.isUnderMinimum() && !cancelCriterion.isCancelInProgress()) {
         try {

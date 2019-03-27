@@ -80,9 +80,11 @@ public class ConnectionAccounting {
 
   /**
    * Should only be called if connection creation failed after calling {@link #tryCreate()}.
+   *
+   * @returns the count after cancelling the reservation made by tryCreate.
    */
-  public void cancelTryCreate() {
-    count.getAndDecrement();
+  public int cancelTryCreate() {
+    return count.decrementAndGet();
   }
 
   /**
