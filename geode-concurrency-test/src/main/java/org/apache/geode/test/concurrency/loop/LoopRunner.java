@@ -48,8 +48,13 @@ public class LoopRunner implements Runner {
         try {
           Object test = child.getDeclaringClass().newInstance();
           child.invoke(test, executor);
-        } catch (Throwable e) {
-          e = (e instanceof InvocationTargetException) ? e.getCause() : e;
+        } catch (InvocationTargetException ex) {
+          Throwable exceptionToReturn = ex.getCause();
+          if (exceptionToReturn == null) {
+            exceptionToReturn = ex;
+          }
+          return Collections.singletonList(ex.getCause());
+        } catch (Exception e) {
           return Collections.singletonList(e);
         }
       }
