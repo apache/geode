@@ -21,10 +21,10 @@ import org.apache.geode.cache.StatisticsDisabledException;
 
 public class NonTXEntry implements Region.Entry {
 
-  private final LocalRegion localRegion;
+  private final LocalRegion region;
   private final Object key;
 
-  private boolean entryIsDestroyed = false;
+  private volatile boolean entryIsDestroyed;
 
   @Override
   public boolean isLocal() {
@@ -34,46 +34,46 @@ public class NonTXEntry implements Region.Entry {
   /**
    * Create an Entry given a key. The returned Entry may or may not be destroyed
    */
-  public NonTXEntry(LocalRegion localRegion, RegionEntry regionEntry) {
+  public NonTXEntry(LocalRegion region, RegionEntry regionEntry) {
     if (regionEntry == null) {
       throw new IllegalArgumentException(
           "regionEntry should not be null");
     }
-    this.localRegion = localRegion;
+    this.region = region;
     // for a soplog region, since the entry may not be in memory,
     // we will have to fetch it from soplog, if the entry is in
     // memory this is a quick lookup, so rather than RegionEntry
     // we keep reference to key
-    this.key = regionEntry.getKey();
+    key = regionEntry.getKey();
   }
 
   /** Internal method for getting the underlying RegionEntry */
   public RegionEntry getRegionEntry() {
-    RegionEntry regionEntry = localRegion.getRegionMap().getEntry(this.key);
+    RegionEntry regionEntry = region.getRegionMap().getEntry(key);
     if (regionEntry == null) {
-      throw new EntryDestroyedException(this.key.toString());
+      throw new EntryDestroyedException(key.toString());
     }
     return regionEntry;
   }
 
   private RegionEntry basicGetEntry() {
-    RegionEntry re = localRegion.basicGetEntry(this.key);
+    RegionEntry re = region.basicGetEntry(key);
     if (re == null) {
-      throw new EntryDestroyedException(this.key.toString());
+      throw new EntryDestroyedException(key.toString());
     }
     return re;
   }
 
   @Override
   public boolean isDestroyed() {
-    if (this.entryIsDestroyed) {
+    if (entryIsDestroyed) {
       return true;
     }
-    if (localRegion.isThisRegionBeingClosedOrDestroyed()
-        || localRegion.basicGetEntry(this.key) == null) {
-      this.entryIsDestroyed = true;
+    if (region.isThisRegionBeingClosedOrDestroyed() || region.basicGetEntry(key) == null) {
+      entryIsDestroyed = true;
+      return true;
     }
-    return this.entryIsDestroyed;
+    return false;
   }
 
   @Override
@@ -88,7 +88,7 @@ public class NonTXEntry implements Region.Entry {
 
   public Object getValue(boolean ignoreCopyOnRead) {
     Object value =
-        localRegion.getDeserialized(this.basicGetEntry(), false, ignoreCopyOnRead, false, false);
+        region.getDeserialized(basicGetEntry(), false, ignoreCopyOnRead, false, false);
     if (value == null) {
       throw new EntryDestroyedException(getKey().toString());
     } else if (Token.isInvalid(value)) {
@@ -106,7 +106,7 @@ public class NonTXEntry implements Region.Entry {
   public Object getRawValue() {
     Object value = basicGetEntry().getValue((RegionEntryContext) getRegion());
     if (value == null) {
-      throw new EntryDestroyedException(this.getRegionEntry().getKey().toString());
+      throw new EntryDestroyedException(getRegionEntry().getKey().toString());
     } else if (Token.isInvalid(value)) {
       return null;
     }
@@ -117,30 +117,29 @@ public class NonTXEntry implements Region.Entry {
   @Override
   public Region getRegion() {
     basicGetEntry();
-    return localRegion;
+    return region;
   }
 
   @Override
   public CacheStatistics getStatistics() {
     // prefer entry destroyed exception over statistics disabled exception
     basicGetEntry();
-    if (!localRegion.isStatisticsEnabled()) {
+    if (!region.isStatisticsEnabled()) {
       throw new StatisticsDisabledException(
-          String.format("Statistics disabled for region '%s'",
-              localRegion.getFullPath()));
+          String.format("Statistics disabled for region '%s'", region.getFullPath()));
     }
-    return new CacheStatisticsImpl(this.basicGetEntry(), localRegion);
+    return new CacheStatisticsImpl(basicGetEntry(), region);
   }
 
   @Override
   public Object getUserAttribute() {
-    this.basicGetEntry();
-    return localRegion.getEntryUserAttributes().get(basicGetEntry().getKey());
+    basicGetEntry();
+    return region.getEntryUserAttributes().get(basicGetEntry().getKey());
   }
 
   @Override
   public Object setUserAttribute(Object userAttribute) {
-    return localRegion.getEntryUserAttributes().put(basicGetEntry().getKey(), userAttribute);
+    return region.getEntryUserAttributes().put(basicGetEntry().getKey(), userAttribute);
   }
 
   @Override
@@ -149,8 +148,8 @@ public class NonTXEntry implements Region.Entry {
       return false;
     }
     NonTXEntry entry = (NonTXEntry) obj;
-    return this.basicGetEntry().equals(entry.getRegionEntry())
-        && this.getRegion() == entry.getRegion();
+    return basicGetEntry().equals(entry.getRegionEntry())
+        && getRegion() == entry.getRegion();
   }
 
   @Override
@@ -162,7 +161,7 @@ public class NonTXEntry implements Region.Entry {
   public String toString() {
     return new StringBuilder("NonTXEntry@")
         .append(Integer.toHexString(System.identityHashCode(this))).append(' ')
-        .append(this.getRegionEntry()).toString();
+        .append(getRegionEntry()).toString();
   }
 
   /**
@@ -170,6 +169,6 @@ public class NonTXEntry implements Region.Entry {
    */
   @Override
   public Object setValue(Object value) {
-    return localRegion.put(getKey(), value);
+    return region.put(getKey(), value);
   }
 }

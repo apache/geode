@@ -25,7 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
@@ -37,7 +37,7 @@ public class SwaggerVerificationIntegrationTest {
 
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule()
-      .withSecurityManager(SimpleTestSecurityManager.class).withRestService().withAutoStart();
+      .withSecurityManager(SimpleSecurityManager.class).withRestService().withAutoStart();
 
   @Rule
   public GeodeHttpClientRule client = new GeodeHttpClientRule(serverStarter::getHttpPort);

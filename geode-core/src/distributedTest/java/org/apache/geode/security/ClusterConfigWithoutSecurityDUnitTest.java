@@ -30,6 +30,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -68,7 +69,7 @@ public class ClusterConfigWithoutSecurityDUnitTest {
   @Test
   public void serverShouldBeAllowedToStartWithSecurityIfNotUsingClusterConfig() throws Exception {
     Properties props = new Properties();
-    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
     props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
 
@@ -79,7 +80,7 @@ public class ClusterConfigWithoutSecurityDUnitTest {
     // after cache is created, the configuration won't chagne
     Properties secProps = ds.getSecurityProperties();
     assertEquals(2, secProps.size());
-    assertEquals(SimpleTestSecurityManager.class.getName(),
+    assertEquals(SimpleSecurityManager.class.getName(),
         secProps.getProperty("security-manager"));
     assertEquals(PDXPostProcessor.class.getName(), secProps.getProperty("security-post-processor"));
   }
@@ -90,7 +91,7 @@ public class ClusterConfigWithoutSecurityDUnitTest {
   @Test
   public void serverShouldNotBeAllowedToStartWithSecurityIfUsingClusterConfig() throws Exception {
     Properties props = new Properties();
-    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
     assertThatThrownBy(

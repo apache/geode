@@ -59,7 +59,7 @@ public class LuceneSearchResults<K, V> implements Comparable<LuceneSearchResults
     // result.
     // This comparator is used to list results, order will be higher to lower on score. (Ref.
     // GEODE-3206)
-    return Float.compare(getScore(), searchResults.getScore()) * -1;
+    return Float.compare(searchResults.getScore(), getScore());
   }
 
   public boolean getExceptionFlag() {

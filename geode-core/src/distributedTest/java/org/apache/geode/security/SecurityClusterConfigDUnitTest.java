@@ -33,6 +33,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -58,7 +59,7 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty(JMX_MANAGER, "false");
     props.setProperty(JMX_MANAGER_START, "false");
     props.setProperty(JMX_MANAGER_PORT, 0 + "");
-    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
 
     this.lsRule.startLocatorVM(0, props);
@@ -92,7 +93,7 @@ public class SecurityClusterConfigDUnitTest {
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
-    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
     // initial security properties should only contain initial set of values
@@ -132,7 +133,7 @@ public class SecurityClusterConfigDUnitTest {
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
-    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, OtherPDXPostProcessor.class.getName());
     props.setProperty(USE_CLUSTER_CONFIGURATION, "true");
 
@@ -150,7 +151,7 @@ public class SecurityClusterConfigDUnitTest {
     // the following are needed for peer-to-peer authentication
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
-    props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(USE_CLUSTER_CONFIGURATION, "false");
 
     assertThatThrownBy(

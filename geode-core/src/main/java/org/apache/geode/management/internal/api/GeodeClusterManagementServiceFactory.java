@@ -15,7 +15,9 @@
 
 package org.apache.geode.management.internal.api;
 
+import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.net.ssl.HostnameVerifier;
@@ -33,8 +35,10 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -47,6 +51,9 @@ import org.apache.geode.management.internal.JavaClientClusterManagementServiceFa
 import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
+import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
+import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
+import org.apache.geode.security.AuthInitialize;
 
 /**
  * An implementation of {@link ClusterManagementServiceFactory} which can be used in any
@@ -80,44 +87,110 @@ public class GeodeClusterManagementServiceFactory
 
     Cache cache = CacheFactory.getAnyInstance();
     if (cache != null && cache.isServer()) {
-      GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
-
-      Set<InternalDistributedMember> locatorsWithClusterConfig =
-          cacheImpl.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration()
-              .keySet();
-
-      MemberInformation memberInformation = getHttpServiceAddress(locatorsWithClusterConfig);
-
-      SSLContext sslContext = null;
-      HostnameVerifier hostnameVerifier = null;
-      if (memberInformation.isWebSSL()) {
-        SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
-            ((GemFireCacheImpl) cache).getSystem().getConfig(), SecurableCommunicationChannel.WEB);
-        if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
-          throw new IllegalStateException(
-              "The server needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
-        }
-
-        sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
-        hostnameVerifier = new NoopHostnameVerifier();
-      }
-
-      return create(getHostName(memberInformation), memberInformation.getHttpServicePort(),
-          sslContext, hostnameVerifier, username, password);
+      return getClusterManagementServiceOnServer(username, password, (GemFireCacheImpl) cache);
     }
 
     ClientCache clientCache = ClientCacheFactory.getAnyInstance();
     if (clientCache != null) {
-      throw new IllegalStateException(
-          "Under construction. To retrieve an instance of ClusterManagementService from a Geode client, please use other methods");
+      return getClusterManagementServiceOnClient(username, password, clientCache);
     }
-    // } catch( CacheClosedException e) {
+
     throw new IllegalStateException("ClusterManagementService.create() " +
         "must be executed on one of locator, server or client cache VMs");
   }
 
+  private ClusterManagementService getClusterManagementServiceOnServer(String username,
+      String password,
+      GemFireCacheImpl cache) {
+    Set<InternalDistributedMember> locatorsWithClusterConfig =
+        cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration()
+            .keySet();
 
-  private MemberInformation getHttpServiceAddress(Set<InternalDistributedMember> locators) {
+    ClusterManagementServiceInfo cmsInfo =
+        getClusterManagementServiceInfo(locatorsWithClusterConfig);
+
+    return createClusterManagementService(username, password, cache.getSystem().getConfig(),
+        cmsInfo);
+  }
+
+  private ClusterManagementService getClusterManagementServiceOnClient(String username,
+      String password,
+      ClientCache clientCache) {
+    List<InetSocketAddress> locators = clientCache.getDefaultPool().getLocators();
+
+    if (locators.size() == 0) {
+      throw new IllegalStateException(
+          "the client needs to have a client pool connected with a locator.");
+    }
+    DistributionConfig config = ((GemFireCacheImpl) clientCache).getSystem().getConfig();
+    TcpClient client = new TcpClient(config);
+    ClusterManagementServiceInfo cmsInfo = null;
+    for (InetSocketAddress locator : locators) {
+      try {
+        cmsInfo =
+            (ClusterManagementServiceInfo) client.requestToServer(locator,
+                new ClusterManagementServiceInfoRequest(), 1000, true);
+
+        // do not try anymore if we found one that has cms running
+        if (cmsInfo.isRunning()) {
+          break;
+        }
+      } catch (Exception e) {
+        logger.warn(
+            "unable to discover the ClusterManagementService on locator " + locator.toString());
+      }
+    }
+
+    // if cmsInfo is still null at this point, i.e. we failed to retrieve the cms information from
+    // any locator
+    if (cmsInfo == null || !cmsInfo.isRunning()) {
+      throw new IllegalStateException(
+          "Unable to discover a locator that has ClusterManagementService running.");
+    }
+    return createClusterManagementService(username, password, config, cmsInfo);
+
+  }
+
+  private ClusterManagementService createClusterManagementService(String username, String password,
+      DistributionConfig config,
+      ClusterManagementServiceInfo cmsInfo) {
+    // if user didn't pass in a username and the locator requires credentials, use the credentials
+    // user used to create the client cache
+    if (cmsInfo.isSecured() && username == null) {
+      Properties securityProps = config.getSecurityProps();
+      username = securityProps.getProperty(AuthInitialize.SECURITY_USERNAME);
+      password = securityProps.getProperty(AuthInitialize.SECURITY_PASSWORD);
+      if (StringUtils.isBlank(username)) {
+        String message = String.format("You will need to either call getService with username and "
+            + "password or specify security-username and security-password in the properties when "
+            + "starting this geode server/client.");
+        throw new IllegalStateException(message);
+      }
+    }
+
+    SSLContext sslContext = null;
+    HostnameVerifier hostnameVerifier = null;
+    if (cmsInfo.isSSL()) {
+      SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+          config, SecurableCommunicationChannel.WEB);
+      if (!sslConfig.useDefaultSSLContext() && sslConfig.getTruststore() == null) {
+        throw new IllegalStateException(
+            "This server/client needs to have ssl-truststore or ssl-use-default-context specified in order to use cluster management service.");
+      }
+
+      sslContext = SSLUtil.createAndConfigureSSLContext(sslConfig, false);
+      hostnameVerifier = new NoopHostnameVerifier();
+    }
+
+    return create(cmsInfo.getHostName(), cmsInfo.getHttpPort(), sslContext, hostnameVerifier,
+        username, password);
+  }
+
+
+  private ClusterManagementServiceInfo getClusterManagementServiceInfo(
+      Set<InternalDistributedMember> locators) {
+    ClusterManagementServiceInfo info = new ClusterManagementServiceInfo();
+    MemberInformation memberInfo = null;
     for (InternalDistributedMember locator : locators) {
       try {
         ResultCollector resultCollector =
@@ -128,16 +201,22 @@ public class GeodeClusterManagementServiceFactory
         if (memberInformations.isEmpty()) {
           continue;
         }
-
-        // return the first available one. Later for HA, we can return the entire list
-        return memberInformations.get(0);
+        memberInfo = memberInformations.get(0);
+        break;
       } catch (FunctionException e) {
         logger.warn("Unable to execute GetMemberInformationFunction on " + locator.getId());
-        throw new IllegalStateException(e);
       }
     }
 
-    throw new IllegalStateException("Unable to determine ClusterManagementService endpoint");
+    if (memberInfo == null) {
+      throw new IllegalStateException("Unable to determine ClusterManagementService endpoint");
+    }
+
+    info.setHostName(getHostName(memberInfo));
+    info.setHttpPort(memberInfo.getHttpServicePort());
+    info.setSSL(memberInfo.isWebSSL());
+    info.setSecured(memberInfo.isSecured());
+    return info;
   }
 
   private String getHostName(MemberInformation memberInformation) {

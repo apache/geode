@@ -29,9 +29,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
-import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -50,7 +50,7 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
   @BeforeClass
   public static void beforeClass() {
     locator = lsRule.startLocatorVM(0,
-        l -> l.withHttpService().withSecurityManager(SimpleTestSecurityManager.class));
+        l -> l.withHttpService().withSecurityManager(SimpleSecurityManager.class));
 
     Properties serverProps = new Properties();
     serverProps.setProperty(ResourceConstants.USER_NAME, "clusterManage");

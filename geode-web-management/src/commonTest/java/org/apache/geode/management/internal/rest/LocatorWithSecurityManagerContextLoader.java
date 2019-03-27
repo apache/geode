@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class LocatorWithSecurityManagerContextLoader extends BaseLocatorContextLoader {
@@ -24,7 +24,7 @@ public class LocatorWithSecurityManagerContextLoader extends BaseLocatorContextL
 
   public LocatorWithSecurityManagerContextLoader() {
     locator = new LocatorStarterRule()
-        .withSecurityManager(SimpleTestSecurityManager.class)
+        .withSecurityManager(SimpleSecurityManager.class)
         .withAutoStart();
   }
 

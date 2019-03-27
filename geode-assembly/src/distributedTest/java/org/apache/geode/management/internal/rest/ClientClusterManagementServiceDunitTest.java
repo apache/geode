@@ -1,6 +1,7 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -10,6 +11,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -33,6 +35,7 @@ public class ClientClusterManagementServiceDunitTest {
   public static ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   private static MemberVM locator, server;
+  private static ClientVM client;
   private static ClusterManagementService cmsClient;
 
   @BeforeClass
@@ -67,5 +70,30 @@ public class ClientClusterManagementServiceDunitTest {
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
+  }
+
+  @Test
+  public void invokeFromClientCacheWithLocatorPool() throws Exception {
+    int locatorPort = locator.getPort();
+    client = cluster.startClientVM(2, c -> c.withLocatorConnection(locatorPort));
+
+    client.invoke(() -> {
+      ClusterManagementService service = ClusterManagementServiceProvider.getService();
+      assertThat(service.isConnected()).isTrue();
+    });
+    client.stop();
+  }
+
+  @Test
+  public void invokeFromClientCacheWithServerPool() throws Exception {
+    int serverPort = server.getPort();
+    client = cluster.startClientVM(2, c -> c.withServerConnection(serverPort));
+
+    client.invoke(() -> {
+      assertThatThrownBy(() -> ClusterManagementServiceProvider.getService())
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("the client needs to have a client pool connected with a locator");
+    });
+    client.stop();
   }
 }

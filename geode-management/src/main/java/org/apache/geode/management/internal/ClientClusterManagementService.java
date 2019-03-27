@@ -133,4 +133,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
     return ((RestfulEndpoint) config).getEndpoint();
   }
 
+  public boolean isConnected() {
+    return restTemplate.getForObject("/ping", String.class).equals("pong");
+  }
+
 }

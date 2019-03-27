@@ -28,6 +28,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.LegacySecurityService;
 import org.apache.geode.internal.security.SecurityService;
@@ -43,7 +44,7 @@ public class CacheFactoryWithSecurityObjectTest {
 
   @Before
   public void before() throws Exception {
-    this.simpleSecurityManager = new SimpleTestSecurityManager();
+    this.simpleSecurityManager = new SimpleSecurityManager();
     properties = new Properties();
     this.properties.setProperty("mcast-port", "0");
   }

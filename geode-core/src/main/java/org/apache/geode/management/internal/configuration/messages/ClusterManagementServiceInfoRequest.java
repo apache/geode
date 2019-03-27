@@ -12,14 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.deployment;
 
+package org.apache.geode.management.internal.configuration.messages;
 
-import org.apache.geode.cache.execute.FunctionAdapter;
-import org.apache.geode.cache.execute.FunctionContext;
+import java.io.Serializable;
 
-public class ExtendsFunctionAdapter extends FunctionAdapter {
-  public void execute(FunctionContext context) {
-    context.getResultSender().lastResult("ExtendsFunctionAdapterResult");
-  }
+public class ClusterManagementServiceInfoRequest implements Serializable {
+  private static final long serialVersionUID = 1L;
 }

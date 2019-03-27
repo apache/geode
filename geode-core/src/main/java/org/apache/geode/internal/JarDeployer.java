@@ -64,7 +64,7 @@ public class JarDeployer implements Serializable {
   private final File deployDirectory;
 
   public JarDeployer() {
-    this.deployDirectory = new File(System.getProperty("user.dir"));
+    this(new File(System.getProperty("user.dir")));
   }
 
   public JarDeployer(final File deployDirectory) {

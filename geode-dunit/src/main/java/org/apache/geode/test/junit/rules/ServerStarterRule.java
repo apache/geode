@@ -57,8 +57,10 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   private transient CacheServer server;
   private int embeddedLocatorPort = -1;
   private boolean pdxPersistent = false;
+  private boolean pdxPersistentUserSet = false;
   private PdxSerializer pdxSerializer = null;
   private boolean pdxReadSerialized = false;
+  private boolean pdxReadSerializedUserSet = false;
   private boolean noCacheServer = false;
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
@@ -103,11 +105,13 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   public ServerStarterRule withPDXPersistent() {
     pdxPersistent = true;
+    pdxPersistentUserSet = true;
     return this;
   }
 
   public ServerStarterRule withPDXReadSerialized() {
     pdxReadSerialized = true;
+    pdxReadSerializedUserSet = true;
     return this;
   }
 
@@ -166,8 +170,12 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   public void startServer() {
     CacheFactory cf = new CacheFactory(this.properties);
-    cf.setPdxPersistent(pdxPersistent);
-    cf.setPdxReadSerialized(pdxReadSerialized);
+    if (pdxPersistentUserSet) {
+      cf.setPdxPersistent(pdxPersistent);
+    }
+    if (pdxReadSerializedUserSet) {
+      cf.setPdxReadSerialized(pdxReadSerialized);
+    }
     if (pdxSerializer != null) {
       cf.setPdxSerializer(pdxSerializer);
     }

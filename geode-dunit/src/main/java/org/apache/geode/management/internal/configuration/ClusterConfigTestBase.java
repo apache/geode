@@ -118,7 +118,7 @@ public abstract class ClusterConfigTestBase {
     return file;
   }
 
-  protected String createJarFileWithClass(String className, String jarName, File dir)
+  protected static String createJarFileWithClass(String className, String jarName, File dir)
       throws IOException {
     File jarFile = new File(dir, jarName);
     new ClassBuilder().writeJarFromName(className, jarFile);

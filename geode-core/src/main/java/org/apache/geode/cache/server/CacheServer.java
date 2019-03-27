@@ -307,7 +307,7 @@ public interface CacheServer {
   int getMaxConnections();
 
   /**
-   * Sets the maxium number of client connections allowed. When the maximum is reached the cache
+   * Sets the maximum number of client connections allowed. When the maximum is reached the cache
    * server will stop accepting connections.
    *
    * @see #DEFAULT_MAX_CONNECTIONS
@@ -315,7 +315,7 @@ public interface CacheServer {
   void setMaxConnections(int maxCons);
 
   /**
-   * Returns the maxium number of threads allowed in this cache server to service client requests.
+   * Returns the maximum number of threads allowed in this cache server to service client requests.
    * The default of <code>0</code> causes the cache server to dedicate a thread for every client
    * connection.
    *
@@ -324,7 +324,7 @@ public interface CacheServer {
   int getMaxThreads();
 
   /**
-   * Sets the maxium number of threads allowed in this cache server to service client requests. The
+   * Sets the maximum number of threads allowed in this cache server to service client requests. The
    * default of <code>0</code> causes the cache server to dedicate a thread for every client
    * connection.
    *
