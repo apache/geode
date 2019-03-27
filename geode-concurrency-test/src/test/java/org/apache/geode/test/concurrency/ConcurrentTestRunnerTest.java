@@ -25,22 +25,31 @@ import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 
-
 public class ConcurrentTestRunnerTest {
-
   @Test
-  public void failingTest() {
-    assertThat(JUnitCore.runClasses(FailingTest.class).wasSuccessful()).isFalse();
+  public void confirmThatInParallelRunsConcurrently() {
+    // We only need FailingTest to fail once for the following
+    // assertion to pass. ConcurrentTestRunner runs FailingTest
+    // 1000 times by default. It will stop running it once it
+    // sees it fail, which is what we want to see because it
+    // confirms that running inParallel actually runs concurrently.
+    assertThat(JUnitCore.runClasses(CheckForConcurrency.class).wasSuccessful()).isFalse();
   }
 
+  /**
+   * This "test" is only meant to be run by confirmThatInParallelRunsConcurrently.
+   * If you run this "test" directly you can expect to see if fail.
+   */
   @RunWith(ConcurrentTestRunner.class)
-  public static class FailingTest {
+  public static class CheckForConcurrency {
     @Test
     public void validateConcurrentExecution(ParallelExecutor executor)
         throws ExecutionException, InterruptedException {
       final AtomicInteger atomicInteger = new AtomicInteger(0);
       executor.inParallel(() -> {
         int oldValue = atomicInteger.get();
+        // We want to see the following assertion fail because that indicates
+        // that another thread currently modified the atomic.
         assertThat(atomicInteger.compareAndSet(oldValue, oldValue + 1)).isTrue();
       }, availableProcessors());
       executor.execute();
