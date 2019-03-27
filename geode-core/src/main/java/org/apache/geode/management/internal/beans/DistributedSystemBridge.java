@@ -926,7 +926,14 @@ public class DistributedSystemBridge {
       return false;
     }
 
-    PersistentMemberPattern pattern = new PersistentMemberPattern(UUID.fromString(diskStoreId));
+    return revokeMissingDiskStore(dm, UUID.fromString(diskStoreId));
+  }
+
+  /**
+   * Revoke a disk store by UUID. Public for tests
+   */
+  public static boolean revokeMissingDiskStore(DistributionManager dm, UUID uuid) {
+    PersistentMemberPattern pattern = new PersistentMemberPattern(uuid);
     boolean success = false;
     try {
       PrepareRevokePersistentIDRequest.send(dm, pattern);

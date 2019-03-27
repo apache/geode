@@ -57,8 +57,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
-import org.apache.geode.internal.SystemAdmin;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSourceFactory;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -174,15 +174,18 @@ public class PdxSerializableJUnitTest {
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
       this.cache.close();
       // make sure offlines tools work with disk store that has pdx keys
-      SystemAdmin.validateDiskStore("DEFAULT", ".");
-      SystemAdmin.compactDiskStore("DEFAULT", ".");
-      SystemAdmin.modifyDiskStore("DEFAULT", ".");
-      SystemAdmin.validateDiskStore("r2DS", ".");
-      SystemAdmin.compactDiskStore("r2DS", ".");
-      SystemAdmin.modifyDiskStore("r2DS", ".");
-      SystemAdmin.validateDiskStore("pdxDS", ".");
-      SystemAdmin.compactDiskStore("pdxDS", ".");
-      SystemAdmin.modifyDiskStore("pdxDS", ".");
+      DiskStoreImpl.validate("DEFAULT", new File[] {new File(".")});
+      DiskStoreImpl.offlineCompact("DEFAULT", new File[] {new File(".")}, false,
+          DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE);
+      DiskStoreImpl.dumpInfo(System.out, "DEFAULT", new File[] {new File(".")}, "r1", null);
+      DiskStoreImpl.validate("r2DS", new File[] {new File(".")});
+      DiskStoreImpl.offlineCompact("r2DS", new File[] {new File(".")}, false,
+          DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE);
+      DiskStoreImpl.dumpInfo(System.out, "r2DS", new File[] {new File(".")}, "r2", null);
+      DiskStoreImpl.validate("pdxDS", new File[] {new File(".")});
+      DiskStoreImpl.offlineCompact("pdxDS", new File[] {new File(".")}, false,
+          DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE);
+      DiskStoreImpl.dumpInfo(System.out, "pdxDS", new File[] {new File(".")}, "r2", null);
     } finally {
       try {
         this.cache.close();
@@ -260,12 +263,14 @@ public class PdxSerializableJUnitTest {
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
       this.cache.close();
       // make sure offlines tools work with disk store that has pdx keys
-      SystemAdmin.validateDiskStore("DEFAULT", ".");
-      SystemAdmin.compactDiskStore("DEFAULT", ".");
-      SystemAdmin.modifyDiskStore("DEFAULT", ".");
-      SystemAdmin.validateDiskStore("r2DS", ".");
-      SystemAdmin.compactDiskStore("r2DS", ".");
-      SystemAdmin.modifyDiskStore("r2DS", ".");
+      DiskStoreImpl.validate("DEFAULT", new File[] {new File(".")});
+      DiskStoreImpl.offlineCompact("DEFAULT", new File[] {new File(".")}, false,
+          DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE);
+      DiskStoreImpl.dumpInfo(System.out, "DEFAULT", new File[] {new File(".")}, "r1", null);
+      DiskStoreImpl.validate("r2DS", new File[] {new File(".")});
+      DiskStoreImpl.offlineCompact("r2DS", new File[] {new File(".")}, false,
+          DiskStoreFactory.DEFAULT_MAX_OPLOG_SIZE);
+      DiskStoreImpl.dumpInfo(System.out, "r2DS", new File[] {new File(".")}, "r2", null);
     } finally {
       try {
         this.cache.close();

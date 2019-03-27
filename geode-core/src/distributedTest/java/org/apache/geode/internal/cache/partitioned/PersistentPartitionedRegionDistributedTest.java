@@ -16,8 +16,6 @@ package org.apache.geode.internal.cache.partitioned;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.admin.AdminDistributedSystemFactory.defineDistributedSystem;
-import static org.apache.geode.admin.AdminDistributedSystemFactory.getDistributedSystem;
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
 import static org.apache.geode.cache.Region.SEPARATOR;
@@ -36,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,10 +53,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.admin.AdminDistributedSystem;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskAccessException;
@@ -72,14 +65,12 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.cache.persistence.RevokeFailedException;
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
@@ -89,6 +80,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
+import org.apache.geode.internal.cache.persistence.DiskStoreUtilities;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -231,25 +223,10 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     assertThat(createPartitionedRegionOnVM0.isAlive()).isTrue();
 
     vm2.invoke(() -> {
-      DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-      AdminDistributedSystem adminDS = getDistributedSystem(config);
-      adminDS.connect();
-      try {
-        adminDS.waitToBeConnected(MINUTES.toMillis(2));
-
-        await().until(() -> {
-          Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-          if (missingIds.size() != 1) {
-            return false;
-          }
-          for (PersistentID missingId : missingIds) {
-            adminDS.revokePersistentMember(missingId.getUUID());
-          }
-          return true;
-        });
-
-      } finally {
-        adminDS.disconnect();
+      await().untilAsserted(
+          () -> assertThat(DiskStoreUtilities.listMissingDiskStores(getCache())).hasSize(1));
+      for (PersistentID member : DiskStoreUtilities.listMissingDiskStores(getCache())) {
+        DiskStoreUtilities.revokeMissingDiskStore(getCache(), member.getUUID());
       }
     });
 
@@ -337,81 +314,6 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     vm0.invoke(() -> checkData(0, numBuckets, null));
   }
 
-  /**
-   * Note: This test is only valid for
-   * {@link AdminDistributedSystem#revokePersistentMember(InetAddress, String)} which is deprecated
-   * and does not exist in GFSH. GFSH only supports revoking by UUID which cannot be revoked
-   * <bold>before</bold> a member starts up and is missing the diskStore identified by the UUID.
-   */
-  @Test
-  public void missingDiskStoreCanBeRevokedBeforeStartingServer() throws Exception {
-    int numBuckets = 50;
-
-    vm0.invoke(() -> createPartitionedRegion(1, -1, 113, true));
-    vm1.invoke(() -> createPartitionedRegion(1, -1, 113, true));
-
-    vm0.invoke(() -> createData(0, numBuckets, "a"));
-
-    Set<Integer> bucketsOnVM0 = vm0.invoke(() -> getBucketList());
-    Set<Integer> bucketsOnVM1 = vm1.invoke(() -> getBucketList());
-    assertThat(bucketsOnVM1).isEqualTo(bucketsOnVM0);
-
-    // This should fail with a revocation failed message
-    try (IgnoredException ie = addIgnoredException(RevokeFailedException.class)) {
-      vm2.invoke(() -> {
-        assertThatThrownBy(() -> {
-          DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-          AdminDistributedSystem adminDS = getDistributedSystem(config);
-          adminDS.connect();
-
-          try {
-            adminDS.waitToBeConnected(MINUTES.toMillis(2));
-            adminDS.revokePersistentMember(InetAddress.getLocalHost(), null);
-          } finally {
-            adminDS.disconnect();
-          }
-        }).isInstanceOf(ReplyException.class).hasCauseInstanceOf(RevokeFailedException.class);
-      });
-    }
-
-    vm0.invoke(() -> getCache().close());
-    vm1.invoke(() -> createData(0, numBuckets, "b"));
-
-    String diskDirPathOnVM1 = diskDirRule.getDiskDirFor(vm1).getAbsolutePath();
-    vm1.invoke(() -> getCache().close());
-
-    vm0.invoke(() -> {
-      getCache();
-    });
-
-    vm2.invoke(() -> {
-      DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-      AdminDistributedSystem adminDS = getDistributedSystem(config);
-      adminDS.connect();
-      try {
-        adminDS.waitToBeConnected(MINUTES.toMillis(2));
-        adminDS.revokePersistentMember(InetAddress.getLocalHost(), diskDirPathOnVM1);
-      } finally {
-        adminDS.disconnect();
-      }
-    });
-
-    vm0.invoke(() -> {
-      createPartitionedRegion(1, -1, 113, true);
-      assertThat(getBucketList()).isEqualTo(bucketsOnVM0);
-
-      checkData(0, numBuckets, "a");
-      createData(numBuckets, 113, "b");
-      checkData(numBuckets, 113, "b");
-    });
-
-    try (IgnoredException ie = addIgnoredException(RevokedPersistentDataException.class)) {
-      vm1.invoke(() -> {
-        assertThatThrownBy(() -> createPartitionedRegion(1, -1, 113, true))
-            .isInstanceOf(RevokedPersistentDataException.class);
-      });
-    }
-  }
 
   /**
    * Test that we wait for missing data to come back if the redundancy was 0.
@@ -1307,14 +1209,9 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     vm.invoke(() -> getCache().getResourceManager().createRebalanceFactory().start().getResults());
   }
 
-  private void revokePersistentMember(PersistentID missingMember, VM vm) {
-    vm.invoke(() -> AdminDistributedSystemImpl
-        .revokePersistentMember(getCache().getDistributionManager(), missingMember.getUUID()));
-  }
 
   private Set<PersistentID> getMissingPersistentMembers(VM vm) {
-    return vm.invoke(() -> AdminDistributedSystemImpl
-        .getMissingPersistentMembers(getCache().getDistributionManager()));
+    return vm.invoke(() -> DiskStoreUtilities.listMissingDiskStores(getCache()));
   }
 
   private void moveBucketToMe(final int bucketId, final InternalDistributedMember sourceMember) {
@@ -1581,28 +1478,12 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     }
   }
 
-  private void revokeKnownMissingMembers(final int numExpectedMissing)
-      throws AdminException, InterruptedException {
-    DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-    AdminDistributedSystem adminDS = getDistributedSystem(config);
-    adminDS.connect();
-    try {
-      adminDS.waitToBeConnected(MINUTES.toMillis(2));
-
-      await().until(() -> {
-        Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-        if (missingIds.size() != numExpectedMissing) {
-          return false;
-        }
-        for (PersistentID missingId : missingIds) {
-          adminDS.revokePersistentMember(missingId.getUUID());
-        }
-        return true;
-      });
-
-
-    } finally {
-      adminDS.disconnect();
+  private void revokeKnownMissingMembers(final int numExpectedMissing) {
+    await().untilAsserted(
+        () -> assertThat(DiskStoreUtilities.listMissingDiskStores(getCache()))
+            .hasSize(numExpectedMissing));
+    for (PersistentID details : DiskStoreUtilities.listMissingDiskStores(getCache())) {
+      DiskStoreUtilities.revokeMissingDiskStore(getCache(), details.getUUID());
     }
   }
 

@@ -46,7 +46,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -57,6 +56,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.persistence.DiskStoreUtilities;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.ProcessStreamReader;
@@ -552,8 +552,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
   }
 
   private Set<PersistentID> getMissingPersistentMembers() {
-    return AdminDistributedSystemImpl
-        .getMissingPersistentMembers(cacheRule.getCache().getDistributionManager());
+    return DiskStoreUtilities.listMissingDiskStores(cacheRule.getCache());
   }
 
   private BackupStatus performBackup(final String targetDirPath) {

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import static org.apache.geode.admin.AdminDistributedSystemFactory.defineDistributedSystem;
-import static org.apache.geode.admin.AdminDistributedSystemFactory.getDistributedSystem;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -33,12 +31,12 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Ignore;
@@ -46,10 +44,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.admin.AdminDistributedSystem;
-import org.apache.geode.admin.AdminDistributedSystemFactory;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -64,11 +58,11 @@ import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.cache.persistence.PersistentReplicatesOfflineException;
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -85,6 +79,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.management.internal.messages.CompactRequest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -219,25 +214,11 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
       @Override
       public void run() {
-        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
-        try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
-          adminDS.connect();
-          Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-          LogWriterUtils.getLogWriter().info("waiting members=" + missingIds);
-          assertEquals(1, missingIds.size());
-          PersistentID missingMember = missingIds.iterator().next();
-          adminDS.revokePersistentMember(missingMember.getUUID());
-        } catch (AdminException e) {
-          throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
-        }
+        Set<PersistentID> missingIds = DiskStoreUtilities.listMissingDiskStores(getCache());
+        LogWriterUtils.getLogWriter().info("waiting members=" + missingIds);
+        assertEquals(1, missingIds.size());
+        PersistentID missingMember = missingIds.iterator().next();
+        DiskStoreUtilities.revokeMissingDiskStore(getCache(), missingMember.getUUID());
       }
     });
 
@@ -324,29 +305,17 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     updateTheEntry(vm1);
 
     LogWriterUtils.getLogWriter().info("closing region in vm1");
+    UUID idToRevoke = vm1.invoke(() -> {
+      DiskStore diskStore = getCache().findDiskStore(REGION_NAME);
+      return diskStore.getDiskStoreUUID();
+    });
     closeRegion(vm1);
 
-    final File dirToRevoke = getDiskDirForVM(vm1);
     vm2.invoke(new SerializableRunnable("Revoke the member") {
 
       @Override
       public void run() {
-        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
-        try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
-          adminDS.connect();
-          adminDS.revokePersistentMember(InetAddress.getLocalHost(),
-              dirToRevoke.getCanonicalPath());
-        } catch (Exception e) {
-          Assert.fail("Unexpected exception", e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
-        }
+        DiskStoreUtilities.revokeMissingDiskStore(getCache(), idToRevoke);
       }
     });
 
@@ -447,23 +416,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
       @Override
       public void run() {
-        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
-        try {
-          config = defineDistributedSystem(getSystem(), "");
-          adminDS = getDistributedSystem(config);
-          adminDS.connect();
-          Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-          getLogWriter().info("waiting members=" + missingIds);
-          assertEquals(1, missingIds.size());
-        } catch (AdminException e) {
-          throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
-        }
+        Set<PersistentID> missingDiskStores = DiskStoreUtilities.listMissingDiskStores(getCache());
+        assertEquals(1, missingDiskStores.size());
       }
     });
 
@@ -493,41 +447,9 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
       @Override
       public void run() {
-        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
-        try {
-          config = defineDistributedSystem(getSystem(), "");
-          adminDS = getDistributedSystem(config);
-          adminDS.connect();
-          final AdminDistributedSystem connectedDS = adminDS;
-          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-
-            @Override
-            public String description() {
-              return "Waiting for waiting members to have 2 members";
-            }
-
-            @Override
-            public boolean done() {
-              Set<PersistentID> missingIds;
-              try {
-                missingIds = connectedDS.getMissingPersistentMembers();
-              } catch (AdminException e) {
-                throw new RuntimeException(e);
-              }
-              return 2 == missingIds.size();
-            }
-
-          });
-
-        } catch (AdminException e) {
-          throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
-        }
+        GeodeAwaitility.await()
+            .untilAsserted(
+                () -> assertThat(DiskStoreUtilities.listMissingDiskStores(getCache())).hasSize(2));
       }
     });
   }
@@ -1453,25 +1375,10 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
       @Override
       public void run() {
-        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        DistributedSystemConfig config;
-        AdminDistributedSystem adminDS = null;
-        try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = AdminDistributedSystemFactory.getDistributedSystem(config);
-          adminDS.connect();
-          Map<DistributedMember, Set<PersistentID>> missingIds = adminDS.compactAllDiskStores();
-          assertEquals(2, missingIds.size());
-          for (Set<PersistentID> value : missingIds.values()) {
-            assertEquals(1, value.size());
-          }
-        } catch (AdminException e) {
-          throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
-        }
+        DistributionManager distributionManager = getCache().getDistributionManager();
+        CompactRequest.send(
+            distributionManager, REGION_NAME,
+            distributionManager.getOtherNormalDistributionManagerIds());
       }
     });
 

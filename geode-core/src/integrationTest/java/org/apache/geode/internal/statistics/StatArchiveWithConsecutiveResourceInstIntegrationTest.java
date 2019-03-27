@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.SystemAdmin.StatSpec;
+import org.apache.geode.internal.StatSpec;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.test.junit.categories.StatisticsTest;

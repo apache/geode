@@ -17,12 +17,13 @@ package org.apache.geode.distributed.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_SEVERE_ALERT_THRESHOLD;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
@@ -46,10 +47,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.LogWriter;
-import org.apache.geode.admin.AdminDistributedSystem;
-import org.apache.geode.admin.AdminDistributedSystemFactory;
-import org.apache.geode.admin.AlertLevel;
-import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
@@ -64,7 +61,9 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.AlertDetails;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -211,6 +210,8 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
 
     vm1.invoke("Connect to distributed system", () -> {
       config.setProperty(NAME, "sleeper");
+      config.setProperty(JMX_MANAGER_START, "true");
+      config.setProperty(JMX_MANAGER, "true");
       getSystem(config);
       addIgnoredException("elapsed while waiting for replies");
 
@@ -374,22 +375,14 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     };
   }
 
-  private void createAlertListener() throws Exception {
-    DistributedSystemConfig config =
-        AdminDistributedSystemFactory.defineDistributedSystem(getSystemStatic(), null);
-    AdminDistributedSystem adminSystem = AdminDistributedSystemFactory.getDistributedSystem(config);
-    adminSystem.setAlertLevel(AlertLevel.SEVERE);
-    adminSystem.addAlertListener(alert -> {
-      try {
-        logger.info("alert listener invoked for alert originating in " + alert.getConnectionName());
-        logger.info("  alert text = " + alert.getMessage());
-        logger.info("  systemMember = " + alert.getSystemMember());
-      } catch (Exception e) {
-        errorCollector.addError(e);
+  private void createAlertListener() {
+    getSystemStatic().addResourceListener((event, resource) -> {
+      if (resource instanceof AlertDetails) {
+        int alertLevel = ((AlertDetails) resource).getAlertLevel();
+        if (alertLevel == InternalLogWriter.SEVERE_LEVEL) {
+          alertReceived = true;
+        }
       }
-      alertReceived = true;
     });
-    adminSystem.connect();
-    assertTrue(adminSystem.waitToBeConnected(5 * 1000));
   }
 }

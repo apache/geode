@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -210,7 +211,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
       assertThat(node.isPrimitiveOrString()).isFalse();
 
       EntryValueNode[] fields = node.getChildren();
-      assertThat(fields).isNotNull();
+      Assertions.assertThat(fields).isNotNull();
 
       getLogWriter().warning(
           "The tests use StringBuffers for values which might be implemented differently in jdk 1.5");

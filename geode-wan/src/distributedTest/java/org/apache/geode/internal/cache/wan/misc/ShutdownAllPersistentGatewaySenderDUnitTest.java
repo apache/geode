@@ -16,20 +16,16 @@ package org.apache.geode.internal.cache.wan.misc;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Set;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.admin.AdminDistributedSystemFactory;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.WANTestBase;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -182,23 +178,12 @@ public class ShutdownAllPersistentGatewaySenderDUnitTest extends WANTestBase {
 
       @Override
       public void run() {
-        DistributedSystemConfig config;
-        AdminDistributedSystemImpl adminDS = null;
+        ManagementService managementService = ManagementService.getManagementService(cache);
+        DistributedSystemMXBean systemMXBean = managementService.getDistributedSystemMXBean();
         try {
-          config = AdminDistributedSystemFactory
-              .defineDistributedSystem(cache.getDistributedSystem(), "");
-          adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
-              .getDistributedSystem(config);
-          adminDS.connect();
-          Set members = adminDS.shutDownAllMembers(timeout);
-          int num = members == null ? 0 : members.size();
-          assertEquals(expectedNumber, num);
-        } catch (AdminException e) {
+          systemMXBean.shutDownAllMembers();
+        } catch (Exception e) {
           throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
         }
       }
     });

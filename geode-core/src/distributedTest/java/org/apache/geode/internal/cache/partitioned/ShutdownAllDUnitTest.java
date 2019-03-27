@@ -33,10 +33,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.admin.AdminDistributedSystemFactory;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -50,6 +46,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -611,29 +608,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
 
   private void shutDownAllMembers(VM vm, final int expnum) {
-    vm.invoke(new SerializableRunnable("Shutdown all the members") {
-
-      @Override
-      public void run() {
-        DistributedSystemConfig config;
-        AdminDistributedSystemImpl adminDS = null;
-        try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
-              .getDistributedSystem(config);
-          adminDS.connect();
-          Set members = adminDS.shutDownAllMembers();
-          int num = members == null ? 0 : members.size();
-          assertEquals(expnum, num);
-        } catch (AdminException e) {
-          throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
-        }
-      }
-    });
+    shutDownAllMembers(vm, expnum, 0);
 
     // clean up for this vm
     System.setProperty("TestInternalGemFireError", "false");
@@ -838,26 +813,11 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
 
   private void shutDownAllMembers(VM vm, final int expnum, final long timeout) {
     vm.invoke(new SerializableRunnable("Shutdown all the members") {
-
       @Override
       public void run() {
-        DistributedSystemConfig config;
-        AdminDistributedSystemImpl adminDS = null;
-        try {
-          config = AdminDistributedSystemFactory.defineDistributedSystem(getSystem(), "");
-          adminDS = (AdminDistributedSystemImpl) AdminDistributedSystemFactory
-              .getDistributedSystem(config);
-          adminDS.connect();
-          Set members = adminDS.shutDownAllMembers(timeout);
-          int num = members == null ? 0 : members.size();
-          assertEquals(expnum, num);
-        } catch (AdminException e) {
-          throw new RuntimeException(e);
-        } finally {
-          if (adminDS != null) {
-            adminDS.disconnect();
-          }
-        }
+        Set members = ShutdownAllRequest.send(getCache().getDistributionManager(), timeout);
+        int num = members == null ? 0 : members.size();
+        assertEquals(expnum, num);
       }
     });
   }

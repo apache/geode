@@ -44,7 +44,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -59,6 +58,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.ColocationLogger;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -1548,7 +1548,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         public Object call() throws Exception {
           InternalDistributedSystem ds =
               (InternalDistributedSystem) getCache().getDistributedSystem();
-          AdminDistributedSystemImpl.shutDownAllMembers(ds.getDistributionManager(), 600000);
+          ShutdownAllRequest.send(ds.getDistributionManager(), 600000);
           return null;
         }
       });
@@ -1782,7 +1782,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       public Object call() throws Exception {
         InternalDistributedSystem ds =
             (InternalDistributedSystem) getCache().getDistributedSystem();
-        AdminDistributedSystemImpl.shutDownAllMembers(ds.getDistributionManager(), 0);
+        ShutdownAllRequest.send(getCache().getDistributionManager(), 0);
         return null;
       }
     });

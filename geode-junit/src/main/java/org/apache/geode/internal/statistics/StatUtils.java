@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.internal.SystemAdmin.StatSpec;
+import org.apache.geode.internal.StatSpec;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 
@@ -64,7 +64,8 @@ public class StatUtils {
   private static void addResourceInstsToSet(final File archiveFile,
       final Set<ResourceInst> resourceInsts) throws IOException {
     StatArchiveReader reader =
-        new StatArchiveReader(new File[] {archiveFile}, new StatSpec[] {}, true);
+        new StatArchiveReader(new File[] {archiveFile}, new StatArchiveReader.ValueFilter[] {},
+            true);
 
     for (Iterator<ResourceInst> it = reader.getResourceInstList().iterator(); it.hasNext();) {
       resourceInsts.add(it.next());
