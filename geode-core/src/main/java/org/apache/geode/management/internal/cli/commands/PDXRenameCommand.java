@@ -25,16 +25,16 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 
-public class PDXRenameCommand extends InternalGfshCommand {
+public class PDXRenameCommand extends GfshCommand {
   @CliCommand(value = CliStrings.PDX_RENAME, help = CliStrings.PDX_RENAME__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DISKSTORE})
-  public Result pdxRename(@CliOption(key = CliStrings.PDX_RENAME_OLD, mandatory = true,
+  public ResultModel pdxRename(@CliOption(key = CliStrings.PDX_RENAME_OLD, mandatory = true,
       help = CliStrings.PDX_RENAME_OLD__HELP) String oldClassName,
 
       @CliOption(key = CliStrings.PDX_RENAME_NEW, mandatory = true,
@@ -44,38 +44,33 @@ public class PDXRenameCommand extends InternalGfshCommand {
           help = CliStrings.PDX_DISKSTORE__HELP) String diskStore,
 
       @CliOption(key = CliStrings.PDX_DISKDIR, mandatory = true,
-          help = CliStrings.PDX_DISKDIR__HELP) String[] diskDirs) {
+          help = CliStrings.PDX_DISKDIR__HELP) String[] diskDirs)
+      throws Exception {
 
-    try {
-      final File[] dirs = new File[diskDirs.length];
-      for (int i = 0; i < diskDirs.length; i++) {
-        dirs[i] = new File((diskDirs[i]));
-      }
 
-      Collection<Object> results =
-          DiskStoreImpl.pdxRename(diskStore, dirs, oldClassName, newClassName);
-
-      if (results.isEmpty()) {
-        return ResultBuilder
-            .createGemFireErrorResult(CliStrings.format(CliStrings.PDX_RENAME__EMPTY));
-      }
-
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-      PrintStream printStream = new PrintStream(outputStream);
-      for (Object p : results) {
-        if (p instanceof PdxType) {
-          ((PdxType) p).toStream(printStream, false);
-        } else {
-          ((EnumInfo) p).toStream(printStream);
-        }
-      }
-      String resultString =
-          CliStrings.format(CliStrings.PDX_RENAME__SUCCESS, outputStream.toString());
-      return ResultBuilder.createInfoResult(resultString);
-
-    } catch (Exception e) {
-      return ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.PDX_RENAME__ERROR, e.getMessage()));
+    final File[] dirs = new File[diskDirs.length];
+    for (int i = 0; i < diskDirs.length; i++) {
+      dirs[i] = new File((diskDirs[i]));
     }
+
+    Collection<Object> results =
+        DiskStoreImpl.pdxRename(diskStore, dirs, oldClassName, newClassName);
+
+    if (results.isEmpty()) {
+      return ResultModel.createError(CliStrings.format(CliStrings.PDX_RENAME__EMPTY));
+    }
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    PrintStream printStream = new PrintStream(outputStream);
+    for (Object p : results) {
+      if (p instanceof PdxType) {
+        ((PdxType) p).toStream(printStream, false);
+      } else {
+        ((EnumInfo) p).toStream(printStream);
+      }
+    }
+    String resultString =
+        CliStrings.format(CliStrings.PDX_RENAME__SUCCESS, outputStream.toString());
+    return ResultModel.createInfo(resultString);
   }
 }
