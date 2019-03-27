@@ -160,9 +160,7 @@ artifacts {
 war {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   classpath configurations.runtimeClasspath
-  classpath project(':geode-core').webJar.archivePath
 }
-war.dependsOn(':geode-core:webJar')
 uiTest.dependsOn war
 uiTest.finalizedBy rootProject.combineReports
 rootProject.combineReports.mustRunAfter uiTest

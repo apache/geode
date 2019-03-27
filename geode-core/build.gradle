@@ -112,7 +112,6 @@ jar {
   from sourceSets.main.output
   from sourceSets.jca.output
 
-  exclude 'org/apache/geode/management/internal/web/**'
   exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
   exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'
 
@@ -124,13 +123,6 @@ jar {
 }
 
 jar.dependsOn(createVersionPropertiesFile)
-
-task webJar(type: Jar, dependsOn: classes) {
-  description 'Assembles the jar archive containing the gemfire management web classes.'
-  from sourceSets.main.output
-  baseName 'geode-web'
-  include 'org/apache/geode/management/internal/web/**'
-}
 
 task raJar(type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive that contains the JCA classes'
@@ -300,19 +292,8 @@ dependencies {
   implementation('org.eclipse.jetty:jetty-server')
 
 
-  //Spring webmvc is used by the REST management API
-  compileOnly('org.springframework:spring-webmvc') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-    ext.optional = true
-  }
-  //Spring webmvc is used by the REST management API
-  testCompile('org.springframework:spring-webmvc') {
-    exclude module: 'aopalliance'
-    exclude module: 'spring-aop'
-    ext.optional = true
-  }
-  //Spring core is used by the REST API, and the gfsh cli
+
+  //Spring core is used by the the gfsh cli
   implementation('org.springframework:spring-core') {
     ext.optional = true
   }

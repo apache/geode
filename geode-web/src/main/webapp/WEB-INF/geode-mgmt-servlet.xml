@@ -48,7 +48,7 @@ limitations under the License.
       <bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.xml.SourceHttpMessageConverter"/>
       <bean class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"/>
-      <bean class="org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter"/>
+      <bean class="org.apache.geode.management.internal.web.http.converter.ServerSerializableObjectHttpMessageConverter"/>
     </mvc:message-converters>
   </mvc:annotation-driven>
 

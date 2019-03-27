@@ -334,9 +334,6 @@ task configureGfshDepsJar(dependsOn: configurations.gfshDependencies.dependencie
   inputs.files {
     configureDepsJar
   }
-  inputs.files {
-    project(':geode-core').webJar
-  }
 
   def output = project.buildDir.toPath().resolve('reports').resolve('gfsh_deps_jar_cp.txt')
   outputs.file {
@@ -344,7 +341,6 @@ task configureGfshDepsJar(dependsOn: configurations.gfshDependencies.dependencie
   }
   doLast {
     def classpath = configureDepsJar.outputs.files.singleFile.text + ' ' +
-        project(':geode-core').webJar.archiveName + ' ' +
         configurations.gfshDependencies.collect { it.getName() }.flatten().join(' ')
     output.write(classpath)
   }
@@ -502,7 +498,6 @@ distributions {
 
         //These tasks are included as closures (wrapped in {}) because gradle may evaluate
         //this CopySpec before it evaluates the geode-core build file.
-        from { project(':geode-core').webJar }
         from { project(':geode-core').raJar }
         from { project(':geode-core').jcaJar }
 
