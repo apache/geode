@@ -23,12 +23,12 @@ dependencies {
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('com.github.stephenc.findbugs:findbugs-annotations')
 
-  testCompile('org.mockito:mockito-core')
-  testCompile(project(':geode-junit'))
+  testImplementation('org.mockito:mockito-core')
+  testImplementation(project(':geode-junit'))
 
-  integrationTestCompile(project(':geode-core'))
-  integrationTestCompile('net.spy:spymemcached')
-  integrationTestCompile(project(':geode-junit'))
+  integrationTestImplementation(project(':geode-core'))
+  integrationTestImplementation('net.spy:spymemcached')
+  integrationTestImplementation(project(':geode-junit'))
 
-  distributedTestCompile(project(':geode-dunit'))
+  distributedTestImplementation(project(':geode-dunit'))
 }
