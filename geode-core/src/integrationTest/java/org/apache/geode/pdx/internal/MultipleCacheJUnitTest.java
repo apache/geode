@@ -42,7 +42,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
@@ -56,7 +55,7 @@ public class MultipleCacheJUnitTest {
 
   private List<Cache> caches = new ArrayList<>();
   private Properties configProperties;
-  private InternalLocator locator;
+  private Locator locator;
   private ConnectListener connectListener;
 
   @Before
@@ -66,8 +65,7 @@ public class MultipleCacheJUnitTest {
     connectListener = mock(ConnectListener.class);
     InternalDistributedSystem.addConnectListener(connectListener);
 
-    locator =
-        (InternalLocator) Locator.startLocatorAndDS(0, locatorFolder.newFile("locator.log"), null);
+    locator = Locator.startLocatorAndDS(0, locatorFolder.newFile("locator.log"), null);
     configProperties = new Properties();
     configProperties.setProperty(ConfigurationProperties.LOCATORS,
         "locahost[" + locator.getPort() + "]");
