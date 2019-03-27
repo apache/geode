@@ -20,13 +20,12 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.CommandManagerAware;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
-public class GfshHintCommand extends GfshCommand implements CommandManagerAware {
+public class GfshHintCommand extends OfflineGfshCommand implements CommandManagerAware {
   private CommandManager commandManager = null;
 
   @Override
