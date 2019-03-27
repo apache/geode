@@ -21,5 +21,4 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   compile('junit:junit')
   compile('org.apache.logging.log4j:log4j-api')
-  testCompile('org.assertj:assertj-core')
 }
