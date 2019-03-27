@@ -184,7 +184,8 @@ public class InternalDistributedSystem extends DistributedSystem
   private final GrantorRequestProcessor.GrantorRequestContext grc;
 
   /** services provided by other modules */
-  private Map<Class, DistributedSystemService> services = new HashMap<>();
+  private Map<Class<? extends DistributedSystemService>, DistributedSystemService> services =
+      new HashMap<>();
 
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
@@ -629,6 +630,10 @@ public class InternalDistributedSystem extends DistributedSystem
       service.init(this);
       services.put(service.getInterface(), service);
     }
+  }
+
+  public <T extends DistributedSystemService> T getService(Class<T> clazz) {
+    return clazz.cast(this.services.get(clazz));
   }
 
 

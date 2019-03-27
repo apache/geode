@@ -20,7 +20,7 @@ import java.util.Collection;
 public interface DistributedSystemService {
   void init(InternalDistributedSystem internalDistributedSystem);
 
-  Class getInterface();
+  Class<? extends DistributedSystemService> getInterface();
 
   Collection<String> getSerializationAcceptlist() throws IOException;
 }
