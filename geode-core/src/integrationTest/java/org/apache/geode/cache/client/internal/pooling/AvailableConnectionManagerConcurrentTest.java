@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,7 +90,6 @@ public class AvailableConnectionManagerConcurrentTest {
       throws ExecutionException, InterruptedException {
     int connectionCount = 2;
     int threadCount = connectionCount * 5;
-    final AtomicBoolean useFirstReturnedNull = new AtomicBoolean(false);
     repeat(() -> instance.addFirst(createConnection(), false), connectionCount);
 
     executor.inParallel(() -> {
@@ -100,17 +98,12 @@ public class AvailableConnectionManagerConcurrentTest {
         if (used != null) {
           Thread.yield();
           instance.addFirst(used, true);
-        } else {
-          if (!useFirstReturnedNull.get()) {
-            useFirstReturnedNull.set(true);
-          }
         }
       }, iterationCount);
     }, threadCount);
     executor.execute();
 
     assertThat(instance.getDeque()).hasSize(connectionCount);
-    assertThat(useFirstReturnedNull.get()).isTrue();
   }
 
   @Test
@@ -119,7 +112,6 @@ public class AvailableConnectionManagerConcurrentTest {
       throws ExecutionException, InterruptedException {
     int connectionCount = 2;
     int threadCount = connectionCount * 5;
-    final AtomicBoolean useFirstReturnedNull = new AtomicBoolean(false);
     repeat(() -> instance.addFirst(createConnection(), false), connectionCount);
 
     executor.inParallel(() -> {
@@ -128,17 +120,12 @@ public class AvailableConnectionManagerConcurrentTest {
         if (used != null) {
           Thread.yield();
           instance.addFirst(used, true);
-        } else {
-          if (!useFirstReturnedNull.get()) {
-            useFirstReturnedNull.set(true);
-          }
         }
       }, iterationCount);
     }, threadCount);
     executor.execute();
 
     assertThat(instance.getDeque()).hasSize(connectionCount);
-    assertThat(useFirstReturnedNull.get()).isTrue();
   }
 
   @Test
@@ -147,7 +134,6 @@ public class AvailableConnectionManagerConcurrentTest {
       throws ExecutionException, InterruptedException {
     int connectionCount = 2;
     int threadCount = connectionCount * 5;
-    final AtomicBoolean useFirstReturnedNull = new AtomicBoolean(false);
     repeat(() -> instance.addFirst(createConnection(), false), connectionCount);
     // now add a bunch of connections that will not match the predicate
     repeat(() -> {
@@ -163,17 +149,12 @@ public class AvailableConnectionManagerConcurrentTest {
           Thread.yield();
           assertThat(used.getBirthDate()).isEqualTo(0L);
           instance.addLast(used, true);
-        } else {
-          if (!useFirstReturnedNull.get()) {
-            useFirstReturnedNull.set(true);
-          }
         }
       }, iterationCount);
     }, threadCount);
     executor.execute();
 
     assertThat(instance.getDeque()).hasSize(connectionCount * 2);
-    assertThat(useFirstReturnedNull.get()).isTrue();
   }
 
   @Test
