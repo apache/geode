@@ -381,7 +381,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       return null;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("Clearing entries for {} rvv={}", _getOwner(), " rvv=" + rvv);
+      logger.debug("Clearing entries for {} rvv={}", _getOwner(), rvv);
     }
     LocalRegion lr = _getOwner();
     RegionVersionVector localRvv = lr.getVersionVector();

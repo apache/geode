@@ -1196,14 +1196,12 @@ public class GMSJoinLeaveJUnitTest {
       initMocks(true);
       System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
       gmsJoinLeave.join();
-      installView(1, gmsJoinLeaveMemberId, createMemberList(mockMembers[0], mockMembers[1],
-          mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
-      for (int i = 1; i < 4; i++) {
-        RemoveMemberMessage msg =
-            new RemoveMemberMessage(gmsJoinLeaveMemberId, mockMembers[i], "crashed");
-        msg.setSender(gmsJoinLeaveMemberId);
-        gmsJoinLeave.processMessage(msg);
-      }
+      installView(1, gmsJoinLeaveMemberId, createMemberList(mockMembers[0],
+          gmsJoinLeaveMemberId));
+      RemoveMemberMessage msg =
+          new RemoveMemberMessage(gmsJoinLeaveMemberId, mockMembers[0], "crashed");
+      msg.setSender(gmsJoinLeaveMemberId);
+      gmsJoinLeave.processMessage(msg);
       Timeout to = new Timeout(3 * ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, new Times(1));
       verify(messenger, to).send(isA(NetworkPartitionMessage.class));
 
