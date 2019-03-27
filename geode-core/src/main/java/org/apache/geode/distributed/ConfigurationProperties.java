@@ -1351,7 +1351,7 @@ public interface ConfigurationProperties {
    * name="memcached-bind-address"/a>
    * </p>
    * <U>Description</U>: Specifies the bind address used by
-   * {@link org.apache.geode.memcached.GemFireMemcachedServer}
+   * {@code org.apache.geode.memcached.GemFireMemcachedServer}
    * </p>
    * <U>Default</U>: ""
    */
@@ -1361,9 +1361,9 @@ public interface ConfigurationProperties {
    * name="memcached-port"/a>
    * </p>
    * <U>Description</U>: Specifies the port used by
-   * {@link org.apache.geode.memcached.GemFireMemcachedServer} which enables memcached clients to
+   * {@code org.apache.geode.memcached.GemFireMemcachedServer} which enables memcached clients to
    * connect and store data in GemFire distributed system. see
-   * {@link org.apache.geode.memcached.GemFireMemcachedServer} for other configuration options.
+   * {@code org.apache.geode.memcached.GemFireMemcachedServer} for other configuration options.
    * </p>
    * <U>Default</U>: "0" disables GemFireMemcachedServer
    * </p>
@@ -1375,7 +1375,7 @@ public interface ConfigurationProperties {
    * name="memcached-protocol"/a>
    * </p>
    * <U>Description</U>: Specifies the protocol used by
-   * {@link org.apache.geode.memcached.GemFireMemcachedServer}
+   * {@code org.apache.geode.memcached.GemFireMemcachedServer}
    * </p>
    * <U>Default</U>: "ASCII"
    * </p>

@@ -210,7 +210,6 @@ import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -641,8 +640,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   @ConfigAttributeChecker(name = MEMCACHED_PROTOCOL)
   protected String checkMemcachedProtocol(String protocol) {
     if (protocol == null
-        || !protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.ASCII.name())
-            && !protocol.equalsIgnoreCase(GemFireMemcachedServer.Protocol.BINARY.name())) {
+        || !protocol.equalsIgnoreCase("ASCII")
+            && !protocol.equalsIgnoreCase("BINARY")) {
       throw new IllegalArgumentException(
           "memcached-protocol must be ASCII or BINARY ");
     }
