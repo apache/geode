@@ -85,7 +85,7 @@ public class WebDriverRule extends ExternalResource {
     driver.quit();
   }
 
-  private void login() {
+  public void login(String username, String password) {
     WebElement userNameElement = waitForElementById("user_name", 60);
     WebElement passwordElement = waitForElementById("user_password");
     userNameElement.sendKeys(username);
@@ -93,10 +93,13 @@ public class WebDriverRule extends ExternalResource {
     passwordElement.submit();
 
     driver.get(getPulseURL() + "clusterDetail.html");
-    WebElement userNameOnPulsePage =
-        (new WebDriverWait(driver, 30, 1000)).until(
-            (ExpectedCondition<WebElement>) d -> d.findElement(By.id("userName")));
+    WebElement userNameOnPulsePage = (new WebDriverWait(driver, 30, 1000))
+        .until((ExpectedCondition<WebElement>) d -> d.findElement(By.id("userName")));
     assertNotNull(userNameOnPulsePage);
+  }
+
+  private void login() {
+    login(username, password);
   }
 
   private void setUpWebDriver() {

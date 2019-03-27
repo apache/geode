@@ -33,10 +33,11 @@
 		<!-- Can be invoked w/o auth -->
 
 		<!-- Restricted urls -->
+		<intercept-url pattern="/accessDenied*" access="isAuthenticated()"/>
 		<intercept-url pattern="/dataBrowser*" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
 		<intercept-url pattern="/getQueryStatisticsGridModel/*" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
 		<intercept-url pattern="/*" access="hasRole('CLUSTER:READ')" />
-		
+
 		<!-- Restricted urls -->
         <form-login login-page="/login.html"
                     authentication-failure-handler-ref="authenticationFailureHandler"
@@ -47,9 +48,11 @@
 			<content-type-options  />
 			<xss-protection enabled="true" block="true" />
 		</headers>
-		
+
+		<access-denied-handler error-page="/accessDenied.html"/>
+
 		<logout logout-url="/clusterLogout" success-handler-ref="customLogoutSuccessHandler"/>
-		
+
 	</http>
 
 	<beans:bean name="customLogoutSuccessHandler" 
