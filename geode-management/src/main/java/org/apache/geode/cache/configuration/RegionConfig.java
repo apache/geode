@@ -324,7 +324,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
    */
   public void setName(String value) throws IllegalArgumentException {
     if (value == null) {
-      throw new IllegalArgumentException("Region name cannot be null");
+      return;
     }
 
     boolean regionPrefixedWithSlash = value.startsWith("/");

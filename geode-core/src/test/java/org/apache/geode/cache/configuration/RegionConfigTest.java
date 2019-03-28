@@ -46,12 +46,6 @@ public class RegionConfigTest {
   }
 
   @Test
-  public void regionNameCannotBeNull() {
-    assertThatThrownBy(() -> regionConfig.setName(null))
-        .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
   public void regionNameSwallowsSlash() {
     regionConfig.setName("/regionA");
     assertThat(regionConfig.getName()).isEqualTo("regionA");

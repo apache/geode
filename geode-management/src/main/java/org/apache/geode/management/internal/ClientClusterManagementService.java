@@ -65,6 +65,10 @@ public class ClientClusterManagementService implements ClusterManagementService 
     restTemplate.setErrorHandler(DEFAULT_ERROR_HANDLER);
   }
 
+  public ClientClusterManagementService(String host, int port) {
+    this(host, port, null, null, null, null);
+  }
+
   public ClientClusterManagementService(String host, int port, SSLContext sslContext,
       HostnameVerifier hostnameVerifier, String username, String password) {
     this();
