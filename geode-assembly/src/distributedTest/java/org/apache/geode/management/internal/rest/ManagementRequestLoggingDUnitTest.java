@@ -55,7 +55,9 @@ public class ManagementRequestLoggingDUnitTest {
   public void checkRequestsAreLogged() throws Exception {
     locator.invoke(() -> {
       Logger logger = (Logger) LogManager.getLogger(ManagementLoggingFilter.class);
-      logger.addAppender(new ListAppender("ListAppender"));
+      ListAppender listAppender = new ListAppender("ListAppender");
+      logger.addAppender(listAppender);
+      listAppender.start();
     });
 
     RegionConfig regionConfig = new RegionConfig();

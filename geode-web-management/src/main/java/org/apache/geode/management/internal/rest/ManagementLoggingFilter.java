@@ -66,6 +66,7 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     String responsePattern = "Management Response: Status=%s; response=%s";
     payload = getContentAsString(wrappedResponse.getContentAsByteArray(),
         wrappedResponse.getCharacterEncoding());
+    payload = payload.replaceAll(System.lineSeparator(), "");
     logger.info(String.format(responsePattern, response.getStatus(), payload));
 
     // IMPORTANT: copy content of response back into original response
