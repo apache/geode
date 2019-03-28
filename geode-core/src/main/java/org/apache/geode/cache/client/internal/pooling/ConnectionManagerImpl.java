@@ -678,7 +678,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   protected class PrefillConnectionsTask extends PoolTask {
-
     @Override
     public void run2() {
       if (logger.isTraceEnabled()) {
@@ -890,7 +889,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     private synchronized void addToEndpointMap(PooledConnection connection) {
       Set<PooledConnection> endpointConnections = map.get(connection.getEndpoint());
       if (endpointConnections == null) {
-        endpointConnections = new HashSet();
+        endpointConnections = new HashSet<>();
         map.put(connection.getEndpoint(), endpointConnections);
       }
       endpointConnections.add(connection);
@@ -963,8 +962,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
      */
     public synchronized PooledConnection findReplacementTarget(ServerLocation currentServer) {
       final long now = System.nanoTime();
-      for (Iterator it = this.allConnections.iterator(); it.hasNext();) {
-        PooledConnection pc = (PooledConnection) it.next();
+      for (PooledConnection pc : allConnections) {
         if (currentServer.equals(pc.getServer())) {
           if (!pc.shouldDestroy() && pc.remainingLife(now, lifetimeTimeoutNanos) <= 0) {
             removeFromEndpointMap(pc);
@@ -982,8 +980,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     public synchronized boolean hasExpiredCnxToServer(ServerLocation currentServer) {
       if (!this.allConnections.isEmpty()) {
         final long now = System.nanoTime();
-        for (Iterator it = this.allConnections.iterator(); it.hasNext();) {
-          PooledConnection pc = (PooledConnection) it.next();
+        for (PooledConnection pc : allConnections) {
           if (pc.shouldDestroy()) {
             // this con has already been destroyed so ignore it
             continue;
@@ -1007,8 +1004,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     public synchronized boolean checkForReschedule(boolean rescheduleOk) {
       if (!this.allConnections.isEmpty()) {
         final long now = System.nanoTime();
-        for (Iterator it = this.allConnections.iterator(); it.hasNext();) {
-          PooledConnection pc = (PooledConnection) it.next();
+        for (PooledConnection pc : allConnections) {
           if (pc.hasIdleExpired(now, idleTimeoutNanos)) {
             // this con has already idle expired so ignore it
             continue;
@@ -1039,8 +1035,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
     public synchronized void extendLifeOfCnxToServer(ServerLocation sl) {
       if (!this.allConnections.isEmpty()) {
         final long now = System.nanoTime();
-        for (Iterator it = this.allConnections.iterator(); it.hasNext();) {
-          PooledConnection pc = (PooledConnection) it.next();
+        for (Iterator<PooledConnection> it = this.allConnections.iterator(); it.hasNext();) {
+          PooledConnection pc = it.next();
           if (pc.remainingLife(now, lifetimeTimeoutNanos) > 0) {
             // no more connections whose lifetime could have expired
             break;
@@ -1096,9 +1092,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
         toClose = new ArrayList<>(conCount - connectionAccounting.getMinimum());
 
         // because we expire thread local connections we need to scan allConnections
-        for (Iterator it = allConnections.iterator(); it.hasNext()
+        for (Iterator<PooledConnection> it = allConnections.iterator(); it.hasNext()
             && conCount > connectionAccounting.getMinimum();) {
-          PooledConnection pc = (PooledConnection) it.next();
+          PooledConnection pc = it.next();
           if (pc.shouldDestroy()) {
             // ignore these connections
             conCount--;
@@ -1176,9 +1172,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
           long now = System.nanoTime();
           long life = 0;
           idlePossible = isIdleExpirePossible();
-          for (Iterator it = this.allConnections.iterator(); it.hasNext() && life <= 0
+          for (Iterator<PooledConnection> it = this.allConnections.iterator(); it.hasNext()
+              && life <= 0
               && (candidate == null);) {
-            PooledConnection pc = (PooledConnection) it.next();
+            PooledConnection pc = it.next();
             // skip over idle expired and destroyed
             life = pc.remainingLife(now, lifetimeTimeoutNanos);
             if (life <= 0) {
@@ -1200,7 +1197,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
             // reschedule
             startBackgroundLifetimeExpiration(firstLife);
           }
-          done = true; // just to be clear
+          done = true;
         }
       } while (!done);
       // If a lifetimeExpire task is not scheduled at this point then
