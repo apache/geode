@@ -1425,8 +1425,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * optimized to only allow one thread to do a search/load, other threads wait on a future
-   *
    * @param isCreate true if call found no entry; false if updating an existing entry
    * @param localValue the value retrieved from the region for this object.
    * @param disableCopyOnRead if true then do not make a copy
@@ -1439,83 +1437,113 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws TimeoutException, CacheLoaderException {
-
     @Retained
+    Object result;
+    if (isProxy()) {
+      result =
+          getObject(keyInfo, isCreate, generateCallbacks, localValue, disableCopyOnRead, preferCD,
+              requestingClient, clientEvent, returnTombstones);
+    } else {
+      result = optimizedGetObject(keyInfo, isCreate, generateCallbacks, localValue,
+          disableCopyOnRead, preferCD,
+          requestingClient, clientEvent, returnTombstones);
+    }
+    return result;
+  }
+
+
+  private Object getObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
+      Object localValue, boolean disableCopyOnRead, boolean preferCD,
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) {
+    Object result;
+    boolean partitioned = this.getDataPolicy().withPartitioning();
+    if (!partitioned) {
+      localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD,
+          clientEvent, false, false);
+
+      // stats have now been updated
+      if (localValue != null && !Token.isInvalid(localValue)) {
+        result = localValue;
+        return result;
+      }
+      isCreate = localValue == null;
+      result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks, localValue,
+          disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
+
+    } else {
+      // For PRs we don't want to deserialize the value and we can't use findObjectInSystem
+      // because it can invoke code that is transactional.
+      result =
+          getSharedDataView().findObject(keyInfo, this, isCreate, generateCallbacks, localValue,
+              disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
+    }
+
+    if (result == null && localValue != null) {
+      if (localValue != Token.TOMBSTONE || returnTombstones) {
+        result = localValue;
+      }
+    }
+    // findObjectInSystem does not call conditionalCopy
+    if (!disableCopyOnRead) {
+      result = conditionalCopy(result);
+    }
+    return result;
+  }
+
+  /**
+   * optimized to only allow one thread to do a search/load, other threads wait on a future
+   */
+  private Object optimizedGetObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
+      Object localValue, boolean disableCopyOnRead, boolean preferCD,
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) {
     Object result = null;
     FutureResult thisFuture = new FutureResult(this.stopper);
     Future otherFuture = (Future) this.getFutures.putIfAbsent(keyInfo.getKey(), thisFuture);
     // only one thread can get their future into the map for this key at a time
-    if (otherFuture != null) {
-      try {
-        Object[] valueAndVersion = (Object[]) otherFuture.get();
-        if (valueAndVersion != null) {
-          result = valueAndVersion[0];
-          if (clientEvent != null) {
-            clientEvent.setVersionTag((VersionTag) valueAndVersion[1]);
-          }
-          if (!preferCD && result instanceof CachedDeserializable) {
-            CachedDeserializable cd = (CachedDeserializable) result;
-            // fix for bug 43023
-            if (!disableCopyOnRead && isCopyOnRead()) {
-              result = cd.getDeserializedWritableCopy(null, null);
-            } else {
-              result = cd.getDeserializedForReading();
-            }
-
-          } else if (!disableCopyOnRead) {
-            result = conditionalCopy(result);
-          }
-          // what was a miss is now a hit
-          if (isCreate) {
-            RegionEntry regionEntry = basicGetEntry(keyInfo.getKey());
-            updateStatsForGet(regionEntry, true);
-          }
-          return result;
-        }
-        // if value == null, try our own search/load
-      } catch (InterruptedException ignore) {
-        Thread.currentThread().interrupt();
-        // TODO check a CancelCriterion here?
-        return null;
-      } catch (ExecutionException e) {
-        // unexpected since there is no background thread
-        // NOTE: this was creating InternalGemFireError and initCause with itself
-        throw new InternalGemFireError(
-            "unexpected exception", e);
-      }
-    }
-    // didn't find a future, do one more probe for the entry to catch a race
-    // condition where the future was just removed by another thread
     try {
-      boolean partitioned = this.getDataPolicy().withPartitioning();
-      if (!partitioned) {
-        localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD,
-            clientEvent, false, false);
+      if (otherFuture != null) {
+        try {
+          Object[] valueAndVersion = (Object[]) otherFuture.get();
+          if (valueAndVersion != null) {
+            result = valueAndVersion[0];
+            if (clientEvent != null) {
+              clientEvent.setVersionTag((VersionTag) valueAndVersion[1]);
+            }
+            if (!preferCD && result instanceof CachedDeserializable) {
+              CachedDeserializable cd = (CachedDeserializable) result;
+              // fix for bug 43023
+              if (!disableCopyOnRead && (isCopyOnRead() || isProxy())) {
+                result = cd.getDeserializedWritableCopy(null, null);
+              } else {
+                result = cd.getDeserializedForReading();
+              }
 
-        // stats have now been updated
-        if (localValue != null && !Token.isInvalid(localValue)) {
-          result = localValue;
-          return result;
+            } else if (!disableCopyOnRead) {
+              result = conditionalCopy(result);
+            }
+            // what was a miss is now a hit
+            if (isCreate) {
+              RegionEntry regionEntry = basicGetEntry(keyInfo.getKey());
+              updateStatsForGet(regionEntry, true);
+            }
+          }
+        } catch (InterruptedException ignore) {
+          Thread.currentThread().interrupt();
+          // TODO check a CancelCriterion here?
+          return null;
+        } catch (ExecutionException e) {
+          // unexpected since there is no background thread
+          // NOTE: this was creating InternalGemFireError and initCause with itself
+          throw new InternalGemFireError(
+              "unexpected exception", e);
         }
-        isCreate = localValue == null;
-        result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks, localValue,
-            disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
-
       } else {
-
-        // For PRs we don't want to deserialize the value and we can't use findObjectInSystem
-        // because it can invoke code that is transactional.
         result =
-            getSharedDataView().findObject(keyInfo, this, isCreate, generateCallbacks, localValue,
-                disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
+            getObject(keyInfo, isCreate, generateCallbacks, localValue, disableCopyOnRead, preferCD,
+                requestingClient, clientEvent, returnTombstones);
       }
-
-      if (result == null && localValue != null) {
-        if (localValue != Token.TOMBSTONE || returnTombstones) {
-          result = localValue;
-        }
-      }
-      // findObjectInSystem does not call conditionalCopy
     } finally {
       if (result != null) {
         VersionTag tag = clientEvent == null ? null : clientEvent.getVersionTag();
@@ -1525,11 +1553,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
       this.getFutures.remove(keyInfo.getKey());
     }
-    if (!disableCopyOnRead) {
-      result = conditionalCopy(result);
-    }
     return result;
   }
+
 
   /**
    * Returns true if get should give a copy; false if a reference.
