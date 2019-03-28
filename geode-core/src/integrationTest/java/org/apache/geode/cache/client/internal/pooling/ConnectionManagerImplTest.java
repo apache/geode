@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -179,6 +180,22 @@ public class ConnectionManagerImplTest {
         .isInstanceOf(NoAvailableServersException.class);
     assertThat(connectionManager.getConnectionCount()).isEqualTo(0);
 
+    connectionManager.close(false);
+  }
+
+  @Test
+  public void borrowConnectionWillSchedulePrefillIfUnderMinimumConnections() {
+    when(connectionFactory.createClientToServerConnection(any())).thenReturn(null);
+    doNothing().when(backgroundProcessor).execute(any());
+
+    pingInterval = 20000000; // set it high to prevent prefill retry
+    connectionManager = spy(createDefaultConnectionManager());
+    connectionManager.start(backgroundProcessor);
+    assertThatThrownBy(() -> connectionManager.borrowConnection(timeout))
+        .isInstanceOf(NoAvailableServersException.class);
+    assertThat(connectionManager.getConnectionCount()).isEqualTo(0);
+
+    verify(connectionManager, times(2)).startBackgroundPrefill();
     connectionManager.close(false);
   }
 

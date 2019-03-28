@@ -258,7 +258,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
-  // TODO reevaluate this
   @Override
   public Connection borrowConnection(long acquireTimeout)
       throws AllConnectionsInUseException, NoAvailableServersException, ServerOperationException {
@@ -280,8 +279,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
             throw new NoAvailableServersException();
           } finally {
             if (connection == null) {
-              int currentCount = connectionAccounting.cancelTryCreate();
-              if (currentCount < connectionAccounting.getMinimum()) {
+              connectionAccounting.cancelTryCreate();
+              if (connectionAccounting.isUnderMinimum()) {
                 startBackgroundPrefill();
               }
             }
@@ -406,7 +405,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
     for (Iterator itr = badConnections.iterator(); itr.hasNext();) {
       PooledConnection conn = (PooledConnection) itr.next();
-      // TODO is this right?
       if (!conn.isDestroyed()) {
         conn.setShouldDestroy();
         availableConnectionManager.remove(conn);

@@ -117,7 +117,7 @@ public class AvailableConnectionManager {
 
   /**
    * This class exists so that we can use ConcurrentLinkedDeque removeFirstOccurrence.
-   * We want to efficiently scan the deque for an item that matches the predicate
+   * We want to efficiently scan the Deque for an item that matches the predicate
    * without changing the position of items that do not match. We also need
    * to know the identity of the first item that did match.
    */
