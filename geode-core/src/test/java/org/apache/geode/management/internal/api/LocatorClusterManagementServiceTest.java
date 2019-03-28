@@ -87,11 +87,11 @@ public class LocatorClusterManagementServiceTest {
   public void noMemberFound() throws Exception {
     regionConfig.setName("test");
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
-    doReturn(Collections.emptySet()).when(service).findMembers(any(), any());
+    doReturn(Collections.emptySet()).when(service).findMembers(any());
     result = service.create(regionConfig, "cluster");
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage())
-        .contains("no members found to create cache element");
+        .contains("no members found in cluster to create cache element");
   }
 
   @Test
@@ -101,8 +101,7 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new CliFunctionResult("member2", false, "failed"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(service).findMembers(any(),
-        any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(service).findMembers(any());
 
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
     regionConfig.setName("test");

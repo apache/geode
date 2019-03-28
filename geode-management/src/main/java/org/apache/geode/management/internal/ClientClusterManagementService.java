@@ -107,9 +107,10 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public ClusterManagementResult create(CacheElement config, String group) {
-    String endPoint = getEndpoint(config);
+    String endPoint = getEndpoint(config) + "?group={group}";
     // the response status code info is represented by the ClusterManagementResult.errorCode already
-    return restTemplate.postForEntity(VERSION + endPoint, config, ClusterManagementResult.class)
+    return restTemplate
+        .postForEntity(VERSION + endPoint, config, ClusterManagementResult.class, group)
         .getBody();
   }
 
