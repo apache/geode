@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -748,7 +747,7 @@ public class GMSJoinLeaveJUnitTest {
     msg.setSender(C);
     gmsJoinLeave.processMessage(msg);
     assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
-    await().atMost(15, TimeUnit.SECONDS).until(() -> {
+    await().until(() -> {
       NetView preparedView = gmsJoinLeave.getPreparedView();
       return preparedView != null && preparedView.contains(E);
     });
