@@ -30,13 +30,19 @@ import org.apache.geode.distributed.DistributedSystem;
 public class InternalDistributedSystemIntegrationTest {
 
   private InternalDistributedSystem system;
+  private InternalDistributedSystem system2;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @After
   public void tearDown() {
-    system.disconnect();
+    if (system != null) {
+      system.disconnect();
+    }
+    if (system2 != null) {
+      system2.disconnect();
+    }
   }
 
   @Test
@@ -55,13 +61,24 @@ public class InternalDistributedSystemIntegrationTest {
   public void connectWithAllowsMultipleSystems() {
     System.setProperty(ALLOW_MULTIPLE_SYSTEMS_PROPERTY, "true");
 
-    String theName = "theName";
-    Properties configProperties = new Properties();
-    configProperties.setProperty(NAME, theName);
+    String name1 = "name1";
+    Properties configProperties1 = new Properties();
+    configProperties1.setProperty(NAME, name1);
 
-    system = (InternalDistributedSystem) DistributedSystem.connect(configProperties);
+    system = (InternalDistributedSystem) DistributedSystem.connect(configProperties1);
+
+    String name2 = "name2";
+    Properties configProperties2 = new Properties();
+    configProperties2.setProperty(NAME, name2);
+
+    system2 = (InternalDistributedSystem) DistributedSystem.connect(configProperties2);
 
     assertThat(system.isConnected()).isTrue();
-    assertThat(system.getName()).isEqualTo(theName);
+    assertThat(system.getName()).isEqualTo(name1);
+
+    assertThat(system2.isConnected()).isTrue();
+    assertThat(system2.getName()).isEqualTo(name2);
+
+    assertThat(system2).isNotSameAs(system);
   }
 }
