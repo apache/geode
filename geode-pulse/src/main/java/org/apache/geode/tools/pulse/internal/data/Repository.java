@@ -38,7 +38,7 @@ public class Repository {
   private static final Logger logger = LogManager.getLogger();
 
   private static Repository instance = new Repository();
-  private HashMap<String, Cluster> clusterMap = new HashMap<String, Cluster>();
+  private HashMap<String, Cluster> clusterMap = new HashMap<>();
   private Boolean jmxUseLocator;
   private String host;
   private String port;
@@ -149,6 +149,7 @@ public class Repository {
     Cluster data = clusterMap.remove(username);
     if (data != null) {
       try {
+        data.setStopUpdates(true);
         data.getJMXConnector().close();
       } catch (Exception e) {
         // We're logging out so this can be ignored
