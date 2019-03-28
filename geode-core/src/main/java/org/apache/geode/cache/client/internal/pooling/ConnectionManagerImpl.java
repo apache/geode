@@ -333,7 +333,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   @Override
   public Connection exchangeConnection(final Connection oldConnection,
-      final Set/* <ServerLocation> */ excludedServers, final long acquireTimeout)
+      final Set<ServerLocation> excludedServers, final long acquireTimeout)
       throws AllConnectionsInUseException {
 
     try {
@@ -354,7 +354,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
-  protected/* GemStoneAddition */ String getPoolName() {
+  protected String getPoolName() {
     return this.poolName;
   }
 

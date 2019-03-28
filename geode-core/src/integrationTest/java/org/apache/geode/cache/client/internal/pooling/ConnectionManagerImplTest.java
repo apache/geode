@@ -372,7 +372,7 @@ public class ConnectionManagerImplTest {
 
   @Test
   public void exchangeCreatesNewConnectionIfNoneAreAvailable() {
-    Set excluded = Collections.EMPTY_SET;
+    Set<ServerLocation> excluded = Collections.emptySet();
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);
     Connection connection1 = mock(Connection.class);
@@ -404,7 +404,7 @@ public class ConnectionManagerImplTest {
   @Test
   public void exchangeBreaksMaxConnectionContractWhenNoConnectionsAreAvailable() {
     int maxConnections = 2;
-    Set excluded = Collections.EMPTY_SET;
+    Set<ServerLocation> excluded = Collections.emptySet();
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);
     Connection connection1 = mock(Connection.class);
@@ -450,7 +450,7 @@ public class ConnectionManagerImplTest {
 
   @Test
   public void exchangeReturnsExistingConnectionIfOneExists() {
-    Set excluded = Collections.emptySet();
+    Set<ServerLocation> excluded = Collections.emptySet();
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);
     Connection connection1 = mock(Connection.class);

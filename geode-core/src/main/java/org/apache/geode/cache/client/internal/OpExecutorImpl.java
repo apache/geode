@@ -158,7 +158,7 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
     try {
-      Set attemptedServers = null;
+      Set<ServerLocation> attemptedServers = null;
 
       for (int attempt = 0; true; attempt++) {
         // when an op is retried we may need to try to recover the previous
@@ -181,7 +181,7 @@ public class OpExecutorImpl implements ExecutablePool {
           handleException(e, conn, attempt, attempt >= retries && retries != -1);
           if (null == attemptedServers) {
             // don't allocate this until we need it
-            attemptedServers = new HashSet();
+            attemptedServers = new HashSet<>();
           }
           attemptedServers.add(conn.getServer());
           try {

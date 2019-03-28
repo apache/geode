@@ -111,7 +111,7 @@ public interface ConnectionManager {
    * @throws ServerOperationException if creating a connection fails due to authentication issues
    * @return a new connection to the pool to a server that is not in the list of excluded servers
    */
-  Connection exchangeConnection(Connection conn, Set/* <ServerLocation> */ excludedServers,
+  Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers,
       long aquireTimeout) throws AllConnectionsInUseException;
 
   /**
