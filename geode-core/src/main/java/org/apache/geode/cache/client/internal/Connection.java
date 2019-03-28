@@ -82,4 +82,28 @@ public interface Connection {
   void setConnectionID(long id);
 
   long getConnectionID();
+
+  /**
+   * If this connection wraps another connection then
+   * return the wrapped connection.
+   * If this connection does not wrap then return this.
+   *
+   * @return the wrapped connection or this connection
+   * @throws ConnectionDestroyedException if the wrapped connection no longer exists
+   */
+  default Connection getWrappedConnection() {
+    return this;
+  }
+
+  /**
+   * Mark the connection as being actively used.
+   */
+  default void activate() {}
+
+  /**
+   * Mark the connection as one that is not being used.
+   *
+   * @param accessed true if the connection was used while active
+   */
+  default void passivate(boolean accessed) {}
 }

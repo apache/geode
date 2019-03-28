@@ -50,7 +50,6 @@ import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.EndpointManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
-import org.apache.geode.cache.client.internal.QueueConnectionImpl;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.i18n.StringId;
@@ -182,7 +181,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * @see org.apache.geode.cache.client.internal.pooling.ConnectionManager#borrowConnection(long)
    */
   @Override
-  public Connection borrowConnection(long acquireTimeout)
+  public PooledConnection borrowConnection(long acquireTimeout)
       throws AllConnectionsInUseException, NoAvailableServersException {
 
     long startTime = System.currentTimeMillis();
@@ -275,7 +274,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * destroyed when returned to the pool.
    */
   @Override
-  public Connection borrowConnection(ServerLocation server, long acquireTimeout,
+  public PooledConnection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
     lock.lock();
     try {
@@ -344,7 +343,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   }
 
   @Override
-  public Connection exchangeConnection(Connection oldConnection,
+  public PooledConnection exchangeConnection(Connection oldConnection,
       Set/* <ServerLocation> */ excludedServers, long acquireTimeout)
       throws AllConnectionsInUseException {
     assert oldConnection instanceof PooledConnection;
@@ -712,17 +711,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   protected PoolStats getPoolStats() {
     return this.poolStats;
-  }
-
-  @Override
-  public Connection getConnection(Connection conn) {
-    if (conn instanceof PooledConnection) {
-      return ((PooledConnection) conn).getConnection();
-    } else if (conn instanceof QueueConnectionImpl) {
-      return ((QueueConnectionImpl) conn).getConnection();
-    } else {
-      return conn;
-    }
   }
 
   private boolean prefillConnection() {
@@ -1413,18 +1401,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     } else {
       logger.error(message, t);
     }
-  }
-
-  @Override
-  public void activate(Connection conn) {
-    assert conn instanceof PooledConnection;
-    ((PooledConnection) conn).activate();
-  }
-
-  @Override
-  public void passivate(Connection conn, boolean accessed) {
-    assert conn instanceof PooledConnection;
-    ((PooledConnection) conn).passivate(accessed);
   }
 
   private static class ClosedPoolConnectionList extends ArrayList {

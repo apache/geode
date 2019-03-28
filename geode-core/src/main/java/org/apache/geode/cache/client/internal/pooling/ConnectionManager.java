@@ -101,16 +101,4 @@ public interface ConnectionManager {
   int getConnectionCount();
 
   void emergencyClose();
-
-  /**
-   * Used to active a thread local connection
-   */
-  void activate(Connection conn);
-
-  /**
-   * Used to passivate a thread local connection
-   */
-  void passivate(Connection conn, boolean accessed);
-
-  Connection getConnection(Connection conn);
 }

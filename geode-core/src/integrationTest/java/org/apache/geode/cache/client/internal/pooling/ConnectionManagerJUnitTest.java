@@ -297,7 +297,7 @@ public class ConnectionManagerJUnitTest {
     long startInNanos = System.nanoTime();
     {
       // make sure a thread local connection that has been passivated can idle-expire
-      manager.passivate(conn1, true);
+      conn1.passivate(true);
 
       synchronized (factory) {
         long waitTime = TIMEOUT * nanoToMillis + startInNanos;
@@ -824,7 +824,7 @@ public class ConnectionManagerJUnitTest {
             conn = borrow(i);
           } else {
             if (i != 0) {
-              manager.activate(conn);
+              conn.activate();
             }
           }
           try {
@@ -838,7 +838,7 @@ public class ConnectionManagerJUnitTest {
             if (!threadLocal) {
               manager.returnConnection(conn);
             } else {
-              manager.passivate(conn, true);
+              conn.passivate(true);
             }
           }
         }

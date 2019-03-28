@@ -188,6 +188,11 @@ public class QueueConnectionImpl implements Connection {
     return result;
   }
 
+  @Override
+  public Connection getWrappedConnection() {
+    return getConnection();
+  }
+
   public FailureTracker getFailureTracker() {
     return failureTracker;
   }
