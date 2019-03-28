@@ -158,7 +158,7 @@ public class AvailableConnectionManagerConcurrentTest {
   }
 
   @Test
-  public void addLastRemoveDoesNoteRemoveOtherConnections(ParallelExecutor executor)
+  public void addLastRemoveDoesNotRemoveOtherConnections(ParallelExecutor executor)
       throws ExecutionException, InterruptedException {
     int originalCount = 7;
     ArrayList<PooledConnection> originalConnections = new ArrayList<>();

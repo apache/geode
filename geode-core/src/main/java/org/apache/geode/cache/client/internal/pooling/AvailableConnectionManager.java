@@ -35,8 +35,7 @@ public class AvailableConnectionManager {
 
   /**
    * Remove, activate, and return the first connection.
-   * Connections that can not be activated will be removed
-   * from the manager but not returned.
+   * Connections that can not be activated will be removed from the manager but not returned.
    *
    * @return the activated connection or null if none found
    */
@@ -62,8 +61,7 @@ public class AvailableConnectionManager {
 
   /**
    * Remove, activate, and return the first connection that matches the predicate.
-   * Connections that can not be activated will be removed
-   * from the manager but not returned.
+   * Connections that can not be activated will be removed from the manager but not returned.
    *
    * @param predicate that the connections are matched against
    * @return the activated connection or null if none found
@@ -80,8 +78,8 @@ public class AvailableConnectionManager {
   }
 
   /**
-   * Passivate and add the given connection to this manager as its first,
-   * highest priority, connection.
+   * Passivate and add the given connection to this manager as its first, highest priority
+   * connection.
    *
    * @param connection the connection to passivate and add
    * @param accessed true if the connection was used by the caller, false otherwise
@@ -92,8 +90,7 @@ public class AvailableConnectionManager {
   }
 
   /**
-   * Passivate and add the given connection to this manager as its last,
-   * lowest priority, connection.
+   * Passivate and add the given connection to this manager as its last, lowest priority connection.
    *
    * @param connection the connection to passivate and add
    * @param accessed true if the connection was used by the caller, false otherwise
@@ -117,9 +114,9 @@ public class AvailableConnectionManager {
 
   /**
    * This class exists so that we can use ConcurrentLinkedDeque removeFirstOccurrence.
-   * We want to efficiently scan the Deque for an item that matches the predicate
-   * without changing the position of items that do not match. We also need
-   * to know the identity of the first item that did match.
+   * We want to efficiently scan the Deque for an item that matches the predicate without changing
+   * the position of items that do not match. We also need to know the identity of the first item
+   * that did match.
    */
   private static class EqualsWithPredicate {
     private final Predicate<PooledConnection> predicate;

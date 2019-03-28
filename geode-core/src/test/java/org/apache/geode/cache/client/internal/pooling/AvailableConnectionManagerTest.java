@@ -46,7 +46,7 @@ public class AvailableConnectionManagerTest {
   }
 
   @Test
-  public void useFirstReturnsExpectedGivenManagerWithOneItem() {
+  public void useFirstReturnsExpectedConnectionGivenManagerWithOneItem() {
     PooledConnection expected = createConnection();
     instance.getDeque().addFirst(expected);
 

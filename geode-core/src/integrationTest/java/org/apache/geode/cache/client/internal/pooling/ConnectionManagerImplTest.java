@@ -232,7 +232,7 @@ public class ConnectionManagerImplTest {
         cancelCriterion, poolStats);
     connectionManager.start(backgroundProcessor);
 
-    // reach max connection count so we can't create anew connection and end up in the wait loop
+    // reach max connection count so we can't create a new connection and end up in the wait loop
     connectionManager.borrowConnection(timeout);
     assertThat(connectionManager.getConnectionCount()).isEqualTo(maxConnections);
 
@@ -243,7 +243,7 @@ public class ConnectionManagerImplTest {
   }
 
   @Test
-  public void borrowWithServerLocationCanBreakMaxConnectionContract() {
+  public void borrowWithServerLocationBreaksMaxConnectionContract() {
     int maxConnections = 2;
 
     ServerLocation serverLocation1 = mock(ServerLocation.class);

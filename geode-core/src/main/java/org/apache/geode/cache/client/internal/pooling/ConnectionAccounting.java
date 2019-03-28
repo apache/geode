@@ -19,11 +19,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Responsible for counting connections.
- * The count maintained by this class will eventually be
- * consistent with the actual number of connections.
- * Since the count is changed before and after the actual
- * connections are created and destroyed, and not changed while
- * holding a lock, the count should be treated as an estimate of
+ * The count maintained by this class will eventually be consistent with the actual number of
+ * connections. Since the count is changed before and after the actual connections are created and
+ * destroyed, and not changed while holding a lock, the count should be treated as an estimate of
  * the current number of connections.
  */
 public class ConnectionAccounting {
@@ -68,9 +66,8 @@ public class ConnectionAccounting {
 
   /**
    * Should be called when a new connection would be nice to have when count is under maximum.
-   * Caller
-   * should only create a connection if this method returns {@code true}. If connection creation
-   * fails then {@link #cancelTryCreate} must be called to revert the count increase.
+   * Caller should only create a connection if this method returns {@code true}. If connection
+   * creation fails then {@link #cancelTryCreate} must be called to revert the count increase.
    *
    * @return {@code true} if count was under maximum and we increased it, otherwise {@code false}.
    */
