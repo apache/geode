@@ -17,6 +17,7 @@ package org.apache.geode.pdx.internal;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -32,6 +33,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
@@ -51,6 +53,9 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class MultipleCacheJUnitTest {
 
   @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
   public TemporaryFolder locatorFolder = new TemporaryFolder();
 
   private List<Cache> caches = new ArrayList<>();
@@ -60,7 +65,7 @@ public class MultipleCacheJUnitTest {
 
   @Before
   public void startLocator() throws IOException {
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = true;
+    System.setProperty(ALLOW_MULTIPLE_SYSTEMS_PROPERTY, "true");
 
     connectListener = mock(ConnectListener.class);
     InternalDistributedSystem.addConnectListener(connectListener);
@@ -72,13 +77,9 @@ public class MultipleCacheJUnitTest {
 
   @After
   public void closeSystemsAndLocator() {
-    try {
-      InternalDistributedSystem.removeConnectListener(connectListener);
-      caches.forEach(Cache::close);
-      locator.stop();
-    } finally {
-      InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = false;
-    }
+    InternalDistributedSystem.removeConnectListener(connectListener);
+    caches.forEach(Cache::close);
+    locator.stop();
   }
 
   @Test
@@ -94,7 +95,6 @@ public class MultipleCacheJUnitTest {
     assertThat(cache2).isNotSameAs(cache1);
 
     DistributedMember member1 = cache1.getDistributedSystem().getDistributedMember();
-
     DistributedMember member2 = cache2.getDistributedSystem().getDistributedMember();
 
     assertThat(member2).isNotEqualTo(member1);

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 import static org.apache.geode.internal.cache.InternalCacheBuilderAllowsMultipleSystemsTest.CacheState.CLOSED;
 import static org.apache.geode.internal.cache.InternalCacheBuilderAllowsMultipleSystemsTest.CacheState.OPEN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,9 +35,10 @@ import java.util.function.Supplier;
 
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.assertj.core.api.ThrowableAssert;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.mockito.Mock;
 
 import org.apache.geode.cache.CacheExistsException;
@@ -52,6 +54,9 @@ import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
  * {@code InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS} is set to true.
  */
 public class InternalCacheBuilderAllowsMultipleSystemsTest {
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private static final int ANY_SYSTEM_ID = 12;
   private static final String ANY_MEMBER_NAME = "a-member-name";
@@ -85,12 +90,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
   public void setUp() {
     initMocks(this);
 
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = true;
-  }
-
-  @After
-  public void tearDown() {
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = false;
+    System.setProperty(ALLOW_MULTIPLE_SYSTEMS_PROPERTY, "true");
   }
 
   @Test
