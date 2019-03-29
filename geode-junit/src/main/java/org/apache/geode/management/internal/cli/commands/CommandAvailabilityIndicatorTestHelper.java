@@ -23,7 +23,6 @@ import java.util.List;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.internal.cache.extension.mock.MockExtensionCommands;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
@@ -36,10 +35,6 @@ public class CommandAvailabilityIndicatorTestHelper {
     for (CommandMarker commandMarker : commandMarkers) {
       // ignore all the other commands beside GfshCommand
       if (!GfshCommand.class.isAssignableFrom(commandMarker.getClass())) {
-        continue;
-      }
-
-      if (commandMarker instanceof MockExtensionCommands) {
         continue;
       }
 
