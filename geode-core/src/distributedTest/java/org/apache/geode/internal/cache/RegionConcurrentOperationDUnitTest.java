@@ -21,19 +21,36 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RegionConcurrentOperationDUnitTest implements Serializable {
+
+  private static DUnitBlackboard blackboard;
+
+  Object key = "KEY";
+  String value = "VALUE";
+
+  private static DUnitBlackboard getBlackboard() {
+    if (blackboard == null) {
+      blackboard = new DUnitBlackboard();
+    }
+    return blackboard;
+  }
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -44,21 +61,23 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
+  @After
+  public void tearDown() {
+    blackboard.initBlackboard();
+  }
+
   @Test
   public void getOnProxyRegionFromMultipleThreadsReturnsDifferentObjects() throws Exception {
     VM member1 = getVM(0);
     String regionName = getClass().getSimpleName();
-
-    Object key = "KEY";
-    String value = "VALUE";
 
     cacheRule.createCache();
     cacheRule.getCache().createRegionFactory(REPLICATE_PROXY).create(regionName);
 
     member1.invoke(() -> {
       cacheRule.createCache();
-      Region region = cacheRule.getCache().createRegionFactory(REPLICATE).create(regionName);
-      region.put(key, value);
+      cacheRule.getCache().createRegionFactory(REPLICATE)
+          .setCacheLoader(new TestCacheLoader()).create(regionName);
     });
 
     Future get1 = executorServiceRule.submit(() -> {
@@ -68,6 +87,7 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
     Future get2 = executorServiceRule.submit(() -> {
       Region region = cacheRule.getCache().getRegion(regionName);
+      getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
 
@@ -82,17 +102,14 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     VM member1 = getVM(0);
     String regionName = getClass().getSimpleName();
 
-    Object key = "KEY";
-    String value = "VALUE";
-
     cacheRule.createCache();
     cacheRule.getCache().createRegionFactory().setDataPolicy(DataPolicy.PRELOADED)
         .setScope(Scope.DISTRIBUTED_ACK).create(regionName);
 
     member1.invoke(() -> {
       cacheRule.createCache();
-      Region region = cacheRule.getCache().createRegionFactory(REPLICATE).create(regionName);
-      region.put(key, value);
+      cacheRule.getCache().createRegionFactory(REPLICATE)
+          .setCacheLoader(new TestCacheLoader()).create(regionName);
     });
     assertThat(cacheRule.getCache().getRegion(regionName).size()).isEqualTo(0);
 
@@ -103,6 +120,7 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
 
     Future get2 = executorServiceRule.submit(() -> {
       Region region = cacheRule.getCache().getRegion(regionName);
+      getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
 
@@ -113,4 +131,15 @@ public class RegionConcurrentOperationDUnitTest implements Serializable {
     assertThat(cacheRule.getCache().getRegion(regionName).size()).isEqualTo(1);
   }
 
+  private class TestCacheLoader implements CacheLoader, Serializable {
+
+    @Override
+    public synchronized Object load(LoaderHelper helper) {
+      getBlackboard().signalGate("Loader");
+      return value;
+    }
+
+    @Override
+    public void close() {}
+  }
 }

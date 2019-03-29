@@ -22,12 +22,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.client.ClientCache;
@@ -35,6 +39,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
@@ -52,7 +57,15 @@ public class ClientRegionGetRegressionTest implements Serializable {
 
   private int port;
   private VM server;
+  private static DUnitBlackboard blackboard;
+  private String key = "KEY-1";
 
+  private static DUnitBlackboard getBlackboard() {
+    if (blackboard == null) {
+      blackboard = new DUnitBlackboard();
+    }
+    return blackboard;
+  }
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -80,15 +93,13 @@ public class ClientRegionGetRegressionTest implements Serializable {
     createClientCache();
   }
 
+  @After
+  public void tearDown() {
+    blackboard.initBlackboard();
+  }
+
   @Test
   public void getOnProxyRegionFromMultipleThreadsReturnsDifferentObjects() throws Exception {
-    String key = "KEY-1";
-    TestObject value = new TestObject(1);
-
-    server.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
-      region.put(key, value);
-    });
 
     ClientRegionFactory<String, String> crf = clientCacheRule.getClientCache()
         .createClientRegionFactory(ClientRegionShortcut.PROXY);
@@ -101,6 +112,7 @@ public class ClientRegionGetRegressionTest implements Serializable {
 
     Future get2 = executorServiceRule.submit(() -> {
       Region region = clientCacheRule.getClientCache().getRegion(regionName);
+      getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
 
@@ -112,13 +124,6 @@ public class ClientRegionGetRegressionTest implements Serializable {
 
   @Test
   public void getOnCachingProxyRegionFromMultipleThreadsReturnSameObject() throws Exception {
-    String key = "KEY-1";
-    TestObject value = new TestObject(1);
-
-    server.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
-      region.put(key, value);
-    });
 
     ClientRegionFactory<String, String> crf = clientCacheRule.getClientCache()
         .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
@@ -131,6 +136,7 @@ public class ClientRegionGetRegressionTest implements Serializable {
 
     Future get2 = executorServiceRule.submit(() -> {
       Region region = clientCacheRule.getClientCache().getRegion(regionName);
+      getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
 
@@ -143,13 +149,6 @@ public class ClientRegionGetRegressionTest implements Serializable {
   @Test
   public void getOnCachingProxyRegionWithCopyOnReadFromMultipleThreadsReturnsDifferentObject()
       throws Exception {
-    String key = "KEY-1";
-    TestObject value = new TestObject(1);
-
-    server.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
-      region.put(key, value);
-    });
 
     ClientCache cache = clientCacheRule.getClientCache();
     cache.setCopyOnRead(true);
@@ -165,6 +164,7 @@ public class ClientRegionGetRegressionTest implements Serializable {
 
     Future get2 = executorServiceRule.submit(() -> {
       Region region = clientCacheRule.getClientCache().getRegion(regionName);
+      getBlackboard().waitForGate("Loader", 60, TimeUnit.SECONDS);
       return region.get(key);
     });
 
@@ -183,7 +183,7 @@ public class ClientRegionGetRegressionTest implements Serializable {
     cacheRule.createCache();
 
     RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
-    regionFactory.create(regionName);
+    regionFactory.setCacheLoader(new TestCacheLoader()).create(regionName);
 
     CacheServer cacheServer = cacheRule.getCache().addCacheServer();
     cacheServer.setPort(0);
@@ -197,5 +197,16 @@ public class ClientRegionGetRegressionTest implements Serializable {
     TestObject(int id) {
       this.id = id;
     }
+  }
+
+  private class TestCacheLoader implements CacheLoader, Serializable {
+    @Override
+    public synchronized Object load(LoaderHelper helper) {
+      getBlackboard().signalGate("Loader");
+      return new TestObject(1);
+    }
+
+    @Override
+    public void close() {}
   }
 }
