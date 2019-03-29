@@ -380,7 +380,10 @@ public interface Cache extends GemFireCache {
    * Returns a set of the administrative members in the distributed system.
    *
    * @since GemFire 6.6
+   * @deprecated "As of Geode 1.10.0 this method is deprecated. This only returns members
+   *             that are using the deprecated {@link org.apache.geode.admin} package.
    */
+  @Deprecated
   Set<DistributedMember> getAdminMembers();
 
   /**
