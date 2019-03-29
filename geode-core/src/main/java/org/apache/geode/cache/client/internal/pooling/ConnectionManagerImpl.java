@@ -390,7 +390,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
 
   protected void invalidateServer(Endpoint endpoint) {
-    Set badConnections = allConnectionsMap.removeEndpoint(endpoint);
+    Set<PooledConnection> badConnections = allConnectionsMap.removeEndpoint(endpoint);
     if (badConnections == null) {
       return;
     }
@@ -403,13 +403,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
       logger.debug("Invalidating {} connections to server {}", badConnections.size(), endpoint);
     }
 
-    for (Iterator itr = badConnections.iterator(); itr.hasNext();) {
-      PooledConnection conn = (PooledConnection) itr.next();
-      if (!conn.isDestroyed()) {
-        conn.setShouldDestroy();
-        availableConnectionManager.remove(conn);
+    for (PooledConnection conn : badConnections) {
+      if (conn.internalDestroy()) {
         destroyAndMaybePrefill();
-        conn.internalDestroy();
+        availableConnectionManager.remove(conn);
       }
     }
   }
@@ -859,11 +856,11 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
 
-    public synchronized Set removeEndpoint(Endpoint endpoint) {
-      final Set endpointConnections = (Set) this.map.remove(endpoint);
+    public synchronized Set<PooledConnection> removeEndpoint(Endpoint endpoint) {
+      final Set<PooledConnection> endpointConnections = this.map.remove(endpoint);
       if (endpointConnections != null) {
         int count = 0;
-        for (Iterator it = this.allConnections.iterator(); it.hasNext();) {
+        for (Iterator<PooledConnection> it = this.allConnections.iterator(); it.hasNext();) {
           if (endpointConnections.contains(it.next())) {
             count++;
             it.remove();
