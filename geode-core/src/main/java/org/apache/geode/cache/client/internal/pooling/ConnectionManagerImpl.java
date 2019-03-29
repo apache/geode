@@ -743,7 +743,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * @return true if caller should recheck for expired lifetimes; false if a background check was
    *         scheduled or no expirations are possible.
    */
-  public boolean createLifetimeReplacementConnection(ServerLocation currentServer,
+  private boolean createLifetimeReplacementConnection(ServerLocation currentServer,
       boolean idlePossible) {
     HashSet<ServerLocation> excludedServers = new HashSet<>();
     while (true) {
