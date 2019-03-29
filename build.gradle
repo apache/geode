@@ -82,6 +82,8 @@ subprojects {
   apply plugin: 'com.github.ben-manes.versions'
 }
 
+check.dependsOn rat
+
 task devBuild(dependsOn: [":assemble"]) {
   description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
   // spotless targets are not available until after evaluation.
