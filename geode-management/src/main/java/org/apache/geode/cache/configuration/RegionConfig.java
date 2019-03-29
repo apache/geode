@@ -152,6 +152,9 @@ import org.apache.geode.management.api.RestfulEndpoint;
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
 public class RegionConfig implements CacheElement, RestfulEndpoint {
+
+  public static final String REGION_CONFIG_ENDPOINT = "/regions";
+
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
@@ -176,7 +179,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
 
   @Override
   public String getEndpoint() {
-    return "/regions";
+    return REGION_CONFIG_ENDPOINT;
   }
 
   public RegionAttributesType getRegionAttributes() {

@@ -15,31 +15,21 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.cache.configuration.RegionConfig.REGION_CONFIG_ENDPOINT;
+
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.api.ClusterManagementResult;
-
-@Controller("regionManagement")
+@Controller("ping")
 @RequestMapping(MANAGEMENT_API_VERSION)
-public class RegionManagementController extends AbstractManagementController {
+public class PingManagementController extends AbstractManagementController {
 
-  @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
-  @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult> createRegion(
-      @RequestBody RegionConfig regionConfig) {
-    ClusterManagementResult result =
-        clusterManagementService.create(regionConfig, "cluster");
-    return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+  @RequestMapping(method = RequestMethod.GET, value = "/ping")
+  public ResponseEntity<String> ping() {
+    return new ResponseEntity<>("pong", HttpStatus.OK);
   }
 }

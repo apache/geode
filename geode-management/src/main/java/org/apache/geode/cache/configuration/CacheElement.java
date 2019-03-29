@@ -20,10 +20,21 @@ package org.apache.geode.cache.configuration;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
+import org.apache.geode.management.configuration.MemberConfig;
 
 @Experimental
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "configClass")
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = RegionConfig.class),
+    @JsonSubTypes.Type(value = MemberConfig.class),
+})
 public interface CacheElement extends Identifiable<String>, Serializable {
 
   static <T extends CacheElement> boolean exists(List<T> list, String id) {

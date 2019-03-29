@@ -15,31 +15,42 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.cache.configuration.RegionConfig.REGION_CONFIG_ENDPOINT;
+import static org.apache.geode.management.configuration.MemberConfig.MEMBER_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.MemberConfig;
 
-@Controller("regionManagement")
+@Controller("members")
 @RequestMapping(MANAGEMENT_API_VERSION)
-public class RegionManagementController extends AbstractManagementController {
+public class MemberManagementController extends AbstractManagementController {
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
+  @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
+  public ResponseEntity<ClusterManagementResult> getMember(
+      @PathVariable(name = "id", required = false) String id) {
+    MemberConfig config = new MemberConfig();
+    config.setId(id);
+    ClusterManagementResult result = clusterManagementService.list(config);
 
-  @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
-  @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult> createRegion(
-      @RequestBody RegionConfig regionConfig) {
-    ClusterManagementResult result =
-        clusterManagementService.create(regionConfig, "cluster");
     return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+        result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
   }
+
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
+  @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
+  public ResponseEntity<ClusterManagementResult> listMembers() {
+    ClusterManagementResult result = clusterManagementService.list(new MemberConfig());
+
+    return new ResponseEntity<>(result,
+        result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
 }

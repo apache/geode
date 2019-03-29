@@ -32,10 +32,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.rest.BaseLocatorContextLoader;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -45,7 +44,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
-public class ClientClusterManagementServiceDUnitTest {
+public class MemberManagementServiceDUnitTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -70,21 +69,36 @@ public class ClientClusterManagementServiceDUnitTest {
 
   @Test
   @WithMockUser
-  public void createRegion() {
-    RegionConfig region = new RegionConfig();
-    region.setName("customer");
-    region.setType(RegionShortcut.REPLICATE);
+  public void listMember() {
+    MemberConfig memberConfig = new MemberConfig();
+    ClusterManagementResult result = client.list(memberConfig);
 
-    ClusterManagementResult result = client.create(region, "");
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getResult().size()).isEqualTo(2);
+  }
 
-    assertThat(client.isConnected()).isTrue();
+  @Test
+  @WithMockUser
+  public void getOneMember() throws Exception {
+    MemberConfig config = new MemberConfig();
+    config.setId("server-0");
+    ClusterManagementResult result = client.list(config);
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getResult().size()).isEqualTo(1);
+  }
 
-    // This all fails in light of running this test repeatedly as a stress test. Until we introduce
-    // idempotency and/or the ability to call client.delete we can't do this. But it will get fixed
-    // assertThat(result.isSuccessful()).isTrue();
-
-    // Not implemented yet
-    // result = client.delete(region, "");
-    // assertThat(result.isSuccessful()).isTrue();
+  @Test
+  @WithMockUser
+  public void noMatch() throws Exception {
+    MemberConfig config = new MemberConfig();
+    // look for a member with a non-existent id
+    config.setId("server");
+    ClusterManagementResult result = client.list(config);
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusCode())
+        .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
+    assertThat(result.getResult().size()).isEqualTo(0);
   }
 }
