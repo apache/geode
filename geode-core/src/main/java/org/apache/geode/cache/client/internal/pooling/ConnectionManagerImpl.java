@@ -70,7 +70,7 @@ import org.apache.geode.security.GemFireSecurityException;
  */
 public class ConnectionManagerImpl implements ConnectionManager {
   private static final Logger logger = LogService.getLogger();
-  public static final int NOT_WAITING = -1;
+  private static final int NOT_WAITING = -1;
 
   private final String poolName;
   private final PoolStats poolStats;
