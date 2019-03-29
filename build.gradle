@@ -183,3 +183,10 @@ if (project.hasProperty('askpass')) {
     }
   }
 }
+
+// Explicitly chain generic tasks -- composite builds do not cascade these tasks by default.
+['clean', 'check', 'test'].each { chainedTask ->
+  rootProject.tasks.named(chainedTask).configure {
+    dependsOn(subprojects*.tasks*.named(chainedTask))
+  }
+}

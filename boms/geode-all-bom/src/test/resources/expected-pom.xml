@@ -118,11 +118,6 @@
         <version>2.2</version>
       </dependency>
       <dependency>
-        <groupId>com.vaadin.external.google</groupId>
-        <artifactId>android-json</artifactId>
-        <version>0.0.20131108.vaadin1</version>
-      </dependency>
-      <dependency>
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
         <version>3.2.0</version>

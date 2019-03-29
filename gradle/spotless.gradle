@@ -147,7 +147,8 @@ subprojects {
 
   // If we add more languages to Spotless, add them to 'compileXYZ' trigger below
   afterEvaluate {
-    project.tasks['compileJava'].mustRunAfter(spotlessCheck)
-    project.tasks['compileJava'].mustRunAfter(spotlessApply)
+    // Not all projects are java projects.  findByName could return null, so use the null-safe ?. operator
+    project.tasks.findByName('compileJava')?.mustRunAfter(spotlessCheck)
+    project.tasks.findByName('compileJava')?.mustRunAfter(spotlessApply)
   }
 }
