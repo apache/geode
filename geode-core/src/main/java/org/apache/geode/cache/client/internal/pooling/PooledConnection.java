@@ -69,11 +69,7 @@ public class PooledConnection implements Connection {
     }
   }
 
-  /**
-   * @return true if internal connection was destroyed by this call; false if already destroyed
-   */
-  public boolean internalDestroy() {
-    boolean result = false;
+  public void internalDestroy() {
     this.shouldDestroy.set(true); // probably already set but make sure
     synchronized (this) {
       this.active = false;
@@ -82,10 +78,8 @@ public class PooledConnection implements Connection {
       if (myCon != null) {
         myCon.destroy();
         connection = null;
-        result = true;
       }
     }
-    return result;
   }
 
   /**
