@@ -76,9 +76,10 @@ public class ManagementRequestLoggingDUnitTest {
       assertThat(logEvents.size()).as("Expected LogEvents").isEqualTo(2);
       String beforeMessage = logEvents.get(0).getMessage().getFormattedMessage();
       assertThat(beforeMessage).startsWith("Management Request: POST");
-      assertThat(beforeMessage).contains("user=");
+      assertThat(beforeMessage).contains("user=").contains("payload={")
+          .contains("regionAttributes");
       assertThat(logEvents.get(1).getMessage().getFormattedMessage())
-          .startsWith("Management Response: ");
+          .startsWith("Management Response: ").contains("response={").contains("Status=");
 
       logger.removeAppender(listAppender);
     });

@@ -38,7 +38,9 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
+
     if (!ENABLE_REQUEST_LOGGING) {
+      filterChain.doFilter(request, response);
       return;
     }
 
@@ -46,11 +48,12 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     // would be consumed and cannot be read again by the actual processing/server.
     ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
     ContentCachingResponseWrapper wrappedResponse = new ContentCachingResponseWrapper(response);
+
     // performs the actual request before logging
     filterChain.doFilter(wrappedRequest, wrappedResponse);
 
     // log after the request has been made and ContentCachingRequestWrapper has cached the request
-    // payload
+    // payload.
     String requestPattern = "Management Request: %s[url=%s]; user=%s; payload=%s";
     String requestUrl = request.getRequestURI();
     if (request.getQueryString() != null) {
@@ -60,7 +63,6 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
         wrappedRequest.getCharacterEncoding());
     logger.info(String.format(requestPattern, request.getMethod(), requestUrl,
         request.getRemoteUser(), payload));
-
 
     // construct the response message
     String responsePattern = "Management Response: Status=%s; response=%s";
