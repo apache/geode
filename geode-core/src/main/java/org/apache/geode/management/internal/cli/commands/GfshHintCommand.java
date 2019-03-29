@@ -20,13 +20,12 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.CommandManagerAware;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
-public class GfshHintCommand extends InternalGfshCommand implements CommandManagerAware {
+public class GfshHintCommand extends OfflineGfshCommand implements CommandManagerAware {
   private CommandManager commandManager = null;
 
   @Override
@@ -36,8 +35,8 @@ public class GfshHintCommand extends InternalGfshCommand implements CommandManag
 
   @CliCommand(value = CliStrings.HINT, help = CliStrings.HINT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP})
-  public Result hint(@CliOption(key = {"", CliStrings.HINT__TOPICNAME},
+  public ResultModel hint(@CliOption(key = {"", CliStrings.HINT__TOPICNAME},
       optionContext = ConverterHint.HINT, help = CliStrings.HINT__TOPICNAME) String topicName) {
-    return ResultBuilder.createInfoResult(commandManager.obtainHint(topicName));
+    return ResultModel.createInfo(commandManager.obtainHint(topicName));
   }
 }

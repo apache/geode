@@ -37,16 +37,16 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
 import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ExportStackTraceCommand extends InternalGfshCommand {
+public class ExportStackTraceCommand extends GfshCommand {
   public static final String STACK_TRACE_FOR_MEMBER = "*** Stack-trace for member ";
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 
@@ -58,7 +58,7 @@ public class ExportStackTraceCommand extends InternalGfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result exportStackTrace(@CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+  public ResultModel exportStackTrace(@CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
       optionContext = ConverterHint.ALL_MEMBER_IDNAME,
       help = CliStrings.EXPORT_STACKTRACE__HELP) String[] memberNameOrId,
 
@@ -80,14 +80,15 @@ public class ExportStackTraceCommand extends InternalGfshCommand {
     final File outFile = new File(fileName);
 
     if (outFile.exists() && failIfFilePresent) {
-      return ResultBuilder.createUserErrorResult(CliStrings
+      return ResultModel.createError(CliStrings
           .format(CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
     }
 
     Map<String, byte[]> dumps = new HashMap<>();
     Set<DistributedMember> targetMembers = getMembers(group, memberNameOrId);
 
-    InfoResultData resultData = ResultBuilder.createInfoResultData();
+    ResultModel result = new ResultModel();
+    InfoResultModel resultData = result.addInfo();
 
     ResultCollector<?, ?> rc = executeFunction(getStackTracesFunction, null, targetMembers);
     ArrayList<Object> resultList = (ArrayList<Object>) rc.getResult();
@@ -104,7 +105,7 @@ public class ExportStackTraceCommand extends InternalGfshCommand {
     resultData.addLine(CliStrings.format(CliStrings.EXPORT_STACKTRACE__SUCCESS, filePath));
     resultData.addLine(CliStrings.EXPORT_STACKTRACE__HOST + ads.getDistributedMember().getHost());
 
-    return ResultBuilder.buildResult(resultData);
+    return result;
 
   }
 

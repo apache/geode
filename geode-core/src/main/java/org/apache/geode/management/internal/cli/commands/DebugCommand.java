@@ -19,17 +19,15 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class DebugCommand extends InternalGfshCommand {
+public class DebugCommand extends OfflineGfshCommand {
   @CliCommand(value = {CliStrings.DEBUG}, help = CliStrings.DEBUG__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_DEBUG_UTIL})
-  public Result debug(
+  public ResultModel debug(
       @CliOption(key = CliStrings.DEBUG__STATE, unspecifiedDefaultValue = "OFF", mandatory = true,
           optionContext = "debug", help = CliStrings.DEBUG__STATE__HELP) String state) {
     Gfsh gfshInstance = Gfsh.getCurrentInstance();
@@ -40,15 +38,12 @@ public class DebugCommand extends InternalGfshCommand {
       } else if (state.equalsIgnoreCase("OFF")) {
         gfshInstance.setDebug(false);
       } else {
-        return ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             CliStrings.format(CliStrings.DEBUG__MSG_0_INVALID_STATE_VALUE, state));
       }
     } else {
-      ErrorResultData errorResultData =
-          ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-              .addLine(CliStrings.ECHO__MSG__NO_GFSH_INSTANCE);
-      return ResultBuilder.buildResult(errorResultData);
+      return ResultModel.createError(CliStrings.ECHO__MSG__NO_GFSH_INSTANCE);
     }
-    return ResultBuilder.createInfoResult(CliStrings.DEBUG__MSG_DEBUG_STATE_IS + state);
+    return ResultModel.createInfo(CliStrings.DEBUG__MSG_DEBUG_STATE_IS + state);
   }
 }
