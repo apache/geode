@@ -14,10 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.shell.jline;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import jline.console.history.MemoryHistory;
+
+import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
  * Overrides jline.History to add History without newline characters.
@@ -26,23 +25,12 @@ import jline.console.history.MemoryHistory;
  */
 public class GfshHistory extends MemoryHistory {
 
-  // Pattern which is intended to pick up any params containing the word 'password'.
-  private static final Pattern passwordRe =
-      Pattern.compile("(--[^=\\s]*password[^=\\s]*\\s*=\\s*)([^\\s]*)");
-
   // let the history from history file get added initially
   private boolean autoFlush = true;
 
-  public static String redact(String buffer) {
-    String trimmed = buffer.trim();
-    Matcher matcher = passwordRe.matcher(trimmed);
-    String sanitized = matcher.replaceAll("$1*****");
-    return sanitized;
-  }
-
   public void addToHistory(String buffer) {
     if (isAutoFlush()) {
-      super.add(redact(buffer));
+      super.add(ArgumentRedactor.redact(buffer.trim()));
     }
   }
 

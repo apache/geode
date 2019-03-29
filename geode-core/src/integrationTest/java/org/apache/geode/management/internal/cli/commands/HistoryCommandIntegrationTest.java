@@ -19,9 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -33,8 +36,8 @@ public class HistoryCommandIntegrationTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  @ClassRule
-  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @After
   public void tearDown() throws Exception {
@@ -82,5 +85,37 @@ public class HistoryCommandIntegrationTest {
 
     // only the history --clear is in the history now.
     assertThat(gfsh.getGfsh().getGfshHistory().size()).isEqualTo(1);
+  }
+
+  @Test
+  public void testHistoryContainsRedactedPasswordWithEquals() throws IOException {
+    gfsh.executeCommand("connect --password=redacted");
+    File historyFile = temporaryFolder.newFile("history.txt");
+    historyFile.delete();
+    assertThat(historyFile).doesNotExist();
+
+    String command = "history --file=" + historyFile.getAbsolutePath();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    assertThat(historyFile).exists();
+
+    List<String> historyLines = Files.readAllLines(historyFile.toPath());
+    assertThat(historyLines.get(0)).isEqualTo("0: connect --password=********");
+  }
+
+  @Test
+  public void testHistoryContainsRedactedPasswordWithoutEquals() throws IOException {
+    gfsh.executeCommand("connect --password redacted");
+    File historyFile = temporaryFolder.newFile("history.txt");
+    historyFile.delete();
+    assertThat(historyFile).doesNotExist();
+
+    String command = "history --file=" + historyFile.getAbsolutePath();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    assertThat(historyFile).exists();
+
+    List<String> historyLines = Files.readAllLines(historyFile.toPath());
+    assertThat(historyLines.get(0)).isEqualTo("0: connect --password ********");
   }
 }
