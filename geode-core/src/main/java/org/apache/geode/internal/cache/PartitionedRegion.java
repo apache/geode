@@ -7373,7 +7373,7 @@ public class PartitionedRegion extends LocalRegion
     }
     PartitionRegionConfig prConfig;
     try {
-      prConfig = prRoot.get(this.getRegionIdentifier());
+      prConfig = getPRRoot().get(this.getRegionIdentifier());
     } catch (CancelException ignore) {
       // global data not accessible, don't try to finish global destroy.
       return false;
@@ -7701,7 +7701,7 @@ public class PartitionedRegion extends LocalRegion
   private boolean checkIfAlreadyDestroyedOrOldReference() {
     PartitionRegionConfig prConfig = null;
     try {
-      prConfig = prRoot.get(this.getRegionIdentifier());
+      prConfig = getPRRoot().get(this.getRegionIdentifier());
     } catch (CancelException ignore) {
       // ignore, metadata not accessible
     }
