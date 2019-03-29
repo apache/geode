@@ -33,7 +33,7 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
   private static final Boolean ENABLE_REQUEST_LOGGING =
       Boolean.parseBoolean(System.getProperty("geode.management.request.logging", "true"));
 
-  private static int MAX_PAYLOAD_LENGTH = 1000;
+  private static int MAX_PAYLOAD_LENGTH = 10000;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
