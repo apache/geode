@@ -1222,24 +1222,16 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public void updatePRConfigWithNewSetOfGatewaySenders(Set<String> gatewaySendersToAdd) {
-    final RegionLock rl = getRegionLock();
-    rl.lock();
-    try {
-      PartitionRegionHelper.assignBucketsToPartitions(this);
-      PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
+    PartitionRegionHelper.assignBucketsToPartitions(this);
+    updatePartitionRegionConfig(prConfig -> {
       prConfig.setGatewaySenderIds(gatewaySendersToAdd);
-      updatePRConfig(prConfig, false);
-    } finally {
-      rl.unlock();
-    }
+      return prConfig;
+    });
   }
 
   public void updatePRConfigWithNewGatewaySender(String aeqId) {
-    final RegionLock rl = getRegionLock();
-    rl.lock();
-    try {
-      PartitionRegionHelper.assignBucketsToPartitions(this);
-      PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
+    PartitionRegionHelper.assignBucketsToPartitions(this);
+    updatePartitionRegionConfig(prConfig -> {
       Set<String> newGateWayIds;
       if (prConfig.getGatewaySenderIds() != null) {
         newGateWayIds = new HashSet<>(prConfig.getGatewaySenderIds());
@@ -1248,10 +1240,8 @@ public class PartitionedRegion extends LocalRegion
       }
       newGateWayIds.add(aeqId);
       prConfig.setGatewaySenderIds(newGateWayIds);
-      updatePRConfig(prConfig, false);
-    } finally {
-      rl.unlock();
-    }
+      return prConfig;
+    });
   }
 
   @Override
@@ -10011,40 +10001,54 @@ public class PartitionedRegion extends LocalRegion
   }
 
   PartitionRegionConfig updatePRNodeInformation() {
-    PartitionRegionConfig newConfig = null;
-    Region<String, PartitionRegionConfig> partitionedRegionRoot = getPRRoot();
-    if (partitionedRegionRoot != null) {
-      RegionLock rl = getRegionLock();
-      rl.lock();
-      try {
-        CacheLoader cacheLoader = basicGetLoader();
-        CacheWriter cacheWriter = basicGetWriter();
-        PartitionRegionConfig prConfig = partitionedRegionRoot.get(getRegionIdentifier());
-        if (prConfig != null) {
-          newConfig =
-              new PartitionRegionConfig(prConfig.getPRId(), prConfig.getFullPath(),
-                  prConfig.getPartitionAttrs(), prConfig.getScope(),
-                  prConfig.getEvictionAttributes(),
-                  this.getRegionIdleTimeout(), this.getRegionTimeToLive(),
-                  this.getEntryIdleTimeout(),
-                  this.getEntryTimeToLive(), prConfig.getGatewaySenderIds());
+    return updatePartitionRegionConfig(prConfig -> {
+      CacheLoader cacheLoader = basicGetLoader();
+      CacheWriter cacheWriter = basicGetWriter();
+      PartitionRegionConfig newConfig = null;
+      if (prConfig != null) {
+        newConfig =
+            new PartitionRegionConfig(prConfig.getPRId(), prConfig.getFullPath(),
+                prConfig.getPartitionAttrs(), prConfig.getScope(),
+                prConfig.getEvictionAttributes(),
+                this.getRegionIdleTimeout(), this.getRegionTimeToLive(),
+                this.getEntryIdleTimeout(),
+                this.getEntryTimeToLive(), prConfig.getGatewaySenderIds());
 
-          for (Node node : prConfig.getNodes()) {
-            if (node.getMemberId().equals(getMyId())) {
-              node.setLoaderAndWriter(cacheLoader, cacheWriter);
-            }
-            newConfig.addNode(node);
+        for (Node node : prConfig.getNodes()) {
+          if (node.getMemberId().equals(getMyId())) {
+            node.setLoaderAndWriter(cacheLoader, cacheWriter);
           }
-          updatePRConfig(newConfig, false);
+          newConfig.addNode(node);
         }
-      } finally {
-        rl.unlock();
       }
-    }
-    return newConfig;
+      return newConfig;
+    });
   }
 
   public Logger getLogger() {
     return logger;
+  }
+
+  interface PartitionRegionConfigModifier {
+    PartitionRegionConfig modify(PartitionRegionConfig prConfig);
+  }
+
+  PartitionRegionConfig updatePartitionRegionConfig(PartitionRegionConfigModifier partitionRegionConfigModifier) {
+    RegionLock rl = getRegionLock();
+    rl.lock();
+    try {
+      if (getPRRoot() == null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(PartitionedRegionHelper.PR_ROOT_REGION_NAME + " is null");
+        }
+        return null;
+      }
+      PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
+      prConfig = partitionRegionConfigModifier.modify(prConfig);
+      updatePRConfig(prConfig, false);
+      return prConfig;
+    } finally {
+      rl.unlock();
+    }
   }
 }
