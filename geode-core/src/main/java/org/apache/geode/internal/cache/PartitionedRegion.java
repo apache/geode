@@ -10033,7 +10033,8 @@ public class PartitionedRegion extends LocalRegion
     PartitionRegionConfig modify(PartitionRegionConfig prConfig);
   }
 
-  PartitionRegionConfig updatePartitionRegionConfig(PartitionRegionConfigModifier partitionRegionConfigModifier) {
+  PartitionRegionConfig updatePartitionRegionConfig(
+      PartitionRegionConfigModifier partitionRegionConfigModifier) {
     RegionLock rl = getRegionLock();
     rl.lock();
     try {
