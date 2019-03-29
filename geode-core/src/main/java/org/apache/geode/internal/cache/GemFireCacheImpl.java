@@ -823,9 +823,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
                 .info("Running in local mode since no locators were specified.");
           }
         }
+
+        clientMetadataService = null;
       } else {
         logger.info("Running in client mode");
         this.resourceEventsListener = null;
+        clientMetadataService = new ClientMetadataService(this);
       }
 
       // Don't let admin-only VMs create Cache's just yet.
@@ -934,14 +937,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
       }
     } // synchronized
-
-    if (this.isClient) {
-      logger.info("Running in client mode.");
-      resourceEventsListener = null;
-      clientMetadataService = new ClientMetadataService(this);
-    } else {
-      clientMetadataService = null;
-    }
   }
 
   @Override
