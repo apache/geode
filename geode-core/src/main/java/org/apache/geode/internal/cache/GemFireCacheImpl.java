@@ -550,7 +550,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final PersistentMemberManager persistentMemberManager;
 
-  private ClientMetadataService clientMetadataService;
+  private final ClientMetadataService clientMetadataService;
 
   private final AtomicBoolean isShutDownAll = new AtomicBoolean();
   private final CountDownLatch shutDownAllFinished = new CountDownLatch(1);
@@ -935,7 +935,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     } // synchronized
 
-    clientMetadataService = new ClientMetadataService(this);
+    if (this.isClient) {
+      logger.info("Running in client mode.");
+      resourceEventsListener = null;
+      clientMetadataService = new ClientMetadataService(this);
+    } else {
+      clientMetadataService = null;
+    }
   }
 
   @Override
