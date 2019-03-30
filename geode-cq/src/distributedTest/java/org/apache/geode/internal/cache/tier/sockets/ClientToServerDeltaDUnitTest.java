@@ -581,7 +581,7 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(LOCATORS, "");
     new ClientToServerDeltaDUnitTest().createCache(props);
     pool = (PoolImpl) PoolManager.createFactory().addServer(host, port.intValue())
-        .setThreadLocalConnections(true).setMinConnections(2)
+        .setMinConnections(2)
         .setSubscriptionEnabled(enableSubscription).setSubscriptionRedundancy(0)
         .setReadTimeout(10000).setPingInterval(1000).setSocketBufferSize(32768)
         .create("ClientToServerDeltaDunitTestPool");

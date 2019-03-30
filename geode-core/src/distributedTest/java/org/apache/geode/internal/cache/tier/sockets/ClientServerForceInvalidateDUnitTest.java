@@ -310,7 +310,7 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
     props.setProperty(LOCATORS, "");
     Cache cache = new ClientServerForceInvalidateDUnitTest().createCacheV(props);
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(h, port1).addServer(h, port2)
-        .setSubscriptionEnabled(true).setThreadLocalConnections(true).setReadTimeout(1000)
+        .setSubscriptionEnabled(true).setReadTimeout(1000)
         .setSocketBufferSize(32768).setMinConnections(3).setSubscriptionRedundancy(-1)
         .setPingInterval(2000).create("ClientServerForceInvalidateDUnitTestPool");
 

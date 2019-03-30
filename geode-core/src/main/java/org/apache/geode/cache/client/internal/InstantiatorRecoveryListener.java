@@ -137,8 +137,6 @@ public class InstantiatorRecoveryListener extends EndpointManager.EndpointListen
             logger.warn("InstantiatorRecoveryTask - Error recovering instantiators:",
                 e);
           }
-        } finally {
-          pool.releaseThreadLocalConnection();
         }
       }
     }

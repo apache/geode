@@ -375,6 +375,7 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
+    @Deprecated
     public void releaseThreadLocalConnection() {}
 
     @Override
@@ -494,6 +495,7 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
+    @Deprecated
     public boolean getThreadLocalConnections() {
       return false;
     }

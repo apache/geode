@@ -227,8 +227,6 @@ public class PoolManagerImpl {
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
-      } finally {
-        next.releaseThreadLocalConnection();
       }
     }
   }
@@ -247,8 +245,6 @@ public class PoolManagerImpl {
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
-      } finally {
-        next.releaseThreadLocalConnection();
       }
     }
   }
@@ -270,8 +266,6 @@ public class PoolManagerImpl {
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
-      } finally {
-        next.releaseThreadLocalConnection();
       }
     }
   }
@@ -293,8 +287,6 @@ public class PoolManagerImpl {
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
-      } finally {
-        next.releaseThreadLocalConnection();
       }
     }
   }

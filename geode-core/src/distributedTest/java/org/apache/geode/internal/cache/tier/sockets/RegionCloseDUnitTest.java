@@ -110,7 +110,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(LOCATORS, "");
     new RegionCloseDUnitTest().createCache(props);
     Pool p = PoolManager.createFactory().addServer(host, PORT1).setSubscriptionEnabled(true)
-        .setSubscriptionRedundancy(-1).setReadTimeout(2000).setThreadLocalConnections(true)
+        .setSubscriptionRedundancy(-1).setReadTimeout(2000)
         .setSocketBufferSize(1000).setMinConnections(2)
         // .setRetryAttempts(2)
         // .setRetryInterval(250)

@@ -140,7 +140,9 @@ public interface Pool {
    * Returns <code>true</code> if thread local connections are enabled on this pool.
    *
    * @see PoolFactory#setThreadLocalConnections
+   * @deprecated Since Geode 1.10.0. Always returns false. Will be removed in future major release.
    */
+  @Deprecated
   boolean getThreadLocalConnections();
 
   /**
@@ -250,7 +252,11 @@ public interface Pool {
    * other threads.
    *
    * If this pool is not using thread local connections, this method will have no effect.
+   *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
+  @Deprecated
   void releaseThreadLocalConnection();
 
   /**

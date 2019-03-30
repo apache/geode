@@ -1268,7 +1268,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     createCache(props);
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, "localhost", ports, true,
-        Integer.parseInt(rLevel), 2, null, 1000, 250, false, -2);
+        Integer.parseInt(rLevel), 2, null, 1000, 250, -2);
 
     factory.setScope(Scope.LOCAL);
 

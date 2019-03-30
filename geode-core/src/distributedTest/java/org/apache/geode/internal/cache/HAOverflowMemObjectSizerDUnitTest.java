@@ -163,7 +163,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.NORMAL);
     ClientServerTestCase.configureConnectionPool(factory, host, port1.intValue(), -1, true, -1, 2,
-        null, -1, -1, false);
+        null, -1, -1);
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(regionName, attrs);
     assertNotNull(region);

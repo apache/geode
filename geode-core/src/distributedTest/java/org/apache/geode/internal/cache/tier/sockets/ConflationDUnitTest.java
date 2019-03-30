@@ -149,7 +149,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   private static Pool createPool(String host, String name, Integer port, boolean enableQueue) {
     return PoolManager.createFactory().addServer(host, port.intValue())
         .setSubscriptionEnabled(enableQueue).setSubscriptionRedundancy(-1).setReadTimeout(10000)
-        .setSocketBufferSize(32768).setMinConnections(3).setThreadLocalConnections(true)
+        .setSocketBufferSize(32768).setMinConnections(3)
         // .setRetryInterval(10000)
         // .setRetryAttempts(5)
         .create("ConflationUnitTestPool" + name);

@@ -142,7 +142,7 @@ public class TestSubscriptionsDUnitTest extends ManagementTestBase {
 
     PoolImpl p =
         (PoolImpl) PoolManager.createFactory().addServer(host, port1).setSubscriptionEnabled(true)
-            .setThreadLocalConnections(true).setMinConnections(1).setReadTimeout(20000)
+            .setMinConnections(1).setReadTimeout(20000)
             .setPingInterval(10000).setRetryAttempts(1).setSubscriptionEnabled(true)
             .setStatisticInterval(1000).create("TestSubscriptionsDUnitTest");
 

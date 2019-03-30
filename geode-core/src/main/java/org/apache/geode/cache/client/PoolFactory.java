@@ -137,14 +137,6 @@ public interface PoolFactory {
   int DEFAULT_STATISTIC_INTERVAL = -1;
 
   /**
-   * The default value for whether connections should have affinity to the thread that last used
-   * them.
-   * <p>
-   * Current value: <code>false</code>.
-   */
-  boolean DEFAULT_THREAD_LOCAL_CONNECTIONS = false;
-
-  /**
    * The default value for whether to establish a server to client subscription.
    * <p>
    * Current value: <code>false</code>.
@@ -273,7 +265,10 @@ public interface PoolFactory {
    *
    * @param threadLocalConnections if <code>true</code> then enable thread local connections.
    * @return a reference to <code>this</code>
+   * @deprecated Ignored since thread local connection do not provide improved contention
+   *             since Geode 1.10. Method will be remove in future major release.
    */
+  @Deprecated
   PoolFactory setThreadLocalConnections(boolean threadLocalConnections);
 
   /**

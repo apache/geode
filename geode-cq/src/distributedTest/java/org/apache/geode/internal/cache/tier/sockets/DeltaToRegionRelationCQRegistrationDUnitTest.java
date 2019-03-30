@@ -499,7 +499,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     props.setProperty(LOCATORS, "");
     new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(props);
     Pool p = PoolManager.createFactory().addServer(host, port.intValue())
-        .setThreadLocalConnections(true).setMinConnections(3).setSubscriptionEnabled(true)
+        .setMinConnections(3).setSubscriptionEnabled(true)
         .setSubscriptionRedundancy(0).setReadTimeout(10000).setSocketBufferSize(32768)
         // .setRetryInterval(10000)
         // .setRetryAttempts(5)
@@ -533,7 +533,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     props.setProperty(LOCATORS, "");
     new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(props);
     p = (PoolImpl) PoolManager.createFactory().addServer(host, port.intValue())
-        .setThreadLocalConnections(true).setMinConnections(3).setSubscriptionEnabled(true)
+        .setMinConnections(3).setSubscriptionEnabled(true)
         .setSubscriptionRedundancy(0).setReadTimeout(10000).setSocketBufferSize(32768)
         // .setRetryInterval(10000)
         // .setRetryAttempts(5)
@@ -550,7 +550,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     props.setProperty(LOCATORS, "");
     new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(props);
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host1, port1.intValue())
-        .addServer(host2, port2.intValue()).setThreadLocalConnections(true).setMinConnections(3)
+        .addServer(host2, port2.intValue()).setMinConnections(3)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(0).setReadTimeout(10000)
         .setSocketBufferSize(32768)
         // .setRetryInterval(10000)
@@ -584,7 +584,7 @@ public class DeltaToRegionRelationCQRegistrationDUnitTest extends JUnit4Distribu
     props.setProperty(LOCATORS, "");
     new DeltaToRegionRelationCQRegistrationDUnitTest().createCache(props);
     p = (PoolImpl) PoolManager.createFactory().addServer(host1, port1.intValue())
-        .addServer(host2, port2.intValue()).setThreadLocalConnections(true).setMinConnections(3)
+        .addServer(host2, port2.intValue()).setMinConnections(3)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(0).setReadTimeout(10000)
         .setSocketBufferSize(32768)
         // .setRetryInterval(10000)

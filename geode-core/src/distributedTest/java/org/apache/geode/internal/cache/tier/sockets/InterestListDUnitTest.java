@@ -578,7 +578,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
     new InterestListDUnitTest().createCache(props);
     PoolFactory pfactory = PoolManager.createFactory().addServer(host, port)
-        .setThreadLocalConnections(true).setMinConnections(3).setSubscriptionEnabled(true)
+        .setMinConnections(3).setSubscriptionEnabled(true)
         .setSubscriptionRedundancy(-1).setReadTimeout(10000).setSocketBufferSize(32768);
     // .setRetryInterval(10000)
     // .setRetryAttempts(5)
