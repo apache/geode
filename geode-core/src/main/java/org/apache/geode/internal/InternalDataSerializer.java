@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.io.UTFDataFormatException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
@@ -2728,14 +2729,69 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return in.readUTF();
   }
 
+  /**
+   * If not null then this field can be used to
+   * directly set the char[] "value" field on a String instance.
+   */
+  static final Field stringValueField;
+  static {
+    Field tempField;
+    try {
+      tempField = String.class.getDeclaredField("value");
+      tempField.setAccessible(true);
+      String test = new String();
+      char[] charArray = new char[2];
+      tempField.set(test, charArray);
+    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException
+        | IllegalAccessException e) {
+      logger.info("Could not optimize string deserialization", e);
+      tempField = null;
+    }
+    stringValueField = tempField;
+  }
+
+  /**
+   * Attempts to create a string without any extra copies of the
+   * characters.
+   * Returns null if this optimization is not supported.
+   * Otherwise it returns the String created.
+   *
+   * @param dataInput stream of input bytes
+   * @param len of the string to create
+   * @return the created string or null if it could not be created
+   * @throws IOException if dataInput fails
+   */
+  private static String tryNoCopyStringCreation(DataInput dataInput, int len) throws IOException {
+    if (stringValueField == null) {
+      return null;
+    }
+    char[] charArray = new char[len];
+    for (int i = 0; i < len; i++) {
+      charArray[i] = (char) dataInput.readByte();
+    }
+    String result = new String();
+    try {
+      stringValueField.set(result, charArray);
+    } catch (IllegalArgumentException | IllegalAccessException e) {
+      // this should never happen
+      throw new IllegalStateException("could not set value field on String", e);
+    }
+    return result;
+  }
+
+
   private static String readStringBytesFromDataInput(DataInput dataInput, int len)
       throws IOException {
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading STRING_BYTES of len={}", len);
     }
-    byte[] buf = new byte[len];
-    dataInput.readFully(buf, 0, len);
-    return new String(buf, 0); // intentionally using deprecated constructor
+    String result = tryNoCopyStringCreation(dataInput, len);
+    if (result == null) {
+      byte[] buf = new byte[len];
+      dataInput.readFully(buf, 0, len);
+      result = new String(buf, 0); // intentionally using deprecated constructor
+    }
+    return result;
   }
 
   public static String readString(DataInput in, byte header) throws IOException {
