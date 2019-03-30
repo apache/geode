@@ -21,10 +21,8 @@ import java.net.ConnectException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.BufferUnderflowException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -81,13 +79,6 @@ public class OpExecutorImpl implements ExecutablePool {
   private final ConnectionManager connectionManager;
   private final int retryAttempts;
   private final long serverTimeout;
-  private final boolean threadLocalConnections;
-  private final ThreadLocal<Connection> localConnection = new ThreadLocal<Connection>();
-  /**
-   * maps serverLocations to Connections when threadLocalConnections is enabled with single-hop.
-   */
-  private final ThreadLocal<Map<ServerLocation, Connection>> localConnectionMap =
-      new ThreadLocal<Map<ServerLocation, Connection>>();
   private final EndpointManager endpointManager;
   private final RegisterInterestTracker riTracker;
   private final QueueManager queueManager;
@@ -112,7 +103,7 @@ public class OpExecutorImpl implements ExecutablePool {
 
   public OpExecutorImpl(ConnectionManager manager, QueueManager queueManager,
       EndpointManager endpointManager, RegisterInterestTracker riTracker, int retryAttempts,
-      long serverTimeout, boolean threadLocalConnections, CancelCriterion cancelCriterion,
+      long serverTimeout, CancelCriterion cancelCriterion,
       PoolImpl pool) {
     this.connectionManager = manager;
     this.queueManager = queueManager;
@@ -120,7 +111,6 @@ public class OpExecutorImpl implements ExecutablePool {
     this.riTracker = riTracker;
     this.retryAttempts = retryAttempts;
     this.serverTimeout = serverTimeout;
-    this.threadLocalConnections = threadLocalConnections;
     this.cancelCriterion = cancelCriterion;
     this.pool = pool;
   }
@@ -145,18 +135,7 @@ public class OpExecutorImpl implements ExecutablePool {
     }
     boolean success = false;
 
-    Connection conn = (Connection) (threadLocalConnections ? localConnection.get() : null);
-    if (conn == null || conn.isDestroyed()) {
-      conn = connectionManager.borrowConnection(serverTimeout);
-    } else if (threadLocalConnections) {
-      // Fix for 43718. Clear the thread local connection
-      // while we're performing the op. It will be reset
-      // if the op succeeds.
-      localConnection.set(null);
-      if (!conn.activate()) {
-        conn = connectionManager.borrowConnection(serverTimeout);
-      }
-    }
+    Connection conn = connectionManager.borrowConnection(serverTimeout);
     try {
       Set<ServerLocation> attemptedServers = null;
 
@@ -175,9 +154,6 @@ public class OpExecutorImpl implements ExecutablePool {
         } catch (MessageTooLargeException e) {
           throw new GemFireIOException("unable to transmit message to server", e);
         } catch (Exception e) {
-          // This method will throw an exception if we need to stop
-          // It also unsets the threadlocal connection and notifies
-          // the connection manager if there are failures.
           handleException(e, conn, attempt, attempt >= retries && retries != -1);
           if (null == attemptedServers) {
             // don't allocate this until we need it
@@ -203,24 +179,7 @@ public class OpExecutorImpl implements ExecutablePool {
         }
       }
     } finally {
-      if (threadLocalConnections) {
-        conn.passivate(success);
-        // Fix for 43718. If the thread local was set to a different
-        // connection deeper in the call stack, return that connection
-        // and set our connection on the thread local.
-        Connection existingConnection = localConnection.get();
-        if (existingConnection != null && existingConnection != conn) {
-          connectionManager.returnConnection(existingConnection);
-        }
-
-        if (!conn.isDestroyed()) {
-          localConnection.set(conn);
-        } else {
-          localConnection.set(null);
-        }
-      } else {
-        connectionManager.returnConnection(conn);
-      }
+      connectionManager.returnConnection(conn);
     }
   }
 
@@ -319,16 +278,12 @@ public class OpExecutorImpl implements ExecutablePool {
   }
 
   public ServerLocation getNextOpServerLocation() {
-    ServerLocation retVal = null;
-    Connection conn = (Connection) (threadLocalConnections ? localConnection.get() : null);
-    if (conn == null || conn.isDestroyed()) {
-      conn = connectionManager.borrowConnection(serverTimeout);
-      retVal = conn.getServer();
+    Connection conn = connectionManager.borrowConnection(serverTimeout);
+    try {
+      return conn.getServer();
+    } finally {
       this.connectionManager.returnConnection(conn);
-    } else {
-      retVal = conn.getServer();
     }
-    return retVal;
   }
 
   /*
@@ -384,23 +339,13 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
     if (conn == null) {
-      if (useThreadLocalConnection(op, pingOp)) {
-        // no need to set threadLocal to null while the op is in progress since
-        // 43718 does not impact single-hop
-        conn = getActivatedThreadLocalConnectionForSingleHop(server, onlyUseExistingCnx);
-        returnCnx = false;
-      } else {
-        conn = connectionManager.borrowConnection(server, serverTimeout, onlyUseExistingCnx);
-      }
+      conn = connectionManager.borrowConnection(server, serverTimeout, onlyUseExistingCnx);
     }
     boolean success = true;
     try {
       return executeWithPossibleReAuthentication(conn, op);
     } catch (Exception e) {
       success = false;
-      // This method will throw an exception if we need to stop
-      // It also unsets the threadlocal connection and notifies
-      // the connection manager if there are failures.
       handleException(e, conn, 0, true);
       // this shouldn't actually be reached, handle exception will throw something
       throw new ServerConnectivityException("Received error connecting to server", e);
@@ -412,67 +357,10 @@ public class OpExecutorImpl implements ExecutablePool {
         }
         this.affinityServerLocation.set(conn.getServer());
       }
-      if (useThreadLocalConnection(op, pingOp)) {
-        conn.passivate(success);
-        setThreadLocalConnectionForSingleHop(server, conn);
-      }
       if (returnCnx) {
         connectionManager.returnConnection(conn, accessed);
       }
     }
-  }
-
-  private boolean useThreadLocalConnection(Op op, boolean pingOp) {
-    return threadLocalConnections && !pingOp && op.useThreadLocalConnection();
-  }
-
-  /**
-   * gets a connection to the given serverLocation either by looking up the threadLocal
-   * {@link #localConnectionMap}. If a connection does not exist (or has been destroyed) we borrow
-   * one from connectionManager.
-   *
-   * @return the activated connection
-   */
-  private Connection getActivatedThreadLocalConnectionForSingleHop(ServerLocation server,
-      boolean onlyUseExistingCnx) {
-    assert threadLocalConnections;
-    Connection conn = null;
-    Map<ServerLocation, Connection> connMap = this.localConnectionMap.get();
-    if (connMap != null && !connMap.isEmpty()) {
-      conn = connMap.get(server);
-    }
-    boolean borrow = true;
-    if (conn != null) {
-      if (conn.activate()) {
-        borrow = false;
-        if (!conn.getServer().equals(server)) {
-          // poolLoadConditioningMonitor can replace the connection's
-          // endpoint from underneath us. fixes bug 45151
-          borrow = true;
-        }
-      }
-    }
-    if (conn == null || borrow) {
-      conn = connectionManager.borrowConnection(server, serverTimeout, onlyUseExistingCnx);
-    }
-    if (borrow && connMap != null) {
-      connMap.remove(server);
-    }
-    return conn;
-  }
-
-  /**
-   * initializes the threadLocal {@link #localConnectionMap} and adds mapping of serverLocation to
-   * Connection.
-   */
-  private void setThreadLocalConnectionForSingleHop(ServerLocation server, Connection conn) {
-    assert threadLocalConnections;
-    Map<ServerLocation, Connection> connMap = this.localConnectionMap.get();
-    if (connMap == null) {
-      connMap = new HashMap<ServerLocation, Connection>();
-      this.localConnectionMap.set(connMap);
-    }
-    connMap.put(server, conn);
   }
 
   /*
@@ -597,19 +485,9 @@ public class OpExecutorImpl implements ExecutablePool {
   }
 
   @Override
+  @Deprecated
   public void releaseThreadLocalConnection() {
-    Connection conn = localConnection.get();
-    localConnection.set(null);
-    if (conn != null) {
-      connectionManager.returnConnection(conn);
-    }
-    Map<ServerLocation, Connection> connMap = localConnectionMap.get();
-    localConnectionMap.set(null);
-    if (connMap != null) {
-      for (Connection c : connMap.values()) {
-        connectionManager.returnConnection(c);
-      }
-    }
+    // no-op
   }
 
   /**
@@ -620,9 +498,6 @@ public class OpExecutorImpl implements ExecutablePool {
     try {
       return executeWithPossibleReAuthentication(conn, op);
     } catch (Exception e) {
-      // This method will throw an exception if we need to stop
-      // It also unsets the threadlocal connection and notifies
-      // the connection manager if there are failures.
       handleException(op, e, conn, 0, true, timeoutFatal);
       // this shouldn't actually be reached, handle exception will throw something
       throw new ServerConnectivityException("Received error connecting to server", e);
@@ -642,6 +517,10 @@ public class OpExecutorImpl implements ExecutablePool {
     return riTracker;
   }
 
+  /**
+   * This method will throw an exception if we need to stop the connection manager if there are
+   * failures.
+   */
   protected void handleException(Throwable e, Connection conn, int retryCount,
       boolean finalAttempt) {
     handleException(e, conn, retryCount, finalAttempt, false/* timeoutFatal */);
@@ -828,14 +707,6 @@ public class OpExecutorImpl implements ExecutablePool {
           .append(" attempts");
     }
     return message;
-  }
-
-  public Connection getThreadLocalConnection() {
-    return localConnection.get();
-  }
-
-  public void setThreadLocalConnection(Connection conn) {
-    localConnection.set(conn);
   }
 
   private void authenticateIfRequired(Connection conn, Op op) {

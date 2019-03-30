@@ -140,7 +140,6 @@ public class ConnectionProxyJUnitTest {
       pf.setSubscriptionEnabled(false);
       pf.setSubscriptionRedundancy(-1);
       pf.setReadTimeout(2000);
-      pf.setThreadLocalConnections(true);
       pf.setSocketBufferSize(32768);
       pf.setRetryAttempts(1);
       pf.setPingInterval(10000);
@@ -204,7 +203,6 @@ public class ConnectionProxyJUnitTest {
       pf.addServer("localhost", port3);
       pf.setSubscriptionEnabled(false);
       pf.setReadTimeout(2000);
-      pf.setThreadLocalConnections(true);
       pf.setMinConnections(1);
       pf.setSocketBufferSize(32768);
       pf.setRetryAttempts(1);
@@ -274,7 +272,6 @@ public class ConnectionProxyJUnitTest {
       pf.addServer("localhost", port3);
       pf.setSubscriptionEnabled(false);
       pf.setReadTimeout(2000);
-      pf.setThreadLocalConnections(true);
       pf.setMinConnections(1);
       pf.setSocketBufferSize(32768);
       pf.setRetryAttempts(1);

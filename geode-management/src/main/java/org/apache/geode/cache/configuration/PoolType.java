@@ -611,6 +611,7 @@ public class PoolType {
    * {@link Boolean }
    *
    */
+  @Deprecated
   public Boolean isThreadLocalConnections() {
     return threadLocalConnections;
   }
@@ -622,6 +623,7 @@ public class PoolType {
    * {@link Boolean }
    *
    */
+  @Deprecated
   public void setThreadLocalConnections(Boolean value) {
     this.threadLocalConnections = value;
   }

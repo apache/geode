@@ -173,8 +173,8 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
     createServerRegion(vm0, true);
     int port = createServerRegion(vm3, true);
-    createClientRegion(vm1, port, false, true);
-    createClientRegion(vm2, port, false, true);
+    createClientRegion(vm1, port, true);
+    createClientRegion(vm2, port, true);
 
     vm1.invoke(new SerializableCallable() {
       @Override
@@ -597,17 +597,11 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void createClientRegion(final VM vm, final int port) {
-    createClientRegion(vm, port, false);
-  }
-
-  private void createClientRegion(final VM vm, final int port,
-      final boolean threadLocalConnections) {
     SerializableCallable createRegion = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
-        cf.setPoolThreadLocalConnections(threadLocalConnections);
         ClientCache cache = getClientCache(cf);
         cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("testSimplePdx");
         return null;
@@ -616,14 +610,12 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(createRegion);
   }
 
-  private void createClientRegion(final VM vm, final int port, final boolean threadLocalConnections,
-      final boolean isPdxReadSerialized) {
+  private void createClientRegion(final VM vm, final int port, final boolean isPdxReadSerialized) {
     SerializableCallable createRegion = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
-        cf.setPoolThreadLocalConnections(threadLocalConnections);
         cf.setPdxReadSerialized(isPdxReadSerialized);
         ClientCache cache = getClientCache(cf);
         cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("testSimplePdx");

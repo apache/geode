@@ -126,8 +126,8 @@ public class RegionClearStatsDistributedTest implements Serializable {
 
     PoolImpl pool =
         (PoolImpl) PoolManager.createFactory().addServer(host, port).setSubscriptionEnabled(false)
-            .setThreadLocalConnections(true).setMinConnections(1).setReadTimeout(20000)
-            .setPingInterval(10000).setRetryAttempts(1).create(getClass().getSimpleName());
+            .setMinConnections(1).setReadTimeout(20000).setPingInterval(10000).setRetryAttempts(1)
+            .create(getClass().getSimpleName());
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -145,8 +145,8 @@ public class RegionClearStatsDistributedTest implements Serializable {
 
     PoolImpl pool =
         (PoolImpl) PoolManager.createFactory().addServer(host, port).setSubscriptionEnabled(false)
-            .setThreadLocalConnections(true).setMinConnections(1).setReadTimeout(20000)
-            .setPingInterval(10000).setRetryAttempts(1).create(getClass().getSimpleName());
+            .setMinConnections(1).setReadTimeout(20000).setPingInterval(10000).setRetryAttempts(1)
+            .create(getClass().getSimpleName());
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

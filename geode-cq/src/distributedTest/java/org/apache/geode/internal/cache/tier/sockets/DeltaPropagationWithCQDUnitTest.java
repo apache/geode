@@ -268,7 +268,7 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(cache);
     AttributesFactory factory = new AttributesFactory();
     pool = ClientServerTestCase.configureConnectionPool(factory, "localhost", new int[] {port},
-        true, 1, 2, null, 1000, 250, false, -2);
+        true, 1, 2, null, 1000, 250, -2);
 
     factory.setScope(Scope.LOCAL);
     factory.addCacheListener(new CacheListenerAdapter<Object, Object>() {

@@ -241,9 +241,8 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
   }
 
   private PoolFactory createPoolFactory() {
-    return PoolManager.createFactory().setThreadLocalConnections(true).setMinConnections(3)
-        .setSubscriptionEnabled(true).setSubscriptionRedundancy(0).setReadTimeout(10000)
-        .setSocketBufferSize(32768);
+    return PoolManager.createFactory().setMinConnections(3).setSubscriptionEnabled(true)
+        .setSubscriptionRedundancy(0).setReadTimeout(10000).setSocketBufferSize(32768);
   }
 
   private Region<Integer, DeltaEnabledObject> createRegionOnClient(final String regionName,

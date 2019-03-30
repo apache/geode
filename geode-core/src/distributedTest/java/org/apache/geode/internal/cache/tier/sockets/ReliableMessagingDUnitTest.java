@@ -370,7 +370,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     String host = NetworkUtils.getServerHostName(Host.getHost(0));
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1)
         .addServer(host, PORT2).setSubscriptionEnabled(true).setSubscriptionRedundancy(1)
-        .setThreadLocalConnections(true).setMinConnections(6).setReadTimeout(20000)
+        .setMinConnections(6).setReadTimeout(20000)
         .setPingInterval(10000).setRetryAttempts(5).setSubscriptionAckInterval(CLIENT_ACK_INTERVAL)
         .create("ReliableMessagingDUnitTestPool");
 

@@ -33,8 +33,4 @@ public interface Op {
    */
   Object attempt(Connection cnx) throws Exception;
 
-  /**
-   * @return true if this Op should use a threadLocalConnection, false otherwise
-   */
-  boolean useThreadLocalConnection();
 }

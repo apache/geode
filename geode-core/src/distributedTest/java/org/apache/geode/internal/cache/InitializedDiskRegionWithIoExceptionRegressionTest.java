@@ -163,8 +163,8 @@ public class InitializedDiskRegionWithIoExceptionRegressionTest implements Seria
     clientCacheRule.createClientCache();
 
     Pool pool = PoolManager.createFactory().addServer(host, port).setSubscriptionEnabled(false)
-        .setSubscriptionRedundancy(0).setThreadLocalConnections(true).setMinConnections(0)
-        .setReadTimeout(20000).setRetryAttempts(1).create(uniqueName);
+        .setSubscriptionRedundancy(0).setMinConnections(0).setReadTimeout(20000).setRetryAttempts(1)
+        .create(uniqueName);
 
     ClientRegionFactory crf = clientCacheRule.getClientCache().createClientRegionFactory(LOCAL);
     crf.setPoolName(pool.getName());

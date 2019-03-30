@@ -281,7 +281,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
 
   private static void createPool2(String host, AttributesFactory factory, Integer port) {
     PoolFactory pf = PoolManager.createFactory();
-    pf.addServer(host, port.intValue()).setSubscriptionEnabled(true).setThreadLocalConnections(true)
+    pf.addServer(host, port.intValue()).setSubscriptionEnabled(true)
         .setReadTimeout(10000).setSocketBufferSize(32768).setPingInterval(1000).setMinConnections(3)
         .setSubscriptionRedundancy(-1);
     Pool pool = pf.create("superpoolish" + (poolNameCounter++));

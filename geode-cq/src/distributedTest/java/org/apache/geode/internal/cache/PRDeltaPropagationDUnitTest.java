@@ -853,7 +853,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
     numValidCqEvents = 0;
 
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer("localhost", port1)
-        .setSubscriptionEnabled(true).setSubscriptionRedundancy(0).setThreadLocalConnections(true)
+        .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
         .setMinConnections(6).setReadTimeout(20000).setPingInterval(10000).setRetryAttempts(5)
         .create("PRDeltaPropagationDUnitTestPool");
 
@@ -934,7 +934,7 @@ public class PRDeltaPropagationDUnitTest extends DistributedTestCase {
 
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer("localhost", port1)
         .addServer("localhost", port2).setSubscriptionEnabled(true).setSubscriptionRedundancy(1)
-        .setThreadLocalConnections(true).setMinConnections(6).setReadTimeout(20000)
+        .setMinConnections(6).setReadTimeout(20000)
         .setPingInterval(10000).setRetryAttempts(5).create("PRDeltaPropagationDUnitTestPool");
 
     AttributesFactory factory = new AttributesFactory();

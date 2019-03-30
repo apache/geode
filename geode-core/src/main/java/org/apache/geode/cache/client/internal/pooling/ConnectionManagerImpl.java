@@ -52,7 +52,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -1066,6 +1065,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
           logger.trace("Looking for connections to expire");
         }
 
+        // because we expire thread local connections we need to scan allConnections
+        // TODO jbarrett - refactor to scan available deque backwards now.
+
         // find connections which have idle expired
         if (!connectionAccounting.isOverMinimum()) {
           return;
@@ -1199,14 +1201,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     } else {
       logger.info(String.format("%s : %s",
           message, t), t);
-    }
-  }
-
-  private void logError(StringId message, Throwable t) {
-    if (t instanceof GemFireSecurityException) {
-      securityLogWriter.error(message, t);
-    } else {
-      logger.error(message, t);
     }
   }
 

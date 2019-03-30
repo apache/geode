@@ -101,7 +101,6 @@ public class PoolImpl implements InternalPool {
   private final int freeConnectionTimeout;
   private final int loadConditioningInterval;
   private final int socketBufferSize;
-  private final boolean threadLocalConnections;
   private final int readTimeout;
   private final boolean subscriptionEnabled;
   private final boolean prSingleHopEnabled;
@@ -194,7 +193,6 @@ public class PoolImpl implements InternalPool {
     this.freeConnectionTimeout = attributes.getFreeConnectionTimeout();
     this.loadConditioningInterval = attributes.getLoadConditioningInterval();
     this.socketBufferSize = attributes.getSocketBufferSize();
-    this.threadLocalConnections = attributes.getThreadLocalConnections();
     this.readTimeout = attributes.getReadTimeout();
     this.minConnections = attributes.getMinConnections();
     this.maxConnections = attributes.getMaxConnections();
@@ -265,7 +263,7 @@ public class PoolImpl implements InternalPool {
     // Fix for 43468 - make sure we check the cache cancel criterion if we get
     // an exception, by passing in the poolOrCache stopper
     executor = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, retryAttempts,
-        freeConnectionTimeout, threadLocalConnections, new PoolOrCacheStopper(), this);
+        freeConnectionTimeout, new PoolOrCacheStopper(), this);
     if (this.multiuserSecureModeEnabled) {
       this.proxyCacheList = new ArrayList<ProxyCache>();
     } else {
@@ -291,7 +289,6 @@ public class PoolImpl implements InternalPool {
         && getPingInterval() == p.getPingInterval()
         && getStatisticInterval() == p.getStatisticInterval()
         && getRetryAttempts() == p.getRetryAttempts()
-        && getThreadLocalConnections() == p.getThreadLocalConnections()
         && getReadTimeout() == p.getReadTimeout()
         && getSubscriptionEnabled() == p.getSubscriptionEnabled()
         && getPRSingleHopEnabled() == p.getPRSingleHopEnabled()
@@ -361,6 +358,7 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
+  @Deprecated
   public void releaseThreadLocalConnection() {
     executor.releaseThreadLocalConnection();
   }
@@ -436,8 +434,9 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
+  @Deprecated
   public boolean getThreadLocalConnections() {
-    return this.threadLocalConnections;
+    return false;
   }
 
   @Override
@@ -701,10 +700,6 @@ public class PoolImpl implements InternalPool {
     if (getSocketBufferSize() != other.getSocketBufferSize()) {
       throw new RuntimeException(
           String.format("Pool %s is different", "socketBufferSize"));
-    }
-    if (getThreadLocalConnections() != other.getThreadLocalConnections()) {
-      throw new RuntimeException(
-          String.format("Pool %s is different", "threadLocalConnections"));
     }
     if (getReadTimeout() != other.getReadTimeout()) {
       throw new RuntimeException(
@@ -1184,17 +1179,6 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * Get the connection held by this thread if we're using thread local connections
-   *
-   * This is a a hook for hydra code to pass thread local connections between threads.
-   *
-   * @return the connection from the thread local, or null if there is no thread local connection.
-   */
-  public Connection getThreadLocalConnection() {
-    return executor.getThreadLocalConnection();
-  }
-
-  /**
    * Returns a list of ServerLocation instances; one for each server we are currently connected to.
    */
   public List<ServerLocation> getCurrentServers() {
@@ -1275,15 +1259,6 @@ public class PoolImpl implements InternalPool {
    */
   public int getInvalidateCount() {
     return ((QueueStateImpl) this.queueManager.getState()).getInvalidateCount();
-  }
-
-  /**
-   * Set the connection held by this thread if we're using thread local connections
-   *
-   * This is a a hook for hydra code to pass thread local connections between threads.
-   */
-  public void setThreadLocalConnection(Connection conn) {
-    executor.setThreadLocalConnection(conn);
   }
 
   @Override

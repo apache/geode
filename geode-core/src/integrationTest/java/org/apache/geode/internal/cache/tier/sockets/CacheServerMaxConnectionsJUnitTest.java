@@ -92,7 +92,6 @@ public class CacheServerMaxConnectionsJUnitTest {
     pf.addServer("localhost", PORT);
     pf.setMinConnections(0);
     pf.setPingInterval(10000);
-    pf.setThreadLocalConnections(true);
     pf.setReadTimeout(2000);
     pf.setSocketBufferSize(32768);
     proxy = (PoolImpl) pf.create("junitPool");

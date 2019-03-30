@@ -198,7 +198,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT, cp.getFreeConnectionTimeout());
     assertEquals(PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL, cp.getLoadConditioningInterval());
     assertEquals(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE, cp.getSocketBufferSize());
-    assertEquals(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS, cp.getThreadLocalConnections());
     assertEquals(PoolFactory.DEFAULT_READ_TIMEOUT, cp.getReadTimeout());
     assertEquals(PoolFactory.DEFAULT_MIN_CONNECTIONS, cp.getMinConnections());
     assertEquals(PoolFactory.DEFAULT_MAX_CONNECTIONS, cp.getMaxConnections());
@@ -265,10 +264,9 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     PoolFactory f = cache.createPoolFactory();
     f.addServer(ALIAS2, 3777).addServer(ALIAS1, 3888);
     f.setFreeConnectionTimeout(12345).setLoadConditioningInterval(12345).setSocketBufferSize(12345)
-        .setThreadLocalConnections(true).setPRSingleHopEnabled(true).setReadTimeout(12345)
-        .setMinConnections(12346).setMaxConnections(12347).setRetryAttempts(12348)
-        .setIdleTimeout(12349).setPingInterval(12350).setStatisticInterval(12351)
-        .setServerGroup("mygroup")
+        .setPRSingleHopEnabled(true).setReadTimeout(12345).setMinConnections(12346)
+        .setMaxConnections(12347).setRetryAttempts(12348).setIdleTimeout(12349)
+        .setPingInterval(12350).setStatisticInterval(12351).setServerGroup("mygroup")
         // commented this out until queues are implemented
         // .setQueueEnabled(true)
         .setSubscriptionRedundancy(12345).setSubscriptionMessageTrackingTimeout(12345)
@@ -294,7 +292,6 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals(12345, cp.getFreeConnectionTimeout());
     assertEquals(12345, cp.getLoadConditioningInterval());
     assertEquals(12345, cp.getSocketBufferSize());
-    assertEquals(true, cp.getThreadLocalConnections());
     assertEquals(true, cp.getPRSingleHopEnabled());
     assertEquals(12345, cp.getReadTimeout());
     assertEquals(12346, cp.getMinConnections());

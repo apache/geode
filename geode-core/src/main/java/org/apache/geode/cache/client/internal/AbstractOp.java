@@ -421,11 +421,6 @@ public abstract class AbstractOp implements Op {
     return true;
   }
 
-  @Override
-  public boolean useThreadLocalConnection() {
-    return true;
-  }
-
   public boolean isGatewaySenderOp() {
     return false;
   }

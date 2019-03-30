@@ -99,16 +99,11 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecute() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
     Object result = exec.execute(new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     });
     assertEquals("hello", result);
@@ -124,11 +119,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new SocketTimeoutException();
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -149,11 +139,6 @@ public class OpExecutorImplJUnitTest {
         public Object attempt(Connection cnx) throws Exception {
           throw new ServerOperationException("Something didn't work");
         }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
-        }
       });
       fail("Should have got an exception");
     } catch (ServerOperationException expected) {
@@ -171,11 +156,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -202,7 +182,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOncePerServer() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
 
     manager.numServers = 5;
     try {
@@ -210,11 +190,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -231,7 +206,7 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testRetryFailedServers() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 10,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
 
     manager.numServers = 5;
     try {
@@ -239,11 +214,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new IOException("Something didn't work");
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -260,17 +230,12 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOn() throws Exception {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
     ServerLocation server = new ServerLocation("localhost", -1);
     Object result = exec.executeOn(server, new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     });
     assertEquals("hello", result);
@@ -286,11 +251,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new SocketTimeoutException();
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -309,11 +269,6 @@ public class OpExecutorImplJUnitTest {
         @Override
         public Object attempt(Connection cnx) throws Exception {
           throw new ServerOperationException("Something didn't work");
-        }
-
-        @Override
-        public boolean useThreadLocalConnection() {
-          return true;
         }
       });
       fail("Should have got an exception");
@@ -340,11 +295,6 @@ public class OpExecutorImplJUnitTest {
           public Object attempt(Connection cnx) throws Exception {
             throw new Exception("Something didn't work");
           }
-
-          @Override
-          public boolean useThreadLocalConnection() {
-            return true;
-          }
         });
         fail("Should have got an exception");
       } catch (ServerConnectivityException expected) {
@@ -362,16 +312,11 @@ public class OpExecutorImplJUnitTest {
   @Test
   public void testExecuteOnAllQueueServers() {
     OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, false, cancelCriterion, null);
+        10, cancelCriterion, null);
     exec.executeOnAllQueueServers(new Op() {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         return "hello";
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     });
     assertEquals(0, invalidateConnections);
@@ -386,11 +331,6 @@ public class OpExecutorImplJUnitTest {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         throw new SocketTimeoutException();
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     });
 
@@ -413,11 +353,6 @@ public class OpExecutorImplJUnitTest {
         }
         return "hello";
       }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
-      }
     });
 
     assertEquals("hello", result);
@@ -429,49 +364,10 @@ public class OpExecutorImplJUnitTest {
   }
 
   @Test
-  public void testThreadLocalConnection() {
-    OpExecutorImpl exec = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, 3,
-        10, true, cancelCriterion, null);
-    ServerLocation server = new ServerLocation("localhost", -1);
-    Op op = new Op() {
-      @Override
-      public Object attempt(Connection cnx) throws Exception {
-        // do nothing
-        return cnx;
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
-      }
-    };
-
-    exec.execute(op);
-    assertEquals(1, borrows);
-    assertEquals(0, returns);
-    reset();
-    exec.execute(op);
-    assertEquals(0, borrows);
-    assertEquals(0, returns);
-    reset();
-    exec.executeOn(server, op);
-    assertEquals(1, borrows);
-    assertEquals(0, returns);
-    reset();
-    exec.executeOn(server, op);
-    assertEquals(0, borrows);
-    assertEquals(0, returns);
-    exec.execute(op);
-    reset();
-    assertEquals(0, borrows);
-    assertEquals(0, returns);
-  }
-
-  @Test
   public void executeWithServerAffinityDoesNotChangeInitialRetryCountOfZero() {
     OpExecutorImpl opExecutor =
         new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, true, cancelCriterion, mock(PoolImpl.class));
+            10, cancelCriterion, mock(PoolImpl.class));
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
     opExecutor.setAffinityRetryCount(0);
@@ -485,7 +381,7 @@ public class OpExecutorImplJUnitTest {
   public void executeWithServerAffinityWithNonZeroAffinityRetryCountWillNotSetToZero() {
     OpExecutorImpl opExecutor =
         new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, true, cancelCriterion, mock(PoolImpl.class));
+            10, cancelCriterion, mock(PoolImpl.class));
 
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
@@ -500,7 +396,7 @@ public class OpExecutorImplJUnitTest {
   public void executeWithServerAffinityWithServerConnectivityExceptionIncrementsRetryCountAndResetsToZero() {
     OpExecutorImpl opExecutor =
         spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, true, cancelCriterion, mock(PoolImpl.class)));
+            10, cancelCriterion, mock(PoolImpl.class)));
 
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);
@@ -522,7 +418,7 @@ public class OpExecutorImplJUnitTest {
   public void executeWithServerAffinityAndRetryCountGreaterThansTxRetryAttemptThrowsServerConnectivityException() {
     OpExecutorImpl opExecutor =
         spy(new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, -1,
-            10, true, cancelCriterion, mock(PoolImpl.class)));
+            10, cancelCriterion, mock(PoolImpl.class)));
 
     Op txSynchronizationOp = mock(TXSynchronizationOp.Impl.class);
     ServerLocation serverLocation = mock(ServerLocation.class);

@@ -158,9 +158,8 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer("localhost", port1)
         .addServer("localhost", port2).addServer("localhost", port3).setSubscriptionEnabled(true)
-        .setSubscriptionRedundancy(rLevel.intValue()).setThreadLocalConnections(true)
-        .setMinConnections(6).setReadTimeout(20000).setPingInterval(1000).setRetryAttempts(5)
-        .create("HASlowReceiverDUnitTestPool");
+        .setSubscriptionRedundancy(rLevel.intValue()).setMinConnections(6).setReadTimeout(20000)
+        .setPingInterval(1000).setRetryAttempts(5).create("HASlowReceiverDUnitTestPool");
 
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());

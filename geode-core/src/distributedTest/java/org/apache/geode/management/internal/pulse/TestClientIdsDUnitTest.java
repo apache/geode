@@ -113,7 +113,7 @@ public class TestClientIdsDUnitTest implements Serializable {
     ClientCache cache = this.managementTestRule.getClientCache();
 
     Pool pool = PoolManager.createFactory().addServer(host, serverPort)
-        .setSubscriptionEnabled(false).setThreadLocalConnections(true).setMinConnections(1)
+        .setSubscriptionEnabled(false).setMinConnections(1)
         .setReadTimeout(20000).setPingInterval(10000).setRetryAttempts(1)
         .setSubscriptionEnabled(true).setStatisticInterval(1000).create(getClass().getSimpleName());
 

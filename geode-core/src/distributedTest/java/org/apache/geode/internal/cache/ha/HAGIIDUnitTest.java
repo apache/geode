@@ -141,7 +141,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     new HAGIIDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
     ClientServerTestCase.configureConnectionPool(factory, host, new int[] {PORT1, PORT2}, true, -1,
-        2, null, 1000, -1, false, -1);
+        2, null, 1000, -1, -1);
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.addCacheListener(HAGIIDUnitTest.checker);
     RegionAttributes attrs = factory.create();

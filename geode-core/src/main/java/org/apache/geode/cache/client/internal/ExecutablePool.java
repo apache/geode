@@ -120,7 +120,11 @@ public interface ExecutablePool {
 
   /**
    * Release the connection held by the calling thread if we're using thread local connections
+   *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
+  @Deprecated
   void releaseThreadLocalConnection();
 
   /**

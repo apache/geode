@@ -43,7 +43,7 @@ import org.apache.geode.test.dunit.VM;
  *
  * {@literal @}Test
  * public void createClientCache() {
- *   vm0.invoke(() -> clientCacheRule.createClientCache(new ClientCacheFactory().setPoolThreadLocalConnections(true));
+ *   vm0.invoke(() -> clientCacheRule.createClientCache(new ClientCacheFactory().setPoolRetryAttempts(1));
  * }
  * </pre>
  *
