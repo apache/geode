@@ -21,7 +21,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 
 
 public class ClusterManagementResult {
@@ -58,7 +58,7 @@ public class ClusterManagementResult {
   private StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
 
-  private List<CacheElement> result = new ArrayList<>();
+  private List<RuntimeCacheElement> result = new ArrayList<>();
 
   public ClusterManagementResult() {}
 
@@ -108,11 +108,11 @@ public class ClusterManagementResult {
     return statusCode;
   }
 
-  public List<CacheElement> getResult() {
+  public List<RuntimeCacheElement> getResult() {
     return result;
   }
 
-  public void setResult(List<CacheElement> result) {
+  public void setResult(List<RuntimeCacheElement> result) {
     this.result = result;
   }
 }
