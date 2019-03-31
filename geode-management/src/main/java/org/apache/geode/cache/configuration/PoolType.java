@@ -625,7 +625,7 @@ public class PoolType {
    */
   @Deprecated
   public void setThreadLocalConnections(Boolean value) {
-    this.threadLocalConnections = value;
+
   }
 
   /**

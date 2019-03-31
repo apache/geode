@@ -519,6 +519,7 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     @Override
+    @Deprecated
     public boolean getThreadLocalConnections() {
       return false;
     }
