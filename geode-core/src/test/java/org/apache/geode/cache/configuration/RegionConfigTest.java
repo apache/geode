@@ -83,7 +83,7 @@ public class RegionConfigTest {
 
     String json2 = mapper.writeValueAsString(regionConfig);
     assertThat(json2).contains("\"type\":\"REPLICATE\"");
-    assertThat(json2).contains("\"id\":\"test\"");
+    assertThat(json2).contains("\"name\":\"test\"");
 
     CacheConfig cacheConfig = new CacheConfig();
     cacheConfig.getRegions().add(regionConfig);
