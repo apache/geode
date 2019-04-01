@@ -629,7 +629,7 @@ public class PoolFactoryImpl implements PoolFactory {
       DataSerializer.writePrimitiveLong(this.pingInterval, out);
       DataSerializer.writePrimitiveInt(this.queueRedundancyLevel, out);
       DataSerializer.writePrimitiveInt(this.queueMessageTrackingTimeout, out);
-      DataSerializer.writePrimitiveBoolean(false, out);
+      DataSerializer.writePrimitiveBoolean(false, out); // deprecated thread local connections
       DataSerializer.writePrimitiveBoolean(this.queueEnabled, out);
       DataSerializer.writeString(this.serverGroup, out);
       DataSerializer.writeArrayList(this.locators, out);
