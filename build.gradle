@@ -23,19 +23,15 @@ buildscript {
   }
 
   dependencies {
-    // Newer versions of the nebula plugins require gradle-info-plugin 4.0.2 or higher, which in
-    // depends on JGit 5.0.  Conversely, gradle-git relies of JGit 4.0.
-    // Be mindful of potential classpath issues when updating any of these three dependencies.
-    classpath "com.netflix.nebula:nebula-project-plugin:5.1.0"
-    classpath "com.netflix.nebula:gradle-lint-plugin:10.1.0"
-    classpath "org.ajoberstar:gradle-git:1.7.2"
-
-    classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.3.1"
-    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
-    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
+    classpath "com.netflix.nebula:nebula-project-plugin:6.0.2"
+    classpath "com.netflix.nebula:gradle-lint-plugin:11.4.4"
+    classpath "org.ajoberstar.grgit:grgit-gradle:3.1.1"
+    classpath "org.nosphere.apache:creadur-rat-gradle:0.4.0"
+    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.21.1"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.8"
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
-    classpath 'io.spring.gradle:dependency-management-plugin:1.0.6.RELEASE'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
+    classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE'
   }
 }
 
