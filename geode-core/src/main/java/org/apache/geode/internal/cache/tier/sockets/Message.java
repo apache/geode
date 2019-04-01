@@ -132,7 +132,9 @@ public class Message {
   }
 
   /**
-   * maximum size of an outgoing message. See GEODE-478
+   * The maximum size of an outgoing message. If the message is larger than this maximum, it may
+   * cause the receiver to throw an exception on message part length mismatch due to overflow in
+   * message size.
    */
   private static final int maxMessageSize =
       Integer.getInteger(MAX_MESSAGE_SIZE_PROPERTY, DEFAULT_MAX_MESSAGE_SIZE);
