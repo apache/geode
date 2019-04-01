@@ -141,7 +141,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   /**
    * Timestamp at which we last had contact from a member
    */
-  final ConcurrentMap<InternalDistributedMember, TimeStamp> memberTimeStamps =
+  final ConcurrentMap<InternalDistributedMember, PhiAccrualFailureDetector> memberDetectors =
       new ConcurrentHashMap<>();
 
   /**
@@ -247,26 +247,16 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       GMSHealthMonitor.this.currentTimeStamp = currentTime;
 
       if (neighbour != null) {
-        TimeStamp nextNeighborTS;
-        synchronized (GMSHealthMonitor.this) {
-          nextNeighborTS = GMSHealthMonitor.this.memberTimeStamps.get(neighbour);
-        }
-
-        if (nextNeighborTS == null) {
-          TimeStamp customTS = new TimeStamp(currentTime);
-          memberTimeStamps.put(neighbour, customTS);
-          return;
-        }
-
-        long interval = memberTimeoutInMillis / GMSHealthMonitor.LOGICAL_INTERVAL;
-        long lastTS = currentTime - nextNeighborTS.getTime();
-        if (lastTS + interval >= memberTimeoutInMillis) {
+        PhiAccrualFailureDetector nextNeighborDetector =
+            getOrCreatePhiAccrualFailureDetector(neighbour, currentTime);
+        if (!nextNeighborDetector.isAvailable()) {
           logger.debug("Checking member {} ", neighbour);
           // now do check request for this member;
           checkMember(neighbour);
         }
       }
     }
+
   }
 
   /***
@@ -382,17 +372,37 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * Record member activity at a specified time
    */
   private void contactedBy(InternalDistributedMember sender, long timeStamp) {
-    TimeStamp cTS = new TimeStamp(timeStamp);
-    cTS = memberTimeStamps.putIfAbsent(sender, cTS);
-    if (cTS != null && cTS.getTime() < timeStamp) {
-      cTS.setTime(timeStamp);
-    }
+
+    PhiAccrualFailureDetector detector = getOrCreatePhiAccrualFailureDetector(sender, timeStamp);
+    detector.heartbeat(timeStamp);
     if (suspectedMemberIds.containsKey(sender)) {
       memberUnsuspected(sender);
       setNextNeighbor(currentView, null);
     }
   }
 
+
+  public PhiAccrualFailureDetector getOrCreatePhiAccrualFailureDetector(
+      InternalDistributedMember member,
+      long timeStamp) {
+    PhiAccrualFailureDetector detector;
+    // TODO use something cheaper than a sync on the health monitor
+    synchronized (GMSHealthMonitor.this) {
+      detector = GMSHealthMonitor.this.memberDetectors.get(member);
+
+      if (detector == null) {
+        logger.info("creating new failure detector for {}", member);
+        final double threshold = 10;
+        final int sampleSize = 200;
+        final int minStdDev = 100;
+        detector = new PhiAccrualFailureDetector(
+            threshold, sampleSize, minStdDev, memberTimeout, memberTimeout);
+        detector.heartbeat(timeStamp);
+        memberDetectors.put(member, detector);
+      }
+    }
+    return detector;
+  }
 
   private HeartbeatRequestMessage constructHeartbeatRequestMessage(
       final InternalDistributedMember mbr) {
@@ -472,8 +482,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           if (pingResp.getResponseMsg() == null) {
             pingResp.wait(memberTimeout);
           }
-          TimeStamp ts = memberTimeStamps.get(member);
-          if (ts != null && ts.getTime() > startTime) {
+          PhiAccrualFailureDetector detector = memberDetectors.get(member);
+          if (detector != null && detector.isAvailable()) {
             return true;
           }
           if (pingResp.getResponseMsg() == null) {
@@ -485,8 +495,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           } else {
             logger.trace("received heartbeat from {}", member);
             this.stats.incHeartbeatsReceived();
-            if (ts != null) {
-              ts.setTime(System.currentTimeMillis());
+            if (detector != null) {
+              detector.heartbeat();
             }
             return true;
           }
@@ -583,9 +593,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           this.stats.incTcpFinalCheckResponsesReceived();
         }
         if (b == OK) {
-          TimeStamp ts = memberTimeStamps.get(suspectMember);
-          if (ts != null) {
-            ts.setTime(System.currentTimeMillis());
+          PhiAccrualFailureDetector detector = memberDetectors.get(suspectMember);
+          if (detector != null) {
+            detector.heartbeat();
           }
           return true;
         } else {
@@ -788,7 +798,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     synchronized (suspectRequestsInView) {
       suspectRequestsInView.clear();
     }
-    for (Iterator<InternalDistributedMember> it = memberTimeStamps.keySet().iterator(); it
+    for (Iterator<InternalDistributedMember> it = memberDetectors.keySet().iterator(); it
         .hasNext();) {
       if (!newView.contains(it.next())) {
         it.remove();
@@ -1310,8 +1320,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
 
       if (!pinged && !isStopping) {
-        TimeStamp ts = memberTimeStamps.get(mbr);
-        if (ts == null || ts.getTime() < startTime) {
+        PhiAccrualFailureDetector detector = memberDetectors.get(mbr);
+        if (detector == null || !detector.isAvailable()) {
           logger.info("Availability check failed for member {}", mbr);
           // if the final check fails & this VM is the coordinator we don't need to do another final
           // check
