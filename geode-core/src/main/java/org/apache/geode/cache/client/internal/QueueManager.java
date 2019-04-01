@@ -47,6 +47,7 @@ public interface QueueManager {
 
   InternalPool getPool();
 
+  @Deprecated
   InternalLogWriter getSecurityLogger();
 
   void readyForEvents(InternalDistributedSystem system);
