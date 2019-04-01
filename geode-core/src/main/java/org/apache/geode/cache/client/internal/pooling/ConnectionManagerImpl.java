@@ -1078,9 +1078,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
           logger.trace("Looking for connections to expire");
         }
 
-        // because we expire thread local connections we need to scan allConnections
-        // TODO jbarrett - refactor to scan available deque backwards now.
-
         // find connections which have idle expired
         if (!connectionAccounting.isOverMinimum()) {
           return;
@@ -1091,6 +1088,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
         toClose = new ArrayList<>(conCount - connectionAccounting.getMinimum());
 
         // because we expire thread local connections we need to scan allConnections
+        // TODO jbarrett - refactor to scan available deque backwards now.
         for (Iterator<PooledConnection> it = allConnections.iterator(); it.hasNext()
             && conCount > connectionAccounting.getMinimum();) {
           PooledConnection pc = it.next();
