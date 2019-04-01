@@ -13,14 +13,25 @@
  * the License.
  */
 
-package org.apache.geode.management.configuration;
+package org.apache.geode.util.internal;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
+/**
+ * helper class for creating various json mappers used by Geode Project
+ */
+public class GeodeJsonMapper {
 
-@Experimental
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public interface RuntimeCacheElement extends CacheElement {
+  /**
+   * @return a jackson json mapper that allows single quotes and is able to deserialize json
+   *         string without @JsonTypeInfo if base class is a concrete implementation.
+   */
+  public static ObjectMapper getMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+    mapper.configure(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL, true);
+    return mapper;
+  }
 }

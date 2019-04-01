@@ -38,7 +38,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
@@ -154,7 +153,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public ClusterManagementResult list(CacheElement filter) {
     ConfigurationManager manager = managers.get(filter.getClass());
-    List<RuntimeCacheElement> listResults = manager.list(filter, null);
+    List<CacheElement> listResults = manager.list(filter, null);
 
     ClusterManagementResult result = new ClusterManagementResult();
     result.setResult(listResults);

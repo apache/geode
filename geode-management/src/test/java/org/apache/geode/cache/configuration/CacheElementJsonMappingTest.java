@@ -20,25 +20,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.RegionRuntimeConfig;
-import org.apache.geode.management.configuration.RuntimeCacheElement;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementJsonMappingTest {
-  private static ObjectMapper mapper;
-  static {
-    mapper = new ObjectMapper();
-    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-  }
+  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   private static MemberConfig member;
-  private static RegionRuntimeConfig region;
+  private static RegionConfig region;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -46,7 +40,7 @@ public class CacheElementJsonMappingTest {
     member.setId("server");
     member.setPid("123");
 
-    region = new RegionRuntimeConfig();
+    region = new RegionConfig();
     region.setName("test");
   }
 
@@ -56,7 +50,7 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
     assertThat(json).contains("class").contains("\"name\":\"test\"");
 
-    RegionConfig config = mapper.readValue(json, RegionRuntimeConfig.class);
+    RegionConfig config = mapper.readValue(json, RegionConfig.class);
     assertThat(config.getName()).isEqualTo(region.getName());
   }
 
@@ -73,7 +67,7 @@ public class CacheElementJsonMappingTest {
   @Test
   public void serializeResult() throws Exception {
     ClusterManagementResult result = new ClusterManagementResult();
-    List<RuntimeCacheElement> elements = new ArrayList<>();
+    List<CacheElement> elements = new ArrayList<>();
     elements.add(region);
     elements.add(member);
     result.setResult(elements);

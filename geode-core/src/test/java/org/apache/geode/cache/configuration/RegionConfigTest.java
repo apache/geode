@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RegionConfigTest {
 
@@ -76,7 +77,7 @@ public class RegionConfigTest {
   @Test
   public void correctJsonAndXml() throws Exception {
     String json = "{\"name\":\"test\", \"type\":\"REPLICATE\"}";
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = GeodeJsonMapper.getMapper();
     regionConfig = mapper.readValue(json, RegionConfig.class);
     assertThat(regionConfig.getName()).isEqualTo("test");
     assertThat(regionConfig.getType()).isEqualTo("REPLICATE");

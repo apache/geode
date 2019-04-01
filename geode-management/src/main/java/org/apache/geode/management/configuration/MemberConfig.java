@@ -18,10 +18,11 @@ package org.apache.geode.management.configuration;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 @Experimental
-public class MemberConfig implements RuntimeCacheElement, RestfulEndpoint {
+public class MemberConfig implements CacheElement, RestfulEndpoint {
 
   private static final long serialVersionUID = -6262538068604902018L;
 

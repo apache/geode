@@ -20,9 +20,13 @@ package org.apache.geode.cache.configuration;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
 
-
+@Experimental
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public interface CacheElement extends Identifiable<String>, Serializable {
 
   static <T extends CacheElement> boolean exists(List<T> list, String id) {
