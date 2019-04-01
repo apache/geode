@@ -34,7 +34,6 @@ import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
-import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
 public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
 
@@ -68,8 +67,8 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
         .stream().filter(m -> (filter.getId() == null || filter.getId().equals(m.getName())))
         .map(DistributedMember.class::cast).collect(Collectors.toSet());
 
-    if (members.size() == 0 && filter.getId() != null) {
-      throw new EntityNotFoundException("Member with id %s does not exist");
+    if (members.size() == 0) {
+      return results;
     }
 
     for (DistributedMember member : members) {

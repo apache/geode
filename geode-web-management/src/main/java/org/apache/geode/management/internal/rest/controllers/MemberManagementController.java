@@ -25,9 +25,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
 @Controller("members")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -40,14 +42,23 @@ public class MemberManagementController extends AbstractManagementController {
     config.setId(id);
     ClusterManagementResult result = clusterManagementService.list(config);
 
+    if (result.getResult().size() == 0) {
+      throw new EntityNotFoundException("Unable to find the member with id = " + id);
+    }
+
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult> listMembers() {
-    ClusterManagementResult result = clusterManagementService.list(new MemberConfig());
+  public ResponseEntity<ClusterManagementResult> listMembers(
+      @RequestParam(required = false) String id) {
+    MemberConfig filter = new MemberConfig();
+    if (id != null) {
+      filter.setId(id);
+    }
+    ClusterManagementResult result = clusterManagementService.list(filter);
 
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);

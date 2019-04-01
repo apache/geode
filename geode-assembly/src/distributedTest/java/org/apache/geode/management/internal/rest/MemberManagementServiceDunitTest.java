@@ -79,12 +79,10 @@ public class MemberManagementServiceDunitTest {
   public void listNonExistentMember() throws Exception {
     MemberConfig config = new MemberConfig();
     config.setId("locator");
-
-
     ClusterManagementResult result = cmsClient.list(config);
-    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
-        .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
+        .isEqualTo(ClusterManagementResult.StatusCode.OK);
     assertThat(result.getResult().size()).isEqualTo(0);
   }
 }

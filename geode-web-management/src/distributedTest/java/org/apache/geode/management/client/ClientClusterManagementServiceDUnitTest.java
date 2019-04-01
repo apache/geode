@@ -78,13 +78,5 @@ public class ClientClusterManagementServiceDUnitTest {
     ClusterManagementResult result = client.create(region, "");
 
     assertThat(client.isConnected()).isTrue();
-
-    // This all fails in light of running this test repeatedly as a stress test. Until we introduce
-    // idempotency and/or the ability to call client.delete we can't do this. But it will get fixed
-    // assertThat(result.isSuccessful()).isTrue();
-
-    // Not implemented yet
-    // result = client.delete(region, "");
-    // assertThat(result.isSuccessful()).isTrue();
   }
 }

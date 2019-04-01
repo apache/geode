@@ -128,9 +128,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
     String endPoint = getEndpoint(config);
     String id = config.getId();
 
+    // return restTemplate
+    // .getForEntity(VERSION + endPoint + ((id == null) ? "" : "/{id}"),
+    // ClusterManagementResult.class, id)
+    // .getBody();
+
     return restTemplate
-        .getForEntity(VERSION + endPoint + ((id == null) ? "" : "/{id}"),
-            ClusterManagementResult.class, id)
+        .getForEntity(VERSION + endPoint + ((id == null) ? "" : "/?id=" + id),
+            ClusterManagementResult.class)
         .getBody();
 
   }
