@@ -25,11 +25,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +43,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
@@ -114,7 +111,7 @@ public class QueueManagerJUnitTest {
   }
 
   @Test
-  public void testBasic() throws Exception {
+  public void testBasic() {
     factory.addConnection(0, 0, 1);
     factory.addConnection(0, 0, 2);
     factory.addConnection(0, 0, 3);
@@ -126,7 +123,7 @@ public class QueueManagerJUnitTest {
   }
 
   @Test
-  public void testUseBestRedundant() throws Exception {
+  public void testUseBestRedundant() {
     factory.addConnection(0, 0, 1);
     factory.addConnection(1, 23, 2);
     factory.addConnection(1, 11, 3);
@@ -138,7 +135,7 @@ public class QueueManagerJUnitTest {
   }
 
   @Test
-  public void testHandleErrorsOnInit() throws Exception {
+  public void testHandleErrorsOnInit() {
     factory.addError();
     factory.addConnection(0, 0, 1);
     factory.addError();
@@ -164,7 +161,7 @@ public class QueueManagerJUnitTest {
           assertPortEquals(new int[] {1, 3}, manager.getAllConnections().getBackups());
           manager.close(false);
           done = true;
-        } catch (AssertionError e) {
+        } catch (AssertionError ignored) {
         }
       }
     } catch (InterruptedException e) {
@@ -193,7 +190,7 @@ public class QueueManagerJUnitTest {
           assertPortEquals(1, manager.getAllConnections().getPrimary());
           assertPortEquals(new int[] {2, 3}, manager.getAllConnections().getBackups());
           done = true;
-        } catch (AssertionError e) {
+        } catch (AssertionError ignored) {
         }
       }
     } catch (InterruptedException e) {
@@ -240,7 +237,7 @@ public class QueueManagerJUnitTest {
     Thread.sleep(100);
     assertPortEquals(new int[] {2, 3}, manager.getAllConnections().getBackups());
 
-    Connection backup1 = (Connection) manager.getAllConnections().getBackups().get(0);
+    Connection backup1 = manager.getAllConnections().getBackups().get(0);
     backup1.destroy();
 
     assertPortEquals(1, manager.getAllConnections().getPrimary());
@@ -250,7 +247,7 @@ public class QueueManagerJUnitTest {
   }
 
   @Test
-  public void testWaitForPrimary() throws Exception {
+  public void testWaitForPrimary() {
     factory.addConnection(0, 0, 1);
     manager = new QueueManagerImpl(pool, endpoints, source, factory, 2, 20, logger,
         ClientProxyMembershipID.getNewProxyMembership(ds));
@@ -289,14 +286,14 @@ public class QueueManagerJUnitTest {
     assertEquals(expected, actual.getServer().getPort());
   }
 
-  private static void assertPortEquals(int[] expected, List actual) {
-    ArrayList expectedPorts = new ArrayList();
-    for (int i = 0; i < expected.length; i++) {
-      expectedPorts.add(new Integer(expected[i]));
+  private static void assertPortEquals(int[] expected, List<Connection> actual) {
+    ArrayList<Integer> expectedPorts = new ArrayList<>();
+    for (int value : expected) {
+      expectedPorts.add(value);
     }
-    ArrayList actualPorts = new ArrayList();
-    for (Iterator itr = actual.iterator(); itr.hasNext();) {
-      actualPorts.add(new Integer(((Connection) itr.next()).getServer().getPort()));
+    ArrayList<Integer> actualPorts = new ArrayList<>();
+    for (Connection connection : actual) {
+      actualPorts.add(connection.getServer().getPort());
     }
 
     assertEquals(expectedPorts, actualPorts);
@@ -404,13 +401,13 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public List getLocators() {
+    public List<InetSocketAddress> getLocators() {
       return null;
     }
 
     @Override
-    public List getOnlineLocators() {
-      return new ArrayList();
+    public List<InetSocketAddress> getOnlineLocators() {
+      return new ArrayList<>();
     }
 
     @Override
@@ -484,7 +481,7 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public List getServers() {
+    public List<InetSocketAddress> getServers() {
       return null;
     }
 
@@ -552,10 +549,6 @@ public class QueueManagerJUnitTest {
       return 0;
     }
 
-    public RegionService createAuthenticatedCacheView(Properties properties) {
-      return null;
-    }
-
     @Override
     public void setupServerAffinity(boolean allowFailover) {}
 
@@ -580,14 +573,13 @@ public class QueueManagerJUnitTest {
    */
   private class DummyFactory implements ConnectionFactory {
 
-    protected LinkedList nextConnections = new LinkedList();
+    LinkedList<DummyConnection> nextConnections = new LinkedList<>();
 
-    public void addError() {
+    void addError() {
       nextConnections.add(null);
     }
 
-    public void addConnection(int endpointType, int queueSize, int port)
-        throws UnknownHostException {
+    void addConnection(int endpointType, int queueSize, int port) {
       nextConnections.add(new DummyConnection(endpointType, queueSize, port));
     }
 
@@ -611,7 +603,7 @@ public class QueueManagerJUnitTest {
       if (nextConnections == null || nextConnections.isEmpty()) {
         return null;
       }
-      return (DummyConnection) nextConnections.removeFirst();
+      return nextConnections.removeFirst();
     }
 
     @Override
@@ -627,7 +619,7 @@ public class QueueManagerJUnitTest {
         }
 
         @Override
-        public void join(long wait) throws InterruptedException {}
+        public void join(long wait) {}
 
         @Override
         public void setFailedUpdater(ClientUpdater failedUpdater) {}
@@ -649,22 +641,22 @@ public class QueueManagerJUnitTest {
     int nextPort = 0;
 
     @Override
-    public ServerLocation findServer(Set excludedServers) {
+    public ServerLocation findServer(Set<ServerLocation> excludedServers) {
       return new ServerLocation("localhost", nextPort++);
     }
 
     @Override
     public ServerLocation findReplacementServer(ServerLocation currentServer,
-        Set/* <ServerLocation> */ excludedServers) {
+        Set<ServerLocation> excludedServers) {
       return new ServerLocation("localhost", nextPort++);
     }
 
     @Override
-    public List findServersForQueue(Set excludedServers, int numServers,
+    public List<ServerLocation> findServersForQueue(Set excludedServers, int numServers,
         ClientProxyMembershipID proxyId, boolean findDurableQueue) {
       numServers =
           numServers > factory.nextConnections.size() ? factory.nextConnections.size() : numServers;
-      ArrayList locations = new ArrayList(numServers);
+      ArrayList<ServerLocation> locations = new ArrayList<>(numServers);
       for (int i = 0; i < numServers; i++) {
         locations.add(findServer(null));
       }
@@ -699,22 +691,21 @@ public class QueueManagerJUnitTest {
     private ServerLocation location;
     private Endpoint endpoint;
 
-    public DummyConnection(int endpointType, int queueSize, int port) throws UnknownHostException {
+    DummyConnection(int endpointType, int queueSize, int port) {
       InternalDistributedMember member = new InternalDistributedMember("localhost", 555);
-      ServerQueueStatus status = new ServerQueueStatus((byte) endpointType, queueSize, member, 0);
-      this.status = status;
+      this.status = new ServerQueueStatus((byte) endpointType, queueSize, member, 0);
       this.location = new ServerLocation("localhost", port);
       this.endpoint = endpoints.referenceEndpoint(location, member);
     }
 
     @Override
-    public void close(boolean keepAlive) throws Exception {}
+    public void close(boolean keepAlive) {}
 
     @Override
     public void destroy() {}
 
     @Override
-    public Object execute(Op op) throws Exception {
+    public Object execute(Op op) {
       return null;
     }
 
