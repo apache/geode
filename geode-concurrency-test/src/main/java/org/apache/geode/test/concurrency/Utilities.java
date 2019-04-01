@@ -12,18 +12,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.concurrency.loop;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.apache.geode.test.concurrency;
 
-/**
- * Configuration for the LoopRunner class
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface LoopRunnerConfig {
-  int count();
+public interface Utilities {
+
+  /**
+   * @return Result of {@code Runtime.getRuntime().availableProcessors()}.
+   */
+  static int availableProcessors() {
+    return Runtime.getRuntime().availableProcessors();
+  }
+
+  /**
+   * Repeat {@code task} for {@code count} times serially.
+   *
+   * @param task to repeat
+   * @param count number of times
+   */
+  static void repeat(Runnable task, int count) {
+    for (; count > 0; count--) {
+      task.run();
+    }
+  }
 }

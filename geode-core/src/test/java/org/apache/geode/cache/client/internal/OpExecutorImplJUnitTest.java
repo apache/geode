@@ -589,7 +589,8 @@ public class OpExecutorImplJUnitTest {
     public void start(ScheduledExecutorService backgroundProcessor) {}
 
     @Override
-    public Connection exchangeConnection(Connection conn, Set excludedServers, long aquireTimeout) {
+    public Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers,
+        long aquireTimeout) {
       if (excludedServers.size() >= numServers) {
         throw new NoAvailableServersException();
       }
@@ -608,7 +609,9 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public void activate(Connection conn) {}
+    public boolean activate(Connection conn) {
+      return true;
+    }
 
     @Override
     public void passivate(Connection conn, boolean accessed) {}
