@@ -58,13 +58,13 @@ public class SerializationHelper {
     }
   }
 
-  public static ArrayList/* <ServerLocation> */ readServerLocationList(DataInput in)
+  public static ArrayList<ServerLocation> readServerLocationList(DataInput in)
       throws IOException, ClassNotFoundException {
     int size = in.readInt();
     if (size < 0) {
       return null;
     }
-    ArrayList serverLocations = new ArrayList(size);
+    ArrayList<ServerLocation> serverLocations = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
       ServerLocation next = new ServerLocation();
       InternalDataSerializer.invokeFromData(next, in);

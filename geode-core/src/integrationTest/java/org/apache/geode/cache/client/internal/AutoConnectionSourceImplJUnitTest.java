@@ -122,7 +122,7 @@ public class AutoConnectionSourceImplJUnitTest {
     locators.add(isa);
     List<HostAddress> la = new ArrayList<>();
     la.add(new HostAddress(isa, ia.getHostName()));
-    source = new AutoConnectionSourceImpl(locators, la, "", 60 * 1000);
+    source = new AutoConnectionSourceImpl(la, "", 60 * 1000);
     source.start(pool);
   }
 
@@ -175,7 +175,7 @@ public class AutoConnectionSourceImplJUnitTest {
     la.add(new HostAddress(floc1, floc1.getHostName()));
     la.add(new HostAddress(floc2, floc2.getHostName()));
 
-    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(locators, la, "", 60 * 1000);
+    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(la, "", 60 * 1000);
 
     // This method will create a new InetSocketAddress of floc1
     src.updateLocatorInLocatorList(new HostAddress(floc1, floc1.getHostName()));
@@ -205,7 +205,7 @@ public class AutoConnectionSourceImplJUnitTest {
     List<HostAddress> la = new ArrayList<>();
     la.add(new HostAddress(floc1, floc1.getHostName()));
     la.add(new HostAddress(floc2, floc2.getHostName()));
-    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(locators, la, "", 60 * 1000);
+    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(la, "", 60 * 1000);
 
 
     InetSocketAddress b1 = new InetSocketAddress("fakeLocalHost1", port);

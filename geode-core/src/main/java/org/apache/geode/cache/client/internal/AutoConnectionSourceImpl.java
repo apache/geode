@@ -67,34 +67,31 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private TcpClient tcpClient;
 
   @Immutable
-  protected static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
+  private static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
 
   @Immutable
   private static final Comparator<HostAddress> SOCKET_ADDRESS_COMPARATOR =
-      new Comparator<HostAddress>() {
-        @Override
-        public int compare(HostAddress address, HostAddress otherAddress) {
-          InetSocketAddress inetSocketAddress = address.getSocketInetAddress();
-          InetSocketAddress otherInetSocketAddress = otherAddress.getSocketInetAddress();
-          // shouldn't happen, but if it does we'll say they're the same.
-          if (inetSocketAddress.getAddress() == null
-              || otherInetSocketAddress.getAddress() == null) {
-            return 0;
-          }
+      (address, otherAddress) -> {
+        InetSocketAddress inetSocketAddress = address.getSocketInetAddress();
+        InetSocketAddress otherInetSocketAddress = otherAddress.getSocketInetAddress();
+        // shouldn't happen, but if it does we'll say they're the same.
+        if (inetSocketAddress.getAddress() == null
+            || otherInetSocketAddress.getAddress() == null) {
+          return 0;
+        }
 
-          int result = inetSocketAddress.getAddress().getCanonicalHostName()
-              .compareTo(otherInetSocketAddress.getAddress().getCanonicalHostName());
-          if (result != 0) {
-            return result;
-          } else {
-            return inetSocketAddress.getPort() - otherInetSocketAddress.getPort();
-          }
+        int result = inetSocketAddress.getAddress().getCanonicalHostName()
+            .compareTo(otherInetSocketAddress.getAddress().getCanonicalHostName());
+        if (result != 0) {
+          return result;
+        } else {
+          return inetSocketAddress.getPort() - otherInetSocketAddress.getPort();
         }
       };
-  protected final List<HostAddress> initialLocators;
+  private final List<HostAddress> initialLocators;
   private final String serverGroup;
-  private AtomicReference<LocatorList> locators = new AtomicReference<LocatorList>();
-  private AtomicReference<LocatorList> onlineLocators = new AtomicReference<LocatorList>();
+  private AtomicReference<LocatorList> locators = new AtomicReference<>();
+  private AtomicReference<LocatorList> onlineLocators = new AtomicReference<>();
   protected InternalPool pool;
   private final int connectionTimeout;
   private long locatorUpdateInterval;
@@ -104,14 +101,11 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    * key is the InetSocketAddress of the locator. value will be an exception if we have already
    * found the locator to be dead. value will be null if we last saw it alive.
    */
-  private final Map<InetSocketAddress, Exception> locatorState =
-      new HashMap<InetSocketAddress, Exception>();
+  private final Map<InetSocketAddress, Exception> locatorState = new HashMap<>();
 
-  public AutoConnectionSourceImpl(List<InetSocketAddress> locators, List<HostAddress> contacts,
-      String serverGroup, int handshakeTimeout) {
-    ArrayList<HostAddress> tmpContacts =
-        new ArrayList<HostAddress>(Collections.unmodifiableList(contacts));
-    this.locators.set(new LocatorList(tmpContacts));
+  public AutoConnectionSourceImpl(List<HostAddress> contacts, String serverGroup,
+      int handshakeTimeout) {
+    this.locators.set(new LocatorList(new ArrayList<>(contacts)));
     this.onlineLocators.set(new LocatorList(Collections.emptyList()));
     this.initialLocators = Collections.unmodifiableList(this.locators.get().getLocatorAddresses());
     this.connectionTimeout = handshakeTimeout;
@@ -140,7 +134,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   @Override
   public ServerLocation findReplacementServer(ServerLocation currentServer,
-      Set/* <ServerLocation> */ excludedServers) {
+      Set<ServerLocation> excludedServers) {
     if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
       return null;
     }
@@ -169,10 +163,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   @Override
-  public List/* ServerLocation */ findServersForQueue(Set/* <ServerLocation> */ excludedServers,
+  public List<ServerLocation> findServersForQueue(Set<ServerLocation> excludedServers,
       int numServers, ClientProxyMembershipID proxyId, boolean findDurableQueue) {
     if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
-      return new ArrayList();
+      return new ArrayList<>();
     }
     QueueConnectionRequest request = new QueueConnectionRequest(proxyId, numServers,
         excludedServers, serverGroup, findDurableQueue);
@@ -181,8 +175,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       throw new NoAvailableLocatorsException(
           "Unable to connect to any locators in the list " + locators);
     }
-    List result = response.getServers();
-    return result;
+    return response.getServers();
   }
 
   @Override
@@ -248,9 +241,6 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
       for (HostAddress tloc : locatorList.getLocatorAddresses()) {
         if (tloc.equals(locator)) {
-          /**
-           * This call doesn't throw UnknownHostException;
-           */
           InetSocketAddress changeLoc = new InetSocketAddress(locator.getHostName(),
               locator.getSocketInetAddressNoLookup().getPort());
           HostAddress hostAddress = new HostAddress(changeLoc, locator.getHostName());
@@ -274,9 +264,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     return locators.get().getLocators();
   }
 
-  protected ServerLocationResponse queryLocators(ServerLocationRequest request) {
+  private ServerLocationResponse queryLocators(ServerLocationRequest request) {
     Iterator controllerItr = locators.get().iterator();
-    ServerLocationResponse response = null;
+    ServerLocationResponse response;
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     do {
@@ -290,25 +280,20 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       }
     } while (controllerItr.hasNext() && (response == null || !response.hasResult()));
 
-    if (response == null) {
-      return null;
-    }
-
     return response;
   }
 
-  protected void updateLocatorList(LocatorListResponse response) {
+  private void updateLocatorList(LocatorListResponse response) {
     if (response == null)
       return;
     isBalanced = response.isBalanced();
     List<ServerLocation> locatorResponse = response.getLocators();
 
-    List<HostAddress> newLocatorAddresses = new ArrayList<HostAddress>(locatorResponse.size());
+    List<HostAddress> newLocatorAddresses = new ArrayList<>(locatorResponse.size());
     List<HostAddress> newOnlineLocators = new ArrayList<>(locatorResponse.size());
 
     Set<HostAddress> badLocators = new HashSet<>(initialLocators);
-    for (Iterator<ServerLocation> itr = locatorResponse.iterator(); itr.hasNext();) {
-      ServerLocation locator = itr.next();
+    for (ServerLocation locator : locatorResponse) {
       InetSocketAddress address = new InetSocketAddress(locator.getHostName(), locator.getPort());
       HostAddress hostAddress = new HostAddress(address, locator.getHostName());
       newLocatorAddresses.add(hostAddress);
@@ -327,8 +312,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     if (logger.isInfoEnabled()
         || !locatorCallback.getClass().equals(LocatorDiscoveryCallbackAdapter.class)) {
       List<InetSocketAddress> newLocators = newLocatorList.getLocators();
-      ArrayList<InetSocketAddress> removedLocators =
-          new ArrayList<InetSocketAddress>(oldLocators.getLocators());
+      ArrayList<InetSocketAddress> removedLocators = new ArrayList<>(oldLocators.getLocators());
       removedLocators.removeAll(newLocators);
 
       ArrayList<InetSocketAddress> addedLocators = new ArrayList<>(newLocators);
@@ -373,7 +357,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   @Override
   public void start(InternalPool pool) {
     this.pool = pool;
-    pool.getStats().setInitialContacts(((LocatorList) locators.get()).size());
+    pool.getStats().setInitialContacts((locators.get()).size());
     this.locatorUpdateInterval = Long.getLong(
         DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL", pool.getPingInterval());
 
@@ -408,9 +392,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       if (ex instanceof ConnectException) {
         logger.info(String.format("locator %s is not running.", l), ex);
       } else {
-        logger.info(String.format("Communication with locator %s failed with %s.",
-            new Object[] {l, ex}),
-            ex);
+        logger.info(String.format("Communication with locator %s failed with %s.", l, ex), ex);
       }
     }
   }
@@ -424,10 +406,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    */
   private static class LocatorList {
     protected final List<HostAddress> locators;
-    protected AtomicInteger currentLocatorIndex = new AtomicInteger();
+    AtomicInteger currentLocatorIndex = new AtomicInteger();
 
-    public LocatorList(List<HostAddress> locators) {
-      Collections.sort(locators, SOCKET_ADDRESS_COMPARATOR);
+    LocatorList(List<HostAddress> locators) {
+      locators.sort(SOCKET_ADDRESS_COMPARATOR);
       this.locators = Collections.unmodifiableList(locators);
     }
 
@@ -439,7 +421,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       return locs;
     }
 
-    public List<HostAddress> getLocatorAddresses() {
+    List<HostAddress> getLocatorAddresses() {
       return locators;
     }
 
