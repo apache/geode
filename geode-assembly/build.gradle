@@ -216,7 +216,7 @@ dependencies {
   }
   acceptanceTestCompile(project(':geode-assembly:geode-assembly-test'))
   acceptanceTestCompile('org.apache.httpcomponents:httpclient')
-  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.2.1')
+  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.3.1')
 
 
   uiTestCompile(project(':geode-core'))

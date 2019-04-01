@@ -228,7 +228,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
       String defaultField, int size) throws Exception {
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(indexName, regionName,
         queryString, defaultField);
-    await().untilAsserted(() -> assertThat(query.findPages()).hasSize(size));
+    await().untilAsserted(() -> assertThat(query.findPages()).toIterable().hasSize(size));
   }
 
   private void verifyInternalRegions(Consumer<LocalRegion> verify) {

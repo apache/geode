@@ -37,7 +37,7 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.params.geo.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusParam;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;

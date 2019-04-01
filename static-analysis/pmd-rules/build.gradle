@@ -15,6 +15,6 @@
  * limitations under the License.
  */
 dependencies {
-    testCompile(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.11.0')
-    compile(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.11.0')
+    testCompile(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.13.0')
+    compile(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.13.0')
 }
