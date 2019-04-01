@@ -1092,11 +1092,10 @@ public class QueueManagerImpl implements QueueManager {
 
   private void recoverSingleList(int interestType, Connection recoveredConnection,
       boolean isDurable, boolean receiveValues, boolean isFirstNewConnection) {
-    for (Object o : this.getPool().getRITracker()
+    for (RegionInterestEntry e : this.getPool().getRITracker()
         .getRegionToInterestsMap(interestType, isDurable, !receiveValues)
         .values()) {
       // restore a region
-      RegionInterestEntry e = (RegionInterestEntry) o;
       recoverSingleRegion(e.getRegion(), e.getInterests(), interestType, recoveredConnection,
           isDurable, receiveValues, isFirstNewConnection);
     }
@@ -1123,7 +1122,8 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   // TODO this is distressingly similar to LocalRegion#processSingleInterest
-  private void recoverSingleRegion(LocalRegion r, Map keys, int interestType,
+  private void recoverSingleRegion(LocalRegion r, Map<Object, InterestResultPolicy> keys,
+      int interestType,
       Connection recoveredConnection, boolean isDurable, boolean receiveValues,
       boolean isFirstNewConnection) {
 
@@ -1133,19 +1133,18 @@ public class QueueManagerImpl implements QueueManager {
     }
 
     // build a HashMap, key is policy, value is list
-    HashMap<InterestResultPolicy, LinkedList> policyMap = new HashMap<>();
-    for (Object o : keys.entrySet()) {
+    HashMap<InterestResultPolicy, LinkedList<Object>> policyMap = new HashMap<>();
+    for (Map.Entry<Object, InterestResultPolicy> me : keys.entrySet()) {
       // restore and commit an interest
-      Map.Entry me = (Map.Entry) o;
       Object key = me.getKey();
-      InterestResultPolicy pol = (InterestResultPolicy) me.getValue();
+      InterestResultPolicy pol = me.getValue();
 
       if (interestType == InterestType.KEY) {
         // Gester: we only consolidate the key into list for InterestType.KEY
-        LinkedList keyList = policyMap.get(pol);
+        LinkedList<Object> keyList = policyMap.get(pol);
         if (keyList == null) {
 
-          keyList = new LinkedList();
+          keyList = new LinkedList<>();
         }
         keyList.add(key);
         policyMap.put(pol, keyList);
@@ -1157,8 +1156,8 @@ public class QueueManagerImpl implements QueueManager {
     }
 
     // Process InterestType.KEY: Iterator list for each each policy
-    for (Map.Entry<InterestResultPolicy, LinkedList> me : policyMap.entrySet()) {
-      LinkedList keyList = me.getValue();
+    for (Map.Entry<InterestResultPolicy, LinkedList<Object>> me : policyMap.entrySet()) {
+      LinkedList<Object> keyList = me.getValue();
       InterestResultPolicy pol = me.getKey();
       recoverSingleKey(r, keyList, pol, interestType, recoveredConnection, isDurable, receiveValues,
           isFirstNewConnection);
