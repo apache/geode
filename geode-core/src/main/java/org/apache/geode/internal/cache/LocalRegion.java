@@ -11330,6 +11330,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @since GemFire prPersistSprint2
    */
+  @FunctionalInterface
   public interface RegionEntryCallback {
     void handleRegionEntry(RegionEntry regionEntry);
   }
@@ -11339,17 +11340,20 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @since GemFire 5.7
    */
+  @FunctionalInterface
   @VisibleForTesting
   public interface TestCallable {
     void call(LocalRegion r, Operation op, RegionEntry re);
   }
 
+  @FunctionalInterface
   @VisibleForTesting
   interface RegionMapConstructor {
     RegionMap create(LocalRegion owner, RegionMap.Attributes attrs,
         InternalRegionArguments internalRegionArgs);
   }
 
+  @FunctionalInterface
   @VisibleForTesting
   interface ServerRegionProxyConstructor {
     ServerRegionProxy create(Region region);
