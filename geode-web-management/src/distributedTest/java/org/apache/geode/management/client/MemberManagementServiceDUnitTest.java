@@ -17,6 +17,11 @@ package org.apache.geode.management.client;
 
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,15 +34,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.rest.BaseLocatorContextLoader;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
+import org.apache.geode.management.internal.rest.StandardRequestPostProcessor;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -45,7 +51,9 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
-public class ClientClusterManagementServiceDUnitTest {
+public class MemberManagementServiceDUnitTest {
+
+  static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -55,11 +63,12 @@ public class ClientClusterManagementServiceDUnitTest {
 
   private MemberVM server1;
   private ClusterManagementService client;
+  private MockMvc mockMvc;
 
   @Before
   public void before() {
     cluster.setSkipLocalDistributedSystemCleanup(true);
-    MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
         .build();
     MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mockMvc);
     client = ClusterManagementServiceProvider.getService(requestFactory);
@@ -70,13 +79,55 @@ public class ClientClusterManagementServiceDUnitTest {
 
   @Test
   @WithMockUser
-  public void createRegion() {
-    RegionConfig region = new RegionConfig();
-    region.setName("customer");
-    region.setType(RegionShortcut.REPLICATE);
+  public void listMember() {
+    MemberConfig memberConfig = new MemberConfig();
+    ClusterManagementResult result = client.list(memberConfig);
 
-    ClusterManagementResult result = client.create(region, "");
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getResult().size()).isEqualTo(2);
+  }
 
-    assertThat(client.isConnected()).isTrue();
+  @Test
+  @WithMockUser
+  public void getOneMember() throws Exception {
+    MemberConfig config = new MemberConfig();
+    config.setId("server-0");
+    ClusterManagementResult result = client.list(config);
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getResult().size()).isEqualTo(1);
+  }
+
+  @Test
+  @WithMockUser
+  public void noMatchWithJavaAPI() throws Exception {
+    MemberConfig config = new MemberConfig();
+    // look for a member with a non-existent id
+    config.setId("server");
+    ClusterManagementResult result = client.list(config);
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode())
+        .isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getResult().size()).isEqualTo(0);
+  }
+
+  @Test
+  @WithMockUser
+  public void noMatchWithFilter() throws Exception {
+    mockMvc.perform(get("/v2/members?id=server"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.statusCode", is("OK")))
+        .andExpect(jsonPath("$.result", iterableWithSize(0)));
+  }
+
+  @Test
+  @WithMockUser
+  public void noMatchWithUriVariable() throws Exception {
+    mockMvc.perform(get("/v2/members/server"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.statusCode", is("ENTITY_NOT_FOUND")))
+        .andExpect(jsonPath("$.statusMessage",
+            is("Unable to find the member with id = server")));
   }
 }
