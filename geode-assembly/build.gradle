@@ -478,6 +478,7 @@ distributions {
             'geode-protobuf',
             'geode-protobuf-messages',
             'geode-rebalancer',
+            'geode-redis',
             'geode-wan',
           ].collect {
             [
