@@ -385,21 +385,19 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   public PhiAccrualFailureDetector getOrCreatePhiAccrualFailureDetector(
       InternalDistributedMember member,
       long timeStamp) {
-    PhiAccrualFailureDetector detector;
-    // TODO use something cheaper than a sync on the health monitor
-    synchronized (GMSHealthMonitor.this) {
-      detector = GMSHealthMonitor.this.memberDetectors.get(member);
+    PhiAccrualFailureDetector detector = GMSHealthMonitor.this.memberDetectors.get(member);
 
-      if (detector == null) {
-        logger.info("creating new failure detector for {}", member);
-        final double threshold = 10;
-        final int sampleSize = 200;
-        final int minStdDev = 100;
-        detector = new PhiAccrualFailureDetector(
-            threshold, sampleSize, minStdDev, memberTimeout, memberTimeout);
-        detector.heartbeat(timeStamp);
-        memberDetectors.put(member, detector);
-      }
+    if (detector == null) {
+      // it's okay to not synchronize here - if we happen to create another detector
+      // for this member in another thread it will be pretty equivalent to the one created here
+      logger.info("Creating new failure detector for {}", member);
+      final int threshold = Integer.getInteger("geode.phiAccrualThreshold", 10);
+      final int sampleSize = Integer.getInteger("geode.phiAccrualSampleSize", 200);
+      final int minStdDev = Integer.getInteger("geode.phiAccrualMinimumStandardDeviation", 100);
+      detector = new PhiAccrualFailureDetector(
+          threshold, sampleSize, minStdDev, memberTimeout, memberTimeout);
+      detector.heartbeat(timeStamp);
+      memberDetectors.put(member, detector);
     }
     return detector;
   }

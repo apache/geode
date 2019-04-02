@@ -1,20 +1,4 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
- * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
- */
-package org.apache.geode.distributed.internal.membership.gms.fd;
-
-/*
  * Copyright 2018 Mitsunori Komatsu (komamitsu)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,37 +14,37 @@ package org.apache.geode.distributed.internal.membership.gms.fd;
  * limitations under the License.
  */
 
+package org.apache.geode.distributed.internal.membership.gms.fd;
+
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.internal.logging.LogService;
-
 /**
+ * <p>Ported to Geode from https://github.com/komamitsu/phi-accural-failure-detector.  Javadoc
+ * from that repo follows...</p>
+ * <p>
  * This is a port of
  * https://github.com/akka/akka/blob/master/akka-remote/src/main/scala/akka/remote/PhiAccrualFailureDetector.scala
  *
  * Implementation of 'The Phi Accrual Failure Detector' by Hayashibara et al. as defined in their
  * paper:
  * [http://ddg.jaist.ac.jp/pub/HDY+04.pdf]
- *
+ *<p>
  * The suspicion level of failure is given by a value called φ (phi).
  * The basic idea of the φ failure detector is to express the value of φ on a scale that
  * is dynamically adjusted to reflect current network conditions. A configurable
  * threshold is used to decide if φ is considered to be a failure.
- *
+ *<p>
  * The value of φ is calculated as:
- *
- * {{{
+ *<pre>
  * φ = -log10(1 - F(timeSinceLastHeartbeat)
- * }}}
+ * </pre>
  * where F is the cumulative distribution function of a normal distribution with mean
  * and standard deviation estimated from historical heartbeat inter-arrival times.
+ *
  */
 public class PhiAccrualFailureDetector {
-  private static final Logger logger = LogService.getLogger();
   private final double threshold;
   private final double minStdDeviationMillis;
   private final long acceptableHeartbeatPauseMillis;
