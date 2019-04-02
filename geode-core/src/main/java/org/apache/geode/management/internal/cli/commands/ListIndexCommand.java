@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -28,64 +29,60 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.IndexDetails;
 import org.apache.geode.management.internal.cli.domain.IndexDetails.IndexStatisticsDetails;
 import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListIndexCommand extends InternalGfshCommand {
+public class ListIndexCommand extends GfshCommand {
   @CliCommand(value = CliStrings.LIST_INDEX, help = CliStrings.LIST_INDEX__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ, target = ResourcePermission.Target.QUERY)
-  public Result listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
+  public ResultModel listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
       specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
       help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats) {
 
-    return toTabularResult(getIndexListing(), showStats);
-  }
-
-  private Result toTabularResult(final List<IndexDetails> indexDetailsList,
-      final boolean showStats) {
-    if (!indexDetailsList.isEmpty()) {
-      final TabularResultData indexData = ResultBuilder.createTabularResultData();
-
-      for (final IndexDetails indexDetails : indexDetailsList) {
-        indexData.accumulate("Member Name",
-            StringUtils.defaultString(indexDetails.getMemberName()));
-        indexData.accumulate("Member ID", indexDetails.getMemberId());
-        indexData.accumulate("Region Path", indexDetails.getRegionPath());
-        indexData.accumulate("Name", indexDetails.getIndexName());
-        if (indexDetails.getIndexType() == null) {
-          indexData.accumulate("Type", "");
-        } else {
-          indexData.accumulate("Type", indexDetails.getIndexType().getName());
-        }
-        indexData.accumulate("Indexed Expression", indexDetails.getIndexedExpression());
-        indexData.accumulate("From Clause", indexDetails.getFromClause());
-        indexData.accumulate("Valid Index", indexDetails.getIsValid());
-
-        if (showStats) {
-          final IndexStatisticsDetailsAdapter adapter =
-              new IndexStatisticsDetailsAdapter(indexDetails.getIndexStatisticsDetails());
-
-          indexData.accumulate("Uses", adapter.getTotalUses());
-          indexData.accumulate("Updates", adapter.getNumberOfUpdates());
-          indexData.accumulate("Update Time", adapter.getTotalUpdateTime());
-          indexData.accumulate("Keys", adapter.getNumberOfKeys());
-          indexData.accumulate("Values", adapter.getNumberOfValues());
-        }
-      }
-
-      return ResultBuilder.buildResult(indexData);
-    } else {
-      return ResultBuilder.createInfoResult(CliStrings.LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE);
+    ResultModel result = new ResultModel();
+    TabularResultModel indexTable = result.addTable("indices");
+    final List<IndexDetails> indexDetailsList = getIndexListing();
+    if (indexDetailsList.isEmpty()) {
+      return ResultModel.createInfo(CliStrings.LIST_INDEX__INDEXES_NOT_FOUND_MESSAGE);
     }
+
+    for (final IndexDetails indexDetails : indexDetailsList) {
+      indexTable.accumulate("Member Name",
+          StringUtils.defaultString(indexDetails.getMemberName()));
+      indexTable.accumulate("Member ID", indexDetails.getMemberId());
+      indexTable.accumulate("Region Path", indexDetails.getRegionPath());
+      indexTable.accumulate("Name", indexDetails.getIndexName());
+      if (indexDetails.getIndexType() == null) {
+        indexTable.accumulate("Type", "");
+      } else {
+        indexTable.accumulate("Type", indexDetails.getIndexType().getName());
+      }
+      indexTable.accumulate("Indexed Expression", indexDetails.getIndexedExpression());
+      indexTable.accumulate("From Clause", indexDetails.getFromClause());
+      indexTable.accumulate("Valid Index", indexDetails.getIsValid() + "");
+
+      if (showStats) {
+        final IndexStatisticsDetailsAdapter adapter =
+            new IndexStatisticsDetailsAdapter(indexDetails.getIndexStatisticsDetails());
+
+        indexTable.accumulate("Uses", adapter.getTotalUses());
+        indexTable.accumulate("Updates", adapter.getNumberOfUpdates());
+        indexTable.accumulate("Update Time", adapter.getTotalUpdateTime());
+        indexTable.accumulate("Keys", adapter.getNumberOfKeys());
+        indexTable.accumulate("Values", adapter.getNumberOfValues());
+      }
+    }
+
+    return result;
   }
 
   List<IndexDetails> getIndexListing() {
@@ -122,28 +119,28 @@ public class ListIndexCommand extends InternalGfshCommand {
     }
 
     public String getNumberOfKeys() {
-      return getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfKeys()) : "";
+      return (getIndexStatisticsDetails() != null)
+          ? Objects.toString(getIndexStatisticsDetails().getNumberOfKeys(), "") : "";
     }
 
     public String getNumberOfUpdates() {
       return getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfUpdates()) : "";
+          ? Objects.toString(getIndexStatisticsDetails().getNumberOfUpdates(), "") : "";
     }
 
     public String getNumberOfValues() {
       return getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getNumberOfValues()) : "";
+          ? Objects.toString(getIndexStatisticsDetails().getNumberOfValues(), "") : "";
     }
 
     public String getTotalUpdateTime() {
       return getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getTotalUpdateTime()) : "";
+          ? Objects.toString(getIndexStatisticsDetails().getTotalUpdateTime(), "") : "";
     }
 
     public String getTotalUses() {
       return getIndexStatisticsDetails() != null
-          ? StringUtils.defaultString(getIndexStatisticsDetails().getTotalUses()) : "";
+          ? Objects.toString(getIndexStatisticsDetails().getTotalUses(), "") : "";
     }
   }
 }

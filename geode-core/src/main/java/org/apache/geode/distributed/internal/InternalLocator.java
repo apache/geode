@@ -691,7 +691,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     clusterManagementService =
-        new LocatorClusterManagementService(locator.myCache.getDistributionManager(),
+        new LocatorClusterManagementService(locator.myCache,
             locator.configurationPersistenceService);
 
     // start management rest service

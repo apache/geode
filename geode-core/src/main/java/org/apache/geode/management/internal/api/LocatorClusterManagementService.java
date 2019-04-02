@@ -33,42 +33,45 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
-import org.apache.geode.management.internal.configuration.mutators.ConfigurationMutator;
-import org.apache.geode.management.internal.configuration.mutators.RegionConfigMutator;
+import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
+import org.apache.geode.management.internal.configuration.mutators.MemberConfigManager;
+import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static final Logger logger = LogService.getLogger();
-  private DistributionManager distributionManager;
+  private InternalCache cache;
   private ConfigurationPersistenceService persistenceService;
-  private HashMap<Class, ConfigurationMutator> mutators;
+  private HashMap<Class, ConfigurationManager> managers;
   private HashMap<Class, ConfigurationValidator> validators;
 
-  public LocatorClusterManagementService(DistributionManager distributionManager,
+  public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
-    this(distributionManager, persistenceService, new HashMap(), new HashMap());
-    // initialize the list of mutators
-    mutators.put(RegionConfig.class, new RegionConfigMutator());
+    this(cache, persistenceService, new HashMap(), new HashMap());
+    // initialize the list of managers
+    managers.put(RegionConfig.class, new RegionConfigManager());
+    managers.put(MemberConfig.class, new MemberConfigManager(cache));
 
     // initialize the list of validators
     validators.put(RegionConfig.class, new RegionConfigValidator());
   }
 
   @VisibleForTesting
-  public LocatorClusterManagementService(DistributionManager distributionManager,
-      ConfigurationPersistenceService persistenceService, HashMap mutators, HashMap validators) {
-    this.distributionManager = distributionManager;
+  public LocatorClusterManagementService(InternalCache cache,
+      ConfigurationPersistenceService persistenceService, HashMap managers, HashMap validators) {
+    this.cache = cache;
     this.persistenceService = persistenceService;
-    this.mutators = mutators;
+    this.managers = managers;
     this.validators = validators;
   }
 
@@ -84,7 +87,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     ClusterManagementResult result = new ClusterManagementResult();
-    ConfigurationMutator configurationMutator = mutators.get(config.getClass());
+    ConfigurationManager configurationMutator = managers.get(config.getClass());
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
@@ -148,13 +151,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
+  public ClusterManagementResult list(CacheElement filter) {
+    ConfigurationManager manager = managers.get(filter.getClass());
+    List<CacheElement> listResults = manager.list(filter, null);
+
+    ClusterManagementResult result = new ClusterManagementResult();
+    result.setResult(listResults);
+
+    return result;
+  }
+
+  @Override
   public boolean isConnected() {
     return true;
   }
 
   @VisibleForTesting
   Set<DistributedMember> findMembers(String[] groups, String[] members) {
-    return CliUtil.findMembers(groups, members, distributionManager);
+    return CliUtil.findMembers(groups, members, cache);
   }
 
   @VisibleForTesting

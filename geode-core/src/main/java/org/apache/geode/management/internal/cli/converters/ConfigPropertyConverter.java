@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.converters;
 import java.io.IOException;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
@@ -25,6 +24,7 @@ import org.springframework.shell.core.MethodTarget;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /***
  * Added converter to enable auto-completion for index-type
@@ -34,10 +34,7 @@ public class ConfigPropertyConverter
     implements Converter<JndiBindingsType.JndiBinding.ConfigProperty> {
 
   @Immutable
-  private static final ObjectMapper mapper = new ObjectMapper();
-  static {
-    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-  }
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Override
   public boolean supports(Class<?> type, String optionContext) {

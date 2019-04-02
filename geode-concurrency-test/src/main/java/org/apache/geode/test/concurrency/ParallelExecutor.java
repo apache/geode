@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.concurrency;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -40,9 +42,18 @@ public interface ParallelExecutor {
     });
   }
 
+  default <T> Collection<Future<T>> inParallel(RunnableWithException runnable, int count) {
+    ArrayList<Future<T>> futures = new ArrayList<>(count);
+    for (; count > 0; count--) {
+      futures.add(inParallel(runnable));
+    }
+    return futures;
+  }
+
   /**
    * Execute all tasks in parallel, wait for them to complete and throw an exception if any of the
    * tasks throw an exception.
    */
   void execute() throws ExecutionException, InterruptedException;
+
 }

@@ -21,9 +21,10 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
+
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
  * This is mostly used for Gfsh command options that need to specify a className for instantiation.
@@ -35,11 +36,7 @@ public class ClassName<T> implements Serializable {
 
   private String className = "";
   private Properties initProperties = new Properties();
-  private static ObjectMapper mapper = new ObjectMapper();
-
-  static {
-    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-  }
+  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   // used to remove a Declarable through gfsh command
   // e.g. alter region --name=regionA --cache-loader=''

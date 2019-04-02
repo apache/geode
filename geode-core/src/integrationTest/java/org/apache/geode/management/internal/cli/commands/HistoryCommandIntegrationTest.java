@@ -47,13 +47,13 @@ public class HistoryCommandIntegrationTest {
   @Test
   public void testHistoryWithEntry() {
     // Generate a line of history
-    gfsh.executeCommand("echo --string=string");
-    gfsh.executeCommand("connect");
+    gfsh.executeAndAssertThat("echo --string=string");
+    gfsh.executeAndAssertThat("connect");
 
     gfsh.executeAndAssertThat("history").statusIsSuccess()
-        .containsOutput(
-            "  1  0: echo --string=string" + System.lineSeparator() + "  2  1: connect" +
-                System.lineSeparator() + System.lineSeparator() + System.lineSeparator());
+        .hasInfoSection()
+        .hasLines()
+        .containsExactly("0: echo --string=string", "1: connect");
   }
 
   @Test
@@ -70,7 +70,8 @@ public class HistoryCommandIntegrationTest {
     assertThat(historyFile).doesNotExist();
 
     String command = "history --file=" + historyFile.getAbsolutePath();
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .containsOutput("Wrote successfully to file");
 
     assertThat(historyFile).exists();
     assertThat(historyFile).hasContent("0: echo --string=string");
@@ -79,7 +80,7 @@ public class HistoryCommandIntegrationTest {
   @Test
   public void testClearHistory() {
     // Generate a line of history
-    gfsh.executeCommand("echo --string=string");
+    gfsh.executeAndAssertThat("echo --string=string");
     gfsh.executeAndAssertThat("history --clear").statusIsSuccess()
         .containsOutput(CliStrings.HISTORY__MSG__CLEARED_HISTORY);
 

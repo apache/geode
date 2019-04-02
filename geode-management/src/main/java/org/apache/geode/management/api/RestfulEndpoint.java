@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public interface RestfulEndpoint {
 
   /**
@@ -22,5 +24,6 @@ public interface RestfulEndpoint {
    *
    * @return e.g. /regions
    */
+  @JsonIgnore
   String getEndpoint();
 }

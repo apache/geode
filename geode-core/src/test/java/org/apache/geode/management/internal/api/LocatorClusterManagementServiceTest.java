@@ -34,7 +34,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
@@ -42,22 +42,22 @@ import org.apache.geode.management.internal.exceptions.EntityExistsException;
 public class LocatorClusterManagementServiceTest {
 
   private LocatorClusterManagementService service;
-  private DistributionManager distributionManager;
+  private InternalCache cache;
   private ConfigurationPersistenceService persistenceService;
   private RegionConfig regionConfig;
   private ClusterManagementResult result;
 
   @Before
   public void before() throws Exception {
-    distributionManager = mock(DistributionManager.class);
+    cache = mock(InternalCache.class);
     persistenceService = mock(ConfigurationPersistenceService.class);
-    service = spy(new LocatorClusterManagementService(distributionManager, persistenceService));
+    service = spy(new LocatorClusterManagementService(cache, persistenceService));
     regionConfig = new RegionConfig();
   }
 
   @Test
   public void persistenceIsNull() throws Exception {
-    service = new LocatorClusterManagementService(distributionManager, null);
+    service = new LocatorClusterManagementService(cache, null);
     result = service.create(regionConfig, "cluster");
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage())
