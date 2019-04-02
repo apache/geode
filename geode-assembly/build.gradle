@@ -192,7 +192,7 @@ dependencies {
   
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
-  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.1.1'
+  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.1.1')
 
 
   uiTestCompile(project(':geode-core'))
