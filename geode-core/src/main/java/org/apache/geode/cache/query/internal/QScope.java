@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,20 +26,18 @@ import java.util.List;
  */
 class QScope {
 
-  // private RuntimeIterator _iterator;
-  private List iterators;
-  boolean _oneIndexLookup = false; // if there is exactly one index lookup in
-                                   // this scope
-  // set if scope evaluation is limited up to this iterator
+  private final List<RuntimeIterator> iterators = new ArrayList<>();
+  /** if there is exactly one index lookup in this scope */
+  boolean _oneIndexLookup = false;
+  /** set if scope evaluation is limited up to this iterator */
   private RuntimeIterator limit = null;
-  private int scopeID = 0;
+  private final int scopeID;
 
   /**
    *
    * @param scopeID The scopeID assosciated with the scope
    */
   QScope(int scopeID) {
-    iterators = new ArrayList();
     this.scopeID = scopeID;
   }
 
@@ -49,35 +46,26 @@ class QScope {
   }
 
   RuntimeIterator getLimit() {
-    return this.limit;
+    return limit;
   }
 
   void bindIterator(RuntimeIterator iterator) {
-    // _iterator = iterator;
     iterators.add(iterator);
     iterator.setInternalId("iter" + iterators.size());
   }
 
   CompiledValue resolve(String name) {
-    // System.out.println("in Scope.resolve "+(_iterator != null ?
-    // _iterator.getName() : null));
-    Iterator iter = iterators.iterator();
-    while (iter.hasNext()) {
-      RuntimeIterator _iterator = (RuntimeIterator) iter.next();
-      if (_iterator != null && name.equals(_iterator.getName()))
+    for (RuntimeIterator _iterator : iterators) {
+      if (_iterator != null && name.equals(_iterator.getName())) {
         return _iterator;
+      }
     }
     return null;
   }
 
-  List getIterators() {
+  List<RuntimeIterator> getIterators() {
     return iterators;
   }
-
-  void setCurrent(RuntimeIterator iterator, Object obj) {
-    iterator.setCurrent(obj);
-  }
-
 
   /**
    *
@@ -85,7 +73,7 @@ class QScope {
    *         with higher scope being able to see iterators of lower scope.
    */
   int getScopeID() {
-    return this.scopeID;
+    return scopeID;
   }
 
 }
