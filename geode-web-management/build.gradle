@@ -98,6 +98,8 @@ dependencies {
   }
   commonTestCompile('org.springframework:spring-test')
   commonTestCompile('org.springframework:spring-webmvc')
+  commonTestCompile('org.springframework.security:spring-security-test')
+  commonTestCompile(project(':geode-web-management'))
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'

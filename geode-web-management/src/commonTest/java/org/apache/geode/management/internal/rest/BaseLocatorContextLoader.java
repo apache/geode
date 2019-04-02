@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.rest;
 
 import org.springframework.test.context.web.GenericXmlWebContextLoader;
 import org.springframework.test.context.web.WebMergedContextConfiguration;
-import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import org.apache.geode.internal.cache.HttpService;
@@ -44,11 +43,6 @@ public abstract class BaseLocatorContextLoader extends GenericXmlWebContextLoade
         getLocator().getCache().getSecurityService());
     context.getServletContext().setAttribute(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
         getLocator().getLocator().getClusterManagementService());
-
     context.getServletContext().setAttribute("locator", getLocator());
-  }
-
-  public static LocatorStarterRule getLocatorFromContext(WebApplicationContext context) {
-    return (LocatorStarterRule) context.getServletContext().getAttribute("locator");
   }
 }
