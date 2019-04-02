@@ -69,9 +69,11 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setName("customer");
     region.setType(RegionShortcut.REPLICATE);
 
-    ClusterManagementResult result = client.create(region, "");
-    assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMemberStatuses().size()).isEqualTo(1);
+    ClusterManagementResult result = client.create(region);
+
+    // in StressNewTest, this will be run multiple times without restarting the locator
+    assertThat(result.getStatusCode()).isIn(ClusterManagementResult.StatusCode.OK,
+        ClusterManagementResult.StatusCode.ENTITY_EXISTS);
   }
 
   @Test
