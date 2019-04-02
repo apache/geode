@@ -269,7 +269,7 @@ def cp = {
     .collect { it.jar.archiveName }
 
   // then add all the dependencies of the dependent jars
-  def depJars = configurations.archives.dependencies.collect {
+  def depJars = configurations.geodeArchives.dependencies.collect {
     it.dependencyProject.findAll {
       !(it.name.contains('geode-web') ||
         it.name.contains('geode-pulse'))
@@ -307,9 +307,6 @@ def cp = {
 tasks.register('configureDepsJar') {
   inputs.files {
     configurations.geodeArchives
-  }
-  inputs.files {
-    configurations.archives
   }
 
   def output = project.buildDir.toPath().resolve('reports').resolve('deps_jar_cp.txt')
