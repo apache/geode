@@ -230,7 +230,7 @@ import org.apache.geode.pdx.PdxInstance;
  */
 @SuppressWarnings("deprecation")
 public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
-    ResourceListener<MemoryEvent>, DiskExceptionHandler, InternalPersistentRegion {
+    ResourceListener<MemoryEvent>, InternalPersistentRegion {
 
   // package-private to avoid synthetic accessor
   static final Logger logger = LogService.getLogger();
