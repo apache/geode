@@ -38,7 +38,9 @@ import org.apache.geode.test.concurrency.loop.LoopRunner;
  * test can use to invoke code in parallel.
  *
  * This test run will try to exercise the test method to flush out any concurrent bugs in the
- * parallel execution.
+ * parallel execution. Currently this runner is using Java PathFinder to run the test with *all*
+ * possible thread interleavings, but other methods such as invoking the method multiple times in a
+ * normal JVM may be supported in the feature.
  *
  * All test logic and state *must* be encapsulated in the individual test methods. This is because
  * the concurrency testing logic may need to invoke the test body multiple times, possibly in

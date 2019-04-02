@@ -570,7 +570,7 @@ public class ConnectionManagerJUnitTest {
     Assert.assertEquals(0, factory.destroys);
     Assert.assertEquals(2, manager.getConnectionCount());
 
-    Connection conn3 = manager.exchangeConnection(conn1, Collections.emptySet(), 10);
+    Connection conn3 = manager.exchangeConnection(conn1, Collections.EMPTY_SET, 10);
 
     Assert.assertEquals(3, factory.creates);
     Assert.assertEquals(1, factory.destroys);
