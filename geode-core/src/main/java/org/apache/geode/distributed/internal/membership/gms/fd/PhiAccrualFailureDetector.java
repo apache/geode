@@ -21,8 +21,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * <p>Ported to Geode from https://github.com/komamitsu/phi-accural-failure-detector.  Javadoc
- * from that repo follows...</p>
+ * <p>
+ * Ported to Geode from https://github.com/komamitsu/phi-accural-failure-detector. Javadoc
+ * from that repo follows...
+ * </p>
  * <p>
  * This is a port of
  * https://github.com/akka/akka/blob/master/akka-remote/src/main/scala/akka/remote/PhiAccrualFailureDetector.scala
@@ -30,16 +32,18 @@ import java.util.concurrent.atomic.AtomicReference;
  * Implementation of 'The Phi Accrual Failure Detector' by Hayashibara et al. as defined in their
  * paper:
  * [http://ddg.jaist.ac.jp/pub/HDY+04.pdf]
- *<p>
+ * <p>
  * The suspicion level of failure is given by a value called φ (phi).
  * The basic idea of the φ failure detector is to express the value of φ on a scale that
  * is dynamically adjusted to reflect current network conditions. A configurable
  * threshold is used to decide if φ is considered to be a failure.
- *<p>
+ * <p>
  * The value of φ is calculated as:
- *<pre>
+ *
+ * <pre>
  * φ = -log10(1 - F(timeSinceLastHeartbeat)
  * </pre>
+ *
  * where F is the cumulative distribution function of a normal distribution with mean
  * and standard deviation estimated from historical heartbeat inter-arrival times.
  *

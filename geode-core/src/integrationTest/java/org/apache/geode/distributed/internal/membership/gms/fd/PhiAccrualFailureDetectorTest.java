@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,19 +16,18 @@
 
 package org.apache.geode.distributed.internal.membership.gms.fd;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
 
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class PhiAccrualFailureDetectorTest
-{
+public class PhiAccrualFailureDetectorTest {
   @Test
-  public void test()
-  {
+  public void test() {
     PhiAccrualFailureDetector failureDetector = new PhiAccrualFailureDetector.Builder().build();
     long now = 1420070400000L;
     for (int i = 0; i < 300; i++) {
@@ -39,38 +38,30 @@ public class PhiAccrualFailureDetectorTest
         if (i == 291) {
           assertTrue(1 < phi && phi < 3);
           assertTrue(failureDetector.isAvailable(timestampMillis));
-        }
-        else if (i == 292) {
+        } else if (i == 292) {
           assertTrue(3 < phi && phi < 8);
           assertTrue(failureDetector.isAvailable(timestampMillis));
-        }
-        else if (i == 293) {
+        } else if (i == 293) {
           assertTrue(8 < phi && phi < 16);
           assertTrue(failureDetector.isAvailable(timestampMillis));
-        }
-        else if (i == 294) {
+        } else if (i == 294) {
           assertTrue(16 < phi && phi < 30);
           assertFalse(failureDetector.isAvailable(timestampMillis));
-        }
-        else if (i == 295) {
+        } else if (i == 295) {
           assertTrue(30 < phi && phi < 50);
           assertFalse(failureDetector.isAvailable(timestampMillis));
-        }
-        else if (i == 296) {
+        } else if (i == 296) {
           assertTrue(50 < phi && phi < 70);
           assertFalse(failureDetector.isAvailable(timestampMillis));
-        }
-        else if (i == 297) {
+        } else if (i == 297) {
           assertTrue(70 < phi && phi < 100);
           assertFalse(failureDetector.isAvailable(timestampMillis));
-        }
-        else {
+        } else {
           assertTrue(100 < phi);
           assertFalse(failureDetector.isAvailable(timestampMillis));
         }
         continue;
-      }
-      else if (i > 200) {
+      } else if (i > 200) {
         if (i % 5 == 0) {
           double phi = failureDetector.phi(timestampMillis);
           assertTrue(0.1 < phi && phi < 0.5);

@@ -240,21 +240,37 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         return;
       }
 
-      InternalDistributedMember neighbour = nextNeighbor;
-
-      long currentTime = System.currentTimeMillis();
-      // this is the start of interval to record member activity
-      GMSHealthMonitor.this.currentTimeStamp = currentTime;
-
-      if (neighbour != null) {
-        PhiAccrualFailureDetector nextNeighborDetector =
-            getOrCreatePhiAccrualFailureDetector(neighbour, currentTime);
-        if (!nextNeighborDetector.isAvailable()) {
-          logger.debug("Checking member {} ", neighbour);
-          // now do check request for this member;
-          checkMember(neighbour);
+      NetView myView = GMSHealthMonitor.this.currentView;
+      if (myView == null) {
+        return;
+      }
+      // if (myView.getCoordinator().equals(localAddress)) {
+      // for phi accrual we need to periodically check all members
+      for (InternalDistributedMember member : myView.getMembers()) {
+        PhiAccrualFailureDetector detector =
+            getOrCreatePhiAccrualFailureDetector(member, currentTimeStamp);
+        if (!detector.isAvailable()) {
+          checkMember(member);
         }
       }
+      return;
+      // }
+
+      // InternalDistributedMember neighbour = nextNeighbor;
+      //
+      // long currentTime = System.currentTimeMillis();
+      // // this is the start of interval to record member activity
+      // GMSHealthMonitor.this.currentTimeStamp = currentTime;
+      //
+      // if (neighbour != null) {
+      // PhiAccrualFailureDetector nextNeighborDetector =
+      // getOrCreatePhiAccrualFailureDetector(neighbour, currentTime);
+      // if (!nextNeighborDetector.isAvailable()) {
+      // logger.debug("Checking member {} ", neighbour);
+      // // now do check request for this member;
+      // checkMember(neighbour);
+      // }
+      // }
     }
 
   }
@@ -1347,9 +1363,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           }
           failed = true;
         } else {
-          logger.info(
-              "Availability check failed but detected recent message traffic for suspect member "
-                  + mbr);
+          if (detector != null) {
+            logger.info(
+                "Availability check failed but detected recent message traffic for suspect member {} its phi rating is at {}",
+                mbr, detector.phi());
+          } else {
+            logger.info(
+                "Availability check failed and there is no phi detector for this member yet the check passed: {}",
+                mbr);
+          }
         }
       }
 

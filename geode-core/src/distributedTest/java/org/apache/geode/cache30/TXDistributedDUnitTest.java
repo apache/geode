@@ -24,6 +24,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.junit.Assert.assertEquals;
@@ -563,6 +564,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     Properties p = super.getDistributedSystemProperties();
     p.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     p.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    p.put(DISABLE_AUTO_RECONNECT, "true");
     return p;
   }
 
