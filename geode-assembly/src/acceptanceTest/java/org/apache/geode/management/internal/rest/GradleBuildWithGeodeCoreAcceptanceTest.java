@@ -63,7 +63,7 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
     build.setStandardError(System.err);
     build.setStandardOutput(System.out);
     build.withArguments("-PgeodeVersion=" + geodeVersion,
-        "-PprojectGroup=" + projectGroup,
+        "-Pgroup=" + projectGroup,
         "-PgeodeHome=" + geodeHome.toString());
 
     build.forTasks("installDist", "run");
