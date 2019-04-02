@@ -407,6 +407,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       // it's okay to not synchronize here - if we happen to create another detector
       // for this member in another thread it will be pretty equivalent to the one created here
       logger.info("Creating new failure detector for {}", member);
+      // TODO consider giving different kinds of members different thresholds
       final int threshold = Integer.getInteger("geode.phiAccrualThreshold", 10);
       final int sampleSize = Integer.getInteger("geode.phiAccrualSampleSize", 200);
       final int minStdDev = Integer.getInteger("geode.phiAccrualMinimumStandardDeviation", 100);

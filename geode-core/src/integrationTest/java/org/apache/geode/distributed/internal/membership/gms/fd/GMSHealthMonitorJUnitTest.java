@@ -630,7 +630,7 @@ public class GMSHealthMonitorJUnitTest {
     boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", false);
     assertFalse(available);
     verify(joinLeave, never()).remove(isA(InternalDistributedMember.class), isA(String.class));
-    assertFalse(gmsHealthMonitor.isSuspectMember(memberToCheck));
+    assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
   }
 
 
