@@ -189,7 +189,7 @@ dependencies {
   }
   acceptanceTestCompile(project(':geode-assembly:geode-assembly-test'))
   acceptanceTestCompile('org.apache.httpcomponents:httpclient')
-  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.2.1')
+  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.1.1')
 
 
   uiTestCompile(project(':geode-core'))
@@ -230,6 +230,11 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
+}
+
+acceptanceTest {
+    // This is specifically used by GradleBuildWithGeodeCoreAcceptanceTest
+    systemProperty 'projectGroup', project.group
 }
 
 tasks.register('defaultDistributionConfig', JavaExec) {

@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    compile("org.apache.geode:geode-core:${findProperty('geodeVersion')}")
+    compile("${findProperty('projectGroup')}:geode-core:${findProperty('geodeVersion')}")
     runtime('org.apache.logging.log4j:log4j-slf4j-impl:2.11.1')
 }
 
