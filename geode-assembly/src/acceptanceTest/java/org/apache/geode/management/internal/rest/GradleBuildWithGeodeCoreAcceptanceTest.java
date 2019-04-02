@@ -62,7 +62,7 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
 
     build.setStandardError(System.err);
     build.setStandardOutput(System.out);
-    build.withArguments("-PgeodeVersion=" + geodeVersion,
+    build.withArguments("-Pversion=" + geodeVersion,
         "-Pgroup=" + projectGroup,
         "-PgeodeHome=" + geodeHome.toString());
 
