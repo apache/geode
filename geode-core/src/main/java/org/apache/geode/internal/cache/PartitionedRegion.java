@@ -10004,24 +10004,16 @@ public class PartitionedRegion extends LocalRegion
     return updatePartitionRegionConfig(prConfig -> {
       CacheLoader cacheLoader = basicGetLoader();
       CacheWriter cacheWriter = basicGetWriter();
-      PartitionRegionConfig newConfig = null;
       if (prConfig != null) {
-        newConfig =
-            new PartitionRegionConfig(prConfig.getPRId(), prConfig.getFullPath(),
-                prConfig.getPartitionAttrs(), prConfig.getScope(),
-                prConfig.getEvictionAttributes(),
-                this.getRegionIdleTimeout(), this.getRegionTimeToLive(),
-                this.getEntryIdleTimeout(),
-                this.getEntryTimeToLive(), prConfig.getGatewaySenderIds());
 
         for (Node node : prConfig.getNodes()) {
+
           if (node.getMemberId().equals(getMyId())) {
             node.setLoaderAndWriter(cacheLoader, cacheWriter);
           }
-          newConfig.addNode(node);
         }
       }
-      return newConfig;
+      return prConfig;
     });
   }
 

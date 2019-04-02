@@ -99,6 +99,9 @@ public class PartitionedRegionTest {
     when(ourNode.getMemberId()).thenReturn(ourMember);
     when(otherNode1.getMemberId()).thenReturn(otherMember1);
     when(otherNode2.getMemberId()).thenReturn(otherMember2);
+    when(ourNode.isCacheLoaderAttached()).thenReturn(mockLoader == null ? false : true);
+    when(ourNode.isCacheWriterAttached()).thenReturn(mockWriter == null ? false : true);
+
 
     VersionedArrayList prNodes = new VersionedArrayList();
     prNodes.add(otherNode1);
@@ -114,9 +117,21 @@ public class PartitionedRegionTest {
 
     PartitionRegionConfig newConfig = prSpy.updatePRNodeInformation();
 
+    Node verifyOurNode = null;
+    assertThat(newConfig.getNodes().contains(ourNode));
+    for (Node node : newConfig.getNodes()) {
+      if (node.getMemberId().equals(ourMember)) {
+        verifyOurNode = node;
+      }
+    }
+
     verify(prRoot).get(prSpy.getRegionIdentifier());
     verify(prSpy).updatePRConfig(newConfig, false);
     verify(prRoot).put(prSpy.getRegionIdentifier(), newConfig);
+
+    assertThat(verifyOurNode).isNotNull();
+    assertThat(verifyOurNode.isCacheLoaderAttached()).isEqualTo(mockLoader == null ? false : true);
+    assertThat(verifyOurNode.isCacheWriterAttached()).isEqualTo(mockWriter == null ? false : true);
   }
 
   private Object[] parametersToTestUpdatePRNodeInformation() {
