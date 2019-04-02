@@ -23,6 +23,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.Test;
 
 public class AvailableConnectionManagerTest {
@@ -114,6 +116,28 @@ public class AvailableConnectionManagerTest {
     assertThat(result).isNull();
     assertThat(instance.getDeque()).isEmpty();
     verify(expected).activate();
+  }
+
+  @Test
+  public void useFirstWithPredicateReturnsNullGivenManagerWithOneItemThatDoesNotMatchAfterBeingActivated() {
+    PooledConnection expected = createConnection();
+    when(expected.activate()).thenReturn(true);
+    instance.getDeque().addFirst(expected);
+    final AtomicBoolean firstTime = new AtomicBoolean(true);
+
+    PooledConnection result = instance.useFirst(c -> {
+      if (firstTime.get()) {
+        firstTime.set(false);
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    assertThat(result).isNull();
+    assertThat(instance.getDeque()).containsExactly(expected);
+    verify(expected).activate();
+    verify(expected).passivate(false);
   }
 
   @Test

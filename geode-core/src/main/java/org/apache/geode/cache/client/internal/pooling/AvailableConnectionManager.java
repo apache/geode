@@ -71,7 +71,14 @@ public class AvailableConnectionManager {
     while (connections.removeFirstOccurrence(equalsWithPredicate)) {
       PooledConnection connection = equalsWithPredicate.getConnectionThatMatched();
       if (connection.activate()) {
-        return connection;
+        // Need to recheck the predicate after we have activated.
+        // Until activated load conditioning can change the server
+        // we are connected to.
+        if (predicate.test(connection)) {
+          return connection;
+        } else {
+          addLast(connection, false);
+        }
       }
     }
     return null;
