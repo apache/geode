@@ -1274,7 +1274,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void checkSameSenderIdsAvailableOnAllNodes() {
+  void checkSameSenderIdsAvailableOnAllNodes() {
     List senderIds =
         this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
     if (!senderIds.isEmpty()) {
@@ -2142,7 +2142,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void performPutAllEntry(EntryEventImpl event) {
+  void performPutAllEntry(EntryEventImpl event) {
     /*
      * force shared data view so that we just do the virtual op, accruing things in the put all
      * operation for later
@@ -2151,7 +2151,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void performRemoveAllEntry(EntryEventImpl event) {
+  void performRemoveAllEntry(EntryEventImpl event) {
     // do not call basicDestroy directly since it causes bug 51715
     // basicDestroy(event, true, null);
     // force shared data view so that we just do the virtual op
@@ -3342,7 +3342,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface tx,
+  Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface tx,
       boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws CacheLoaderException, TimeoutException {
@@ -4823,7 +4823,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public boolean canStoreDataLocally() {
+  boolean canStoreDataLocally() {
     return getDataStore() != null;
   }
 
@@ -4989,7 +4989,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void initialized() {
+  void initialized() {
     // PartitionedRegions do not send out a profile at the end of
     // initialization. It is not currently needed by other members
     // since no GII is done on a PartitionedRegion
@@ -5571,7 +5571,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void invalidateAllEntries(RegionEvent rgnEvent) {
+  void invalidateAllEntries(RegionEvent rgnEvent) {
     // do nothing
   }
 
@@ -6265,7 +6265,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean nonTXContainsKey(KeyInfo keyInfo) {
+  boolean nonTXContainsKey(KeyInfo keyInfo) {
     final long startTime = PartitionedRegionStats.startTime();
     boolean contains = false;
     try {
@@ -6451,7 +6451,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean nonTXContainsValueForKey(KeyInfo keyInfo) {
+  boolean nonTXContainsValueForKey(KeyInfo keyInfo) {
     boolean containsValueForKey = false;
     int bucketId = keyInfo.getBucketId();
     if (bucketId == KeyInfo.UNKNOWN_BUCKET) {
@@ -6516,7 +6516,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public int entryCount(Set<Integer> buckets) {
+  int entryCount(Set<Integer> buckets) {
     return entryCount(buckets, false);
   }
 
@@ -6563,7 +6563,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public long getEstimatedLocalSize() {
+  long getEstimatedLocalSize() {
     final PartitionedRegionDataStore ds = this.dataStore;
     if (ds != null) {
       return ds.getEstimatedLocalBucketSize(false);
@@ -7722,7 +7722,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void generateLocalFilterRouting(InternalCacheEvent event) {
+  void generateLocalFilterRouting(InternalCacheEvent event) {
     if (event.getLocalFilterInfo() == null) {
       super.generateLocalFilterRouting(event);
     }
@@ -8038,7 +8038,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void enableConcurrencyChecks() {
+  void enableConcurrencyChecks() {
     if (supportsConcurrencyChecks()) {
       this.setConcurrencyChecksEnabled(true);
       assert !isDataStore();
@@ -8818,15 +8818,6 @@ public class PartitionedRegion extends LocalRegion
     return this.dataStore.getLocalValueInVM(key, bucketId);
   }
 
-  @Override
-  public Object getValueInVM(EntryEventImpl event) throws EntryNotFoundException {
-    if (this.dataStore == null) {
-      throw new EntryNotFoundException(event.getKey().toString());
-    }
-    final int bucketId = PartitionedRegionHelper.getHashKey(event);
-    return this.dataStore.getLocalValueInVM(event.getKey(), bucketId);
-  }
-
   /**
    * This method is intended for testing purposes only.
    */
@@ -8918,7 +8909,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void releaseLatches() {
+  void releaseLatches() {
     super.releaseLatches();
     releaseAfterBucketMetadataSetupLatch();
   }
@@ -8998,7 +8989,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected RegionEntry basicGetTXEntry(KeyInfo keyInfo) {
+  RegionEntry basicGetTXEntry(KeyInfo keyInfo) {
     int bucketId = keyInfo.getBucketId();
     if (bucketId == KeyInfo.UNKNOWN_BUCKET) {
       bucketId = PartitionedRegionHelper.getHashKey(this, null, keyInfo.getKey(),
@@ -9021,7 +9012,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean usesDiskStore(RegionAttributes regionAttributes) {
+  boolean usesDiskStore(RegionAttributes regionAttributes) {
     if (regionAttributes.getPartitionAttributes().getLocalMaxMemory() <= 0) {
       return false; // see bug 42055
     }
@@ -9029,7 +9020,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
+  DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
       InternalRegionArguments internalRegionArgs) {
     DiskStoreImpl store = super.findDiskStore(regionAttributes, internalRegionArgs);
     if (store != null && store.getOwnedByRegion()) {
@@ -9039,7 +9030,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected DiskRegion createDiskRegion(InternalRegionArguments internalRegionArgs)
+  DiskRegion createDiskRegion(InternalRegionArguments internalRegionArgs)
       throws DiskAccessException {
     if (internalRegionArgs.getDiskRegion() != null) {
       return internalRegionArgs.getDiskRegion();
@@ -9238,7 +9229,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void setMemoryThresholdFlag(MemoryEvent event) {
+  void setMemoryThresholdFlag(MemoryEvent event) {
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()
         && (event.getType() == ResourceType.HEAP_MEMORY
             || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
@@ -9252,7 +9243,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void initialCriticalMembers(boolean localMemoryIsCritical,
+  void initialCriticalMembers(boolean localMemoryIsCritical,
       Set<InternalDistributedMember> criticalMembers) {
     for (InternalDistributedMember idm : criticalMembers) {
       getRegionAdvisor().markBucketsOnMember(idm, true/* sick */);
@@ -9750,7 +9741,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean isEntryIdleExpiryPossible() {
+  boolean isEntryIdleExpiryPossible() {
     // false always as this is a partitionedRegion,
     // its the BucketRegion that does the expiry
     return false;
@@ -9968,7 +9959,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void preDestroyChecks() {
+  void preDestroyChecks() {
     try {
       // if there are colocated children throw an exception
       checkForColocatedChildren();
@@ -9979,7 +9970,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean hasStorage() {
+  boolean hasStorage() {
     return this.getLocalMaxMemory() != 0;
   }
 

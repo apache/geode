@@ -1823,7 +1823,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
 
     @Override
-    public boolean isUsedForParallelGatewaySenderQueue() {
+    protected boolean isUsedForParallelGatewaySenderQueue() {
       return true;
     }
 

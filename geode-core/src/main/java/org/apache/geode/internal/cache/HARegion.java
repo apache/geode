@@ -122,7 +122,7 @@ public class HARegion extends DistributedRegion {
    *
    */
   @Override
-  protected void checkIfReplicatedAndLocalDestroy(EntryEventImpl event) {}
+  void checkIfReplicatedAndLocalDestroy(EntryEventImpl event) {}
 
   @Override
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {}
@@ -342,7 +342,7 @@ public class HARegion extends DistributedRegion {
    *
    */
   @Override
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface txState,
+  Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface txState,
       boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws CacheLoaderException, TimeoutException {
@@ -452,7 +452,7 @@ public class HARegion extends DistributedRegion {
    *
    */
   @Override
-  public void recordEventState(InternalDistributedMember sender, Map eventState) {
+  void recordEventState(InternalDistributedMember sender, Map eventState) {
     if (eventState != null && this.owningQueue != null) {
       this.owningQueue.recordEventState(sender, eventState);
     }

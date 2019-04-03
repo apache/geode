@@ -1158,7 +1158,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     @Override
-    public boolean isUsedForSerialGatewaySenderQueue() {
+    protected boolean isUsedForSerialGatewaySenderQueue() {
       return true;
     }
 

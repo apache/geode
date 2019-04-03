@@ -76,7 +76,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   // Prevent this region from using concurrency checks
   @Override
-  public boolean supportsConcurrencyChecks() {
+  boolean supportsConcurrencyChecks() {
     return false;
   }
 
@@ -168,7 +168,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * proceeds smoothly.
    */
   @Override
-  protected void updateSizeOnClearRegion(int sizeBeforeClear) {
+  void updateSizeOnClearRegion(int sizeBeforeClear) {
 
   }
 

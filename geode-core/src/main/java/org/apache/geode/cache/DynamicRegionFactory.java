@@ -976,7 +976,7 @@ public abstract class DynamicRegionFactory {
               entry.dispatchListenerEvents(event);
             } catch (InterruptedException ignore) {
               Thread.currentThread().interrupt();
-              this.stopper.checkCancelInProgress(null);
+              getCancelCriterion().checkCancelInProgress(null);
             }
           }
         }
@@ -1088,7 +1088,7 @@ public abstract class DynamicRegionFactory {
               entry.dispatchListenerEvents(event);
             } catch (InterruptedException ignore) {
               Thread.currentThread().interrupt();
-              this.stopper.checkCancelInProgress(null);
+              getCancelCriterion().checkCancelInProgress(null);
             }
           }
         }

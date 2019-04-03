@@ -786,7 +786,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return this.loadFactor;
   }
 
-  protected abstract boolean isCurrentlyLockGrantor();
+  abstract boolean isCurrentlyLockGrantor();
 
   @Override
   public boolean isLockGrantor() {
@@ -1580,19 +1580,19 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     }
   }
 
-  protected void timeToLiveChanged(ExpirationAttributes oldTimeToLive) {
+  void timeToLiveChanged(ExpirationAttributes oldTimeToLive) {
     // nothing
   }
 
-  protected void idleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
+  void idleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
     // nothing
   }
 
-  protected void regionTimeToLiveChanged(ExpirationAttributes oldTimeToLive) {
+  void regionTimeToLiveChanged(ExpirationAttributes oldTimeToLive) {
     // nothing
   }
 
-  protected void regionIdleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
+  void regionIdleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
     // nothing
   }
 
@@ -1669,7 +1669,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   /** is this a region that supports versioning? */
-  public abstract boolean supportsConcurrencyChecks();
+  abstract boolean supportsConcurrencyChecks();
 
   /**
    * Returns the pool this region is using or null if it does not have one or the pool does not
@@ -1810,7 +1810,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     throw new UnsupportedOperationException("fromData is not implemented");
   }
 
-  public boolean forceCompaction() {
+  boolean forceCompaction() {
     throw new UnsupportedOperationException("forceCompaction is not implemented");
   }
 

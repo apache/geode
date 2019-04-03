@@ -295,14 +295,14 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
 
   @Override
-  public void initialized() {
+  void initialized() {
     // announce that the bucket is ready
     // setHosting performs a profile exchange, so there
     // is no need to call super.initialized() here.
   }
 
   @Override
-  protected DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
+  DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
       InternalRegionArguments internalRegionArgs) {
     return internalRegionArgs.getPartitionedRegion().getDiskStore();
   }
@@ -359,7 +359,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected boolean needsTombstoneGCKeysForClients(EventID eventID, FilterInfo clientRouting) {
+  boolean needsTombstoneGCKeysForClients(EventID eventID, FilterInfo clientRouting) {
     if (eventID == null) {
       return false;
     }
@@ -376,7 +376,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected void notifyClientsOfTombstoneGC(Map<VersionSource, Long> regionGCVersions,
+  void notifyClientsOfTombstoneGC(Map<VersionSource, Long> regionGCVersions,
       Set<Object> removedKeys, EventID eventID, FilterInfo routing) {
     if (CacheClientNotifier.getInstance() != null) {
       // Only route the event to clients interested in the partitioned region.
@@ -1030,7 +1030,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected boolean shouldGenerateVersionTag(RegionEntry entry, EntryEventImpl event) {
+  boolean shouldGenerateVersionTag(RegionEntry entry, EntryEventImpl event) {
     if (event.getOperation().isLocal()) { // bug #45402 - localDestroy generated a version tag
       return false;
     }
@@ -1159,7 +1159,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    */
   @Override
   @Retained
-  protected EntryEventImpl generateEvictDestroyEvent(Object key) {
+  EntryEventImpl generateEvictDestroyEvent(Object key) {
     EntryEventImpl event = super.generateEvictDestroyEvent(key);
     event.setInvokePRCallbacks(true); // see bug 40797
     return event;
@@ -1301,7 +1301,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // invokeCallbacks)
 
   @Override
-  protected void validateArguments(Object key, Object value, Object aCallbackArgument) {
+  void validateArguments(Object key, Object value, Object aCallbackArgument) {
     Assert.assertTrue(!isTX());
     super.validateArguments(key, value, aCallbackArgument);
   }
@@ -1328,7 +1328,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
    * @see LocalRegion#basicPutEntry(EntryEventImpl, long)
    */
   @Override
-  protected RegionEntry basicPutEntry(final EntryEventImpl event, final long lastModified)
+  RegionEntry basicPutEntry(final EntryEventImpl event, final long lastModified)
       throws TimeoutException, CacheWriterException {
     boolean locked = lockKeysAndPrimary(event);
     try {
@@ -1425,7 +1425,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  public int sizeEstimate() {
+  int sizeEstimate() {
     return size();
   }
 
@@ -1621,7 +1621,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected void distributeDestroyRegion(RegionEventImpl event, boolean notifyOfRegionDeparture) {
+  void distributeDestroyRegion(RegionEventImpl event, boolean notifyOfRegionDeparture) {
     // No need to do this when we actually destroy the region,
     // we already distributed this info.
   }
@@ -2121,7 +2121,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   boolean isDestroyingDiskRegion;
 
   @Override
-  protected void updateSizeOnClearRegion(int sizeBeforeClear) {
+  void updateSizeOnClearRegion(int sizeBeforeClear) {
     // This method is only called when the bucket is destroyed. If we
     // start supporting clear of partitioned regions, this logic needs to change
     // we can't just set these counters to zero, because there could be
@@ -2204,20 +2204,20 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected void setMemoryThresholdFlag(MemoryEvent event) {
+  void setMemoryThresholdFlag(MemoryEvent event) {
     Assert.assertTrue(false);
     // Bucket regions are not registered with ResourceListener,
     // and should not get this event
   }
 
   @Override
-  public void initialCriticalMembers(boolean localHeapIsCritical,
+  void initialCriticalMembers(boolean localHeapIsCritical,
       Set<InternalDistributedMember> criticalMembers) {
     // The owner Partitioned Region handles critical threshold events
   }
 
   @Override
-  protected void closeCallbacksExceptListener() {
+  void closeCallbacksExceptListener() {
     // closeCacheCallback(getCacheLoader()); - fix bug 40228 - do NOT close loader
     closeCacheCallback(getCacheWriter());
     EvictionController evictionController = getEvictionController();
@@ -2383,7 +2383,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  public void incBucketEvictions() {
+  void incBucketEvictions() {
     this.evictions.getAndAdd(1);
   }
 
@@ -2392,7 +2392,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected boolean isMemoryThresholdReachedForLoad() {
+  boolean isMemoryThresholdReachedForLoad() {
     return getBucketAdvisor().getProxyBucketRegion().isBucketSick();
   }
 
@@ -2410,7 +2410,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  public HashMap getDestroyedSubregionSerialNumbers() {
+  HashMap getDestroyedSubregionSerialNumbers() {
     return new HashMap(0);
   }
 
@@ -2430,7 +2430,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected void generateLocalFilterRouting(InternalCacheEvent event) {
+  void generateLocalFilterRouting(InternalCacheEvent event) {
     if (event.getLocalFilterInfo() == null) {
       super.generateLocalFilterRouting(event);
     }
@@ -2487,7 +2487,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     try {
       getEventTracker().waitOnInitialization();
     } catch (InterruptedException ie) {
-      stopper.checkCancelInProgress(ie);
+      getCancelCriterion().checkCancelInProgress(ie);
       Thread.currentThread().interrupt();
     }
   }

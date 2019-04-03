@@ -266,7 +266,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   protected EventTracker createEventTracker() {
-    EventTracker tracker = new DistributedEventTracker(cache, stopper, getName());
+    EventTracker tracker = new DistributedEventTracker(cache, getCancelCriterion(), getName());
     tracker.start();
     return tracker;
   }
@@ -299,7 +299,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public boolean requiresOneHopForMissingEntry(EntryEventImpl event) {
+  boolean requiresOneHopForMissingEntry(EntryEventImpl event) {
     // received from another member - don't use one-hop
     if (event.isOriginRemote()) {
       return false;
@@ -316,7 +316,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (!this.generateVersionTag) {
       return true;
     }
-    return this.getConcurrencyChecksEnabled() && (this.serverRegionProxy == null) && !isTX()
+    return this.getConcurrencyChecksEnabled() && (getServerProxy() == null) && !isTX()
         && this.scope.isDistributed() && !this.getDataPolicy().withReplication();
   }
 
@@ -418,7 +418,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected RegionEntry basicPutEntry(EntryEventImpl event, long lastModified)
+  RegionEntry basicPutEntry(EntryEventImpl event, long lastModified)
       throws TimeoutException, CacheWriterException {
 
     final boolean isTraceEnabled = logger.isTraceEnabled();
@@ -446,7 +446,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public void performPutAllEntry(EntryEventImpl event) {
+  void performPutAllEntry(EntryEventImpl event) {
     /*
      * force shared data view so that we just do the virtual op, accruing things in the put all
      * operation for later
@@ -459,7 +459,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public void performRemoveAllEntry(EntryEventImpl event) {
+  void performRemoveAllEntry(EntryEventImpl event) {
     // force shared data view so that we just do the virtual op, accruing things in the bulk
     // operation for later
     if (isTX()) {
@@ -548,7 +548,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected boolean shouldGenerateVersionTag(RegionEntry entry, EntryEventImpl event) {
+  boolean shouldGenerateVersionTag(RegionEntry entry, EntryEventImpl event) {
     if (logger.isTraceEnabled()) {
       logger.trace(
           "shouldGenerateVersionTag this.generateVersionTag={} ccenabled={} dataPolicy={} event:{}",
@@ -558,7 +558,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         || !this.generateVersionTag) {
       return false;
     }
-    if (this.serverRegionProxy != null) { // client
+    if (getServerProxy() != null) { // client
       return false;
     }
     if (event.getVersionTag() != null && !event.getVersionTag().isGatewayTag()) {
@@ -927,7 +927,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public Object validatedDestroy(Object key, EntryEventImpl event)
+  Object validatedDestroy(Object key, EntryEventImpl event)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     Lock dlock = this.getDistributedLockIfGlobal(key);
     try {
@@ -940,7 +940,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public void localDestroyNoCallbacks(Object key) {
+  void localDestroyNoCallbacks(Object key) {
     super.localDestroyNoCallbacks(key);
     if (getScope().isGlobal()) {
       try {
@@ -1097,7 +1097,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public void initialized() {
+  void initialized() {
     new UpdateAttributesProcessor(this).distribute(false);
   }
 
@@ -1119,10 +1119,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     ImageState imgState = getImageState();
     imgState.init();
     boolean targetRecreated = internalRegionArgs.getRecreateFlag();
-    Boolean isCBool = (Boolean) isConversion.get();
-    boolean isForConversion = isCBool != null ? isCBool : false;
 
-    if (recoverFromDisk && snapshotInputStream != null && !isForConversion) {
+    if (recoverFromDisk && snapshotInputStream != null) {
       throw new InternalGemFireError(
           String.format(
               "if loading a snapshot, then should not be recovering; isRecovering= %s ,snapshotStream= %s",
@@ -1621,7 +1619,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         // bug #45704: see if a one-hop must be done for this operation
         RegionEntry re = getRegionEntry(event.getKey());
         if (re == null /* || re.isTombstone() */ || !this.generateVersionTag) {
-          if (this.serverRegionProxy == null) {
+          if (getServerProxy() == null) {
             // only assert for non-client regions.
             Assert.assertTrue(!this.getDataPolicy().withReplication() || !this.generateVersionTag);
           }
@@ -1784,7 +1782,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected void distributeDestroyRegion(RegionEventImpl event, boolean notifyOfRegionDeparture) {
+  void distributeDestroyRegion(RegionEventImpl event, boolean notifyOfRegionDeparture) {
     if (this.persistenceAdvisor != null) {
       this.persistenceAdvisor.releaseTieLock();
     }
@@ -1813,7 +1811,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         // bug #45704: see if a one-hop must be done for this operation
         RegionEntry re = getRegionEntry(event.getKey());
         if (re == null/* || re.isTombstone() */ || !this.generateVersionTag) {
-          if (this.serverRegionProxy == null) {
+          if (getServerProxy() == null) {
             // only assert for non-client regions.
             Assert.assertTrue(!this.getDataPolicy().withReplication() || !this.generateVersionTag);
           }
@@ -1929,7 +1927,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             op.distribute();
             return;
           } catch (CancelException | RegionDestroyedException | RemoteOperationException e) {
-            this.stopper.checkCancelInProgress(e);
+            getCancelCriterion().checkCancelInProgress(e);
             retry = true;
           }
         }
@@ -2205,7 +2203,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected boolean isCurrentlyLockGrantor() {
+  boolean isCurrentlyLockGrantor() {
     return this.scope.isGlobal() && getLockService().isLockGrantor();
   }
 
@@ -2243,7 +2241,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   /** @return the deserialized value */
   @Override
   @Retained
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface txState,
+  Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface txState,
       boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws CacheLoaderException, TimeoutException {
@@ -2360,13 +2358,13 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    */
   private EntryEventImpl findOnServer(KeyInfo keyInfo, Operation op, boolean generateCallbacks,
       EntryEventImpl clientEvent) {
-    if (this.serverRegionProxy == null) {
+    if (getServerProxy() == null) {
       return null;
     }
     EntryEventImpl event = null;
     VersionTagHolder holder = new VersionTagHolder();
     Object aCallbackArgument = keyInfo.getCallbackArg();
-    Object value = this.serverRegionProxy.get(keyInfo.getKey(), aCallbackArgument, holder);
+    Object value = getServerProxy().get(keyInfo.getKey(), aCallbackArgument, holder);
     if (value != null) {
       event = EntryEventImpl.create(this, op, keyInfo.getKey(), value, aCallbackArgument, false,
           getMyId(), generateCallbacks);
@@ -2700,7 +2698,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public void checkSameSenderIdsAvailableOnAllNodes() {
+  void checkSameSenderIdsAvailableOnAllNodes() {
     List<Set<String>> senderIds =
         this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
     if (!senderIds.isEmpty()) {
@@ -3268,7 +3266,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public VersionedObjectList basicPutAll(final Map<?, ?> map,
+  VersionedObjectList basicPutAll(final Map<?, ?> map,
       final DistributedPutAllOperation putAllOp, final Map<Object, VersionTag> retryVersions) {
     Lock dlock = this.getRegionDistributedLockIfGlobal();
     try {
@@ -3400,7 +3398,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected void removeSenderFromAdvisor(InternalDistributedMember sender, int serial,
+  void removeSenderFromAdvisor(InternalDistributedMember sender, int serial,
       boolean regionDestroyed) {
     getDistributionAdvisor().removeIdWithSerial(sender, serial, regionDestroyed);
   }
@@ -3780,7 +3778,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected void setMemoryThresholdFlag(MemoryEvent event) {
+  void setMemoryThresholdFlag(MemoryEvent event) {
     Set<InternalDistributedMember> others = getCacheDistributionAdvisor().adviseGeneric();
 
     if (event.isLocal() || others.contains(event.getMember())) {
@@ -3810,7 +3808,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public void initialCriticalMembers(boolean localMemoryIsCritical,
+  void initialCriticalMembers(boolean localMemoryIsCritical,
       Set<InternalDistributedMember> criticalMembers) {
     Set<InternalDistributedMember> others = getCacheDistributionAdvisor().adviseGeneric();
     for (InternalDistributedMember idm : criticalMembers) {
@@ -3888,7 +3886,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  public long getLatestLastAccessTimeFromOthers(Object key) {
+  long getLatestLastAccessTimeFromOthers(Object key) {
     LatestLastAccessTimeOperation op = new LatestLastAccessTimeOperation(this, key);
     return op.getLatestLastAccessTime();
   }
