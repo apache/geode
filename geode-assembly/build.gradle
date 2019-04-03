@@ -215,7 +215,10 @@ dependencies {
   }
   acceptanceTestCompile(project(':geode-assembly:geode-assembly-test'))
   acceptanceTestCompile('org.apache.httpcomponents:httpclient')
-  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.2.1')
+  
+  // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
+  // don't have it be the same version as the outer gradle version.
+  acceptanceTestCompile('org.gradle:gradle-tooling-api:5.1.1')
 
 
   uiTestCompile(project(':geode-core'))
@@ -256,6 +259,11 @@ dependencies {
     exclude module: 'spring-core'
     exclude module: 'commons-logging'
   }
+}
+
+acceptanceTest {
+    // This is specifically used by GradleBuildWithGeodeCoreAcceptanceTest
+    systemProperty 'projectGroup', project.group
 }
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
