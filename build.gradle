@@ -62,16 +62,25 @@ allprojects {
   }
 }
 
-apply from: "${scriptDir}/java.gradle"
-apply from: "${scriptDir}/dependency-resolution.gradle"
-apply from: "${scriptDir}/test.gradle"
-apply from: "${scriptDir}/code-analysis.gradle"
-apply from: "${scriptDir}/sonar.gradle"
-apply from: "${scriptDir}/rat.gradle"
-apply from: "${scriptDir}/docker.gradle"
-apply from: "${scriptDir}/spotless.gradle"
-apply from: "${scriptDir}/lint.gradle"
-apply from: "${scriptDir}/resolve-dependencies.gradle"
+// formerly in java.gradle:
+apply plugin: 'java-library'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+compileJava.options.encoding = 'UTF-8'
+
+subprojects {
+  apply from: "${rootDir}/${scriptDir}/java.gradle"
+}
+
+apply from: "${scriptDir}/dependency-resolution.gradle"  // sub
+apply from: "${scriptDir}/test.gradle"   // sub + some root + graph whenready
+apply from: "${scriptDir}/code-analysis.gradle"  // sub
+apply from: "${scriptDir}/sonar.gradle"  // root only
+apply from: "${scriptDir}/rat.gradle"    // root only
+apply from: "${scriptDir}/docker.gradle"  // large def + sub
+apply from: "${scriptDir}/spotless.gradle"  // few def + sub
+apply from: "${scriptDir}/lint.gradle"      // allprojects but not integrated into other bits
+apply from: "${scriptDir}/resolve-dependencies.gradle"   // two root tasks.
 
 subprojects {
   apply plugin: 'com.github.ben-manes.versions'
