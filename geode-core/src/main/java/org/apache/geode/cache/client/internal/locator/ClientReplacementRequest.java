@@ -36,7 +36,7 @@ public class ClientReplacementRequest extends ClientConnectionRequest {
   }
 
   public ClientReplacementRequest(ServerLocation currentServer,
-      Set/* <ServerLocation> */ excludedServers, String serverGroup) {
+      Set<ServerLocation> excludedServers, String serverGroup) {
     super(excludedServers, serverGroup);
     this.currentServer = currentServer;
   }
