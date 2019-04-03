@@ -76,7 +76,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   // Prevent this region from using concurrency checks
   @Override
-  boolean supportsConcurrencyChecks() {
+  protected boolean supportsConcurrencyChecks() {
     return false;
   }
 

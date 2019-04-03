@@ -10071,7 +10071,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * whether concurrency checks should be disabled for this region
    */
   @Override
-  boolean supportsConcurrencyChecks() {
+  protected boolean supportsConcurrencyChecks() {
     return !isSecret() || this.getDataPolicy().withPersistence();
   }
 

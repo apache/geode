@@ -1669,7 +1669,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   /** is this a region that supports versioning? */
-  abstract boolean supportsConcurrencyChecks();
+  protected abstract boolean supportsConcurrencyChecks();
 
   /**
    * Returns the pool this region is using or null if it does not have one or the pool does not

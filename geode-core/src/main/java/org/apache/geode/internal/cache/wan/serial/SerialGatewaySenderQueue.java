@@ -1126,7 +1126,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     // Prevent this region from using concurrency checks
     @Override
-    public boolean supportsConcurrencyChecks() {
+    protected boolean supportsConcurrencyChecks() {
       return false;
     }
 
