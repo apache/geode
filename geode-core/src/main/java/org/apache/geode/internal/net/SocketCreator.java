@@ -38,20 +38,18 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.PrivateKey;
-import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -82,7 +80,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.internal.InetAddressUtil;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -101,6 +98,7 @@ import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
+import org.apache.geode.management.internal.SSLUtil;
 
 /**
  * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
@@ -128,7 +126,7 @@ public class SocketCreator {
   /**
    * Optional system property to enable GemFire usage of link-local addresses
    */
-  public static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY =
+  private static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "net.useLinkLocalAddresses";
 
   /**
@@ -190,11 +188,9 @@ public class SocketCreator {
         InetAddress ipv4Fallback = null;
         InetAddress ipv6Fallback = null;
         // try to find a non-loopback address
-        Set myInterfaces = getMyAddresses();
+        Set<InetAddress> myInterfaces = getMyAddresses();
         boolean preferIPv6 = SocketCreator.useIPv6Addresses;
-        String lhName = null;
-        for (Iterator<InetAddress> it = myInterfaces.iterator(); lhName == null && it.hasNext();) {
-          InetAddress addr = it.next();
+        for (InetAddress addr : myInterfaces) {
           if (addr.isLoopbackAddress() || addr.isAnyLocalAddress()) {
             break;
           }
@@ -204,10 +200,10 @@ public class SocketCreator {
             String addrName = reverseDNS(addr);
             if (inetAddress.isLoopbackAddress()) {
               inetAddress = addr;
-              lhName = addrName;
+              break;
             } else if (addrName != null) {
               inetAddress = addr;
-              lhName = addrName;
+              break;
             }
           } else {
             if (preferIPv6 && ipv4 && ipv4Fallback == null) {
@@ -229,11 +225,8 @@ public class SocketCreator {
             SocketCreator.useIPv6Addresses = true;
           }
         }
-        if (inetAddress == null) {
-          inetAddress = InetAddress.getLocalHost();
-        }
       }
-    } catch (UnknownHostException e) {
+    } catch (UnknownHostException ignored) {
     }
     localHost = inetAddress;
   }
@@ -387,7 +380,7 @@ public class SocketCreator {
       return SSLContext.getDefault();
     }
 
-    SSLContext newSSLContext = getSSLContextInstance();
+    SSLContext newSSLContext = SSLUtil.getSSLContextInstance(sslConfig);
     KeyManager[] keyManagers = getKeyManagers();
     TrustManager[] trustManagers = getTrustManagers();
 
@@ -416,16 +409,16 @@ public class SocketCreator {
   public static void readSSLProperties(Map<String, String> env, boolean ignoreGemFirePropsFile) {
     Properties props = new Properties();
     DistributionConfigImpl.loadGemFireProperties(props, ignoreGemFirePropsFile);
-    for (Object entry : props.entrySet()) {
-      Map.Entry<String, String> ent = (Map.Entry<String, String>) entry;
+    for (Map.Entry<Object, Object> ent : props.entrySet()) {
+      String key = (String) ent.getKey();
       // if the value of ssl props is empty, read them from console
-      if (ent.getKey().startsWith(DistributionConfig.SSL_SYSTEM_PROPS_NAME)
-          || ent.getKey().startsWith(DistributionConfig.SYS_PROP_NAME)) {
-        String key = ent.getKey();
+      if (key.startsWith(DistributionConfig.SSL_SYSTEM_PROPS_NAME)
+          || key.startsWith(DistributionConfig.SYS_PROP_NAME)) {
         if (key.startsWith(DistributionConfig.SYS_PROP_NAME)) {
           key = key.substring(DistributionConfig.SYS_PROP_NAME.length());
         }
-        if (ent.getValue() == null || ent.getValue().trim().equals("")) {
+        final String value = (String) ent.getValue();
+        if (value == null || value.trim().equals("")) {
           GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
           if (!consoleReader.isSupported()) {
             throw new GemFireConfigException(
@@ -438,40 +431,9 @@ public class SocketCreator {
     }
   }
 
-  private SSLContext getSSLContextInstance() {
-    String[] protocols = sslConfig.getProtocolsAsStringArray();
-    SSLContext sslContext = null;
-    if (protocols != null && protocols.length > 0) {
-      for (String protocol : protocols) {
-        if (!protocol.equals("any")) {
-          try {
-            sslContext = SSLContext.getInstance(protocol);
-            break;
-          } catch (NoSuchAlgorithmException e) {
-            // continue
-          }
-        }
-      }
-    }
-    if (sslContext != null) {
-      return sslContext;
-    }
-    // lookup known algorithms
-    String[] knownAlgorithms = {"SSL", "SSLv2", "SSLv3", "TLS", "TLSv1", "TLSv1.1", "TLSv1.2"};
-    for (String algo : knownAlgorithms) {
-      try {
-        sslContext = SSLContext.getInstance(algo);
-        break;
-      } catch (NoSuchAlgorithmException e) {
-        // continue
-      }
-    }
-    return sslContext;
-  }
-
   private TrustManager[] getTrustManagers()
       throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-    TrustManager[] trustManagers = null;
+    TrustManager[] trustManagers;
 
     String trustStoreType = sslConfig.getTruststoreType();
     if (StringUtils.isEmpty(trustStoreType)) {
@@ -516,7 +478,7 @@ public class SocketCreator {
       return null;
     }
 
-    KeyManager[] keyManagers = null;
+    KeyManager[] keyManagers;
     String keyStoreType = sslConfig.getKeystoreType();
     if (StringUtils.isEmpty(keyStoreType)) {
       keyStoreType = KeyStore.getDefaultType();
@@ -695,9 +657,8 @@ public class SocketCreator {
       try {
         result.bind(new InetSocketAddress(bindAddr, nport), backlog);
       } catch (BindException e) {
-        BindException throwMe =
-            new BindException(String.format("Failed to create server socket on %s[%s]",
-                bindAddr, Integer.valueOf(nport)));
+        BindException throwMe = new BindException(
+            String.format("Failed to create server socket on %s[%s]", bindAddr, nport));
         throwMe.initCause(e);
         throw throwMe;
       }
@@ -790,17 +751,12 @@ public class SocketCreator {
   public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange,
       boolean sslConnection) throws IOException {
-    ServerSocket socket = null;
-    int localPort = 0;
-    int startingPort = 0;
 
     // Get a random port from range.
-    Random rand = new SecureRandom();
+    int startingPort = tcpPortRange[0]
+        + ThreadLocalRandom.current().nextInt(tcpPortRange[1] - tcpPortRange[0] + 1);
+    int localPort = startingPort;
     int portLimit = tcpPortRange[1];
-    int randPort = tcpPortRange[0] + rand.nextInt(tcpPortRange[1] - tcpPortRange[0] + 1);
-
-    startingPort = randPort;
-    localPort = startingPort;
 
     while (true) {
       if (localPort > portLimit) {
@@ -814,17 +770,18 @@ public class SocketCreator {
         }
       }
       try {
+        ServerSocket socket;
         if (useNIO) {
-          ServerSocketChannel channl = ServerSocketChannel.open();
-          socket = channl.socket();
+          ServerSocketChannel channel = ServerSocketChannel.open();
+          socket = channel.socket();
 
-          InetSocketAddress addr = new InetSocketAddress(isBindAddress ? ba : null, localPort);
-          socket.bind(addr, backlog);
+          InetSocketAddress address = new InetSocketAddress(isBindAddress ? ba : null, localPort);
+          socket.bind(address, backlog);
         } else {
           socket = this.createServerSocket(localPort, backlog, isBindAddress ? ba : null,
               tcpBufferSize, sslConnection);
         }
-        break;
+        return socket;
       } catch (java.net.SocketException ex) {
         if (useNIO || SocketCreator.treatAsBindException(ex)) {
           localPort++;
@@ -833,10 +790,9 @@ public class SocketCreator {
         }
       }
     }
-    return socket;
   }
 
-  public static boolean treatAsBindException(SocketException se) {
+  private static boolean treatAsBindException(SocketException se) {
     if (se instanceof BindException) {
       return true;
     }
@@ -1039,10 +995,8 @@ public class SocketCreator {
         sslSocket.startHandshake();
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
-          logger.fatal(
-              String.format("SSL Error in authenticating peer %s[%s].",
-                  new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
-              ex);
+          logger.fatal(String.format("SSL Error in authenticating peer %s[%s].",
+              socket.getInetAddress(), socket.getPort()), ex);
           throw ex;
         }
       }
@@ -1058,9 +1012,7 @@ public class SocketCreator {
       } finally {
         try {
           socket.setSoTimeout(oldTimeout);
-        }
-        // ignore
-        catch (SocketException e) {
+        } catch (SocketException ignored) {
         }
       }
     }
@@ -1073,7 +1025,7 @@ public class SocketCreator {
   /**
    * Configure the SSLServerSocket based on this SocketCreator's settings.
    */
-  private void finishServerSocket(SSLServerSocket serverSocket) throws IOException {
+  private void finishServerSocket(SSLServerSocket serverSocket) {
     serverSocket.setUseClientMode(false);
     if (this.sslConfig.isRequireAuth()) {
       // serverSocket.setWantClientAuth( true );
@@ -1141,10 +1093,8 @@ public class SocketCreator {
           throw ex;
         }
       } catch (SSLHandshakeException ex) {
-        logger
-            .fatal(String.format("Problem forming SSL connection to %s[%s].",
-                socket.getInetAddress(), Integer.valueOf(socket.getPort())),
-                ex);
+        logger.fatal(String.format("Problem forming SSL connection to %s[%s].",
+            socket.getInetAddress(), socket.getPort()), ex);
         throw ex;
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
@@ -1209,8 +1159,8 @@ public class SocketCreator {
    * returns a set of the non-loopback InetAddresses for this machine
    */
   public static Set<InetAddress> getMyAddresses() {
-    Set<InetAddress> result = new HashSet<InetAddress>();
-    Set<InetAddress> locals = new HashSet<InetAddress>();
+    Set<InetAddress> result = new HashSet<>();
+    Set<InetAddress> locals = new HashSet<>();
     Enumeration<NetworkInterface> interfaces;
     try {
       interfaces = NetworkInterface.getNetworkInterfaces();
@@ -1259,21 +1209,20 @@ public class SocketCreator {
    * @return the host name associated with the address or null if lookup isn't possible or there is
    *         no host name for this address
    */
-  public static String reverseDNS(InetAddress addr) {
+  private static String reverseDNS(InetAddress addr) {
     byte[] addrBytes = addr.getAddress();
     // reverse the address suitable for reverse lookup
-    String lookup = "";
+    StringBuilder lookup = new StringBuilder();
     for (int index = addrBytes.length - 1; index >= 0; index--) {
-      lookup = lookup + (addrBytes[index] & 0xff) + '.';
+      lookup.append(addrBytes[index] & 0xff).append('.');
     }
-    lookup += "in-addr.arpa";
-    // System.out.println("Looking up: " + lookup);
+    lookup.append("in-addr.arpa");
 
     try {
-      Hashtable env = new Hashtable();
+      Hashtable<String, String> env = new Hashtable<>();
       env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
       DirContext ctx = new InitialDirContext(env);
-      Attributes attrs = ctx.getAttributes(lookup, new String[] {"PTR"});
+      Attributes attrs = ctx.getAttributes(lookup.toString(), new String[] {"PTR"});
       for (NamingEnumeration ae = attrs.getAll(); ae.hasMoreElements();) {
         Attribute attr = (Attribute) ae.next();
         for (Enumeration vals = attr.getAll(); vals.hasMoreElements();) {
@@ -1295,9 +1244,10 @@ public class SocketCreator {
    */
   public static boolean isLocalHost(Object host) {
     if (host instanceof InetAddress) {
-      if (InetAddressUtil.LOCALHOST.equals(host)) {
+      InetAddress inetAddress = (InetAddress) host;
+      if (isLocalHost(inetAddress)) {
         return true;
-      } else if (((InetAddress) host).isLoopbackAddress()) {
+      } else if (inetAddress.isLoopbackAddress()) {
         return true;
       } else {
         try {
@@ -1306,20 +1256,26 @@ public class SocketCreator {
             NetworkInterface i = (NetworkInterface) en.nextElement();
             for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
               InetAddress addr = (InetAddress) en2.nextElement();
-              if (host.equals(addr)) {
+              if (inetAddress.equals(addr)) {
                 return true;
               }
             }
           }
           return false;
         } catch (SocketException e) {
-          throw new IllegalArgumentException(
-              "Unable to query network interface",
-              e);
+          throw new IllegalArgumentException("Unable to query network interface", e);
         }
       }
     } else {
-      return isLocalHost(toInetAddress(host.toString()));
+      return isLocalHost((Object) toInetAddress(host.toString()));
+    }
+  }
+
+  private static boolean isLocalHost(InetAddress host) {
+    try {
+      return SocketCreator.getLocalHost().equals(host);
+    } catch (UnknownHostException ignored) {
+      return false;
     }
   }
 
@@ -1338,8 +1294,9 @@ public class SocketCreator {
       return null;
     }
     try {
-      if (host.indexOf("/") > -1) {
-        return InetAddress.getByName(host.substring(host.indexOf("/") + 1));
+      final int index = host.indexOf("/");
+      if (index > -1) {
+        return InetAddress.getByName(host.substring(index + 1));
       } else {
         return InetAddress.getByName(host);
       }
