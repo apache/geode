@@ -44,6 +44,10 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
     URL projectDir = ResourceUtils.getResource("/gradle-test-projects/management");
     assertThat(projectDir).isNotNull();
 
+    String projectGroup = System.getProperty("projectGroup");
+    assertThat(projectGroup).as("'projectGroup' is not available as a system property")
+        .isNotBlank();
+
     String geodeVersion = GemFireVersion.getGemFireVersion();
 
     File buildDir = temp.getRoot();
@@ -58,7 +62,8 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
 
     build.setStandardError(System.err);
     build.setStandardOutput(System.out);
-    build.withArguments("-PgeodeVersion=" + geodeVersion,
+    build.withArguments("-Pversion=" + geodeVersion,
+        "-Pgroup=" + projectGroup,
         "-PgeodeHome=" + geodeHome.toString());
 
     build.forTasks("installDist", "run");
