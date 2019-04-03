@@ -19,6 +19,8 @@ import java.util.ArrayList;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.cli.PreconditionException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
@@ -58,7 +60,8 @@ public class MappingCommandUtils {
   }
 
   public static ArrayList<RegionMapping> getMappingsFromRegionConfig(CacheConfig cacheConfig,
-      RegionConfig regionConfig, String group) {
+      RegionConfig regionConfig,
+      String group) {
     ArrayList<RegionMapping> results = new ArrayList<>();
     for (CacheElement element : regionConfig.getCustomRegionElements()) {
       if (element instanceof RegionMapping) {
@@ -82,6 +85,16 @@ public class MappingCommandUtils {
       }
     }
     return null;
+  }
+
+  public static boolean isAccessor(RegionAttributesType attributesType) {
+    if (attributesType.getDataPolicy() == RegionAttributesDataPolicy.EMPTY
+        || (attributesType.getPartitionAttributes() != null
+            && attributesType.getPartitionAttributes().getLocalMaxMemory().equals("0"))) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public static String createAsyncEventQueueName(String regionPath) {
