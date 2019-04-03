@@ -632,7 +632,6 @@ public class ConnectionManagerJUnitTest {
 
     }
     long elapsed = elapsedMillis(startTime);
-    System.out.println("DEBUG: " + elapsed);
     Assert.assertTrue("Should have blocked for 100 millis for a connection", elapsed >= 100);
 
     Thread returnThread = new Thread() {
