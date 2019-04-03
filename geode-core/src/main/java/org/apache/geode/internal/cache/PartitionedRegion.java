@@ -10000,8 +10000,8 @@ public class PartitionedRegion extends LocalRegion
     return br.getEntryExpiryTask(key);
   }
 
-  PartitionRegionConfig updatePRNodeInformation() {
-    return updatePartitionRegionConfig(prConfig -> {
+  void updatePRNodeInformation() {
+    updatePartitionRegionConfig(prConfig -> {
       CacheLoader cacheLoader = basicGetLoader();
       CacheWriter cacheWriter = basicGetWriter();
       if (prConfig != null) {

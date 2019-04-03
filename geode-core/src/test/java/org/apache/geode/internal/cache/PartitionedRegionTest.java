@@ -115,19 +115,19 @@ public class PartitionedRegionTest {
     PartitionedRegion.RegionLock mockLock = mock(PartitionedRegion.RegionLock.class);
     doReturn(mockLock).when(prSpy).getRegionLock();
 
-    PartitionRegionConfig newConfig = prSpy.updatePRNodeInformation();
+    prSpy.updatePRNodeInformation();
 
     Node verifyOurNode = null;
-    assertThat(newConfig.getNodes().contains(ourNode));
-    for (Node node : newConfig.getNodes()) {
+    assertThat(mockConfig.getNodes().contains(ourNode));
+    for (Node node : mockConfig.getNodes()) {
       if (node.getMemberId().equals(ourMember)) {
         verifyOurNode = node;
       }
     }
 
     verify(prRoot).get(prSpy.getRegionIdentifier());
-    verify(prSpy).updatePRConfig(newConfig, false);
-    verify(prRoot).put(prSpy.getRegionIdentifier(), newConfig);
+    verify(prSpy).updatePRConfig(mockConfig, false);
+    verify(prRoot).put(prSpy.getRegionIdentifier(), mockConfig);
 
     assertThat(verifyOurNode).isNotNull();
     assertThat(verifyOurNode.isCacheLoaderAttached()).isEqualTo(mockLoader == null ? false : true);
