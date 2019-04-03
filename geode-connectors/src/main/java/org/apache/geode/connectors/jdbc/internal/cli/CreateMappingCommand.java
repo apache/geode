@@ -169,14 +169,16 @@ public class CreateMappingCommand extends SingleGfshCommand {
         CacheConfig cacheConfig =
             MappingCommandUtils.getCacheConfig(configurationPersistenceService, group);
         RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, group);
-        checkForExistingMapping(regionName, regionConfig, ifNotExists);
+        checkForExistingMapping(regionName, regionConfig);
         checkForCacheLoader(regionName, regionConfig);
         checkForCacheWriter(regionName, synchronous, regionConfig);
         checkForAsyncQueue(regionName, synchronous, cacheConfig);
+        checkForAEQIdForAccessor(regionName, synchronous, regionConfig);
       }
     } catch (PreconditionException ex) {
-      if(ex.getMessage().equals(IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE)) {
-        return ResultModel.createInfo(ex.getMessage() + "Existing mapping found for region " + regionName + ". ");
+      if (ifNotExists) {
+        return ResultModel
+            .createInfo(IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE + ex.getMessage());
       } else {
         return ResultModel.createError(ex.getMessage());
       }
@@ -251,16 +253,11 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return MappingCommandUtils.checkForRegion(regionName, cacheConfig, groupName);
   }
 
-  private void checkForExistingMapping(String regionName, RegionConfig regionConfig, boolean ifNotExists)
+  private void checkForExistingMapping(String regionName, RegionConfig regionConfig)
       throws PreconditionException {
     if (regionConfig.getCustomRegionElements().stream()
         .anyMatch(element -> element instanceof RegionMapping)) {
-      if(ifNotExists) {
-        throw new PreconditionException(IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE);
-      } else {
-        // default
-        throw new PreconditionException("A JDBC mapping for " + regionName + " already exists.");
-      }
+      throw new PreconditionException("A JDBC mapping for " + regionName + " already exists.");
     }
   }
 
@@ -305,8 +302,30 @@ public class CreateMappingCommand extends SingleGfshCommand {
     }
   }
 
+  private void checkForAEQIdForAccessor(String regionName, boolean synchronous,
+      RegionConfig regionConfig)
+      throws PreconditionException {
+    if (!synchronous) {
+      RegionAttributesType regionAttributesType = regionConfig.getRegionAttributes();
+      boolean isAccessor = MappingCommandUtils.isAccessor(regionAttributesType);
+      if (!isAccessor) {
+        return;
+      } else {
+        String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
+        if (regionAttributesType.getAsyncEventQueueIds() != null && regionAttributesType
+            .getAsyncEventQueueIds().contains(queueName)) {
+          throw new PreconditionException(
+              "An async-event-queue named " + queueName + " must not already exist.");
+        }
+      }
+    }
+  }
+
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig cacheConfig, Object element) {
+    if (element == null) {
+      return false;
+    }
     Object[] arguments = (Object[]) element;
     RegionMapping regionMapping = (RegionMapping) arguments[0];
     boolean synchronous = (Boolean) arguments[1];

@@ -415,7 +415,8 @@ public class CreateMappingCommandTest {
   }
 
   @Test
-  public void createsMappingIsSkippedWhenRegionMappingExistsWithIfNotExistsTrue() throws IOException {
+  public void createsMappingIsSkippedWhenRegionMappingExistsWithIfNotExistsTrue()
+      throws IOException {
     results.add(successFunctionResult);
     ConfigurationPersistenceService configurationPersistenceService =
         mock(ConfigurationPersistenceService.class);
@@ -440,7 +441,8 @@ public class CreateMappingCommandTest {
         tableName, pdxClass, pdxClassFile, false, null, null, null, true, null);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
-    assertThat(result.toString()).contains("Skipping: Existing mapping found for region " + regionName +". ");
+    assertThat(result.toString())
+        .contains("Skipping: Existing mapping found for region " + regionName + ". ");
   }
 
   @Test

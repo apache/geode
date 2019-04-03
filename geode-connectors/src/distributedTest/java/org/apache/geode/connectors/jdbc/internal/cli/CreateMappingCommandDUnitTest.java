@@ -302,6 +302,43 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
+  public void createMappingSucceedsWithWarningWhenMappingAlreadyExistsAndIfNotExistsIsTrue() {
+    String regionName = REGION_NAME;
+    setupReplicate(regionName);
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("A JDBC mapping for " + regionName + " already exists.");
+
+    csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+    csb.addOption(CliStrings.IFNOTEXISTS, "true");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput("Skipping: ");
+  }
+
+  @Test
   public void createMappingReplicatedUpdatesServiceAndClusterConfigForServerGroup() {
     String regionName = GROUP1_REGION;
     setupGroupReplicate(regionName, TEST_GROUP1);
