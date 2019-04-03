@@ -17,6 +17,8 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 
 
 dependencies {

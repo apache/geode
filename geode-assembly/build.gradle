@@ -15,13 +15,35 @@
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
 import java.nio.file.Paths
 
-evaluationDependsOn(":geode-core")
-evaluationDependsOn(":geode-protobuf-messages")
+// This project aggressively reaches into many other projects and must wait for those configurations
+// to be evaluated and resolved.
+[
+    ':geode-common',
+    ':geode-connectors',
+    ':geode-core',
+    ':geode-cq',
+    ':geode-lucene',
+    ':geode-memcached',
+    ':geode-old-client-support',
+    ':geode-protobuf',
+    ':geode-protobuf-messages',
+    ':geode-pulse',
+    ':geode-rebalancer',
+    ':geode-redis',
+    ':geode-wan',
+    ':geode-web',
+    ':geode-web-api',
+    ':geode-web-management',
+].each {
+  evaluationDependsOn(it)
+}
 
 apply plugin: 'distribution'
 apply from: "${rootDir}/${scriptDir}/publish.gradle"

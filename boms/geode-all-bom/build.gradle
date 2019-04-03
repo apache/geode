@@ -16,9 +16,11 @@
  */
 
 plugins {
-  id 'geode-dependency-constraints'
   id 'maven-publish'
 }
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply plugin: 'geode-dependency-constraints'
 
 apply from: "${project.projectDir}/../../gradle/publish.gradle"
 
