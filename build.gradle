@@ -87,14 +87,6 @@ gradle.taskGraph.whenReady({ graph ->
 apply from: "${scriptDir}/sonar.gradle"  // root only, standalone
 apply from: "${scriptDir}/rat.gradle"    // root only, standalone
 
-subprojects {
-  apply from: "${rootDir}/${scriptDir}/java.gradle"
-  apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
-  apply from: "${rootDir}/${scriptDir}/test.gradle"
-  apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
-}
-
-
 
 if (project.hasProperty('parallelDunit')) {
   def pwd = System.getenv('PWD')
@@ -193,6 +185,10 @@ rootProject.ext.dockerConfig = {
 
 
 subprojects {
+  apply from: "${rootDir}/${scriptDir}/java.gradle"
+  apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
+  apply from: "${rootDir}/${scriptDir}/test.gradle"
+  apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
   apply from: "${rootDir}/${scriptDir}/docker.gradle"
 }
 
