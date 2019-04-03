@@ -184,14 +184,6 @@ rootProject.ext.dockerConfig = {
 }
 
 
-subprojects {
-  apply from: "${rootDir}/${scriptDir}/java.gradle"
-  apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
-  apply from: "${rootDir}/${scriptDir}/test.gradle"
-  apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
-  apply from: "${rootDir}/${scriptDir}/docker.gradle"
-}
-
 // When a custom step changes, we need to bump the value passed to the method
 //   bumpThisNumberIfACustomStepChanges
 // This has been historically easy to forget, however, and can cause failures in some rare cases.
@@ -204,16 +196,20 @@ logger.debug("Using partial md5 (${thisFileIntegerHash}) of file ${thisFile} as 
 
 project.ext.set("spotless-file-hash", thisFileIntegerHash)
 
+
 subprojects {
+  apply from: "${rootDir}/${scriptDir}/java.gradle"
+  apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
+  apply from: "${rootDir}/${scriptDir}/test.gradle"
+  apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
+  apply from: "${rootDir}/${scriptDir}/docker.gradle"
   apply from: "${rootDir}/${scriptDir}/spotless.gradle"
-}
-
-apply from: "${scriptDir}/lint.gradle"      // allprojects but not integrated into other bits
-apply from: "${scriptDir}/resolve-dependencies.gradle"   // two root tasks.
-
-subprojects {
   apply plugin: 'com.github.ben-manes.versions'
 }
+
+
+apply from: "${scriptDir}/lint.gradle"      // allprojects but standalone.
+apply from: "${scriptDir}/resolve-dependencies.gradle"   // two root tasks, standalone (with doLast)
 
 check.dependsOn rat
 
