@@ -70,9 +70,9 @@ compileJava.options.encoding = 'UTF-8'
 
 subprojects {
   apply from: "${rootDir}/${scriptDir}/java.gradle"
+  apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
 }
 
-apply from: "${scriptDir}/dependency-resolution.gradle"  // sub
 apply from: "${scriptDir}/test.gradle"   // sub + some root + graph whenready
 apply from: "${scriptDir}/code-analysis.gradle"  // sub
 apply from: "${scriptDir}/sonar.gradle"  // root only
