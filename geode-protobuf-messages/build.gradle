@@ -27,7 +27,6 @@ buildscript {
 }
 
 apply plugin: 'com.google.protobuf'
-apply plugin: 'idea'
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 dependencies {
@@ -49,13 +48,6 @@ sourceSets {
     java {
       srcDir "$buildDir/generated-src/proto/main/java"
     }
-  }
-}
-
-// let IntelliJ know where the generated sources are.
-idea {
-  module {
-    sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
   }
 }
 
