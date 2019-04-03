@@ -14,10 +14,14 @@
  */
 package org.apache.geode.management.api;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.apache.geode.cache.configuration.CacheElement;
 
 
 public class ClusterManagementResult {
@@ -53,6 +57,8 @@ public class ClusterManagementResult {
   // we will always have statusCode when the object is created
   private StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
+
+  private List<CacheElement> result = new ArrayList<>();
 
   public ClusterManagementResult() {}
 
@@ -100,5 +106,13 @@ public class ClusterManagementResult {
 
   public StatusCode getStatusCode() {
     return statusCode;
+  }
+
+  public List<CacheElement> getResult() {
+    return result;
+  }
+
+  public void setResult(List<CacheElement> result) {
+    this.result = result;
   }
 }

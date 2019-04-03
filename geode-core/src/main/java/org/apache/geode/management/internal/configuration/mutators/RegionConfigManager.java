@@ -17,12 +17,16 @@
 
 package org.apache.geode.management.internal.configuration.mutators;
 
+import java.util.List;
+
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 
-public class RegionConfigMutator implements ConfigurationMutator<RegionConfig> {
+public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
 
-  public RegionConfigMutator() {}
+  public RegionConfigManager() {}
 
   @Override
   public void add(RegionConfig configElement, CacheConfig existingConfig) {
@@ -31,11 +35,16 @@ public class RegionConfigMutator implements ConfigurationMutator<RegionConfig> {
 
   @Override
   public void update(RegionConfig config, CacheConfig existing) {
-
+    throw new NotImplementedException("Not implemented yet");
   }
 
   @Override
   public void delete(RegionConfig config, CacheConfig existing) {
+    throw new NotImplementedException("Not implemented yet");
+  }
 
+  @Override
+  public List<RegionConfig> list(RegionConfig config, CacheConfig existing) {
+    throw new NotImplementedException("Not implemented yet");
   }
 }

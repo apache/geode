@@ -300,13 +300,16 @@ public class CreateMappingCommand extends SingleGfshCommand {
     if (regionConfig == null) {
       return false;
     }
-
     RegionAttributesType attributes = getRegionAttribute(regionConfig);
-    addMappingToRegion(regionMapping, regionConfig);
-    if (!synchronous) {
-      createAsyncQueue(cacheConfig, attributes, queueName);
+    if (MappingCommandUtils.isAccessor(attributes)) {
+      alterProxyRegion(queueName, attributes, synchronous);
+    } else {
+      addMappingToRegion(regionMapping, regionConfig);
+      if (!synchronous) {
+        createAsyncQueue(cacheConfig, attributes, queueName);
+      }
+      alterNonProxyRegion(queueName, attributes, synchronous);
     }
-    alterRegion(queueName, attributes, synchronous);
 
     return true;
   }
@@ -324,7 +327,15 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return isOnlineCommandAvailable();
   }
 
-  private void alterRegion(String queueName, RegionAttributesType attributes, boolean synchronous) {
+  private void alterProxyRegion(String queueName, RegionAttributesType attributes,
+      boolean synchronous) {
+    if (!synchronous) {
+      addAsyncEventQueueId(queueName, attributes);
+    }
+  }
+
+  private void alterNonProxyRegion(String queueName, RegionAttributesType attributes,
+      boolean synchronous) {
     setCacheLoader(attributes);
     if (synchronous) {
       setCacheWriter(attributes);

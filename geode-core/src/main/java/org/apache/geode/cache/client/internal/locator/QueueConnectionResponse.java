@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.DataSerializableFixedID;
 
 /**
@@ -30,12 +31,12 @@ import org.apache.geode.internal.DataSerializableFixedID;
 public class QueueConnectionResponse extends ServerLocationResponse {
 
   private boolean durableQueueFound;
-  private List servers;
+  private List<ServerLocation> servers;
   private boolean serversFound = false;
 
   public QueueConnectionResponse() {}
 
-  public QueueConnectionResponse(boolean durableQueueFound, List servers) {
+  public QueueConnectionResponse(boolean durableQueueFound, List<ServerLocation> servers) {
     this.durableQueueFound = durableQueueFound;
     this.servers = servers;
     if (servers != null && !servers.isEmpty()) {
@@ -62,7 +63,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
     return durableQueueFound;
   }
 
-  public List getServers() {
+  public List<ServerLocation> getServers() {
     return servers;
   }
 

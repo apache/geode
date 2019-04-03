@@ -16,6 +16,8 @@
 package org.apache.geode.management.client;
 
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,14 +30,12 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.internal.RestTemplateResponseErrorHandler;
 import org.apache.geode.management.internal.rest.BaseLocatorContextLoader;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -46,7 +46,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
 public class ClientClusterManagementServiceDUnitTest {
-  private static final ResponseErrorHandler ERROR_HANDLER = new RestTemplateResponseErrorHandler();
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -78,12 +77,6 @@ public class ClientClusterManagementServiceDUnitTest {
 
     ClusterManagementResult result = client.create(region, "");
 
-    // This all fails in light of running this test repeatedly as a stress test. Until we introduce
-    // idempotency and/or the ability to call client.delete we can't do this. But it will get fixed
-    // assertThat(result.isSuccessful()).isTrue();
-
-    // Not implemented yet
-    // result = client.delete(region, "");
-    // assertThat(result.isSuccessful()).isTrue();
+    assertThat(client.isConnected()).isTrue();
   }
 }

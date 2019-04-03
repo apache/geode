@@ -103,6 +103,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
+import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -166,7 +167,11 @@ public class JGroupsMessengerJUnitTest {
 
     DistributionManager dm = mock(DistributionManager.class);
     InternalDistributedSystem system =
-        InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
+        new InternalDistributedSystem.BuilderForTesting(nonDefault)
+            .setDistributionManager(dm)
+            .setStatisticsManagerFactory(
+                (name, startTime, statsDisabled) -> new StatisticsRegistry(name, startTime))
+            .build();
     when(services.getStatistics()).thenReturn(new DistributionStats(system, statsId));
 
     messenger = new JGroupsMessenger();

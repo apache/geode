@@ -19,9 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -33,8 +36,8 @@ public class HistoryCommandIntegrationTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  @ClassRule
-  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @After
   public void tearDown() throws Exception {
@@ -44,13 +47,13 @@ public class HistoryCommandIntegrationTest {
   @Test
   public void testHistoryWithEntry() {
     // Generate a line of history
-    gfsh.executeCommand("echo --string=string");
-    gfsh.executeCommand("connect");
+    gfsh.executeAndAssertThat("echo --string=string");
+    gfsh.executeAndAssertThat("connect");
 
     gfsh.executeAndAssertThat("history").statusIsSuccess()
-        .containsOutput(
-            "  1  0: echo --string=string" + System.lineSeparator() + "  2  1: connect" +
-                System.lineSeparator() + System.lineSeparator() + System.lineSeparator());
+        .hasInfoSection()
+        .hasLines()
+        .containsExactly("0: echo --string=string", "1: connect");
   }
 
   @Test
@@ -67,7 +70,8 @@ public class HistoryCommandIntegrationTest {
     assertThat(historyFile).doesNotExist();
 
     String command = "history --file=" + historyFile.getAbsolutePath();
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .containsOutput("Wrote successfully to file");
 
     assertThat(historyFile).exists();
     assertThat(historyFile).hasContent("0: echo --string=string");
@@ -76,11 +80,43 @@ public class HistoryCommandIntegrationTest {
   @Test
   public void testClearHistory() {
     // Generate a line of history
-    gfsh.executeCommand("echo --string=string");
+    gfsh.executeAndAssertThat("echo --string=string");
     gfsh.executeAndAssertThat("history --clear").statusIsSuccess()
         .containsOutput(CliStrings.HISTORY__MSG__CLEARED_HISTORY);
 
     // only the history --clear is in the history now.
     assertThat(gfsh.getGfsh().getGfshHistory().size()).isEqualTo(1);
+  }
+
+  @Test
+  public void testHistoryContainsRedactedPasswordWithEquals() throws IOException {
+    gfsh.executeCommand("connect --password=redacted");
+    File historyFile = temporaryFolder.newFile("history.txt");
+    historyFile.delete();
+    assertThat(historyFile).doesNotExist();
+
+    String command = "history --file=" + historyFile.getAbsolutePath();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    assertThat(historyFile).exists();
+
+    List<String> historyLines = Files.readAllLines(historyFile.toPath());
+    assertThat(historyLines.get(0)).isEqualTo("0: connect --password=********");
+  }
+
+  @Test
+  public void testHistoryContainsRedactedPasswordWithoutEquals() throws IOException {
+    gfsh.executeCommand("connect --password redacted");
+    File historyFile = temporaryFolder.newFile("history.txt");
+    historyFile.delete();
+    assertThat(historyFile).doesNotExist();
+
+    String command = "history --file=" + historyFile.getAbsolutePath();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    assertThat(historyFile).exists();
+
+    List<String> historyLines = Files.readAllLines(historyFile.toPath());
+    assertThat(historyLines.get(0)).isEqualTo("0: connect --password ********");
   }
 }

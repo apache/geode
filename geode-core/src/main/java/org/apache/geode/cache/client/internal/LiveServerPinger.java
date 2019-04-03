@@ -37,7 +37,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
 
   private static final long NANOS_PER_MS = 1000000L;
 
-  private final ConcurrentMap/* <Endpoint,Future> */ taskFutures = new ConcurrentHashMap();
+  private final ConcurrentMap<Endpoint, Future> taskFutures = new ConcurrentHashMap<>();
   protected final InternalPool pool;
   protected final long pingIntervalNanos;
 
@@ -70,7 +70,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
   }
 
   private void cancelFuture(Endpoint endpoint) {
-    Future future = (Future) taskFutures.remove(endpoint);
+    Future future = taskFutures.remove(endpoint);
     if (future != null) {
       future.cancel(false);
     }
@@ -79,7 +79,7 @@ public class LiveServerPinger extends EndpointListenerAdapter {
   private class PingTask extends PoolTask {
     private final Endpoint endpoint;
 
-    public PingTask(Endpoint endpoint) {
+    PingTask(Endpoint endpoint) {
       this.endpoint = endpoint;
     }
 

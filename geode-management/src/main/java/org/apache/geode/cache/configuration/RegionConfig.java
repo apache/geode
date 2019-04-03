@@ -29,6 +29,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -152,6 +154,9 @@ import org.apache.geode.management.api.RestfulEndpoint;
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
 public class RegionConfig implements CacheElement, RestfulEndpoint {
+
+  public static final String REGION_CONFIG_ENDPOINT = "/regions";
+
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
@@ -176,7 +181,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
 
   @Override
   public String getEndpoint() {
-    return "/regions";
+    return REGION_CONFIG_ENDPOINT;
   }
 
   public RegionAttributesType getRegionAttributes() {
@@ -324,7 +329,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
    */
   public void setName(String value) throws IllegalArgumentException {
     if (value == null) {
-      throw new IllegalArgumentException("Region name cannot be null");
+      return;
     }
 
     boolean regionPrefixedWithSlash = value.startsWith("/");
@@ -504,6 +509,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
   }
 
   @Override
+  @JsonIgnore
   public String getId() {
     return getName();
   }

@@ -20,6 +20,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 
@@ -97,13 +98,16 @@ public interface Connection {
 
   /**
    * Mark the connection as being actively used.
+   * @return true if connection activated, false if could not be activated because it is destroyed
+   * @throws InternalGemFireException when the connection is already active
    */
-  default void activate() {}
+  default boolean activate() {return true;}
 
   /**
    * Mark the connection as one that is not being used.
    *
    * @param accessed true if the connection was used while active
+   * @throws InternalGemFireException when the connection is already passive
    */
   default void passivate(boolean accessed) {}
 }

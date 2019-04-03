@@ -75,7 +75,7 @@ public class GfshHistoryJUnitTest {
     gfsh.executeScriptLine("connect --password=foo");
 
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
-    assertEquals("connect --password=*****", lines.get(1));
+    assertEquals("connect --password=********", lines.get(1));
   }
 
   @Test

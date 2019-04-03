@@ -15,119 +15,81 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Iterator;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
 
-public class HistoryCommand extends InternalGfshCommand {
+public class HistoryCommand extends OfflineGfshCommand {
   @CliCommand(value = CliStrings.HISTORY, help = CliStrings.HISTORY__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result history(
+  public ResultModel history(
       @CliOption(key = {CliStrings.HISTORY__FILE},
           help = CliStrings.HISTORY__FILE__HELP) String saveHistoryTo,
       @CliOption(key = {CliStrings.HISTORY__CLEAR}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
-          help = CliStrings.HISTORY__CLEAR__HELP) Boolean clearHistory) {
+          help = CliStrings.HISTORY__CLEAR__HELP) Boolean clearHistory)
+      throws IOException {
     // process clear history
     if (clearHistory) {
       return executeClearHistory();
     } else {
       // Process file option
-      Gfsh gfsh = Gfsh.getCurrentInstance();
-      ErrorResultData errorResultData;
-      StringBuilder contents = new StringBuilder();
-      Writer output = null;
+      Gfsh gfsh = getGfsh();
 
-      int historySize = gfsh.getHistorySize();
-      String historySizeString = String.valueOf(historySize);
-      int historySizeWordLength = historySizeString.length();
+      boolean hasFile = StringUtils.isNotBlank(saveHistoryTo);
+
+      File saveHistoryToFile = null;
+      if (hasFile) {
+        saveHistoryToFile = new File(saveHistoryTo);
+        if (saveHistoryToFile.exists()) {
+          return ResultModel.createError("File exists already");
+        }
+        if (saveHistoryToFile.isDirectory()) {
+          return ResultModel.createError(CliStrings.HISTORY__MSG__FILE_SHOULD_NOT_BE_DIRECTORY);
+        }
+      }
 
       GfshHistory gfshHistory = gfsh.getGfshHistory();
       Iterator<?> it = gfshHistory.entries();
-      boolean flagForLineNumbers = !(saveHistoryTo != null && saveHistoryTo.length() > 0);
-      long lineNumber = 0;
 
+      ResultModel result = new ResultModel();
+      InfoResultModel histories = result.addInfo("history");
       while (it.hasNext()) {
         String line = it.next().toString();
         if (!line.isEmpty()) {
-          if (flagForLineNumbers) {
-            lineNumber++;
-            contents.append(String.format("%" + historySizeWordLength + "s  ", lineNumber));
+          if (hasFile) {
+            FileUtils.writeStringToFile(saveHistoryToFile, line + GfshParser.LINE_SEPARATOR,
+                "UTF-8", true);
+          } else {
+            histories.addLine(line);
           }
-          contents.append(line);
-          contents.append(GfshParser.LINE_SEPARATOR);
         }
       }
 
-      try {
-        // write to a user file
-        if (saveHistoryTo != null && saveHistoryTo.length() > 0) {
-          File saveHistoryToFile = new File(saveHistoryTo);
-          output = new BufferedWriter(new FileWriter(saveHistoryToFile));
-
-          if (!saveHistoryToFile.exists()) {
-            errorResultData =
-                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                    .addLine(CliStrings.HISTORY__MSG__FILE_DOES_NOT_EXISTS);
-            return ResultBuilder.buildResult(errorResultData);
-          }
-          if (!saveHistoryToFile.isFile()) {
-            errorResultData =
-                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                    .addLine(CliStrings.HISTORY__MSG__FILE_SHOULD_NOT_BE_DIRECTORY);
-            return ResultBuilder.buildResult(errorResultData);
-          }
-          if (!saveHistoryToFile.canWrite()) {
-            errorResultData =
-                ResultBuilder.createErrorResultData().setErrorCode(ResultBuilder.ERRORCODE_DEFAULT)
-                    .addLine(CliStrings.HISTORY__MSG__FILE_CANNOT_BE_WRITTEN);
-            return ResultBuilder.buildResult(errorResultData);
-          }
-
-          output.write(contents.toString());
-        }
-
-      } catch (IOException ex) {
-        return ResultBuilder
-            .createInfoResult("File error " + ex.getMessage() + " for file " + saveHistoryTo);
-      } finally {
-        try {
-          if (output != null) {
-            output.close();
-          }
-        } catch (IOException e) {
-          errorResultData = ResultBuilder.createErrorResultData()
-              .setErrorCode(ResultBuilder.ERRORCODE_DEFAULT).addLine("exception in closing file");
-          return ResultBuilder.buildResult(errorResultData);
-        }
-      }
-      if (saveHistoryTo != null && saveHistoryTo.length() > 0) {
+      if (hasFile) {
         // since written to file no need to display the content
-        return ResultBuilder.createInfoResult("Wrote successfully to file " + saveHistoryTo);
+        return ResultModel.createInfo("Wrote successfully to file " + saveHistoryTo);
       } else {
-        return ResultBuilder.createInfoResult(contents.toString());
+        return result;
       }
     }
   }
 
-  private Result executeClearHistory() {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-    gfsh.clearHistory();
-    return ResultBuilder.createInfoResult(CliStrings.HISTORY__MSG__CLEARED_HISTORY);
+  private ResultModel executeClearHistory() {
+    getGfsh().clearHistory();
+    return ResultModel.createInfo(CliStrings.HISTORY__MSG__CLEARED_HISTORY);
   }
 }

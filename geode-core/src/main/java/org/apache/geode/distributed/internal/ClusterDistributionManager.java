@@ -3444,7 +3444,7 @@ public class ClusterDistributionManager implements DistributionManager {
       if (wasAdmin) {
         // Pretend we received an AdminConsoleDisconnectMessage from the console that
         // is no longer in the JavaGroup view.
-        // He must have died without sending a ShutdownMessage.
+        // It must have died without sending a ShutdownMessage.
         // This fixes bug 28454.
         AdminConsoleDisconnectMessage message = new AdminConsoleDisconnectMessage();
         message.setSender(theId);

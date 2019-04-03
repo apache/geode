@@ -153,14 +153,12 @@ public class OpExecutorImpl implements ExecutablePool {
       // while we're performing the op. It will be reset
       // if the op succeeds.
       localConnection.set(null);
-      try {
-        conn.activate();
-      } catch (ConnectionDestroyedException ex) {
+      if (!conn.activate()) {
         conn = connectionManager.borrowConnection(serverTimeout);
       }
     }
     try {
-      Set attemptedServers = null;
+      Set<ServerLocation> attemptedServers = null;
 
       for (int attempt = 0; true; attempt++) {
         // when an op is retried we may need to try to recover the previous
@@ -183,7 +181,7 @@ public class OpExecutorImpl implements ExecutablePool {
           handleException(e, conn, attempt, attempt >= retries && retries != -1);
           if (null == attemptedServers) {
             // don't allocate this until we need it
-            attemptedServers = new HashSet();
+            attemptedServers = new HashSet<>();
           }
           attemptedServers.add(conn.getServer());
           try {
@@ -445,15 +443,13 @@ public class OpExecutorImpl implements ExecutablePool {
     }
     boolean borrow = true;
     if (conn != null) {
-      try {
-        conn.activate();
+      if (conn.activate()) {
         borrow = false;
         if (!conn.getServer().equals(server)) {
           // poolLoadConditioningMonitor can replace the connection's
           // endpoint from underneath us. fixes bug 45151
           borrow = true;
         }
-      } catch (ConnectionDestroyedException e) {
       }
     }
     if (conn == null || borrow) {

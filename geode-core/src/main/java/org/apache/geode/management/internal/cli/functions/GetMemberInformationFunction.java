@@ -30,6 +30,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.CacheClientStatus;
 import org.apache.geode.internal.cache.InternalCache;
@@ -118,7 +119,7 @@ public class GetMemberInformationFunction implements InternalFunction {
       List<CacheServer> csList = cache.getCacheServers();
 
       // A member is a server only if it has a cacheserver
-      if (csList != null) {
+      if (csList != null && !csList.isEmpty()) {
         memberInfo.setServer(true);
         Iterator<CacheServer> iters = csList.iterator();
         while (iters.hasNext()) {
@@ -143,6 +144,10 @@ public class GetMemberInformationFunction implements InternalFunction {
         memberInfo.setClientCount(numConnections);
       } else {
         memberInfo.setServer(false);
+        InternalLocator locator = InternalLocator.getLocator();
+        if (locator != null) {
+          memberInfo.setLocatorPort(locator.getPort());
+        }
       }
       functionContext.getResultSender().lastResult(memberInfo);
     } catch (CacheClosedException e) {
@@ -151,6 +156,8 @@ public class GetMemberInformationFunction implements InternalFunction {
       functionContext.getResultSender().sendException(e);
     }
   }
+
+
 
   private long bytesToMeg(long bytes) {
     return bytes / (1024L * 1024L);

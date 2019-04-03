@@ -663,7 +663,7 @@ public class PoolImpl implements InternalPool {
     if (locators.isEmpty()) {
       return new ExplicitConnectionSourceImpl(getServers());
     } else {
-      AutoConnectionSourceImpl source = new AutoConnectionSourceImpl(locators, locatorAddresses,
+      AutoConnectionSourceImpl source = new AutoConnectionSourceImpl(locatorAddresses,
           getServerGroup(), socketConnectTimeout);
       if (locatorDiscoveryCallback != null) {
         source.setLocatorDiscoveryCallback(locatorDiscoveryCallback);

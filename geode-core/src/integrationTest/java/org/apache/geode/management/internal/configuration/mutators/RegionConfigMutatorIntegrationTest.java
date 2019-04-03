@@ -31,13 +31,13 @@ public class RegionConfigMutatorIntegrationTest {
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
-  private RegionConfigMutator mutator;
+  private RegionConfigManager mutator;
   private RegionConfig config;
 
   @Before
   public void before() throws Exception {
     config = new RegionConfig();
-    mutator = new RegionConfigMutator();
+    mutator = new RegionConfigManager();
   }
 
   @Test

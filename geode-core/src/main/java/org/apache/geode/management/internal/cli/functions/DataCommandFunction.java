@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -59,6 +58,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
  * @since GemFire 7.0
@@ -586,8 +586,7 @@ public class DataCommandFunction implements InternalFunction {
 
     Object resultObject;
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+      ObjectMapper mapper = GeodeJsonMapper.getMapper();
       resultObject = mapper.readValue(string, klass);
     } catch (IOException e) {
       throw new IllegalArgumentException(

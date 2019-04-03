@@ -190,7 +190,7 @@ public class ArgumentRedactor {
   /**
    * Determine whether a option's argument should be redacted.
    *
-   * @param option The option option in question.
+   * @param option The option in question.
    *
    * @return true if the value should be redacted, otherwise false.
    */

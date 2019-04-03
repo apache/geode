@@ -46,7 +46,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
 
   private static final Logger logger = LogService.getLogger();
 
-  private List serverList;
+  private List<ServerLocation> serverList;
   private int nextServerIndex = 0;
   private int nextQueueIndex = 0;
   private InternalPool pool;
@@ -57,10 +57,9 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
   private boolean DISABLE_SHUFFLING =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
 
-  public ExplicitConnectionSourceImpl(List/* <InetSocketAddress> */ contacts) {
-    ArrayList serverList = new ArrayList(contacts.size());
-    for (int i = 0; i < contacts.size(); i++) {
-      InetSocketAddress addr = (InetSocketAddress) contacts.get(i);
+  ExplicitConnectionSourceImpl(List<InetSocketAddress> contacts) {
+    ArrayList<ServerLocation> serverList = new ArrayList<>(contacts.size());
+    for (InetSocketAddress addr : contacts) {
       serverList.add(new ServerLocation(addr.getHostName(), addr.getPort()));
     }
     shuffle(serverList);
@@ -80,13 +79,13 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
 
   @Override
   public ServerLocation findReplacementServer(ServerLocation currentServer,
-      Set/* <ServerLocation> */ excludedServers) {
+      Set<ServerLocation> excludedServers) {
     // at this time we always try to find a server other than currentServer
     // and if we do return it. Otherwise return null;
     // so that clients would attempt to keep the same number of connections
     // to each server but it would be a bit of work.
     // Plus we need to make sure it would work ok for hardware load balancers.
-    HashSet excludedPlusCurrent = new HashSet(excludedServers);
+    HashSet<ServerLocation> excludedPlusCurrent = new HashSet<>(excludedServers);
     excludedPlusCurrent.add(currentServer);
     return findServer(excludedPlusCurrent);
   }
@@ -99,7 +98,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     ServerLocation nextServer;
     int startIndex = nextServerIndex;
     do {
-      nextServer = (ServerLocation) serverList.get(nextServerIndex);
+      nextServer = serverList.get(nextServerIndex);
       if (++nextServerIndex >= serverList.size()) {
         nextServerIndex = 0;
       }
@@ -116,10 +115,11 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
    * system to find where our durable queue lives.
    */
   @Override
-  public synchronized List findServersForQueue(Set excludedServers, int numServers,
+  public synchronized List<ServerLocation> findServersForQueue(Set<ServerLocation> excludedServers,
+      int numServers,
       ClientProxyMembershipID proxyId, boolean findDurableQueue) {
     if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
-      return new ArrayList();
+      return new ArrayList<>();
     }
     if (numServers == -1) {
       numServers = Integer.MAX_VALUE;
@@ -136,13 +136,14 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     return false;
   }
 
-  private List pickQueueServers(Set excludedServers, int numServers) {
+  private List<ServerLocation> pickQueueServers(Set<ServerLocation> excludedServers,
+      int numServers) {
 
-    ArrayList result = new ArrayList();
+    ArrayList<ServerLocation> result = new ArrayList<>();
     ServerLocation nextQueue;
     int startIndex = nextQueueIndex;
     do {
-      nextQueue = (ServerLocation) serverList.get(nextQueueIndex);
+      nextQueue = serverList.get(nextQueueIndex);
       if (++nextQueueIndex >= serverList.size()) {
         nextQueueIndex = 0;
       }
@@ -159,7 +160,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
    */
   private static class HasQueueOp implements Op {
     @Immutable
-    public static final HasQueueOp SINGLETON = new HasQueueOp();
+    static final HasQueueOp SINGLETON = new HasQueueOp();
 
     @Override
     public Object attempt(Connection cnx) throws Exception {
@@ -173,14 +174,14 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     }
   }
 
-  private List findDurableQueues(Set excludedServers, int numServers) {
-    ArrayList durableServers = new ArrayList();
-    ArrayList otherServers = new ArrayList();
+  private List<ServerLocation> findDurableQueues(Set<ServerLocation> excludedServers,
+      int numServers) {
+    ArrayList<ServerLocation> durableServers = new ArrayList<>();
+    ArrayList<ServerLocation> otherServers = new ArrayList<>();
 
     logger.debug("ExplicitConnectionSource - looking for durable queue");
 
-    for (Iterator itr = serverList.iterator(); itr.hasNext();) {
-      ServerLocation server = (ServerLocation) itr.next();
+    for (ServerLocation server : serverList) {
       if (excludedServers.contains(server)) {
         continue;
       }
@@ -202,7 +203,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
         continue;
       }
       if (hasQueue != null) {
-        if (hasQueue.booleanValue()) {
+        if (hasQueue) {
           if (logger.isDebugEnabled()) {
             logger.debug("Durable queue found on {}", server);
           }
@@ -250,13 +251,13 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("EndPoints[");
     synchronized (this) {
       Iterator it = serverList.iterator();
       while (it.hasNext()) {
         ServerLocation loc = (ServerLocation) it.next();
-        sb.append(loc.getHostName() + ":" + loc.getPort());
+        sb.append(loc.getHostName()).append(":").append(loc.getPort());
         if (it.hasNext()) {
           sb.append(",");
         }
@@ -268,9 +269,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
 
   @Override
   public ArrayList<ServerLocation> getAllServers() {
-    ArrayList<ServerLocation> list = new ArrayList<ServerLocation>();
-    list.addAll(this.serverList);
-    return list;
+    return new ArrayList<>(this.serverList);
   }
 
   @Override

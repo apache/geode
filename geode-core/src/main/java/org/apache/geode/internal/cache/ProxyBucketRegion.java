@@ -19,6 +19,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,7 +31,6 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
@@ -67,7 +67,7 @@ public class ProxyBucketRegion implements Bucket {
   private final BucketPersistenceAdvisor persistenceAdvisor;
   private volatile BucketRegion realBucket = null;
   private final AtomicBoolean bucketSick = new AtomicBoolean(false);
-  private final Set<DistributedMember> sickHosts = new HashSet<DistributedMember>();
+  private final Set<DistributedMember> sickHosts = new HashSet<>();
   private final DiskRegion diskRegion;
   private final BucketLock bucketLock;
 
@@ -222,10 +222,6 @@ public class ProxyBucketRegion implements Bucket {
     return this.partitionedRegion.getCache();
   }
 
-  public RegionService getCacheView() {
-    return this.partitionedRegion.getRegionService();
-  }
-
   @Override
   public RegionAttributes getAttributes() {
     return this.partitionedRegion.getAttributes();
@@ -254,7 +250,7 @@ public class ProxyBucketRegion implements Bucket {
     this.realBucket = br;
   }
 
-  public void clearBucketRegion(BucketRegion br) {
+  void clearBucketRegion(BucketRegion br) {
     Assert.assertTrue(this.realBucket == br);
     this.realBucket = null;
   }
@@ -356,10 +352,10 @@ public class ProxyBucketRegion implements Bucket {
   @Override
   public Set<InternalDistributedMember> getBucketOwners() {
     Set<InternalDistributedMember> s = this.advisor.adviseInitialized();
-    if (s == Collections.<InternalDistributedMember>emptySet()) {
-      s = new HashSet<InternalDistributedMember>();
-    }
     if (isHosting()) {
+      if (s.isEmpty()) {
+        s = new HashSet<>();
+      }
       s.add(this.partitionedRegion.getDistributionManager().getId());
     }
     return s;
@@ -400,11 +396,11 @@ public class ProxyBucketRegion implements Bucket {
 
   public Set<DistributedMember> getSickMembers() {
     synchronized (this.sickHosts) {
-      return Collections.unmodifiableSet(new HashSet<DistributedMember>(this.sickHosts));
+      return Collections.unmodifiableSet(new HashSet<>(this.sickHosts));
     }
   }
 
-  public void recoverFromDiskRecursively() {
+  void recoverFromDiskRecursively() {
     recoverFromDisk();
 
     List<PartitionedRegion> colocatedWithList =
@@ -448,7 +444,7 @@ public class ProxyBucketRegion implements Bucket {
                 ColocationHelper.getColocatedRegion(this.partitionedRegion);
 
             if (this.partitionedRegion.getDataPolicy().withPersistence()
-                && !colocatedRegion.getDataPolicy().withPersistence()) {
+                && !Objects.requireNonNull(colocatedRegion).getDataPolicy().withPersistence()) {
               result = colocatedRegion.getDataStore().grabBucket(bid,
                   getDistributionManager().getDistributionManagerId(), true, true, false, null,
                   true);
@@ -503,14 +499,13 @@ public class ProxyBucketRegion implements Bucket {
   }
 
   boolean hasPersistentChildRegion() {
-    boolean hasPersistentChildRegion = ColocationHelper.hasPersistentChildRegion(partitionedRegion);
-    return hasPersistentChildRegion;
+    return ColocationHelper.hasPersistentChildRegion(partitionedRegion);
   }
 
   /**
    * Destroy the offline data just for this bucket.
    */
-  public void destroyOfflineData() {
+  void destroyOfflineData() {
     Map<InternalDistributedMember, PersistentMemberID> onlineMembers =
         advisor.adviseInitializedPersistentMembers();
     persistenceAdvisor.checkMyStateOnMembers(onlineMembers.keySet());
@@ -531,7 +526,7 @@ public class ProxyBucketRegion implements Bucket {
     return this.diskRegion;
   }
 
-  public void finishRemoveBucket() {
+  void finishRemoveBucket() {
     if (this.persistenceAdvisor != null) {
       this.persistenceAdvisor.bucketRemoved();
     }
@@ -541,7 +536,7 @@ public class ProxyBucketRegion implements Bucket {
     return bucketLock;
   }
 
-  public void initializePersistenceAdvisor() {
+  void initializePersistenceAdvisor() {
     persistenceAdvisor.initialize();
 
     List<PartitionedRegion> colocatedWithList =
@@ -557,7 +552,7 @@ public class ProxyBucketRegion implements Bucket {
     }
   }
 
-  public boolean checkBucketRedundancyBeforeGrab(InternalDistributedMember moveSource,
+  boolean checkBucketRedundancyBeforeGrab(InternalDistributedMember moveSource,
       boolean replaceOfflineData) {
     int redundancy = getBucketAdvisor().getBucketRedundancy();
     // Skip any checks if this is a colocated bucket. We need to create
@@ -645,12 +640,12 @@ public class ProxyBucketRegion implements Bucket {
     return true;
   }
 
-  public void waitForPrimaryPersistentRecovery() {
+  void waitForPrimaryPersistentRecovery() {
     persistenceAdvisor.waitForPrimaryPersistentRecovery();
 
   }
 
-  public void initializePrimaryElector(InternalDistributedMember creationRequestor) {
+  void initializePrimaryElector(InternalDistributedMember creationRequestor) {
     advisor.initializePrimaryElector(creationRequestor);
 
     if (persistenceAdvisor != null) {
@@ -658,7 +653,7 @@ public class ProxyBucketRegion implements Bucket {
     }
   }
 
-  public void clearPrimaryElector() {
+  void clearPrimaryElector() {
     if (persistenceAdvisor != null) {
       persistenceAdvisor.setAtomicCreation(false);
     }

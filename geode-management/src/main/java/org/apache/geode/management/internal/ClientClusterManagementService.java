@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal;
 
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
@@ -24,8 +25,6 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
@@ -58,11 +57,17 @@ public class ClientClusterManagementService implements ClusterManagementService 
   private static final ResponseErrorHandler DEFAULT_ERROR_HANDLER =
       new RestTemplateResponseErrorHandler();
 
+  private static final String VERSION = "/v2";
+
   private final RestTemplate restTemplate;
 
   private ClientClusterManagementService() {
     restTemplate = new RestTemplate();
     restTemplate.setErrorHandler(DEFAULT_ERROR_HANDLER);
+  }
+
+  public ClientClusterManagementService(String host, int port) {
+    this(host, port, null, null, null, null);
   }
 
   public ClientClusterManagementService(String host, int port, SSLContext sslContext,
@@ -71,7 +76,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
     DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
     String schema = (sslContext == null) ? "http" : "https";
-    templateHandler.setBaseUrl(schema + "://" + host + ":" + port + "/geode-management/v2");
+    templateHandler.setBaseUrl(schema + "://" + host + ":" + port + "/geode-management");
     restTemplate.setUriTemplateHandler(templateHandler);
 
     // HttpComponentsClientHttpRequestFactory allows use to preconfigure httpClient for
@@ -103,10 +108,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public ClusterManagementResult create(CacheElement config, String group) {
     String endPoint = getEndpoint(config);
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_JSON);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
-    return restTemplate.postForObject(endPoint, config, ClusterManagementResult.class);
+    return restTemplate.postForEntity(VERSION + endPoint, config, ClusterManagementResult.class)
+        .getBody();
   }
 
   @Override
@@ -117,6 +121,23 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public ClusterManagementResult update(CacheElement config, String group) {
     throw new NotImplementedException("Not Implemented");
+  }
+
+  @Override
+  public ClusterManagementResult list(CacheElement config) {
+    String endPoint = getEndpoint(config);
+    String id = config.getId();
+
+    // return restTemplate
+    // .getForEntity(VERSION + endPoint + ((id == null) ? "" : "/{id}"),
+    // ClusterManagementResult.class, id)
+    // .getBody();
+
+    return restTemplate
+        .getForEntity(VERSION + endPoint + ((id == null) ? "" : "/?id=" + id),
+            ClusterManagementResult.class)
+        .getBody();
+
   }
 
   public RestTemplate getRestTemplate() {
@@ -134,7 +155,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   public boolean isConnected() {
-    return restTemplate.getForObject("/ping", String.class).equals("pong");
+    return restTemplate.getForEntity(VERSION + "/ping", String.class)
+        .getBody().equals("pong");
   }
 
 }

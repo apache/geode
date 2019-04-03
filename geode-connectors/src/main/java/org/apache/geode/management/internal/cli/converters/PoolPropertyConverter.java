@@ -17,13 +17,13 @@ package org.apache.geode.management.internal.cli.converters;
 import java.io.IOException;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
 import org.apache.geode.connectors.jdbc.internal.cli.CreateDataSourceCommand;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /***
  * Converter for CreateDataSourceCommand's --pool-properties option.
@@ -32,10 +32,7 @@ import org.apache.geode.connectors.jdbc.internal.cli.CreateDataSourceCommand;
 public class PoolPropertyConverter
     implements Converter<CreateDataSourceCommand.PoolProperty> {
 
-  private static final ObjectMapper mapper = new ObjectMapper();
-  static {
-    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-  }
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Override
   public boolean supports(Class<?> type, String optionContext) {
