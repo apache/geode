@@ -30,29 +30,42 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.util.VersionedArrayList;
 import org.apache.geode.test.fake.Fakes;
 
+@RunWith(JUnitParamsRunner.class)
 public class PartitionedRegionTest {
 
   String regionName = "prTestRegion";
 
+  InternalCache internalCache;
+
   PartitionedRegion partitionedRegion;
 
+  Properties gemfireProperties = new Properties();
 
   @Before
   public void setup() {
-    InternalCache internalCache = Fakes.cache();
+    internalCache = Fakes.cache();
+
     InternalResourceManager resourceManager =
         mock(InternalResourceManager.class, RETURNS_DEEP_STUBS);
     when(internalCache.getInternalResourceManager()).thenReturn(resourceManager);
@@ -61,7 +74,75 @@ public class PartitionedRegionTest {
         new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
     partitionedRegion = new PartitionedRegion(regionName, attributesFactory.create(),
         null, internalCache, mock(InternalRegionArguments.class));
+    DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+    when(internalCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+    when(mockDistributedSystem.getProperties()).thenReturn(gemfireProperties);
+  }
 
+  @Test
+  @Parameters(method = "parametersToTestUpdatePRNodeInformation")
+  public void verifyPRConfigUpdatedAfterLoaderUpdate(CacheLoader mockLoader, CacheWriter mockWriter,
+      byte configByte) {
+    LocalRegion prRoot = mock(LocalRegion.class);
+    PartitionRegionConfig mockConfig = mock(PartitionRegionConfig.class);
+    PartitionedRegion prSpy = spy(partitionedRegion);
+
+    doReturn(prRoot).when(prSpy).getPRRoot();
+    when(prRoot.get(prSpy.getRegionIdentifier())).thenReturn(mockConfig);
+
+    InternalDistributedMember ourMember = prSpy.getDistributionManager().getId();
+    InternalDistributedMember otherMember1 = mock(InternalDistributedMember.class);
+    InternalDistributedMember otherMember2 = mock(InternalDistributedMember.class);
+    Node ourNode = mock(Node.class);
+    Node otherNode1 = mock(Node.class);
+    Node otherNode2 = mock(Node.class);
+    when(ourNode.getMemberId()).thenReturn(ourMember);
+    when(otherNode1.getMemberId()).thenReturn(otherMember1);
+    when(otherNode2.getMemberId()).thenReturn(otherMember2);
+    when(ourNode.isCacheLoaderAttached()).thenReturn(mockLoader == null ? false : true);
+    when(ourNode.isCacheWriterAttached()).thenReturn(mockWriter == null ? false : true);
+
+
+    VersionedArrayList prNodes = new VersionedArrayList();
+    prNodes.add(otherNode1);
+    prNodes.add(ourNode);
+    prNodes.add(otherNode2);
+    when(mockConfig.getNodes()).thenReturn(prNodes.getListCopy());
+    when(mockConfig.getPartitionAttrs()).thenReturn(mock(PartitionAttributesImpl.class));
+
+    doReturn(mockLoader).when(prSpy).basicGetLoader();
+    doReturn(mockWriter).when(prSpy).basicGetWriter();
+    PartitionedRegion.RegionLock mockLock = mock(PartitionedRegion.RegionLock.class);
+    doReturn(mockLock).when(prSpy).getRegionLock();
+
+    prSpy.updatePRNodeInformation();
+
+    Node verifyOurNode = null;
+    assertThat(mockConfig.getNodes().contains(ourNode));
+    for (Node node : mockConfig.getNodes()) {
+      if (node.getMemberId().equals(ourMember)) {
+        verifyOurNode = node;
+      }
+    }
+
+    verify(prRoot).get(prSpy.getRegionIdentifier());
+    verify(prSpy).updatePRConfig(mockConfig, false);
+    verify(prRoot).put(prSpy.getRegionIdentifier(), mockConfig);
+
+    assertThat(verifyOurNode).isNotNull();
+    assertThat(verifyOurNode.isCacheLoaderAttached()).isEqualTo(mockLoader == null ? false : true);
+    assertThat(verifyOurNode.isCacheWriterAttached()).isEqualTo(mockWriter == null ? false : true);
+  }
+
+  private Object[] parametersToTestUpdatePRNodeInformation() {
+    CacheLoader mockLoader = mock(CacheLoader.class);
+    CacheWriter mockWriter = mock(CacheWriter.class);
+    return new Object[] {
+        new Object[] {mockLoader, null, (byte) 0x01},
+        new Object[] {null, mockWriter, (byte) 0x02},
+        new Object[] {mockLoader, mockWriter, (byte) 0x03},
+        new Object[] {null, null, (byte) 0x00}
+    };
   }
 
   @Test
