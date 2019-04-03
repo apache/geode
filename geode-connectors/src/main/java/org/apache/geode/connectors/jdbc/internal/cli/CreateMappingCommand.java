@@ -101,6 +101,10 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private static final String CREATE_MAPPING__PDX_CLASS_FILE = MappingConstants.PDX_CLASS_FILE;
   private static final String CREATE_MAPPING__PDX_CLASS_FILE__HELP =
       "The file that contains the PDX class. It must be a file with the \".jar\" or \".class\" extension. By default, the PDX class must be on the server's classpath or gfsh deployed.";
+  public static final String CREATE_MAPPING__SKIPIFEXISTS = "skip-if-exists";
+  public static final String CREATE_MAPPING__IFNOTEXISTS__HELP =
+      "By default, an attempt to create a duplicate jdbc mapping is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error.";
+  static final String IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE = "Skipping: ";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(
@@ -127,6 +131,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__CATALOG_NAME__HELP) String catalog,
       @CliOption(key = CREATE_MAPPING__SCHEMA_NAME,
           help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
+      @CliOption(key = {CliStrings.IFNOTEXISTS, CREATE_MAPPING__SKIPIFEXISTS},
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CREATE_MAPPING__IFNOTEXISTS__HELP) boolean ifNotExists,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups)
@@ -162,13 +169,17 @@ public class CreateMappingCommand extends SingleGfshCommand {
         CacheConfig cacheConfig =
             MappingCommandUtils.getCacheConfig(configurationPersistenceService, group);
         RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, group);
-        checkForExistingMapping(regionName, regionConfig);
+        checkForExistingMapping(regionName, regionConfig, ifNotExists);
         checkForCacheLoader(regionName, regionConfig);
         checkForCacheWriter(regionName, synchronous, regionConfig);
         checkForAsyncQueue(regionName, synchronous, cacheConfig);
       }
     } catch (PreconditionException ex) {
-      return ResultModel.createError(ex.getMessage());
+      if(ex.getMessage().equals(IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE)) {
+        return ResultModel.createInfo(ex.getMessage() + "Existing mapping found for region " + regionName + ". ");
+      } else {
+        return ResultModel.createError(ex.getMessage());
+      }
     }
 
     if (pdxClassFile != null) {
@@ -240,11 +251,16 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return MappingCommandUtils.checkForRegion(regionName, cacheConfig, groupName);
   }
 
-  private void checkForExistingMapping(String regionName, RegionConfig regionConfig)
+  private void checkForExistingMapping(String regionName, RegionConfig regionConfig, boolean ifNotExists)
       throws PreconditionException {
     if (regionConfig.getCustomRegionElements().stream()
         .anyMatch(element -> element instanceof RegionMapping)) {
-      throw new PreconditionException("A JDBC mapping for " + regionName + " already exists.");
+      if(ifNotExists) {
+        throw new PreconditionException(IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE);
+      } else {
+        // default
+        throw new PreconditionException("A JDBC mapping for " + regionName + " already exists.");
+      }
     }
   }
 
