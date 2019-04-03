@@ -110,7 +110,10 @@ rootProject.tasks.named('classes').configure {
 }
 
 
-apply from: "${scriptDir}/code-analysis.gradle"  // sub
+subprojects {
+  apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
+}
+
 apply from: "${scriptDir}/sonar.gradle"  // root only
 apply from: "${scriptDir}/rat.gradle"    // root only
 apply from: "${scriptDir}/docker.gradle"  // large def + sub
