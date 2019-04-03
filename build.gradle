@@ -73,7 +73,43 @@ subprojects {
   apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
 }
 
-apply from: "${scriptDir}/test.gradle"   // sub + some root + graph whenready
+// TODO: These came from test.gradle.  Move when safe.
+task combineReports(type: TestReport) {
+  description 'Combines the test reports.'
+  destinationDir = file "${rootProject.buildDir}/reports/combined"
+
+  doLast {
+    println "All test reports at ${rootProject.buildDir}/reports/combined"
+  }
+}
+
+gradle.taskGraph.whenReady({ graph ->
+  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
+    it.tasks.withType(Test)
+  }.flatten()
+})
+
+
+subprojects {
+  apply from: "${rootDir}/${scriptDir}/test.gradle"
+}
+
+rootProject.tasks.named('classes').configure {
+  // This is a semi-lazy hook so that the target "assemble" also assembles our test sources.
+  dependsOn(subprojects.collect { thisSubProject ->
+    [
+        thisSubProject.tasks.named('compileTestJava'),
+        thisSubProject.tasks.named('compileIntegrationTestJava'),
+        thisSubProject.tasks.named('compileDistributedTestJava'),
+        thisSubProject.tasks.named('compileAcceptanceTestJava'),
+        thisSubProject.tasks.named('compileUiTestJava'),
+        thisSubProject.tasks.named('compilePerformanceTestJava'),
+        thisSubProject.tasks.named('compileUpgradeTestJava'),
+    ]
+  }.flatten())
+}
+
+
 apply from: "${scriptDir}/code-analysis.gradle"  // sub
 apply from: "${scriptDir}/sonar.gradle"  // root only
 apply from: "${scriptDir}/rat.gradle"    // root only
