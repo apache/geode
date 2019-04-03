@@ -1225,7 +1225,6 @@ public class PartitionedRegion extends LocalRegion
     PartitionRegionHelper.assignBucketsToPartitions(this);
     updatePartitionRegionConfig(prConfig -> {
       prConfig.setGatewaySenderIds(gatewaySendersToAdd);
-      return prConfig;
     });
   }
 
@@ -1240,7 +1239,6 @@ public class PartitionedRegion extends LocalRegion
       }
       newGateWayIds.add(aeqId);
       prConfig.setGatewaySenderIds(newGateWayIds);
-      return prConfig;
     });
   }
 
@@ -10013,7 +10011,6 @@ public class PartitionedRegion extends LocalRegion
           }
         }
       }
-      return prConfig;
     });
   }
 
@@ -10022,10 +10019,10 @@ public class PartitionedRegion extends LocalRegion
   }
 
   interface PartitionRegionConfigModifier {
-    PartitionRegionConfig modify(PartitionRegionConfig prConfig);
+    void modify(PartitionRegionConfig prConfig);
   }
 
-  PartitionRegionConfig updatePartitionRegionConfig(
+  void updatePartitionRegionConfig(
       PartitionRegionConfigModifier partitionRegionConfigModifier) {
     RegionLock rl = getRegionLock();
     rl.lock();
@@ -10034,12 +10031,11 @@ public class PartitionedRegion extends LocalRegion
         if (logger.isDebugEnabled()) {
           logger.debug(PartitionedRegionHelper.PR_ROOT_REGION_NAME + " is null");
         }
-        return null;
+        return;
       }
       PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
-      prConfig = partitionRegionConfigModifier.modify(prConfig);
+      partitionRegionConfigModifier.modify(prConfig);
       updatePRConfig(prConfig, false);
-      return prConfig;
     } finally {
       rl.unlock();
     }
