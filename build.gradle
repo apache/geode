@@ -68,11 +68,6 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
 
-subprojects {
-  apply from: "${rootDir}/${scriptDir}/java.gradle"
-  apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
-}
-
 // TODO: These came from test.gradle.  Move when safe.
 task combineReports(type: TestReport) {
   description 'Combines the test reports.'
@@ -89,40 +84,16 @@ gradle.taskGraph.whenReady({ graph ->
   }.flatten()
 })
 
+apply from: "${scriptDir}/sonar.gradle"  // root only, standalone
+apply from: "${scriptDir}/rat.gradle"    // root only, standalone
 
 subprojects {
+  apply from: "${rootDir}/${scriptDir}/java.gradle"
+  apply from: "${rootDir}/${scriptDir}/dependency-resolution.gradle"
   apply from: "${rootDir}/${scriptDir}/test.gradle"
-}
-
-rootProject.tasks.named('classes').configure {
-  // This is a semi-lazy hook so that the target "assemble" also assembles our test sources.
-  dependsOn(subprojects.collect { thisSubProject ->
-    [
-        thisSubProject.tasks.named('compileTestJava'),
-        thisSubProject.tasks.named('compileIntegrationTestJava'),
-        thisSubProject.tasks.named('compileDistributedTestJava'),
-        thisSubProject.tasks.named('compileAcceptanceTestJava'),
-        thisSubProject.tasks.named('compileUiTestJava'),
-        thisSubProject.tasks.named('compilePerformanceTestJava'),
-        thisSubProject.tasks.named('compileUpgradeTestJava'),
-    ]
-  }.flatten())
-}
-
-
-subprojects {
   apply from: "${rootDir}/${scriptDir}/code-analysis.gradle"
 }
-
-apply from: "${scriptDir}/sonar.gradle"  // root only
-apply from: "${scriptDir}/rat.gradle"    // root only
-
-
 apply from: "${scriptDir}/docker.gradle"  // large def + sub
-
-
-
-// TODO: from spotless.gradle
 
 // When a custom step changes, we need to bump the value passed to the method
 //   bumpThisNumberIfACustomStepChanges
@@ -139,6 +110,7 @@ project.ext.set("spotless-file-hash", thisFileIntegerHash)
 subprojects {
   apply from: "${rootDir}/${scriptDir}/spotless.gradle"
 }
+
 apply from: "${scriptDir}/lint.gradle"      // allprojects but not integrated into other bits
 apply from: "${scriptDir}/resolve-dependencies.gradle"   // two root tasks.
 
@@ -254,3 +226,26 @@ if (project.hasProperty('askpass')) {
     dependsOn(subprojects*.tasks*.named(chainedTask))
   }
 }
+
+
+
+
+
+
+
+rootProject.tasks.named('classes').configure {
+  // This is a semi-lazy hook so that the target "assemble" also assembles our test sources.
+  dependsOn(subprojects.collect { thisSubProject ->
+    [
+        thisSubProject.tasks.named('compileTestJava'),
+        thisSubProject.tasks.named('compileIntegrationTestJava'),
+        thisSubProject.tasks.named('compileDistributedTestJava'),
+        thisSubProject.tasks.named('compileAcceptanceTestJava'),
+        thisSubProject.tasks.named('compileUiTestJava'),
+        thisSubProject.tasks.named('compilePerformanceTestJava'),
+        thisSubProject.tasks.named('compileUpgradeTestJava'),
+    ]
+  }.flatten())
+}
+
+
