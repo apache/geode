@@ -116,8 +116,29 @@ subprojects {
 
 apply from: "${scriptDir}/sonar.gradle"  // root only
 apply from: "${scriptDir}/rat.gradle"    // root only
+
+
 apply from: "${scriptDir}/docker.gradle"  // large def + sub
-apply from: "${scriptDir}/spotless.gradle"  // few def + sub
+
+
+
+// TODO: from spotless.gradle
+
+// When a custom step changes, we need to bump the value passed to the method
+//   bumpThisNumberIfACustomStepChanges
+// This has been historically easy to forget, however, and can cause failures in some rare cases.
+// To safeguard against this, we instead use the (partial) md5 of this file as that method input.
+def thisFile = file("${scriptDir}/spotless.gradle")
+def thisFileMd5 = thisFile.text.md5() as String
+def thisFileMd5Piece = thisFileMd5.substring(0, 8)
+def thisFileIntegerHash = Integer.parseUnsignedInt(thisFileMd5Piece, 16)
+logger.debug("Using partial md5 (${thisFileIntegerHash}) of file ${thisFile} as spotless bump.")
+
+project.ext.set("spotless-file-hash", thisFileIntegerHash)
+
+subprojects {
+  apply from: "${rootDir}/${scriptDir}/spotless.gradle"
+}
 apply from: "${scriptDir}/lint.gradle"      // allprojects but not integrated into other bits
 apply from: "${scriptDir}/resolve-dependencies.gradle"   // two root tasks.
 
