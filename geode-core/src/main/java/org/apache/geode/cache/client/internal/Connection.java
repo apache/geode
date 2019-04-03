@@ -98,10 +98,13 @@ public interface Connection {
 
   /**
    * Mark the connection as being actively used.
+   *
    * @return true if connection activated, false if could not be activated because it is destroyed
    * @throws InternalGemFireException when the connection is already active
    */
-  default boolean activate() {return true;}
+  default boolean activate() {
+    return true;
+  }
 
   /**
    * Mark the connection as one that is not being used.
