@@ -442,7 +442,7 @@ public class CreateMappingCommandTest {
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     assertThat(result.toString())
-        .contains("Skipping: Existing mapping found for region " + regionName + ". ");
+        .contains("Skipping: A JDBC mapping for " + regionName + " already exists.");
   }
 
   @Test

@@ -1246,7 +1246,7 @@ public class CreateMappingCommandDUnitTest {
     // NOTE: --table is optional so it should not be in the output but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
-            "You should specify option (--table, --pdx-name, --pdx-class-file, --synchronous, --id, --catalog, --schema, --group) for this command");
+            "You should specify option (--table, --pdx-name, --pdx-class-file, --synchronous, --id, --catalog, --schema, --if-not-exists, --group) for this command");
   }
 
   @Test
