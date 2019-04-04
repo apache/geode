@@ -28,6 +28,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -43,7 +44,8 @@ public class DescribeMembersCommandDUnitTest {
   @BeforeClass
   public static void setup() throws Exception {
     locator = lsRule.startLocatorVM(0);
-    lsRule.startServerVM(1, locator.getPort());
+    int locatorPort = locator.getPort();
+    lsRule.startServerVM(1, s -> s.withConnectionToLocator(locatorPort).withServerCount(2));
   }
 
   @Test
@@ -81,25 +83,21 @@ public class DescribeMembersCommandDUnitTest {
   @Test
   public void describeServer() throws Exception {
     gfsh.connectAndVerify(locator);
-    CommandResult result = gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=server-1")
-        .statusIsSuccess()
-        .getCommandResult();
+    CommandResultAssert commandAssert =
+        gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=server-1").statusIsSuccess();
 
-    Map<String, String> memberInfo = result.getMapFromSection("memberInfo");
-    assertThat(memberInfo.get("Name")).isEqualTo("server-1");
-    assertThat(memberInfo.get("Id")).contains("server-1");
-    assertThat(memberInfo.get("Host")).as("Host").isNotBlank();
-    assertThat(memberInfo.get("PID")).as("PID").isNotBlank();
-    assertThat(memberInfo.get("Used Heap")).as("Used Heap").isNotBlank();
-    assertThat(memberInfo.get("Max Heap")).as("Max Heap").isNotBlank();
-    assertThat(memberInfo.get("Working Dir")).as("Working Dir").isNotBlank();
-    assertThat(memberInfo.get("Log file")).as("Log File").isNotBlank();
-    assertThat(memberInfo.get("Locators")).as("Locators").isNotBlank();
+    commandAssert.hasDataSection("memberInfo").hasContent()
+        .containsEntry("Name", "server-1")
+        .containsKeys("Id", "Host", "PID", "Used Heap", "Max Heap", "Working Dir", "Log file",
+            "Locators");
 
-    Map<String, String> cacheServerInfo = result.getMapFromSection("connectionInfo");
-    assertThat(cacheServerInfo.get("Server Bind")).as("Server Bind").isBlank();
-    assertThat(cacheServerInfo.get("Server Port")).as("Server Port").isNotBlank();
-    assertThat(cacheServerInfo.get("Running")).as("Running").isEqualTo("true");
-    assertThat(cacheServerInfo.get("Client Connections")).as("Client Connections").isEqualTo("0");
+    commandAssert.hasDataSection("connectionInfo").hasContent()
+        .containsEntry("Client Connections", "0");
+
+    commandAssert.hasDataSection("serverInfo0").hasContent()
+        .containsKeys("Server Bind", "Server Port", "Running");
+
+    commandAssert.hasDataSection("serverInfo1").hasContent()
+        .containsKeys("Server Bind", "Server Port", "Running");
   }
 }
