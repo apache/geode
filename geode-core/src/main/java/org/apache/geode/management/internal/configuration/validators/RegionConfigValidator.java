@@ -35,7 +35,18 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     if (config.getType() == null) {
       RegionType defaultRegion = RegionType.PARTITION;
       config.setType(defaultRegion);
+    } else {
+      String type = config.getType();
+      // validate if the type is a valid RegionType. Only types defined in RegionType are supported
+      // by management v2 api.
+      try {
+        RegionType.valueOf(type);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(
+            String.format("Type %s is not supported in Management V2 API.", type));
+      }
     }
+
   }
 
   @Override
