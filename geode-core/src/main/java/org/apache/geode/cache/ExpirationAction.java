@@ -16,38 +16,43 @@
 
 package org.apache.geode.cache;
 
-import java.util.Arrays;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 /**
  * Enumerated type for expiration actions.
  *
+ *
+ *
  * @since GemFire 3.0
  */
-public enum ExpirationAction {
+public class ExpirationAction implements Serializable {
+  private static final long serialVersionUID = 658925707882047900L;
+
   /** When the region or cached object expires, it is invalidated. */
-  INVALIDATE("invalidate"),
+  public static final ExpirationAction INVALIDATE = new ExpirationAction("INVALIDATE");
   /** When expired, invalidated locally only. Not supported for partitioned regions. */
-  LOCAL_INVALIDATE("local-invalidate"),
+  public static final ExpirationAction LOCAL_INVALIDATE = new ExpirationAction("LOCAL_INVALIDATE");
 
   /** When the region or cached object expires, it is destroyed. */
-  DESTROY("destroy"),
+  public static final ExpirationAction DESTROY = new ExpirationAction("DESTROY");
   /**
    * When expired, destroyed locally only. Not supported for partitioned regions. Use DESTROY
    * instead.
    */
-  LOCAL_DESTROY("local-destroy");
+  public static final ExpirationAction LOCAL_DESTROY = new ExpirationAction("LOCAL_DESTROY");
 
-  private static final long serialVersionUID = 658925707882047900L;
-
-  private final transient String xmlName;
+  /** The name of this action */
+  private final transient String name;
 
   /**
    * Creates a new instance of ExpirationAction.
    *
-   * @param xmlName the name of the expiration action
+   * @param name the name of the expiration action
+   * @see #toString
    */
-  ExpirationAction(String xmlName) {
-    this.xmlName = xmlName;
+  private ExpirationAction(String name) {
+    this.name = name;
   }
 
   /**
@@ -105,12 +110,33 @@ public enum ExpirationAction {
   }
 
   /**
+   * Returns a string representation for this action
+   *
+   * @return the name of this action
+   */
+  @Override
+  public String toString() {
+    return this.name;
+  }
+
+  /**
    * converts to strings used in cache.xml
    *
    * @return strings used in cache.xml
    */
   public String toXmlString() {
-    return xmlName;
+    switch (this.name) {
+      case "INVALIDATE":
+        return "invalidate";
+      case "DESTROY":
+        return "destroy";
+      case "LOCAL_DESTROY":
+        return "local-destroy";
+      case "LOCAL_INVALIDATE":
+        return "local-invalidate";
+      default:
+        return null;
+    }
   }
 
   /**
@@ -121,8 +147,33 @@ public enum ExpirationAction {
    * @throws IllegalArgumentException for all other invalid strings.
    */
   public static ExpirationAction fromXmlString(String xmlValue) {
-    return Arrays.stream(ExpirationAction.values()).filter(e -> e.xmlName.equals(xmlValue))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("invalid expiration action: " + xmlValue));
+    switch (xmlValue) {
+      case "invalidate":
+        return INVALIDATE;
+      case "destroy":
+        return DESTROY;
+      case "local-destroy":
+        return LOCAL_DESTROY;
+      case "local-invalidate":
+        return LOCAL_INVALIDATE;
+      default:
+        throw new IllegalArgumentException("invalid expiration action: " + xmlValue);
+    }
   }
+
+  // The 4 declarations below are necessary for serialization
+  private static int nextOrdinal = 0;
+  public final int ordinal = nextOrdinal++;
+  private static final ExpirationAction[] VALUES =
+      {INVALIDATE, LOCAL_INVALIDATE, DESTROY, LOCAL_DESTROY};
+
+  private Object readResolve() throws ObjectStreamException {
+    return fromOrdinal(ordinal); // Canonicalize
+  }
+
+  /** Return the ExpirationAction represented by specified ordinal */
+  public static ExpirationAction fromOrdinal(int ordinal) {
+    return VALUES[ordinal];
+  }
+
 }
