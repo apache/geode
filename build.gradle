@@ -35,10 +35,6 @@ buildscript {
   }
 }
 
-plugins {
-  id "com.dorongold.task-tree" version "1.3.1"
-}
-
 apply plugin: 'wrapper'
 apply plugin: 'nebula.facet'
 apply plugin: 'java-library'
@@ -145,7 +141,6 @@ tasks.register('writeBuildInfo') {
 }
 
 tasks.register('devBuild') {
-  // TODO: Evaluation order has invalidated this dependency chain.  Rewrite.
   description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
   dependsOn tasks.named('assemble')
   dependsOn childTasksWithName('spotlessApply')
