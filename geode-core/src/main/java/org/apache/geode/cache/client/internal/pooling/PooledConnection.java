@@ -131,6 +131,11 @@ public class PooledConnection implements Connection {
     return result;
   }
 
+  @Override
+  public Connection getWrappedConnection() {
+    return getConnection();
+  }
+
   /**
    * Set the destroy bit if it is not already set.
    *
@@ -149,6 +154,7 @@ public class PooledConnection implements Connection {
     return connection == null;
   }
 
+  @Override
   public void passivate(final boolean accessed) {
     long now = 0L;
     if (accessed) {
@@ -208,9 +214,7 @@ public class PooledConnection implements Connection {
     return true;
   }
 
-  /**
-   * @return true if connection activated, false if could not be activated because it is destroyed
-   */
+  @Override
   public boolean activate() {
     synchronized (this) {
       try {

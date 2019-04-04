@@ -394,6 +394,7 @@ dependencies {
   }
   distributedTestCompile('pl.pragmatists:JUnitParams')
   distributedTestCompile('com.jayway.jsonpath:json-path-assert')
+  distributedTestCompile('net.openhft:compiler')
 
   distributedTestRuntime(project(':geode-old-versions'))
   distributedTestRuntime('org.apache.derby:derby')

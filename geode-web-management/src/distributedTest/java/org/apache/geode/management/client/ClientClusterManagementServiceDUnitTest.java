@@ -27,16 +27,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.internal.rest.BaseLocatorContextLoader;
+import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -55,17 +52,14 @@ public class ClientClusterManagementServiceDUnitTest {
 
   private MemberVM server1;
   private ClusterManagementService client;
+  private LocatorWebContext webContext;
 
   @Before
   public void before() {
     cluster.setSkipLocalDistributedSystemCleanup(true);
-    MockMvc mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-        .build();
-    MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mockMvc);
-    client = ClusterManagementServiceProvider.getService(requestFactory);
-
-    server1 = cluster.startServerVM(0,
-        BaseLocatorContextLoader.getLocatorFromContext(webApplicationContext).getPort());
+    webContext = new LocatorWebContext(webApplicationContext);
+    client = ClusterManagementServiceProvider.getService(webContext.getRequestFactory());
+    server1 = cluster.startServerVM(0, webContext.getLocator().getPort());
   }
 
   @Test
@@ -75,8 +69,16 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setName("customer");
     region.setType(RegionShortcut.REPLICATE);
 
-    ClusterManagementResult result = client.create(region, "");
+    ClusterManagementResult result = client.create(region);
 
+    // in StressNewTest, this will be run multiple times without restarting the locator
+    assertThat(result.getStatusCode()).isIn(ClusterManagementResult.StatusCode.OK,
+        ClusterManagementResult.StatusCode.ENTITY_EXISTS);
+  }
+
+  @Test
+  @WithMockUser
+  public void sanityCheck() {
     assertThat(client.isConnected()).isTrue();
   }
 }

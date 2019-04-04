@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal.pooling;
 
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.logging.LogWriterLevel.FINEST;
@@ -32,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BooleanSupplier;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -69,10 +71,9 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 public class ConnectionManagerJUnitTest {
 
-  private static final long TIMEOUT = 30 * 1000;
-  // This is added for some windows machines which think the connection expired
-  // before the idle timeout due to precision issues.
-  private static final long ALLOWABLE_ERROR_IN_EXPIRATION = 20; // milliseconds
+  private static final long TIMEOUT_MILLIS = 30 * 1000;
+  // Some machines do not have a monotonic clock.
+  private static final long ALLOWABLE_ERROR_IN_MILLIS = 100;
   ConnectionManager manager;
   private InternalLogWriter logger;
   protected DummyFactory factory;
@@ -234,44 +235,17 @@ public class ConnectionManagerJUnitTest {
     Assert.assertEquals(3, factory.destroys);
   }
 
-  // public void testGetConnectionToSpecificServer() throws AllConnectionsInUseException,
-  // NoAvailableServersException, InterruptedException {
-  // DummySource source = new DummySource();
-  // manager = new ConnectionManager(source, factory, 10, -1, 10, logger, logger);
-  // manager.start();
-  //
-  // source.nextServer = new ServerLocation("localhost", 10);
-  // Connection conn1 = manager.borrowConnection(10);
-  // manager.returnConnection(conn1);
-  //
-  // try {
-  // Connection conn2 = manager.borrowConnection(new ServerLocation("locahost", 20), 10);
-  // Assert.fail("Should have received no servers available, because we asked for a server we can't
-  // get");
-  // } catch(NoAvailableServersException expected) {
-  //
-  // }
-  //
-  // }
-
   @Test
   public void testIdleExpiration()
       throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
-    final long nanoToMillis = 1000000;
-    final long idleTimeout = 300;
-    manager = new ConnectionManagerImpl("pool", factory, endpointManager, 5, 2, idleTimeout, -1,
-        logger, 60 * 1000, cancelCriterion, poolStats);
+    final long idleTimeoutMillis = 300;
+    manager =
+        new ConnectionManagerImpl("pool", factory, endpointManager, 5, 2, idleTimeoutMillis, -1,
+            logger, 60 * 1000, cancelCriterion, poolStats);
     manager.start(background);
 
     {
-      long start = System.currentTimeMillis();
-      synchronized (factory) {
-        long remaining = TIMEOUT;
-        while (factory.creates < 2 && remaining > 0) {
-          factory.wait(remaining);
-          remaining = TIMEOUT - (System.currentTimeMillis() - start);
-        }
-      }
+      factory.waitWhile(() -> factory.creates < 2);
       Assert.assertEquals(2, factory.creates);
       Assert.assertEquals(0, factory.destroys);
       Assert.assertEquals(0, factory.closes);
@@ -288,33 +262,23 @@ public class ConnectionManagerJUnitTest {
     Connection conn5 = manager.borrowConnection(500);
 
     // wait to make sure checked out connections aren't timed out
-    Thread.sleep(idleTimeout * 2);
+    Thread.sleep(idleTimeoutMillis * 2);
     Assert.assertEquals(5, factory.creates);
     Assert.assertEquals(0, factory.destroys);
     Assert.assertEquals(0, factory.closes);
     Assert.assertEquals(0, poolStats.getIdleExpire());
 
-    long startInNanos = System.nanoTime();
     {
       // make sure a thread local connection that has been passivated can idle-expire
-      manager.passivate(conn1, true);
+      conn1.passivate(true);
 
-      synchronized (factory) {
-        long waitTime = TIMEOUT * nanoToMillis + startInNanos;
-        while (factory.destroys < 1 && (waitTime - System.nanoTime()) > 0) {
-          factory.wait(idleTimeout);
-        }
-      }
-      long elapsed = (System.nanoTime() - startInNanos) / nanoToMillis;
-      Assert.assertTrue("Elapsed " + elapsed + " is less than idle timeout " + idleTimeout,
-          elapsed >= idleTimeout && elapsed <= idleTimeout + 100);
+      long elapsedMillis = factory.waitWhile(() -> factory.destroys < 1);
       Assert.assertEquals(5, factory.creates);
       Assert.assertEquals(1, factory.destroys);
       Assert.assertEquals(1, factory.closes);
       Assert.assertEquals(1, poolStats.getIdleExpire());
+      checkIdleTimeout(idleTimeoutMillis, elapsedMillis);
     }
-
-    startInNanos = System.nanoTime();
 
     // now return all other connections to pool and verify that just 2 expire
     manager.returnConnection(conn2);
@@ -323,78 +287,78 @@ public class ConnectionManagerJUnitTest {
     manager.returnConnection(conn5);
 
     {
-      synchronized (factory) {
-        long waitTime = TIMEOUT * nanoToMillis + startInNanos;
-        while (factory.destroys < 3 && (waitTime - System.nanoTime()) > 0) {
-          factory.wait(idleTimeout);
-        }
-      }
-      long elapsed = (System.nanoTime() - startInNanos) / nanoToMillis;
-      Assert.assertTrue("Elapsed " + elapsed + " is less than idle timeout " + idleTimeout,
-          elapsed >= idleTimeout && elapsed <= idleTimeout + 100);
+      long elapsedMillis = factory.waitWhile(() -> factory.destroys < 3);
       Assert.assertEquals(5, factory.creates);
       Assert.assertEquals(3, factory.destroys);
       Assert.assertEquals(3, factory.closes);
       Assert.assertEquals(3, poolStats.getIdleExpire());
+      checkIdleTimeout(idleTimeoutMillis, elapsedMillis);
     }
 
     // wait to make sure min-connections don't time out
-    Thread.sleep(idleTimeout * 2);
+    Thread.sleep(idleTimeoutMillis * 2);
     Assert.assertEquals(5, factory.creates);
     Assert.assertEquals(3, factory.destroys);
     Assert.assertEquals(3, factory.closes);
     Assert.assertEquals(3, poolStats.getIdleExpire());
   }
 
+  private void checkIdleTimeout(final long idleTimeoutMillis, long elapsedMillis) {
+    Assert.assertTrue(
+        "Elapsed " + elapsedMillis + " is less than idle timeout " + idleTimeoutMillis,
+        elapsedMillis >= (idleTimeoutMillis - ALLOWABLE_ERROR_IN_MILLIS));
+    Assert.assertTrue(
+        "Elapsed " + elapsedMillis + " is greater than idle timeout " + idleTimeoutMillis,
+        elapsedMillis <= (idleTimeoutMillis + ALLOWABLE_ERROR_IN_MILLIS));
+  }
+
   @Test
   public void testBug41516()
       throws InterruptedException, AllConnectionsInUseException, NoAvailableServersException {
-    final long idleTimeout = 300;
-    manager = new ConnectionManagerImpl("pool", factory, endpointManager, 2, 1, idleTimeout, -1,
-        logger, 60 * 1000, cancelCriterion, poolStats);
+    final long idleTimeoutMillis = 300;
+    final long BORROW_TIMEOUT_MILLIS = 500;
+    manager =
+        new ConnectionManagerImpl("pool", factory, endpointManager, 2, 1, idleTimeoutMillis, -1,
+            logger, 60 * 1000, cancelCriterion, poolStats);
     manager.start(background);
 
-    Connection conn1 = manager.borrowConnection(500);
-    Connection conn2 = manager.borrowConnection(500);
+    Connection conn1 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
 
     // Return some connections, let them idle expire
     manager.returnConnection(conn1);
     manager.returnConnection(conn2);
 
     {
-      long start = System.currentTimeMillis();
-      synchronized (factory) {
-        long remaining = TIMEOUT;
-        while (factory.destroys < 1 && remaining > 0) {
-          factory.wait(remaining);
-          remaining = TIMEOUT - (System.currentTimeMillis() - start);
-        }
-      }
-      long elapsed = System.currentTimeMillis() - start;
-      Assert.assertTrue("Elapsed " + elapsed + " is less than idle timeout " + idleTimeout,
-          elapsed + ALLOWABLE_ERROR_IN_EXPIRATION >= idleTimeout);
+      long elapsedMillis = factory.waitWhile(() -> factory.destroys < 1);
       Assert.assertEquals(1, factory.destroys);
       Assert.assertEquals(1, factory.closes);
       Assert.assertEquals(1, poolStats.getIdleExpire());
+      Assert.assertTrue(
+          "Elapsed " + elapsedMillis + " is less than idle timeout " + idleTimeoutMillis,
+          elapsedMillis + ALLOWABLE_ERROR_IN_MILLIS >= idleTimeoutMillis);
     }
 
     // Ok, now get some connections that fill our queue
-    Connection ping1 = manager.borrowConnection(new ServerLocation("localhost", 5), 500, false);
-    Connection ping2 = manager.borrowConnection(new ServerLocation("localhost", 5), 500, false);
+    Connection ping1 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+    Connection ping2 =
+        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
     manager.returnConnection(ping1);
     manager.returnConnection(ping2);
 
-    Connection conn3 = manager.borrowConnection(500);
-    Connection conn4 = manager.borrowConnection(500);
-    long start = System.currentTimeMillis();
+    manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    long startNanos = nowNanos();
     try {
-      Connection conn5 = manager.borrowConnection(500);
+      manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
       fail("Didn't get an exception");
     } catch (AllConnectionsInUseException e) {
       // expected
     }
-    long elapsed = System.currentTimeMillis() - start;
-    Assert.assertTrue("Elapsed = " + elapsed, elapsed >= 500);
+    long elapsedMillis = elapsedMillis(startNanos);
+    Assert.assertTrue("Elapsed = " + elapsedMillis,
+        elapsedMillis >= BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
   }
 
   @Test
@@ -406,14 +370,7 @@ public class ConnectionManagerJUnitTest {
     manager.start(background);
 
     {
-      long start = System.currentTimeMillis();
-      synchronized (factory) {
-        long remaining = TIMEOUT;
-        while (factory.creates < 2 && remaining > 0) {
-          factory.wait(remaining);
-          remaining = TIMEOUT - (System.currentTimeMillis() - start);
-        }
-      }
+      factory.waitWhile(() -> factory.creates < 2);
       Assert.assertEquals(2, factory.creates);
       Assert.assertEquals(0, factory.destroys);
       Assert.assertEquals(0, factory.finds);
@@ -434,15 +391,7 @@ public class ConnectionManagerJUnitTest {
     }
 
     {
-      long start = System.currentTimeMillis();
-      synchronized (factory) {
-        long remaining = TIMEOUT;
-        while (factory.finds < 2 && remaining > 0) {
-          factory.wait(remaining);
-          remaining = TIMEOUT - (System.currentTimeMillis() - start);
-        }
-      }
-      long end = System.currentTimeMillis();
+      long durationMillis = factory.waitWhile(() -> factory.finds < 2);
       Assert.assertEquals(2, factory.finds);
       // server shouldn't have changed so no increase in creates or destroys
       Assert.assertEquals(2, factory.creates);
@@ -450,7 +399,7 @@ public class ConnectionManagerJUnitTest {
       Assert.assertEquals(0, factory.closes);
 
       Assert.assertTrue("took too long to expire lifetime; expected=" + lifetimeTimeout
-          + " but took=" + (end - start), (end - start) < lifetimeTimeout * 2);
+          + " but took=" + durationMillis, durationMillis < lifetimeTimeout * 5);
     }
 
     for (int i = 0; i < updaterCount; i++) {
@@ -464,40 +413,6 @@ public class ConnectionManagerJUnitTest {
     for (int i = 0; i < updaterCount; i++) {
       Assert.assertFalse("Updater [" + i + "] is still running", updaters[i].isAlive());
     }
-
-    // //wait for prefill task to finish.
-    // Thread.sleep(100);
-
-    // Connection conn1 = manager.borrowConnection(0);
-    // Connection conn2 = manager.borrowConnection(0);
-    // Connection conn3 = manager.borrowConnection(0);
-    // Connection conn4 = manager.borrowConnection(0);
-    // Connection conn5 = manager.borrowConnection(0);
-
-    // //wait to make sure checked out connections aren't timed out
-    // Thread.sleep(idleTimeout + 100);
-    // Assert.assertIndexDetailsEquals(5,factory.creates);
-    // Assert.assertIndexDetailsEquals(0,factory.destroys);
-
-    // manager.returnConnection(conn1);
-    // manager.returnConnection(conn2);
-    // manager.returnConnection(conn3);
-    // manager.returnConnection(conn4);
-    // manager.returnConnection(conn5);
-
-    // long start = System.currentTimeMillis();
-    // synchronized(factory) {
-    // while(factory.destroys < 3 && remaining > 0) {
-    // factory.wait(remaining);
-    // remaining = TIMEOUT - (System.currentTimeMillis() - start);
-    // }
-    // }
-
-    // long elapsed = System.currentTimeMillis() - start;
-    // Assert.assertTrue(elapsed > idleTimeout);
-
-    // Assert.assertIndexDetailsEquals(5,factory.creates);
-    // Assert.assertIndexDetailsEquals(3,factory.destroys);
   }
 
   @Test
@@ -659,6 +574,18 @@ public class ConnectionManagerJUnitTest {
     });
   }
 
+  private long nowNanos() {
+    return System.nanoTime();
+  }
+
+  private long elapsedNanos(long startNanos) {
+    return nowNanos() - startNanos;
+  }
+
+  private long elapsedMillis(long startNanos) {
+    return NANOSECONDS.toMillis(elapsedNanos(startNanos));
+  }
+
   @Test
   public void testBlocking() throws Throwable {
     manager = new ConnectionManagerImpl("pool", factory, endpointManager, 1, 0, -1, -1, logger,
@@ -667,15 +594,18 @@ public class ConnectionManagerJUnitTest {
 
     final Connection conn1 = manager.borrowConnection(10);
 
-    long startTime = System.currentTimeMillis();
+    long BORROW_TIMEOUT_MILLIS = 300;
+    long startNonos = nowNanos();
     try {
-      manager.borrowConnection(100);
+      manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
       fail("Should have received no servers available");
     } catch (AllConnectionsInUseException expected) {
 
     }
-    long elapsed = System.currentTimeMillis() - startTime;
-    Assert.assertTrue("Should have blocked for 100 millis for a connection", elapsed >= 100);
+    long elapsedMillis = elapsedMillis(startNonos);
+    Assert.assertTrue(
+        "Should have blocked for " + BORROW_TIMEOUT_MILLIS + " millis for a connection",
+        elapsedMillis >= BORROW_TIMEOUT_MILLIS - ALLOWABLE_ERROR_IN_MILLIS);
 
     Thread returnThread = new Thread() {
       @Override
@@ -690,10 +620,13 @@ public class ConnectionManagerJUnitTest {
     };
 
     returnThread.start();
-    startTime = System.currentTimeMillis();
-    Connection conn2 = manager.borrowConnection(1000);
-    elapsed = System.currentTimeMillis() - startTime;
-    Assert.assertTrue("Should have blocked for less than 1 second", elapsed < 1000);
+    BORROW_TIMEOUT_MILLIS = 5000;
+    startNonos = nowNanos();
+    Connection conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    elapsedMillis = elapsedMillis(startNonos);
+    Assert.assertTrue(
+        "Should have blocked for less than " + BORROW_TIMEOUT_MILLIS + " milliseconds",
+        elapsedMillis < BORROW_TIMEOUT_MILLIS + ALLOWABLE_ERROR_IN_MILLIS);
     manager.returnConnection(conn2);
 
 
@@ -712,10 +645,12 @@ public class ConnectionManagerJUnitTest {
     };
 
     invalidateThread.start();
-    startTime = System.currentTimeMillis();
-    conn2 = manager.borrowConnection(1000);
-    elapsed = System.currentTimeMillis() - startTime;
-    Assert.assertTrue("Should have blocked for less than 1 second", elapsed < 1000);
+    startNonos = nowNanos();
+    conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    elapsedMillis = elapsedMillis(startNonos);
+    Assert.assertTrue(
+        "Should have blocked for less than " + BORROW_TIMEOUT_MILLIS + " milliseconds",
+        elapsedMillis < BORROW_TIMEOUT_MILLIS + ALLOWABLE_ERROR_IN_MILLIS);
     manager.returnConnection(conn2);
 
     final Connection conn4 = manager.borrowConnection(10);
@@ -733,10 +668,12 @@ public class ConnectionManagerJUnitTest {
     };
 
     invalidateThread2.start();
-    startTime = System.currentTimeMillis();
-    conn2 = manager.borrowConnection(1000);
-    elapsed = System.currentTimeMillis() - startTime;
-    Assert.assertTrue("Should have blocked for less than 1 second", elapsed < 1000);
+    startNonos = nowNanos();
+    conn2 = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
+    elapsedMillis = elapsedMillis(startNonos);
+    Assert.assertTrue(
+        "Should have blocked for less than " + BORROW_TIMEOUT_MILLIS + " milliseconds",
+        elapsedMillis < BORROW_TIMEOUT_MILLIS + ALLOWABLE_ERROR_IN_MILLIS);
     manager.returnConnection(conn2);
   }
 
@@ -798,16 +735,16 @@ public class ConnectionManagerJUnitTest {
     }
 
     private Connection borrow(int i) {
-      long startTime = System.currentTimeMillis();
-      Connection conn = manager.borrowConnection(2000);
+      long startNanos = nowNanos();
+      long BORROW_TIMEOUT_MILLIS = 2000;
+      Connection conn = manager.borrowConnection(BORROW_TIMEOUT_MILLIS);
       if (haveConnection != null) {
         Assert.assertTrue("Updater[" + id + "] loop[" + i + "] Someone else has the connection!",
             haveConnection.compareAndSet(false, true));
       }
-      long elapsed = System.currentTimeMillis() - startTime;
-      if (elapsed >= 2000) {
-        Assert.assertTrue("Elapsed time (" + elapsed + ") >= 2000", false);
-      }
+      long elapsedMillis = elapsedMillis(startNanos);
+      Assert.assertTrue("Elapsed time (" + elapsedMillis + ") >= " + BORROW_TIMEOUT_MILLIS,
+          elapsedMillis < BORROW_TIMEOUT_MILLIS + ALLOWABLE_ERROR_IN_MILLIS);
       return conn;
     }
 
@@ -824,7 +761,7 @@ public class ConnectionManagerJUnitTest {
             conn = borrow(i);
           } else {
             if (i != 0) {
-              manager.activate(conn);
+              conn.activate();
             }
           }
           try {
@@ -838,7 +775,7 @@ public class ConnectionManagerJUnitTest {
             if (!threadLocal) {
               manager.returnConnection(conn);
             } else {
-              manager.passivate(conn, true);
+              conn.passivate(true);
             }
           }
         }
@@ -860,6 +797,22 @@ public class ConnectionManagerJUnitTest {
     protected volatile int destroys;
     protected volatile int closes;
     protected volatile int finds;
+
+    /**
+     * Wait as long as "whileCondition" is true.
+     * The wait will timeout after TIMEOUT_MILLIS has elapsed.
+     *
+     * @return the elapsed time in milliseconds.
+     */
+    public synchronized long waitWhile(BooleanSupplier whileCondition) throws InterruptedException {
+      final long startNanos = nowNanos();
+      long remainingMillis = TIMEOUT_MILLIS;
+      while (whileCondition.getAsBoolean() && remainingMillis > 0) {
+        wait(remainingMillis);
+        remainingMillis = TIMEOUT_MILLIS - elapsedMillis(startNanos);
+      }
+      return elapsedMillis(startNanos);
+    }
 
     @Override
     public ServerDenyList getDenyList() {

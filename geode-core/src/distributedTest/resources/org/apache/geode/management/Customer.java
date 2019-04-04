@@ -13,25 +13,26 @@
  * the License.
  */
 
-plugins {
-    id 'java'
-    id 'application'
-}
+package org.apache.geode.management;
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
+import org.apache.geode.internal.PdxSerializerObject;
 
-dependencies {
-    compile("${project.group}:geode-core:${project.version}")
-    runtime('org.apache.logging.log4j:log4j-slf4j-impl:2.11.1')
-}
+public class Customer implements PdxSerializerObject {
+  public String name;
+  public Address address;
+  public String street;
+  public String city;
 
-application {
-    mainClassName = 'ServerTestApp'
-}
+  public Customer() {}
 
-run {
-    environment['GEODE_HOME'] = "${findProperty('geodeHome')}"
+  public Customer(String name, String street, String city) {
+    this.name = name;
+    this.street = street;
+    this.city = city;
+    this.address = new Address(street, city);
+  }
+
+  public String toString() {
+    return name + street + city;
+  }
 }

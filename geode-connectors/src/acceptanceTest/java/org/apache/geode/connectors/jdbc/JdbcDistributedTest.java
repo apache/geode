@@ -318,6 +318,16 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   @Test
+  public void serverStartupSucceedsForPartitionedRegionAfterMappingIsCreated()
+      throws Exception {
+    createTable();
+    createPartitionRegionUsingGfsh();
+    createJdbcDataSource();
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
+    startupRule.startServerVM(3, x -> x.withConnectionToLocator(locator.getPort()));
+  }
+
+  @Test
   public void verifyDateToDate() throws Exception {
     server = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
     server.invoke(() -> {

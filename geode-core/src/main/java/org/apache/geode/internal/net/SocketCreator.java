@@ -190,8 +190,9 @@ public class SocketCreator {
         // try to find a non-loopback address
         Set<InetAddress> myInterfaces = getMyAddresses();
         boolean preferIPv6 = SocketCreator.useIPv6Addresses;
+        String lhName = null;
         for (InetAddress addr : myInterfaces) {
-          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress()) {
+          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress() || lhName != null) {
             break;
           }
           boolean ipv6 = addr instanceof Inet6Address;
@@ -200,10 +201,10 @@ public class SocketCreator {
             String addrName = reverseDNS(addr);
             if (inetAddress.isLoopbackAddress()) {
               inetAddress = addr;
-              break;
+              lhName = addrName;
             } else if (addrName != null) {
               inetAddress = addr;
-              break;
+              lhName = addrName;
             }
           } else {
             if (preferIPv6 && ipv4 && ipv4Fallback == null) {
