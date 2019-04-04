@@ -86,17 +86,6 @@ gradle.taskGraph.whenReady({ graph ->
   }.flatten()
 })
 
-def childTasksWithName = { n ->
-  // Return a collection of tasks in child projects with the given name.
-  // Does not include the calling project's task with the given name, if it exists.
-  def allTs = getTasksByName(n, true)
-  def rootT = tasks.findByName(n)
-  if (rootT != null) {
-    allTs.remove(rootT)
-  }
-  allTs
-}
-
 ext.readScmInfo = { proj ->
   // Attempt to read git information, or else return UNKNOWN
   try {
@@ -189,26 +178,4 @@ if (project.hasProperty('askpass')) {
       }
     }
   }
-}
-
-// Explicitly chain generic tasks -- composite builds do not cascade these tasks by default.
-['clean', 'check', 'test'].each { taskName ->
-  rootProject.tasks.named(taskName).configure {
-    dependsOn childTasksWithName(taskName)
-  }
-}
-
-rootProject.tasks.named('classes').configure {
-  // This is a semi-lazy hook so that the target "assemble" also assembles our test sources.
-  dependsOn(subprojects.collect { thisSubProject ->
-    [
-        childTasksWithName('compileTestJava'),
-        childTasksWithName('compileIntegrationTestJava'),
-        childTasksWithName('compileDistributedTestJava'),
-        childTasksWithName('compileAcceptanceTestJava'),
-        childTasksWithName('compileUiTestJava'),
-        childTasksWithName('compilePerformanceTestJava'),
-        childTasksWithName('compileUpgradeTestJava'),
-    ]
-  })
 }
