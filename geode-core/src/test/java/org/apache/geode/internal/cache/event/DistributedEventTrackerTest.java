@@ -47,17 +47,16 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
 public class DistributedEventTrackerTest {
-  LocalRegion region;
-  RegionAttributes<?, ?> regionAttributes;
-  DistributedEventTracker eventTracker;
-  ClientProxyMembershipID memberId;
-  DistributedMember member;
+
+  private LocalRegion region;
+  private DistributedEventTracker eventTracker;
+  private ClientProxyMembershipID memberId;
+  private DistributedMember member;
 
   @Before
   public void setup() {
     region = mock(LocalRegion.class);
-    regionAttributes = mock(RegionAttributes.class);
-    when(region.createStopper()).thenCallRealMethod();
+    RegionAttributes<?, ?> regionAttributes = mock(RegionAttributes.class);
     memberId = mock(ClientProxyMembershipID.class);
     when(region.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getDataPolicy()).thenReturn(mock(DataPolicy.class));
