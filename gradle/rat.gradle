@@ -183,3 +183,5 @@ rat {
     'geode-core/src/main/java/org/apache/geode/admin/jmx/internal/MX4JModelMBean.java'
   ]
 }
+
+check.dependsOn rat

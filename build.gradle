@@ -47,7 +47,6 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
 
-
 wrapper {
   gradleVersion = minimumGradleVersion
   distributionType = "all"
@@ -87,115 +86,6 @@ gradle.taskGraph.whenReady({ graph ->
   }.flatten()
 })
 
-if (project.hasProperty('parallelDunit')) {
-  def pwd = System.getenv('PWD')
-  def geodeDir = new File(pwd).getCanonicalPath()
-  rootProject.ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
-}
-
-rootProject.ext.dockerConfig = {
-  maxParallelForks = dunitParallelForks.toInteger()
-
-  docker {
-    // base image for creating docker containers that execute the tests
-    image = dunitDockerImage
-
-    // volumes mounted to the containers
-    // in a form: host_dir : container_dir
-    def gradleHome = System.getenv('GRADLE_USER_HOME') ?: "${System.getenv('HOME')}/.gradle"
-    volumes = ["${gradleHome}":gradleHome]
-
-    // Add volumes configured by top-level build script
-    volumes << rootProject.dunitDockerVolumes
-
-    // specify the user for starting Gradle test worker within the container.
-    user = dunitDockerUser
-
-    beforeContainerCreate = { cmd, client ->
-      def javaHomeIdx = -1
-      def pathIdx = -1
-      def tmpEnv = []
-      cmd.getEnv().each { tmpEnv << it }
-
-      tmpEnv.eachWithIndex { x, j ->
-        if (x.startsWith('JAVA_HOME')) {
-          javaHomeIdx = j
-        }
-        if (x.startsWith('PATH')) {
-          pathIdx = j
-        }
-      }
-
-      // Remove JAVA_HOME and PATH env variables - they might not be the same as the container needs
-      if (javaHomeIdx >= 0) {
-        tmpEnv[javaHomeIdx] = 'JAVA_HOME_REMOVED='
-      }
-      if (pathIdx >= 0) {
-        tmpEnv[pathIdx] = 'PATH_REMOVED='
-      }
-
-      if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
-        // Docker command is just 'java' so set to full path
-        tmpEnv << ("JAVA_HOME=${project.testJVM}" as String)
-      }
-
-
-      // Unfortunately this snippet of code is here and is required by dev-tools/docker/base/entrypoint.sh.
-      // This allows preserving the outer user inside the running container. Required for Jenkins
-      // and other environments. There doesn't seem to be a way to pass this environment variable
-      // in from a Jenkins Gradle job.
-      if (System.env['LOCAL_USER_ID'] == null) {
-        def username = System.getProperty("user.name")
-        def uid = ['id', '-u', username].execute().text.trim()
-        tmpEnv << ("LOCAL_USER_ID=${uid}" as String)
-      }
-
-      cmd.withEnv(tmpEnv)
-
-      // Infer the index of this invocation
-      def cmdList = cmd.getCmd()
-
-      if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
-        // Docker command is just 'java' so set to full path
-        cmdList[0] = ("${project.testJVM}/bin/java" as String)
-      }
-
-      def matcher = (cmdList[cmdList.length - 1] =~ /.*Executor (\d*).*/)
-
-      def workdir = new File(cmd.getWorkingDir() + matcher[0][1])
-      workdir.mkdirs()
-      cmd.withWorkingDir(workdir.toString())
-
-      // copy the classpath file to the working dir
-      def classPathFileIndex = cmdList.findIndexOf { it =~ /^@.*gradle-worker-classpath.*txt$/ }
-      if (classPathFileIndex > 0) {
-        def dst = new File(workdir, "gradle-worker-classpath.txt")
-        if (!dst.exists()) {
-          def src = new File(cmdList[classPathFileIndex].substring(1))
-          dst.write(src.text)
-        }
-        cmdList[classPathFileIndex] = '@'+dst.toString()
-      }
-
-      //println cmd
-    }
-  }
-}
-
-// When a custom step changes, we need to bump the value passed to the method
-//   bumpThisNumberIfACustomStepChanges
-// This has been historically easy to forget, however, and can cause failures in some rare cases.
-// To safeguard against this, we instead use the (partial) md5 of this file as that method input.
-def thisFile = file("${scriptDir}/spotless.gradle")
-def thisFileMd5 = thisFile.text.md5() as String
-def thisFileMd5Piece = thisFileMd5.substring(0, 8)
-def thisFileIntegerHash = Integer.parseUnsignedInt(thisFileMd5Piece, 16)
-logger.debug("Using partial md5 (${thisFileIntegerHash}) of file ${thisFile} as spotless bump.")
-
-project.ext.set("spotless-file-hash", thisFileIntegerHash)
-
-check.dependsOn rat
-
 task devBuild(dependsOn: [":assemble"]) {
   // TODO: Evaluation order has invalidated this dependency chain.  Rewrite.
   description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
@@ -206,8 +96,6 @@ task devBuild(dependsOn: [":assemble"]) {
 //    }
 //  }
 }
-
-
 
 ext.readScmInfo = { proj ->
   // Attempt to read git information, or else return UNKNOWN
