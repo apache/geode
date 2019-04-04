@@ -743,7 +743,15 @@ public abstract class ServerConnection implements Runnable {
   private boolean clientDisconnectedCleanly = false;
   private Throwable clientDisconnectedException;
   private int failureCount = 0;
-  volatile boolean processMessages = true;
+  private volatile boolean processMessages = true;
+
+  public boolean getProcessMessages() {
+    return processMessages;
+  }
+
+  public void setProcessMessages(boolean newValue) {
+    processMessages = newValue;
+  }
 
   protected void doHandshake() {
     // hitesh:to create new connection handshake
@@ -764,6 +772,16 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
+  private boolean incrementConnectionsProcessing() {
+    if (serverConnectionCollection.isTerminating) {
+      serverConnectionCollection.connectionsProcessing.incrementAndGet();
+
+      return true;
+    }
+
+    return false;
+  }
+
   void doNormalMessage() {
     if (serverConnectionCollection == null) {
       // return here if we haven't successfully completed handshake
@@ -773,13 +791,11 @@ public abstract class ServerConnection implements Runnable {
     }
     Message message;
     message = BaseCommand.readRequest(this);
-    if (serverConnectionCollection.isTerminating) {
+    if (!incrementConnectionsProcessing()) {
       // Client is being disconnected, don't try to process message.
       this.processMessages = false;
       return;
     }
-
-    serverConnectionCollection.connectionsProcessing.incrementAndGet();
 
     ThreadState threadState = null;
     try {
