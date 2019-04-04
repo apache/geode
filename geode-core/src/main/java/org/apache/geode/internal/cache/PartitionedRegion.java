@@ -1223,16 +1223,6 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  /**
-   * @deprecated as of 10.0 use
-   *             {@link PartitionedRegion#updatePRConfigWithNewSetOfAsynchronousEventDispatchers(Set)}
-   *             instead
-   */
-  @Deprecated
-  public void updatePRConfigWithNewSetOfGatewaySenders(Set<String> gatewaySendersToAdd) {
-    updatePRConfigWithNewSetOfAsynchronousEventDispatchers(gatewaySendersToAdd);
-  }
-
   public void updatePRConfigWithNewSetOfAsynchronousEventDispatchers(
       Set<String> asynchronousEventDispatchers) {
     PartitionRegionHelper.assignBucketsToPartitions(this);
@@ -1493,15 +1483,6 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  /**
-   * @deprecated as of 10.0 use
-   *             {@link PartitionedRegion#validateParallelAsynchronousEventDispatcherIds()} instead.
-   */
-  @Deprecated
-  public void validateParallelGatewaySenderIds() throws PRLocallyDestroyedException {
-    validateParallelAsynchronousEventDispatcherIds();
-  }
-
   public void validateParallelAsynchronousEventDispatcherIds() throws PRLocallyDestroyedException {
     validateParallelAsynchronousEventDispatcherIds(this.getParallelGatewaySenderIds());
   }
@@ -1543,17 +1524,6 @@ public class PartitionedRegion extends LocalRegion
     parallelAsyncEventQueues.retainAll(allParallelQueues);
 
     return parallelAsyncEventQueues;
-  }
-
-  /**
-   * @deprecated as of 10.0 use
-   *             {@link PartitionedRegion#validateParallelAsynchronousEventDispatcherIds(Set)}
-   *             instead.
-   */
-  @Deprecated
-  public void validateParallelGatewaySenderIds(Set<String> parallelGatewaySenderIds)
-      throws PRLocallyDestroyedException {
-    validateParallelAsynchronousEventDispatcherIds(parallelGatewaySenderIds);
   }
 
   public void validateParallelAsynchronousEventDispatcherIds(
