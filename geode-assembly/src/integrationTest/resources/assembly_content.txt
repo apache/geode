@@ -336,6 +336,7 @@ javadoc/org/apache/geode/cache/configuration/RegionAttributesType.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.Entry.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.Index.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.html
+javadoc/org/apache/geode/cache/configuration/RegionType.html
 javadoc/org/apache/geode/cache/configuration/ResourceManagerType.html
 javadoc/org/apache/geode/cache/configuration/SerializationRegistrationType.Instantiator.html
 javadoc/org/apache/geode/cache/configuration/SerializationRegistrationType.Serializer.html
