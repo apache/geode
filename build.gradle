@@ -132,7 +132,7 @@ tasks.register('writeBuildInfo') {
 tasks.register('devBuild') {
   description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
   dependsOn tasks.named('assemble')
-  dependsOn childTasksWithName('spotlessApply')
+  // SpotlessApply is injected by each subproject in the standard configuration
 }
 
 tasks.register('generate') {
