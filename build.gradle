@@ -37,6 +37,16 @@ buildscript {
 
 apply plugin: 'wrapper'
 apply plugin: 'nebula.facet'
+apply plugin: 'java-library'
+apply from: "${scriptDir}/lint.gradle"
+apply from: "${scriptDir}/resolve-dependencies.gradle"
+apply from: "${scriptDir}/sonar.gradle"
+apply from: "${scriptDir}/rat.gradle"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+compileJava.options.encoding = 'UTF-8'
+
 
 wrapper {
   gradleVersion = minimumGradleVersion
@@ -62,13 +72,6 @@ allprojects {
   }
 }
 
-// formerly in java.gradle:
-apply plugin: 'java-library'
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-compileJava.options.encoding = 'UTF-8'
-
-// TODO: These came from test.gradle.  Move when safe.
 task combineReports(type: TestReport) {
   description 'Combines the test reports.'
   destinationDir = file "${rootProject.buildDir}/reports/combined"
@@ -83,10 +86,6 @@ gradle.taskGraph.whenReady({ graph ->
     it.tasks.withType(Test)
   }.flatten()
 })
-
-apply from: "${scriptDir}/sonar.gradle"  // root only, standalone
-apply from: "${scriptDir}/rat.gradle"    // root only, standalone
-
 
 if (project.hasProperty('parallelDunit')) {
   def pwd = System.getenv('PWD')
@@ -183,7 +182,6 @@ rootProject.ext.dockerConfig = {
   }
 }
 
-
 // When a custom step changes, we need to bump the value passed to the method
 //   bumpThisNumberIfACustomStepChanges
 // This has been historically easy to forget, however, and can cause failures in some rare cases.
@@ -195,10 +193,6 @@ def thisFileIntegerHash = Integer.parseUnsignedInt(thisFileMd5Piece, 16)
 logger.debug("Using partial md5 (${thisFileIntegerHash}) of file ${thisFile} as spotless bump.")
 
 project.ext.set("spotless-file-hash", thisFileIntegerHash)
-
-
-apply from: "${scriptDir}/lint.gradle"      // allprojects but standalone.
-apply from: "${scriptDir}/resolve-dependencies.gradle"   // two root tasks, standalone (with doLast)
 
 check.dependsOn rat
 
