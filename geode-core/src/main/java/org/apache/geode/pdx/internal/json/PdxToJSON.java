@@ -85,7 +85,6 @@ public class PdxToJSON {
   private void enableDisableJSONGeneratorFeature(JsonGenerator jg) {
     jg.enable(Feature.ESCAPE_NON_ASCII);
     jg.disable(Feature.AUTO_CLOSE_TARGET);
-    jg.setPrettyPrinter(new DefaultPrettyPrinter());
     if (PDXTOJJSON_UNQUOTEFIELDNAMES)
       jg.disable(Feature.QUOTE_FIELD_NAMES);
   }
