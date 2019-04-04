@@ -138,16 +138,21 @@ public class AlterRegionCommand extends SingleGfshCommand {
     RegionAttributesType regionAttributesType = new RegionAttributesType();
     deltaConfig.setRegionAttributes(regionAttributesType);
     regionAttributesType.setEntryIdleTime(ExpirationAttributesType.generate(entryExpirationIdleTime,
-        entryExpirationIdleTimeAction.toXmlString(), entryIdleTimeCustomExpiry));
+        (entryExpirationIdleTimeAction == null) ? null
+            : entryExpirationIdleTimeAction.toXmlString(),
+        entryIdleTimeCustomExpiry));
     regionAttributesType.setEntryTimeToLive(ExpirationAttributesType.generate(entryExpirationTTL,
-        entryExpirationTTLAction.toXmlString(), entryTTLCustomExpiry));
+        (entryExpirationTTLAction == null) ? null : entryExpirationTTLAction.toXmlString(),
+        entryTTLCustomExpiry));
     regionAttributesType.setRegionIdleTime(
         ExpirationAttributesType.generate(regionExpirationIdleTime,
-            regionExpirationIdleTimeAction.toXmlString(),
+            (regionExpirationIdleTimeAction == null) ? null
+                : regionExpirationIdleTimeAction.toXmlString(),
             null));
     regionAttributesType.setRegionTimeToLive(
         ExpirationAttributesType.generate(regionExpirationTTL,
-            regionExpirationTTLAction.toXmlString(), null));
+            (regionExpirationTTLAction == null) ? null : regionExpirationTTLAction.toXmlString(),
+            null));
     if (cacheLoader != null) {
       regionAttributesType.setCacheLoader(
           new DeclarableType(cacheLoader.getClassName(), cacheLoader.getInitProperties()));

@@ -435,16 +435,18 @@ public class CreateRegionCommand extends SingleGfshCommand {
     }
 
     regionAttributes.updateEntryIdleTime(entryExpirationIdleTime,
-        entryExpirationIdleTimeAction.toXmlString(),
+        (entryExpirationIdleTimeAction == null) ? null
+            : entryExpirationIdleTimeAction.toXmlString(),
         entryIdleTimeCustomExpiry);
     regionAttributes.updateEntryTimeToLive(entryExpirationTTL,
-        entryExpirationTTLAction.toXmlString(),
+        (entryExpirationTTLAction == null) ? null : entryExpirationTTLAction.toXmlString(),
         entryTTLCustomExpiry);
     regionAttributes.updateRegionIdleTime(regionExpirationIdleTime,
-        regionExpirationIdleTimeAction.toXmlString(),
+        (regionExpirationIdleTimeAction == null) ? null
+            : regionExpirationIdleTimeAction.toXmlString(),
         null);
     regionAttributes.updateRegionTimeToLive(regionExpirationTTL,
-        regionExpirationTTLAction.toXmlString(), null);
+        (regionExpirationTTLAction == null) ? null : regionExpirationTTLAction.toXmlString(), null);
 
     // unlike expiration attributes, if any single eviction attributes is set, we will replace
     // the template eviction attributes with this new eviction attributes. we do not combine
