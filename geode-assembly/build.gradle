@@ -23,13 +23,20 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 import java.nio.file.Paths
 
 // This project aggressively reaches into many other projects and must wait for those configurations
-// to be evaluated and resolved.
+// to be evaluated and resolved.  This list should consist exactly of those other projects that are
+// referenced in a presumed-to-be-resolved way during this project's configuration.
+// Notably, this is any project whose configurations are referenced outside explicitly, e.g.,
+// any 'project().configuration' or those referenced by geodeArchives.
+// As this is a near-global assembly, this should be a nearly-comprehensive list.
 [
+    ':extensions', // transitively, extensions's evaluationDependsOnChildren()
     ':geode-common',
     ':geode-connectors',
     ':geode-core',
     ':geode-cq',
+    ':geode-experimental-driver',
     ':geode-lucene',
+    ':geode-management',
     ':geode-memcached',
     ':geode-old-client-support',
     ':geode-protobuf',
@@ -44,6 +51,8 @@ import java.nio.file.Paths
 ].each {
   evaluationDependsOn(it)
 }
+// This project also aggressively inspects its own subprojects.
+evaluationDependsOnChildren()
 
 apply plugin: 'distribution'
 apply from: "${rootDir}/${scriptDir}/publish.gradle"

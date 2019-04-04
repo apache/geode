@@ -16,3 +16,5 @@
  */
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
+evaluationDependsOnChildren()
