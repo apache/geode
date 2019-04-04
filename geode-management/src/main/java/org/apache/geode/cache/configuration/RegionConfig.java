@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 
@@ -362,9 +361,15 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
    * {@link String }
    *
    */
-  public void setType(RegionShortcut regionShortcut) {
-    if (regionShortcut != null) {
-      this.type = regionShortcut.name();
+  public void setType(RegionType regionType) {
+    if (regionType != null) {
+      setType(regionType.name());
+    }
+  }
+
+  public void setType(String regionType) {
+    this.type = regionType;
+    if (type != null) {
       setShortcutAttributes();
     }
   }
@@ -377,6 +382,11 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
     switch (type) {
       case "PARTITION": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        break;
+      }
+      case "REPLICATE": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
         break;
       }
       case "PARTITION_REDUNDANT": {
@@ -408,14 +418,12 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
         regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
         break;
-
       }
       case "PARTITION_REDUNDANT_PERSISTENT_OVERFLOW": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
         regionAttributes.setRedundantCopy("1");
         regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
         break;
-
       }
       case "PARTITION_HEAP_LRU": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
@@ -429,11 +437,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
         regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
         break;
       }
-      case "REPLICATE": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
+
       case "REPLICATE_PERSISTENT": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
         regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);

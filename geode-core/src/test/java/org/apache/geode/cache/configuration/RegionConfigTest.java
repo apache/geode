@@ -25,7 +25,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -63,8 +62,8 @@ public class RegionConfigTest {
 
   @Test
   public void checkDefaultRegionAttributesForShortcuts() {
-    RegionShortcut[] shortcuts = RegionShortcut.values();
-    for (RegionShortcut shortcut : shortcuts) {
+    RegionType[] shortcuts = RegionType.values();
+    for (RegionType shortcut : shortcuts) {
       RegionConfig config = new RegionConfig();
       config.setType(shortcut);
       config.setName(shortcut.name());

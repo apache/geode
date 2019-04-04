@@ -224,7 +224,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
     InternalConfigurationPersistenceService persistenceService =
         getConfigurationPersistenceService();
     if (regionShortcut != null) {
-      regionConfig.setType(regionShortcut);
+      regionConfig.setType(regionShortcut.name());
     }
     // get the attributes from the template region
     else {
@@ -434,13 +434,17 @@ public class CreateRegionCommand extends SingleGfshCommand {
       regionAttributes.setDiskSynchronous(diskSynchronous);
     }
 
-    regionAttributes.updateEntryIdleTime(entryExpirationIdleTime, entryExpirationIdleTimeAction,
+    regionAttributes.updateEntryIdleTime(entryExpirationIdleTime,
+        entryExpirationIdleTimeAction.toXmlString(),
         entryIdleTimeCustomExpiry);
-    regionAttributes.updateEntryTimeToLive(entryExpirationTTL, entryExpirationTTLAction,
+    regionAttributes.updateEntryTimeToLive(entryExpirationTTL,
+        entryExpirationTTLAction.toXmlString(),
         entryTTLCustomExpiry);
-    regionAttributes.updateRegionIdleTime(regionExpirationIdleTime, regionExpirationIdleTimeAction,
+    regionAttributes.updateRegionIdleTime(regionExpirationIdleTime,
+        regionExpirationIdleTimeAction.toXmlString(),
         null);
-    regionAttributes.updateRegionTimeToLive(regionExpirationTTL, regionExpirationTTLAction, null);
+    regionAttributes.updateRegionTimeToLive(regionExpirationTTL,
+        regionExpirationTTLAction.toXmlString(), null);
 
     // unlike expiration attributes, if any single eviction attributes is set, we will replace
     // the template eviction attributes with this new eviction attributes. we do not combine
