@@ -35,6 +35,10 @@ buildscript {
   }
 }
 
+plugins {
+  id "com.dorongold.task-tree" version "1.3.1"
+}
+
 apply plugin: 'wrapper'
 apply plugin: 'nebula.facet'
 apply plugin: 'java-library'
@@ -86,15 +90,15 @@ gradle.taskGraph.whenReady({ graph ->
   }.flatten()
 })
 
-task devBuild(dependsOn: [":assemble"]) {
-  // TODO: Evaluation order has invalidated this dependency chain.  Rewrite.
-  description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
-  // spotless targets are not available until after evaluation.
-//  subprojects {
-//    afterEvaluate {
-//      this.devBuild.dependsOn(project.spotlessApply)
-//    }
-//  }
+def childTasksWithName = { n ->
+  // Return a collection of tasks in child projects with the given name.
+  // Does not include the calling project's task with the given name, if it exists.
+  def allTs = getTasksByName(n, true)
+  def rootT = tasks.findByName(n)
+  if (rootT != null) {
+    allTs.remove(rootT)
+  }
+  allTs
 }
 
 ext.readScmInfo = { proj ->
@@ -126,7 +130,7 @@ ext.readScmInfo = { proj ->
   }
 }
 
-task writeBuildInfo {
+tasks.register('writeBuildInfo') {
   def buildInfo = file "$buildDir/.buildinfo"
   def scmInfo = this.readScmInfo("geode-core")
 
@@ -138,6 +142,13 @@ task writeBuildInfo {
       scmInfo.store(fos, '')
     }
   }
+}
+
+tasks.register('devBuild') {
+  // TODO: Evaluation order has invalidated this dependency chain.  Rewrite.
+  description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
+  dependsOn tasks.named('assemble')
+  dependsOn childTasksWithName('spotlessApply')
 }
 
 tasks.register('generate') {
@@ -185,33 +196,24 @@ if (project.hasProperty('askpass')) {
   }
 }
 
-// TODO: Evaluation order changes has invalidated these chains.  Rewrite.
 // Explicitly chain generic tasks -- composite builds do not cascade these tasks by default.
-//['clean', 'check', 'test'].each { chainedTask ->
-//  rootProject.tasks.named(chainedTask).configure {
-//    dependsOn(subprojects*.tasks*.named(chainedTask))
-//  }
-//}
+['clean', 'check', 'test'].each { taskName ->
+  rootProject.tasks.named(taskName).configure {
+    dependsOn childTasksWithName(taskName)
+  }
+}
 
-
-
-
-
-
-// TODO: Evaluation order changes have invalidated these dependencies.  Rewrite
-//rootProject.tasks.named('classes').configure {
-//  // This is a semi-lazy hook so that the target "assemble" also assembles our test sources.
-//  dependsOn(subprojects.collect { thisSubProject ->
-//    [
-//        thisSubProject.tasks.named('compileTestJava'),
-//        thisSubProject.tasks.named('compileIntegrationTestJava'),
-//        thisSubProject.tasks.named('compileDistributedTestJava'),
-//        thisSubProject.tasks.named('compileAcceptanceTestJava'),
-//        thisSubProject.tasks.named('compileUiTestJava'),
-//        thisSubProject.tasks.named('compilePerformanceTestJava'),
-//        thisSubProject.tasks.named('compileUpgradeTestJava'),
-//    ]
-//  }.flatten())
-//}
-//
-//
+rootProject.tasks.named('classes').configure {
+  // This is a semi-lazy hook so that the target "assemble" also assembles our test sources.
+  dependsOn(subprojects.collect { thisSubProject ->
+    [
+        childTasksWithName('compileTestJava'),
+        childTasksWithName('compileIntegrationTestJava'),
+        childTasksWithName('compileDistributedTestJava'),
+        childTasksWithName('compileAcceptanceTestJava'),
+        childTasksWithName('compileUiTestJava'),
+        childTasksWithName('compilePerformanceTestJava'),
+        childTasksWithName('compileUpgradeTestJava'),
+    ]
+  })
+}
