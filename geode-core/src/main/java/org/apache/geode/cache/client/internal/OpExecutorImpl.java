@@ -153,7 +153,7 @@ public class OpExecutorImpl implements ExecutablePool {
       // while we're performing the op. It will be reset
       // if the op succeeds.
       localConnection.set(null);
-      if (!this.connectionManager.activate(conn)) {
+      if (!conn.activate()) {
         conn = connectionManager.borrowConnection(serverTimeout);
       }
     }
@@ -204,7 +204,7 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     } finally {
       if (threadLocalConnections) {
-        this.connectionManager.passivate(conn, success);
+        conn.passivate(success);
         // Fix for 43718. If the thread local was set to a different
         // connection deeper in the call stack, return that connection
         // and set our connection on the thread local.
@@ -413,7 +413,7 @@ public class OpExecutorImpl implements ExecutablePool {
         this.affinityServerLocation.set(conn.getServer());
       }
       if (useThreadLocalConnection(op, pingOp)) {
-        this.connectionManager.passivate(conn, success);
+        conn.passivate(success);
         setThreadLocalConnectionForSingleHop(server, conn);
       }
       if (returnCnx) {
@@ -443,7 +443,7 @@ public class OpExecutorImpl implements ExecutablePool {
     }
     boolean borrow = true;
     if (conn != null) {
-      if (this.connectionManager.activate(conn)) {
+      if (conn.activate()) {
         borrow = false;
         if (!conn.getServer().equals(server)) {
           // poolLoadConditioningMonitor can replace the connection's
@@ -866,7 +866,7 @@ public class OpExecutorImpl implements ExecutablePool {
       // This should not be reached, but keeping this code here in case it is
       // reached.
       if (conn.getServer().getUserId() == -1) {
-        Connection connImpl = this.connectionManager.getConnection(conn);
+        Connection connImpl = conn.getWrappedConnection();
         conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, this.pool));
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -918,7 +918,7 @@ public class OpExecutorImpl implements ExecutablePool {
         PoolImpl pool =
             (PoolImpl) PoolManagerImpl.getPMI().find(this.endpointManager.getPoolName());
         if (!pool.getMultiuserAuthentication()) {
-          Connection connImpl = this.connectionManager.getConnection(conn);
+          Connection connImpl = conn.getWrappedConnection();
           conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, this));
           return conn.execute(op);
         } else {

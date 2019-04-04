@@ -120,21 +120,4 @@ public interface ConnectionManager {
   int getConnectionCount();
 
   void emergencyClose();
-
-  /**
-   * Used to active a thread local connection
-   *
-   * @return true if connection activated, false if could not be activated because it is destroyed
-   * @throws InternalGemFireException when the connection is already active
-   */
-  boolean activate(Connection conn);
-
-  /**
-   * Used to passivate a thread local connection
-   *
-   * @throws InternalGemFireException when the connection is already passive
-   */
-  void passivate(Connection conn, boolean accessed);
-
-  Connection getConnection(Connection conn);
 }
