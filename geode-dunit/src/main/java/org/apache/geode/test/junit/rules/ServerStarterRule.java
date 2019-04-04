@@ -96,6 +96,9 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   @Override
   public void stopMember() {
+    for (CacheServer server : servers) {
+      server.stop();
+    }
     // make sure this cache is the one currently open. A server cache can be recreated due to
     // importing a new set of cluster configuration.
     cache = GemFireCacheImpl.getInstance();
@@ -107,7 +110,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
         cache = null;
       }
     }
-    servers = null;
+    servers.clear();
   }
 
   public ServerStarterRule withPDXPersistent() {
@@ -205,7 +208,11 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
       CacheServer server = cache.addCacheServer();
       // memberPort is by default zero, which translates to "randomly select an available port,"
       // which is why it is updated after this try block
-      server.setPort(memberPort);
+      if (serverCount == 1) {
+        server.setPort(memberPort);
+      } else {
+        server.setPort(0);
+      }
       try {
         server.start();
       } catch (IOException e) {
