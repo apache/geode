@@ -25,8 +25,10 @@ import static org.mockito.quality.Strictness.LENIENT;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleConfig;
@@ -42,6 +44,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.MembershipAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -49,13 +52,18 @@ import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.statistics.StatisticsManager;
 
 public class LocalRegionMetricsTest {
   @Rule
   public MockitoRule rule = MockitoJUnit.rule().strictness(LENIENT);
 
-  private final String myRegion = "MyRegion";
+  private final String regionName = "MyRegion";
+  private final Predicate<Meter> isMyRegion =
+      meter -> regionName.equals(meter.getId().getTag("region.name"));
+  private final Predicate<Meter> isRegionOperation =
+      meter -> meter.getId().getName().startsWith("cache.region.operations");
   private final AtomicLong clockTime = new AtomicLong();
 
   private MeterRegistry meterRegistry;
@@ -86,6 +94,14 @@ public class LocalRegionMetricsTest {
   private PoolImpl pool;
   @Mock
   private Clock clock;
+  @Mock
+  private TXManagerImpl txManager;
+  @Mock
+  private TXStateProxy txStateProxy;
+  @Mock
+  private InternalResourceManager internalResourceManager;
+  @Mock
+  private MembershipAttributes membershipAttributes;
 
   @Before
   public void setUp() {
@@ -128,12 +144,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void create_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.create("", "");
 
     Timer timer = meterRegistry.find("cache.region.operations.puts")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("put.type", "create")
         .timer();
 
@@ -144,12 +160,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void createWithCallbackArgument_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.create("", "", null);
 
     Timer timer = meterRegistry.find("cache.region.operations.puts")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("put.type", "create")
         .timer();
 
@@ -160,12 +176,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void put_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.put("", "");
 
     Timer timer = meterRegistry.find("cache.region.operations.puts")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("put.type", "put")
         .timer();
 
@@ -176,12 +192,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void putWithCallback_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.put("", "", "");
 
     Timer timer = meterRegistry.find("cache.region.operations.puts")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("put.type", "put")
         .timer();
 
@@ -192,12 +208,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void putIfAbsent_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.putIfAbsent("", "");
 
     Timer timer = meterRegistry.find("cache.region.operations.puts")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("put.type", "put-if-absent")
         .timer();
 
@@ -208,12 +224,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void putIfAbsentWithCallback_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.putIfAbsent("", "", "");
 
     Timer timer = meterRegistry.find("cache.region.operations.puts")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("put.type", "put-if-absent")
         .timer();
 
@@ -224,12 +240,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void replace_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.replace("", "");
 
     Timer timer = meterRegistry.find("cache.region.operations.puts")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("put.type", "replace")
         .timer();
 
@@ -240,12 +256,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void replaceWithOldAndNewValues_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.replace("", "", "");
 
     Timer timer = meterRegistry.find("cache.region.operations.puts")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("put.type", "replace")
         .timer();
 
@@ -256,12 +272,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void get_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.get("");
 
     Timer timer = meterRegistry.find("cache.region.operations.gets")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("get.type", "get")
         .timer();
 
@@ -272,12 +288,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void getWithCallback_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.get("", "");
 
     Timer timer = meterRegistry.find("cache.region.operations.gets")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("get.type", "get")
         .timer();
 
@@ -288,12 +304,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void getEntry_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.getEntry("");
 
     Timer timer = meterRegistry.find("cache.region.operations.gets")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("get.type", "get-entry")
         .timer();
 
@@ -304,12 +320,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void containsKey_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.containsKey("");
 
     Timer timer = meterRegistry.find("cache.region.operations.contains")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("contains.type", "contains-key")
         .timer();
 
@@ -320,12 +336,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void containsValue_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegion(myRegion);
+    LocalRegion localRegion = createLocalRegion(regionName);
 
     localRegion.containsValue("");
 
     Timer timer = meterRegistry.find("cache.region.operations.contains")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("contains.type", "contains-value")
         .timer();
 
@@ -336,12 +352,12 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void containsKeyOnServer_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegionForClient(myRegion);
+    LocalRegion localRegion = createLocalRegionForClient(regionName);
 
     localRegion.containsKeyOnServer("");
 
     Timer timer = meterRegistry.find("cache.region.operations.contains")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("contains.type", "contains-key-on-server")
         .timer();
 
@@ -352,18 +368,46 @@ public class LocalRegionMetricsTest {
 
   @Test
   public void containsValueForKey_timesHowLongItTook() {
-    LocalRegion localRegion = createLocalRegionForClient(myRegion);
+    LocalRegion localRegion = createLocalRegionForClient(regionName);
 
     localRegion.containsValueForKey("");
 
     Timer timer = meterRegistry.find("cache.region.operations.contains")
-        .tag("region.name", myRegion)
+        .tag("region.name", regionName)
         .tag("contains.type", "contains-value-for-key")
         .timer();
 
     assertThat(timer).isNotNull();
     assertThat(timer.count()).isEqualTo(1L);
     assertThat(timer.totalTime(TimeUnit.NANOSECONDS)).isGreaterThan(0);
+  }
+
+  @Test
+  public void close_removesAllTimers() {
+    LocalRegion localRegion = createLocalRegionThatCanBeClosed(regionName);
+
+    long numberOfRegionMetersBeforeClosing = meterRegistry.getMeters().stream()
+        .filter(isMyRegion.and(isRegionOperation))
+        .count();
+
+    assertThat(numberOfRegionMetersBeforeClosing).isNotZero();
+
+    configureMockCacheToAllowRegionToBeClosed();
+
+    localRegion.close();
+
+    long numberOfRegionMetersAfterClosing = meterRegistry.getMeters().stream()
+        .filter(isMyRegion.and(isRegionOperation))
+        .count();
+
+    assertThat(numberOfRegionMetersAfterClosing).isZero();
+  }
+
+  private void configureMockCacheToAllowRegionToBeClosed() {
+    when(cache.getTXMgr()).thenReturn(txManager);
+    when(txManager.pauseTransaction()).thenReturn(txStateProxy);
+    when(cache.getInternalResourceManager(false)).thenReturn(internalResourceManager);
+    when(cache.forcedDisconnect()).thenReturn(true);
   }
 
   private LocalRegion createLocalRegion(String regionName) {
@@ -376,5 +420,11 @@ public class LocalRegionMetricsTest {
     return new LocalRegion(regionName, regionAttributes, null, cache, internalRegionArgs,
         internalDataView, (a, b, c) -> regionMap, (a) -> serverRegionProxy, entryEventFactory,
         (a) -> pool);
+  }
+
+  private LocalRegion createLocalRegionThatCanBeClosed(String regionName) {
+    when(internalRegionArgs.isUsedForPartitionedRegionAdmin()).thenReturn(true);
+    when(regionAttributes.getMembershipAttributes()).thenReturn(membershipAttributes);
+    return createLocalRegion(regionName);
   }
 }
