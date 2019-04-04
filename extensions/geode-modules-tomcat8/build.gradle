@@ -56,3 +56,10 @@ dependencies {
   distributedTestRuntime('xerces:xercesImpl')
   distributedTestRuntime('javax.annotation:javax.annotation-api')
 }
+
+eclipse.classpath.file {
+  whenMerged { classpath ->
+    classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build')}
+  }
+}
+

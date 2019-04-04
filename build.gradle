@@ -38,6 +38,9 @@ buildscript {
 apply plugin: 'wrapper'
 apply plugin: 'nebula.facet'
 apply plugin: 'java-library'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
 apply from: "${scriptDir}/lint.gradle"
 apply from: "${scriptDir}/resolve-dependencies.gradle"
 apply from: "${scriptDir}/sonar.gradle"

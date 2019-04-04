@@ -55,3 +55,10 @@ dependencies {
   integrationTestRuntime('org.eclipse.persistence:javax.persistence')
   integrationTestRuntime('xerces:xercesImpl')
 }
+
+eclipse.classpath.file {
+  whenMerged { classpath ->
+    classpath.entries.removeAll { entry -> entry.path.contains('geode-modules/build')}
+  }
+}
+
