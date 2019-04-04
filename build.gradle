@@ -80,12 +80,6 @@ task combineReports(type: TestReport) {
   }
 }
 
-gradle.taskGraph.whenReady({ graph ->
-  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
-    it.tasks.withType(Test)
-  }.flatten()
-})
-
 ext.readScmInfo = { proj ->
   // Attempt to read git information, or else return UNKNOWN
   try {
@@ -132,7 +126,7 @@ tasks.register('writeBuildInfo') {
 tasks.register('devBuild') {
   description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
   dependsOn tasks.named('assemble')
-  // SpotlessApply is injected by each subproject in the standard configuration
+  // Each subproject injects its SpotlessApply as a dependency to this task in the standard config
 }
 
 tasks.register('generate') {
@@ -179,3 +173,9 @@ if (project.hasProperty('askpass')) {
     }
   }
 }
+
+gradle.taskGraph.whenReady({ graph ->
+  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
+    it.tasks.withType(Test)
+  }.flatten()
+})
