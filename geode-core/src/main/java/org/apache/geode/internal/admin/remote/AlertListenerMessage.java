@@ -158,6 +158,11 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   }
 
   @VisibleForTesting
+  public String getMessage() {
+    return message;
+  }
+
+  @VisibleForTesting
   public static void addListener(Listener listener) {
     listenerRef.compareAndSet(null, listener);
   }
