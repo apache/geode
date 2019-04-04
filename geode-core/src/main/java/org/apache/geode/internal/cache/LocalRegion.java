@@ -2282,7 +2282,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void close() {
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_CLOSE, null, false,
-        getMyId(), generateEventID()/* generate EventID */);
+        getMyId(), generateEventID());
     try {
       // NOTE: the 422dynamicRegions branch added the callbackEvents argument
       // to basicDestroyRegion and inhibited events on region.close. This
@@ -2755,6 +2755,17 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (hasOwnStats) {
         cachePerfStats.close();
       }
+
+      cache.getMeterRegistry().remove(createTimer);
+      cache.getMeterRegistry().remove(putTimer);
+      cache.getMeterRegistry().remove(putIfAbsentTimer);
+      cache.getMeterRegistry().remove(replaceTimer);
+      cache.getMeterRegistry().remove(getTimer);
+      cache.getMeterRegistry().remove(getEntryTimer);
+      cache.getMeterRegistry().remove(containsKeyTimer);
+      cache.getMeterRegistry().remove(containsValueTimer);
+      cache.getMeterRegistry().remove(containsKeyOnServerTimer);
+      cache.getMeterRegistry().remove(containsValueForKeyTimer);
     }
   }
 
