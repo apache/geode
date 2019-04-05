@@ -2906,6 +2906,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             // this means the value attempted to overwrite a newer modification and was rejected
             if (logger.isDebugEnabled()) {
               logger.debug("caught concurrent modification attempt when applying {}", event);
+              logger.debug("Hitting the exception :: NABA ", ignore);
             }
             notifyBridgeClients(event);
           }
@@ -5700,6 +5701,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // thread got around to doing so
       if (logger.isDebugEnabled()) {
         logger.debug("caught concurrent modification attempt when applying {}", event);
+        logger.debug("Hitting the exception :: NABA ", ignore);
       }
       notifyBridgeClients(event);
       notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
@@ -6596,6 +6598,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // thread got around to doing so
       if (logger.isDebugEnabled()) {
         logger.debug("caught concurrent modification attempt when applying {}", event);
+        logger.debug("Hitting the exception :: NABA ", ignore);
       }
       // Notify clients only if its NOT a gateway event.
       if (event.getVersionTag() != null && !event.getVersionTag().isGatewayTag()) {
