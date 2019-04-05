@@ -72,5 +72,7 @@ public class GfshCommandIntegrationTest {
         "Executing command: start locator --properties-file=unknown --J=-Dgemfire.security-password=********");
     assertThat(logEvents.get(1).getMessage().getFormattedMessage())
         .isEqualTo("Executing command: connect --password=********");
+
+    logger.removeAppender(listAppender);
   }
 }
