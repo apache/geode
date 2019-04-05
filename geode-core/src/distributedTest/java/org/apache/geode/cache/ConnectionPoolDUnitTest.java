@@ -1299,7 +1299,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   protected static volatile int baselineLifetimeConnect;
   protected static volatile int baselineLifetimeDisconnect;
 
-  private void basicTestLifetimeExpire() throws CacheException {
+  @Test
+  public void basicTestLifetimeExpire() throws CacheException {
     final String name = this.getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
