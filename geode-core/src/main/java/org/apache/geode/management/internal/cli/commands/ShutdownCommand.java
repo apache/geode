@@ -37,16 +37,16 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.ShutDownFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ShutdownCommand extends InternalGfshCommand {
+public class ShutdownCommand extends GfshCommand {
   private static final String DEFAULT_TIME_OUT = "10";
   private static final Logger logger = LogService.getLogger();
 
@@ -55,78 +55,72 @@ public class ShutdownCommand extends InternalGfshCommand {
       interceptor = "org.apache.geode.management.internal.cli.commands.ShutdownCommand$ShutdownCommandInterceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result shutdown(
+  public ResultModel shutdown(
       @CliOption(key = CliStrings.SHUTDOWN__TIMEOUT, unspecifiedDefaultValue = DEFAULT_TIME_OUT,
           help = CliStrings.SHUTDOWN__TIMEOUT__HELP) int userSpecifiedTimeout,
       @CliOption(key = CliStrings.INCLUDE_LOCATORS, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
-          help = CliStrings.INCLUDE_LOCATORS_HELP) boolean shutdownLocators) {
-    try {
-      if (userSpecifiedTimeout < Integer.parseInt(DEFAULT_TIME_OUT)) {
-        return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN__MSG__IMPROPER_TIMEOUT);
-      }
+          help = CliStrings.INCLUDE_LOCATORS_HELP) boolean shutdownLocators)
+      throws InterruptedException, ExecutionException, TimeoutException {
 
-      // convert to milliseconds
-      long timeout = userSpecifiedTimeout * 1000L;
-      InternalCache cache = (InternalCache) getCache();
-      int numDataNodes = getAllNormalMembers().size();
-      Set<DistributedMember> locators = getAllMembers();
-      Set<DistributedMember> dataNodes = getAllNormalMembers();
-      locators.removeAll(dataNodes);
-
-      if (!shutdownLocators && numDataNodes == 0) {
-        return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN__MSG__NO_DATA_NODE_FOUND);
-      }
-
-      String managerName = cache.getJmxManagerAdvisor().getDistributionManager().getId().getId();
-
-      final DistributedMember manager = getMember(managerName);
-
-      dataNodes.remove(manager);
-
-      // shut down all data members excluding this manager if manager is a data node
-      long timeElapsed = shutDownNodeWithTimeOut(timeout, dataNodes);
-      timeout = timeout - timeElapsed;
-
-      // shut down locators one by one
-      if (shutdownLocators) {
-        if (manager == null) {
-          return ResultBuilder.createUserErrorResult(CliStrings.SHUTDOWN__MSG__MANAGER_NOT_FOUND);
-        }
-
-        // remove current locator as that would get shutdown last
-        if (locators.contains(manager)) {
-          locators.remove(manager);
-        }
-
-        for (DistributedMember locator : locators) {
-          Set<DistributedMember> lsSet = new HashSet<>();
-          lsSet.add(locator);
-          long elapsedTime = shutDownNodeWithTimeOut(timeout, lsSet);
-          timeout = timeout - elapsedTime;
-        }
-      }
-
-      if (locators.contains(manager) && !shutdownLocators) { // This means manager is a locator and
-        // shutdownLocators is false. Hence we
-        // should not stop the manager
-        return ResultBuilder.createInfoResult("Shutdown is triggered");
-      }
-      // now shut down this manager
-      Set<DistributedMember> mgrSet = new HashSet<>();
-      mgrSet.add(manager);
-      // No need to check further timeout as this is the last node we will be
-      // shutting down
-      shutDownNodeWithTimeOut(timeout, mgrSet);
-
-    } catch (TimeoutException tex) {
-      return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN_TIMEDOUT);
-    } catch (Exception ex) {
-      logger.error(ex.getMessage(), ex);
-      return ResultBuilder.createUserErrorResult(ex.getMessage());
+    if (userSpecifiedTimeout < Integer.parseInt(DEFAULT_TIME_OUT)) {
+      return ResultModel.createInfo(CliStrings.SHUTDOWN__MSG__IMPROPER_TIMEOUT);
     }
-    // @TODO. List all the nodes which could be successfully shutdown
-    return ResultBuilder.createInfoResult("Shutdown is triggered");
+
+    // convert to milliseconds
+    long timeout = userSpecifiedTimeout * 1000L;
+    InternalCache cache = (InternalCache) getCache();
+    int numDataNodes = getAllNormalMembers().size();
+    Set<DistributedMember> locators = getAllMembers();
+    Set<DistributedMember> dataNodes = getAllNormalMembers();
+    locators.removeAll(dataNodes);
+
+    if (!shutdownLocators && numDataNodes == 0) {
+      return ResultModel.createInfo(CliStrings.SHUTDOWN__MSG__NO_DATA_NODE_FOUND);
+    }
+
+    String managerName = cache.getJmxManagerAdvisor().getDistributionManager().getId().getId();
+
+    final DistributedMember manager = getMember(managerName);
+
+    dataNodes.remove(manager);
+
+    // shut down all data members excluding this manager if manager is a data node
+    long timeElapsed = shutDownNodeWithTimeOut(timeout, dataNodes);
+    timeout = timeout - timeElapsed;
+
+    // shut down locators one by one
+    if (shutdownLocators) {
+      if (manager == null) {
+        return ResultModel.createError(CliStrings.SHUTDOWN__MSG__MANAGER_NOT_FOUND);
+      }
+
+      // remove current locator as that would get shutdown last
+      if (locators.contains(manager)) {
+        locators.remove(manager);
+      }
+
+      for (DistributedMember locator : locators) {
+        Set<DistributedMember> lsSet = new HashSet<>();
+        lsSet.add(locator);
+        long elapsedTime = shutDownNodeWithTimeOut(timeout, lsSet);
+        timeout = timeout - elapsedTime;
+      }
+    }
+
+    if (locators.contains(manager) && !shutdownLocators) { // This means manager is a locator and
+      // shutdownLocators is false. Hence we
+      // should not stop the manager
+      return ResultModel.createInfo("Shutdown is triggered");
+    }
+    // now shut down this manager
+    Set<DistributedMember> mgrSet = new HashSet<>();
+    mgrSet.add(manager);
+    // No need to check further timeout as this is the last node we will be
+    // shutting down
+    shutDownNodeWithTimeOut(timeout, mgrSet);
+
+    return ResultModel.createInfo("Shutdown is triggered");
   }
 
   /**
@@ -185,19 +179,18 @@ public class ShutdownCommand extends InternalGfshCommand {
 
   public static class ShutdownCommandInterceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
 
       // This hook is for testing purpose only.
       if (Boolean.getBoolean(CliStrings.IGNORE_INTERCEPTORS)) {
-        return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN__MSG__SHUTDOWN_ENTIRE_DS);
+        return ResultModel.createInfo(CliStrings.SHUTDOWN__MSG__SHUTDOWN_ENTIRE_DS);
       }
 
       Response response = readYesNo(CliStrings.SHUTDOWN__MSG__WARN_USER, Response.YES);
       if (response == Response.NO) {
-        return ResultBuilder
-            .createShellClientAbortOperationResult(CliStrings.SHUTDOWN__MSG__ABORTING_SHUTDOWN);
+        return ResultModel.createInfo(CliStrings.SHUTDOWN__MSG__ABORTING_SHUTDOWN);
       } else {
-        return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN__MSG__SHUTDOWN_ENTIRE_DS);
+        return ResultModel.createInfo(CliStrings.SHUTDOWN__MSG__SHUTDOWN_ENTIRE_DS);
       }
     }
   }
