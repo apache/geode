@@ -21,8 +21,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -77,7 +80,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   @Override
   public ClusterManagementResult create(CacheElement config, String group) {
-    if (group == null) {
+    if (StringUtils.isBlank(group)) {
       group = "cluster";
     }
 
@@ -94,7 +97,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
       validator.validate(config);
     }
 
-
     // exit early if config element already exists in cache config
     CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
     if (validator.exists(config, currentPersistedConfig)) {
@@ -102,9 +104,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // execute function on all members
-    Set<DistributedMember> targetedMembers = findMembers(null, null);
+    Set<DistributedMember> targetedMembers = findMembers(group);
+
     if (targetedMembers.size() == 0) {
-      return new ClusterManagementResult(false, "no members found to create cache element");
+      return new ClusterManagementResult(false,
+          "no members found in " + group + " to create cache element");
     }
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
@@ -123,7 +127,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-    String finalGroup = group;
+    final String finalGroup = group; // the below lambda requires a reference that is final
     persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
       try {
         configurationMutator.add(config, cacheConfigForGroup);
@@ -167,8 +171,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @VisibleForTesting
-  Set<DistributedMember> findMembers(String[] groups, String[] members) {
-    return CliUtil.findMembers(groups, members, cache);
+  Set<DistributedMember> findMembers(String group) {
+    Stream<DistributedMember> stream =
+        cache.getDistributionManager().getNormalDistributionManagerIds()
+            .stream().map(DistributedMember.class::cast);
+    if (!"cluster".equals(group)) {
+      stream = stream.filter(m -> m.getGroups().contains(group));
+    }
+    return stream.collect(Collectors.toSet());
   }
 
   @VisibleForTesting
