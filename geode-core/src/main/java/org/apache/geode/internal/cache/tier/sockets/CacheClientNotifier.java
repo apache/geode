@@ -34,8 +34,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -122,7 +124,7 @@ import org.apache.geode.security.AuthenticationRequiredException;
 @SuppressWarnings({"synthetic-access", "deprecation"})
 public class CacheClientNotifier {
   private static final Logger logger = LogService.getLogger();
-  private final Map<ClientProxyMembershipID, List<InternalCacheEvent>> initializingProxyEventQueues =
+  private final Map<ClientProxyMembershipID, Queue<InternalCacheEvent>> initializingProxyEventQueues =
       new ConcurrentHashMap<>();
   private final Object initializingProxyEventQueuesLock = new Object();
 
@@ -303,8 +305,8 @@ public class CacheClientNotifier {
     byte clientConflation;
     try {
       proxyID = ClientProxyMembershipID.readCanonicalized(dis);
-      final List<InternalCacheEvent> eventsReceivedWhileInitializingClient =
-          Collections.synchronizedList(new ArrayList<>());
+      final Queue<InternalCacheEvent> eventsReceivedWhileInitializingClient =
+          new ConcurrentLinkedQueue<>();
       initializingProxyEventQueues.put(proxyID, eventsReceivedWhileInitializingClient);
 
       try {
@@ -437,7 +439,7 @@ public class CacheClientNotifier {
   }
 
   private void drainEventsReceivedWhileInitializingClient(final ClientProxyMembershipID proxyID,
-      final List<InternalCacheEvent> eventsReceivedWhileInitializingClient) {
+      final Queue<InternalCacheEvent> eventsReceivedWhileInitializingClient) {
     for (final InternalCacheEvent queuedEvent : eventsReceivedWhileInitializingClient) {
       logger.info("RYGUY: Draining event queued during initialization: " + queuedEvent
           + " for client " + proxyID);
@@ -901,7 +903,7 @@ public class CacheClientNotifier {
   }
 
   private void addEventToInitializingQueues(final InternalCacheEvent event) {
-    for (final Map.Entry<ClientProxyMembershipID, List<InternalCacheEvent>> eventsQueuedWhileInitializing : initializingProxyEventQueues
+    for (final Map.Entry<ClientProxyMembershipID, Queue<InternalCacheEvent>> eventsQueuedWhileInitializing : initializingProxyEventQueues
         .entrySet()) {
       synchronized (initializingProxyEventQueuesLock) {
         if (initializingProxyEventQueues.containsKey(eventsQueuedWhileInitializing.getKey())) {
