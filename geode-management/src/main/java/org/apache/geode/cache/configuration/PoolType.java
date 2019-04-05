@@ -610,6 +610,8 @@ public class PoolType {
    * possible object is
    * {@link Boolean }
    *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
   @Deprecated
   public Boolean isThreadLocalConnections() {
@@ -622,6 +624,8 @@ public class PoolType {
    * allowed object is
    * {@link Boolean }
    *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
   @Deprecated
   public void setThreadLocalConnections(Boolean value) {

@@ -277,8 +277,8 @@ public interface PoolFactory {
    *
    * @param threadLocalConnections if <code>true</code> then enable thread local connections.
    * @return a reference to <code>this</code>
-   * @deprecated Ignored since thread local connection do not provide improved contention
-   *             since Geode 1.10. Method will be remove in future major release.
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
   @Deprecated
   PoolFactory setThreadLocalConnections(boolean threadLocalConnections);

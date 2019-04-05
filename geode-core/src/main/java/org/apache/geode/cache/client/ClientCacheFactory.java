@@ -352,8 +352,8 @@ public class ClientCacheFactory {
    *
    * @param threadLocalConnections if <code>true</code> then enable thread local connections.
    * @return a reference to <code>this</code>
-   * @deprecated Since 1.10.0. Does not provide any benefit over default connection pooling. Will
-   *             be removed in future major release.
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
   @Deprecated
   public ClientCacheFactory setPoolThreadLocalConnections(boolean threadLocalConnections) {
