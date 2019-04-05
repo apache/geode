@@ -14,12 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
@@ -27,36 +25,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
 public class GfshCommandJUnitTest {
 
-  private InternalGfshCommand command;
+  private GfshCommand command;
   private Gfsh gfsh;
   private InternalConfigurationPersistenceService clusterConfigurationService;
 
   @Before
   public void before() throws Exception {
-    command = spy(InternalGfshCommand.class);
+    command = spy(GfshCommand.class);
     gfsh = mock(Gfsh.class);
     clusterConfigurationService = mock(InternalConfigurationPersistenceService.class);
-  }
-
-  @Test
-  public void persistClusterConfiguration() throws Exception {
-    when(command.getConfigurationPersistenceService()).thenReturn(null);
-    Result result = ResultBuilder.createInfoResult("info");
-    Runnable runnable = mock(Runnable.class);
-
-    command.persistClusterConfiguration(result, runnable);
-    assertThat(result.failedToPersist()).isTrue();
-
-    when(command.getConfigurationPersistenceService()).thenReturn(clusterConfigurationService);
-    command.persistClusterConfiguration(result, runnable);
-    assertThat(result.failedToPersist()).isFalse();
   }
 
   @Test

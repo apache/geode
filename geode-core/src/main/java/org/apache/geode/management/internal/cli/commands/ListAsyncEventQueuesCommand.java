@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ListAsyncEventQueuesFunction;
@@ -34,7 +35,7 @@ import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListAsyncEventQueuesCommand extends InternalGfshCommand {
+public class ListAsyncEventQueuesCommand extends GfshCommand {
   private static final String[] DETAILS_OUTPUT_COLUMNS =
       {"Member", "ID", "Batch Size", "Persistent", "Disk Store", "Max Memory", "Listener"};
   private static final String ASYNC_EVENT_QUEUES_TABLE_SECTION = "Async Event Queues";

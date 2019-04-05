@@ -42,7 +42,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
@@ -179,7 +179,7 @@ public class CommandManager {
     packagesToScan.add("org.apache.geode.management.internal.cli.converters");
     packagesToScan.add("org.springframework.shell.converters");
     packagesToScan.add(GfshCommand.class.getPackage().getName());
-    packagesToScan.add(InternalGfshCommand.class.getPackage().getName());
+    packagesToScan.add(VersionCommand.class.getPackage().getName());
 
     // Create one scanner to be used everywhere
     try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan)) {
@@ -235,7 +235,7 @@ public class CommandManager {
       // geode's commands
       foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
           GfshCommand.class.getPackage().getName(),
-          InternalGfshCommand.class.getPackage().getName());
+          VersionCommand.class.getPackage().getName());
 
       for (Class<?> klass : foundClasses) {
         try {
