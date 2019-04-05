@@ -15,11 +15,20 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.test.appender.ListAppender;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -41,5 +50,27 @@ public class GfshCommandIntegrationTest {
   public void invalidCommandWhenConnected() throws Exception {
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("abc").statusIsError().containsOutput("Command 'abc' not found");
+  }
+
+  @Test
+  public void commandsAreLoggedAndRedacted() {
+    Logger logger = (Logger) LogManager.getLogger(CommandExecutor.class);
+    ListAppender listAppender = new ListAppender("ListAppender");
+    logger.addAppender(listAppender);
+    listAppender.start();
+
+    gfsh.executeAndAssertThat(
+        "start locator --properties-file=unknown --J=-Dgemfire.security-password=bob")
+        .statusIsError();
+    gfsh.executeAndAssertThat("connect --password=secret").statusIsError();
+
+    List<LogEvent> logEvents = listAppender.getEvents();
+    assertThat(logEvents.size()).as("There should be exactly 2 log events").isEqualTo(2);
+
+    String logMessage = logEvents.get(0).getMessage().getFormattedMessage();
+    assertThat(logEvents.get(0).getMessage().getFormattedMessage()).isEqualTo(
+        "Executing command: start locator --properties-file=unknown --J=-Dgemfire.security-password=********");
+    assertThat(logEvents.get(1).getMessage().getFormattedMessage())
+        .isEqualTo("Executing command: connect --password=********");
   }
 }
