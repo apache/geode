@@ -90,6 +90,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.execute.EmptyRegionFunctionException;
@@ -231,6 +232,7 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -1221,10 +1223,11 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  public void updatePRConfigWithNewSetOfGatewaySenders(Set<String> gatewaySendersToAdd) {
+  public void updatePRConfigWithNewSetOfAsynchronousEventDispatchers(
+      Set<String> asynchronousEventDispatchers) {
     PartitionRegionHelper.assignBucketsToPartitions(this);
     updatePartitionRegionConfig(prConfig -> {
-      prConfig.setGatewaySenderIds(gatewaySendersToAdd);
+      prConfig.setGatewaySenderIds(asynchronousEventDispatchers);
     });
   }
 
@@ -1375,7 +1378,7 @@ public class PartitionedRegion extends LocalRegion
       prConfig = getPRRoot().get(getRegionIdentifier());
 
       if (prConfig == null) {
-        validateParallelGatewaySenderIds();
+        validateParallelAsynchronousEventDispatcherIds();
         this.partitionedRegionId = generatePRId(getSystem());
         prConfig = new PartitionRegionConfig(this.partitionedRegionId, this.getFullPath(),
             prAttribs, this.getScope(), getAttributes().getEvictionAttributes(),
@@ -1480,35 +1483,77 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  public void validateParallelGatewaySenderIds() throws PRLocallyDestroyedException {
-    validateParallelGatewaySenderIds(this.getParallelGatewaySenderIds());
+  public void validateParallelAsynchronousEventDispatcherIds() throws PRLocallyDestroyedException {
+    validateParallelAsynchronousEventDispatcherIds(this.getParallelGatewaySenderIds());
   }
 
-  /*
-   * filterOutNonParallelGatewaySenders takes in a set of gateway sender IDs and returns
-   * a set of parallel gateway senders present in the input set.
+  /**
+   * Filters out non parallel GatewaySenders.
+   *
+   * @param senderIds set of gateway sender IDs.
+   * @return set of parallel gateway senders present in the input set.
    */
   public Set<String> filterOutNonParallelGatewaySenders(Set<String> senderIds) {
-    Set<String> allParallelSenders = cache.getAllGatewaySenders().parallelStream()
-        .filter(GatewaySender::isParallel).map(GatewaySender::getId).collect(toSet());
-    Set<String> parallelSenders = new HashSet<>();
-    senderIds.parallelStream().forEach(gatewaySenderId -> {
-      if (allParallelSenders.contains(gatewaySenderId)) {
-        parallelSenders.add(gatewaySenderId);
-      }
-    });
+    Set<String> allParallelSenders = cache.getAllGatewaySenders()
+        .parallelStream()
+        .filter(GatewaySender::isParallel)
+        .map(GatewaySender::getId)
+        .collect(toSet());
+
+    Set<String> parallelSenders = new HashSet<>(senderIds);
+    parallelSenders.retainAll(allParallelSenders);
+
     return parallelSenders;
   }
 
-  public void validateParallelGatewaySenderIds(Set<String> parallelGatewaySenderIds)
-      throws PRLocallyDestroyedException {
-    for (String senderId : parallelGatewaySenderIds) {
-      for (PartitionRegionConfig config : getPRRoot().values()) {
-        if (config.getGatewaySenderIds().contains(senderId)) {
+  /**
+   * Filters out non parallel AsyncEventQueues.
+   *
+   * @param queueIds set of async-event-queue IDs.
+   * @return set of parallel async-event-queues present in the input set.
+   */
+  public Set<String> filterOutNonParallelAsyncEventQueues(Set<String> queueIds) {
+    Set<String> allParallelQueues = cache.getAsyncEventQueues()
+        .parallelStream()
+        .filter(AsyncEventQueue::isParallel)
+        .map(asyncEventQueue -> AsyncEventQueueImpl
+            .getAsyncEventQueueIdFromSenderId(asyncEventQueue.getId()))
+        .collect(toSet());
+
+    Set<String> parallelAsyncEventQueues = new HashSet<>(queueIds);
+    parallelAsyncEventQueues.retainAll(allParallelQueues);
+
+    return parallelAsyncEventQueues;
+  }
+
+  public void validateParallelAsynchronousEventDispatcherIds(
+      Set<String> asynchronousEventDispatcherIds) throws PRLocallyDestroyedException {
+    for (String dispatcherId : asynchronousEventDispatcherIds) {
+      GatewaySender sender = getCache().getGatewaySender(dispatcherId);
+      AsyncEventQueue asyncEventQueue = getCache()
+          .getAsyncEventQueue(AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(dispatcherId));
+
+      // Can't attach a non persistent parallel gateway / async-event-queue to a persistent
+      // partitioned region.
+      if (getDataPolicy().withPersistence()) {
+        if ((sender != null) && (!sender.isPersistenceEnabled())) {
+          throw new GatewaySenderConfigurationException(String.format(
+              "Non persistent gateway sender %s can not be attached to persistent region %s",
+              dispatcherId, getFullPath()));
+        } else if ((asyncEventQueue != null) && (!asyncEventQueue.isPersistent())) {
+          throw new AsyncEventQueueConfigurationException(String.format(
+              "Non persistent asynchronous event queue %s can not be attached to persistent region %s",
+              dispatcherId, getFullPath()));
+        }
+      }
+
+      for (PartitionRegionConfig config : this.prRoot.values()) {
+        if (config.getGatewaySenderIds().contains(dispatcherId)) {
           if (this.getFullPath().equals(config.getFullPath())) {
             // The sender is already attached to this region
             continue;
           }
+
           Map<String, PartitionedRegion> colocationMap =
               ColocationHelper.getAllColocationRegions(this);
           if (!colocationMap.isEmpty()) {
@@ -1518,28 +1563,23 @@ public class PartitionedRegion extends LocalRegion
               int prID = config.getPRId();
               PartitionedRegion colocatedPR = PartitionedRegion.getPRFromId(prID);
               PartitionedRegion leader = ColocationHelper.getLeaderRegion(colocatedPR);
+
               if (colocationMap.containsValue(leader)) {
                 continue;
               } else {
-                throw new IllegalStateException(
-                    String.format(
-                        "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
-                        new Object[] {this.getFullPath(), config.getFullPath(),
-                            senderId.contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)
-                                ? "async event queue" : "gateway sender",
-                            senderId}));
+                throw new IllegalStateException(String.format(
+                    "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
+                    this.getFullPath(), config.getFullPath(),
+                    (asyncEventQueue != null ? "async event queue" : "gateway sender"),
+                    dispatcherId));
               }
             }
           } else {
-            throw new IllegalStateException(
-                String.format(
-                    "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
-                    new Object[] {this.getFullPath(), config.getFullPath(),
-                        senderId.contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)
-                            ? "async event queue" : "gateway sender",
-                        senderId}));
+            throw new IllegalStateException(String.format(
+                "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
+                this.getFullPath(), config.getFullPath(),
+                (asyncEventQueue != null ? "async event queue" : "gateway sender"), dispatcherId));
           }
-
         }
       }
     }
