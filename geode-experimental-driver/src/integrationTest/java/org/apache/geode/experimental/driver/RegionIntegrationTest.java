@@ -36,9 +36,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class RegionIntegrationTest extends IntegrationTestBase {
   /** a JSON document */
   private static final String jsonDocument =
-      "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
-          + "  \"age\" : 1276," + System.lineSeparator() + "  \"nationality\" : \"french\","
-          + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
+      "{\"name\":\"Charlemagne\",\"age\":1276,\"nationality\":\"french\",\"emailAddress\":\"none\"}";
 
   @Test
   public void putNewValueShouldIncrementSize() throws Exception {

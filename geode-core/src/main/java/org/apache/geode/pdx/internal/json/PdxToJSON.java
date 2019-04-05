@@ -27,7 +27,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.HeapDataOutputStream;
