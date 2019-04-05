@@ -439,13 +439,23 @@ public class CacheClientNotifier {
   private void drainEventsReceivedWhileInitializingClient(final ClientProxyMembershipID proxyID,
       final List<InternalCacheEvent> eventsReceivedWhileInitializingClient) {
     for (final InternalCacheEvent queuedEvent : eventsReceivedWhileInitializingClient) {
+      logger.info("RYGUY: Draining event queued during initialization: " + queuedEvent
+          + " for client " + proxyID);
+
       final FilterProfile filterProfile =
           ((DistributedRegion) queuedEvent.getRegion()).getFilterProfile();
+
+      logger.info("RYGUY: Filter profile: " + filterProfile);
 
       if (filterProfile != null) {
         final FilterRoutingInfo filterRoutingInfo =
             filterProfile.getFilterRoutingForClients(null, queuedEvent);
+
+        logger.info("RYGUY: Filter routing info: " + filterRoutingInfo);
+
         final FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
+
+        logger.info("RYGUY: Filter info: " + filterInfo);
 
         // For initializing clients, we will just queue the ClientUpdateMessage instead
         // of an HAEventWrapper. Since this is not the normal hot path for event processing,
@@ -459,7 +469,12 @@ public class CacheClientNotifier {
         final CacheClientProxy cacheClientProxy = this._clientProxies.get(proxyID);
 
         if (filterClientIDs.contains(proxyID) && cacheClientProxy != null) {
+          logger.info(
+              "RYGUY: Event matched, delivering.  Event: " + queuedEvent + "; Client: " + proxyID);
+
           cacheClientProxy.deliverMessage(clientUpdateMessage);
+        } else {
+          logger.info("RYGUY: Event didn't match.  Event: " + queuedEvent + "; Client: " + proxyID);
         }
       }
     }
