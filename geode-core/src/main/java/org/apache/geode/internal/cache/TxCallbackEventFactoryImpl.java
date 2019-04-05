@@ -118,7 +118,7 @@ public class TxCallbackEventFactoryImpl implements TxCallbackEventFactory {
             FilterProfile fp =
                 ((BucketRegion) internalRegion).getPartitionedRegion().getFilterProfile();
             if (fp != null) {
-              FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(filterRoutingInfo, retVal);
+              FilterRoutingInfo fri = fp.getFilterRoutingForClients(filterRoutingInfo, retVal);
               if (fri != null) {
                 retVal.setLocalFilterInfo(fri.getLocalFilterInfo());
               }

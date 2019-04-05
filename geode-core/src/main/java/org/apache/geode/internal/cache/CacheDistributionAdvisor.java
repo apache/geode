@@ -251,7 +251,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
   public FilterRoutingInfo adviseFilterRouting(CacheEvent event, Set cacheOpRecipients) {
     FilterProfile fp = ((LocalRegion) event.getRegion()).getFilterProfile();
     if (fp != null) {
-      return fp.getFilterRoutingInfoPart1(event, this.profiles, cacheOpRecipients);
+      return fp.getFilterRoutingInfoForPeers(event, this.profiles, cacheOpRecipients);
     }
     return null;
   }

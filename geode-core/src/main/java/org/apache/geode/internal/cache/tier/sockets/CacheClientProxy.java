@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -293,14 +292,6 @@ public class CacheClientProxy implements ClientSession {
 
   /** acceptor's setting for notifyBySubscription */
   private final boolean notifyBySubscription;
-
-  /** To queue the events arriving during message dispatcher initialization */
-  private volatile ConcurrentLinkedQueue<Conflatable> queuedEvents =
-      new ConcurrentLinkedQueue<Conflatable>();
-
-  private final Object queuedEventsSync = new Object();
-
-  private volatile boolean messageDispatcherInit = false;
 
   /**
    * A counter that keeps track of how many task iterations that have occurred since the last ping
@@ -1591,37 +1582,6 @@ public class CacheClientProxy implements ClientSession {
     }
 
     if (clientMessage.needsNoAuthorizationCheck() || postDeliverAuthCheckPassed(clientMessage)) {
-      // If dispatcher is getting initialized, add the event to temporary queue.
-      if (this.messageDispatcherInit) {
-        synchronized (this.queuedEventsSync) {
-          if (this.messageDispatcherInit) { // Check to see value did not changed while getting the
-                                            // synchronize lock.
-            if (logger.isDebugEnabled()) {
-              logger.debug(
-                  "Message dispatcher for proxy {} is getting initialized. Adding message to the queuedEvents.",
-                  this);
-            }
-
-            if (conflatable instanceof HAEventWrapper) {
-              HAEventWrapper haEventWrapper = (HAEventWrapper) conflatable;
-              haEventWrapper.incrementPutInProgressCounter();
-              if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "Incremented PutInProgressCounter on HAEventWrapper with Event ID hash code: "
-                        + haEventWrapper.hashCode()
-                        + "; System ID hash code: "
-                        + System.identityHashCode(haEventWrapper) + "; Wrapper details: "
-                        + haEventWrapper);
-              }
-            }
-
-            this.queuedEvents.add(conflatable);
-
-            return;
-          }
-        }
-      }
-
       if (this._messageDispatcher != null) {
         this._messageDispatcher.enqueueMessage(conflatable);
       } else {
@@ -1730,7 +1690,6 @@ public class CacheClientProxy implements ClientSession {
    *
    */
   public void initializeMessageDispatcher() throws CacheException {
-    this.messageDispatcherInit = true; // Initialization process.
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Initializing message dispatcher with capacity of {} entries", this,
@@ -1739,55 +1698,14 @@ public class CacheClientProxy implements ClientSession {
       String name = "Client Message Dispatcher for " + getProxyID().getDistributedMember()
           + (isDurable() ? " (" + getDurableId() + ")" : "");
       this._messageDispatcher = createMessageDispatcher(name);
-
-      // Fix for 41375 - drain as many of the queued events
-      // as we can without synchronization.
-      if (logger.isDebugEnabled()) {
-        logger.debug("{} draining {} events from init queue into intialized queue", this,
-            this.queuedEvents.size());
-      }
-
-      drainQueuedEvents(false);
-
-      // Now finish emptying the queue with synchronization to make
-      // sure we don't miss any events.
-      synchronized (this.queuedEventsSync) {
-        drainQueuedEvents(true);
-
-        this.messageDispatcherInit = false; // Done initialization.
-      }
-    } finally {
-      if (this.messageDispatcherInit) { // If its not successfully completed.
-        this._statistics.close();
-      }
+    } catch (final Exception ex) {
+      this._statistics.close();
+      throw ex;
     }
   }
 
   MessageDispatcher createMessageDispatcher(String name) {
     return new MessageDispatcher(this, name);
-  }
-
-  private void drainQueuedEvents(boolean withSynchronization) {
-    Conflatable nextEvent;
-    while ((nextEvent = queuedEvents.poll()) != null) {
-      if (logger.isDebugEnabled()) {
-        if (nextEvent instanceof HAEventWrapper) {
-          logger.debug(
-              "Draining events queued during message dispatcher initialization "
-                  + (withSynchronization ? "with" : "without")
-                  + " synchronization. Event ID hash code: "
-                  + nextEvent.hashCode()
-                  + "; System ID hash code: " + System.identityHashCode(nextEvent)
-                  + "; Wrapper details: " + nextEvent);
-        }
-      }
-
-      this._messageDispatcher.enqueueMessage(nextEvent);
-
-      if (nextEvent instanceof HAEventWrapper) {
-        ((HAEventWrapper) nextEvent).decrementPutInProgressCounter();
-      }
-    }
   }
 
   protected void startOrResumeMessageDispatcher(boolean processedMarker) {

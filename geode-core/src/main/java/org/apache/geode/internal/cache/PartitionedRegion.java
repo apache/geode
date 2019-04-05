@@ -7683,10 +7683,10 @@ public class PartitionedRegion extends LocalRegion
     // DistributedCacheOperation.distribute().
     if (!isUsedForMetaRegion() && !isUsedForPartitionedRegionAdmin()
         && !isUsedForPartitionedRegionBucket() && !isUsedForParallelGatewaySenderQueue()) {
-      FilterRoutingInfo localCqFrInfo = getFilterProfile().getFilterRoutingInfoPart1(event,
+      FilterRoutingInfo localCqFrInfo = getFilterProfile().getFilterRoutingInfoForPeers(event,
           FilterProfile.NO_PROFILES, Collections.emptySet());
       FilterRoutingInfo localCqInterestFrInfo =
-          getFilterProfile().getFilterRoutingInfoPart2(localCqFrInfo, event);
+          getFilterProfile().getFilterRoutingForClients(localCqFrInfo, event);
       if (localCqInterestFrInfo != null) {
         event.setLocalFilterInfo(localCqInterestFrInfo.getLocalFilterInfo());
       }

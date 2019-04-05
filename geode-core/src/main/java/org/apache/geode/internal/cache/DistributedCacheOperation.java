@@ -842,11 +842,11 @@ public abstract class DistributedCacheOperation {
    * @return the filter routing computed for distribution to clients of this process
    */
   protected FilterInfo getLocalFilterRouting(FilterRoutingInfo frInfo) {
-    FilterProfile fp = getRegion().getFilterProfile();
+    final FilterProfile fp = getRegion().getFilterProfile();
     if (fp == null) {
       return null;
     }
-    FilterRoutingInfo fri = fp.getFilterRoutingInfoPart2(frInfo, this.event);
+    FilterRoutingInfo fri = fp.getFilterRoutingForClients(frInfo, this.event);
     if (fri == null) {
       return null;
     }

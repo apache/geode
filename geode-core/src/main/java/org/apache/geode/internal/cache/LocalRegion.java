@@ -5887,7 +5887,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * Warning: Even if you comment out bucket condition in following method, getLocalRoutingInfo()
    * does NOT process CQs for bucket regions internally. See
-   * {@link FilterProfile#getFilterRoutingInfoPart2(FilterRoutingInfo, CacheEvent)} .
+   * {@link FilterProfile#getFilterRoutingForClients(FilterRoutingInfo, CacheEvent)} .
    */
   void generateLocalFilterRouting(InternalCacheEvent event) {
     boolean isEntryEvent = event.getOperation().isEntry();

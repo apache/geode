@@ -1044,7 +1044,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /** compute local routing information */
   public FilterInfo getLocalFilterRouting(CacheEvent event) {
-    FilterRoutingInfo fri = getFilterRoutingInfoPart2(null, event);
+    FilterRoutingInfo fri = getFilterRoutingForClients(null, event);
     if (fri != null) {
       return fri.getLocalFilterInfo();
     } else {
@@ -1061,9 +1061,9 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /**
    * Compute the full routing information for the given set of peers. This will not include local
-   * routing information from interest processing. That is done by getFilterRoutingInfoPart2
+   * routing information from interest processing. That is done by getFilterRoutingForClients
    */
-  public FilterRoutingInfo getFilterRoutingInfoPart1(CacheEvent event, Profile[] peerProfiles,
+  public FilterRoutingInfo getFilterRoutingInfoForPeers(CacheEvent event, Profile[] peerProfiles,
       Set cacheOpRecipients) {
     // early out if there are no cache servers in the system
     boolean anyServers = false;
@@ -1102,15 +1102,16 @@ public class FilterProfile implements DataSerializableFixedID {
 
 
   /**
-   * get local routing information
+   * Add routing info for clients with matching CQs or registered interest to the provided
+   * filter routing info parameter.
    *
-   * @param part1Info routing information for peers, if any
+   * @param filterRoutingInfo routing information for peers, if any
    * @param event the event to process
    * @return routing information for clients connected to this server
    */
-  public FilterRoutingInfo getFilterRoutingInfoPart2(FilterRoutingInfo part1Info,
+  public FilterRoutingInfo getFilterRoutingForClients(FilterRoutingInfo filterRoutingInfo,
       CacheEvent event) {
-    FilterRoutingInfo result = part1Info;
+    FilterRoutingInfo result = filterRoutingInfo;
     if (localProfile.hasCacheServer) {
       // bug #45520 - CQ events arriving out of order causes result set
       // inconsistency, so don't compute routings for events in conflict
