@@ -5440,6 +5440,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           basicInvalidate(event, true, forceNewEntry);
           if (event.isConcurrencyConflict()) {
             // bug #45520 - we must throw this for the CacheClientUpdater
+            logger.info(
+                "NABA::: serverId = [" + serverId + "], key = [" + key + "], callbackArgument = ["
+                    + callbackArgument + "], processedMarker = [" + processedMarker
+                    + "], eventID = [" + eventID + "], versionTag = [" + versionTag + "]");
             throw new ConcurrentCacheModificationException();
           }
         } else {
@@ -5489,6 +5493,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         if (processedMarker) {
           basicDestroy(event, false, null);
           if (event.isConcurrencyConflict()) {
+            logger.info(
+                "NABA ::: serverId = [" + serverId + "], key = [" + key + "], callbackArgument = ["
+                    + callbackArgument + "], processedMarker = [" + processedMarker
+                    + "], eventID = [" + eventID + "], versionTag = [" + versionTag + "]");
             // bug #45520 - we must throw an exception for CacheClientUpdater
             throw new ConcurrentCacheModificationException();
           }

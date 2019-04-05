@@ -1494,6 +1494,13 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
             }
             r.getCachePerfStats().incConflatedEventsCount();
             persistConflictingTag(r, tag);
+            logger.info(
+                "NABA ::: cacheEvent = [" + cacheEvent + "], conflictCheck = [" + conflictCheck
+                    + "]");
+            logger.info("NABA ::: stampDsId =" + stampDsId + " tagDsId=" + tagDsId + " stampTime="
+                + stampTime + " tagTime=" + tagTime + " stamp.getDistributedSystemId()"
+                + stamp.getDistributedSystemId() + " tag.getDistributedSystemId()="
+                + tag.getDistributedSystemId());
             throw new ConcurrentCacheModificationException("conflicting event detected");
           }
         }
@@ -1582,6 +1589,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
                 .append("\nThough in conflict the tag timestamp was more recent and was recorded.");
           }
         }
+        logger.info("NABA :: region = [" + region + "], tag = [" + tag + "], isTombstoneFromGII = ["
+            + isTombstoneFromGII + "], deltaCheck = [" + deltaCheck + "], dmId = [" + dmId
+            + "], sender = [" + sender + "], checkForConflict = [" + checkForConflict + "]");
         throw e;
       } finally {
         if (verbose != null) {
@@ -1715,6 +1725,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     }
 
     if (!apply && throwex) {
+      logger.info("NABA::: region = [" + region + "], stamp = [" + stamp + "], tag = [" + tag
+          + "], isTombstoneFromGII = [" + isTombstoneFromGII + "], deltaCheck = [" + deltaCheck
+          + "], dmId = [" + dmId + "], sender = [" + sender + "], verbose = [" + verbose + "]");
       region.getCachePerfStats().incConflatedEventsCount();
       persistConflictingTag(region, tag);
       throw new ConcurrentCacheModificationException();
@@ -1825,6 +1838,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       if (tagTime >= stampTime) {
         return true;
       } else {
+        logger.info("NABA :: cacheEvent = [" + cacheEvent + "]");
+        logger.info("NABA :: stampDsid=" + stampDsid + " tagDsid=" + tagDsid + " tagTime=" + tagTime
+            + " stampTime=" + stampTime);
         throw new ConcurrentCacheModificationException("conflicting WAN event detected");
       }
     }
@@ -1888,6 +1904,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
           if (isDebugEnabled) {
             logger.debug("conflict resolver rejected the event for {}", event.getKey());
           }
+          logger.info("NABA :: cacheEvent = [" + cacheEvent + "]");
+          logger.info("NABA :: stampDsid=" + stampDsid + " tagDsid=" + tagDsid + " tagTime="
+              + tagTime + " stampTime=" + stampTime);
           throw new ConcurrentCacheModificationException(
               "WAN conflict resolver rejected the operation");
         }
@@ -1920,6 +1939,9 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     if (isDebugEnabled) {
       logger.debug("disallowing event for {}", event.getKey());
     }
+    logger.info("NABA :: cacheEvent = [" + cacheEvent + "]");
+    logger.info("NABA :: stampDsid=" + stampDsid + " tagDsid=" + tagDsid + " tagTime=" + tagTime
+        + " stampTime=" + stampTime);
     throw new ConcurrentCacheModificationException("conflicting WAN event detected");
   }
 
