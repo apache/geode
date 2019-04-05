@@ -62,7 +62,7 @@ public class ManagementRequestLoggingDUnitTest {
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setType(RegionType.REPLICATE.REPLICATE);
+    regionConfig.setType(RegionType.REPLICATE);
 
     ClusterManagementResult result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();

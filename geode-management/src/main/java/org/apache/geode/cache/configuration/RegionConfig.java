@@ -368,8 +368,8 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
   }
 
   public void setType(String regionType) {
-    this.type = regionType;
-    if (type != null) {
+    if (regionType != null) {
+      this.type = regionType.toUpperCase();
       setShortcutAttributes();
     }
   }
