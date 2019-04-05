@@ -826,7 +826,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     return remotePrimaryFPAs;
   }
 
-  public Set adviseAllPRNodes() {
+  public Set<InternalDistributedMember> adviseAllPRNodes() {
     return adviseFilter(profile -> {
       CacheProfile prof = (CacheProfile) profile;
       return prof.isPartitioned;
