@@ -25,7 +25,7 @@ Sockets use file descriptors and the operating system’s view of your applicati
 
 ## <a id="socket_comm__section_31B4EFAD6F384AB1BEBCF148D3DEA514" class="no-quick-link"></a>Socket Sharing
 
-You can configure socket sharing for peer-to-peer and client-to-server connections:
+You can configure socket sharing for peer-to-peer:
 
 - **Peer-to-peer**. You can configure whether your members share sockets both at the application
 level and at the thread level. To enable sharing at the application level, set the
@@ -34,7 +34,6 @@ recommend that you set `conserve-sockets` to `false`.
 
     At the thread level, developers can override this setting by using the DistributedSystem API method `setThreadsSocketPolicy`. You might want to enable socket sharing at the application level and then have threads that do a lot of cache work take sole ownership of their sockets. Make sure to program these threads to release their sockets as soon as possible using the `releaseThreadsSockets` method, rather than waiting for a timeout or thread death.
 
--   **Client**. You can configure whether your clients share their socket connections to servers with the pool setting `thread-local-connections`. There is no thread override for this setting. All threads either have their own socket or they all share.
 
 ## <a id="socket_comm__section_6189D4E5E14F47E7882354603FBCE471" class="no-quick-link"></a>Socket Lease Time
 
