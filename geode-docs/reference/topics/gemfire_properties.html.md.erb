@@ -215,7 +215,7 @@ This setting must be the same for every member of a given cluster and unique to 
 </tr>
 <tr class="odd">
 <td>geode.disallow-internal-messages-without-credentials</td>
-<td>A boolean that enables internal message validation when true. Set this system property to true on the `gfsh start server` command line when restarting servers to work with upgraded clients.
+<td>A boolean that enables internal message validation when true. Set this system property to true on the <code>gfsh start server</code> command line when restarting servers to work with upgraded clients.
 </td>
 <td>S</td>
 <td>false</td>
@@ -746,6 +746,30 @@ If you only specify the port, the address assigned to the member is used for the
 <p>Valid values are in the range 0..65535.</p></td>
 <td>S, L</td>
 <td>0</td>
+</tr>
+<tr>
+<td>thread-monitor-enabled</td>
+<td><p>
+Boolean. When true, enables monitoring of <%=vars.product_name%>-created operational threads. Informational messages are written to the log file.
+</p></td>
+<td>S</td>
+<td>true</td>
+</tr>
+<tr>
+<td>thread-monitor-interval-ms</td>
+<td><p>
+The time interval (in milliseconds) with which thread monitoring is scheduled to run.
+</p></td>
+<td>S</td>
+<td>60000</td>
+</tr>
+<tr>
+<td>thread-monitor-time-limit-ms</td>
+<td><p>
+The time period (in milliseconds) after which the monitored thread is considered to be stuck.
+</p></td>
+<td>S</td>
+<td>30000</td>
 </tr>
 <tr class="even">
 <td>tombstone-gc-threshold</td>
