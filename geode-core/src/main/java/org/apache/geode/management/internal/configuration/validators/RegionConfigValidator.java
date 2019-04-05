@@ -15,10 +15,10 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.RegionNameValidation;
 
 public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
@@ -33,7 +33,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     RegionNameValidation.validate(config.getName());
 
     if (config.getType() == null) {
-      RegionShortcut defaultRegion = RegionShortcut.PARTITION;
+      RegionType defaultRegion = RegionType.PARTITION;
       config.setType(defaultRegion);
     }
   }

@@ -25,10 +25,10 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -63,7 +63,7 @@ public class RegionAPIDUnitTest {
     locator.invoke(() -> {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
-      config.setType(RegionShortcut.PARTITION);
+      config.setType(RegionType.PARTITION);
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();
@@ -88,7 +88,7 @@ public class RegionAPIDUnitTest {
     locator.invoke(() -> {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
-      config.setType(RegionShortcut.REPLICATE);
+      config.setType(RegionType.REPLICATE);
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config, "cluster");
       assertThat(result.isSuccessful()).isTrue();

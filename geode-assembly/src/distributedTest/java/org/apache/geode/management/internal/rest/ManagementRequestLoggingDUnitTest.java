@@ -29,8 +29,8 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
@@ -62,7 +62,7 @@ public class ManagementRequestLoggingDUnitTest {
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setType(RegionShortcut.REPLICATE);
+    regionConfig.setType(RegionType.REPLICATE);
 
     ClusterManagementResult result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
