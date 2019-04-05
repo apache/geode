@@ -484,12 +484,6 @@ public class OpExecutorImpl implements ExecutablePool {
     }
   }
 
-  @Override
-  @Deprecated
-  public void releaseThreadLocalConnection() {
-    // no-op
-  }
-
   /**
    * Used by GatewayBatchOp
    */

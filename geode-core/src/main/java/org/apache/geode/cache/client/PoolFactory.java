@@ -137,6 +137,18 @@ public interface PoolFactory {
   int DEFAULT_STATISTIC_INTERVAL = -1;
 
   /**
+   * The default value for whether connections should have affinity to the thread that last used
+   * them.
+   * <p>
+   * Current value: <code>false</code>.
+   *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
+   */
+  @Deprecated
+  boolean DEFAULT_THREAD_LOCAL_CONNECTIONS = false;
+
+  /**
    * The default value for whether to establish a server to client subscription.
    * <p>
    * Current value: <code>false</code>.

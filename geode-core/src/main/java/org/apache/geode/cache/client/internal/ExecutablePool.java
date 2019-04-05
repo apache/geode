@@ -119,15 +119,6 @@ public interface ExecutablePool {
   RegisterInterestTracker getRITracker();
 
   /**
-   * Release the connection held by the calling thread if we're using thread local connections
-   *
-   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
-   *             major release.
-   */
-  @Deprecated
-  void releaseThreadLocalConnection();
-
-  /**
    * The calling thread will connect to only one server for executing all ops until it calls
    * {@link #releaseServerAffinity()}
    *

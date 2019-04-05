@@ -360,7 +360,7 @@ public class PoolImpl implements InternalPool {
   @Override
   @Deprecated
   public void releaseThreadLocalConnection() {
-    executor.releaseThreadLocalConnection();
+    // no-op
   }
 
   @Override
@@ -373,11 +373,6 @@ public class PoolImpl implements InternalPool {
     executor.releaseServerAffinity();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.Pool#getName()
-   */
   @Override
   public String getName() {
     return this.name;
