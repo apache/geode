@@ -19,20 +19,26 @@ import java.util.HashSet;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.metrics.MetricsSession;
 
 public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecycleListener {
+  private static final Logger logger = LogService.getLogger();
+
   private final CacheLifecycle cacheLifecycle;
   private final CompositeMeterRegistry registry;
   private final Collection<MetricsPublishingService> metricsPublishingServices;
+  private final ErrorLogger errorLogger;
 
   public static Builder builder() {
     return new Builder();
@@ -41,9 +47,16 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
   @VisibleForTesting
   CacheLifecycleMetricsSession(CacheLifecycle cacheLifecycle, CompositeMeterRegistry registry,
       Collection<MetricsPublishingService> metricsPublishingServices) {
+    this(cacheLifecycle, registry, metricsPublishingServices, logger::error);
+  }
+
+  @VisibleForTesting
+  CacheLifecycleMetricsSession(CacheLifecycle cacheLifecycle, CompositeMeterRegistry registry,
+      Collection<MetricsPublishingService> metricsPublishingServices, ErrorLogger errorLogger) {
     this.cacheLifecycle = cacheLifecycle;
     this.registry = registry;
     this.metricsPublishingServices = metricsPublishingServices;
+    this.errorLogger = errorLogger;
   }
 
   @Override
@@ -59,7 +72,14 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
   @Override
   public void cacheCreated(InternalCache cache) {
     for (MetricsPublishingService metricsPublishingService : metricsPublishingServices) {
-      metricsPublishingService.start(this);
+      try {
+        metricsPublishingService.start(this);
+      } catch (VirtualMachineError e) {
+        SystemFailure.initiateFailure(e);
+        throw e;
+      } catch (Error | RuntimeException e) {
+        logError(errorLogger, metricsPublishingService.getClass().getName(), e);
+      }
     }
   }
 
@@ -68,7 +88,14 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
     cacheLifecycle.removeListener(this);
 
     for (MetricsPublishingService metricsPublishingService : metricsPublishingServices) {
-      metricsPublishingService.stop();
+      try {
+        metricsPublishingService.stop();
+      } catch (VirtualMachineError e) {
+        SystemFailure.initiateFailure(e);
+        throw e;
+      } catch (Error | RuntimeException e) {
+        logError(errorLogger, metricsPublishingService.getClass().getName(), e);
+      }
     }
 
     for (MeterRegistry downstream : new HashSet<>(registry.getRegistries())) {
@@ -84,6 +111,15 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
   @VisibleForTesting
   Collection<MetricsPublishingService> metricsPublishingServices() {
     return metricsPublishingServices;
+  }
+
+  private static void logError(ErrorLogger errorLogger, String className, Throwable throwable) {
+    errorLogger.logError("Error invoking start for MetricsPublishingService implementation {}",
+        className, throwable);
+  }
+
+  interface ErrorLogger {
+    void logError(String message, String className, Throwable throwable);
   }
 
   public static class Builder {
