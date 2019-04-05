@@ -433,10 +433,8 @@ public class InternalCacheBuilder {
   @VisibleForTesting
   interface InternalCacheConstructor {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
-        InternalDistributedSystem internalDistributedSystem,
-        CacheConfig cacheConfig,
-        boolean useAsyncEventListeners, TypeRegistry typeRegistry,
-        MeterRegistry meterRegistry,
+        InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
+        boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
         Set<MeterRegistry> addedMeterSubregistries);
   }
 
