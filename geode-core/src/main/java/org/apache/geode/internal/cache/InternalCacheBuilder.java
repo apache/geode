@@ -121,7 +121,10 @@ public class InternalCacheBuilder {
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
-        GemFireCacheImpl::new);
+        (isClient1, poolFactory1, internalDistributedSystem, cacheConfig1, useAsyncEventListeners1,
+            typeRegistry1, meterRegistry, addedMeterSubregistries) -> new GemFireCacheImpl(
+                isClient1, poolFactory1, internalDistributedSystem, cacheConfig1,
+                useAsyncEventListeners1, typeRegistry1, meterRegistry, addedMeterSubregistries));
   }
 
   @VisibleForTesting
@@ -209,7 +212,8 @@ public class InternalCacheBuilder {
 
             cache =
                 internalCacheConstructor.construct(isClient, poolFactory, internalDistributedSystem,
-                    cacheConfig, useAsyncEventListeners, typeRegistry, compositeMeterRegistry);
+                    cacheConfig, useAsyncEventListeners, typeRegistry, compositeMeterRegistry,
+                    meterSubregistries);
 
             internalDistributedSystem.setCache(cache);
             cache.initialize();
@@ -429,8 +433,11 @@ public class InternalCacheBuilder {
   @VisibleForTesting
   interface InternalCacheConstructor {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
-        InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-        boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry);
+        InternalDistributedSystem internalDistributedSystem,
+        CacheConfig cacheConfig,
+        boolean useAsyncEventListeners, TypeRegistry typeRegistry,
+        MeterRegistry meterRegistry,
+        Set<MeterRegistry> addedMeterSubregistries);
   }
 
   @VisibleForTesting
