@@ -358,12 +358,6 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
-  @Deprecated
-  public void releaseThreadLocalConnection() {
-    // no-op
-  }
-
-  @Override
   public void setupServerAffinity(boolean allowFailover) {
     executor.setupServerAffinity(allowFailover);
   }
@@ -426,12 +420,6 @@ public class PoolImpl implements InternalPool {
   @Override
   public int getSocketBufferSize() {
     return this.socketBufferSize;
-  }
-
-  @Override
-  @Deprecated
-  public boolean getThreadLocalConnections() {
-    return false;
   }
 
   @Override

@@ -144,7 +144,9 @@ public interface Pool {
    *             major release. Now always returns false.
    */
   @Deprecated
-  boolean getThreadLocalConnections();
+  default boolean getThreadLocalConnections() {
+    return false;
+  }
 
   /**
    * Returns the true if a server-to-client subscriptions are enabled on this pool.
@@ -258,7 +260,8 @@ public interface Pool {
    *             major release.
    */
   @Deprecated
-  void releaseThreadLocalConnection();
+  default void releaseThreadLocalConnection() {
+  }
 
   /**
    * Returns the QueryService for this Pool. The query operations performed using this QueryService

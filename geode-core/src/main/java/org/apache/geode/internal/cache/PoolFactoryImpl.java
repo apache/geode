@@ -484,12 +484,6 @@ public class PoolFactoryImpl implements PoolFactory {
     }
 
     @Override
-    @Deprecated
-    public boolean getThreadLocalConnections() {
-      return false;
-    }
-
-    @Override
     public int getReadTimeout() {
       return this.readTimeout;
     }
@@ -596,12 +590,6 @@ public class PoolFactoryImpl implements PoolFactory {
 
     @Override
     public boolean isDestroyed() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    @Deprecated
-    public void releaseThreadLocalConnection() {
       throw new UnsupportedOperationException();
     }
 

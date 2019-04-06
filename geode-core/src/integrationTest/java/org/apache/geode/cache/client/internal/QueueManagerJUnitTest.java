@@ -372,10 +372,6 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    @Deprecated
-    public void releaseThreadLocalConnection() {}
-
-    @Override
     public void destroy() {}
 
     @Override
@@ -489,12 +485,6 @@ public class QueueManagerJUnitTest {
     @Override
     public int getSocketBufferSize() {
       return 0;
-    }
-
-    @Override
-    @Deprecated
-    public boolean getThreadLocalConnections() {
-      return false;
     }
 
     @Override
