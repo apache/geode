@@ -25,5 +25,6 @@ public interface RestfulEndpoint {
    * @return e.g. /regions
    */
   @JsonIgnore
+  // @ApiModelProperty(hidden = true)
   String getEndpoint();
 }

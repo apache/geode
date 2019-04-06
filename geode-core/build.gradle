@@ -286,6 +286,10 @@ dependencies {
   runtimeOnly('org.apache.logging.log4j:log4j-jul') {
     ext.optional = true
   }
+  runtimeOnly('io.swagger:swagger-annotations') {
+    ext.optional = true
+  }
+  
   //Jetty is used by the http service, which is used for the developer and management rest APIs
   implementation('org.eclipse.jetty:jetty-webapp') {
     ext.optional = true

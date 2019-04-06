@@ -179,7 +179,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     String classPath = Arrays.stream(System.getProperty("java.class.path")
         .split(File.pathSeparator))
         .filter(x -> x.contains(module)
-            && (x.endsWith("/classes") || x.endsWith("/resources") || x.endsWith(".jar")))
+            && (x.endsWith("/classes") || x.endsWith("/classes/java/main")
+                || x.endsWith("/resources") || x.endsWith(".jar")))
         .collect(Collectors.joining(File.pathSeparator));
 
     assertThat(classPath).as("no classes found for module: " + module)

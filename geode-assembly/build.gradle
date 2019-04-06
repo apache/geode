@@ -202,6 +202,8 @@ dependencies {
   integrationTestCompile('org.apache.httpcomponents:httpclient')
   integrationTestCompile('javax.annotation:javax.annotation-api')
 
+  integrationTestRuntime('io.swagger:swagger-annotations')
+
 
   distributedTestCompile(project(':geode-core'))
   distributedTestCompile(project(':geode-dunit')){
@@ -220,15 +222,19 @@ dependencies {
     exclude group: 'org.apache.tomcat'
   }
   distributedTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
+  distributedTestRuntime('io.swagger:swagger-annotations')
 
 
-  acceptanceTestCompile(project(':geode-core'))
+  // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that
+  // end only add _test_ dependencies to acceptanceTestCompile/Runtime. All other product
+  // dependencies should be a part of geodeArchives and should not need to be added as individual
+  // dependencies here.
+  acceptanceTestCompile(configurations.geodeArchives)
   acceptanceTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
   acceptanceTestCompile(project(':geode-assembly:geode-assembly-test'))
-  acceptanceTestCompile('org.apache.httpcomponents:httpclient')
-  
+
   // This is used by 'gradle within gradle' tests. No need to bump this version; but if you do,
   // don't have it be the same version as the outer gradle version.
   acceptanceTestCompile('org.gradle:gradle-tooling-api:5.1.1')

@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -47,10 +48,13 @@ public class BasicRegionConfig implements CacheElement, RestfulEndpoint {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
+  @ApiModelProperty(hidden = true)
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
+
   @XmlAttribute(name = "name", required = true)
   protected String name;
+
   @XmlAttribute(name = "refid")
   protected String type;
 

@@ -363,6 +363,11 @@
         <version>1.7.25</version>
       </dependency>
       <dependency>
+        <groupId>io.swagger</groupId>
+        <artifactId>swagger-annotations</artifactId>
+        <version>1.5.20</version>
+      </dependency>
+      <dependency>
         <groupId>org.springframework.hateoas</groupId>
         <artifactId>spring-hateoas</artifactId>
         <version>0.25.0.RELEASE</version>

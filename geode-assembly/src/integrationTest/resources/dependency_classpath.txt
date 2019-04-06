@@ -80,3 +80,4 @@ slf4j-api-1.7.25.jar
 snappy-0.4.jar
 spring-core-4.3.20.RELEASE.jar
 spring-shell-1.2.0.RELEASE.jar
+swagger-annotations-1.5.20.jar
