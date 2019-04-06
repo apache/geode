@@ -16,13 +16,10 @@
  */
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
-// There exist peculiarities surrounding our handling of ClassLoaders and cross-module resources,
-// causing test failures if we apply the newer 'java-library' plugin.
 if (project.name.endsWith("geode-all-bom")) {
   // This anti-pattern is a workaround -- java-platform must be applied before java or java-library
   // to avoid conflicts over redefining certain configurations.
-  // A better solution, per GEODE-6383, would be to refactor this file's configuration to be
-  // "opt in", rather than having the root project inject this configuration into all projects.
+  // Evaluation as to whether java-platform should be applied at all is left to GEODE-6611.
   apply plugin: 'java-platform'
 }
 apply plugin: 'java-library'
