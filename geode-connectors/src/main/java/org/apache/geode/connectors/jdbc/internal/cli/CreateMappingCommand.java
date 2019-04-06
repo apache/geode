@@ -131,7 +131,7 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__CATALOG_NAME__HELP) String catalog,
       @CliOption(key = CREATE_MAPPING__SCHEMA_NAME,
           help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
-      @CliOption(key = {CliStrings.IFNOTEXISTS, CREATE_MAPPING__SKIPIFEXISTS},
+      @CliOption(key = CliStrings.IFNOTEXISTS,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
           help = CREATE_MAPPING__IFNOTEXISTS__HELP) boolean ifNotExists,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
@@ -305,8 +305,8 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private void checkForAEQIdForAccessor(String regionName, boolean synchronous,
       RegionConfig regionConfig)
       throws PreconditionException {
-    if (!synchronous) {
-      RegionAttributesType regionAttributesType = regionConfig.getRegionAttributes();
+    RegionAttributesType regionAttributesType = regionConfig.getRegionAttributes();
+    if (!synchronous && regionAttributesType != null) {
       boolean isAccessor = MappingCommandUtils.isAccessor(regionAttributesType);
       if (!isAccessor) {
         return;
