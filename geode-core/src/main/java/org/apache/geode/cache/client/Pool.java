@@ -260,8 +260,7 @@ public interface Pool {
    *             major release.
    */
   @Deprecated
-  default void releaseThreadLocalConnection() {
-  }
+  default void releaseThreadLocalConnection() {}
 
   /**
    * Returns the QueryService for this Pool. The query operations performed using this QueryService
