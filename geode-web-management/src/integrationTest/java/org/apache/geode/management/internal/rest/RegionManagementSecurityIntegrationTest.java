@@ -32,8 +32,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
@@ -53,7 +53,7 @@ public class RegionManagementSecurityIntegrationTest {
   public void before() throws JsonProcessingException {
     regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setType(RegionShortcut.REPLICATE);
+    regionConfig.setType(RegionType.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();
     json = mapper.writeValueAsString(regionConfig);
     context = new LocatorWebContext(webApplicationContext);
@@ -99,7 +99,7 @@ public class RegionManagementSecurityIntegrationTest {
         .andExpect(status().isInternalServerError())
         .andExpect(jsonPath("$.statusCode", is("ERROR")))
         .andExpect(jsonPath("$.statusMessage",
-            is("no members found to create cache element")));
+            is("no members found in cluster to create cache element")));
   }
 
 }

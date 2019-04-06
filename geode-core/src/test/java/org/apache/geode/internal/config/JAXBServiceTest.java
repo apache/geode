@@ -31,10 +31,10 @@ import javax.xml.bind.annotation.XmlType;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 
 
 public class JAXBServiceTest {
@@ -219,7 +219,7 @@ public class JAXBServiceTest {
 
     RegionConfig region = new RegionConfig();
     region.setName("testRegion");
-    region.setType(RegionShortcut.REPLICATE);
+    region.setType(RegionType.REPLICATE);
     cache.getRegions().add(region);
   }
 

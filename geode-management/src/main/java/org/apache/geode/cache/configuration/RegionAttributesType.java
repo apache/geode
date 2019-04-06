@@ -36,7 +36,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 
 
@@ -509,7 +508,7 @@ public class RegionAttributesType implements Serializable {
    * @param expiry could be null
    */
   public void updateRegionTimeToLive(Integer timeout,
-      ExpirationAction action, ClassName expiry) {
+      String action, ClassName expiry) {
     regionTimeToLive = ExpirationAttributesType.combine(regionTimeToLive,
         ExpirationAttributesType.generate(timeout, action, expiry));
   }
@@ -545,7 +544,7 @@ public class RegionAttributesType implements Serializable {
    * @param expiry could be null
    */
   public void updateRegionIdleTime(Integer timeout,
-      ExpirationAction action, ClassName expiry) {
+      String action, ClassName expiry) {
     regionIdleTime = ExpirationAttributesType.combine(regionIdleTime,
         ExpirationAttributesType.generate(timeout, action, expiry));
   }
@@ -582,7 +581,7 @@ public class RegionAttributesType implements Serializable {
    * @param expiry could be null
    */
   public void updateEntryTimeToLive(Integer timeout,
-      ExpirationAction action, ClassName expiry) {
+      String action, ClassName expiry) {
     entryTimeToLive = ExpirationAttributesType.combine(entryTimeToLive,
         ExpirationAttributesType.generate(timeout, action, expiry));
   }
@@ -618,7 +617,7 @@ public class RegionAttributesType implements Serializable {
    * @param expiry could be null
    */
   public void updateEntryIdleTime(Integer timeout,
-      ExpirationAction action, ClassName expiry) {
+      String action, ClassName expiry) {
     entryIdleTime = ExpirationAttributesType.combine(entryIdleTime,
         ExpirationAttributesType.generate(timeout, action, expiry));
   }
@@ -1771,11 +1770,11 @@ public class RegionAttributesType implements Serializable {
 
     public ExpirationAttributesType() {}
 
-    public ExpirationAttributesType(Integer timeout, ExpirationAction action, String expiry,
+    public ExpirationAttributesType(Integer timeout, String action, String expiry,
         Properties iniProps) {
       expirationAttributes.setTimeout(Objects.toString(timeout, null));
       if (action != null) {
-        expirationAttributes.setAction(action.toXmlString());
+        expirationAttributes.setAction(action);
       }
       if (expiry != null) {
         expirationAttributes.setCustomExpiry(new DeclarableType(expiry, iniProps));
@@ -1783,7 +1782,7 @@ public class RegionAttributesType implements Serializable {
     }
 
     public static ExpirationAttributesType generate(Integer timeout,
-        ExpirationAction action, ClassName expiry) {
+        String action, ClassName expiry) {
       if (timeout == null && action == null && expiry == null) {
         return null;
       }
@@ -1804,7 +1803,7 @@ public class RegionAttributesType implements Serializable {
 
       if (existing == null) {
         existing = new ExpirationAttributesType();
-        existing.setAction(ExpirationAction.INVALIDATE.toXmlString());
+        existing.setAction("invalidate");
         existing.setTimeout("0");
       }
 
@@ -1914,6 +1913,9 @@ public class RegionAttributesType implements Serializable {
     @XmlAttribute(name = "timeout", required = true)
     protected String timeout;
 
+    private static List<String> ALLOWED_ACTIONS =
+        Arrays.asList("invalidate", "destroy", "local-invalidate", "local-destroy");
+
     /**
      * Gets the value of the customExpiry property.
      *
@@ -1955,6 +1957,9 @@ public class RegionAttributesType implements Serializable {
      *
      */
     public void setAction(String value) {
+      if (!ALLOWED_ACTIONS.contains(value)) {
+        throw new IllegalArgumentException("invalid expiration action: " + value);
+      }
       this.action = value;
     }
 

@@ -53,11 +53,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 
 public class RegionAlterFunctionTest {
-
   private RegionAlterFunction function;
   private RegionConfig config;
   private RegionAttributesType regionAttributes;
-  private InternalCache internalCache;
   private InternalCacheForClientAccess cache;
   private FunctionContext<RegionConfig> context;
   private AttributesMutator mutator;
@@ -78,13 +76,14 @@ public class RegionAlterFunctionTest {
   }
 
   @Before
+  @SuppressWarnings("unchecked")
   public void setUp() throws Exception {
     function = spy(RegionAlterFunction.class);
     config = new RegionConfig();
     regionAttributes = new RegionAttributesType();
     config.setRegionAttributes(regionAttributes);
 
-    internalCache = mock(InternalCache.class);
+    InternalCache internalCache = mock(InternalCache.class);
     cache = mock(InternalCacheForClientAccess.class);
     mutator = mock(AttributesMutator.class);
     evictionMutator = mock(EvictionAttributesMutator.class);
@@ -101,7 +100,7 @@ public class RegionAlterFunctionTest {
   }
 
   @Test
-  public void executeFuntcionHappyPathRetunsStatusOK() {
+  public void executeFunctionHappyPathReturnsStatusOK() {
     doNothing().when(function).alterRegion(any(), any());
     config.setName("regionA");
     CliFunctionResult result = function.executeFunction(context);
@@ -242,6 +241,33 @@ public class RegionAlterFunctionTest {
 
     verify(mutator).removeGatewaySenderId("1");
     verify(mutator).removeGatewaySenderId("2");
+  }
+
+  @Test
+  public void updateWithAsynchronousEventQueues() {
+    regionAttributes.setAsyncEventQueueIds("queue2,queue3");
+    when(region.getAsyncEventQueueIds())
+        .thenReturn(new HashSet<>(Arrays.asList("queue1", "queue2")));
+    function.alterRegion(cache, config);
+
+    verify(mutator).removeAsyncEventQueueId("queue1");
+    verify(mutator, times(0)).removeAsyncEventQueueId("queue2");
+    verify(mutator).addAsyncEventQueueId("queue3");
+
+    // gatewaySender is left intact
+    verify(mutator, times(0)).addGatewaySenderId(any());
+    verify(mutator, times(0)).removeGatewaySenderId(any());
+  }
+
+  @Test
+  public void updateWithEmptyAsynchronousEventQueues() {
+    regionAttributes.setAsyncEventQueueIds("");
+    when(region.getAsyncEventQueueIds())
+        .thenReturn(new HashSet<>(Arrays.asList("queue1", "queue2")));
+    function.alterRegion(cache, config);
+
+    verify(mutator).removeAsyncEventQueueId("queue1");
+    verify(mutator).removeAsyncEventQueueId("queue2");
   }
 
   @Test

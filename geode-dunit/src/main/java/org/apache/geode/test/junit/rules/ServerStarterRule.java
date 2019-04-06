@@ -19,7 +19,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -54,14 +56,15 @@ import org.apache.geode.pdx.PdxSerializer;
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
   private transient InternalCache cache;
-  private transient CacheServer server;
+  private transient List<CacheServer> servers = new ArrayList<>();
   private int embeddedLocatorPort = -1;
   private boolean pdxPersistent = false;
   private boolean pdxPersistentUserSet = false;
   private PdxSerializer pdxSerializer = null;
   private boolean pdxReadSerialized = false;
   private boolean pdxReadSerializedUserSet = false;
-  private boolean noCacheServer = false;
+  // By default we start one server per jvm
+  private int serverCount = 1;
 
   private Map<String, RegionShortcut> regions = new HashMap<>();
 
@@ -72,7 +75,11 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   @Override
   public CacheServer getServer() {
-    return server;
+    return servers.get(0);
+  }
+
+  public List<CacheServer> getServers() {
+    return servers;
   }
 
   @Override
@@ -89,6 +96,9 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   @Override
   public void stopMember() {
+    for (CacheServer server : servers) {
+      server.stop();
+    }
     // make sure this cache is the one currently open. A server cache can be recreated due to
     // importing a new set of cluster configuration.
     cache = GemFireCacheImpl.getInstance();
@@ -100,7 +110,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
         cache = null;
       }
     }
-    server = null;
+    servers.clear();
   }
 
   public ServerStarterRule withPDXPersistent() {
@@ -124,7 +134,12 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
    * If your only needs a cache and does not need a server for clients to connect
    */
   public ServerStarterRule withNoCacheServer() {
-    this.noCacheServer = true;
+    this.serverCount = 0;
+    return this;
+  }
+
+  public ServerStarterRule withServerCount(int serverCount) {
+    this.serverCount = serverCount;
     return this;
   }
 
@@ -185,17 +200,28 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();
 
-    if (!noCacheServer) {
-      server = cache.addCacheServer();
+    if (serverCount > 1 && memberPort != 0) {
+      throw new IllegalStateException("can't specify a member port when you have multiple port");
+    }
+
+    for (int i = 0; i < serverCount; i++) {
+      CacheServer server = cache.addCacheServer();
       // memberPort is by default zero, which translates to "randomly select an available port,"
       // which is why it is updated after this try block
-      server.setPort(memberPort);
+      if (serverCount == 1) {
+        server.setPort(memberPort);
+      } else {
+        server.setPort(0);
+      }
       try {
         server.start();
       } catch (IOException e) {
         throw new RuntimeException("unable to start server", e);
       }
+      // if this member has multiple cache servers, the memberPort will be the last server's port
+      // started.
       memberPort = server.getPort();
+      servers.add(server);
     }
   }
 

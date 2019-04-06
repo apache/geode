@@ -48,7 +48,7 @@ public class RegionConfigRealizerTest {
   public void createsPartitionedInCache() {
     RegionConfig config = new RegionConfig();
     config.setName("regionName");
-    config.setType(RegionShortcut.PARTITION);
+    config.setType(RegionShortcut.PARTITION.name());
 
     realizer.create(config, cache);
 
@@ -63,7 +63,7 @@ public class RegionConfigRealizerTest {
   public void createsReplicateInCache() {
     RegionConfig config = new RegionConfig();
     config.setName("regionName");
-    config.setType(RegionShortcut.REPLICATE);
+    config.setType(RegionShortcut.REPLICATE.name());
 
     realizer.create(config, cache);
 

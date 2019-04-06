@@ -19,29 +19,19 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class SetVariableCommand extends OfflineGfshCommand {
   @CliCommand(value = {CliStrings.SET_VARIABLE}, help = CliStrings.SET_VARIABLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result setVariable(
+  public ResultModel setVariable(
       @CliOption(key = CliStrings.SET_VARIABLE__VAR, mandatory = true,
           help = CliStrings.SET_VARIABLE__VAR__HELP) String var,
       @CliOption(key = CliStrings.SET_VARIABLE__VALUE, mandatory = true,
           help = CliStrings.SET_VARIABLE__VALUE__HELP) String value) {
-    Result result;
-    try {
-      getGfsh().setEnvProperty(var, String.valueOf(value));
-      result =
-          ResultBuilder.createInfoResult("Value for variable " + var + " is now: " + value + ".");
-    } catch (IllegalArgumentException e) {
-      ErrorResultData errorResultData = ResultBuilder.createErrorResultData();
-      errorResultData.addLine(e.getMessage());
-      result = ResultBuilder.buildResult(errorResultData);
-    }
-    return result;
+
+    getGfsh().setEnvProperty(var, String.valueOf(value));
+    return ResultModel.createInfo("Value for variable " + var + " is now: " + value + ".");
   }
 }
