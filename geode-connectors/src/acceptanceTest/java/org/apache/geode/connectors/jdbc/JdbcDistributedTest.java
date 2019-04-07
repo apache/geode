@@ -23,11 +23,13 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,9 +37,14 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
+import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
@@ -323,8 +330,31 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTable();
     createPartitionRegionUsingGfsh();
     createJdbcDataSource();
-    createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
-    startupRule.startServerVM(3, x -> x.withConnectionToLocator(locator.getPort()));
+    createMapping(REGION_NAME, DATA_SOURCE_NAME, false);
+    MemberVM server5 =
+        startupRule.startServerVM(3, x -> x.withConnectionToLocator(locator.getPort()));
+    server5.invoke(() -> {
+      RegionMapping mapping =
+          ClusterStartupRule.getCache().getService(JdbcConnectorService.class)
+              .getMappingForRegion(REGION_NAME);
+      assertThat(mapping.getDataSourceName()).isEqualTo(DATA_SOURCE_NAME);
+      assertThat(mapping.getPdxName()).isEqualTo(Employee.class.getName());
+      assertThat(mapping.getTableName()).isEqualTo(TABLE_NAME);
+      List<FieldMapping> fieldMappings = mapping.getFieldMappings();
+      assertThat(fieldMappings.size()).isEqualTo(3);
+      assertThat(fieldMappings.get(0)).isEqualTo(
+          new FieldMapping("name", FieldType.STRING.name(), "name", JDBCType.VARCHAR.name(),
+              true));
+      assertThat(fieldMappings.get(1)).isEqualTo(
+          new FieldMapping("id", FieldType.STRING.name(), "id", JDBCType.VARCHAR.name(), false));
+      assertThat(fieldMappings.get(2)).isEqualTo(
+          new FieldMapping("age", FieldType.INT.name(), "age", JDBCType.INTEGER.name(), false));
+
+      String queueName = MappingCommandUtils.createAsyncEventQueueName(REGION_NAME);
+      AsyncEventQueue queue = ClusterStartupRule.getCache().getAsyncEventQueue(queueName);
+      assertThat(queue).isNotNull();
+      assertThat(queue.getAsyncEventListener()).isInstanceOf(JdbcAsyncWriter.class);
+    });
   }
 
   @Test
@@ -751,7 +781,8 @@ public abstract class JdbcDistributedTest implements Serializable {
 
   private void createPartitionRegionUsingGfsh() {
     StringBuffer createRegionCmd = new StringBuffer();
-    createRegionCmd.append("create region --name=" + REGION_NAME + " --type=PARTITION");
+    createRegionCmd
+        .append("create region --name=" + REGION_NAME + " --type=PARTITION --redundant-copies=1");
     gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
   }
 
@@ -768,6 +799,7 @@ public abstract class JdbcDistributedTest implements Serializable {
       boolean synchronous, String ids) {
     final String commandStr = "create jdbc-mapping --region=" + regionName
         + " --data-source=" + connectionName
+        + " --table=" + TABLE_NAME
         + " --synchronous=" + synchronous
         + " --pdx-name=" + pdxClassName
         + ((ids != null) ? (" --id=" + ids) : "");
