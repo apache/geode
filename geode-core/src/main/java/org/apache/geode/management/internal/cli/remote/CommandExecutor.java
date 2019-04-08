@@ -27,6 +27,7 @@ import org.springframework.util.ReflectionUtils;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
@@ -59,6 +60,11 @@ public class CommandExecutor {
 
   // used by the GfshParserRule to pass in a mock command
   public Object execute(Object command, GfshParseResult parseResult) {
+    String userInput = parseResult.getUserInput();
+    if (userInput != null) {
+      logger.info("Executing command: " + ArgumentRedactor.redact(userInput));
+    }
+
     try {
       Object result = invokeCommand(command, parseResult);
 
