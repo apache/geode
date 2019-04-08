@@ -440,7 +440,8 @@ public class CacheClientNotifier {
 
   private void drainEventsReceivedWhileInitializingClient(final ClientProxyMembershipID proxyID,
       final Queue<InternalCacheEvent> eventsReceivedWhileInitializingClient) {
-    for (final InternalCacheEvent queuedEvent : eventsReceivedWhileInitializingClient) {
+    InternalCacheEvent queuedEvent;
+    while ((queuedEvent = eventsReceivedWhileInitializingClient.poll()) != null) {
       logger.info("RYGUY: Draining event queued during initialization: " + queuedEvent
           + " for client " + proxyID);
 
