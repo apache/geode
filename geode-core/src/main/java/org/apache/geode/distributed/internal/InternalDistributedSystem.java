@@ -43,6 +43,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -2449,11 +2450,13 @@ public class InternalDistributedSystem extends DistributedSystem
     // reconnecting for lost roles then this will be null
     String cacheXML = null;
     List<CacheServerCreation> cacheServerCreation = null;
+    Set<MeterRegistry> meterRegistries = null;
 
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       cacheXML = cache.getCacheConfig().getCacheXMLDescription();
       cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
+      meterRegistries = cache.getMeterSubregistries();
     }
 
     DistributionConfig oldConfig = ids.getConfig();
@@ -2635,9 +2638,12 @@ public class InternalDistributedSystem extends DistributedSystem
             do {
               retry = false;
               try {
-                cache = new InternalCacheBuilder()
-                    .setCacheXMLDescription(cacheXML)
-                    .create(reconnectDS);
+                InternalCacheBuilder cacheBuilder = new InternalCacheBuilder()
+                    .setCacheXMLDescription(cacheXML);
+                for (MeterRegistry meterRegistry : meterRegistries) {
+                  cacheBuilder.addMeterSubregistry(meterRegistry);
+                }
+                cache = cacheBuilder.create(reconnectDS);
 
                 if (!cache.isClosed()) {
                   createAndStartCacheServers(cacheServerCreation, cache);

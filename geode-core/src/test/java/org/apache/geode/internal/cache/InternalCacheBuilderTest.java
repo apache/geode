@@ -74,7 +74,7 @@ public class InternalCacheBuilderTest {
         throw new AssertionError("throwing system constructor");
       };
   private static final InternalCacheConstructor THROWING_CACHE_CONSTRUCTOR =
-      (a, b, c, d, e, f, g) -> {
+      (a, b, c, d, e, f, g, addedMeterSubregistries) -> {
         throw new AssertionError("throwing cache constructor");
       };
 
@@ -191,7 +191,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), any(), any(),
-        anyBoolean(), any(), same(theCompositeMeterRegistry));
+        anyBoolean(), any(), same(theCompositeMeterRegistry), any());
   }
 
   @Test
@@ -244,7 +244,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(constructedSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -299,7 +299,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(singletonSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -351,7 +351,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(singletonSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -465,7 +465,7 @@ public class InternalCacheBuilderTest {
         .create(givenSystem);
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -517,7 +517,7 @@ public class InternalCacheBuilderTest {
         .create(givenSystem);
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -694,8 +694,9 @@ public class InternalCacheBuilderTest {
   private static InternalCacheConstructor constructorOf(InternalCache constructedCache) {
     InternalCacheConstructor constructor =
         mock(InternalCacheConstructor.class, "internal cache constructor");
-    when(constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any()))
-        .thenReturn(constructedCache);
+    when(
+        constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any(), any()))
+            .thenReturn(constructedCache);
     return constructor;
   }
 

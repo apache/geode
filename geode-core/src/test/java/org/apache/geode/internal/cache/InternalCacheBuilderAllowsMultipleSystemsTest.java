@@ -76,7 +76,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         throw new AssertionError("throwing system constructor");
       };
   private static final InternalCacheConstructor THROWING_CACHE_CONSTRUCTOR =
-      (a, b, c, d, e, f, g) -> {
+      (a, b, c, d, e, f, g, addedMeterSubregistries) -> {
         throw new AssertionError("throwing cache constructor");
       };
 
@@ -185,7 +185,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     internalCacheBuilder.create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(constructedSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
 
@@ -251,7 +251,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         .create(givenSystem);
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -304,7 +304,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         .create(givenSystem);
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -471,8 +471,9 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
   private static InternalCacheConstructor constructorOf(InternalCache constructedCache) {
     InternalCacheConstructor constructor =
         mock(InternalCacheConstructor.class, "internal cache constructor");
-    when(constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any()))
-        .thenReturn(constructedCache);
+    when(
+        constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any(), any()))
+            .thenReturn(constructedCache);
     return constructor;
   }
 

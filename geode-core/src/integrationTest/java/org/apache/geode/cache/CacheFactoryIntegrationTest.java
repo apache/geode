@@ -15,6 +15,7 @@
 package org.apache.geode.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
@@ -30,7 +31,9 @@ public class CacheFactoryIntegrationTest {
 
   @After
   public void tearDown() {
-    cache.close();
+    if (cache != null) {
+      cache.close();
+    }
   }
 
   @Test
@@ -59,6 +62,14 @@ public class CacheFactoryIntegrationTest {
 
     assertThat(getCacheMeterRegistry(cache).getRegistries())
         .containsExactlyInAnyOrder(firstMeterRegistry, secondMeterRegistry, thirdMeterRegistry);
+  }
+
+  @Test
+  public void addMeterSubregistryThrowsNullPointerExceptionIfTheSubregistryIsNull() {
+    Throwable thrown = catchThrowable(() -> cache = (InternalCache) new CacheFactory()
+        .addMeterSubregistry(null)
+        .create());
+    assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
 
   private CompositeMeterRegistry getCacheMeterRegistry(InternalCache cache) {
