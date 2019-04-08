@@ -270,6 +270,126 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
   }
 
   @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep01()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep02()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep03()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep04()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep05()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep06()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep07()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep08()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep09()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep10()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep11()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep12()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep13()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep14()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep15()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep16()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep17()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep18()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep19()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
+  public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations_rep20()
+      throws Exception {
+    multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations();
+  }
+
+  @Test
   public void multipleClientLongTransactionsCanFailoverMultipleTimesWithoutLosingOperations()
       throws Exception {
     // set up
