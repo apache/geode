@@ -772,16 +772,6 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-  private boolean incrementConnectionsProcessing() {
-    if (serverConnectionCollection.isTerminating) {
-      serverConnectionCollection.connectionsProcessing.incrementAndGet();
-
-      return true;
-    }
-
-    return false;
-  }
-
   void doNormalMessage() {
     if (serverConnectionCollection == null) {
       // return here if we haven't successfully completed handshake
@@ -791,7 +781,7 @@ public abstract class ServerConnection implements Runnable {
     }
     Message message;
     message = BaseCommand.readRequest(this);
-    if (!incrementConnectionsProcessing()) {
+    if (!serverConnectionCollection.incrementConnectionsProcessing()) {
       // Client is being disconnected, don't try to process message.
       this.processMessages = false;
       return;
