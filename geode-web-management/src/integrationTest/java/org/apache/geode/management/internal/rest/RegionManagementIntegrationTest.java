@@ -30,6 +30,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.BasicRegionConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -80,6 +81,19 @@ public class RegionManagementIntegrationTest {
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
         .containsStatusMessage("Type LOCAL is not supported in Management V2 API.");
   }
+
+  @Test
+  public void invalidConfigObject() throws Exception {
+    RegionConfig config = new RegionConfig();
+    config.setName("customers");
+    ClusterManagementResult result = client.create(config);
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusCode())
+        .isEqualTo(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
+    assertThat(result.getStatusMessage())
+        .contains("Use BasicRegionConfig to configure your region");
+  }
+
 
   @Test
   @WithMockUser

@@ -28,6 +28,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -50,5 +51,18 @@ public class RegionManagementController extends AbstractManagementController {
         clusterManagementService.create(regionConfig);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
+  @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
+  public ResponseEntity<ClusterManagementResult> listRegion(
+      @RequestParam(required = false) String id,
+      @RequestParam(required = false) String group) {
+    BasicRegionConfig filter = new BasicRegionConfig();
+    filter.setName(id);
+    filter.setGroup(group);
+    ClusterManagementResult result = clusterManagementService.list(filter);
+    return new ResponseEntity<>(result,
+        result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

@@ -45,12 +45,24 @@ public class CacheElementJsonMappingTest {
   }
 
   @Test
-  public void serializeRegion() throws Exception {
+  public void serializeBasicRegion() throws Exception {
     String json = mapper.writeValueAsString(region);
     System.out.println(json);
     assertThat(json).contains("class").contains("\"name\":\"test\"");
 
     BasicRegionConfig config = mapper.readValue(json, BasicRegionConfig.class);
+    assertThat(config.getName()).isEqualTo(region.getName());
+  }
+
+  @Test
+  public void serializeRegion() throws Exception {
+    RegionConfig value = new RegionConfig();
+    value.setName("test");
+    String json = mapper.writeValueAsString(value);
+    System.out.println(json);
+    assertThat(json).contains("class").contains("\"name\":\"test\"");
+
+    RegionConfig config = mapper.readValue(json, RegionConfig.class);
     assertThat(config.getName()).isEqualTo(region.getName());
   }
 
@@ -77,6 +89,8 @@ public class CacheElementJsonMappingTest {
 
     ClusterManagementResult result1 = mapper.readValue(json, ClusterManagementResult.class);
     assertThat(result1.getResult()).hasSize(2);
+    assertThat(result1.getResult().get(0)).isInstanceOf(BasicRegionConfig.class);
+    assertThat(result1.getResult().get(1)).isInstanceOf(MemberConfig.class);
   }
 
   @Test
@@ -84,5 +98,14 @@ public class CacheElementJsonMappingTest {
     String json = "{'name':'test'}";
     BasicRegionConfig config = mapper.readValue(json, BasicRegionConfig.class);
     assertThat(config.getName()).isEqualTo("test");
+  }
+
+  @Test
+  public void getGroup() throws Exception {
+    assertThat(region.getGroup()).isNull();
+    assertThat(region.getConfigGroup()).isEqualTo("cluster");
+
+    String json = mapper.writeValueAsString(region);
+    assertThat(json).contains("\"group\":null");
   }
 }

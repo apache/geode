@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.api;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -25,12 +26,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -66,6 +69,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // initialize the list of validators
     validators.put(BasicRegionConfig.class, new RegionConfigValidator(cache));
+    validators.put(RegionConfig.class, new RegionConfigValidator(cache));
   }
 
   @VisibleForTesting
@@ -79,7 +83,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   @Override
   public ClusterManagementResult create(CacheElement config) {
-    String group = config.getGroup();
+    String group = config.getConfigGroup();
 
     if (persistenceService == null) {
       return new ClusterManagementResult(false,
@@ -154,11 +158,33 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public ClusterManagementResult list(CacheElement filter) {
     ConfigurationManager manager = managers.get(filter.getClass());
-    List<CacheElement> listResults = manager.list(filter, null);
-
     ClusterManagementResult result = new ClusterManagementResult();
-    result.setResult(listResults);
 
+    if (filter instanceof MemberConfig) {
+      List<CacheElement> listResults = manager.list(filter, null);
+      result.setResult(listResults);
+      return result;
+    }
+
+    if (persistenceService == null) {
+      return new ClusterManagementResult(false,
+          "Cluster configuration service needs to be enabled");
+    }
+
+    List<CacheElement> elements = new ArrayList<>();
+    for (String group : persistenceService.getGroups()) {
+      if (StringUtils.isBlank(filter.getGroup()) || group.equals(filter.getConfigGroup())) {
+        CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+        List<CacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
+        // only set the group attribute when the config level is not in the cluster level
+        if (!group.equals("cluster")) {
+          listInGroup.stream().forEach(e -> e.setGroup(group));
+        }
+        elements.addAll(listInGroup);
+      }
+    }
+
+    result.setResult(elements);
     return result;
   }
 

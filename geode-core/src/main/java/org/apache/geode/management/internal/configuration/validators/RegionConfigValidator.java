@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.configuration.validators;
 import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionNameValidation;
@@ -33,11 +34,20 @@ public class RegionConfigValidator implements ConfigurationValidator<BasicRegion
   @Override
   public void validate(BasicRegionConfig config)
       throws IllegalArgumentException {
+    if (config instanceof RegionConfig) {
+      throw new IllegalArgumentException("Use BasicRegionConfig to configure your region.");
+    }
+
     if (config.getName() == null) {
       throw new IllegalArgumentException("Name of the region has to be specified.");
     }
 
     RegionNameValidation.validate(config.getName());
+
+    if ("cluster".equalsIgnoreCase(config.getGroup())) {
+      throw new IllegalArgumentException(
+          "cluster is a reserved group name. Do not use it for member groups.");
+    }
 
     if (config.getType() == null) {
       RegionType defaultRegion = RegionType.PARTITION;

@@ -53,7 +53,7 @@ public class MemberManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> listMembers(
-      @RequestParam(required = false) String id) {
+      @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
     MemberConfig filter = new MemberConfig();
     if (id != null) {
       filter.setId(id);

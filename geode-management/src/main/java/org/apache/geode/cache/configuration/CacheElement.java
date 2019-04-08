@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlTransient;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,6 +48,12 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
 
   @XmlTransient
   public String getGroup() {
+    return group;
+  }
+
+  @XmlTransient
+  @JsonIgnore
+  public String getConfigGroup() {
     if (StringUtils.isBlank(group)) {
       return "cluster";
     }

@@ -18,11 +18,14 @@
 package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 
 public class RegionConfigManager implements ConfigurationManager<BasicRegionConfig> {
 
@@ -44,7 +47,11 @@ public class RegionConfigManager implements ConfigurationManager<BasicRegionConf
   }
 
   @Override
-  public List<BasicRegionConfig> list(BasicRegionConfig config, CacheConfig existing) {
-    throw new NotImplementedException("Not implemented yet");
+  public List<RegionConfig> list(BasicRegionConfig filter, CacheConfig existing) {
+    if (StringUtils.isBlank(filter.getName())) {
+      return existing.getRegions();
+    }
+    return existing.getRegions().stream().filter(r -> filter.getName().equals(r.getName())).collect(
+        Collectors.toList());
   }
 }
