@@ -29,7 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -60,7 +60,7 @@ public class ManagementRequestLoggingDUnitTest {
       listAppender.start();
     });
 
-    RegionConfig regionConfig = new RegionConfig();
+    BasicRegionConfig regionConfig = new BasicRegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 

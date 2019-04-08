@@ -68,7 +68,8 @@ public class RegionConfigTest {
       RegionConfig config = new RegionConfig();
       config.setType(shortcut.name());
       config.setName(shortcut.name());
-      RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
+      RegionConfig masterRegion =
+          CacheElement.findElement(master.getRegions(), shortcut.name());
       assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
     }
   }

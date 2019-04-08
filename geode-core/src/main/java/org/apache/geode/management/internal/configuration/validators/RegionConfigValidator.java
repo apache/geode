@@ -15,16 +15,16 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.RegionNameValidation;
 
-public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
+public class RegionConfigValidator implements ConfigurationValidator<BasicRegionConfig> {
 
   @Override
-  public void validate(RegionConfig config)
+  public void validate(BasicRegionConfig config)
       throws IllegalArgumentException {
     if (config.getName() == null) {
       throw new IllegalArgumentException("Name of the region has to be specified.");
@@ -50,7 +50,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
   }
 
   @Override
-  public boolean exists(RegionConfig config, CacheConfig existing) {
+  public boolean exists(BasicRegionConfig config, CacheConfig existing) {
     return CacheElement.exists(existing.getRegions(), config.getId());
   }
 }

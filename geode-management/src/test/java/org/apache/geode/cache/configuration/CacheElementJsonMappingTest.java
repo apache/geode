@@ -32,7 +32,7 @@ public class CacheElementJsonMappingTest {
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   private static MemberConfig member;
-  private static RegionConfig region;
+  private static BasicRegionConfig region;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -40,7 +40,7 @@ public class CacheElementJsonMappingTest {
     member.setId("server");
     member.setPid("123");
 
-    region = new RegionConfig();
+    region = new BasicRegionConfig();
     region.setName("test");
   }
 
@@ -50,7 +50,7 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
     assertThat(json).contains("class").contains("\"name\":\"test\"");
 
-    RegionConfig config = mapper.readValue(json, RegionConfig.class);
+    BasicRegionConfig config = mapper.readValue(json, BasicRegionConfig.class);
     assertThat(config.getName()).isEqualTo(region.getName());
   }
 
@@ -82,7 +82,7 @@ public class CacheElementJsonMappingTest {
   @Test
   public void deserializeWithoutTypeInfo() throws Exception {
     String json = "{'name':'test'}";
-    RegionConfig config = mapper.readValue(json, RegionConfig.class);
+    BasicRegionConfig config = mapper.readValue(json, BasicRegionConfig.class);
     assertThat(config.getName()).isEqualTo("test");
   }
 }

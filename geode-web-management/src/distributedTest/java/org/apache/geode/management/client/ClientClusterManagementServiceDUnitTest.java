@@ -29,7 +29,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -65,7 +65,7 @@ public class ClientClusterManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void createRegion() {
-    RegionConfig region = new RegionConfig();
+    BasicRegionConfig region = new BasicRegionConfig();
     region.setName("customer");
     region.setType(RegionType.REPLICATE);
 
