@@ -17,6 +17,7 @@ package org.apache.geode.internal.metrics;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -233,7 +234,7 @@ public class CacheLifecycleMetricsSessionTest {
 
     metricsSession.cacheCreated(mock(InternalCache.class));
 
-    verify(errorLogger).logError(anyString(), same(theClassName), same(theException));
+    verify(errorLogger).logError(anyString(), eq("start"), same(theClassName), same(theException));
   }
 
   @Test
@@ -251,7 +252,7 @@ public class CacheLifecycleMetricsSessionTest {
 
     metricsSession.cacheCreated(mock(InternalCache.class));
 
-    verify(errorLogger).logError(anyString(), same(theClassName), same(theError));
+    verify(errorLogger).logError(anyString(), eq("start"), same(theClassName), same(theError));
   }
 
   @Test
@@ -269,7 +270,7 @@ public class CacheLifecycleMetricsSessionTest {
 
     metricsSession.cacheClosed(mock(InternalCache.class));
 
-    verify(errorLogger).logError(anyString(), same(theClassName), same(theException));
+    verify(errorLogger).logError(anyString(), eq("stop"), same(theClassName), same(theException));
   }
 
   @Test
@@ -287,7 +288,7 @@ public class CacheLifecycleMetricsSessionTest {
 
     metricsSession.cacheClosed(mock(InternalCache.class));
 
-    verify(errorLogger).logError(anyString(), same(theClassName), same(theError));
+    verify(errorLogger).logError(anyString(), eq("stop"), same(theClassName), same(theError));
   }
 
   private MetricsPublishingService metricsPublishingService(String name) {

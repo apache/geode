@@ -78,7 +78,7 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
         SystemFailure.initiateFailure(e);
         throw e;
       } catch (Error | RuntimeException e) {
-        logError(errorLogger, metricsPublishingService.getClass().getName(), e);
+        logError(errorLogger, "start", metricsPublishingService.getClass().getName(), e);
       }
     }
   }
@@ -94,7 +94,7 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
         SystemFailure.initiateFailure(e);
         throw e;
       } catch (Error | RuntimeException e) {
-        logError(errorLogger, metricsPublishingService.getClass().getName(), e);
+        logError(errorLogger, "stop", metricsPublishingService.getClass().getName(), e);
       }
     }
 
@@ -113,13 +113,14 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
     return metricsPublishingServices;
   }
 
-  private static void logError(ErrorLogger errorLogger, String className, Throwable throwable) {
-    errorLogger.logError("Error invoking start for MetricsPublishingService implementation {}",
-        className, throwable);
+  private static void logError(ErrorLogger errorLogger, String methodName, String className,
+      Throwable throwable) {
+    errorLogger.logError("Error invoking {} for MetricsPublishingService implementation {}",
+        methodName, className, throwable);
   }
 
   interface ErrorLogger {
-    void logError(String message, String className, Throwable throwable);
+    void logError(String message, String methodName, String className, Throwable throwable);
   }
 
   public static class Builder {
