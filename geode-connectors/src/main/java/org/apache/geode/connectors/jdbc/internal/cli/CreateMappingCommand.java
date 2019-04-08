@@ -101,7 +101,6 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private static final String CREATE_MAPPING__PDX_CLASS_FILE = MappingConstants.PDX_CLASS_FILE;
   private static final String CREATE_MAPPING__PDX_CLASS_FILE__HELP =
       "The file that contains the PDX class. It must be a file with the \".jar\" or \".class\" extension. By default, the PDX class must be on the server's classpath or gfsh deployed.";
-  public static final String CREATE_MAPPING__SKIPIFEXISTS = "skip-if-exists";
   public static final String CREATE_MAPPING__IFNOTEXISTS__HELP =
       "By default, an attempt to create a duplicate jdbc mapping is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error.";
   static final String IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE = "Skipping: ";
