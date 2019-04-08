@@ -37,6 +37,18 @@ buildscript {
 
 apply plugin: 'wrapper'
 apply plugin: 'nebula.facet'
+apply plugin: 'java-library'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+apply from: "${scriptDir}/lint.gradle"
+apply from: "${scriptDir}/resolve-dependencies.gradle"
+apply from: "${scriptDir}/sonar.gradle"
+apply from: "${scriptDir}/rat.gradle"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+compileJava.options.encoding = 'UTF-8'
 
 wrapper {
   gradleVersion = minimumGradleVersion
@@ -62,35 +74,14 @@ allprojects {
   }
 }
 
-apply from: "${scriptDir}/java.gradle"
-apply from: "${scriptDir}/ide.gradle"
-apply from: "${scriptDir}/dependency-resolution.gradle"
-apply from: "${scriptDir}/test.gradle"
-apply from: "${scriptDir}/code-analysis.gradle"
-apply from: "${scriptDir}/sonar.gradle"
-apply from: "${scriptDir}/rat.gradle"
-apply from: "${scriptDir}/docker.gradle"
-apply from: "${scriptDir}/spotless.gradle"
-apply from: "${scriptDir}/lint.gradle"
-apply from: "${scriptDir}/resolve-dependencies.gradle"
+task combineReports(type: TestReport) {
+  description 'Combines the test reports.'
+  destinationDir = file "${rootProject.buildDir}/reports/combined"
 
-subprojects {
-  apply plugin: 'com.github.ben-manes.versions'
-}
-
-check.dependsOn rat
-
-task devBuild(dependsOn: [":assemble"]) {
-  description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
-  // spotless targets are not available until after evaluation.
-  subprojects {
-    afterEvaluate {
-      this.devBuild.dependsOn(project.spotlessApply)
-    }
+  doLast {
+    println "All test reports at ${rootProject.buildDir}/reports/combined"
   }
 }
-
-
 
 ext.readScmInfo = { proj ->
   // Attempt to read git information, or else return UNKNOWN
@@ -121,7 +112,7 @@ ext.readScmInfo = { proj ->
   }
 }
 
-task writeBuildInfo {
+tasks.register('writeBuildInfo') {
   def buildInfo = file "$buildDir/.buildinfo"
   def scmInfo = this.readScmInfo("geode-core")
 
@@ -133,6 +124,12 @@ task writeBuildInfo {
       scmInfo.store(fos, '')
     }
   }
+}
+
+tasks.register('devBuild') {
+  description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
+  dependsOn tasks.named('assemble')
+  // Each subproject injects its SpotlessApply as a dependency to this task in the standard config
 }
 
 tasks.register('generate') {
@@ -180,9 +177,8 @@ if (project.hasProperty('askpass')) {
   }
 }
 
-// Explicitly chain generic tasks -- composite builds do not cascade these tasks by default.
-['clean', 'check', 'test'].each { chainedTask ->
-  rootProject.tasks.named(chainedTask).configure {
-    dependsOn(subprojects*.tasks*.named(chainedTask))
-  }
-}
+gradle.taskGraph.whenReady({ graph ->
+  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
+    it.tasks.withType(Test)
+  }.flatten()
+})

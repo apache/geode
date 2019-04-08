@@ -15,14 +15,24 @@
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
 import java.nio.file.Paths
 
-evaluationDependsOn(":geode-core")
-evaluationDependsOn(":geode-protobuf-messages")
-
+// This project aggressively reaches into many other projects and must wait for those configurations
+// to be evaluated and resolved.  As a safeguard against this and to avoid having to explicitly 
+// re-list every geode-* here, we instead depend on every subproject of rootProject, excluding this
+// project itself.  Additionally, this project also aggressively inspects its own subprojects.
+// Evaluation depends on them all.
+evaluationDependsOnChildren()
+rootProject.subprojects.each { neighborProject ->
+  if (neighborProject != project) {
+    project.evaluationDependsOn(neighborProject.path)
+  }
+}
 apply plugin: 'distribution'
 apply from: "${rootDir}/${scriptDir}/publish.gradle"
 

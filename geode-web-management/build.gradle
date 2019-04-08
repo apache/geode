@@ -13,6 +13,8 @@
  * the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 apply plugin: 'war'
 
 apply from: "${project.projectDir}/../gradle/publish.gradle"

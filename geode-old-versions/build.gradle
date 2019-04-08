@@ -17,10 +17,14 @@ import java.nio.file.Paths
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 project.ext.installs = new Properties()
 project.ext.versions = new Properties()
 
 subprojects {
+  apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
   def oldGeodeVersion = project.name
 
   boolean useTgz = (oldGeodeVersion >= "1.7.0")

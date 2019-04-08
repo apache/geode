@@ -38,14 +38,16 @@
  *                       The default is 'root'.
  */
 
+apply plugin: 'com.github.pedjak.dockerized-test'
+
 
 if (project.hasProperty('parallelDunit')) {
   def pwd = System.getenv('PWD')
   def geodeDir = new File(pwd).getCanonicalPath()
-  ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
+  project.ext.dunitDockerVolumes = ["${geodeDir}":geodeDir]
 }
 
-def dockerConfig = {
+project.ext.dockerConfig = {
   maxParallelForks = dunitParallelForks.toInteger()
 
   docker {
@@ -133,23 +135,21 @@ def dockerConfig = {
     }
   }
 }
-subprojects {
-  apply plugin: 'com.github.pedjak.dockerized-test'
 
-  if (project.hasProperty('parallelDunit')) {
-    uiTest.configure(dockerConfig)
-    repeatUnitTest.configure(dockerConfig)
 
-    integrationTest.configure(dockerConfig)
-    repeatIntegrationTest.configure(dockerConfig)
+if (project.hasProperty('parallelDunit')) {
+  uiTest.configure(project.ext.dockerConfig)
+  repeatUnitTest.configure(project.ext.dockerConfig)
 
-    distributedTest.configure(dockerConfig)
-    repeatDistributedTest.configure(dockerConfig)
+  integrationTest.configure(project.ext.dockerConfig)
+  repeatIntegrationTest.configure(project.ext.dockerConfig)
 
-    upgradeTest.configure(dockerConfig)
-    repeatUpgradeTest.configure(dockerConfig)
+  distributedTest.configure(project.ext.dockerConfig)
+  repeatDistributedTest.configure(project.ext.dockerConfig)
 
-    acceptanceTest.configure(dockerConfig)
-    repeatAcceptanceTest.configure(dockerConfig)
-  }
+  upgradeTest.configure(project.ext.dockerConfig)
+  repeatUpgradeTest.configure(project.ext.dockerConfig)
+
+  acceptanceTest.configure(project.ext.dockerConfig)
+  repeatAcceptanceTest.configure(project.ext.dockerConfig)
 }
