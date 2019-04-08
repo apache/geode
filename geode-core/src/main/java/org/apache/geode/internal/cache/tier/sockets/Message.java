@@ -132,9 +132,16 @@ public class Message {
   }
 
   /**
-   * maximum size of an outgoing message. See GEODE-478
+   * The maximum size of an outgoing message. If the message is larger than this maximum, it may
+   * cause the receiver to throw an exception on message part length mismatch due to overflow in
+   * message size.
+   *
+   * This value is STATIC because getting a system property requires holding a lock. It is costly to
+   * do this for every message sent. If this value needs to be modified for testing, please add a
+   * new constructor.
    */
-  private final int maxMessageSize;
+  private static final int maxMessageSize =
+      Integer.getInteger(MAX_MESSAGE_SIZE_PROPERTY, DEFAULT_MAX_MESSAGE_SIZE);
 
   protected int messageType;
   private int payloadLength = 0;
@@ -170,7 +177,6 @@ public class Message {
    * Creates a new message with the given number of parts
    */
   public Message(int numberOfParts, Version destVersion) {
-    this.maxMessageSize = Integer.getInteger(MAX_MESSAGE_SIZE_PROPERTY, DEFAULT_MAX_MESSAGE_SIZE);
     this.version = destVersion;
     Assert.assertTrue(destVersion != null, "Attempt to create an unversioned message");
     this.partsList = new Part[numberOfParts];
