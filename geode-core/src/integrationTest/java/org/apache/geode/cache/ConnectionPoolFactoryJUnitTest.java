@@ -129,6 +129,8 @@ public class ConnectionPoolFactoryJUnitTest {
       // now add a source and try defaults again
       assertEquals(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT,
           defaultAttr.getFreeConnectionTimeout());
+      assertEquals(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS,
+          defaultAttr.getThreadLocalConnections());
       assertEquals(PoolFactory.DEFAULT_READ_TIMEOUT, defaultAttr.getReadTimeout());
       assertEquals(PoolFactory.DEFAULT_MIN_CONNECTIONS, defaultAttr.getMinConnections());
       assertEquals(PoolFactory.DEFAULT_MAX_CONNECTIONS, defaultAttr.getMaxConnections());
@@ -146,6 +148,7 @@ public class ConnectionPoolFactoryJUnitTest {
 
     int connectionTimeout = -1;
     int connectionLifetime = -2;
+    boolean threadLocalConnections = false;
     int readTimeout = -1;
     int messageTrackingTimeout = -1;
     int ackInterval = -1;
@@ -252,6 +255,8 @@ public class ConnectionPoolFactoryJUnitTest {
         defaultAttr.getFreeConnectionTimeout(), PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT);
     assertEquals("Attribute should match default, but doesn't",
         defaultAttr.getLoadConditioningInterval(), PoolFactory.DEFAULT_LOAD_CONDITIONING_INTERVAL);
+    assertEquals("Attribute should match default, but doesn't",
+        defaultAttr.getThreadLocalConnections(), PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS);
     assertEquals("Attribute should match default, but doesn't", defaultAttr.getReadTimeout(),
         PoolFactory.DEFAULT_READ_TIMEOUT);
     assertEquals("Attribute should match default, but doesn't", defaultAttr.getMinConnections(),
@@ -271,6 +276,7 @@ public class ConnectionPoolFactoryJUnitTest {
 
     connectionTimeout = 30;
     connectionLifetime = -1;
+    threadLocalConnections = true;
     readTimeout = 3;
     minConnections = 6;
     maxConnections = 7;
@@ -285,6 +291,7 @@ public class ConnectionPoolFactoryJUnitTest {
 
     cpf.setFreeConnectionTimeout(connectionTimeout);
     cpf.setLoadConditioningInterval(connectionLifetime);
+    cpf.setThreadLocalConnections(threadLocalConnections);
     cpf.setReadTimeout(readTimeout);
     cpf.setSubscriptionEnabled(true);
     cpf.setSubscriptionRedundancy(redundancy);
@@ -302,6 +309,7 @@ public class ConnectionPoolFactoryJUnitTest {
 
       assertEquals(connectionTimeout, cpa.getFreeConnectionTimeout());
       assertEquals(connectionLifetime, cpa.getLoadConditioningInterval());
+      assertEquals(threadLocalConnections, cpa.getThreadLocalConnections());
       assertEquals(true, cpa.getSubscriptionEnabled());
       assertEquals(redundancy, cpa.getSubscriptionRedundancy());
       assertEquals(messageTrackingTimeout, cpa.getSubscriptionMessageTrackingTimeout());
@@ -334,6 +342,7 @@ public class ConnectionPoolFactoryJUnitTest {
   @Test
   public void testCreateADirectPool() throws Exception {
     int connectionTimeout = 20;
+    boolean threadLocalConnections = true;
     int readTimeout = 20;
     int messageTrackingTimeout = 20;
     int redundancy = 20;
@@ -343,7 +352,7 @@ public class ConnectionPoolFactoryJUnitTest {
     PoolFactory cpf = PoolManager.createFactory();
     ((PoolFactoryImpl) cpf).setStartDisabled(true);
     cpf.addServer("localhost", 40907).setFreeConnectionTimeout(connectionTimeout)
-        .setReadTimeout(readTimeout)
+        .setThreadLocalConnections(threadLocalConnections).setReadTimeout(readTimeout)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(redundancy)
         .setSubscriptionMessageTrackingTimeout(messageTrackingTimeout)
         .setSubscriptionAckInterval(ackInterval).setSocketBufferSize(bufferSize);

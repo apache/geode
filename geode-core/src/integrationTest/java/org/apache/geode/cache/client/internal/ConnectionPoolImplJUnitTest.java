@@ -109,6 +109,7 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(PoolFactory.DEFAULT_RETRY_ATTEMPTS, pool.getRetryAttempts());
     assertEquals(PoolFactory.DEFAULT_IDLE_TIMEOUT, pool.getIdleTimeout());
     assertEquals(PoolFactory.DEFAULT_PING_INTERVAL, pool.getPingInterval());
+    assertEquals(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS, pool.getThreadLocalConnections());
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED, pool.getSubscriptionEnabled());
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY, pool.getSubscriptionRedundancy());
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT,
@@ -134,7 +135,7 @@ public class ConnectionPoolImplJUnitTest {
 
     PoolFactory cpf = PoolManager.createFactory();
     cpf.addServer("localhost", port).setSocketConnectTimeout(socketTimeout)
-        .setReadTimeout(readTimeout);
+        .setReadTimeout(readTimeout).setThreadLocalConnections(true);
 
     PoolImpl pool = (PoolImpl) cpf.create("myfriendlypool");
 
@@ -142,6 +143,7 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals("myfriendlypool", pool.getName());
     assertEquals(socketTimeout, pool.getSocketConnectTimeout());
     assertEquals(readTimeout, pool.getReadTimeout());
+    assertEquals(true, pool.getThreadLocalConnections());
     assertEquals(1, pool.getServers().size());
     assertEquals(0, pool.getLocators().size());
     {

@@ -1253,6 +1253,10 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
       }
       if (generateDefaults() || cp.getSocketBufferSize() != PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE)
         atts.addAttribute("", "", SOCKET_BUFFER_SIZE, "", String.valueOf(cp.getSocketBufferSize()));
+      if (generateDefaults()
+          || cp.getThreadLocalConnections() != PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS)
+        atts.addAttribute("", "", THREAD_LOCAL_CONNECTIONS, "",
+            String.valueOf(cp.getThreadLocalConnections()));
 
       if (this.version.compareTo(CacheXmlVersion.GEMFIRE_6_1) > 0) {
         if (generateDefaults()

@@ -141,6 +141,7 @@ public class PoolType {
   protected String subscriptionRedundancy;
   @XmlAttribute(name = "statistic-interval")
   protected String statisticInterval;
+  @Deprecated
   @XmlAttribute(name = "thread-local-connections")
   protected Boolean threadLocalConnections;
   @XmlAttribute(name = "pr-single-hop-enabled")
@@ -629,7 +630,7 @@ public class PoolType {
    */
   @Deprecated
   public void setThreadLocalConnections(Boolean value) {
-
+    this.threadLocalConnections = value;
   }
 
   /**

@@ -101,6 +101,8 @@ public class PoolImpl implements InternalPool {
   private final int freeConnectionTimeout;
   private final int loadConditioningInterval;
   private final int socketBufferSize;
+  @Deprecated
+  private final boolean threadLocalConnections;
   private final int readTimeout;
   private final boolean subscriptionEnabled;
   private final boolean prSingleHopEnabled;
@@ -193,6 +195,7 @@ public class PoolImpl implements InternalPool {
     this.freeConnectionTimeout = attributes.getFreeConnectionTimeout();
     this.loadConditioningInterval = attributes.getLoadConditioningInterval();
     this.socketBufferSize = attributes.getSocketBufferSize();
+    this.threadLocalConnections = attributes.getThreadLocalConnections();
     this.readTimeout = attributes.getReadTimeout();
     this.minConnections = attributes.getMinConnections();
     this.maxConnections = attributes.getMaxConnections();
@@ -289,6 +292,7 @@ public class PoolImpl implements InternalPool {
         && getPingInterval() == p.getPingInterval()
         && getStatisticInterval() == p.getStatisticInterval()
         && getRetryAttempts() == p.getRetryAttempts()
+        && getThreadLocalConnections() == p.getThreadLocalConnections()
         && getReadTimeout() == p.getReadTimeout()
         && getSubscriptionEnabled() == p.getSubscriptionEnabled()
         && getPRSingleHopEnabled() == p.getPRSingleHopEnabled()
@@ -420,6 +424,11 @@ public class PoolImpl implements InternalPool {
   @Override
   public int getSocketBufferSize() {
     return this.socketBufferSize;
+  }
+
+  @Override
+  public boolean getThreadLocalConnections() {
+    return this.threadLocalConnections;
   }
 
   @Override
@@ -683,6 +692,10 @@ public class PoolImpl implements InternalPool {
     if (getSocketBufferSize() != other.getSocketBufferSize()) {
       throw new RuntimeException(
           String.format("Pool %s is different", "socketBufferSize"));
+    }
+    if (getThreadLocalConnections() != other.getThreadLocalConnections()) {
+      throw new RuntimeException(
+          String.format("Pool %s is different", "threadLocalConnections"));
     }
     if (getReadTimeout() != other.getReadTimeout()) {
       throw new RuntimeException(
