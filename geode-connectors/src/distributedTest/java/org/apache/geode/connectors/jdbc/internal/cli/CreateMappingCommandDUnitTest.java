@@ -302,6 +302,28 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
+  public void createMappingSucceedsWithWarningWhenMappingAlreadyExistsAndIfNotExistsIsTrue() {
+    String regionName = REGION_NAME;
+    setupReplicate(regionName);
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(REGION_NAME, regionName);
+    csb.addOption(DATA_SOURCE_NAME, "connection");
+    csb.addOption(TABLE_NAME, "myTable");
+    csb.addOption(PDX_NAME, IdAndName.class.getName());
+    csb.addOption(ID_NAME, "myId");
+    csb.addOption(SCHEMA_NAME, "mySchema");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    // do it again and expect to fail
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("A JDBC mapping for " + regionName + " already exists.");
+
+    csb.addOption(CliStrings.IFNOTEXISTS, "true");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput("Skipping: ");
+  }
+
+  @Test
   public void createMappingReplicatedUpdatesServiceAndClusterConfigForServerGroup() {
     String regionName = GROUP1_REGION;
     setupGroupReplicate(regionName, TEST_GROUP1);
@@ -1209,7 +1231,7 @@ public class CreateMappingCommandDUnitTest {
     // NOTE: --table is optional so it should not be in the output but it is. See GEODE-3468.
     gfsh.executeAndAssertThat(csb.toString()).statusIsError()
         .containsOutput(
-            "You should specify option (--table, --pdx-name, --pdx-class-file, --synchronous, --id, --catalog, --schema, --group) for this command");
+            "You should specify option (--table, --pdx-name, --pdx-class-file, --synchronous, --id, --catalog, --schema, --if-not-exists, --group) for this command");
   }
 
   @Test

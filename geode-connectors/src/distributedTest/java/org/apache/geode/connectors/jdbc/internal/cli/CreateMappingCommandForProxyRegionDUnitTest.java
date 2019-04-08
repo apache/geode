@@ -64,6 +64,7 @@ import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxReader;
@@ -454,6 +455,10 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput(MappingConstants.THERE_IS_NO_JDBC_MAPPING_ON_PROXY_REGION);
+
+    // do create jdbc-mapping again
+    csb.addOption(CliStrings.IFNOTEXISTS, "true");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput("Skipping: ");
 
     server1.invoke(() -> {
       RegionMapping mapping = getRegionMappingFromService(regionName);
