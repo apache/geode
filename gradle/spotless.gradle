@@ -60,7 +60,7 @@ spotless {
         throw new AssertionError("Do not use Awaitility.await(). Use GeodeAwaitility.await() instead. 'spotlessApply' cannot resolve this issue.")
       }
     }
-    importOrderFile "${project(':geode-core').projectDir}/../etc/eclipseOrganizeImports.importorder"
+    importOrderFile "${rootDir}/${scriptDir}/../etc/eclipseOrganizeImports.importorder"
 
     custom 'Remove unhelpful javadoc stubs', {
       // e.g., remove the following lines:
@@ -114,10 +114,11 @@ spotless {
 
     // The format file is relative to geode-core and not the root project as the root project would change
     // if Geode and submodules are included as part of a different gradle project.
-    eclipse('4.6.3').configFile "${project(':geode-core').projectDir}/../etc/eclipse-java-google-style.xml"
+    eclipse('4.6.3').configFile "${rootDir}/${scriptDir}/../etc/eclipse-java-google-style.xml"
     trimTrailingWhitespace()
     endWithNewline()
   }
+
 
   groovyGradle {
     target project.fileTree(project.projectDir) {
@@ -153,4 +154,10 @@ afterEvaluate {
   // Not all projects are java projects.  findByName could return null, so use the null-safe ?. operator
   project.tasks.findByName('compileJava')?.mustRunAfter(spotlessCheck)
   project.tasks.findByName('compileJava')?.mustRunAfter(spotlessApply)
+
+  // Within the configure block, 'project' refers to the task-owning project, in this case rootProject
+  def thisProjectScoped = project
+  rootProject.tasks.named('devBuild').configure {
+    dependsOn thisProjectScoped.tasks.named('spotlessApply')
+  }
 }
