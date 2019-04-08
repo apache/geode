@@ -135,6 +135,10 @@ public class Message {
    * The maximum size of an outgoing message. If the message is larger than this maximum, it may
    * cause the receiver to throw an exception on message part length mismatch due to overflow in
    * message size.
+   *
+   * This value is STATIC because getting a system property requires holding a lock. It is costly to
+   * do this for every message sent. If this value needs to be modified for testing, please add a
+   * new constructor.
    */
   private static final int maxMessageSize =
       Integer.getInteger(MAX_MESSAGE_SIZE_PROPERTY, DEFAULT_MAX_MESSAGE_SIZE);
