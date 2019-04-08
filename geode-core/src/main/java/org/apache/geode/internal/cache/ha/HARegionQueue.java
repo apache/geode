@@ -612,10 +612,10 @@ public class HARegionQueue implements RegionQueue {
     this.giiLock.readLock().lock(); // fix for bug #41681 - durable client misses event
     try {
       if (this.giiCount > 0) {
-        //if (logger.isDebugEnabled()) {
-          logger.info("{}: adding message to GII queue of size {}: {}", this.regionName,
-              giiQueue.size(), object);
-        //}
+        // if (logger.isDebugEnabled()) {
+        logger.info("{}: adding message to GII queue of size {}: {}", this.regionName,
+            giiQueue.size(), object);
+        // }
         HAEventWrapper haContainerKey = null;
 
         if (object instanceof HAEventWrapper) {
@@ -632,9 +632,9 @@ public class HARegionQueue implements RegionQueue {
 
         this.giiQueue.add(object);
       } else {
-//        if (logger.isTraceEnabled()) {
-          logger.info("RYGUY: {}: adding message to HA queue: {}", this.regionName, object);
-//        }
+        // if (logger.isTraceEnabled()) {
+        logger.info("RYGUY: {}: adding message to HA queue: {}", this.regionName, object);
+        // }
         basicPut(object);
       }
     } finally {
@@ -689,18 +689,18 @@ public class HARegionQueue implements RegionQueue {
             this.put(object);
           }
         } else {
-//          if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
-            logger.info(LogMarker.BRIDGE_SERVER_VERBOSE, "{}: Adding message to queue: {}", this,
-                object);
-//          }
+          // if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+          logger.info(LogMarker.BRIDGE_SERVER_VERBOSE, "{}: Adding message to queue: {}", this,
+              object);
+          // }
         }
 
       } else {
-//        if (logger.isDebugEnabled()) {
-          logger.info(
-              "RYGUY: {}: This queue has already seen this event.  The highest sequence number in the queue for {} is {}, but this event's sequence number is {}",
-              this.regionName, ti, dace.lastDispatchedSequenceId, sequenceID);
-//        }
+        // if (logger.isDebugEnabled()) {
+        logger.info(
+            "RYGUY: {}: This queue has already seen this event.  The highest sequence number in the queue for {} is {}, but this event's sequence number is {}",
+            this.regionName, ti, dace.lastDispatchedSequenceId, sequenceID);
+        // }
         incrementTakeSidePutPermits();
       }
     } else {
@@ -3000,7 +3000,8 @@ public class HARegionQueue implements RegionQueue {
       final boolean isDebugEnabled_BS = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE);
       if (isDebugEnabled_BS && this.lastSequenceIDPut >= sequenceID
           && !owningQueue.puttingGIIDataInQueue) {
-        logger.info("RYGUY; HARegionQueue::DACE:putObject: Given sequence ID is already present ({}).\nThis may be a recovered operation via P2P or a GetInitialImage.\nlastSequenceIDPut = {} ; event = {};\n",
+        logger.info(
+            "RYGUY; HARegionQueue::DACE:putObject: Given sequence ID is already present ({}).\nThis may be a recovered operation via P2P or a GetInitialImage.\nlastSequenceIDPut = {} ; event = {};\n",
             sequenceID, lastSequenceIDPut, event);
       }
 
@@ -3014,12 +3015,12 @@ public class HARegionQueue implements RegionQueue {
 
           this.lastSequenceIDPut = sequenceID;
         } else if (!owningQueue.puttingGIIDataInQueue) {
-//          if (isDebugEnabled_BS) {
-            logger.info(LogMarker.BRIDGE_SERVER_VERBOSE,
-                "RYGUY: {} eliding event with ID {}, because it is not greater than the last sequence ID ({}). The rejected event has key <{}> and value <{}>",
-                this, event.getEventId(), this.lastSequenceIDPut, event.getKeyToConflate(),
-                event.getValueToConflate());
-//          }
+          // if (isDebugEnabled_BS) {
+          logger.info(LogMarker.BRIDGE_SERVER_VERBOSE,
+              "RYGUY: {} eliding event with ID {}, because it is not greater than the last sequence ID ({}). The rejected event has key <{}> and value <{}>",
+              this, event.getEventId(), this.lastSequenceIDPut, event.getKeyToConflate(),
+              event.getValueToConflate());
+          // }
           owningQueue.stats.incNumSequenceViolated();
 
           // increase take side put permits instead of increasing put side permits
@@ -3061,7 +3062,8 @@ public class HARegionQueue implements RegionQueue {
           // should be issued
           // from this block & hence this function should be appropriately
           // overridden
-          logger.info("RYGUY: {} publishing event with ID {}. last sequence ID ({}). event has key <{}> and value <{}>",
+          logger.info(
+              "RYGUY: {} publishing event with ID {}. last sequence ID ({}). event has key <{}> and value <{}>",
               this, event.getEventId(), this.lastSequenceIDPut, event.getKeyToConflate(),
               event.getValueToConflate());
           owningQueue.publish(position);

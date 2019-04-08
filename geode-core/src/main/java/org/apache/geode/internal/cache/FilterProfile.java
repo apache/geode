@@ -1112,17 +1112,16 @@ public class FilterProfile implements DataSerializableFixedID {
   public FilterRoutingInfo getFilterRoutingForClients(FilterRoutingInfo filterRoutingInfo,
       CacheEvent event) {
     FilterRoutingInfo result = filterRoutingInfo;
+    logger.info("RYGUY: Getting local filter info for event: " + event);
     if (localProfile.hasCacheServer) {
       // bug #45520 - CQ events arriving out of order causes result set
       // inconsistency, so don't compute routings for events in conflict
       boolean isInConflict =
           event.getOperation().isEntry() && ((EntryEventImpl) event).isConcurrencyConflict();
       CqService cqService = getCqService(event.getRegion());
-      if (!isInConflict && cqService.isRunning()
-          && this.region != null /*
-                                  * && !( this.region.isUsedForPartitionedRegionBucket() || //
-                                  * partitioned region CQ this.region instanceof PartitionedRegion)
-                                  */) { // processing is done in part 1
+      final boolean cqServiceRunning = cqService.isRunning();
+      if (!isInConflict && cqServiceRunning
+          && this.region != null) {
         if (result == null) {
           result = new FilterRoutingInfo();
         }
@@ -1130,8 +1129,13 @@ public class FilterProfile implements DataSerializableFixedID {
           logger.debug("getting local cq matches for {}", event);
         }
         fillInCQRoutingInfo(event, true, NO_PROFILES, result);
+      } else {
+        logger.info("RYGUY: Local matches not acquired.  CQ service running? "
+            + cqServiceRunning + "; IsInConflict: " + isInConflict);
       }
       result = fillInInterestRoutingInfo(event, localProfileArray, result, Collections.emptySet());
+    } else {
+      logger.info("RYGUY: Local profile did not have cache server.  Event: " + event);
     }
     return result;
   }
@@ -1298,9 +1302,9 @@ public class FilterProfile implements DataSerializableFixedID {
     Set clientsInv = Collections.emptySet();
     Set clients = Collections.emptySet();
 
-    if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
-      logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "finding interested clients for {}", event);
-    }
+    // if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
+    logger.info("RYGUY: finding interested clients for {}", event);
+    // }
 
     FilterRoutingInfo frInfo = filterRoutingInfo;
 
