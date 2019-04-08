@@ -848,7 +848,8 @@ public abstract class ServerConnection implements Runnable {
           } else if (uniqueId == 0) {
             logger.debug("No unique ID yet. {}, {}", messageType, this.getName());
           } else {
-            logger.error("Failed to bind the subject of uniqueId {} for message {} with {}",
+            logger.warn(
+                "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
                 uniqueId, messageType, this.getName());
             throw new AuthenticationRequiredException("Failed to find the authenticated user.");
           }
@@ -1211,6 +1212,8 @@ public abstract class ServerConnection implements Runnable {
       } catch (IOException ex) {
         logger.warn(ex.toString() + " : Unexpected Exception");
         setClientDisconnectedException(ex);
+      } catch (AuthenticationRequiredException ex) {
+        logger.warn(ex.toString() + " : Unexpected Exception");
       } finally {
         getAcceptor().releaseTLCommBuffer();
         // DistributedSystem.releaseThreadsSockets();

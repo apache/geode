@@ -19,8 +19,10 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -80,6 +82,22 @@ public class ServerConnectionTest {
         new ServerConnectionFactory().makeServerConnection(socket, cache, null, stats, 0, 0, null,
             CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
     MockitoAnnotations.initMocks(this);
+  }
+
+  @Test
+  public void whenAuthenticationRequiredExceptionIsThrownItShouldBeCaught() {
+    AcceptorImpl acceptor = serverConnection.getAcceptor();
+    when(acceptor.isSelector()).thenReturn(true);
+    doThrow(new AuthenticationRequiredException("Test")).when(serverConnection.stats)
+        .decThreadQueueSize();
+    serverConnection.setProcessMessages(true);
+    try {
+      serverConnection.run();
+    } catch (AuthenticationRequiredException ex) {
+      fail();
+    } catch (NullPointerException ex) {
+      // Acceptable - avoiding mocking of the entire handleTermination.
+    }
   }
 
 
