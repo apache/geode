@@ -511,7 +511,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * @param suspectMember member that does not respond to HeartbeatRequestMessage
    * @return true if successfully exchanged PING/PONG with TCP connection, otherwise false.
    */
-  boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
+  boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port,
+      boolean retryIfConnectFails) {
     Socket clientSocket = null;
     // make sure we try to check on the member for the contracted memberTimeout period
     // in case a timed socket.connect() returns immediately
@@ -555,7 +556,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           // expected
         }
       }
-    } while (!passed && !this.isShutdown() && System.nanoTime() < giveupTime);
+    } while (retryIfConnectFails && !passed && !this.isShutdown()
+        && System.nanoTime() < giveupTime);
     return passed;
   }
 
@@ -690,7 +692,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         if (!ssocket.isClosed()) {
           try {
             ssocket.close();
-            logger.info("GMSHealthMonitor server socket closed.");
           } catch (IOException e) {
             logger.debug("Unexpected exception", e);
           }
@@ -857,7 +858,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
       InternalDistributedMember oldNeighbor = nextNeighbor;
       if (oldNeighbor != newNeighbor) {
-        logger.info("Failure detection is now watching " + newNeighbor);
+        logger.debug("Failure detection is now watching " + newNeighbor);
         nextNeighbor = newNeighbor;
       }
     }
@@ -928,7 +929,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       if (serverSocket != null && !serverSocket.isClosed()) {
         try {
           serverSocket.close();
-          logger.info("GMSHealthMonitor server socket is closed in stopServices().");
         } catch (IOException e) {
           logger.trace("Unexpected exception", e);
         }
@@ -939,8 +939,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
-      logger.info("GMSHealthMonitor serverSocketExecutor is "
-          + (serverSocketExecutor.isTerminated() ? "terminated" : "not terminated"));
     }
   }
 
@@ -1122,9 +1120,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
     NetView cv = currentView;
 
-    logger.info("Received suspect message {} with current view {}", incomingRequest,
-        cv == null ? "<no view>" : cv.getViewId());
-
     if (cv == null) {
       return;
     }
@@ -1176,7 +1171,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       synchronized (suspectRequestsInView) {
         recordSuspectRequests(suspectRequests, cv);
         Set<SuspectRequest> suspectsInView = suspectRequestsInView.get(cv);
-        logger.info("Current suspects are {}", suspectsInView);
+        logger.debug("Current suspects are {}", suspectsInView);
         for (final SuspectRequest sr : suspectsInView) {
           check.remove(sr.getSuspectMember());
           membersToCheck.add(sr);
@@ -1189,10 +1184,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         }
       }
       if (!membersLeaving.isEmpty()) {
-        logger.info("Current leave requests are {}", membersLeaving);
+        logger.debug("Current leave requests are {}", membersLeaving);
         check.removeAll(membersLeaving);
       }
-      logger.info(
+      logger.trace(
           "Proposed view with suspects & leaving members removed is {}\nwith coordinator {}\nmy address is {}",
           check,
           check.getCoordinator(), localAddress);
@@ -1308,7 +1303,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         // if we will get heartbeat then it will change the timestamp, which we are
         // checking below in case of tcp check failure..
         doCheckMember(mbr, false);
-        pinged = doTCPCheckMember(mbr, port);
+        // now, while waiting for a heartbeat, try connecting to the suspect's failure detection
+        // port
+        final boolean retryIfConnectFails = forceRemovalIfCheckFails;
+        pinged = doTCPCheckMember(mbr, port, retryIfConnectFails);
       }
 
       if (!pinged && !isStopping) {
@@ -1325,7 +1323,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           } else {
             // if this node can survive an availability check then initiate suspicion about
             // the node that failed the availability check
-            if (doTCPCheckMember(localAddress, this.socketPort)) {
+            if (doTCPCheckMember(localAddress, this.socketPort, false)) {
               membersInFinalCheck.remove(mbr);
               // tell peers about this member and then perform another availability check
               memberSuspected(localAddress, mbr, reason);
@@ -1335,7 +1333,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
                       Collections
                           .singletonList(new SuspectRequest(mbr, "failed availability check")));
               suspectMembersMessage.setSender(localAddress);
-              logger.info("Performing local processing on suspect request");
+              logger.debug("Performing local processing on suspect request");
               processSuspectMembersRequest(suspectMembersMessage);
             }
           }
@@ -1398,7 +1396,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       recipients = currentView.getMembers();
     }
 
-    logger.info("Sending suspect messages to {}", recipients);
+    logger.trace("Sending suspect messages to {}", recipients);
     SuspectMembersMessage smm = new SuspectMembersMessage(recipients, requests);
     Set<InternalDistributedMember> failedRecipients;
     try {
@@ -1409,7 +1407,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     if (failedRecipients != null && failedRecipients.size() > 0) {
-      logger.info("Unable to send suspect message to {}", failedRecipients);
+      logger.trace("Unable to send suspect message to {}", failedRecipients);
     }
   }
 

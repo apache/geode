@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.rest;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,9 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -45,15 +41,13 @@ import org.apache.geode.cache.configuration.RegionConfig;
 @WebAppConfiguration
 public class RegionManagementSecurityIntegrationTest {
 
-  static RequestPostProcessor POST_PROCESSOR =
-      new StandardRequestPostProcessor();
-
   @Autowired
   private WebApplicationContext webApplicationContext;
 
+  private LocatorWebContext context;
+
   private RegionConfig regionConfig;
   private String json;
-  private MockMvc mockMvc;
 
   @Before
   public void before() throws JsonProcessingException {
@@ -62,16 +56,13 @@ public class RegionManagementSecurityIntegrationTest {
     regionConfig.setType(RegionShortcut.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();
     json = mapper.writeValueAsString(regionConfig);
-    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+    context = new LocatorWebContext(webApplicationContext);
   }
 
   @Test
   public void sanityCheck_not_authorized() throws Exception {
-    mockMvc.perform(post("/v2/regions")
+    context.perform(post("/v2/regions")
         .with(httpBasic("user", "user"))
-        .with(POST_PROCESSOR)
         .content(json))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHORIZED")))
@@ -81,8 +72,7 @@ public class RegionManagementSecurityIntegrationTest {
 
   @Test
   public void sanityCheckWithNoCredentials() throws Exception {
-    mockMvc.perform(post("/v2/regions")
-        .with(POST_PROCESSOR)
+    context.perform(post("/v2/regions")
         .content(json))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
@@ -92,9 +82,8 @@ public class RegionManagementSecurityIntegrationTest {
 
   @Test
   public void sanityCheckWithWrongCredentials() throws Exception {
-    mockMvc.perform(post("/v2/regions")
+    context.perform(post("/v2/regions")
         .with(httpBasic("user", "wrong_password"))
-        .with(POST_PROCESSOR)
         .content(json))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
@@ -104,9 +93,8 @@ public class RegionManagementSecurityIntegrationTest {
 
   @Test
   public void sanityCheck_success() throws Exception {
-    mockMvc.perform(post("/v2/regions")
+    context.perform(post("/v2/regions")
         .with(httpBasic("dataManage", "dataManage"))
-        .with(POST_PROCESSOR)
         .content(json))
         .andExpect(status().isInternalServerError())
         .andExpect(jsonPath("$.statusCode", is("ERROR")))

@@ -12,11 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -49,15 +49,15 @@ public class ServerDenyList {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final Map/* <ServerLocation, AI> */ failureTrackerMap = new HashMap();
-  protected final Set denylist = new CopyOnWriteArraySet();
-  private final Set unmodifiableDenylist = Collections.unmodifiableSet(denylist);
+  private final Map<ServerLocation, FailureTracker> failureTrackerMap = new HashMap<>();
+  private final Set<ServerLocation> denylist = new CopyOnWriteArraySet<>();
+  private final Set<ServerLocation> unmodifiableDenylist = Collections.unmodifiableSet(denylist);
   protected ScheduledExecutorService background;
-  protected final ListenerBroadcaster broadcaster = new ListenerBroadcaster();
+  private final ListenerBroadcaster broadcaster = new ListenerBroadcaster();
 
   // not final for tests.
-  private static final int THRESHOLD = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "ServerDenyList.THRESHOLD", 3).intValue();
+  private static final int THRESHOLD =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "ServerDenyList.THRESHOLD", 3);
   protected final long pingInterval;
 
   public ServerDenyList(long pingInterval) {
@@ -71,7 +71,7 @@ public class ServerDenyList {
   FailureTracker getFailureTracker(ServerLocation location) {
     FailureTracker failureTracker;
     synchronized (failureTrackerMap) {
-      failureTracker = (FailureTracker) failureTrackerMap.get(location);
+      failureTracker = failureTrackerMap.get(location);
       if (failureTracker == null) {
         failureTracker = new FailureTracker(location);
         failureTrackerMap.put(location, failureTracker);
@@ -81,7 +81,7 @@ public class ServerDenyList {
     return failureTracker;
   }
 
-  public Set getBadServers() {
+  public Set<ServerLocation> getBadServers() {
     return unmodifiableDenylist;
   }
 
@@ -89,7 +89,7 @@ public class ServerDenyList {
     private final AtomicInteger consecutiveFailures = new AtomicInteger();
     private final ServerLocation location;
 
-    public FailureTracker(ServerLocation location) {
+    FailureTracker(ServerLocation location) {
       this.location = location;
     }
 
@@ -114,7 +114,7 @@ public class ServerDenyList {
         try {
           background.schedule(new ExpireDenyListTask(location), pingInterval,
               TimeUnit.MILLISECONDS);
-        } catch (RejectedExecutionException e) {
+        } catch (RejectedExecutionException ignored) {
           // ignore, the timer has been cancelled, which means we're shutting down.
         }
 
@@ -135,7 +135,7 @@ public class ServerDenyList {
   private class ExpireDenyListTask extends PoolTask {
     private ServerLocation location;
 
-    public ExpireDenyListTask(ServerLocation location) {
+    ExpireDenyListTask(ServerLocation location) {
       this.location = location;
     }
 
@@ -169,20 +169,18 @@ public class ServerDenyList {
 
   protected static class ListenerBroadcaster implements DenyListListener {
 
-    protected Set listeners = new CopyOnWriteArraySet();
+    protected Set<DenyListListener> listeners = new CopyOnWriteArraySet<>();
 
     @Override
     public void serverAdded(ServerLocation location) {
-      for (Iterator itr = listeners.iterator(); itr.hasNext();) {
-        DenyListListener listener = (DenyListListener) itr.next();
+      for (DenyListListener listener : listeners) {
         listener.serverAdded(location);
       }
     }
 
     @Override
     public void serverRemoved(ServerLocation location) {
-      for (Iterator itr = listeners.iterator(); itr.hasNext();) {
-        DenyListListener listener = (DenyListListener) itr.next();
+      for (DenyListListener listener : listeners) {
         listener.serverRemoved(location);
       }
     }

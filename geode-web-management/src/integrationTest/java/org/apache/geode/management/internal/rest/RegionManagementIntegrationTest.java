@@ -31,9 +31,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -45,17 +42,15 @@ import org.apache.geode.cache.configuration.RegionConfig;
 @WebAppConfiguration
 public class RegionManagementIntegrationTest {
 
-  static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
-
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  private MockMvc mockMvc;
+  // needs to be used together with any BaseLocatorContextLoader
+  private LocatorWebContext context;
 
   @Before
   public void before() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-        .build();
+    context = new LocatorWebContext(webApplicationContext);
   }
 
   @Test
@@ -68,9 +63,7 @@ public class RegionManagementIntegrationTest {
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 
-    mockMvc.perform(post("/v2/regions")
-        .with(POST_PROCESSOR)
-        .content(json))
+    context.perform(post("/v2/regions").content(json))
         .andExpect(status().isInternalServerError())
         .andExpect(jsonPath("$.statusCode", is("ERROR")))
         .andExpect(jsonPath("$.statusMessage",
@@ -80,8 +73,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void ping() throws Exception {
-    mockMvc.perform(get("/v2/ping")
-        .with(POST_PROCESSOR))
+    context.perform(get("/v2/ping"))
         .andExpect(content().string("pong"));
   }
 }

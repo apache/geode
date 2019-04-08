@@ -192,9 +192,6 @@ public class ClusterStartupRule implements SerializableTestRule {
     DUnitLauncher.closeAndCheckForSuspects();
   }
 
-  public boolean isSkipLocalDistributedSystemCleanup() {
-    return skipLocalDistributedSystemCleanup;
-  }
 
   /**
    * In some weird situations you may not want to do local DS cleanup as that lifecyle is deferred

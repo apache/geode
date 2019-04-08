@@ -18,15 +18,13 @@ plugins {
     id 'application'
 }
 
-version = '1.0'
-
 repositories {
     mavenLocal()
     mavenCentral()
 }
 
 dependencies {
-    compile("org.apache.geode:geode-core:${findProperty('geodeVersion')}")
+    compile("${project.group}:geode-core:${project.version}")
     runtime('org.apache.logging.log4j:log4j-slf4j-impl:2.11.1')
 }
 

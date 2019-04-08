@@ -817,7 +817,7 @@ public class GMSHealthMonitorJUnitTest {
     InternalDistributedMember otherMember =
         createInternalDistributedMember(Version.CURRENT_ORDINAL, 0, 1, 1);
     long startTime = System.currentTimeMillis();
-    gmsHealthMonitor.doTCPCheckMember(otherMember, mySocket.getLocalPort());
+    gmsHealthMonitor.doTCPCheckMember(otherMember, mySocket.getLocalPort(), true);
     mySocket.close();
     serverThread.interrupt();
     serverThread.join(getTimeout().getValueInMS());
@@ -903,7 +903,8 @@ public class GMSHealthMonitorJUnitTest {
     public boolean useBlockingSocket = false;
 
     @Override
-    boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port) {
+    boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port,
+        boolean retryIfConnectFails) {
       if (useGMSHealthMonitorTestClass) {
         if (simulateHeartbeatInGMSHealthMonitorTestClass) {
           HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
@@ -912,7 +913,7 @@ public class GMSHealthMonitorJUnitTest {
         }
         return false;
       }
-      return super.doTCPCheckMember(suspectMember, port);
+      return super.doTCPCheckMember(suspectMember, port, retryIfConnectFails);
     }
 
     @Override

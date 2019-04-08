@@ -14,9 +14,16 @@
  */
 package org.apache.geode.test.concurrency.loop;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * Configuration for the LoopRunner class
  */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
 public @interface LoopRunnerConfig {
   int count();
 }

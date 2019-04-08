@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -46,8 +47,9 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
     super();
   }
 
-  void createRegion(String name, boolean accessor, int redundantCopies) {
+  void createRegion(String name, boolean accessor, int redundantCopies, CacheWriter w) {
     AttributesFactory af = new AttributesFactory();
+    af.setCacheWriter(w);
     af.setPartitionAttributes(new PartitionAttributesFactory().setLocalMaxMemory(accessor ? 0 : 12)
         .setRedundantCopies(redundantCopies).create());
     getCache().createRegion(name, af.create());
@@ -61,7 +63,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        createRegion(rName, false, 0);
+        createRegion(rName, false, 0, null);
         Region r = getCache().getRegion(rName);
         InvalidatePRListener l = new InvalidatePRListener();
         r.getAttributesMutator().addCacheListener(l);
@@ -107,13 +109,12 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
 
       @Override
       public Object call() throws Exception {
-        createRegion(rName, false, 1);
+        InvalidatePRWriter w = new InvalidatePRWriter();
+        createRegion(rName, false, 1, w);
         Region r = getCache().getRegion(rName);
         InvalidatePRListener l = new InvalidatePRListener();
         l.originRemote = originRemote;
         r.getAttributesMutator().addCacheListener(l);
-        InvalidatePRWriter w = new InvalidatePRWriter();
-        r.getAttributesMutator().setCacheWriter(w);
         return null;
       }
     };

@@ -1808,7 +1808,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
     // Prevent this region from using concurrency checks
     @Override
-    public boolean supportsConcurrencyChecks() {
+    protected boolean supportsConcurrencyChecks() {
       return false;
     }
 
@@ -1823,7 +1823,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
 
     @Override
-    public boolean isUsedForParallelGatewaySenderQueue() {
+    protected boolean isUsedForParallelGatewaySenderQueue() {
       return true;
     }
 

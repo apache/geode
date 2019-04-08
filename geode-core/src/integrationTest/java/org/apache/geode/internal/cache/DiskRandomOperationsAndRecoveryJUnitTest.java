@@ -549,7 +549,7 @@ public class DiskRandomOperationsAndRecoveryJUnitTest extends DiskRegionTestingB
             } catch (InterruptedException ie) {
               ie.printStackTrace();
             }
-            ((LocalRegion) region).notifyToRoll();
+            ((LocalRegion) region).forceCompaction();
 
           }
         }

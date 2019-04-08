@@ -27,5 +27,8 @@ public final class MappingConstants {
   public static final String GROUP_NAME = "groups";
   public static final String PDX_CLASS_FILE = "pdx-class-file";
 
+  public static final String THERE_IS_NO_JDBC_MAPPING_ON_PROXY_REGION =
+      "There is no jdbc mapping on proxy region.";
+
   private MappingConstants() {}
 }

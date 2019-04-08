@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.cq.internal.ops;
 import java.util.List;
 
 import org.apache.geode.cache.client.internal.Connection;
-import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.cache.client.internal.InternalPool;
 import org.apache.geode.cache.client.internal.ServerProxy;
 import org.apache.geode.cache.query.SelectResults;
@@ -71,11 +70,10 @@ public class ServerCQProxyImpl extends ServerProxy {
    * @param isDurable true if CQ is durable
    * @param regionDataPolicy the data policy ordinal of the region
    */
-  public Object createOn(String cqName, Connection conn, String queryStr, int cqState,
+  public void createOn(String cqName, Connection conn, String queryStr, int cqState,
       boolean isDurable, byte regionDataPolicy) {
 
-    return CreateCQOp.executeOn(this.pool, conn, cqName, queryStr, cqState, isDurable,
-        regionDataPolicy);
+    CreateCQOp.executeOn(this.pool, conn, cqName, queryStr, cqState, isDurable, regionDataPolicy);
   }
 
   /**
@@ -97,7 +95,7 @@ public class ServerCQProxyImpl extends ServerProxy {
    * @param cq the CQ to stop on the server
    */
   public void stop(ClientCQ cq) {
-    pool.getRITracker().removeCq(cq, cq.isDurable());
+    pool.getRITracker().removeCq(cq);
     StopCQOp.execute(this.pool, cq.getName());
   }
 
@@ -107,11 +105,11 @@ public class ServerCQProxyImpl extends ServerProxy {
    * @param cq the CQ to close on the server
    */
   public void close(ClientCQ cq) {
-    pool.getRITracker().removeCq(cq, cq.isDurable());
+    pool.getRITracker().removeCq(cq);
     CloseCQOp.execute(this.pool, cq.getName());
   }
 
   public List<String> getAllDurableCqsFromServer() {
-    return GetDurableCQsOp.execute((ExecutablePool) pool);
+    return GetDurableCQsOp.execute(pool);
   }
 }

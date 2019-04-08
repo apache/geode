@@ -15,7 +15,12 @@
 package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.verify;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -23,139 +28,215 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CustomExpiry;
+import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionObserverHolder;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class PartitionedRegionAttributesMutatorTest {
   private static final String TEST_REGION_NAME = "testRegion";
   private static final int DEFAULT_WAIT_DURATION = 5;
   private static final TimeUnit DEFAULT_WAIT_UNIT = TimeUnit.SECONDS;
 
-  @Rule
-  public ServerStarterRule server = new ServerStarterRule().withAutoStart();
+  private static MemberVM locator, server;
+  @ClassRule
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private final CountDownLatch mutationMade = new CountDownLatch(1);
-  private final CountDownLatch bucketCreated = new CountDownLatch(1);
-  private PartitionedRegion pr;
+  public void startCluster() {
+    Properties gemfireProperties = new Properties();
+    locator = cluster.startLocatorVM(0, gemfireProperties);
+    server = cluster.startServerVM(1, gemfireProperties, locator.getPort());
+  }
+
+  @After
+  public void stopCluster() {
+    cluster.stop(1);
+    cluster.stop(0);
+  }
 
   @Test
   public void testChangeCacheLoaderDuringBucketCreation()
       throws InterruptedException, TimeoutException, ExecutionException {
-    createRegion();
-    CacheLoader loader = createTestCacheLoader();
+    startCluster();
+    server.invoke(() -> {
+      CountDownLatch mutationMade = new CountDownLatch(1);
+      CountDownLatch bucketCreated = new CountDownLatch(1);
+      PartitionedRegion pr = createRegion(bucketCreated, mutationMade);
+      CacheLoader loader = createTestCacheLoader();
 
-    CompletableFuture<Void> createBucket =
-        CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
-    bucketCreated.await();
-    pr.getAttributesMutator().setCacheLoader(loader);
-    mutationMade.countDown();
-    createBucket.get(DEFAULT_WAIT_DURATION, DEFAULT_WAIT_UNIT);
+      CompletableFuture<Void> createBucket =
+          CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
+      bucketCreated.await();
+      pr.getAttributesMutator().setCacheLoader(loader);
+      mutationMade.countDown();
+      createBucket.get(DEFAULT_WAIT_DURATION, DEFAULT_WAIT_UNIT);
+      getAllBucketRegions(pr).forEach(region -> assertEquals(loader, region.getCacheLoader()));
+    });
+  }
 
-    getAllBucketRegions(pr).forEach(region -> assertEquals(loader, region.getCacheLoader()));
+  @Test
+  public void testChangeCacheLoaderWithClusterConfigUpdatesNodeInfo() {
+    startCluster();
+    server.invoke(() -> {
+      PartitionedRegion pr = createRegionSpy();
+      CacheLoader loader = createTestCacheLoader();
+      pr.getAttributesMutator().setCacheLoader(loader);
+      verify(pr).updatePRNodeInformation();
+      verify(pr, times(1)).updatePRConfig(any(), anyBoolean());
+    });
+  }
+
+  @Test
+  public void testChangeCacheWriterWithClusterConfigUpdatesNodeInfo() {
+    startCluster();
+    server.invoke(() -> {
+      PartitionedRegion pr = createRegionSpy();
+      CacheWriter writer = createTestCacheWriter();
+      pr.getAttributesMutator().setCacheWriter(writer);
+      verify(pr).updatePRNodeInformation();
+      verify(pr, times(1)).updatePRConfig(any(), anyBoolean());
+    });
   }
 
   @Test
   public void testChangeCustomEntryTtlDuringBucketCreation()
       throws InterruptedException, ExecutionException {
-    createRegion();
-    CustomExpiry customExpiry = createTestCustomExpiry();
+    startCluster();
+    server.invoke(() -> {
+      CountDownLatch mutationMade = new CountDownLatch(1);
+      CountDownLatch bucketCreated = new CountDownLatch(1);
+      PartitionedRegion pr = createRegion(bucketCreated, mutationMade);
+      CustomExpiry customExpiry = createTestCustomExpiry();
 
-    CompletableFuture<Void> createBucket =
-        CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
-    bucketCreated.await();
-    pr.getAttributesMutator().setCustomEntryTimeToLive(customExpiry);
-    mutationMade.countDown();
-    createBucket.get();
+      CompletableFuture<Void> createBucket =
+          CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
+      bucketCreated.await();
+      pr.getAttributesMutator().setCustomEntryTimeToLive(customExpiry);
+      mutationMade.countDown();
+      createBucket.get();
 
-    getAllBucketRegions(pr)
-        .forEach(region -> assertEquals(customExpiry, region.customEntryTimeToLive));
+      getAllBucketRegions(pr)
+          .forEach(region -> assertEquals(customExpiry, region.customEntryTimeToLive));
+    });
   }
 
   @Test
   public void testChangeCustomEntryIdleTimeoutDuringBucketCreation()
       throws InterruptedException, ExecutionException {
-    createRegion();
-    CustomExpiry customExpiry = createTestCustomExpiry();
+    startCluster();
+    server.invoke(() -> {
+      CountDownLatch mutationMade = new CountDownLatch(1);
+      CountDownLatch bucketCreated = new CountDownLatch(1);
+      PartitionedRegion pr = createRegion(bucketCreated, mutationMade);
+      CustomExpiry customExpiry = createTestCustomExpiry();
 
-    CompletableFuture<Void> createBucket =
-        CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
-    bucketCreated.await();
-    pr.getAttributesMutator().setCustomEntryIdleTimeout(customExpiry);
-    mutationMade.countDown();
-    createBucket.get();
+      CompletableFuture<Void> createBucket =
+          CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
+      bucketCreated.await();
+      pr.getAttributesMutator().setCustomEntryIdleTimeout(customExpiry);
+      mutationMade.countDown();
+      createBucket.get();
 
-    getAllBucketRegions(pr)
-        .forEach(region -> assertEquals(customExpiry, region.customEntryIdleTimeout));
+      getAllBucketRegions(pr)
+          .forEach(region -> assertEquals(customExpiry, region.customEntryIdleTimeout));
+    });
   }
 
   @Test
   public void testChangeEntryIdleTimeoutDuringBucketCreation()
       throws InterruptedException, ExecutionException {
-    createRegionWithFewBuckets();
+    startCluster();
+    server.invoke(() -> {
+      CountDownLatch mutationMade = new CountDownLatch(1);
+      CountDownLatch bucketCreated = new CountDownLatch(1);
+      PartitionedRegion pr = createRegionWithFewBuckets(bucketCreated, mutationMade);
 
-    CompletableFuture<Void> createBucket =
-        CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
-    bucketCreated.await();
-    ExpirationAttributes expirationAttributes =
-        new ExpirationAttributes(1000, ExpirationAction.DESTROY);
-    pr.getAttributesMutator().setEntryIdleTimeout(expirationAttributes);
-    mutationMade.countDown();
-    createBucket.get();
+      CompletableFuture<Void> createBucket =
+          CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
+      bucketCreated.await();
+      ExpirationAttributes expirationAttributes =
+          new ExpirationAttributes(1000, ExpirationAction.DESTROY);
+      pr.getAttributesMutator().setEntryIdleTimeout(expirationAttributes);
+      mutationMade.countDown();
+      createBucket.get();
 
-    getAllBucketRegions(pr)
-        .forEach(region -> assertEquals(expirationAttributes, region.getEntryIdleTimeout()));
+      getAllBucketRegions(pr)
+          .forEach(region -> assertEquals(expirationAttributes, region.getEntryIdleTimeout()));
+    });
   }
 
   @Test
   public void testChangeEntryTtlDuringBucketCreation()
       throws InterruptedException, ExecutionException {
-    createRegionWithFewBuckets();
+    startCluster();
+    server.invoke(() -> {
+      CountDownLatch mutationMade = new CountDownLatch(1);
+      CountDownLatch bucketCreated = new CountDownLatch(1);
+      PartitionedRegion pr = createRegionWithFewBuckets(bucketCreated, mutationMade);
+      CompletableFuture<Void> createBucket =
+          CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
+      bucketCreated.await();
+      ExpirationAttributes expirationAttributes =
+          new ExpirationAttributes(1000, ExpirationAction.DESTROY);
+      pr.getAttributesMutator().setEntryTimeToLive(expirationAttributes);
+      mutationMade.countDown();
+      createBucket.get();
 
-    CompletableFuture<Void> createBucket =
-        CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
-    bucketCreated.await();
-    ExpirationAttributes expirationAttributes =
-        new ExpirationAttributes(1000, ExpirationAction.DESTROY);
-    pr.getAttributesMutator().setEntryTimeToLive(expirationAttributes);
-    mutationMade.countDown();
-    createBucket.get();
-
-    getAllBucketRegions(pr)
-        .forEach(region -> assertEquals(expirationAttributes, region.getEntryTimeToLive()));
+      getAllBucketRegions(pr)
+          .forEach(region -> assertEquals(expirationAttributes, region.getEntryTimeToLive()));
+    });
   }
 
-  private void createRegion() {
-    pr = (PartitionedRegion) server.getCache().createRegionFactory(RegionShortcut.PARTITION)
+  private static PartitionedRegion createRegion(CountDownLatch bucketCreated,
+      CountDownLatch mutationMade) {
+    PartitionedRegion pr = (PartitionedRegion) ClusterStartupRule.getCache()
+        .createRegionFactory(RegionShortcut.PARTITION)
         .setStatisticsEnabled(true).create(TEST_REGION_NAME);
-    setRegionObserver();
+    setRegionObserver(bucketCreated, mutationMade);
+    return pr;
   }
 
-  private void createRegionWithFewBuckets() {
+  private static PartitionedRegion createRegionSpy() {
+    return Mockito
+        .spy((PartitionedRegion) ClusterStartupRule.getCache()
+            .createRegionFactory(RegionShortcut.PARTITION)
+            .setStatisticsEnabled(true).create(TEST_REGION_NAME));
+  }
+
+  private static PartitionedRegion createRegionWithFewBuckets(CountDownLatch bucketCreated,
+      CountDownLatch mutationMade) {
     PartitionAttributes partitionAttributes =
         new PartitionAttributesFactory().setTotalNumBuckets(5).create();
-    pr = (PartitionedRegion) server.getCache().createRegionFactory(RegionShortcut.PARTITION)
+    PartitionedRegion pr = (PartitionedRegion) ClusterStartupRule.getCache()
+        .createRegionFactory(RegionShortcut.PARTITION)
         .setStatisticsEnabled(true).setPartitionAttributes(partitionAttributes)
         .create(TEST_REGION_NAME);
-    setRegionObserver();
+    setRegionObserver(bucketCreated, mutationMade);
+    return pr;
   }
 
   // Adds an observer which will block bucket creation and wait for a loader to be added
-  private void setRegionObserver() {
+  private static void setRegionObserver(CountDownLatch bucketCreated, CountDownLatch mutationMade) {
     PartitionedRegionObserverHolder.setInstance(new PartitionedRegionObserverAdapter() {
       @Override
       public void beforeAssignBucket(PartitionedRegion partitionedRegion, int bucketId) {
@@ -176,11 +257,11 @@ public class PartitionedRegionAttributesMutatorTest {
     });
   }
 
-  private Set<BucketRegion> getAllBucketRegions(PartitionedRegion pr) {
+  private static Set<BucketRegion> getAllBucketRegions(PartitionedRegion pr) {
     return pr.getDataStore().getAllLocalBucketRegions();
   }
 
-  private CacheLoader createTestCacheLoader() {
+  private static CacheLoader createTestCacheLoader() {
     return new CacheLoader() {
       @Override
       public void close() {}
@@ -192,7 +273,40 @@ public class PartitionedRegionAttributesMutatorTest {
     };
   }
 
-  private CustomExpiry createTestCustomExpiry() {
+  private static CacheWriter createTestCacheWriter() {
+    return new CacheWriter() {
+      @Override
+      public void beforeUpdate(EntryEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void beforeCreate(EntryEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void beforeDestroy(EntryEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
+
+      }
+
+      @Override
+      public void close() {}
+
+    };
+  }
+
+  private static CustomExpiry createTestCustomExpiry() {
     return new CustomExpiry() {
       @Override
       public ExpirationAttributes getExpiry(Region.Entry entry) {

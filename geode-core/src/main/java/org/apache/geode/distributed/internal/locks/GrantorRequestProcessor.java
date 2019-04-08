@@ -394,7 +394,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
               if (opCode != CLEAR_OP && opCode != CLEAR_WITH_LOCKS_OP) {
                 // Note we do not try a new elder if doing a clear because
                 // the new elder will not have anything for us to clear.
-                // He will have done an ElderInit.
+                // It will have done an ElderInit.
                 tryNewElder = true;
               }
             }

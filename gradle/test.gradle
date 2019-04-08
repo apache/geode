@@ -35,7 +35,7 @@ gradle.taskGraph.whenReady({ graph ->
 })
 
 
-subprojects {
+subprojects { thisSubProject ->
   // This configuration might be safely removed once the CategoryWithParameterizedRunnerFactory
   // and associated classes are themselves removed, per GEODE-5606
   configurations {
@@ -50,8 +50,8 @@ subprojects {
     doFirst {
       TestPropertiesWriter.writeTestProperties(buildDir, name)
     }
-    if (project.hasProperty('testMaxParallelForks')) {
-      maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
+    if (thisSubProject.hasProperty('testMaxParallelForks')) {
+      maxParallelForks = Integer.parseUnsignedInt(thisSubProject.testMaxParallelForks)
     } else {
       maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     }
@@ -106,7 +106,7 @@ subprojects {
     // Do not add dependencies here that are not part of a custom configuration.
     // Dependencies should be explicit in the relevant build.gradle files to keep our modules
     //  as decoupled as possible.
-    
+
     // This 'apt' configuration to be removed by GEODE-5606.
     apt files("${rootProject.projectDir}/buildSrc/build/libs/buildSrc.jar")
     apt('junit:junit:' + DependencyConstraints.get('junit.version')) {
@@ -130,13 +130,13 @@ subprojects {
 
   configure([integrationTest, distributedTest, performanceTest]) {
     useJUnit {
-      if (project.hasProperty("testCategory")) {
-        includeCategories += project.testCategory
+      if (thisSubProject.hasProperty("testCategory")) {
+        includeCategories += thisSubProject.testCategory
       }
     }
   }
 
-  if (project.hasProperty("forceTest")) {
+  if (thisSubProject.hasProperty("forceTest")) {
     // All test facets already force rerun.  Only :test can be upToDate.
     test {
       outputs.upToDateWhen { false }
@@ -144,37 +144,37 @@ subprojects {
   }
 
   task repeatDistributedTest(type: RepeatTest) {
-    dependsOn {distributedTest.taskDependencies}
-    classpath = project.sourceSets.distributedTest.runtimeClasspath
-    testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
+    dependsOn { distributedTest.taskDependencies }
+    classpath = thisSubProject.sourceSets.distributedTest.runtimeClasspath
+    testClassesDirs = thisSubProject.sourceSets.distributedTest.output.classesDirs
   }
 
   task repeatIntegrationTest(type: RepeatTest) {
-    dependsOn {integrationTest.taskDependencies}
-    classpath = project.sourceSets.integrationTest.runtimeClasspath
-    testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+    dependsOn { integrationTest.taskDependencies }
+    classpath = thisSubProject.sourceSets.integrationTest.runtimeClasspath
+    testClassesDirs = thisSubProject.sourceSets.integrationTest.output.classesDirs
   }
 
   task repeatAcceptanceTest(type: RepeatTest) {
-    dependsOn {acceptanceTest.taskDependencies}
-    classpath = project.sourceSets.acceptanceTest.runtimeClasspath
-    testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
+    dependsOn { acceptanceTest.taskDependencies }
+    classpath = thisSubProject.sourceSets.acceptanceTest.runtimeClasspath
+    testClassesDirs = thisSubProject.sourceSets.acceptanceTest.output.classesDirs
   }
 
   task repeatUpgradeTest(type: RepeatTest) {
-    dependsOn {upgradeTest.taskDependencies}
-    classpath = project.sourceSets.upgradeTest.runtimeClasspath
-    testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs
+    dependsOn { upgradeTest.taskDependencies }
+    classpath = thisSubProject.sourceSets.upgradeTest.runtimeClasspath
+    testClassesDirs = thisSubProject.sourceSets.upgradeTest.output.classesDirs
   }
 
   task repeatUnitTest(type: RepeatTest) {
-    dependsOn {test.taskDependencies}
+    dependsOn { test.taskDependencies }
     // default classpath works for this one.
   }
 
   configure([integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest]) {
-    if (project.hasProperty('excludeTest')) {
-      exclude project.getProperty('excludeTest').split(',')
+    if (thisSubProject.hasProperty('excludeTest')) {
+      exclude thisSubProject.getProperty('excludeTest').split(',')
     }
   }
 
@@ -183,9 +183,9 @@ subprojects {
     useJUnit {}
     outputs.upToDateWhen { false }
 
-    if (project.hasProperty("failOnNoMatchingTests")) {
+    if (thisSubProject.hasProperty("failOnNoMatchingTests")) {
       filter {
-        setFailOnNoMatchingTests(Boolean.valueOf(project.failOnNoMatchingTests))
+        setFailOnNoMatchingTests(Boolean.valueOf(thisSubProject.failOnNoMatchingTests))
       }
     }
   }
@@ -207,12 +207,12 @@ subprojects {
 
         maxHeapSize '768m'
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
-        if (project.hasProperty('testJVMVer') &&  testJVMVer.toInteger() >= 9) {
+        if (thisSubProject.hasProperty('testJVMVer') && testJVMVer.toInteger() >= 9) {
           jvmArgs += ["--add-opens", "java.xml/jdk.xml.internal=ALL-UNNAMED"]
           jvmArgs += ["--add-opens", "java.base/jdk.internal.module=ALL-UNNAMED"]
           jvmArgs += ["--add-opens", "java.base/java.lang.module=ALL-UNNAMED"]
         }
-        if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+        if (thisSubProject.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
           executable = "${testJVM}/bin/java"
         }
 
@@ -257,8 +257,8 @@ subprojects {
     // Acceptance tests may reach out and run a gfsh command from the assembled gfsh.
     // If the test JVM version is specified, we must have the correct JAVA_HOME set for gfsh to use.
     // See also environment configuration for parallel testing in docker.gradle
-    if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
-      environment "JAVA_HOME", "${project.testJVM}"
+    if (thisSubProject.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+      environment "JAVA_HOME", "${thisSubProject.testJVM}"
     }
   }
 
@@ -268,16 +268,21 @@ subprojects {
     description 'Run this task before checking in code to validate changes. It runs tests beyond unitTest'
   }
 
-  tasks.withType(Test).plus([build,check]).each {
+  tasks.withType(Test).plus([build, check]).each {
     it.finalizedBy combineReports
     combineReports.mustRunAfter it
   }
-}
 
-classes.dependsOn subprojects.compileTestJava
-classes.dependsOn subprojects.compileIntegrationTestJava
-classes.dependsOn subprojects.compileDistributedTestJava
-classes.dependsOn subprojects.compileAcceptanceTestJava
-classes.dependsOn subprojects.compileUiTestJava
-classes.dependsOn subprojects.compilePerformanceTestJava
-classes.dependsOn subprojects.compileUpgradeTestJava
+  rootProject.tasks.named('classes').configure {
+    // This is a semi-lazy hook so that the target "assemble" also assembles our test sources.
+    dependsOn([
+      thisSubProject.tasks.named('compileTestJava'),
+      thisSubProject.tasks.named('compileIntegrationTestJava'),
+      thisSubProject.tasks.named('compileDistributedTestJava'),
+      thisSubProject.tasks.named('compileAcceptanceTestJava'),
+      thisSubProject.tasks.named('compileUiTestJava'),
+      thisSubProject.tasks.named('compilePerformanceTestJava'),
+      thisSubProject.tasks.named('compileUpgradeTestJava'),
+    ])
+  }
+}

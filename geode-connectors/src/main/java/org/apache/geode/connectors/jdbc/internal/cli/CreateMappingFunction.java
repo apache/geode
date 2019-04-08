@@ -26,6 +26,7 @@ import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
+import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
@@ -54,16 +55,19 @@ public class CreateMappingFunction extends CliFunction<Object[]> {
     Region<?, ?> region = verifyRegionExists(context.getCache(), regionName);
 
     // action
+    String member = context.getMemberName();
     String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
-    if (!synchronous) {
+    alterRegion(region, queueName, synchronous);
+    if (isAccessor(region)) {
+      return new CliFunctionResult(member, true,
+          MappingConstants.THERE_IS_NO_JDBC_MAPPING_ON_PROXY_REGION);
+    } else if (!synchronous) {
       createAsyncEventQueue(context.getCache(), queueName,
           region.getAttributes().getDataPolicy().withPartitioning());
     }
-    alterRegion(region, queueName, synchronous);
     createRegionMapping(service, regionMapping);
 
     // output
-    String member = context.getMemberName();
     String message =
         "Created JDBC mapping for region " + regionMapping.getRegionName() + " on " + member;
     return new CliFunctionResult(member, true, message);
@@ -75,12 +79,29 @@ public class CreateMappingFunction extends CliFunction<Object[]> {
    * and the given async-event-queue as one of its queues.
    */
   private void alterRegion(Region<?, ?> region, String queueName, boolean synchronous) {
-    region.getAttributesMutator().setCacheLoader(new JdbcLoader());
-    if (synchronous) {
-      region.getAttributesMutator().setCacheWriter(new JdbcWriter());
+    if (!isAccessor(region)) {
+      region.getAttributesMutator().setCacheLoader(new JdbcLoader());
+      if (synchronous) {
+        region.getAttributesMutator().setCacheWriter(new JdbcWriter());
+      } else {
+        region.getAttributesMutator().addAsyncEventQueueId(queueName);
+      }
     } else {
-      region.getAttributesMutator().addAsyncEventQueueId(queueName);
+      if (!synchronous) {
+        region.getAttributesMutator().addAsyncEventQueueId(queueName);
+      }
     }
+  }
+
+  boolean isAccessor(Region<?, ?> region) {
+    if (!region.getAttributes().getDataPolicy().withStorage()) {
+      return true;
+    }
+    if (region.getAttributes().getPartitionAttributes() != null
+        && region.getAttributes().getPartitionAttributes().getLocalMaxMemory() == 0) {
+      return true;
+    }
+    return false;
   }
 
   /**
