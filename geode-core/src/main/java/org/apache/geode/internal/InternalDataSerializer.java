@@ -2594,7 +2594,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   private static class ThreadLocalByteArrayCache {
-    private final ThreadLocal<byte[]> cache = new ThreadLocal<byte[]>();
+    private static final ThreadLocal<byte[]> cache = new ThreadLocal<byte[]>();
 
     /**
      * Returns a byte array whose length it at least minimumLength.
@@ -2604,7 +2604,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
      * @param minimumLength the minimum length of the byte array
      * @return a byte array, owned by this thread, whose length is at least minimumLength.
      */
-    public byte[] get(int minimumLength) {
+    public static byte[] get(int minimumLength) {
       byte[] result = cache.get();
       if (result == null || result.length < minimumLength) {
         result = new byte[minimumLength];
@@ -2614,15 +2614,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
   }
 
-  private static final ThreadLocalByteArrayCache threadLocalByteArrayCache =
-      new ThreadLocalByteArrayCache();
-
   private static String readStringBytesFromDataInput(DataInput dataInput, int len)
       throws IOException {
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading STRING_BYTES of len={}", len);
     }
-    byte[] buf = threadLocalByteArrayCache.get(len);
+    byte[] buf = ThreadLocalByteArrayCache.get(len);
     dataInput.readFully(buf, 0, len);
     return new String(buf, 0, 0, len); // intentionally using deprecated constructor
   }
