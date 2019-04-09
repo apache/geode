@@ -39,7 +39,7 @@ public class ManagementClientCreateRegion {
     config.setName(regionName);
     config.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult result = cms.create(config, "cluster");
+    ClusterManagementResult result = cms.create(config);
 
     if (!result.isSuccessful()) {
       throw new RuntimeException(
