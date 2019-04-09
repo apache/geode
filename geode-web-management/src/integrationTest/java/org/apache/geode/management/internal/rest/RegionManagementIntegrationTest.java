@@ -73,7 +73,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void invalidType() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
+    BasicRegionConfig regionConfig = new BasicRegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType("LOCAL");
 
