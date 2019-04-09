@@ -49,7 +49,3 @@ rootProject.tasks.named('classes').configure {
     ]
   )
 }
-
-rootProject.tasks.named('devBuild').configure {
-  dependsOn thisProjectScoped.tasks.named('spotlessApply')
-}
