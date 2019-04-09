@@ -106,21 +106,21 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public ClusterManagementResult create(CacheElement config, String group) {
-    String endPoint = getEndpoint(config) + "?group={group}";
+  public ClusterManagementResult create(CacheElement config) {
+    String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return restTemplate
-        .postForEntity(VERSION + endPoint, config, ClusterManagementResult.class, group)
+        .postForEntity(VERSION + endPoint, config, ClusterManagementResult.class)
         .getBody();
   }
 
   @Override
-  public ClusterManagementResult delete(CacheElement config, String group) {
+  public ClusterManagementResult delete(CacheElement config) {
     throw new NotImplementedException("Not Implemented");
   }
 
   @Override
-  public ClusterManagementResult update(CacheElement config, String group) {
+  public ClusterManagementResult update(CacheElement config) {
     throw new NotImplementedException("Not Implemented");
   }
 

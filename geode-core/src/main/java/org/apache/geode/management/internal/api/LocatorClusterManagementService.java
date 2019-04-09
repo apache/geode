@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -79,10 +78,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult create(CacheElement config, String group) {
-    if (StringUtils.isBlank(group)) {
-      group = "cluster";
-    }
+  public ClusterManagementResult create(CacheElement config) {
+    String group = config.getGroup();
 
     if (persistenceService == null) {
       return new ClusterManagementResult(false,
@@ -145,12 +142,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult delete(CacheElement config, String group) {
+  public ClusterManagementResult delete(CacheElement config) {
     throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public ClusterManagementResult update(CacheElement config, String group) {
+  public ClusterManagementResult update(CacheElement config) {
     throw new NotImplementedException("Not implemented");
   }
 

@@ -56,13 +56,13 @@ public class ClientClusterManagementServiceDunitTest {
     BasicRegionConfig region = new BasicRegionConfig();
     region.setName("customer");
 
-    ClusterManagementResult result = cmsClient.create(region, "");
+    ClusterManagementResult result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     assertThat(result.getMemberStatuses()).containsOnlyKeys("server-1", "server-2");
 
-    result = cmsClient.create(region, "");
+    result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
   }
@@ -72,7 +72,7 @@ public class ClientClusterManagementServiceDunitTest {
     BasicRegionConfig region = new BasicRegionConfig();
     region.setName("orders");
 
-    ClusterManagementResult result = cmsClient.create(region, null);
+    ClusterManagementResult result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -85,7 +85,7 @@ public class ClientClusterManagementServiceDunitTest {
     BasicRegionConfig region = new BasicRegionConfig();
     region.setName("__test");
 
-    ClusterManagementResult result = cmsClient.create(region, "");
+    ClusterManagementResult result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
@@ -95,8 +95,9 @@ public class ClientClusterManagementServiceDunitTest {
   public void createRegionWithGroup() {
     BasicRegionConfig region = new BasicRegionConfig();
     region.setName("company");
+    region.setGroup(groupA);
 
-    ClusterManagementResult result = cmsClient.create(region, groupA);
+    ClusterManagementResult result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);

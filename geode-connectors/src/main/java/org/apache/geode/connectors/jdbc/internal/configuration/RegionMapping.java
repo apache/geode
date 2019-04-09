@@ -40,7 +40,7 @@ import org.apache.geode.cache.configuration.XSDRootElement;
 @XmlRootElement(name = "mapping", namespace = "http://geode.apache.org/schema/jdbc")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/jdbc",
     schemaLocation = "http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd")
-public class RegionMapping implements CacheElement {
+public class RegionMapping extends CacheElement {
 
   @XmlElement(name = "field-mapping", namespace = "http://geode.apache.org/schema/jdbc")
   protected final List<FieldMapping> fieldMappings = new ArrayList<>();

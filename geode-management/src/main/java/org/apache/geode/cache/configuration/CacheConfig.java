@@ -1112,7 +1112,7 @@ public class CacheConfig {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "",
       propOrder = {"gatewayEventFilters", "gatewayEventSubstitutionFilter", "asyncEventListener"})
-  public static class AsyncEventQueue implements CacheElement {
+  public static class AsyncEventQueue extends CacheElement {
 
     @XmlElement(name = "gateway-event-filter", namespace = "http://geode.apache.org/schema/cache")
     protected List<DeclarableType> gatewayEventFilters;

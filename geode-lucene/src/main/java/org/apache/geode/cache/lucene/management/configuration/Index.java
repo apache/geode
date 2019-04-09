@@ -71,7 +71,7 @@ import org.apache.geode.cache.configuration.XSDRootElement;
 @XmlRootElement(name = "index", namespace = "http://geode.apache.org/schema/lucene")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/lucene",
     schemaLocation = "http://geode.apache.org/schema/lucene/lucene-1.0.xsd")
-public class Index implements CacheElement {
+public class Index extends CacheElement {
   @XmlElement(namespace = "http://geode.apache.org/schema/lucene", required = true)
   protected List<Index.Field> field;
   @XmlElement(namespace = "http://geode.apache.org/schema/lucene")
