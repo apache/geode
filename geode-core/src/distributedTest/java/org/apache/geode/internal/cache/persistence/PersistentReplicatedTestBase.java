@@ -14,229 +14,171 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import static org.junit.Assert.fail;
+import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
-  protected static final int MAX_WAIT = 60 * 1000;
-  protected static String REGION_NAME = "region";
-  protected File diskDir;
-  protected static String SAVED_ACK_WAIT_THRESHOLD;
+  static String regionName = "region";
 
-  @Override
-  public final void postSetUp() throws Exception {
-    Invoke.invokeInEveryVM(PersistentReplicatedTestBase.class, "setRegionName",
-        new Object[] {getUniqueName()});
-    setRegionName(getUniqueName());
+  private File diskDir;
+
+  @Before
+  public void setUpPersistentReplicatedTestBase() throws IOException {
+    invokeInEveryVM(() -> regionName = getUniqueName() + "Region");
+    regionName = getUniqueName() + "Region";
+
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
-    FileUtils.deleteDirectory(diskDir);
+    deleteDirectory(diskDir);
     diskDir.mkdir();
     diskDir.deleteOnExit();
   }
 
-  public static void setRegionName(String testName) {
-    REGION_NAME = testName + "Region";
+  @After
+  public void tearDownPersistentReplicatedTestBase() throws IOException {
+    deleteDirectory(diskDir);
   }
 
-  @Override
-  public final void postTearDownCacheTestCase() throws Exception {
-    FileUtils.deleteDirectory(diskDir);
-    postTearDownPersistentReplicatedTestBase();
-  }
-
-  protected void postTearDownPersistentReplicatedTestBase() throws Exception {}
-
-  protected void waitForBlockedInitialization(VM vm) {
-    vm.invoke(new SerializableRunnable() {
-
-      @Override
-      public void run() {
-        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-
-          @Override
-          public String description() {
-            return "Waiting for another persistent member to come online";
-          }
-
-          @Override
-          public boolean done() {
-            GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-            PersistentMemberManager mm = cache.getPersistentMemberManager();
-            Map<String, Set<PersistentMemberID>> regions = mm.getWaitingRegions();
-            boolean done = !regions.isEmpty();
-            return done;
-          }
-
-        });
-
-      }
-
+  void waitForBlockedInitialization(VM vm) {
+    vm.invoke(() -> {
+      await().until(() -> {
+        PersistentMemberManager persistentMemberManager = getCache().getPersistentMemberManager();
+        Map<String, Set<PersistentMemberID>> regions = persistentMemberManager.getWaitingRegions();
+        return !regions.isEmpty();
+      });
     });
   }
 
-  protected SerializableRunnable createPersistentRegionWithoutCompaction(final VM vm0) {
-    SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        File dir = getDiskDirForVM(vm0);
-        dir.mkdirs();
-        dsf.setDiskDirs(new File[] {dir});
-        dsf.setMaxOplogSize(1);
-        dsf.setAutoCompact(false);
-        dsf.setAllowForceCompaction(true);
-        dsf.setCompactionThreshold(20);
-        DiskStore ds = dsf.create(REGION_NAME);
-        RegionFactory rf = new RegionFactory();
-        rf.setDiskStoreName(ds.getName());
-        rf.setDiskSynchronous(true);
-        rf.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-        rf.setScope(Scope.DISTRIBUTED_ACK);
-        rf.create(REGION_NAME);
-      }
-    };
-    vm0.invoke(createRegion);
-    return createRegion;
+  void createPersistentRegionWithoutCompaction(VM vm) {
+    vm.invoke(() -> {
+      File dir = getDiskDirForVM(vm);
+      dir.mkdirs();
+
+      DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
+      diskStoreFactory.setDiskDirs(new File[] {dir});
+      diskStoreFactory.setMaxOplogSize(1);
+      diskStoreFactory.setAutoCompact(false);
+      diskStoreFactory.setAllowForceCompaction(true);
+      diskStoreFactory.setCompactionThreshold(20);
+
+      DiskStore diskStore = diskStoreFactory.create(regionName);
+
+      RegionFactory regionFactory = new RegionFactory();
+      regionFactory.setDiskStoreName(diskStore.getName());
+      regionFactory.setDiskSynchronous(true);
+      regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+
+      regionFactory.create(regionName);
+    });
   }
 
-  protected void closeRegion(final VM vm) {
-    SerializableRunnable closeRegion = new SerializableRunnable("Close persistent region") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(REGION_NAME);
-        region.close();
-      }
-    };
-    vm.invoke(closeRegion);
+  void closeRegion(VM vm) {
+    vm.invoke(() -> getCache().getRegion(regionName).close());
   }
 
-  protected void closeCache(final VM vm) {
-    SerializableRunnable closeCache = new SerializableRunnable("close cache") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        cache.close();
-      }
-    };
-    vm.invoke(closeCache);
+  void closeCache(final VM vm) {
+    vm.invoke(() -> getCache().close());
   }
 
-  protected AsyncInvocation closeCacheAsync(VM vm0) {
-    SerializableRunnable close = new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        cache.close();
-      }
-    };
-
-    return vm0.invokeAsync(close);
+  AsyncInvocation closeCacheAsync(VM vm) {
+    return vm.invokeAsync(() -> getCache().close());
   }
 
-  protected void createNonPersistentRegion(VM vm) throws Exception {
-    SerializableRunnable createRegion = new SerializableRunnable("Create non persistent region") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        RegionFactory rf = new RegionFactory();
-        rf.setDataPolicy(DataPolicy.REPLICATE);
-        rf.setScope(Scope.DISTRIBUTED_ACK);
-        rf.create(REGION_NAME);
-      }
-    };
-    vm.invoke(createRegion);
+  void createNonPersistentRegion(VM vm) {
+    vm.invoke(() -> {
+      getCache();
+
+      RegionFactory regionFactory = new RegionFactory();
+      regionFactory.setDataPolicy(DataPolicy.REPLICATE);
+      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+
+      regionFactory.create(regionName);
+    });
   }
 
-  protected AsyncInvocation createPersistentRegionWithWait(VM vm) throws Exception {
-    return _createPersistentRegion(vm, true);
+  AsyncInvocation createPersistentRegionWithWait(VM vm)
+      throws ExecutionException, InterruptedException {
+    return createPersistentRegion(vm, true);
   }
 
-  protected void createPersistentRegion(VM vm) throws Exception {
-    _createPersistentRegion(vm, false);
+  void createPersistentRegion(VM vm) throws ExecutionException, InterruptedException {
+    createPersistentRegion(vm, false);
   }
 
-  private AsyncInvocation _createPersistentRegion(VM vm, boolean wait) throws Exception {
-    AsyncInvocation future = createPersistentRegionAsync(vm);
-    long waitTime = wait ? 500 : MAX_WAIT;
-    future.join(waitTime);
-    if (future.isAlive() && !wait) {
-      fail("Region not created within" + MAX_WAIT);
+  private AsyncInvocation createPersistentRegion(VM vm, boolean createPersistentRegionWillWait)
+      throws ExecutionException, InterruptedException {
+    AsyncInvocation createPersistentRegionInVM = createPersistentRegionAsync(vm);
+
+    if (createPersistentRegionWillWait) {
+      createPersistentRegionInVM.join(500);
+      assertThat(createPersistentRegionInVM.isAlive()).isTrue();
+    } else {
+      createPersistentRegionInVM.await();
     }
-    if (!future.isAlive() && wait) {
-      fail("Did not expect region creation to complete");
-    }
-    if (!wait && future.exceptionOccurred()) {
-      throw new RuntimeException(future.getException());
-    }
-    return future;
+
+    return createPersistentRegionInVM;
   }
 
-  protected AsyncInvocation createPersistentRegionAsync(final VM vm) {
-    SerializableRunnable createRegion = new SerializableRunnable("Create persistent region") {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        File dir = getDiskDirForVM(vm);
-        dir.mkdirs();
-        dsf.setDiskDirs(new File[] {dir});
-        dsf.setMaxOplogSize(1);
-        DiskStore ds = dsf.create(REGION_NAME);
-        RegionFactory rf = new RegionFactory();
-        rf.setDiskStoreName(ds.getName());
-        rf.setDiskSynchronous(true);
-        rf.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-        rf.setScope(Scope.DISTRIBUTED_ACK);
-        rf.create(REGION_NAME);
-      }
-    };
-    return vm.invokeAsync(createRegion);
+  AsyncInvocation createPersistentRegionAsync(VM vm) {
+    return vm.invokeAsync(() -> {
+      File dir = getDiskDirForVM(vm);
+      dir.mkdirs();
+
+      DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
+      diskStoreFactory.setDiskDirs(new File[] {dir});
+      diskStoreFactory.setMaxOplogSize(1);
+
+      DiskStore diskStore = diskStoreFactory.create(regionName);
+
+      RegionFactory regionFactory = new RegionFactory();
+      regionFactory.setDiskStoreName(diskStore.getName());
+      regionFactory.setDiskSynchronous(true);
+      regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+
+      regionFactory.create(regionName);
+    });
   }
 
-  protected File getDiskDirForVM(final VM vm) {
-    File dir = new File(diskDir, String.valueOf(vm.getId()));
-    return dir;
+  File getDiskDirForVM(VM vm) {
+    return new File(diskDir, String.valueOf(vm.getId()));
   }
 
-  protected void backupDir(VM vm) throws IOException {
+  void backupDir(VM vm) throws IOException {
     File dirForVM = getDiskDirForVM(vm);
-    File backFile = new File(dirForVM.getParent(), dirForVM.getName() + ".bk");
-    FileUtils.copyDirectory(dirForVM, backFile);
+    File backupFile = new File(dirForVM.getParent(), dirForVM.getName() + ".bk");
+    FileUtils.copyDirectory(dirForVM, backupFile);
   }
 
-  protected void restoreBackup(VM vm) throws IOException {
+  void restoreBackup(VM vm) throws IOException {
     File dirForVM = getDiskDirForVM(vm);
-    File backFile = new File(dirForVM.getParent(), dirForVM.getName() + ".bk");
-    if (!backFile.renameTo(dirForVM)) {
-      FileUtils.deleteDirectory(dirForVM);
-      FileUtils.copyDirectory(backFile, dirForVM);
-      FileUtils.deleteDirectory(backFile);
+    File backupFile = new File(dirForVM.getParent(), dirForVM.getName() + ".bk");
+    if (!backupFile.renameTo(dirForVM)) {
+      deleteDirectory(dirForVM);
+      FileUtils.copyDirectory(backupFile, dirForVM);
+      deleteDirectory(backupFile);
     }
   }
-
 }
