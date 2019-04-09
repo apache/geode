@@ -671,11 +671,13 @@ public class HARegionQueue implements RegionQueue {
     // Check from Events Map if the put operation should proceed or not
     DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) this.eventsMap.get(ti);
     if (dace != null && dace.isGIIDace && this.puttingGIIDataInQueue) {
+      logger.info("RYGUY: Setting DACE to null for queue {} object {}", this, object);
       // we only need to retain DACE for which there are no entries in the queue.
       // for other thread identifiers we build up a new DACE
       dace = null;
     }
     if (dace != null) {
+      logger.info("RYGUY: DACE was not null for queue {} object {}", this, object);
       // check the last dispatched sequence Id
       if (this.puttingGIIDataInQueue || (sequenceID > dace.lastDispatchedSequenceId)) {
         // Asif:Insert the Event into the Region with proper locking.
@@ -684,13 +686,18 @@ public class HARegionQueue implements RegionQueue {
         // this point
         // also does not get added
         if (!dace.putObject(event, sequenceID)) {
+          logger.info("RYGUY: DACE encountered a destroyed token for queue {} object {}", this,
+              object);
           // dace encountered a DESTROYED token - stop adding GII data
           if (!this.puttingGIIDataInQueue) {
             this.put(object);
           }
+          {
+            logger.info("RYGUY: DACE was putting GII data in queue {} object {}", this, object);
+          }
         } else {
           // if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
-          logger.info(LogMarker.BRIDGE_SERVER_VERBOSE, "{}: Adding message to queue: {}", this,
+          logger.info("{}: Adding message to queue: {}", this,
               object);
           // }
         }
@@ -704,24 +711,27 @@ public class HARegionQueue implements RegionQueue {
         incrementTakeSidePutPermits();
       }
     } else {
+      logger.info("RYGUY: Creating new DACE for queue {} object {}", this, object);
       dace = new DispatchedAndCurrentEvents(this);
       DispatchedAndCurrentEvents oldDace =
           (DispatchedAndCurrentEvents) this.eventsMap.putIfAbsent(ti, dace);
       if (oldDace != null) {
+        logger.info("RYGUY: Old DACE wasn't null for queue {} object {}", this, object);
         dace = oldDace;
       } else {
+        logger.info("RYGUY: Putting object into HARegion for queue {} object {}", this, object);
         // Add the recently added ThreadIdentifier to the RegionQueue for expiry
         this.region.put(ti, dace.lastDispatchedSequenceId);
         // update the stats
         this.stats.incThreadIdentifiers();
       }
       if (!dace.putObject(event, sequenceID)) {
+        logger.info("RYGUY: Failed to putObject on DACE for queue {} object {}. Reputting.", this,
+            object);
         this.put(object);
       } else {
-        if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
-          logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "{}: Adding message to queue: {}", this,
-              object);
-        }
+        logger.info("RYGUY: Did not fail to putObject on DACE for queue {} object {}", this,
+            object);
       }
     }
   }
@@ -3016,7 +3026,7 @@ public class HARegionQueue implements RegionQueue {
           this.lastSequenceIDPut = sequenceID;
         } else if (!owningQueue.puttingGIIDataInQueue) {
           // if (isDebugEnabled_BS) {
-          logger.info(LogMarker.BRIDGE_SERVER_VERBOSE,
+          logger.info(
               "RYGUY: {} eliding event with ID {}, because it is not greater than the last sequence ID ({}). The rejected event has key <{}> and value <{}>",
               this, event.getEventId(), this.lastSequenceIDPut, event.getKeyToConflate(),
               event.getValueToConflate());
