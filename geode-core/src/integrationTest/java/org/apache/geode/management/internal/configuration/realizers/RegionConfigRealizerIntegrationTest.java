@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -33,11 +33,11 @@ public class RegionConfigRealizerIntegrationTest {
   public ServerStarterRule server = new ServerStarterRule().withAutoStart();
 
   private RegionConfigRealizer realizer;
-  private RegionConfig config;
+  private BasicRegionConfig config;
 
   @Before
   public void setup() {
-    config = new RegionConfig();
+    config = new BasicRegionConfig();
     realizer = new RegionConfigRealizer();
   }
 

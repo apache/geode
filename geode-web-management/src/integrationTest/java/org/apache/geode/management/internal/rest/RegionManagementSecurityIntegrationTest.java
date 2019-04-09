@@ -32,7 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 
 @RunWith(SpringRunner.class)
@@ -46,12 +46,12 @@ public class RegionManagementSecurityIntegrationTest {
 
   private LocatorWebContext context;
 
-  private RegionConfig regionConfig;
+  private BasicRegionConfig regionConfig;
   private String json;
 
   @Before
   public void before() throws JsonProcessingException {
-    regionConfig = new RegionConfig();
+    regionConfig = new BasicRegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();

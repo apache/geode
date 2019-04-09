@@ -29,166 +29,41 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.RestfulEndpoint;
 
 
 /**
  *
- * A "region" element describes a region (and its entries) in Geode distributed cache.
- * It may be used to create a new region or may be used to add new entries to an existing
- * region. Note that the "name" attribute specifies the simple name of the region; it
- * cannot contain a "/". If "refid" is set then it defines the default region attributes
- * to use for this region. A nested "region-attributes" element can override these defaults.
- * If the nested "region-attributes" element has its own "refid" then it will cause the
- * "refid" on the region to be ignored. "refid" can be set to the name of a RegionShortcut
- * or a ClientRegionShortcut (see the javadocs of those enum classes for their names).
- *
- *
- * <p>
- * Java class for region-type complex type.
- *
- * <p>
- * The following schema fragment specifies the expected content contained within this class.
- *
- * <pre>
- * &lt;complexType name="region-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="region-attributes" type="{http://geode.apache.org/schema/cache}region-attributes-type" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="index" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;choice minOccurs="0">
- *                   &lt;element name="functional">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="expression" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="from-clause" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="primary-key">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="field" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/choice>
- *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="expression" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="from-clause" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="key-index" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="type" default="range">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="range"/>
- *                       &lt;enumeration value="hash"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="entry" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="key">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;choice>
- *                             &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
- *                             &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
- *                           &lt;/choice>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="value">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;choice>
- *                             &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
- *                             &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
- *                           &lt;/choice>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;any processContents='lax' namespace='##other' maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="region" type="{http://geode.apache.org/schema/cache}region-type" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="refid" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- *
- *
+ * this holds the attributes that belongs to region element in cache.xml, but can not be
+ * configured through manage v2 API (yet)
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
-    propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
+    propOrder = {"indexes", "regionElements", "entries", "regions"})
 @Experimental
-public class RegionConfig implements CacheElement, RestfulEndpoint {
-
-  public static final String REGION_CONFIG_ENDPOINT = "/regions";
-
-  @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
-  protected RegionAttributesType regionAttributes;
+public class RegionConfig extends BasicRegionConfig {
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
   protected List<Index> indexes;
-  @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
-  protected List<Entry> entries;
   @XmlAnyElement(lax = true)
   protected List<CacheElement> regionElements;
+
+  @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
+  protected List<Entry> entries;
+
   @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionConfig> regions;
-  @XmlAttribute(name = "name", required = true)
-  protected String name;
-  @XmlAttribute(name = "refid")
-  protected String type;
 
   public RegionConfig() {}
 
-  public RegionConfig(String name, String refid) {
-    this.name = name;
-    this.type = refid;
+  public RegionConfig(String name, String type) {
+    super(name, type);
   }
 
-  @Override
-  public String getEndpoint() {
-    return REGION_CONFIG_ENDPOINT;
-  }
-
-  public RegionAttributesType getRegionAttributes() {
-    return regionAttributes;
-  }
-
-  public void setRegionAttributes(RegionAttributesType regionAttributes) {
-    this.regionAttributes = regionAttributes;
+  // a convenience constructor to turn a BasicRegionConfig into RegionConfig
+  public RegionConfig(BasicRegionConfig regionConfig) {
+    this.name = regionConfig.getName();
+    this.type = regionConfig.getType();
+    this.regionAttributes = regionConfig.getRegionAttributes();
   }
 
   /**
@@ -206,13 +81,6 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
    * <pre>
    * getIndexes().add(newItem);
    * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   * {@link RegionConfig.Index }
-   *
-   *
    */
   public List<Index> getIndexes() {
     if (indexes == null) {
@@ -220,6 +88,34 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
     }
     return this.indexes;
   }
+
+  /**
+   * Gets the value of the any property.
+   *
+   * <p>
+   * This accessor method returns a reference to the live list,
+   * not a snapshot. Therefore any modification you make to the
+   * returned list will be present inside the JAXB object.
+   * This is why there is not a <CODE>set</CODE> method for the any property.
+   *
+   * <p>
+   * For example, to add a new item, do as follows:
+   *
+   * <pre>
+   * getCustomRegionElements().add(newItem);
+   * </pre>
+   *
+   *
+   * <p>
+   * Objects of the following type(s) are allowed in the list
+   */
+  public List<CacheElement> getCustomRegionElements() {
+    if (regionElements == null) {
+      regionElements = new ArrayList<>();
+    }
+    return this.regionElements;
+  }
+
 
   /**
    * Gets the value of the entry property.
@@ -252,33 +148,6 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
   }
 
   /**
-   * Gets the value of the any property.
-   *
-   * <p>
-   * This accessor method returns a reference to the live list,
-   * not a snapshot. Therefore any modification you make to the
-   * returned list will be present inside the JAXB object.
-   * This is why there is not a <CODE>set</CODE> method for the any property.
-   *
-   * <p>
-   * For example, to add a new item, do as follows:
-   *
-   * <pre>
-   * getCustomRegionElements().add(newItem);
-   * </pre>
-   *
-   *
-   * <p>
-   * Objects of the following type(s) are allowed in the list
-   */
-  public List<CacheElement> getCustomRegionElements() {
-    if (regionElements == null) {
-      regionElements = new ArrayList<>();
-    }
-    return this.regionElements;
-  }
-
-  /**
    * Gets the value of the region property.
    *
    * <p>
@@ -307,217 +176,6 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
     }
     return this.regions;
   }
-
-  /**
-   * Gets the value of the name property.
-   *
-   * possible object is
-   * {@link String }
-   *
-   */
-  public String getName() {
-    return name;
-  }
-
-  /**
-   * Sets the value of the name property.
-   *
-   * allowed object is
-   * {@link String }
-   *
-   */
-  public void setName(String value) throws IllegalArgumentException {
-    if (value == null) {
-      return;
-    }
-
-    boolean regionPrefixedWithSlash = value.startsWith("/");
-    String[] regionSplit = value.split("/");
-
-    boolean hasSubRegions =
-        regionPrefixedWithSlash ? regionSplit.length > 2 : regionSplit.length > 1;
-    if (hasSubRegions) {
-      throw new IllegalArgumentException("Sub-regions are unsupported");
-    }
-
-    this.name = regionPrefixedWithSlash ? regionSplit[1] : value;
-  }
-
-  /**
-   * Gets the value of the type property.
-   *
-   * possible object is
-   * {@link String }
-   *
-   */
-  public String getType() {
-    return type;
-  }
-
-  /**
-   * Sets the value of the type property.
-   *
-   * allowed object is
-   * {@link String }
-   *
-   */
-  public void setType(RegionType regionType) {
-    if (regionType != null) {
-      setType(regionType.name());
-    }
-  }
-
-  public void setType(String regionType) {
-    if (regionType != null) {
-      this.type = regionType.toUpperCase();
-      setShortcutAttributes();
-    }
-  }
-
-  private void setShortcutAttributes() {
-    if (regionAttributes == null) {
-      regionAttributes = new RegionAttributesType();
-    }
-
-    switch (type) {
-      case "PARTITION": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        break;
-      }
-      case "REPLICATE": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
-      case "PARTITION_REDUNDANT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        break;
-      }
-      case "PARTITION_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        break;
-      }
-      case "PARTITION_REDUNDANT_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        break;
-      }
-      case "PARTITION_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_REDUNDANT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_PERSISTENT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_REDUNDANT_PERSISTENT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_HEAP_LRU": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
-        break;
-
-      }
-      case "PARTITION_REDUNDANT_HEAP_LRU": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
-        break;
-      }
-
-      case "REPLICATE_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
-      case "REPLICATE_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-
-      }
-      case "REPLICATE_PERSISTENT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "REPLICATE_HEAP_LRU": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PRELOADED);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        regionAttributes.setInterestPolicy("all");
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
-        break;
-      }
-      case "LOCAL": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        break;
-      }
-      case "LOCAL_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        break;
-      }
-      case "LOCAL_HEAP_LRU": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
-        break;
-      }
-      case "LOCAL_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "LOCAL_PERSISTENT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_PROXY": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLocalMaxMemory("0");
-        break;
-      }
-      case "PARTITION_PROXY_REDUNDANT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLocalMaxMemory("0");
-        regionAttributes.setRedundantCopy("1");
-        break;
-      }
-      case "REPLICATE_PROXY": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.EMPTY);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
-      default:
-        throw new IllegalArgumentException("invalid type " + type);
-    }
-  }
-
-  @Override
-  @JsonIgnore
-  public String getId() {
-    return getName();
-  }
-
 
   /**
    * <p>
@@ -850,5 +508,4 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
       return getName();
     }
   }
-
 }

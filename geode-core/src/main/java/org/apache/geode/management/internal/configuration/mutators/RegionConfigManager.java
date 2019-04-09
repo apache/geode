@@ -21,30 +21,30 @@ import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.RegionConfig;
 
-public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
+public class RegionConfigManager implements ConfigurationManager<BasicRegionConfig> {
 
   public RegionConfigManager() {}
 
   @Override
-  public void add(RegionConfig configElement, CacheConfig existingConfig) {
-    existingConfig.getRegions().add(configElement);
+  public void add(BasicRegionConfig configElement, CacheConfig existingConfig) {
+    existingConfig.addRegion(configElement);
   }
 
   @Override
-  public void update(RegionConfig config, CacheConfig existing) {
+  public void update(BasicRegionConfig config, CacheConfig existing) {
     throw new NotImplementedException("Not implemented yet");
   }
 
   @Override
-  public void delete(RegionConfig config, CacheConfig existing) {
+  public void delete(BasicRegionConfig config, CacheConfig existing) {
     throw new NotImplementedException("Not implemented yet");
   }
 
   @Override
-  public List<RegionConfig> list(RegionConfig config, CacheConfig existing) {
+  public List<BasicRegionConfig> list(BasicRegionConfig config, CacheConfig existing) {
     throw new NotImplementedException("Not implemented yet");
   }
 }

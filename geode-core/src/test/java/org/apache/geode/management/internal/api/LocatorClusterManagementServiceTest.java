@@ -30,8 +30,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -44,7 +44,7 @@ public class LocatorClusterManagementServiceTest {
   private LocatorClusterManagementService service;
   private InternalCache cache;
   private ConfigurationPersistenceService persistenceService;
-  private RegionConfig regionConfig;
+  private BasicRegionConfig regionConfig;
   private ClusterManagementResult result;
 
   @Before
@@ -52,7 +52,7 @@ public class LocatorClusterManagementServiceTest {
     cache = mock(InternalCache.class);
     persistenceService = mock(ConfigurationPersistenceService.class);
     service = spy(new LocatorClusterManagementService(cache, persistenceService));
-    regionConfig = new RegionConfig();
+    regionConfig = new BasicRegionConfig();
   }
 
   @Test
@@ -68,7 +68,7 @@ public class LocatorClusterManagementServiceTest {
   public void elementAlreadyExist() throws Exception {
     regionConfig.setName("test");
     CacheConfig cacheConfig = new CacheConfig();
-    cacheConfig.getRegions().add(regionConfig);
+    cacheConfig.addRegion(regionConfig);
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
 
     assertThatThrownBy(() -> service.create(regionConfig, "cluster"))

@@ -23,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -56,7 +56,7 @@ public class RegionManagementRestSecurityDUnitTest {
     restClient =
         new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
 
-    RegionConfig regionConfig = new RegionConfig();
+    BasicRegionConfig regionConfig = new BasicRegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();

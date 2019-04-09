@@ -33,7 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.web.client.ResourceAccessException;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -51,7 +51,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
 
   private MemberVM locator, server;
   private Properties sslProps;
-  private RegionConfig regionConfig;
+  private BasicRegionConfig regionConfig;
 
   @Before
   public void before() throws Exception {
@@ -62,7 +62,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
     sslProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     sslProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
 
-    regionConfig = new RegionConfig();
+    regionConfig = new BasicRegionConfig();
     regionConfig.setName("test");
   }
 

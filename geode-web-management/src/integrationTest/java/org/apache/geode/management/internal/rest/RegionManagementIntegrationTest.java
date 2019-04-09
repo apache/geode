@@ -33,7 +33,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 
 @RunWith(SpringRunner.class)
@@ -56,7 +56,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void sanityCheck() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
+    BasicRegionConfig regionConfig = new BasicRegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 
@@ -73,7 +73,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void invalidType() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
+    BasicRegionConfig regionConfig = new BasicRegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType("LOCAL");
 
