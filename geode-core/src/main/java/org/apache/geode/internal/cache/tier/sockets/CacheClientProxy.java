@@ -2686,7 +2686,7 @@ public class CacheClientProxy implements ClientSession {
 
       if (clientMessage instanceof ClientUpdateMessage) {
         byte[] latestValue = (byte[]) ((ClientUpdateMessage) clientMessage).getValue();
-        if (logger.isTraceEnabled()) {
+//        if (logger.isTraceEnabled()) {
           StringBuilder msg = new StringBuilder(100);
           msg.append(this).append(": Using latest value: ").append(Arrays.toString(latestValue));
           if (((ClientUpdateMessage) clientMessage).valueIsObject()) {
@@ -2695,8 +2695,8 @@ public class CacheClientProxy implements ClientSession {
             }
             msg.append(" for ").append(clientMessage);
           }
-          logger.trace(msg.toString());
-        }
+          logger.info(msg.toString());
+//        }
 
         message = ((ClientUpdateMessageImpl) clientMessage).getMessage(getProxy(), latestValue);
 
@@ -2711,14 +2711,14 @@ public class CacheClientProxy implements ClientSession {
       if (!this._proxy.isPaused()) {
         sendMessage(message);
 
-        if (logger.isTraceEnabled()) {
-          logger.trace("{}: Dispatched {}", this, clientMessage);
-        }
+//        if (logger.isTraceEnabled()) {
+          logger.info("{}: Dispatched {}", this, clientMessage);
+//        }
         isDispatched = true;
       } else {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Message Dispatcher of a Paused CCProxy is trying to dispatch message");
-        }
+//        if (logger.isDebugEnabled()) {
+          logger.debug("Message Dispatcher of a Paused CCProxy is trying to dispatch message: " + clientMessage);
+//        }
       }
       if (isDispatched) {
         this._messageQueue.getStatistics().incEventsDispatched();

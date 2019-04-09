@@ -854,8 +854,6 @@ public class CacheClientNotifier {
   }
 
   private void singletonNotifyClients(InternalCacheEvent event, ClientUpdateMessage cmsg) {
-    addEventToInitializingQueues(event);
-
     final FilterInfo filterInfo = event.getLocalFilterInfo();
     final FilterProfile regionProfile = ((LocalRegion) event.getRegion()).getFilterProfile();
 
@@ -887,6 +885,8 @@ public class CacheClientNotifier {
     final Set<ClientProxyMembershipID> filterClients =
         getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
 
+    addEventToInitializingQueues(event, filterClients);
+
     final Conflatable conflatable = handleClientTombstoneMessage(clientMessage, filterClients);
 
     singletonRouteClientMessage(conflatable, filterClients);
@@ -903,12 +903,19 @@ public class CacheClientNotifier {
     }
   }
 
-  private void addEventToInitializingQueues(final InternalCacheEvent event) {
+  private void addEventToInitializingQueues(final InternalCacheEvent event, final Set<ClientProxyMembershipID> filterClients) {
     for (final Map.Entry<ClientProxyMembershipID, Queue<InternalCacheEvent>> eventsQueuedWhileInitializing : initializingProxyEventQueues
         .entrySet()) {
       synchronized (initializingProxyEventQueuesLock) {
-        if (initializingProxyEventQueues.containsKey(eventsQueuedWhileInitializing.getKey())) {
+        ClientProxyMembershipID clientProxyMembershipID = eventsQueuedWhileInitializing.getKey();
+        if (initializingProxyEventQueues.containsKey(clientProxyMembershipID)) {
           eventsQueuedWhileInitializing.getValue().add(event);
+          // Because this event will be processed and sent when it is drained out of the temporary
+          // client initialization queue, we do not need to send it to the client at this time.
+          // We can prevent the event from being sent to the initializing client at this time
+          // by removing its client proxy membership ID from the filter clients collection,
+          // if it exists.
+          filterClients.remove(clientProxyMembershipID);
         }
       }
     }

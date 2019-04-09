@@ -3027,9 +3027,8 @@ public class HARegionQueue implements RegionQueue {
         } else if (!owningQueue.puttingGIIDataInQueue) {
           // if (isDebugEnabled_BS) {
           logger.info(
-              "RYGUY: {} eliding event with ID {}, because it is not greater than the last sequence ID ({}). The rejected event has key <{}> and value <{}>",
-              this, event.getEventId(), this.lastSequenceIDPut, event.getKeyToConflate(),
-              event.getValueToConflate());
+              "RYGUY: {} eliding event with ID {}, because it is not greater than the last sequence ID ({}). The rejected event: {}",
+              this, event.getEventId(), this.lastSequenceIDPut, event);
           // }
           owningQueue.stats.incNumSequenceViolated();
 
