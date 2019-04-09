@@ -23,16 +23,46 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
 import java.nio.file.Paths
 
 // This project aggressively reaches into many other projects and must wait for those configurations
-// to be evaluated and resolved.  As a safeguard against this and to avoid having to explicitly 
-// re-list every geode-* here, we instead depend on every subproject of rootProject, excluding this
-// project itself.  Additionally, this project also aggressively inspects its own subprojects.
-// Evaluation depends on them all.
+// to be evaluated and resolved.  Evaluation depends on each of these subprojects.
+
+// This list is used in a loop to defined the /lib copySpec 
+def dependentProjectNames = [
+  ':geode-common',
+  ':geode-connectors',
+  ':geode-core',
+  ':geode-cq',
+  ':geode-lucene',
+  ':geode-memcached',
+  ':geode-old-client-support',
+  ':geode-protobuf',
+  ':geode-protobuf-messages',
+  ':geode-rebalancer',
+  ':geode-redis',
+  ':geode-wan',
+]
+
+// These other dependencies are explicitly referenced throughout other copySpec
+def otherDependentProjectNames = [
+  ':extensions:geode-modules',
+  ':extensions:geode-modules-assembly',
+  ':extensions:geode-modules-session',
+  ':extensions:geode-modules-session',
+  ':extensions:geode-modules-tomcat7',
+  ':extensions:geode-modules-tomcat8',
+  ':extensions:geode-modules-tomcat9',
+  ':geode-experimental-driver',
+  ':geode-management',
+  ':geode-pulse',
+  ':geode-web',
+  ':geode-web-api',
+  ':geode-web-management',
+]
+
 evaluationDependsOnChildren()
-rootProject.subprojects.each { neighborProject ->
-  if (neighborProject != project) {
-    project.evaluationDependsOn(neighborProject.path)
-  }
+(dependentProjectNames + otherDependentProjectNames).each { neighborProjectName ->
+  project.evaluationDependsOn(neighborProjectName)
 }
+
 apply plugin: 'distribution'
 apply from: "${rootDir}/${scriptDir}/publish.gradle"
 
@@ -115,7 +145,6 @@ sourceSets {
     output.dir(webServersDir, builtBy: 'downloadWebServers')
   }
 }
-
 
 task downloadWebServers(type:Copy) {
   from {configurations.findAll {it.name.startsWith("webServer")}}
@@ -484,21 +513,7 @@ distributions {
 
       with copySpec {
         into('lib')
-        from {
-          [
-            'geode-common',
-            'geode-connectors',
-            'geode-core',
-            'geode-cq',
-            'geode-lucene',
-            'geode-memcached',
-            'geode-old-client-support',
-            'geode-protobuf',
-            'geode-protobuf-messages',
-            'geode-rebalancer',
-            'geode-redis',
-            'geode-wan',
-          ].collect {
+        from { dependentProjectNames.collect {
             [
               project(':'.concat(it)).configurations.runtimeClasspath,
               project(':'.concat(it)).configurations.archives.allArtifacts.files
