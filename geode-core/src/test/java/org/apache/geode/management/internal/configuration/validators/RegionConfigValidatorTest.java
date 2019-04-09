@@ -46,6 +46,15 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
+  public void invalidType() throws Exception {
+    config.setName("regionName");
+    config.setType("LOCAL");
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Type LOCAL is not supported in Management V2 API.");
+  }
+
+  @Test
   public void defaultsTypeToPartitioned() {
     config.setName("regionName");
     validator.validate(config);

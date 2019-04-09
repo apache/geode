@@ -72,6 +72,23 @@ public class RegionManagementIntegrationTest {
 
   @Test
   @WithMockUser
+  public void invalidType() throws Exception {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("customers");
+    regionConfig.setType("LOCAL");
+
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(regionConfig);
+
+    context.perform(post("/v2/regions").content(json))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.statusCode", is("ILLEGAL_ARGUMENT")))
+        .andExpect(jsonPath("$.statusMessage",
+            is("Type LOCAL is not supported in Management V2 API.")));
+  }
+
+  @Test
+  @WithMockUser
   public void ping() throws Exception {
     context.perform(get("/v2/ping"))
         .andExpect(content().string("pong"));

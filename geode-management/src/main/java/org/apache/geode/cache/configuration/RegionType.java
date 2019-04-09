@@ -15,18 +15,21 @@
 
 package org.apache.geode.cache.configuration;
 
-/**
- * Cluster Management V2 API supports all region shortcuts and attributes, but these are the
- * recommended types by the Cluster Management V2 API
- */
-public enum RegionType {
-  /**
-   * Same as RegionShortCut.PARTITION
-   */
-  PARTITION,
+import org.apache.geode.annotations.Experimental;
 
-  /**
-   * Same as RegionShortCut.REPLICATE
-   */
+/**
+ * these are the region types supported by Cluster Management V2 API. The attributes of these
+ * region types are the same as their namesakes in RegionShortcut
+ */
+@Experimental
+public enum RegionType {
+  PARTITION,
+  PARTITION_PROXY,
+  PARTITION_PROXY_REDUNDANT,
+  PARTITION_HEAP_LRU,
+  PARTITION_OVERFLOW,
   REPLICATE,
+  REPLICATE_PROXY,
+  REPLICATE_HEAP_LRU,
+  REPLICATE_OVERFLOW
 }
