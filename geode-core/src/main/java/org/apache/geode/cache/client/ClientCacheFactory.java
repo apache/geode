@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -155,7 +156,7 @@ public class ClientCacheFactory {
    * Creates a new client cache factory.
    */
   public ClientCacheFactory() {
-    this.dsProps = new Properties();
+    dsProps = new Properties();
   }
 
   /**
@@ -169,7 +170,7 @@ public class ClientCacheFactory {
     if (props == null) {
       props = new Properties();
     }
-    this.dsProps = props;
+    dsProps = props;
   }
 
   /**
@@ -181,7 +182,7 @@ public class ClientCacheFactory {
    * @return a reference to this ClientCacheFactory object
    */
   public ClientCacheFactory set(String name, String value) {
-    this.dsProps.setProperty(name, value);
+    dsProps.setProperty(name, value);
     return this;
   }
 
@@ -214,12 +215,17 @@ public class ClientCacheFactory {
     return basicCreate();
   }
 
+  @SuppressWarnings("deprecation")
+  private static InternalClientCache getInternalClientCache() {
+    return GemFireCacheImpl.getInstance();
+  }
+
   private ClientCache basicCreate() {
     synchronized (ClientCacheFactory.class) {
-      InternalClientCache instance = GemFireCacheImpl.getInstance();
+      InternalClientCache instance = getInternalClientCache();
 
       {
-        String propValue = this.dsProps.getProperty(MCAST_PORT);
+        String propValue = dsProps.getProperty(MCAST_PORT);
         if (propValue != null) {
           int mcastPort = Integer.parseInt(propValue);
           if (mcastPort != 0) {
@@ -230,17 +236,16 @@ public class ClientCacheFactory {
         }
       }
       {
-        String propValue = this.dsProps.getProperty(LOCATORS);
+        String propValue = dsProps.getProperty(LOCATORS);
         if (propValue != null && !propValue.isEmpty()) {
           throw new IllegalStateException(
               "On a client cache the locators property must be set to an empty string or not set. It was set to \""
                   + propValue + "\".");
         }
       }
-      this.dsProps.setProperty(MCAST_PORT, "0");
-      this.dsProps.setProperty(LOCATORS, "");
-      InternalDistributedSystem system =
-          (InternalDistributedSystem) DistributedSystem.connect(this.dsProps);
+      dsProps.setProperty(MCAST_PORT, "0");
+      dsProps.setProperty(LOCATORS, "");
+      InternalDistributedSystem system = connectInternalDistributedSystem();
 
       if (instance != null && !instance.isClosed()) {
         // this is ok; just make sure it is a client cache
@@ -250,7 +255,7 @@ public class ClientCacheFactory {
         }
 
         // check if pool is compatible
-        instance.validatePoolFactory(this.pf);
+        instance.validatePoolFactory(pf);
 
         // Check if cache configuration matches.
         cacheConfig.validateCacheConfig(instance);
@@ -266,11 +271,16 @@ public class ClientCacheFactory {
     }
   }
 
+  @SuppressWarnings("deprecation")
+  private InternalDistributedSystem connectInternalDistributedSystem() {
+    return (InternalDistributedSystem) DistributedSystem.connect(dsProps);
+  }
+
   private PoolFactory getPoolFactory() {
-    if (this.pf == null) {
-      this.pf = PoolManager.createFactory();
+    if (pf == null) {
+      pf = PoolManager.createFactory();
     }
-    return this.pf;
+    return pf;
   }
 
   /**
@@ -651,7 +661,7 @@ public class ClientCacheFactory {
    *         ClientCacheFactory
    */
   public static synchronized ClientCache getAnyInstance() {
-    InternalClientCache instance = GemFireCacheImpl.getInstance();
+    InternalClientCache instance = getInternalClientCache();
     if (instance == null) {
       throw new CacheClosedException(
           "A cache has not yet been created.");
@@ -683,7 +693,7 @@ public class ClientCacheFactory {
    * @see org.apache.geode.pdx.PdxInstance
    */
   public ClientCacheFactory setPdxReadSerialized(boolean pdxReadSerialized) {
-    this.cacheConfig.setPdxReadSerialized(pdxReadSerialized);
+    cacheConfig.setPdxReadSerialized(pdxReadSerialized);
     return this;
   }
 
@@ -698,7 +708,7 @@ public class ClientCacheFactory {
    * @see PdxSerializer
    */
   public ClientCacheFactory setPdxSerializer(PdxSerializer serializer) {
-    this.cacheConfig.setPdxSerializer(serializer);
+    cacheConfig.setPdxSerializer(serializer);
     return this;
   }
 
@@ -717,7 +727,7 @@ public class ClientCacheFactory {
    */
   @Deprecated
   public ClientCacheFactory setPdxDiskStore(String diskStoreName) {
-    this.cacheConfig.setPdxDiskStore(diskStoreName);
+    cacheConfig.setPdxDiskStore(diskStoreName);
     return this;
   }
 
@@ -734,7 +744,7 @@ public class ClientCacheFactory {
    */
   @Deprecated
   public ClientCacheFactory setPdxPersistent(boolean isPersistent) {
-    this.cacheConfig.setPdxPersistent(isPersistent);
+    cacheConfig.setPdxPersistent(isPersistent);
     return this;
   }
 
@@ -753,7 +763,7 @@ public class ClientCacheFactory {
    * @since GemFire 6.6
    */
   public ClientCacheFactory setPdxIgnoreUnreadFields(boolean ignore) {
-    this.cacheConfig.setPdxIgnoreUnreadFields(ignore);
+    cacheConfig.setPdxIgnoreUnreadFields(ignore);
     return this;
   }
 }

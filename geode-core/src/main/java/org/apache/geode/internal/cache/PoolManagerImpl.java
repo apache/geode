@@ -76,14 +76,14 @@ public class PoolManagerImpl {
    *        listener. False if it is a fake manager used internally by the XML code.
    */
   public PoolManagerImpl(boolean addListener) {
-    this.normalManager = addListener;
+    normalManager = addListener;
   }
 
   /**
    * Returns true if this is a normal manager; false if it is a fake one used for xml parsing.
    */
   public boolean isNormal() {
-    return this.normalManager;
+    return normalManager;
   }
 
   /**
@@ -104,7 +104,7 @@ public class PoolManagerImpl {
    * @return the existing connection pool or <code>null</code> if it does not exist.
    */
   public Pool find(String name) {
-    return this.pools.get(name);
+    return pools.get(name);
   }
 
   /**
@@ -114,8 +114,7 @@ public class PoolManagerImpl {
     // destroying connection pools
     boolean foundClientPool = false;
     synchronized (poolLock) {
-      for (Iterator<Map.Entry<String, Pool>> itr = pools.entrySet().iterator(); itr.hasNext();) {
-        Map.Entry<String, Pool> entry = itr.next();
+      for (Entry<String, Pool> entry : pools.entrySet()) {
         PoolImpl pool = (PoolImpl) entry.getValue();
         pool.basicDestroy(keepAlive);
         foundClientPool = true;
@@ -133,8 +132,7 @@ public class PoolManagerImpl {
    * @return a copy of the Pools Map
    */
   public Map<String, Pool> getMap() {
-    // debugStack("getMap: " + this.pools);
-    return new HashMap<String, Pool>(this.pools);
+    return new HashMap<>(pools);
   }
 
   /**
@@ -143,8 +141,8 @@ public class PoolManagerImpl {
    * @throws IllegalStateException if a pool with same name is already registered.
    */
   public void register(Pool pool) {
-    synchronized (this.poolLock) {
-      Map<String, Pool> copy = new HashMap<String, Pool>(pools);
+    synchronized (poolLock) {
+      Map<String, Pool> copy = new HashMap<>(pools);
       String name = pool.getName();
       // debugStack("register pool=" + name);
       Object old = copy.put(name, pool);
@@ -157,8 +155,8 @@ public class PoolManagerImpl {
       // throw new IllegalStateException("Using SPECIAL_DURABLE system property"
       // + " and more than one pool already exists in client.");
       // }
-      this.pools = Collections.unmodifiableMap(copy);
-      this.itrForEmergencyClose = copy.entrySet().iterator();
+      pools = Collections.unmodifiableMap(copy);
+      itrForEmergencyClose = copy.entrySet().iterator();
     }
   }
 
@@ -168,16 +166,16 @@ public class PoolManagerImpl {
    * @return true if pool unregistered from cache; false if someone else already did it
    */
   public boolean unregister(Pool pool) {
-    synchronized (this.poolLock) {
-      Map<String, Pool> copy = new HashMap<String, Pool>(pools);
+    synchronized (poolLock) {
+      Map<String, Pool> copy = new HashMap<>(pools);
       String name = pool.getName();
       // debugStack("unregister pool=" + name);
       Object rmPool = copy.remove(name);
       if (rmPool == null || rmPool != pool) {
         return false;
       } else {
-        this.pools = Collections.unmodifiableMap(copy);
-        this.itrForEmergencyClose = copy.entrySet().iterator();
+        pools = Collections.unmodifiableMap(copy);
+        itrForEmergencyClose = copy.entrySet().iterator();
         return true;
       }
     }
@@ -185,9 +183,7 @@ public class PoolManagerImpl {
 
   @Override
   public String toString() {
-    StringBuffer result = new StringBuffer();
-    result.append(super.toString()).append("-").append(this.normalManager ? "normal" : "xml");
-    return result.toString();
+    return super.toString() + "-" + (normalManager ? "normal" : "xml");
   }
 
   /**
@@ -196,12 +192,12 @@ public class PoolManagerImpl {
   public static void readyForEvents(InternalDistributedSystem system, boolean xmlPoolsOnly) {
     boolean foundDurablePool = false;
     Map<String, Pool> pools = PoolManager.getAll();
-    for (Iterator<Pool> itr = pools.values().iterator(); itr.hasNext();) {
-      PoolImpl p = (PoolImpl) itr.next();
+    for (Pool pool : pools.values()) {
+      PoolImpl p = (PoolImpl) pool;
       if (p.isDurableClient()) {
         // TODO - handle an exception and attempt on all pools?
         foundDurablePool = true;
-        if (!xmlPoolsOnly || p.getDeclaredInXML()) {
+        if (!xmlPoolsOnly) {
           p.readyForEvents(system);
         }
       }
@@ -213,17 +209,13 @@ public class PoolManagerImpl {
   }
 
   public static void allPoolsRegisterInstantiator(Instantiator instantiator) {
-    Instantiator[] instantiators = new Instantiator[1];
-    instantiators[0] = instantiator;
-    for (Iterator<Pool> itr = PoolManager.getAll().values().iterator(); itr.hasNext();) {
-      PoolImpl next = (PoolImpl) itr.next();
+    Instantiator[] instantiators = new Instantiator[] {instantiator};
+    for (Pool pool : PoolManager.getAll().values()) {
+      PoolImpl next = (PoolImpl) pool;
       try {
         EventID eventId = InternalInstantiator.generateEventId();
-        if (eventId == null) {
-          // cache must not exist, do nothing
-        } else {
-          RegisterInstantiatorsOp.execute(next, instantiators,
-              InternalInstantiator.generateEventId());
+        if (eventId != null) {
+          RegisterInstantiatorsOp.execute(next, instantiators, eventId);
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
@@ -232,16 +224,13 @@ public class PoolManagerImpl {
   }
 
   public static void allPoolsRegisterInstantiator(InstantiatorAttributesHolder holder) {
-    InstantiatorAttributesHolder[] holders = new InstantiatorAttributesHolder[1];
-    holders[0] = holder;
-    for (Iterator<Pool> itr = PoolManager.getAll().values().iterator(); itr.hasNext();) {
-      PoolImpl next = (PoolImpl) itr.next();
+    InstantiatorAttributesHolder[] holders = new InstantiatorAttributesHolder[] {holder};
+    for (Pool pool : PoolManager.getAll().values()) {
+      PoolImpl next = (PoolImpl) pool;
       try {
         EventID eventId = InternalInstantiator.generateEventId();
-        if (eventId == null) {
-          // cache must not exist, do nothing
-        } else {
-          RegisterInstantiatorsOp.execute(next, holders, InternalInstantiator.generateEventId());
+        if (eventId != null) {
+          RegisterInstantiatorsOp.execute(next, holders, eventId);
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
@@ -250,18 +239,15 @@ public class PoolManagerImpl {
   }
 
   public static void allPoolsRegisterDataSerializers(DataSerializer dataSerializer) {
-    DataSerializer[] dataSerializers = new DataSerializer[1];
-    dataSerializers[0] = dataSerializer;
-    for (Iterator<Pool> itr = PoolManager.getAll().values().iterator(); itr.hasNext();) {
-      PoolImpl next = (PoolImpl) itr.next();
+    DataSerializer[] dataSerializers = new DataSerializer[] {dataSerializer};
+    for (Pool pool : PoolManager.getAll().values()) {
+      PoolImpl next = (PoolImpl) pool;
       try {
         EventID eventId = (EventID) dataSerializer.getEventId();
         if (eventId == null) {
           eventId = InternalDataSerializer.generateEventId();
         }
-        if (eventId == null) {
-          // cache must not exist, do nothing
-        } else {
+        if (eventId != null) {
           RegisterDataSerializersOp.execute(next, dataSerializers, eventId);
         }
       } catch (RuntimeException e) {
@@ -271,18 +257,15 @@ public class PoolManagerImpl {
   }
 
   public static void allPoolsRegisterDataSerializers(SerializerAttributesHolder holder) {
-    SerializerAttributesHolder[] holders = new SerializerAttributesHolder[1];
-    holders[0] = holder;
-    for (Iterator<Pool> itr = PoolManager.getAll().values().iterator(); itr.hasNext();) {
-      PoolImpl next = (PoolImpl) itr.next();
+    SerializerAttributesHolder[] holders = new SerializerAttributesHolder[] {holder};
+    for (Pool pool : PoolManager.getAll().values()) {
+      PoolImpl next = (PoolImpl) pool;
       try {
-        EventID eventId = (EventID) holder.getEventId();
+        EventID eventId = holder.getEventId();
         if (eventId == null) {
           eventId = InternalDataSerializer.generateEventId();
         }
-        if (eventId == null) {
-          // cache must not exist, do nothing
-        } else {
+        if (eventId != null) {
           RegisterDataSerializersOp.execute(next, holders, eventId);
         }
       } catch (RuntimeException e) {
