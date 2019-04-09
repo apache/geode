@@ -18,6 +18,9 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.cache.configuration.BasicRegionConfig.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,6 +37,12 @@ import org.apache.geode.management.api.ClusterManagementResult;
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class RegionManagementController extends AbstractManagementController {
 
+  @ApiOperation(value = "create regions")
+  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
+      @ApiResponse(code = 401, message = "Invalid Username or Password."),
+      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
+      @ApiResponse(code = 409, message = "Region already exist."),
+      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> createRegion(

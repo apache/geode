@@ -304,5 +304,11 @@
       <scope>runtime</scope>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 </project>

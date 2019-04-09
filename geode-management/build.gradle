@@ -28,10 +28,14 @@ dependencies {
   compile('org.springframework:spring-web')
   compile('javax.xml.bind:jaxb-api')
   compile('javax.xml.bind:jaxb-api')
-    compile('org.apache.httpcomponents:httpclient')
+  compile('org.apache.httpcomponents:httpclient')
 
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
+  }
+  compileOnly('io.springfox:springfox-swagger2') {
+    exclude module: 'slf4j-api'
+    exclude module: "jackson-annotations"
   }
 
   testCompile(project(':geode-common'))

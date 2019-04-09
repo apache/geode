@@ -52,8 +52,19 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     // performs the actual request before logging
     filterChain.doFilter(wrappedRequest, wrappedResponse);
 
-    // log after the request has been made and ContentCachingRequestWrapper has cached the request
-    // payload.
+    // Log after the request has been made and ContentCachingRequestWrapper has cached the request
+    // payload. We don't want to log any swagger requests though.
+    if (!(request.getRequestURI().contains("swagger")
+        || request.getRequestURI().contains("api-docs"))) {
+      logRequest(request, wrappedRequest);
+      logResponse(response, wrappedResponse);
+    }
+
+    // IMPORTANT: copy content of response back into original response
+    wrappedResponse.copyBodyToResponse();
+  }
+
+  private void logRequest(HttpServletRequest request, ContentCachingRequestWrapper wrappedRequest) {
     String requestPattern = "Management Request: %s[url=%s]; user=%s; payload=%s";
     String requestUrl = request.getRequestURI();
     if (request.getQueryString() != null) {
@@ -63,21 +74,22 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
         wrappedRequest.getCharacterEncoding());
     logger.info(String.format(requestPattern, request.getMethod(), requestUrl,
         request.getRemoteUser(), payload));
+  }
 
+  private void logResponse(HttpServletResponse response,
+      ContentCachingResponseWrapper wrappedResponse) {
     // construct the response message
     String responsePattern = "Management Response: Status=%s; response=%s";
-    payload = getContentAsString(wrappedResponse.getContentAsByteArray(),
+    String payload = getContentAsString(wrappedResponse.getContentAsByteArray(),
         wrappedResponse.getCharacterEncoding());
     payload = payload.replaceAll(System.lineSeparator(), "");
     logger.info(String.format(responsePattern, response.getStatus(), payload));
-
-    // IMPORTANT: copy content of response back into original response
-    wrappedResponse.copyBodyToResponse();
   }
 
   private String getContentAsString(byte[] buf, String encoding) {
-    if (buf == null || buf.length == 0)
+    if (buf == null || buf.length == 0) {
       return "";
+    }
     int length = Math.min(buf.length, MAX_PAYLOAD_LENGTH);
     try {
       return new String(buf, 0, length, encoding);
