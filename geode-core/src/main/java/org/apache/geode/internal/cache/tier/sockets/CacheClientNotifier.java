@@ -903,11 +903,12 @@ public class CacheClientNotifier {
     }
   }
 
-  private void addEventToInitializingQueues(final InternalCacheEvent event, final Set<ClientProxyMembershipID> filterClients) {
+  private void addEventToInitializingQueues(final InternalCacheEvent event,
+      final Set<ClientProxyMembershipID> filterClients) {
     for (final Map.Entry<ClientProxyMembershipID, Queue<InternalCacheEvent>> eventsQueuedWhileInitializing : initializingProxyEventQueues
         .entrySet()) {
       synchronized (initializingProxyEventQueuesLock) {
-        ClientProxyMembershipID clientProxyMembershipID = eventsQueuedWhileInitializing.getKey();
+        final ClientProxyMembershipID clientProxyMembershipID = eventsQueuedWhileInitializing.getKey();
         if (initializingProxyEventQueues.containsKey(clientProxyMembershipID)) {
           eventsQueuedWhileInitializing.getValue().add(event);
           // Because this event will be processed and sent when it is drained out of the temporary
