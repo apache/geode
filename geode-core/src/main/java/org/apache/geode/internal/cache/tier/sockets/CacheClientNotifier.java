@@ -18,12 +18,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,8 +33,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -45,8 +46,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -57,7 +56,6 @@ import org.apache.geode.cache.InterestRegistrationListener;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.query.CqException;
@@ -72,12 +70,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.CacheClientStatus;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -90,6 +84,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterProfile;
+import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -111,6 +106,7 @@ import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.GemFireSecurityException;
 
 /**
  * Class <code>CacheClientNotifier</code> works on the server and manages client socket connections
@@ -121,6 +117,10 @@ import org.apache.geode.security.AuthenticationRequiredException;
 @SuppressWarnings({"synthetic-access", "deprecation"})
 public class CacheClientNotifier {
   private static final Logger logger = LogService.getLogger();
+  private final Map<ClientProxyMembershipID, Queue<ClientRegistrationEvent>> registeringProxyEventQueues =
+      new ConcurrentHashMap<>();
+  private final Object registeringProxyEventQueuesLock = new Object();
+  private final SocketMessageWriter socketMessageWriter = new SocketMessageWriter();
 
   @MakeNotStatic
   private static volatile CacheClientNotifier ccnSingleton;
@@ -136,7 +136,7 @@ public class CacheClientNotifier {
       ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver) {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, acceptorStats, maximumMessageCount,
-          messageTimeToLive, listener, overflowAttributesList, isGatewayReceiver);
+          messageTimeToLive, listener, isGatewayReceiver);
     }
 
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -152,269 +152,114 @@ public class CacheClientNotifier {
   }
 
   /**
-   * Writes a given message to the output stream
-   *
-   * @param dos the <code>DataOutputStream</code> to use for writing the message
-   * @param type a byte representing the message type
-   * @param p_msg the message to be written; can be null
-   */
-  private void writeMessage(DataOutputStream dos, byte type, String p_msg, Version clientVersion)
-      throws IOException {
-    writeHandshakeMessage(dos, type, p_msg, clientVersion, (byte) 0x00, 0);
-  }
-
-  private void writeHandshakeMessage(DataOutputStream dos, byte type, String p_msg,
-      Version clientVersion, byte endpointType, int queueSize) throws IOException {
-    String msg = p_msg;
-
-    // write the message type
-    dos.writeByte(type);
-
-    dos.writeByte(endpointType);
-    dos.writeInt(queueSize);
-
-    if (msg == null) {
-      msg = "";
-    }
-    dos.writeUTF(msg);
-    if (clientVersion != null && clientVersion.compareTo(Version.GFE_61) >= 0) {
-      // get all the instantiators.
-      Instantiator[] instantiators = InternalInstantiator.getInstantiators();
-      HashMap instantiatorMap = new HashMap();
-      if (instantiators != null && instantiators.length > 0) {
-        for (Instantiator instantiator : instantiators) {
-          ArrayList instantiatorAttributes = new ArrayList();
-          instantiatorAttributes.add(instantiator.getClass().toString().substring(6));
-          instantiatorAttributes.add(instantiator.getInstantiatedClass().toString().substring(6));
-          instantiatorMap.put(instantiator.getId(), instantiatorAttributes);
-        }
-      }
-      DataSerializer.writeHashMap(instantiatorMap, dos);
-
-      // get all the dataserializers.
-      DataSerializer[] dataSerializers = InternalDataSerializer.getSerializers();
-      HashMap<Integer, ArrayList<String>> dsToSupportedClasses =
-          new HashMap<Integer, ArrayList<String>>();
-      HashMap<Integer, String> dataSerializersMap = new HashMap<Integer, String>();
-      if (dataSerializers != null && dataSerializers.length > 0) {
-        for (DataSerializer dataSerializer : dataSerializers) {
-          dataSerializersMap.put(dataSerializer.getId(),
-              dataSerializer.getClass().toString().substring(6));
-          if (clientVersion.compareTo(Version.GFE_6516) >= 0) {
-            ArrayList<String> supportedClassNames = new ArrayList<String>();
-            for (Class clazz : dataSerializer.getSupportedClasses()) {
-              supportedClassNames.add(clazz.getName());
-            }
-            dsToSupportedClasses.put(dataSerializer.getId(), supportedClassNames);
-          }
-        }
-      }
-      DataSerializer.writeHashMap(dataSerializersMap, dos);
-      if (clientVersion.compareTo(Version.GFE_6516) >= 0) {
-        DataSerializer.writeHashMap(dsToSupportedClasses, dos);
-      }
-      if (clientVersion.compareTo(Version.GEODE_1_5_0) >= 0) {
-        dos.writeInt(CLIENT_PING_TASK_PERIOD);
-      }
-    }
-    dos.flush();
-  }
-
-  /**
-   * Writes an exception message to the socket
-   *
-   * @param dos the <code>DataOutputStream</code> to use for writing the message
-   * @param type a byte representing the exception type
-   * @param ex the exception to be written; should not be null
-   */
-  private void writeException(DataOutputStream dos, byte type, Exception ex, Version clientVersion)
-      throws IOException {
-    writeMessage(dos, type, ex.toString(), clientVersion);
-  }
-
-  /**
    * Registers a new client updater that wants to receive updates with this server.
    *
    * @param socket The socket over which the server communicates with the client.
+   * @param isPrimary Whether server is the primary subscription end point for this client
+   * @param acceptorId ID of the acceptor used to clean up the client connection
+   * @param notifyBySubscription Whether the Server is running in NotifyBySubscription mode
+   * @throws IOException Can occur if there are issues communicating over the socket
    */
-  public void registerClient(Socket socket, boolean isPrimary, long acceptorId,
-      boolean notifyBySubscription) throws IOException {
-    // Since no remote ports were specified in the message, wait for them.
+  public void registerClient(final ClientRegistrationMetadata clientRegistrationMetadata,
+      final Socket socket, final boolean isPrimary, final long acceptorId,
+      final boolean notifyBySubscription) throws IOException {
     long startTime = this.statistics.startTime();
-    DataInputStream dis = new DataInputStream(socket.getInputStream());
-    DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
-    // Read the client version
-    short clientVersionOrdinal = Version.readOrdinal(dis);
-    Version clientVersion = null;
+    ClientProxyMembershipID clientProxyMembershipID =
+        clientRegistrationMetadata.getClientProxyMembershipID();
+    DataOutputStream dataOutputStream = clientRegistrationMetadata.getDataOutputStream();
+    Version clientVersion = clientRegistrationMetadata.getClientVersion();
+
     try {
-      clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);
-      if (logger.isDebugEnabled()) {
-        logger.debug("{}: Registering client with version: {}", this, clientVersion);
-      }
-    } catch (UnsupportedVersionException e) {
-      SocketAddress sa = socket.getRemoteSocketAddress();
-      UnsupportedVersionException uve = e;
-      if (sa != null) {
-        String sInfo = " Client: " + sa.toString() + ".";
-        uve = new UnsupportedVersionException(e.getMessage() + sInfo);
-      }
-      logger.warn("CacheClientNotifier: Caught exception attempting to client: ",
-          uve);
-      writeException(dos, CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), uve,
-          clientVersion);
-      return;
-    }
+      if (isClientPermitted(clientRegistrationMetadata, clientProxyMembershipID)) {
+        Queue<ClientRegistrationEvent> eventsReceivedWhileRegisteringClient =
+            createRegisteringProxyEventQueue(clientProxyMembershipID);
 
-    // Read and ignore the reply code. This is used on the client to server
-    // handshake.
-    dis.readByte(); // replyCode
-
-    if (Version.GFE_57.compareTo(clientVersion) <= 0) {
-      if (Version.CURRENT.compareTo(clientVersion) > 0) {
-        dis = new VersionedDataInputStream(dis, clientVersion);
-        dos = new VersionedDataOutputStream(dos, clientVersion);
-      }
-      registerGFEClient(dis, dos, socket, isPrimary, startTime, clientVersion, acceptorId,
-          notifyBySubscription);
-    } else {
-      Exception e = new UnsupportedVersionException(clientVersionOrdinal);
-      throw new IOException(e.toString());
-    }
-  }
-
-  protected void registerGFEClient(DataInputStream dis, DataOutputStream dos, Socket socket,
-      boolean isPrimary, long startTime, Version clientVersion, long acceptorId,
-      boolean notifyBySubscription) throws IOException {
-    // Read the ports and throw them away. We no longer need them
-    int numberOfPorts = dis.readInt();
-    for (int i = 0; i < numberOfPorts; i++) {
-      dis.readInt();
-    }
-    // Read the handshake identifier and convert it to a string member id
-    ClientProxyMembershipID proxyID = null;
-    CacheClientProxy proxy;
-    AccessControl authzCallback = null;
-    byte clientConflation;
-    try {
-      proxyID = ClientProxyMembershipID.readCanonicalized(dis);
-      if (getDenylistedClient().contains(proxyID)) {
-        writeException(dos, Handshake.REPLY_INVALID,
-            new Exception("This client is denylisted by server"), clientVersion);
-        return;
-      }
-      proxy = getClientProxy(proxyID);
-      DistributedMember member = proxyID.getDistributedMember();
-
-      DistributedSystem system = this.getCache().getDistributedSystem();
-      Properties sysProps = system.getProperties();
-      String authenticator = sysProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
-
-      if (clientVersion.compareTo(Version.GFE_603) >= 0) {
-        byte[] overrides = Handshake.extractOverrides(new byte[] {(byte) dis.read()});
-        clientConflation = overrides[0];
-      } else {
-        clientConflation = (byte) dis.read();
-      }
-
-      switch (clientConflation) {
-        case Handshake.CONFLATION_DEFAULT:
-        case Handshake.CONFLATION_OFF:
-        case Handshake.CONFLATION_ON:
-          break;
-        default:
-          writeException(dos, Handshake.REPLY_INVALID,
-              new IllegalArgumentException("Invalid conflation byte"), clientVersion);
-          return;
-      }
-      Object subject = null;
-      Properties credentials =
-          Handshake.readCredentials(dis, dos, system, this.cache.getSecurityService());
-      if (credentials != null) {
-        if (securityLogWriter.fineEnabled()) {
-          securityLogWriter
-              .fine("CacheClientNotifier: verifying credentials for proxyID: " + proxyID);
-        }
-        subject =
-            Handshake.verifyCredentials(authenticator, credentials, system.getSecurityProperties(),
-                this.logWriter, this.securityLogWriter, member, this.cache.getSecurityService());
-      }
-
-      Subject shiroSubject =
-          subject instanceof Subject ? (Subject) subject : null;
-      proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation, clientVersion,
-          acceptorId, notifyBySubscription, shiroSubject);
-
-      if (proxy != null && subject != null) {
-        if (subject instanceof Principal) {
-          Principal principal = (Principal) subject;
-          if (securityLogWriter.fineEnabled()) {
-            securityLogWriter
-                .fine("CacheClientNotifier: successfully verified credentials for proxyID: "
-                    + proxyID + " having principal: " + principal.getName());
-          }
-
-          String postAuthzFactoryName = sysProps.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
-          if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
-            Method authzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
-            authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
-            authzCallback.init(principal, member, this.getCache());
-          }
-          proxy.setPostAuthzCallback(authzCallback);
+        try {
+          registerClientInternal(clientRegistrationMetadata, socket, isPrimary, acceptorId,
+              notifyBySubscription);
+        } finally {
+          drainAllEventsReceivedWhileRegisteringClient(
+              clientProxyMembershipID,
+              clientRegistrationMetadata,
+              eventsReceivedWhileRegisteringClient);
         }
       }
-    } catch (ClassNotFoundException e) {
-      throw new IOException(
-          String.format(
-              "ClientProxyMembershipID object could not be created. Exception occurred was %s",
-              e));
-    } catch (AuthenticationRequiredException ex) {
-      securityLogWriter.warning(
-          String.format("An exception was thrown for client [%s]. %s",
-              new Object[] {proxyID, ex}));
-      writeException(dos, Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED, ex, clientVersion);
-      return;
-    } catch (AuthenticationFailedException ex) {
-      securityLogWriter.warning(
-          String.format("An exception was thrown for client [%s]. %s",
-              new Object[] {proxyID, ex}));
-      writeException(dos, Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED, ex, clientVersion);
-      return;
-    } catch (CacheException e) {
+    } catch (final AuthenticationRequiredException ex) {
+      handleAuthenticationException(clientProxyMembershipID, dataOutputStream, clientVersion,
+          ex, Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED);
+    } catch (final AuthenticationFailedException ex) {
+      handleAuthenticationException(clientProxyMembershipID, dataOutputStream, clientVersion, ex,
+          Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
+    } catch (final CacheException e) {
       logger.warn(String.format("%s :registerClient: Exception encountered in registration %s",
-          new Object[] {this, e}),
+          this, e),
           e);
-      IOException io = new IOException(
+      IOException ioException = new IOException(
           String.format("Exception occurred while trying to register interest due to : %s",
-              e.getMessage()));
-      io.initCause(e);
-      throw io;
-    } catch (Exception ex) {
-      logger.warn(String.format("An exception was thrown for client [%s]. %s",
-          new Object[] {proxyID, ""}),
+              e.getMessage()),
+          e);
+      throw ioException;
+    } catch (final Exception ex) {
+      logger.warn(String.format("An exception was thrown for client [%s].",
+          (clientProxyMembershipID != null
+              ? clientProxyMembershipID : "unknown")),
           ex);
-      writeException(dos, CommunicationMode.UnsuccessfulServerToClient.getModeNumber(), ex,
+      socketMessageWriter.writeException(dataOutputStream,
+          CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
+          ex,
           clientVersion);
-      return;
     }
 
     this.statistics.endClientRegistration(startTime);
   }
 
+  private boolean isClientPermitted(ClientRegistrationMetadata clientRegistrationMetadata,
+      ClientProxyMembershipID clientProxyMembershipID)
+      throws IOException {
+    if (getDenylistedClient().contains(clientProxyMembershipID)) {
+      Exception deniedException = new Exception("This client is denylisted by server");
+      socketMessageWriter.writeException(clientRegistrationMetadata.getDataOutputStream(),
+          Handshake.REPLY_INVALID, deniedException, clientRegistrationMetadata.getClientVersion());
+      return false;
+    }
+    return true;
+  }
+
   /**
-   * Registers a new client that wants to receive updates with this server.
+   * Continues the registration of a new client that wants to receive updates with this server.
    *
+   * @param clientRegistrationMetadata Contains registration info pertaining to the client
    * @param socket The socket over which the server communicates with the client.
-   * @param proxyId The distributed member id of the client being registered
-   * @param proxy The <code>CacheClientProxy</code> of the given <code>proxyId</code>
-   *
-   * @return CacheClientProxy for the registered client
+   * @param isPrimary Whether server is the primary subscription end point for this client
+   * @param acceptorId ID of the acceptor used to clean up the client connection
+   * @param notifyBySubscription Whether the Server is running in NotifyBySubscription mode
+   * @throws IOException Can occur if there are issues communicating over the socket
+   * @throws CacheException A generic exception, which indicates a cache error has occurred.
+   * @throws ClassNotFoundException Thrown when the ClientProxyMembershipID class is not found
+   * @throws NoSuchMethodException Potentially thrown by performPostAuthorization
+   * @throws InvocationTargetException Potentially thrown by performPostAuthorization
+   * @throws IllegalAccessException Potentially thrown by performPostAuthorization
    */
-  private CacheClientProxy registerClient(Socket socket, ClientProxyMembershipID proxyId,
-      CacheClientProxy proxy, boolean isPrimary, byte clientConflation, Version clientVersion,
-      long acceptorId, boolean notifyBySubscription, Subject subject)
-      throws IOException, CacheException {
-    CacheClientProxy l_proxy = proxy;
+  void registerClientInternal(final ClientRegistrationMetadata clientRegistrationMetadata,
+      final Socket socket,
+      final boolean isPrimary,
+      final long acceptorId, final boolean notifyBySubscription)
+      throws IOException, CacheException, ClassNotFoundException, NoSuchMethodException,
+      InvocationTargetException, IllegalAccessException {
+    ClientProxyMembershipID clientProxyMembershipID =
+        clientRegistrationMetadata.getClientProxyMembershipID();
+    byte clientConflation = clientRegistrationMetadata.getClientConflation();
+    Version clientVersion = clientRegistrationMetadata.getClientVersion();
+
+    CacheClientProxy cacheClientProxy = getClientProxy(clientProxyMembershipID);
+    DistributedMember member = clientProxyMembershipID.getDistributedMember();
+    DistributedSystem system = getCache().getDistributedSystem();
+    Properties sysProps = system.getProperties();
+    String authenticator = sysProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
+    Object subjectOrPrincipal =
+        getSubjectOrPrincipal(clientRegistrationMetadata, member, system, authenticator);
+    Subject subject = subjectOrPrincipal instanceof Subject ? (Subject) subjectOrPrincipal : null;
 
     // Initialize the socket
     socket.setTcpNoDelay(true);
@@ -431,11 +276,11 @@ public class CacheClientNotifier {
     byte responseByte = CommunicationMode.SuccessfulServerToClient.getModeNumber();
     String unsuccessfulMsg = null;
     boolean successful = true;
-    boolean clientIsDurable = proxyId.isDurable();
+    boolean clientIsDurable = clientProxyMembershipID.isDurable();
     if (logger.isDebugEnabled()) {
       if (clientIsDurable) {
         logger.debug("CacheClientNotifier: Attempting to register durable client: {}",
-            proxyId.getDurableId());
+            clientProxyMembershipID.getDurableId());
       } else {
         logger.debug("CacheClientNotifier: Attempting to register non-durable client");
       }
@@ -444,8 +289,8 @@ public class CacheClientNotifier {
     byte endpointType = 0x00;
     int queueSize = 0;
     if (clientIsDurable) {
-      if (l_proxy == null) {
-        if (isTimedOut(proxyId)) {
+      if (cacheClientProxy == null) {
+        if (isTimedOut(clientProxyMembershipID)) {
           queueSize = PoolImpl.PRIMARY_QUEUE_TIMED_OUT;
         } else {
           queueSize = PoolImpl.PRIMARY_QUEUE_NOT_AVAILABLE;
@@ -454,42 +299,45 @@ public class CacheClientNotifier {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "CacheClientNotifier: No proxy exists for durable client with id {}. It must be created.",
-              proxyId.getDurableId());
+              clientProxyMembershipID.getDurableId());
         }
-        l_proxy =
-            new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation, clientVersion,
+        cacheClientProxy =
+            new CacheClientProxy(this, socket, clientProxyMembershipID, isPrimary, clientConflation,
+                clientVersion,
                 acceptorId, notifyBySubscription, this.cache.getSecurityService(), subject);
-        successful = this.initializeProxy(l_proxy);
+        successful = this.initializeProxy(cacheClientProxy);
       } else {
-        l_proxy.setSubject(subject);
-        if (proxy.isPrimary()) {
+        cacheClientProxy.setSubject(subject);
+        if (cacheClientProxy.isPrimary()) {
           endpointType = (byte) 2;
         } else {
           endpointType = (byte) 1;
         }
-        queueSize = proxy.getQueueSize();
+        queueSize = cacheClientProxy.getQueueSize();
         // A proxy exists for this durable client. It must be reinitialized.
-        if (l_proxy.isPaused()) {
+        if (cacheClientProxy.isPaused()) {
           if (CacheClientProxy.testHook != null) {
             CacheClientProxy.testHook.doTestHook("CLIENT_PRE_RECONNECT");
           }
-          if (l_proxy.lockDrain()) {
+          if (cacheClientProxy.lockDrain()) {
             try {
               if (logger.isDebugEnabled()) {
                 logger.debug(
                     "CacheClientNotifier: A proxy exists for durable client with id {}. This proxy will be reinitialized: {}",
-                    proxyId.getDurableId(), l_proxy);
+                    clientProxyMembershipID.getDurableId(), cacheClientProxy);
               }
               this.statistics.incDurableReconnectionCount();
-              l_proxy.getProxyID().updateDurableTimeout(proxyId.getDurableTimeout());
-              l_proxy.reinitialize(socket, proxyId, this.getCache(), isPrimary, clientConflation,
+              cacheClientProxy.getProxyID()
+                  .updateDurableTimeout(clientProxyMembershipID.getDurableTimeout());
+              cacheClientProxy.reinitialize(socket, clientProxyMembershipID, this.getCache(),
+                  isPrimary, clientConflation,
                   clientVersion);
-              l_proxy.setMarkerEnqueued(true);
+              cacheClientProxy.setMarkerEnqueued(true);
               if (CacheClientProxy.testHook != null) {
                 CacheClientProxy.testHook.doTestHook("CLIENT_RECONNECTED");
               }
             } finally {
-              l_proxy.unlockDrain();
+              cacheClientProxy.unlockDrain();
             }
           } else {
             unsuccessfulMsg =
@@ -506,14 +354,14 @@ public class CacheClientNotifier {
           unsuccessfulMsg =
               String.format(
                   "The requested durable client has the same identifier ( %s ) as an existing durable client ( %s ). Duplicate durable clients are not allowed.",
-                  new Object[] {proxyId.getDurableId(), proxy});
+                  new Object[] {clientProxyMembershipID.getDurableId(), cacheClientProxy});
           logger.warn(unsuccessfulMsg);
           // Set the unsuccessful response byte.
           responseByte = Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT;
         }
       }
     } else {
-      CacheClientProxy staleClientProxy = this.getClientProxy(proxyId);
+      CacheClientProxy staleClientProxy = this.getClientProxy(clientProxyMembershipID);
       if (staleClientProxy != null) {
         // A proxy exists for this non-durable client. It must be closed.
         if (logger.isDebugEnabled()) {
@@ -529,19 +377,20 @@ public class CacheClientNotifier {
       } // non-null stale proxy
 
       // Create the new proxy for this non-durable client
-      l_proxy =
-          new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation, clientVersion,
+      cacheClientProxy =
+          new CacheClientProxy(this, socket, clientProxyMembershipID, isPrimary, clientConflation,
+              clientVersion,
               acceptorId, notifyBySubscription, this.cache.getSecurityService(), subject);
-      successful = this.initializeProxy(l_proxy);
+      successful = this.initializeProxy(cacheClientProxy);
     }
 
     if (!successful) {
-      l_proxy = null;
+      cacheClientProxy = null;
       responseByte = Handshake.REPLY_REFUSED;
       unsuccessfulMsg =
           String.format(
               "A previous connection attempt from this client is still being processed: %s",
-              new Object[] {proxyId});
+              new Object[] {clientProxyMembershipID});
       logger.warn(unsuccessfulMsg);
     }
 
@@ -554,13 +403,14 @@ public class CacheClientNotifier {
       DataOutputStream dos =
           new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
       // write the message type, message length and the error message (if any)
-      writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion, endpointType,
-          queueSize);
+      socketMessageWriter.writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion,
+          endpointType, queueSize);
     } catch (IOException ioe) {// remove the added proxy if we get IOException.
-      if (l_proxy != null) {
-        boolean keepProxy = l_proxy.close(false, false); // do not check for queue, just close it
+      if (cacheClientProxy != null) {
+        boolean keepProxy = cacheClientProxy.close(false, false); // do not check for queue, just
+                                                                  // close it
         if (!keepProxy) {
-          removeClientProxy(l_proxy);
+          removeClientProxy(cacheClientProxy);
         }
       }
       throw ioe;
@@ -575,25 +425,50 @@ public class CacheClientNotifier {
     // will ensure that the response byte is sent to the client before
     // the marker message. If the client is durable, the message processor
     // is not started until the clientReady message is received.
-    if (!clientIsDurable && l_proxy != null
+    if (!clientIsDurable && cacheClientProxy != null
         && responseByte == CommunicationMode.SuccessfulServerToClient.getModeNumber()) {
       // The startOrResumeMessageDispatcher tests if the proxy is a primary.
       // If this is a secondary proxy, the dispatcher is not started.
       // The false parameter signifies that a marker message has not already been
       // processed. This will generate and send one.
-      l_proxy.startOrResumeMessageDispatcher(false);
+      cacheClientProxy.startOrResumeMessageDispatcher(false);
     }
 
     if (responseByte == CommunicationMode.SuccessfulServerToClient.getModeNumber()) {
       if (logger.isDebugEnabled()) {
-        logger.debug("CacheClientNotifier: Successfully registered {}", l_proxy);
+        logger.debug("CacheClientNotifier: Successfully registered {}", cacheClientProxy);
       }
     } else {
       logger.warn(
           "CacheClientNotifier: Unsuccessfully registered client with identifier {} and response code {}",
-          new Object[] {proxyId, responseByte});
+          new Object[] {clientProxyMembershipID, responseByte});
     }
-    return l_proxy;
+
+    performPostAuthorization(cacheClientProxy, clientProxyMembershipID, member,
+        sysProps,
+        subjectOrPrincipal);
+  }
+
+  private void handleAuthenticationException(final ClientProxyMembershipID clientProxyMembershipID,
+      final DataOutputStream dataOutputStream,
+      final Version clientVersion,
+      final GemFireSecurityException ex,
+      final byte replyExceptionAuthenticationFailed)
+      throws IOException {
+    securityLogWriter.warning(
+        String.format("An exception was thrown for client [%s]. %s",
+            clientProxyMembershipID, ex));
+    socketMessageWriter.writeException(dataOutputStream, replyExceptionAuthenticationFailed, ex,
+        clientVersion);
+  }
+
+  private Queue<ClientRegistrationEvent> createRegisteringProxyEventQueue(
+      final ClientProxyMembershipID clientProxyMembershipID) {
+    Queue<ClientRegistrationEvent> eventsReceivedWhileRegisteringClient =
+        new ConcurrentLinkedQueue<>();
+    registeringProxyEventQueues.put(clientProxyMembershipID,
+        eventsReceivedWhileRegisteringClient);
+    return eventsReceivedWhileRegisteringClient;
   }
 
   private boolean initializeProxy(CacheClientProxy l_proxy) throws IOException, CacheException {
@@ -734,7 +609,7 @@ public class CacheClientNotifier {
     }
   }
 
-  private ClientUpdateMessageImpl constructClientMessage(InternalCacheEvent event) {
+  ClientUpdateMessageImpl constructClientMessage(InternalCacheEvent event) {
     ClientUpdateMessageImpl clientMessage = null;
     EnumListenerEvent operation = event.getEventType();
 
@@ -772,15 +647,11 @@ public class CacheClientNotifier {
   }
 
   private void singletonNotifyClients(InternalCacheEvent event, ClientUpdateMessage cmsg) {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    final boolean isTraceEnabled = logger.isTraceEnabled();
-
     FilterInfo filterInfo = event.getLocalFilterInfo();
 
-    FilterProfile regionProfile = ((LocalRegion) event.getRegion()).getFilterProfile();
     if (filterInfo != null) {
       // if the routing was made using an old profile we need to recompute it
-      if (isTraceEnabled) {
+      if (logger.isTraceEnabled()) {
         logger.trace("Event isOriginRemote={}", event.isOriginRemote());
       }
     }
@@ -803,67 +674,12 @@ public class CacheClientNotifier {
       return;
     }
 
-    // Holds the clientIds to which filter message needs to be sent.
-    Set<ClientProxyMembershipID> filterClients = new HashSet();
+    FilterProfile regionProfile = ((LocalRegion) event.getRegion()).getFilterProfile();
 
-    // Add CQ info.
-    if (filterInfo.getCQs() != null) {
-      for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
-        Long cqID = e.getKey();
-        String cqName = regionProfile.getRealCqID(cqID);
-        if (cqName == null) {
-          continue;
-        }
-        ServerCQ cq = regionProfile.getCq(cqName);
-        if (cq != null) {
-          ClientProxyMembershipID id = cq.getClientProxyId();
-          filterClients.add(id);
-          if (isDebugEnabled) {
-            logger.debug("Adding cq routing info to message for id: {} and cq: {}", id, cqName);
-          }
+    Set<ClientProxyMembershipID> filterClients =
+        getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
 
-          clientMessage.addClientCq(id, cq.getName(), e.getValue());
-        }
-      }
-    }
-
-    // Add interestList info.
-    if (filterInfo.getInterestedClientsInv() != null) {
-      Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClientsInv());
-      Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs, true);
-      if (ids.remove(event.getContext())) { // don't send to member of origin
-        CacheClientProxy ccp = getClientProxy(event.getContext());
-        if (ccp != null) {
-          ccp.getStatistics().incMessagesNotQueuedOriginator();
-        }
-      }
-      if (!ids.isEmpty()) {
-        if (isTraceEnabled) {
-          logger.trace("adding invalidation routing to message for {}", ids);
-        }
-        clientMessage.addClientInterestList(ids, false);
-        filterClients.addAll(ids);
-      }
-    }
-    if (filterInfo.getInterestedClients() != null) {
-      Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClients());
-      Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs, true);
-      if (ids.remove(event.getContext())) { // don't send to member of origin
-        CacheClientProxy ccp = getClientProxy(event.getContext());
-        if (ccp != null) {
-          ccp.getStatistics().incMessagesNotQueuedOriginator();
-        }
-      }
-      if (!ids.isEmpty()) {
-        if (isTraceEnabled) {
-          logger.trace("adding routing to message for {}", ids);
-        }
-        clientMessage.addClientInterestList(ids, true);
-        filterClients.addAll(ids);
-      }
-    }
-
-    Conflatable conflatable = null;
+    Conflatable conflatable;
 
     if (clientMessage instanceof ClientTombstoneMessage) {
       // bug #46832 - HAEventWrapper deserialization can't handle subclasses
@@ -892,6 +708,8 @@ public class CacheClientNotifier {
       conflatable = wrapper;
     }
 
+    addEventToRegisteringProxyQueues(event, conflatable, filterClients);
+
     singletonRouteClientMessage(conflatable, filterClients);
 
     this.statistics.endEvent(startTime);
@@ -903,6 +721,190 @@ public class CacheClientNotifier {
     // destroyed are removed after the event is placed in clients HAQueue.
     if (filterInfo.filterProcessedLocally) {
       removeDestroyTokensFromCqResultKeys(event, filterInfo);
+    }
+  }
+
+  private Set<ClientProxyMembershipID> getFilterClientIDs(final InternalCacheEvent event,
+      final FilterProfile regionProfile,
+      final FilterInfo filterInfo,
+      final ClientUpdateMessageImpl clientMessage) {
+    // Holds the clientIds to which filter message needs to be sent.
+    Set<ClientProxyMembershipID> filterClients = new HashSet<>();
+
+    // Add CQ info.
+    if (filterInfo.getCQs() != null) {
+      for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
+        Long cqID = e.getKey();
+        String cqName = regionProfile.getRealCqID(cqID);
+        if (cqName == null) {
+          continue;
+        }
+        ServerCQ cq = regionProfile.getCq(cqName);
+        if (cq != null) {
+          ClientProxyMembershipID id = cq.getClientProxyId();
+          filterClients.add(id);
+          if (logger.isDebugEnabled()) {
+            logger.debug("Adding cq routing info to message for id: {} and cq: {}", id, cqName);
+          }
+
+          clientMessage.addClientCq(id, cq.getName(), e.getValue());
+        }
+      }
+    }
+
+    // Add interestList info.
+    if (filterInfo.getInterestedClientsInv() != null) {
+      Set<Object> rawIDs =
+          regionProfile.getRealClientIDs(filterInfo.getInterestedClientsInv());
+      Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs, true);
+      incMessagesNotQueuedOriginatorStat(event, ids);
+      if (!ids.isEmpty()) {
+        if (logger.isTraceEnabled()) {
+          logger.trace("adding invalidation routing to message for {}", ids);
+        }
+        clientMessage.addClientInterestList(ids, false);
+        filterClients.addAll(ids);
+      }
+    }
+    if (filterInfo.getInterestedClients() != null) {
+      Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClients());
+      Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs, true);
+      incMessagesNotQueuedOriginatorStat(event, ids);
+      if (!ids.isEmpty()) {
+        if (logger.isTraceEnabled()) {
+          logger.trace("adding routing to message for {}", ids);
+        }
+        clientMessage.addClientInterestList(ids, true);
+        filterClients.addAll(ids);
+      }
+    }
+
+    return filterClients;
+  }
+
+  private void incMessagesNotQueuedOriginatorStat(final InternalCacheEvent event,
+      final Set<ClientProxyMembershipID> ids) {
+    if (ids.remove(event.getContext())) { // don't send to member of origin
+      CacheClientProxy ccp = getClientProxy(event.getContext());
+      if (ccp != null) {
+        ccp.getStatistics().incMessagesNotQueuedOriginator();
+      }
+    }
+  }
+
+  private void addEventToRegisteringProxyQueues(final InternalCacheEvent event,
+      final Conflatable conflatable,
+      final Set<ClientProxyMembershipID> filterClients) {
+    for (final Map.Entry<ClientProxyMembershipID, Queue<ClientRegistrationEvent>> eventsReceivedWhileRegisteringClient : registeringProxyEventQueues
+        .entrySet()) {
+      synchronized (registeringProxyEventQueuesLock) {
+        // After taking out the lock, we need to determine if the client is still actually
+        // registering since there is a small race where it may have finished registering
+        // after we pulled the queue out of the registeringProxyEventQueues collection
+        ClientProxyMembershipID clientProxyMembershipID =
+            eventsReceivedWhileRegisteringClient.getKey();
+
+        if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
+          // If this is an HAEventWrapper we need to increment the PutInProgress counter so
+          // that the contents of the contents of the HAEventWrapper are preserved when the
+          // event is drained and processed. See incrementPutInProgressCounter() and
+          // decrementPutInProgressCounter() for more details.
+          if (conflatable instanceof HAEventWrapper) {
+            ((HAEventWrapper) conflatable).incrementPutInProgressCounter();
+          }
+
+          ClientRegistrationEvent clientRegistrationEvent =
+              new ClientRegistrationEvent(event, conflatable);
+          eventsReceivedWhileRegisteringClient.getValue().add(clientRegistrationEvent);
+
+          // Because this event will be processed and sent when it is drained out of the temporary
+          // client registration queue, we do not need to send it to the client at this time.
+          // We can prevent the event from being sent to the registering client at this time
+          // by removing its client proxy membership ID from the filter clients collection,
+          // if it exists.
+          filterClients.remove(clientProxyMembershipID);
+        }
+      }
+    }
+  }
+
+  private void drainAllEventsReceivedWhileRegisteringClient(
+      final ClientProxyMembershipID clientProxyMembershipID,
+      final ClientRegistrationMetadata clientRegistrationMetadata,
+      final Queue<ClientRegistrationEvent> eventsReceivedWhileRegisteringClient) {
+    // As an optimization, we drain as many events from the queue as we can
+    // before taking out a lock to drain the remaining events
+    if (logger.isDebugEnabled()) {
+      logger.debug("Draining events from registration queue for client proxy "
+          + clientRegistrationMetadata.getClientProxyMembershipID()
+          + " without synchronization");
+    }
+
+    drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID,
+        eventsReceivedWhileRegisteringClient);
+
+    synchronized (registeringProxyEventQueuesLock) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Draining remaining events from registration queue for client proxy "
+            + clientProxyMembershipID + " with synchronization");
+      }
+
+      drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID,
+          eventsReceivedWhileRegisteringClient);
+
+      registeringProxyEventQueues.remove(clientProxyMembershipID);
+    }
+  }
+
+  private void drainEventsReceivedWhileRegisteringClient(final ClientProxyMembershipID proxyID,
+      final Queue<ClientRegistrationEvent> eventsReceivedWhileRegisteringClient) {
+    ClientRegistrationEvent queuedEvent;
+    while ((queuedEvent = eventsReceivedWhileRegisteringClient.poll()) != null) {
+      InternalCacheEvent internalCacheEvent = queuedEvent.internalCacheEvent;
+      Conflatable conflatable = queuedEvent.conflatable;
+
+      // The first step is to repopulate the filter info for the event to determine if
+      // the client which was registering has a matching CQ or has registered interest
+      // in the key for this event. We need to get the filter profile, filter routing info,
+      // and local filter info in order to do so. If any of these are null, then there is
+      // no need to proceed as the client is not interested.
+      FilterProfile filterProfile =
+          ((LocalRegion) internalCacheEvent.getRegion()).getFilterProfile();
+
+      if (filterProfile != null) {
+        FilterRoutingInfo filterRoutingInfo =
+            filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent);
+
+        if (filterRoutingInfo != null) {
+          FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
+
+          if (filterInfo != null) {
+            ClientUpdateMessageImpl clientUpdateMessage = conflatable instanceof HAEventWrapper
+                ? (ClientUpdateMessageImpl) ((HAEventWrapper) conflatable).getClientUpdateMessage()
+                : (ClientUpdateMessageImpl) conflatable;
+
+            internalCacheEvent.setLocalFilterInfo(filterInfo);
+
+            Set<ClientProxyMembershipID> filterClientIDs =
+                getFilterClientIDs(internalCacheEvent, filterProfile, filterInfo,
+                    clientUpdateMessage);
+
+            CacheClientProxy cacheClientProxy =
+                (CacheClientProxy) this._clientProxies.get(proxyID);
+
+            if (filterClientIDs.contains(proxyID) && cacheClientProxy != null) {
+              cacheClientProxy.deliverMessage(conflatable);
+            }
+          }
+        }
+      }
+
+      // Once we have processed the conflatable, if it is an HAEventWrapper we can
+      // decrement the PutInProgress counter, allowing the ClientUpdateMessage to be
+      // set to null. See decrementPutInProgressCounter() for more details.
+      if (conflatable instanceof HAEventWrapper) {
+        ((HAEventWrapper) conflatable).decrementPutInProgressCounter();
+      }
     }
   }
 
@@ -922,6 +924,57 @@ public class CacheClientNotifier {
         }
       }
     }
+  }
+
+  private void performPostAuthorization(final CacheClientProxy proxy,
+      final ClientProxyMembershipID clientProxyMembershipID, final DistributedMember member,
+      final Properties sysProps, final Object subjectOrPrincipal)
+      throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+      InvocationTargetException {
+    if (proxy != null && subjectOrPrincipal != null) {
+      if (subjectOrPrincipal instanceof Principal) {
+        Principal principal = (Principal) subjectOrPrincipal;
+        if (securityLogWriter.fineEnabled()) {
+          securityLogWriter
+              .fine("CacheClientNotifier: successfully verified credentials for proxyID: "
+                  + clientProxyMembershipID
+                  + " having principal: " + principal.getName());
+        }
+
+        String postAuthzFactoryName = sysProps.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
+        AccessControl authzCallback = null;
+        if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
+          Method authzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
+          authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
+          authzCallback.init(principal, member, this.getCache());
+        }
+        proxy.setPostAuthzCallback(authzCallback);
+      }
+    }
+  }
+
+  private Object getSubjectOrPrincipal(final ClientRegistrationMetadata clientRegistrationMetadata,
+      final DistributedMember member,
+      final DistributedSystem system, final String authenticator) {
+    final Object subjectOrPrincipal;
+
+    if (clientRegistrationMetadata.getClientCredentials() != null) {
+      if (securityLogWriter.fineEnabled()) {
+        securityLogWriter
+            .fine("CacheClientNotifier: verifying credentials for proxyID: "
+                + clientRegistrationMetadata.getClientProxyMembershipID());
+      }
+      subjectOrPrincipal = Handshake
+          .verifyCredentials(authenticator,
+              clientRegistrationMetadata.getClientCredentials(),
+              system.getSecurityProperties(),
+              this.logWriter, this.securityLogWriter, member,
+              this.cache.getSecurityService());
+    } else {
+      subjectOrPrincipal = null;
+    }
+
+    return subjectOrPrincipal;
   }
 
   /**
@@ -1844,7 +1897,7 @@ public class CacheClientNotifier {
    */
   private CacheClientNotifier(InternalCache cache, CacheServerStats acceptorStats,
       int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
-      List overflowAttributesList, boolean isGatewayReceiver) {
+      boolean isGatewayReceiver) {
     // Set the Cache
     setCache(cache);
     this.acceptorStats = acceptorStats;
@@ -2230,6 +2283,25 @@ public class CacheClientNotifier {
           logger.debug("{} client is no longer denylisted", proxyID);
         }
       }
+    }
+  }
+
+  /**
+   * Represents a conflatable and event processed while a client was registering.
+   * This needs to be queued and processed after registration is complete. The conflatable
+   * is what we will actually be delivering to the MessageDispatcher (and thereby adding
+   * to the HARegionQueue). The internal cache event is required to rehydrate the filter
+   * info and determine if the client which was registering does have a CQ that matches or
+   * has registered interest in the key.
+   */
+  private class ClientRegistrationEvent {
+    private final Conflatable conflatable;
+    private final InternalCacheEvent internalCacheEvent;
+
+    ClientRegistrationEvent(final InternalCacheEvent internalCacheEvent,
+        final Conflatable conflatable) {
+      this.conflatable = conflatable;
+      this.internalCacheEvent = internalCacheEvent;
     }
   }
 }
