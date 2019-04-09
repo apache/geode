@@ -778,11 +778,11 @@ public class Gfsh extends JLineShell {
     String originalString = expandedPropCommandsMap.get(processedLine);
     if (originalString != null) {
       // In history log the original command string & expanded line as a comment
-      super.logCommandToOutput(GfshHistory.redact(originalString));
-      super.logCommandToOutput(GfshHistory.redact("// Post substitution"));
-      super.logCommandToOutput(GfshHistory.redact("//" + processedLine));
+      super.logCommandToOutput(ArgumentRedactor.redact(originalString));
+      super.logCommandToOutput(ArgumentRedactor.redact("// Post substitution"));
+      super.logCommandToOutput(ArgumentRedactor.redact("//" + processedLine));
     } else {
-      super.logCommandToOutput(GfshHistory.redact(processedLine));
+      super.logCommandToOutput(ArgumentRedactor.redact(processedLine));
     }
   }
 

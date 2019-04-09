@@ -35,6 +35,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -47,6 +48,8 @@ import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 public class CreateMappingFunctionTest {
@@ -71,7 +74,7 @@ public class CreateMappingFunctionTest {
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     cache = mock(InternalCache.class);
-    region = mock(Region.class);
+    region = mock(LocalRegion.class);
     DistributedSystem system = mock(DistributedSystem.class);
     distributedMember = mock(DistributedMember.class);
     service = mock(JdbcConnectorService.class);
@@ -218,7 +221,53 @@ public class CreateMappingFunctionTest {
   }
 
   @Test
+  public void shouldOnlyAddAEQIdForProxyPR() throws Exception {
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    PartitionedRegion pr = mock(PartitionedRegion.class);
+    when(cache.getRegion(REGION_NAME)).thenReturn(pr);
+    when(pr.getAttributes()).thenReturn(attributes);
+    PartitionAttributes pa = mock(PartitionAttributes.class);
+    when(attributes.getPartitionAttributes()).thenReturn(pa);
+    when(pa.getLocalMaxMemory()).thenReturn(0);
+    when(pr.getAttributesMutator()).thenReturn(mock(AttributesMutator.class));
+    function.executeFunction(context);
+
+    AttributesMutator mutator = pr.getAttributesMutator();
+    verify(mutator, times(1)).addAsyncEventQueueId(any());
+
+    verify(mutator, times(0)).setCacheWriter(any());
+    verify(mutator, times(0)).setCacheLoader(any());
+    verify(asyncEventQueueFactory, times(0)).create(any(), any());
+  }
+
+  @Test
+  public void shouldOnlyAddAEQIdForProxyReplicate() throws Exception {
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    when(cache.getRegion(REGION_NAME)).thenReturn(region);
+    LocalRegion lr = (LocalRegion) region;
+    when(lr.getAttributes()).thenReturn(attributes);
+    when(lr.getAttributesMutator()).thenReturn(mock(AttributesMutator.class));
+    function.executeFunction(context);
+
+    AttributesMutator mutator = lr.getAttributesMutator();
+    verify(mutator, times(1)).addAsyncEventQueueId(any());
+
+    verify(mutator, times(0)).setCacheWriter(any());
+    verify(mutator, times(0)).setCacheLoader(any());
+    verify(asyncEventQueueFactory, times(0)).create(any(), any());
+  }
+
+  @Test
   public void executeCreatesParallelAsyncQueueForPartitionedRegion() throws Exception {
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
+    function.executeFunction(context);
+
+    verify(asyncEventQueueFactory, times(1)).create(any(), any());
+    verify(asyncEventQueueFactory, times(1)).setParallel(true);
+  }
+
+  @Test
+  public void executeCreatesPartitionedProxyShouldNotContainWriterOrLoader() throws Exception {
     when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     function.executeFunction(context);
 

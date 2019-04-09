@@ -90,6 +90,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.execute.EmptyRegionFunctionException;
@@ -231,6 +232,7 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -1221,25 +1223,26 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  public void updatePRConfigWithNewSetOfGatewaySenders(Set<String> gatewaySendersToAdd) {
+  public void updatePRConfigWithNewSetOfAsynchronousEventDispatchers(
+      Set<String> asynchronousEventDispatchers) {
     PartitionRegionHelper.assignBucketsToPartitions(this);
-    PartitionRegionConfig prConfig = this.prRoot.get(getRegionIdentifier());
-    prConfig.setGatewaySenderIds(gatewaySendersToAdd);
-    updatePRConfig(prConfig, false);
+    updatePartitionRegionConfig(prConfig -> {
+      prConfig.setGatewaySenderIds(asynchronousEventDispatchers);
+    });
   }
 
   public void updatePRConfigWithNewGatewaySender(String aeqId) {
     PartitionRegionHelper.assignBucketsToPartitions(this);
-    PartitionRegionConfig prConfig = this.prRoot.get(getRegionIdentifier());
-    Set<String> newGateWayIds;
-    if (prConfig.getGatewaySenderIds() != null) {
-      newGateWayIds = new HashSet<>(prConfig.getGatewaySenderIds());
-    } else {
-      newGateWayIds = new HashSet<>();
-    }
-    newGateWayIds.add(aeqId);
-    prConfig.setGatewaySenderIds(newGateWayIds);
-    updatePRConfig(prConfig, false);
+    updatePartitionRegionConfig(prConfig -> {
+      Set<String> newGateWayIds;
+      if (prConfig.getGatewaySenderIds() != null) {
+        newGateWayIds = new HashSet<>(prConfig.getGatewaySenderIds());
+      } else {
+        newGateWayIds = new HashSet<>();
+      }
+      newGateWayIds.add(aeqId);
+      prConfig.setGatewaySenderIds(newGateWayIds);
+    });
   }
 
   @Override
@@ -1274,7 +1277,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void checkSameSenderIdsAvailableOnAllNodes() {
+  void checkSameSenderIdsAvailableOnAllNodes() {
     List senderIds =
         this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
     if (!senderIds.isEmpty()) {
@@ -1302,6 +1305,11 @@ public class PartitionedRegion extends LocalRegion
    */
   private void initializePartitionedRegion() {
     this.prRoot = PartitionedRegionHelper.getPRRoot(getCache());
+  }
+
+  // Used for testing purposes
+  Region<String, PartitionRegionConfig> getPRRoot() {
+    return prRoot;
   }
 
   @Override
@@ -1350,9 +1358,8 @@ public class PartitionedRegion extends LocalRegion
         this.node.setPRType(Node.ACCESSOR_DATASTORE);
       }
       this.node.setPersistence(getAttributes().getDataPolicy() == DataPolicy.PERSISTENT_PARTITION);
-      byte loaderByte = (byte) (getAttributes().getCacheLoader() != null ? 0x01 : 0x00);
-      byte writerByte = (byte) (getAttributes().getCacheWriter() != null ? 0x02 : 0x00);
-      this.node.setLoaderWriterByte((byte) (loaderByte + writerByte));
+      this.node.setLoaderAndWriter(getAttributes().getCacheLoader(),
+          getAttributes().getCacheWriter());
     } else {
       if (this.fixedPAttrs != null) {
         this.node.setPRType(Node.FIXED_PR_ACCESSOR);
@@ -1368,10 +1375,10 @@ public class PartitionedRegion extends LocalRegion
       rl.lock();
       checkReadiness();
 
-      prConfig = this.prRoot.get(getRegionIdentifier());
+      prConfig = getPRRoot().get(getRegionIdentifier());
 
       if (prConfig == null) {
-        validateParallelGatewaySenderIds();
+        validateParallelAsynchronousEventDispatcherIds();
         this.partitionedRegionId = generatePRId(getSystem());
         prConfig = new PartitionRegionConfig(this.partitionedRegionId, this.getFullPath(),
             prAttribs, this.getScope(), getAttributes().getEvictionAttributes(),
@@ -1398,6 +1405,7 @@ public class PartitionedRegion extends LocalRegion
       synchronized (prIdToPR) {
         prIdToPR.put(this.partitionedRegionId, this); // last
       }
+
       prConfig.addNode(this.node);
       if (this.getFixedPartitionAttributesImpl() != null) {
         calculateStartingBucketIDs(prConfig);
@@ -1475,35 +1483,77 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  public void validateParallelGatewaySenderIds() throws PRLocallyDestroyedException {
-    validateParallelGatewaySenderIds(this.getParallelGatewaySenderIds());
+  public void validateParallelAsynchronousEventDispatcherIds() throws PRLocallyDestroyedException {
+    validateParallelAsynchronousEventDispatcherIds(this.getParallelGatewaySenderIds());
   }
 
-  /*
-   * filterOutNonParallelGatewaySenders takes in a set of gateway sender IDs and returns
-   * a set of parallel gateway senders present in the input set.
+  /**
+   * Filters out non parallel GatewaySenders.
+   *
+   * @param senderIds set of gateway sender IDs.
+   * @return set of parallel gateway senders present in the input set.
    */
   public Set<String> filterOutNonParallelGatewaySenders(Set<String> senderIds) {
-    Set<String> allParallelSenders = cache.getAllGatewaySenders().parallelStream()
-        .filter(GatewaySender::isParallel).map(GatewaySender::getId).collect(toSet());
-    Set<String> parallelSenders = new HashSet<>();
-    senderIds.parallelStream().forEach(gatewaySenderId -> {
-      if (allParallelSenders.contains(gatewaySenderId)) {
-        parallelSenders.add(gatewaySenderId);
-      }
-    });
+    Set<String> allParallelSenders = cache.getAllGatewaySenders()
+        .parallelStream()
+        .filter(GatewaySender::isParallel)
+        .map(GatewaySender::getId)
+        .collect(toSet());
+
+    Set<String> parallelSenders = new HashSet<>(senderIds);
+    parallelSenders.retainAll(allParallelSenders);
+
     return parallelSenders;
   }
 
-  public void validateParallelGatewaySenderIds(Set<String> parallelGatewaySenderIds)
-      throws PRLocallyDestroyedException {
-    for (String senderId : parallelGatewaySenderIds) {
+  /**
+   * Filters out non parallel AsyncEventQueues.
+   *
+   * @param queueIds set of async-event-queue IDs.
+   * @return set of parallel async-event-queues present in the input set.
+   */
+  public Set<String> filterOutNonParallelAsyncEventQueues(Set<String> queueIds) {
+    Set<String> allParallelQueues = cache.getAsyncEventQueues()
+        .parallelStream()
+        .filter(AsyncEventQueue::isParallel)
+        .map(asyncEventQueue -> AsyncEventQueueImpl
+            .getAsyncEventQueueIdFromSenderId(asyncEventQueue.getId()))
+        .collect(toSet());
+
+    Set<String> parallelAsyncEventQueues = new HashSet<>(queueIds);
+    parallelAsyncEventQueues.retainAll(allParallelQueues);
+
+    return parallelAsyncEventQueues;
+  }
+
+  public void validateParallelAsynchronousEventDispatcherIds(
+      Set<String> asynchronousEventDispatcherIds) throws PRLocallyDestroyedException {
+    for (String dispatcherId : asynchronousEventDispatcherIds) {
+      GatewaySender sender = getCache().getGatewaySender(dispatcherId);
+      AsyncEventQueue asyncEventQueue = getCache()
+          .getAsyncEventQueue(AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(dispatcherId));
+
+      // Can't attach a non persistent parallel gateway / async-event-queue to a persistent
+      // partitioned region.
+      if (getDataPolicy().withPersistence()) {
+        if ((sender != null) && (!sender.isPersistenceEnabled())) {
+          throw new GatewaySenderConfigurationException(String.format(
+              "Non persistent gateway sender %s can not be attached to persistent region %s",
+              dispatcherId, getFullPath()));
+        } else if ((asyncEventQueue != null) && (!asyncEventQueue.isPersistent())) {
+          throw new AsyncEventQueueConfigurationException(String.format(
+              "Non persistent asynchronous event queue %s can not be attached to persistent region %s",
+              dispatcherId, getFullPath()));
+        }
+      }
+
       for (PartitionRegionConfig config : this.prRoot.values()) {
-        if (config.getGatewaySenderIds().contains(senderId)) {
+        if (config.getGatewaySenderIds().contains(dispatcherId)) {
           if (this.getFullPath().equals(config.getFullPath())) {
             // The sender is already attached to this region
             continue;
           }
+
           Map<String, PartitionedRegion> colocationMap =
               ColocationHelper.getAllColocationRegions(this);
           if (!colocationMap.isEmpty()) {
@@ -1513,28 +1563,23 @@ public class PartitionedRegion extends LocalRegion
               int prID = config.getPRId();
               PartitionedRegion colocatedPR = PartitionedRegion.getPRFromId(prID);
               PartitionedRegion leader = ColocationHelper.getLeaderRegion(colocatedPR);
+
               if (colocationMap.containsValue(leader)) {
                 continue;
               } else {
-                throw new IllegalStateException(
-                    String.format(
-                        "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
-                        new Object[] {this.getFullPath(), config.getFullPath(),
-                            senderId.contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)
-                                ? "async event queue" : "gateway sender",
-                            senderId}));
+                throw new IllegalStateException(String.format(
+                    "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
+                    this.getFullPath(), config.getFullPath(),
+                    (asyncEventQueue != null ? "async event queue" : "gateway sender"),
+                    dispatcherId));
               }
             }
           } else {
-            throw new IllegalStateException(
-                String.format(
-                    "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
-                    new Object[] {this.getFullPath(), config.getFullPath(),
-                        senderId.contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)
-                            ? "async event queue" : "gateway sender",
-                        senderId}));
+            throw new IllegalStateException(String.format(
+                "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
+                this.getFullPath(), config.getFullPath(),
+                (asyncEventQueue != null ? "async event queue" : "gateway sender"), dispatcherId));
           }
-
         }
       }
     }
@@ -1575,7 +1620,6 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public void updatePRConfig(PartitionRegionConfig prConfig, boolean putOnlyIfUpdated) {
-    final Set<Node> nodes = prConfig.getNodes();
     final PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(this);
     RegionLock colocatedLock = null;
     boolean colocatedLockAcquired = false;
@@ -1586,7 +1630,7 @@ public class PartitionedRegion extends LocalRegion
         colocatedLock.lock();
         colocatedLockAcquired = true;
         final PartitionRegionConfig parentConf =
-            this.prRoot.get(colocatedRegion.getRegionIdentifier());
+            getPRRoot().get(colocatedRegion.getRegionIdentifier());
         if (parentConf.isColocationComplete() && parentConf.hasSameDataStoreMembers(prConfig)) {
           colocationComplete = true;
           prConfig.setColocationComplete(this);
@@ -1598,7 +1642,7 @@ public class PartitionedRegion extends LocalRegion
       }
       // N.B.: this put could fail with a CacheClosedException:
       if (!putOnlyIfUpdated || colocationComplete) {
-        this.prRoot.put(getRegionIdentifier(), prConfig);
+        getPRRoot().put(getRegionIdentifier(), prConfig);
       }
     } finally {
       if (colocatedLockAcquired) {
@@ -2142,7 +2186,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void performPutAllEntry(EntryEventImpl event) {
+  void performPutAllEntry(EntryEventImpl event) {
     /*
      * force shared data view so that we just do the virtual op, accruing things in the put all
      * operation for later
@@ -2151,7 +2195,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void performRemoveAllEntry(EntryEventImpl event) {
+  void performRemoveAllEntry(EntryEventImpl event) {
     // do not call basicDestroy directly since it causes bug 51715
     // basicDestroy(event, true, null);
     // force shared data view so that we just do the virtual op
@@ -3342,7 +3386,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface tx,
+  Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface tx,
       boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws CacheLoaderException, TimeoutException {
@@ -4823,7 +4867,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public boolean canStoreDataLocally() {
+  boolean canStoreDataLocally() {
     return getDataStore() != null;
   }
 
@@ -4989,7 +5033,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void initialized() {
+  void initialized() {
     // PartitionedRegions do not send out a profile at the end of
     // initialization. It is not currently needed by other members
     // since no GII is done on a PartitionedRegion
@@ -5008,6 +5052,7 @@ public class PartitionedRegion extends LocalRegion
   protected void cacheWriterChanged(CacheWriter p_oldWriter) {
     super.cacheWriterChanged(p_oldWriter);
     if (p_oldWriter == null ^ basicGetWriter() == null) {
+      updatePRNodeInformation();
       new UpdateAttributesProcessor(this).distribute();
     }
   }
@@ -5018,6 +5063,7 @@ public class PartitionedRegion extends LocalRegion
     this.dataStore.cacheLoaderChanged(basicGetLoader(), oldLoader);
     super.cacheLoaderChanged(oldLoader);
     if (oldLoader == null ^ basicGetLoader() == null) {
+      updatePRNodeInformation();
       new UpdateAttributesProcessor(this).distribute();
     }
   }
@@ -5084,12 +5130,12 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public String dumpAllPartitionedRegions() {
-    StringBuilder sb = new StringBuilder(this.prRoot.getFullPath());
+    StringBuilder sb = new StringBuilder(getPRRoot().getFullPath());
     sb.append("\n");
     Object key = null;
-    for (Iterator i = this.prRoot.keySet().iterator(); i.hasNext();) {
+    for (Iterator i = getPRRoot().keySet().iterator(); i.hasNext();) {
       key = i.next();
-      sb.append(key).append("=>").append(this.prRoot.get(key));
+      sb.append(key).append("=>").append(getPRRoot().get(key));
       if (i.hasNext()) {
         sb.append("\n");
       }
@@ -5571,7 +5617,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void invalidateAllEntries(RegionEvent rgnEvent) {
+  void invalidateAllEntries(RegionEvent rgnEvent) {
     // do nothing
   }
 
@@ -6265,7 +6311,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean nonTXContainsKey(KeyInfo keyInfo) {
+  boolean nonTXContainsKey(KeyInfo keyInfo) {
     final long startTime = PartitionedRegionStats.startTime();
     boolean contains = false;
     try {
@@ -6451,7 +6497,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean nonTXContainsValueForKey(KeyInfo keyInfo) {
+  boolean nonTXContainsValueForKey(KeyInfo keyInfo) {
     boolean containsValueForKey = false;
     int bucketId = keyInfo.getBucketId();
     if (bucketId == KeyInfo.UNKNOWN_BUCKET) {
@@ -6516,7 +6562,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public int entryCount(Set<Integer> buckets) {
+  int entryCount(Set<Integer> buckets) {
     return entryCount(buckets, false);
   }
 
@@ -6563,7 +6609,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public long getEstimatedLocalSize() {
+  long getEstimatedLocalSize() {
     final PartitionedRegionDataStore ds = this.dataStore;
     if (ds != null) {
       return ds.getEstimatedLocalBucketSize(false);
@@ -7305,7 +7351,7 @@ public class PartitionedRegion extends LocalRegion
       } else {
         PartitionRegionConfig prConfig = null;
         try {
-          prConfig = this.prRoot.get(getRegionIdentifier());
+          prConfig = getPRRoot().get(getRegionIdentifier());
         } catch (CancelException ignore) {
           // ignore; metadata not accessible
         }
@@ -7355,7 +7401,7 @@ public class PartitionedRegion extends LocalRegion
     }
     PartitionRegionConfig prConfig;
     try {
-      prConfig = prRoot.get(this.getRegionIdentifier());
+      prConfig = getPRRoot().get(this.getRegionIdentifier());
     } catch (CancelException ignore) {
       // global data not accessible, don't try to finish global destroy.
       return false;
@@ -7366,7 +7412,7 @@ public class PartitionedRegion extends LocalRegion
     }
     prConfig.setIsDestroying();
     try {
-      this.prRoot.put(this.getRegionIdentifier(), prConfig);
+      getPRRoot().put(this.getRegionIdentifier(), prConfig);
     } catch (CancelException ignore) {
       // ignore; metadata not accessible
     }
@@ -7404,8 +7450,8 @@ public class PartitionedRegion extends LocalRegion
       try {
         // if this event is global destruction of the region everywhere, remove
         // it from the pr root configuration
-        if (null != this.prRoot) {
-          this.prRoot.destroy(rId);
+        if (null != getPRRoot()) {
+          getPRRoot().destroy(rId);
         }
       } catch (EntryNotFoundException ex) {
         if (logger.isDebugEnabled()) {
@@ -7442,7 +7488,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   private boolean attemptToSendDestroyRegionMessage(RegionEventImpl event, int serials[]) {
-    if (this.prRoot == null) {
+    if (getPRRoot() == null) {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "Partition region {} failed to initialize. Remove its profile from remote members.",
@@ -7457,7 +7503,7 @@ public class PartitionedRegion extends LocalRegion
     // or hasn't gotten through initialize() far enough to have
     // sent a CreateRegionProcessor message, bug 36048
     try {
-      final PartitionRegionConfig prConfig = this.prRoot.get(getRegionIdentifier());
+      final PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
 
       if (prConfig != null) {
         // Fix for bug#34621 by Tushar
@@ -7683,7 +7729,7 @@ public class PartitionedRegion extends LocalRegion
   private boolean checkIfAlreadyDestroyedOrOldReference() {
     PartitionRegionConfig prConfig = null;
     try {
-      prConfig = prRoot.get(this.getRegionIdentifier());
+      prConfig = getPRRoot().get(this.getRegionIdentifier());
     } catch (CancelException ignore) {
       // ignore, metadata not accessible
     }
@@ -7722,7 +7768,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void generateLocalFilterRouting(InternalCacheEvent event) {
+  void generateLocalFilterRouting(InternalCacheEvent event) {
     if (event.getLocalFilterInfo() == null) {
       super.generateLocalFilterRouting(event);
     }
@@ -7928,11 +7974,11 @@ public class PartitionedRegion extends LocalRegion
    * PartitionedRegion.
    */
   public void dumpSelfEntryFromAllPartitionedRegions() {
-    StringBuilder sb = new StringBuilder(this.prRoot.getFullPath());
+    StringBuilder sb = new StringBuilder(getPRRoot().getFullPath());
     sb.append("Dumping allPartitionedRegions for ");
     sb.append(this);
     sb.append("\n");
-    sb.append(this.prRoot.get(getRegionIdentifier()));
+    sb.append(getPRRoot().get(getRegionIdentifier()));
     logger.debug(sb.toString());
   }
 
@@ -8038,7 +8084,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void enableConcurrencyChecks() {
+  void enableConcurrencyChecks() {
     if (supportsConcurrencyChecks()) {
       this.setConcurrencyChecksEnabled(true);
       assert !isDataStore();
@@ -8818,15 +8864,6 @@ public class PartitionedRegion extends LocalRegion
     return this.dataStore.getLocalValueInVM(key, bucketId);
   }
 
-  @Override
-  public Object getValueInVM(EntryEventImpl event) throws EntryNotFoundException {
-    if (this.dataStore == null) {
-      throw new EntryNotFoundException(event.getKey().toString());
-    }
-    final int bucketId = PartitionedRegionHelper.getHashKey(event);
-    return this.dataStore.getLocalValueInVM(event.getKey(), bucketId);
-  }
-
   /**
    * This method is intended for testing purposes only.
    */
@@ -8918,7 +8955,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void releaseLatches() {
+  void releaseLatches() {
     super.releaseLatches();
     releaseAfterBucketMetadataSetupLatch();
   }
@@ -8998,7 +9035,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected RegionEntry basicGetTXEntry(KeyInfo keyInfo) {
+  RegionEntry basicGetTXEntry(KeyInfo keyInfo) {
     int bucketId = keyInfo.getBucketId();
     if (bucketId == KeyInfo.UNKNOWN_BUCKET) {
       bucketId = PartitionedRegionHelper.getHashKey(this, null, keyInfo.getKey(),
@@ -9021,7 +9058,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean usesDiskStore(RegionAttributes regionAttributes) {
+  boolean usesDiskStore(RegionAttributes regionAttributes) {
     if (regionAttributes.getPartitionAttributes().getLocalMaxMemory() <= 0) {
       return false; // see bug 42055
     }
@@ -9029,7 +9066,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
+  DiskStoreImpl findDiskStore(RegionAttributes regionAttributes,
       InternalRegionArguments internalRegionArgs) {
     DiskStoreImpl store = super.findDiskStore(regionAttributes, internalRegionArgs);
     if (store != null && store.getOwnedByRegion()) {
@@ -9039,7 +9076,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected DiskRegion createDiskRegion(InternalRegionArguments internalRegionArgs)
+  DiskRegion createDiskRegion(InternalRegionArguments internalRegionArgs)
       throws DiskAccessException {
     if (internalRegionArgs.getDiskRegion() != null) {
       return internalRegionArgs.getDiskRegion();
@@ -9172,7 +9209,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   private PartitionRegionConfig getPRConfigWithLatestExpirationAttributes() {
-    PartitionRegionConfig prConfig = this.prRoot.get(getRegionIdentifier());
+    PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
 
     return new PartitionRegionConfig(prConfig.getPRId(), prConfig.getFullPath(),
         prConfig.getPartitionAttrs(), prConfig.getScope(), prConfig.getEvictionAttributes(),
@@ -9238,7 +9275,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void setMemoryThresholdFlag(MemoryEvent event) {
+  void setMemoryThresholdFlag(MemoryEvent event) {
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()
         && (event.getType() == ResourceType.HEAP_MEMORY
             || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
@@ -9252,7 +9289,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public void initialCriticalMembers(boolean localMemoryIsCritical,
+  void initialCriticalMembers(boolean localMemoryIsCritical,
       Set<InternalDistributedMember> criticalMembers) {
     for (InternalDistributedMember idm : criticalMembers) {
       getRegionAdvisor().markBucketsOnMember(idm, true/* sick */);
@@ -9750,7 +9787,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean isEntryIdleExpiryPossible() {
+  boolean isEntryIdleExpiryPossible() {
     // false always as this is a partitionedRegion,
     // its the BucketRegion that does the expiry
     return false;
@@ -9968,7 +10005,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void preDestroyChecks() {
+  void preDestroyChecks() {
     try {
       // if there are colocated children throw an exception
       checkForColocatedChildren();
@@ -9979,7 +10016,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected boolean hasStorage() {
+  boolean hasStorage() {
     return this.getLocalMaxMemory() != 0;
   }
 
@@ -9992,7 +10029,46 @@ public class PartitionedRegion extends LocalRegion
     return br.getEntryExpiryTask(key);
   }
 
+  void updatePRNodeInformation() {
+    updatePartitionRegionConfig(prConfig -> {
+      CacheLoader cacheLoader = basicGetLoader();
+      CacheWriter cacheWriter = basicGetWriter();
+      if (prConfig != null) {
+
+        for (Node node : prConfig.getNodes()) {
+
+          if (node.getMemberId().equals(getMyId())) {
+            node.setLoaderAndWriter(cacheLoader, cacheWriter);
+          }
+        }
+      }
+    });
+  }
+
   public Logger getLogger() {
     return logger;
+  }
+
+  interface PartitionRegionConfigModifier {
+    void modify(PartitionRegionConfig prConfig);
+  }
+
+  void updatePartitionRegionConfig(
+      PartitionRegionConfigModifier partitionRegionConfigModifier) {
+    RegionLock rl = getRegionLock();
+    rl.lock();
+    try {
+      if (getPRRoot() == null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(PartitionedRegionHelper.PR_ROOT_REGION_NAME + " is null");
+        }
+        return;
+      }
+      PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
+      partitionRegionConfigModifier.modify(prConfig);
+      updatePRConfig(prConfig, false);
+    } finally {
+      rl.unlock();
+    }
   }
 }

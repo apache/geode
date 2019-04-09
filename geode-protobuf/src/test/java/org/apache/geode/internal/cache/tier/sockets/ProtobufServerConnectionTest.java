@@ -50,9 +50,9 @@ public class ProtobufServerConnectionTest {
   @Test
   public void testProcessFlag() throws Exception {
     ServerConnection serverConnection = IOExceptionThrowingServerConnection();
-    Assert.assertTrue(serverConnection.processMessages);
+    Assert.assertTrue(serverConnection.getProcessMessages());
     serverConnection.doOneMessage();
-    Assert.assertTrue(!serverConnection.processMessages);
+    Assert.assertTrue(!serverConnection.getProcessMessages());
   }
 
   @Test

@@ -20,10 +20,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class RegionConfigMutatorIntegrationTest {
@@ -31,18 +31,18 @@ public class RegionConfigMutatorIntegrationTest {
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
-  private RegionConfigMutator mutator;
+  private RegionConfigManager mutator;
   private RegionConfig config;
 
   @Before
   public void before() throws Exception {
     config = new RegionConfig();
-    mutator = new RegionConfigMutator();
+    mutator = new RegionConfigManager();
   }
 
   @Test
   public void sanity() throws Exception {
-    config.setType(RegionShortcut.REPLICATE);
+    config.setType(RegionType.REPLICATE);
     config.setName("test");
     CacheConfig cacheConfig =
         locator.getLocator().getConfigurationPersistenceService().getCacheConfig("cluster", true);

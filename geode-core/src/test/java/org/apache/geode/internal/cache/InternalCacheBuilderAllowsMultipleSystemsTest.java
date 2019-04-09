@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 import static org.apache.geode.internal.cache.InternalCacheBuilderAllowsMultipleSystemsTest.CacheState.CLOSED;
 import static org.apache.geode.internal.cache.InternalCacheBuilderAllowsMultipleSystemsTest.CacheState.OPEN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,9 +35,10 @@ import java.util.function.Supplier;
 
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.assertj.core.api.ThrowableAssert;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.mockito.Mock;
 
 import org.apache.geode.cache.CacheExistsException;
@@ -52,6 +54,9 @@ import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
  * {@code InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS} is set to true.
  */
 public class InternalCacheBuilderAllowsMultipleSystemsTest {
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private static final int ANY_SYSTEM_ID = 12;
   private static final String ANY_MEMBER_NAME = "a-member-name";
@@ -71,7 +76,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         throw new AssertionError("throwing system constructor");
       };
   private static final InternalCacheConstructor THROWING_CACHE_CONSTRUCTOR =
-      (a, b, c, d, e, f, g) -> {
+      (a, b, c, d, e, f, g, addedMeterSubregistries) -> {
         throw new AssertionError("throwing cache constructor");
       };
 
@@ -85,12 +90,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
   public void setUp() {
     initMocks(this);
 
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = true;
-  }
-
-  @After
-  public void tearDown() {
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = false;
+    System.setProperty(ALLOW_MULTIPLE_SYSTEMS_PROPERTY, "true");
   }
 
   @Test
@@ -185,7 +185,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     internalCacheBuilder.create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(constructedSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
 
@@ -251,7 +251,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         .create(givenSystem);
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -304,7 +304,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         .create(givenSystem);
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -471,8 +471,9 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
   private static InternalCacheConstructor constructorOf(InternalCache constructedCache) {
     InternalCacheConstructor constructor =
         mock(InternalCacheConstructor.class, "internal cache constructor");
-    when(constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any()))
-        .thenReturn(constructedCache);
+    when(
+        constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any(), any()))
+            .thenReturn(constructedCache);
     return constructor;
   }
 

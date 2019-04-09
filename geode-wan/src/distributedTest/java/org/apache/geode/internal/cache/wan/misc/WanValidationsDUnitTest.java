@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -1297,42 +1298,30 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createReceiverWithBindAddress(lnPort));
   }
 
-
   @Test
-  public void testBug50247_NonPersistentSenderWithPersistentRegion() throws Exception {
+  public void testBug50247_NonPersistentSenderWithPersistentRegion() {
     IgnoredException.addIgnoredException("could not get remote locator information");
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-
     createCacheInVMs(lnPort, vm4, vm5);
 
-    try {
-      vm4.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
-      vm4.invoke(() -> WANTestBase
-          .createPartitionedRegionWithPersistence(getTestMethodName() + "_PR", "ln1", 1, 100));
-      fail("Expected GatewaySenderException with incompatible gateway sender ids and region");
-    } catch (Exception e) {
-      if (!(e.getCause() instanceof GatewaySenderException)
-          || !(e.getCause().getMessage().contains("can not be attached to persistent region "))) {
-        Assert.fail(
-            "Expected GatewaySenderException with incompatible gateway sender ids and region", e);
-      }
-    }
+    vm4.invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
+    assertThatThrownBy(() -> vm4.invoke(() -> WANTestBase
+        .createPartitionedRegionWithPersistence(getTestMethodName() + "_PR", "ln1", 1, 100)))
+            .withFailMessage(
+                "Expected GatewaySenderException with incompatible gateway sender ids and region")
+            .hasRootCauseInstanceOf(GatewaySenderException.class)
+            .hasStackTraceContaining("can not be attached to persistent region ");
 
-    try {
-      vm5.invoke(() -> WANTestBase
-          .createPartitionedRegionWithPersistence(getTestMethodName() + "_PR", "ln1", 1, 100));
-      vm5.invoke(
-          () -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false));
-      fail("Expected GatewaySenderException with incompatible gateway sender ids and region");
-    } catch (Exception e) {
-      if (!(e.getCause() instanceof GatewaySenderException)
-          || !(e.getCause().getMessage().contains("can not be attached to persistent region "))) {
-        Assert.fail(
-            "Expected GatewaySenderException with incompatible gateway sender ids and region", e);
-      }
-    }
+    vm5.invoke(() -> WANTestBase.createPartitionedRegionWithPersistence(getTestMethodName() + "_PR",
+        "ln1", 1, 100));
+    assertThatThrownBy(() -> vm5
+        .invoke(() -> WANTestBase.createSender("ln1", 2, true, 10, 100, false, false, null, false)))
+            .withFailMessage(
+                "Expected GatewaySenderException with incompatible gateway sender ids and region")
+            .hasRootCauseInstanceOf(GatewaySenderException.class)
+            .hasStackTraceContaining("can not be attached to persistent region ");
   }
+
 
   /**
    * Test configuration::

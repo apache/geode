@@ -725,6 +725,34 @@ public class GMSJoinLeaveJUnitTest {
     await().until(() -> gmsJoinLeave.getView().size() == 1);
   }
 
+  /**
+   * Given a view with [A, B, C, D] where C is coordinator, a failed availability check on A
+   * and a pending join request from E show that B becomes coordinator when C sends it a
+   * Leave request and that E is allowed into the system and retains its view ID.
+   * See GEODE-6570
+   */
+  @Test
+  public void testBecomeCoordinatorAndAcceptMemberWithViewID() throws Exception {
+    initMocks();
+    InternalDistributedMember A = mockMembers[0],
+        B = gmsJoinLeaveMemberId,
+        C = mockMembers[1],
+        D = mockMembers[2],
+        E = mockMembers[3];
+    prepareAndInstallView(C, createMemberList(A, B, C, D));
+    when(healthMonitor.getMembersFailingAvailabilityCheck()).thenReturn(Collections.singleton(A));
+    E.setVmViewId(1);
+    gmsJoinLeave.processMessage(new JoinRequestMessage(B, E, null, 1, 1));
+    LeaveRequestMessage msg = new LeaveRequestMessage(B, C, "leaving for test");
+    msg.setSender(C);
+    gmsJoinLeave.processMessage(msg);
+    assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
+    await().until(() -> {
+      NetView preparedView = gmsJoinLeave.getPreparedView();
+      return preparedView != null && preparedView.contains(E);
+    });
+  }
+
   @Test
   public void testBecomeCoordinatorThroughViewChange() throws Exception {
     initMocks();
@@ -1196,14 +1224,12 @@ public class GMSJoinLeaveJUnitTest {
       initMocks(true);
       System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
       gmsJoinLeave.join();
-      installView(1, gmsJoinLeaveMemberId, createMemberList(mockMembers[0], mockMembers[1],
-          mockMembers[2], gmsJoinLeaveMemberId, mockMembers[3]));
-      for (int i = 1; i < 4; i++) {
-        RemoveMemberMessage msg =
-            new RemoveMemberMessage(gmsJoinLeaveMemberId, mockMembers[i], "crashed");
-        msg.setSender(gmsJoinLeaveMemberId);
-        gmsJoinLeave.processMessage(msg);
-      }
+      installView(1, gmsJoinLeaveMemberId, createMemberList(mockMembers[0],
+          gmsJoinLeaveMemberId));
+      RemoveMemberMessage msg =
+          new RemoveMemberMessage(gmsJoinLeaveMemberId, mockMembers[0], "crashed");
+      msg.setSender(gmsJoinLeaveMemberId);
+      gmsJoinLeave.processMessage(msg);
       Timeout to = new Timeout(3 * ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, new Times(1));
       verify(messenger, to).send(isA(NetworkPartitionMessage.class));
 

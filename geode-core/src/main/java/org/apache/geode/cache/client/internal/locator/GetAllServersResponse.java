@@ -19,11 +19,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.DataSerializableFixedID;
 
 public class GetAllServersResponse extends ServerLocationResponse {
 
-  private ArrayList servers;
+  private ArrayList<ServerLocation> servers;
 
   private boolean serversFound = false;
 
@@ -32,7 +33,7 @@ public class GetAllServersResponse extends ServerLocationResponse {
     super();
   }
 
-  public GetAllServersResponse(ArrayList servers) {
+  public GetAllServersResponse(ArrayList<ServerLocation> servers) {
     this.servers = servers;
     if (servers != null && !servers.isEmpty()) {
       this.serversFound = true;
@@ -52,7 +53,7 @@ public class GetAllServersResponse extends ServerLocationResponse {
     SerializationHelper.writeServerLocationList(servers, out);
   }
 
-  public ArrayList getServers() {
+  public ArrayList<ServerLocation> getServers() {
     return servers;
   }
 

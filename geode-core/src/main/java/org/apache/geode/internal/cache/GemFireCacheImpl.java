@@ -235,8 +235,6 @@ import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.management.internal.beans.ManagementListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
-import org.apache.geode.memcached.GemFireMemcachedServer;
-import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -552,9 +550,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final PersistentMemberManager persistentMemberManager;
 
-  private ClientMetadataService clientMetadataService = null;
-
-  private final Object clientMetaDatServiceLock = new Object();
+  private final ClientMetadataService clientMetadataService;
 
   private final AtomicBoolean isShutDownAll = new AtomicBoolean();
   private final CountDownLatch shutDownAllFinished = new CountDownLatch(1);
@@ -582,12 +578,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "xml.parameterization.disabled");
 
   /**
-   * the memcachedServer instance that is started when {@link DistributionConfig#getMemcachedPort()}
-   * is specified
-   */
-  private GemFireMemcachedServer memcachedServer;
-
-  /**
    * {@link ExtensionPoint} support.
    *
    * @since GemFire 8.1
@@ -610,6 +600,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private Optional<HttpService> httpService = Optional.ofNullable(null);
 
   private final MeterRegistry meterRegistry;
+  private final Set<MeterRegistry> meterSubregistries;
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
@@ -784,12 +775,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
       InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-      boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry) {
+      boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
+      Set<MeterRegistry> meterSubregistries) {
     this.isClient = isClient;
     this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig; // do early for bug 43213
     this.pdxRegistry = typeRegistry;
     this.meterRegistry = meterRegistry;
+    this.meterSubregistries = meterSubregistries;
 
     // Synchronized to prevent a new cache from being created
     // before an old one has finished closing
@@ -833,6 +826,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
                 .info("Running in local mode since no locators were specified.");
           }
         }
+
       } else {
         logger.info("Running in client mode");
         this.resourceEventsListener = null;
@@ -944,6 +938,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
       }
     } // synchronized
+
+    clientMetadataService = new ClientMetadataService(this);
   }
 
   @Override
@@ -955,6 +951,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public MeterRegistry getMeterRegistry() {
     return meterRegistry;
+  }
+
+  @Override
+  public Set<MeterRegistry> getMeterSubregistries() {
+    return meterSubregistries;
   }
 
   @Override
@@ -1225,8 +1226,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     startColocatedJmxManagerLocator();
 
-    startMemcachedServer();
-
     startRestAgentServer(this);
 
     this.isInitialized = true;
@@ -1276,25 +1275,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private void startMemcachedServer() {
-    int port = this.system.getConfig().getMemcachedPort();
-    if (port != 0) {
-      String protocol = this.system.getConfig().getMemcachedProtocol();
-      assert protocol != null;
-      String bindAddress = this.system.getConfig().getMemcachedBindAddress();
-      assert bindAddress != null;
-      if (bindAddress.equals(DistributionConfig.DEFAULT_MEMCACHED_BIND_ADDRESS)) {
-        logger.info("Starting GemFireMemcachedServer on port {} for {} protocol",
-            new Object[] {port, protocol});
-      } else {
-        logger.info("Starting GemFireMemcachedServer on bind address {} on port {} for {} protocol",
-            new Object[] {bindAddress, port, protocol});
-      }
-      this.memcachedServer =
-          new GemFireMemcachedServer(bindAddress, port, Protocol.valueOf(protocol.toUpperCase()));
-      this.memcachedServer.start();
-    }
-  }
+
 
   @Override
   public URL getCacheXmlURL() {
@@ -2050,13 +2031,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public ClientMetadataService getClientMetadataService() {
-    synchronized (this.clientMetaDatServiceLock) {
-      this.stopper.checkCancelInProgress(null);
-      if (this.clientMetadataService == null) {
-        this.clientMetadataService = new ClientMetadataService(this);
-      }
-      return this.clientMetadataService;
-    }
+    this.stopper.checkCancelInProgress(null);
+
+    return this.clientMetadataService;
   }
 
   private final boolean DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE = Boolean
@@ -2175,8 +2152,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
          */
         try {
           this.stopServers();
-
-          stopMemcachedServer();
 
           this.stopServices();
 
@@ -2445,14 +2420,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       cache = null;
     }
     return cache;
-  }
-
-  private void stopMemcachedServer() {
-    if (this.memcachedServer != null) {
-      logger.info("GemFireMemcachedServer on port {} is shutting down",
-          new Object[] {this.system.getConfig().getMemcachedPort()});
-      this.memcachedServer.shutdown();
-    }
   }
 
   private void prepareDiskStoresForClose() {

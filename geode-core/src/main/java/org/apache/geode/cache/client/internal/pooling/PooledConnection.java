@@ -69,7 +69,11 @@ public class PooledConnection implements Connection {
     }
   }
 
-  public void internalDestroy() {
+  /**
+   * @return true if internal connection was destroyed by this call; false if already destroyed
+   */
+  public boolean internalDestroy() {
+    boolean result = false;
     this.shouldDestroy.set(true); // probably already set but make sure
     synchronized (this) {
       this.active = false;
@@ -78,8 +82,10 @@ public class PooledConnection implements Connection {
       if (myCon != null) {
         myCon.destroy();
         connection = null;
+        result = true;
       }
     }
+    return result;
   }
 
   /**
@@ -125,6 +131,11 @@ public class PooledConnection implements Connection {
     return result;
   }
 
+  @Override
+  public Connection getWrappedConnection() {
+    return getConnection();
+  }
+
   /**
    * Set the destroy bit if it is not already set.
    *
@@ -143,6 +154,7 @@ public class PooledConnection implements Connection {
     return connection == null;
   }
 
+  @Override
   public void passivate(final boolean accessed) {
     long now = 0L;
     if (accessed) {
@@ -202,7 +214,8 @@ public class PooledConnection implements Connection {
     return true;
   }
 
-  public void activate() {
+  @Override
+  public boolean activate() {
     synchronized (this) {
       try {
         while (this.waitingToSwitch) {
@@ -211,14 +224,14 @@ public class PooledConnection implements Connection {
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       }
-      getConnection(); // it checks if we are destroyed
+      if (isDestroyed() || shouldDestroy()) {
+        return false;
+      }
       if (active) {
         throw new InternalGemFireException("Connection already active");
       }
-      if (shouldDestroy()) {
-        throw new ConnectionDestroyedException();
-      }
       active = true;
+      return true;
     }
   }
 

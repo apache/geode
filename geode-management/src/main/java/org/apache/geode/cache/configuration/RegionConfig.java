@@ -29,8 +29,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 
@@ -152,6 +153,9 @@ import org.apache.geode.management.api.RestfulEndpoint;
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
 public class RegionConfig implements CacheElement, RestfulEndpoint {
+
+  public static final String REGION_CONFIG_ENDPOINT = "/regions";
+
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
@@ -176,7 +180,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
 
   @Override
   public String getEndpoint() {
-    return "/regions";
+    return REGION_CONFIG_ENDPOINT;
   }
 
   public RegionAttributesType getRegionAttributes() {
@@ -324,7 +328,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
    */
   public void setName(String value) throws IllegalArgumentException {
     if (value == null) {
-      throw new IllegalArgumentException("Region name cannot be null");
+      return;
     }
 
     boolean regionPrefixedWithSlash = value.startsWith("/");
@@ -357,9 +361,15 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
    * {@link String }
    *
    */
-  public void setType(RegionShortcut regionShortcut) {
-    if (regionShortcut != null) {
-      this.type = regionShortcut.name();
+  public void setType(RegionType regionType) {
+    if (regionType != null) {
+      setType(regionType.name());
+    }
+  }
+
+  public void setType(String regionType) {
+    if (regionType != null) {
+      this.type = regionType.toUpperCase();
       setShortcutAttributes();
     }
   }
@@ -372,6 +382,11 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
     switch (type) {
       case "PARTITION": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        break;
+      }
+      case "REPLICATE": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
         break;
       }
       case "PARTITION_REDUNDANT": {
@@ -403,14 +418,12 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
         regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
         break;
-
       }
       case "PARTITION_REDUNDANT_PERSISTENT_OVERFLOW": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
         regionAttributes.setRedundantCopy("1");
         regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
         break;
-
       }
       case "PARTITION_HEAP_LRU": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
@@ -424,11 +437,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
         regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
         break;
       }
-      case "REPLICATE": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
+
       case "REPLICATE_PERSISTENT": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
         regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
@@ -504,6 +513,7 @@ public class RegionConfig implements CacheElement, RestfulEndpoint {
   }
 
   @Override
+  @JsonIgnore
   public String getId() {
     return getName();
   }

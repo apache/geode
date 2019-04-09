@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Logger;
 
@@ -47,9 +48,7 @@ import org.apache.geode.management.internal.configuration.domain.DeclarableTypeI
  */
 public class RegionAlterFunction extends CliFunction<RegionConfig> {
   private static final Logger logger = LogService.getLogger();
-
   private static final long serialVersionUID = -4846425364943216425L;
-  private static final String NULLSTR = "null";
 
   @Override
   public boolean isHA() {
@@ -57,12 +56,22 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
   }
 
   @Override
+  public String getId() {
+    return RegionAlterFunction.class.getName();
+  }
+
+  @Override
   public CliFunctionResult executeFunction(FunctionContext<RegionConfig> context) {
     Cache cache = ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
     RegionConfig deltaConfig = context.getArguments();
     alterRegion(cache, deltaConfig);
+
     return new CliFunctionResult(context.getMemberName(), Result.Status.OK,
         String.format("Region %s altered", deltaConfig.getName()));
+  }
+
+  private static <T> Predicate<T> not(Predicate<T> t) {
+    return t.negate();
   }
 
   void alterRegion(Cache cache, RegionConfig deltaConfig) {
@@ -70,12 +79,12 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
 
     AbstractRegion region = (AbstractRegion) cache.getRegion(regionPathString);
     if (region == null) {
-      throw new IllegalArgumentException(String.format(
-          "Region does not exist: %s", regionPathString));
+      throw new IllegalArgumentException(
+          String.format("Region does not exist: %s", regionPathString));
     }
 
+    AttributesMutator<?, ?> mutator = region.getAttributesMutator();
     RegionAttributesType regionAttributes = deltaConfig.getRegionAttributes();
-    AttributesMutator mutator = region.getAttributesMutator();
 
     if (regionAttributes.isCloningEnabled() != null) {
       mutator.setCloningEnabled(regionAttributes.isCloningEnabled());
@@ -94,55 +103,51 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
 
     // Alter expiration attributes
     updateExpirationAttributes(cache, regionAttributes.getEntryIdleTime(),
-        region.getEntryIdleTimeout(), p -> mutator.setEntryIdleTimeout(p),
-        p -> mutator.setCustomEntryIdleTimeout(p));
+        region.getEntryIdleTimeout(), mutator::setEntryIdleTimeout,
+        mutator::setCustomEntryIdleTimeout);
     updateExpirationAttributes(cache, regionAttributes.getEntryTimeToLive(),
-        region.getEntryTimeToLive(), p -> mutator.setEntryTimeToLive(p),
-        p -> mutator.setCustomEntryTimeToLive(p));
+        region.getEntryTimeToLive(), mutator::setEntryTimeToLive,
+        mutator::setCustomEntryTimeToLive);
     updateExpirationAttributes(cache, regionAttributes.getRegionIdleTime(),
-        region.getRegionIdleTimeout(), p -> mutator.setRegionIdleTimeout(p), null);
+        region.getRegionIdleTimeout(), mutator::setRegionIdleTimeout, null);
     updateExpirationAttributes(cache, regionAttributes.getRegionTimeToLive(),
-        region.getRegionTimeToLive(), p -> mutator.setRegionTimeToLive(p), null);
-
+        region.getRegionTimeToLive(), mutator::setRegionTimeToLive, null);
 
     final Set<String> newGatewaySenderIds = regionAttributes.getGatewaySenderIdsAsSet();
     final Set<String> newAsyncEventQueueIds = regionAttributes.getAsyncEventQueueIdsAsSet();
 
     if (region instanceof PartitionedRegion) {
       Set<String> senderIds = new HashSet<>();
+
       if (newGatewaySenderIds != null) {
         validateParallelGatewaySenderIDs((PartitionedRegion) region, newGatewaySenderIds);
         senderIds.addAll(newGatewaySenderIds);
       } else if (region.getGatewaySenderIds() != null) {
         senderIds.addAll(region.getAllGatewaySenderIds());
       }
+
       if (newAsyncEventQueueIds != null) {
-        validateParallelGatewaySenderIDs((PartitionedRegion) region, newAsyncEventQueueIds);
+        validateParallelAsynchronousEventQueueIDs((PartitionedRegion) region,
+            newAsyncEventQueueIds);
         senderIds.addAll(newAsyncEventQueueIds);
       } else if (region.getAsyncEventQueueIds() != null) {
         senderIds.addAll(region.getAsyncEventQueueIds());
       }
-      ((PartitionedRegion) region).updatePRConfigWithNewSetOfGatewaySenders(senderIds);
+
+      ((PartitionedRegion) region)
+          .updatePRConfigWithNewSetOfAsynchronousEventDispatchers(senderIds);
     }
 
     // Alter Gateway Sender Ids
     if (newGatewaySenderIds != null) {
-      // Remove old gateway sender ids that aren't in the new list
       Set<String> oldGatewaySenderIds = region.getGatewaySenderIds();
-      if (!oldGatewaySenderIds.isEmpty()) {
-        for (String gatewaySenderId : oldGatewaySenderIds) {
-          if (!newGatewaySenderIds.contains(gatewaySenderId)) {
-            mutator.removeGatewaySenderId(gatewaySenderId);
-          }
-        }
-      }
+      // Remove old gateway sender ids that aren't in the new list
+      oldGatewaySenderIds.stream().filter(not(newGatewaySenderIds::contains))
+          .forEach(mutator::removeGatewaySenderId);
 
       // Add new gateway sender ids that don't already exist
-      for (String gatewaySenderId : newGatewaySenderIds) {
-        if (!oldGatewaySenderIds.contains(gatewaySenderId)) {
-          mutator.addGatewaySenderId(gatewaySenderId);
-        }
-      }
+      newGatewaySenderIds.stream().filter(not(oldGatewaySenderIds::contains))
+          .forEach(mutator::addGatewaySenderId);
 
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - gateway sender IDs");
@@ -151,23 +156,15 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
 
     // Alter Async Queue Ids
     if (newAsyncEventQueueIds != null) {
+      Set<String> oldAsyncEventQueueIds = region.getAsyncEventQueueIds();
 
       // Remove old async event queue ids that aren't in the new list
-      Set<String> oldAsyncEventQueueIds = region.getAsyncEventQueueIds();
-      if (!oldAsyncEventQueueIds.isEmpty()) {
-        for (String asyncEventQueueId : oldAsyncEventQueueIds) {
-          if (!newAsyncEventQueueIds.contains(asyncEventQueueId)) {
-            mutator.removeAsyncEventQueueId(asyncEventQueueId);
-          }
-        }
-      }
+      oldAsyncEventQueueIds.stream().filter(not(newAsyncEventQueueIds::contains))
+          .forEach(mutator::removeAsyncEventQueueId);
 
       // Add new async event queue ids that don't already exist
-      for (String asyncEventQueueId : newAsyncEventQueueIds) {
-        if (!oldAsyncEventQueueIds.contains(asyncEventQueueId)) {
-          mutator.addAsyncEventQueueId(asyncEventQueueId);
-        }
-      }
+      newAsyncEventQueueIds.stream().filter(not(oldAsyncEventQueueIds::contains))
+          .forEach(mutator::addAsyncEventQueueId);
 
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - async event queue IDs");
@@ -226,8 +223,7 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
 
   private void updateExpirationAttributes(Cache cache,
       RegionAttributesType.ExpirationAttributesType newAttributes,
-      ExpirationAttributes existingAttributes,
-      Consumer<ExpirationAttributes> mutator1,
+      ExpirationAttributes existingAttributes, Consumer<ExpirationAttributes> mutator1,
       Consumer<CustomExpiry> mutator2) {
     if (newAttributes == null) {
       return;
@@ -236,6 +232,7 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
     if (newAttributes.hasTimoutOrAction() && existingAttributes != null) {
       int existingTimeout = existingAttributes.getTimeout();
       ExpirationAction existingAction = existingAttributes.getAction();
+
       if (newAttributes.getTimeout() != null) {
         existingTimeout = Integer.parseInt(newAttributes.getTimeout());
       }
@@ -243,6 +240,7 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
       if (newAttributes.getAction() != null) {
         existingAction = ExpirationAction.fromXmlString(newAttributes.getAction());
       }
+
       mutator1.accept(new ExpirationAttributes(existingTimeout, existingAction));
     }
 
@@ -252,6 +250,7 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
 
     if (newAttributes.hasCustomExpiry()) {
       DeclarableType newCustomExpiry = newAttributes.getCustomExpiry();
+
       if (newCustomExpiry.equals(DeclarableType.EMPTY)) {
         mutator2.accept(null);
       } else {
@@ -264,19 +263,24 @@ public class RegionAlterFunction extends CliFunction<RegionConfig> {
     }
   }
 
-
   private void validateParallelGatewaySenderIDs(PartitionedRegion region,
       Set<String> newGatewaySenderIds) {
     try {
       Set<String> parallelSenders = region.filterOutNonParallelGatewaySenders(newGatewaySenderIds);
-      region.validateParallelGatewaySenderIds(parallelSenders);
+      region.validateParallelAsynchronousEventDispatcherIds(parallelSenders);
     } catch (PRLocallyDestroyedException e) {
       throw new IllegalStateException("Partitioned Region not found registered", e);
     }
   }
 
-  @Override
-  public String getId() {
-    return RegionAlterFunction.class.getName();
+  private void validateParallelAsynchronousEventQueueIDs(PartitionedRegion region,
+      Set<String> newAsyncEventQueueIds) {
+    try {
+      Set<String> parallelSenders =
+          region.filterOutNonParallelAsyncEventQueues(newAsyncEventQueueIds);
+      region.validateParallelAsynchronousEventDispatcherIds(parallelSenders);
+    } catch (PRLocallyDestroyedException e) {
+      throw new IllegalStateException("Partitioned Region not found registered", e);
+    }
   }
 }

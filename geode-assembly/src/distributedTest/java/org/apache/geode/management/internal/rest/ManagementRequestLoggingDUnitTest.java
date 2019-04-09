@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
@@ -30,48 +29,42 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 
 public class ManagementRequestLoggingDUnitTest {
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
-
   private static MemberVM locator, server;
-
-  private static GeodeDevRestClient restClient;
+  private static ClusterManagementService service;
 
   @BeforeClass
   public static void beforeClass() {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server = cluster.startServerVM(1, locator.getPort());
-    restClient =
-        new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+    service = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort());
   }
 
   @Test
   public void checkRequestsAreLogged() throws Exception {
     locator.invoke(() -> {
       Logger logger = (Logger) LogManager.getLogger(ManagementLoggingFilter.class);
-      logger.addAppender(new ListAppender("ListAppender"));
+      ListAppender listAppender = new ListAppender("ListAppender");
+      logger.addAppender(listAppender);
+      listAppender.start();
     });
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setType(RegionShortcut.REPLICATE);
-    ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(regionConfig);
+    regionConfig.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult result =
-        restClient.doPostAndAssert("/regions", json)
-            .hasStatusCode(201)
-            .getClusterManagementResult();
-
+    ClusterManagementResult result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 
     locator.invoke(() -> {
@@ -80,9 +73,13 @@ public class ManagementRequestLoggingDUnitTest {
       ListAppender listAppender = (ListAppender) appenders.get("ListAppender");
       List<LogEvent> logEvents = listAppender.getEvents();
 
-      assertThat(logEvents.size()).as("Expected LogEvents").isEqualTo(1);
-      assertThat(logEvents.get(0).getMessage().getFormattedMessage())
-          .startsWith("Management request:");
+      assertThat(logEvents.size()).as("Expected LogEvents").isEqualTo(2);
+      String beforeMessage = logEvents.get(0).getMessage().getFormattedMessage();
+      assertThat(beforeMessage).startsWith("Management Request: POST");
+      assertThat(beforeMessage).contains("user=").contains("payload={")
+          .contains("regionAttributes");
+      assertThat(logEvents.get(1).getMessage().getFormattedMessage())
+          .startsWith("Management Response: ").contains("response={").contains("Status=");
 
       logger.removeAppender(listAppender);
     });

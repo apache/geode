@@ -101,6 +101,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
   private static final String CREATE_MAPPING__PDX_CLASS_FILE = MappingConstants.PDX_CLASS_FILE;
   private static final String CREATE_MAPPING__PDX_CLASS_FILE__HELP =
       "The file that contains the PDX class. It must be a file with the \".jar\" or \".class\" extension. By default, the PDX class must be on the server's classpath or gfsh deployed.";
+  public static final String CREATE_MAPPING__IFNOTEXISTS__HELP =
+      "By default, an attempt to create a duplicate jdbc mapping is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error.";
+  static final String IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE = "Skipping: ";
 
   @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
   @CliMetaData(
@@ -127,6 +130,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
           help = CREATE_MAPPING__CATALOG_NAME__HELP) String catalog,
       @CliOption(key = CREATE_MAPPING__SCHEMA_NAME,
           help = CREATE_MAPPING__SCHEMA_NAME__HELP) String schema,
+      @CliOption(key = CliStrings.IFNOTEXISTS,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CREATE_MAPPING__IFNOTEXISTS__HELP) boolean ifNotExists,
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CREATE_MAPPING__GROUPS_NAME__HELP) String[] groups)
@@ -166,9 +172,15 @@ public class CreateMappingCommand extends SingleGfshCommand {
         checkForCacheLoader(regionName, regionConfig);
         checkForCacheWriter(regionName, synchronous, regionConfig);
         checkForAsyncQueue(regionName, synchronous, cacheConfig);
+        checkForAEQIdForAccessor(regionName, synchronous, regionConfig);
       }
     } catch (PreconditionException ex) {
-      return ResultModel.createError(ex.getMessage());
+      if (ifNotExists) {
+        return ResultModel
+            .createInfo(IF_NOT_EXISTS_SKIPPING_EXCEPTION_MESSAGE + ex.getMessage());
+      } else {
+        return ResultModel.createError(ex.getMessage());
+      }
     }
 
     if (pdxClassFile != null) {
@@ -289,8 +301,30 @@ public class CreateMappingCommand extends SingleGfshCommand {
     }
   }
 
+  private void checkForAEQIdForAccessor(String regionName, boolean synchronous,
+      RegionConfig regionConfig)
+      throws PreconditionException {
+    RegionAttributesType regionAttributesType = regionConfig.getRegionAttributes();
+    if (!synchronous && regionAttributesType != null) {
+      boolean isAccessor = MappingCommandUtils.isAccessor(regionAttributesType);
+      if (!isAccessor) {
+        return;
+      } else {
+        String queueName = MappingCommandUtils.createAsyncEventQueueName(regionName);
+        if (regionAttributesType.getAsyncEventQueueIds() != null && regionAttributesType
+            .getAsyncEventQueueIds().contains(queueName)) {
+          throw new PreconditionException(
+              "An async-event-queue named " + queueName + " must not already exist.");
+        }
+      }
+    }
+  }
+
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig cacheConfig, Object element) {
+    if (element == null) {
+      return false;
+    }
     Object[] arguments = (Object[]) element;
     RegionMapping regionMapping = (RegionMapping) arguments[0];
     boolean synchronous = (Boolean) arguments[1];
@@ -300,13 +334,16 @@ public class CreateMappingCommand extends SingleGfshCommand {
     if (regionConfig == null) {
       return false;
     }
-
     RegionAttributesType attributes = getRegionAttribute(regionConfig);
-    addMappingToRegion(regionMapping, regionConfig);
-    if (!synchronous) {
-      createAsyncQueue(cacheConfig, attributes, queueName);
+    if (MappingCommandUtils.isAccessor(attributes)) {
+      alterProxyRegion(queueName, attributes, synchronous);
+    } else {
+      addMappingToRegion(regionMapping, regionConfig);
+      if (!synchronous) {
+        createAsyncQueue(cacheConfig, attributes, queueName);
+      }
+      alterNonProxyRegion(queueName, attributes, synchronous);
     }
-    alterRegion(queueName, attributes, synchronous);
 
     return true;
   }
@@ -324,7 +361,15 @@ public class CreateMappingCommand extends SingleGfshCommand {
     return isOnlineCommandAvailable();
   }
 
-  private void alterRegion(String queueName, RegionAttributesType attributes, boolean synchronous) {
+  private void alterProxyRegion(String queueName, RegionAttributesType attributes,
+      boolean synchronous) {
+    if (!synchronous) {
+      addAsyncEventQueueId(queueName, attributes);
+    }
+  }
+
+  private void alterNonProxyRegion(String queueName, RegionAttributesType attributes,
+      boolean synchronous) {
     setCacheLoader(attributes);
     if (synchronous) {
       setCacheWriter(attributes);

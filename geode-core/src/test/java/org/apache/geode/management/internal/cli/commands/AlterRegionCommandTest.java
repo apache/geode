@@ -78,7 +78,7 @@ public class AlterRegionCommandTest {
     cacheConfig = new CacheConfig();
     existingRegionConfig = new RegionConfig();
     existingRegionConfig.setName("/regionA");
-    existingRegionConfig.setType(RegionShortcut.REPLICATE);
+    existingRegionConfig.setType(RegionShortcut.REPLICATE.name());
     cacheConfig.getRegions().add(existingRegionConfig);
     when(ccService.getCacheConfig("cluster")).thenReturn(cacheConfig);
   }
@@ -220,7 +220,8 @@ public class AlterRegionCommandTest {
     // check that the combined the configuration is created as expected
     RegionAttributesType existingAttributes = new RegionAttributesType();
     RegionAttributesType.ExpirationAttributesType expirationAttributesType =
-        new RegionAttributesType.ExpirationAttributesType(10, ExpirationAction.DESTROY, null, null);
+        new RegionAttributesType.ExpirationAttributesType(10,
+            ExpirationAction.DESTROY.toXmlString(), null, null);
     existingAttributes.setEntryIdleTime(expirationAttributesType);
     existingRegionConfig.setRegionAttributes(existingAttributes);
 
@@ -247,7 +248,8 @@ public class AlterRegionCommandTest {
     // check that the combined the configuration is created as expected
     RegionAttributesType existingAttributes = new RegionAttributesType();
     RegionAttributesType.ExpirationAttributesType expirationAttributesType =
-        new RegionAttributesType.ExpirationAttributesType(10, ExpirationAction.INVALIDATE, null,
+        new RegionAttributesType.ExpirationAttributesType(10,
+            ExpirationAction.INVALIDATE.toXmlString(), null,
             null);
     existingAttributes.setEntryIdleTime(expirationAttributesType);
     existingRegionConfig.setRegionAttributes(existingAttributes);
@@ -274,7 +276,8 @@ public class AlterRegionCommandTest {
     // check that the combined the configuration is created as expected
     RegionAttributesType existingAttributes = new RegionAttributesType();
     RegionAttributesType.ExpirationAttributesType expirationAttributesType =
-        new RegionAttributesType.ExpirationAttributesType(10, ExpirationAction.INVALIDATE, null,
+        new RegionAttributesType.ExpirationAttributesType(10,
+            ExpirationAction.INVALIDATE.toXmlString(), null,
             null);
     existingAttributes.setEntryIdleTime(expirationAttributesType);
     existingRegionConfig.setRegionAttributes(existingAttributes);
@@ -301,7 +304,8 @@ public class AlterRegionCommandTest {
     // check that the combined the configuration is created as expected
     RegionAttributesType existingAttributes = new RegionAttributesType();
     RegionAttributesType.ExpirationAttributesType expirationAttributesType =
-        new RegionAttributesType.ExpirationAttributesType(10, ExpirationAction.INVALIDATE, null,
+        new RegionAttributesType.ExpirationAttributesType(10,
+            ExpirationAction.INVALIDATE.toXmlString(), null,
             null);
     existingAttributes.setEntryIdleTime(expirationAttributesType);
     existingRegionConfig.setRegionAttributes(existingAttributes);

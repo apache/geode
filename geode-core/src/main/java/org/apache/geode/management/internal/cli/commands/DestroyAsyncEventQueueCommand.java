@@ -18,6 +18,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS_HELP;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -26,6 +27,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunctionArgs;
@@ -36,7 +38,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class DestroyAsyncEventQueueCommand extends InternalGfshCommand {
+public class DestroyAsyncEventQueueCommand extends GfshCommand {
   public static final String DESTROY_ASYNC_EVENT_QUEUE = "destroy async-event-queue";
   public static final String DESTROY_ASYNC_EVENT_QUEUE__HELP = "destroy an Async Event Queue";
   public static final String DESTROY_ASYNC_EVENT_QUEUE__ID = "id";
@@ -70,7 +72,8 @@ public class DestroyAsyncEventQueueCommand extends InternalGfshCommand {
         new DestroyAsyncEventQueueFunction(), asyncEventQueueDestoryFunctionArgs, members);
 
     ResultModel result = ResultModel.createMemberStatusResult(functionResults);
-    XmlEntity xmlEntity = findXmlEntity(functionResults);
+    XmlEntity xmlEntity = functionResults.stream().filter(CliFunctionResult::isSuccessful)
+        .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);
     InternalConfigurationPersistenceService cps = getConfigurationPersistenceService();
     if (xmlEntity != null) {
       if (cps == null) {

@@ -42,7 +42,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
@@ -69,6 +68,7 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -671,7 +671,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     InternalCache internalCache = GemFireCacheImpl.getInstance();
     if (internalCache == null) {
       logger.info("Creating cache for locator.");
-      this.myCache = (InternalCache) new CacheFactory(ds.getProperties()).create();
+      this.myCache = new InternalCacheBuilder(ds.getProperties())
+          .create((InternalDistributedSystem) ds);
       internalCache = this.myCache;
     } else {
       logger.info("Using existing cache for locator.");
@@ -690,7 +691,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     clusterManagementService =
-        new LocatorClusterManagementService(locator.myCache.getDistributionManager(),
+        new LocatorClusterManagementService(locator.myCache,
             locator.configurationPersistenceService);
 
     // start management rest service

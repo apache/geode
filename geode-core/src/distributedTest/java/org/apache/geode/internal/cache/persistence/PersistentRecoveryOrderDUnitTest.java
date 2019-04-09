@@ -17,9 +17,12 @@ package org.apache.geode.internal.cache.persistence;
 import static org.apache.geode.admin.AdminDistributedSystemFactory.defineDistributedSystem;
 import static org.apache.geode.admin.AdminDistributedSystemFactory.getDistributedSystem;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
-import static org.apache.geode.internal.lang.ThrowableUtils.getRootCause;
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -267,8 +270,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     // Now, we should not be able to create a region
     // in vm1, because the this member was revoked
     LogWriterUtils.getLogWriter().info("Creating region in VM1");
-    IgnoredException e = IgnoredException
-        .addIgnoredException(RevokedPersistentDataException.class.getSimpleName(), vm1);
+    IgnoredException e =
+        addIgnoredException(RevokedPersistentDataException.class.getSimpleName(), vm1);
     try {
       createPersistentRegion(vm1);
       fail("We should have received a split distributed system exception");
@@ -369,8 +372,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     // Now, we should not be able to create a region
     // in vm1, because the this member was revoked
     LogWriterUtils.getLogWriter().info("Creating region in VM1");
-    IgnoredException e = IgnoredException
-        .addIgnoredException(RevokedPersistentDataException.class.getSimpleName(), vm1);
+    IgnoredException e =
+        addIgnoredException(RevokedPersistentDataException.class.getSimpleName(), vm1);
     try {
       createPersistentRegion(vm1);
       fail("We should have received a split distributed system exception");
@@ -1037,8 +1040,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     // so it will start up.
     createPersistentRegion(vm0);
 
-    IgnoredException e = IgnoredException
-        .addIgnoredException(ConflictingPersistentDataException.class.getSimpleName(), vm1);
+    IgnoredException e =
+        addIgnoredException(ConflictingPersistentDataException.class.getSimpleName(), vm1);
     try {
       // VM1 should not start up, because we should detect that vm1
       // was never in the same distributed system as vm0
@@ -1269,19 +1272,18 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   @Test
   public void testCrashDuringPreparePersistentId() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm0 = getVM(0);
+    VM vm1 = getVM(1);
+
+    addIgnoredException(DistributedSystemDisconnectedException.class);
+    addIgnoredException(CacheClosedException.class);
 
     // Add a hook which will disconnect from the distributed
     // system when the initial image message shows up.
     vm0.invoke(new SerializableRunnable() {
-
       @Override
       public void run() {
-
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
-
           @Override
           public void beforeProcessMessage(ClusterDistributionManager dm,
               DistributionMessage message) {
@@ -1290,19 +1292,12 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
               disconnectFromDS();
             }
           }
-
-          @Override
-          public void afterProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-
-          }
         });
       }
     });
+
     createPersistentRegion(vm0);
-
     putAnEntry(vm0);
-
     updateTheEntry(vm0);
 
     AsyncInvocation async1 = createPersistentRegionAsync(vm1);
@@ -1313,18 +1308,11 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     // closeCache(vm0);
     closeCache(vm1);
 
-    try {
-      async1.getResult();
-      fail("Should have seen a CacheClosedException");
-    } catch (AssertionError e) {
-      if (!CacheClosedException.class.isInstance(getRootCause(e))) {
-        throw e;
-      }
-    }
+    Throwable thrown = catchThrowable(() -> async1.await());
+    assertThat(thrown).hasRootCauseInstanceOf(CacheClosedException.class);
 
     createPersistentRegion(vm0);
-
-    createPersistentRegion(vm1);;
+    createPersistentRegion(vm1);
 
     checkForEntry(vm0);
     checkForEntry(vm1);
@@ -1346,7 +1334,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     createNonPersistentRegion(vm0);
 
     IgnoredException e =
-        IgnoredException.addIgnoredException(IllegalStateException.class.getSimpleName(), vm1);
+        addIgnoredException(IllegalStateException.class.getSimpleName(), vm1);
     try {
       createPersistentRegion(vm1);
       fail("Should have received an IllegalState exception");
@@ -1650,7 +1638,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
     LogWriterUtils.getLogWriter().info("Creating region in VM0");
     IgnoredException ex =
-        IgnoredException.addIgnoredException("ConflictingPersistentDataException", vm0);
+        addIgnoredException("ConflictingPersistentDataException", vm0);
     try {
       // this should cause a conflict
       createPersistentRegion(vm0);
@@ -1671,7 +1659,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
     updateTheEntry(vm0);
 
-    ex = IgnoredException.addIgnoredException("ConflictingPersistentDataException", vm1);
+    ex = addIgnoredException("ConflictingPersistentDataException", vm1);
     // Now make sure vm1 gets a conflict
     LogWriterUtils.getLogWriter().info("Creating region in VM1");
     try {

@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RegionConfigTest {
 
@@ -43,12 +44,6 @@ public class RegionConfigTest {
     assertThat(xmlResource).isNotNull();
     master =
         service.unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
-  }
-
-  @Test
-  public void regionNameCannotBeNull() {
-    assertThatThrownBy(() -> regionConfig.setName(null))
-        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -71,7 +66,7 @@ public class RegionConfigTest {
     RegionShortcut[] shortcuts = RegionShortcut.values();
     for (RegionShortcut shortcut : shortcuts) {
       RegionConfig config = new RegionConfig();
-      config.setType(shortcut);
+      config.setType(shortcut.name());
       config.setName(shortcut.name());
       RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
       assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
@@ -82,14 +77,14 @@ public class RegionConfigTest {
   @Test
   public void correctJsonAndXml() throws Exception {
     String json = "{\"name\":\"test\", \"type\":\"REPLICATE\"}";
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = GeodeJsonMapper.getMapper();
     regionConfig = mapper.readValue(json, RegionConfig.class);
     assertThat(regionConfig.getName()).isEqualTo("test");
     assertThat(regionConfig.getType()).isEqualTo("REPLICATE");
 
     String json2 = mapper.writeValueAsString(regionConfig);
     assertThat(json2).contains("\"type\":\"REPLICATE\"");
-    assertThat(json2).contains("\"id\":\"test\"");
+    assertThat(json2).contains("\"name\":\"test\"");
 
     CacheConfig cacheConfig = new CacheConfig();
     cacheConfig.getRegions().add(regionConfig);

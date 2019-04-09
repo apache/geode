@@ -19,28 +19,33 @@ package org.apache.geode.cache;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+import org.apache.geode.annotations.Immutable;
+
 /**
  * Enumerated type for expiration actions.
  *
  *
  *
- * @see ExpirationAttributes
  * @since GemFire 3.0
  */
 public class ExpirationAction implements Serializable {
   private static final long serialVersionUID = 658925707882047900L;
 
   /** When the region or cached object expires, it is invalidated. */
+  @Immutable
   public static final ExpirationAction INVALIDATE = new ExpirationAction("INVALIDATE");
   /** When expired, invalidated locally only. Not supported for partitioned regions. */
+  @Immutable
   public static final ExpirationAction LOCAL_INVALIDATE = new ExpirationAction("LOCAL_INVALIDATE");
 
   /** When the region or cached object expires, it is destroyed. */
+  @Immutable
   public static final ExpirationAction DESTROY = new ExpirationAction("DESTROY");
   /**
    * When expired, destroyed locally only. Not supported for partitioned regions. Use DESTROY
    * instead.
    */
+  @Immutable
   public static final ExpirationAction LOCAL_DESTROY = new ExpirationAction("LOCAL_DESTROY");
 
   /** The name of this action */
@@ -163,8 +168,10 @@ public class ExpirationAction implements Serializable {
   }
 
   // The 4 declarations below are necessary for serialization
+  @Immutable
   private static int nextOrdinal = 0;
   public final int ordinal = nextOrdinal++;
+  @Immutable
   private static final ExpirationAction[] VALUES =
       {INVALIDATE, LOCAL_INVALIDATE, DESTROY, LOCAL_DESTROY};
 

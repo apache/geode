@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -87,17 +86,20 @@ public class DescribeMemberCommand extends GfshCommand {
     if (memberInformation.isServer()) {
       List<CacheServerInfo> csList = memberInformation.getCacheServeInfo();
       if (csList != null) {
-        DataResultModel connectionInfo = result.addData("connectionInfo");
-        Iterator<CacheServerInfo> iters = csList.iterator();
-        connectionInfo.setHeader("Cache Server Information");
-
-        while (iters.hasNext()) {
-          CacheServerInfo cacheServerInfo = iters.next();
-          connectionInfo.addData("Server Bind", cacheServerInfo.getBindAddress());
-          connectionInfo.addData("Server Port", cacheServerInfo.getPort());
-          connectionInfo.addData("Running", cacheServerInfo.isRunning());
+        int serverCount = 0;
+        for (CacheServerInfo cacheServerInfo : csList) {
+          DataResultModel serverInfo = result.addData("serverInfo" + serverCount++);
+          if (csList.size() == 1) {
+            serverInfo.setHeader("Cache Server Information");
+          } else {
+            serverInfo.setHeader("Cache Server " + serverCount + " Information");
+          }
+          serverInfo.addData("Server Bind", cacheServerInfo.getBindAddress());
+          serverInfo.addData("Server Port", cacheServerInfo.getPort());
+          serverInfo.addData("Running", cacheServerInfo.isRunning());
         }
 
+        DataResultModel connectionInfo = result.addData("connectionInfo");
         connectionInfo.addData("Client Connections", memberInformation.getClientCount());
       }
     }

@@ -69,7 +69,6 @@ import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -268,9 +267,13 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   protected final InternalCache cache;
 
+  private final PoolFinder poolFinder;
+
   /** Creates a new instance of AbstractRegion */
   protected AbstractRegion(InternalCache cache, RegionAttributes attrs, String regionName,
-      InternalRegionArguments internalRegionArgs) {
+      InternalRegionArguments internalRegionArgs, PoolFinder poolFinder) {
+    this.poolFinder = poolFinder;
+
     this.cache = cache;
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.isPdxTypesRegion = PeerTypeRegistration.REGION_NAME.equals(regionName);
@@ -385,6 +388,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     this.lastAccessedTime = new AtomicLong(0);
     this.lastModifiedTime = new AtomicLong(0);
     evictionAttributes = new EvictionAttributesImpl();
+    poolFinder = (a) -> null;
   }
 
   /**
@@ -782,7 +786,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return this.loadFactor;
   }
 
-  protected abstract boolean isCurrentlyLockGrantor();
+  abstract boolean isCurrentlyLockGrantor();
 
   @Override
   public boolean isLockGrantor() {
@@ -1576,19 +1580,19 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     }
   }
 
-  protected void timeToLiveChanged(ExpirationAttributes oldTimeToLive) {
+  void timeToLiveChanged(ExpirationAttributes oldTimeToLive) {
     // nothing
   }
 
-  protected void idleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
+  void idleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
     // nothing
   }
 
-  protected void regionTimeToLiveChanged(ExpirationAttributes oldTimeToLive) {
+  void regionTimeToLiveChanged(ExpirationAttributes oldTimeToLive) {
     // nothing
   }
 
-  protected void regionIdleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
+  void regionIdleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
     // nothing
   }
 
@@ -1665,7 +1669,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   /** is this a region that supports versioning? */
-  public abstract boolean supportsConcurrencyChecks();
+  protected abstract boolean supportsConcurrencyChecks();
 
   /**
    * Returns the pool this region is using or null if it does not have one or the pool does not
@@ -1676,7 +1680,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   private PoolImpl getPool() {
     PoolImpl result = null;
     if (getPoolName() != null) {
-      result = (PoolImpl) PoolManager.find(getPoolName());
+      result = poolFinder.find(getPoolName());
     }
     return result;
   }
@@ -1806,7 +1810,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     throw new UnsupportedOperationException("fromData is not implemented");
   }
 
-  public boolean forceCompaction() {
+  boolean forceCompaction() {
     throw new UnsupportedOperationException("forceCompaction is not implemented");
   }
 
@@ -1864,4 +1868,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     // nothing
   }
 
+  protected interface PoolFinder {
+    PoolImpl find(String poolName);
+  }
 }

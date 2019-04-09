@@ -27,8 +27,16 @@ public class PulseTestLocators {
     public static final String styleAttribute = "style";
   }
 
+  public static class TopHeader {
+    public static final String aboutLinkXpath = "//a[text()='About']";
+    public static final String helpLinkXpath = "//a[text()='Help']";
+    public static final String welcomeLinkXpath = "//div[text()='Welcome']";
+    public static final String signOutLinkXpath = "//a[text()='Sign Out']";
+  }
+
   public static class TopNavigation {
     public static final String clusterViewLinkXpath = "//a[text()='Cluster View']";
+    public static final String dataBrowserViewLinkXpath = "//a[text()='Data Browser']";
   }
 
   public static class ClusterStatus {

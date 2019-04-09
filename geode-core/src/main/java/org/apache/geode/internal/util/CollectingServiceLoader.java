@@ -23,15 +23,14 @@ import java.util.ServiceLoader;
  * Loads and returns a collection of all currently loadable implementations of the given service
  * interface using {@link ServiceLoader}.
  */
-public interface CollectingServiceLoader {
+public interface CollectingServiceLoader<S> {
 
   /**
    * Loads and returns a collection of all currently loadable implementations of the given service
    * interface.
    *
    * @param service the service interface
-   * @param <S> the class of the service interface to load implementations of
    * @return a collection of instantiated implementations of the given service interface
    */
-  <S> Collection<S> loadServices(Class<S> service);
+  Collection<S> loadServices(Class<S> service);
 }

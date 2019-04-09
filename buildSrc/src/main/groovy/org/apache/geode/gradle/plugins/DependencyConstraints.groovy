@@ -30,9 +30,9 @@ class DependencyConstraints implements Plugin<Project> {
   static private Map<String, String> initExternalDependencies() {
     Map<String,String> deps = new HashMap<>()
     // These versions are consumed beyond the scope of source set dependencies.
-    
+
     // These version numbers are consumed by :geode-modules-assembly:distAppServer filtering
-    // Some of these are referenced above as well
+    // Some of these are referenced below as well
     deps.put("antlr.version", "2.7.7")
     deps.put("commons-io.version", "2.6")
     deps.put("commons-lang3.version", "3.8.1")
@@ -44,12 +44,11 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("micrometer.version", "1.1.3")
     deps.put("shiro.version", "1.4.0")
     deps.put("slf4j-api.version", "1.7.25")
-    deps.put("android-json.version", "0.0.20131108.vaadin1")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
-    // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to place nicely when
-    // specifying @zip in a dependency, in the manner in which we consume them in custom configurations.
+    // in geode-assembly.gradle.  Moreover, dependencyManagement does not seem to play nicely when
+    // specifying @zip in a dependency, the manner in which we consume them in custom configurations.
     // This would possibly be corrected if they were proper source sets.
     deps.put("tomcat6.version", "6.0.37")
     deps.put("tomcat7.version", "7.0.90")
@@ -67,7 +66,6 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("protobuf-java.version", "3.6.1")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
-    // This results in brittle behavior compared to dependency-management.gradle"s "opt-in" plugin style.
     deps.put("junit.version", "4.12")
     deps.put("cglib.version", "3.2.9")
     return deps
@@ -102,7 +100,6 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.mockrunner', name: 'mockrunner-servlet', version: '1.1.2')
         api(group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0')
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '2.2')
-        api(group: 'com.vaadin.external.google', name: 'android-json', version: '0.0.20131108.vaadin1')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '3.2.0')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3')
         api(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
@@ -127,6 +124,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
         api(group: 'net.java.dev.jna', name: 'jna', version: '4.1.0')
+        api(group: 'net.openhft', name: 'compiler', version: '2.3.1')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
         api(group: 'net.spy', name: 'spymemcached', version: '2.12.2')
         api(group: 'org.apache.bcel', name: 'bcel', version: '6.2')

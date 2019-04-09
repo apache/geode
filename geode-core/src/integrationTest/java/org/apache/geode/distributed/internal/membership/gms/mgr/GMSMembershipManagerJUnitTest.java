@@ -82,6 +82,7 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager.StartupEvent;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.statistics.DummyStatisticsRegistry;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -422,7 +423,11 @@ public class GMSMembershipManagerJUnitTest {
     DMStats stats = mock(DMStats.class);
 
     InternalDistributedSystem system =
-        InternalDistributedSystem.newInstanceForTesting(dm, distProperties);
+        new InternalDistributedSystem.BuilderForTesting(distProperties)
+            .setDistributionManager(dm)
+            .setStatisticsManagerFactory(
+                (name, startTime, statsDisabled) -> new DummyStatisticsRegistry(name, startTime))
+            .build();
 
     when(dm.getStats()).thenReturn(stats);
     when(dm.getSystem()).thenReturn(system);

@@ -46,7 +46,7 @@ public class RegionAttributesTypeTest {
   @Test
   public void expirationAttributesConstructor() {
     expirationAttributes =
-        new ExpirationAttributesType(null, ExpirationAction.DESTROY, null,
+        new ExpirationAttributesType(null, ExpirationAction.DESTROY.toXmlString(), null,
             null);
     assertThat(expirationAttributes.getAction()).isEqualTo("destroy");
     assertThat(expirationAttributes.getTimeout()).isNull();
@@ -93,11 +93,17 @@ public class RegionAttributesTypeTest {
         .isEqualToComparingFieldByFieldRecursively(expirationAttributes);
 
     ExpirationAttributesType another =
-        new ExpirationAttributesType(null, ExpirationAction.DESTROY, "abc", null);
+        new ExpirationAttributesType(null, ExpirationAction.DESTROY.toXmlString(), "abc", null);
     expirationAttributes = ExpirationAttributesType.combine(expirationAttributes, another);
     assertThat(expirationAttributes.getTimeout()).isEqualTo("8");
     assertThat(expirationAttributes.getAction()).isEqualTo(ExpirationAction.DESTROY.toXmlString());
     assertThat(expirationAttributes.getCustomExpiry().getClassName()).isEqualTo("abc");
+  }
+
+  @Test
+  public void expirationAttributesDetail() throws Exception {
+    assertThatThrownBy(() -> new ExpirationAttributesType(8, "invalid", null, null))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

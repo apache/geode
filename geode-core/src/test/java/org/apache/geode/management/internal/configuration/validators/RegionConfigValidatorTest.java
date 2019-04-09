@@ -23,8 +23,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 
 public class RegionConfigValidatorTest {
 
@@ -40,9 +40,18 @@ public class RegionConfigValidatorTest {
   @Test
   public void noChangesWhenTypeIsSet() {
     config.setName("regionName");
-    config.setType(RegionShortcut.REPLICATE);
+    config.setType(RegionType.REPLICATE);
     validator.validate(config);
     assertThat(config.getType()).isEqualTo("REPLICATE");
+  }
+
+  @Test
+  public void invalidType() throws Exception {
+    config.setName("regionName");
+    config.setType("LOCAL");
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Type LOCAL is not supported in Management V2 API.");
   }
 
   @Test

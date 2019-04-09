@@ -16,10 +16,12 @@ package org.apache.geode.internal.cache;
 
 import static java.util.Objects.requireNonNull;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -61,6 +63,8 @@ public class InternalCacheBuilder {
 
   private static final boolean IS_EXISTING_OK_DEFAULT = true;
   private static final boolean IS_CLIENT_DEFAULT = false;
+
+  private final Set<MeterRegistry> meterSubregistries = new HashSet<>();
 
   private final Properties configProperties;
   private final CacheConfig cacheConfig;
@@ -117,7 +121,10 @@ public class InternalCacheBuilder {
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
-        GemFireCacheImpl::new);
+        (isClient1, poolFactory1, internalDistributedSystem, cacheConfig1, useAsyncEventListeners1,
+            typeRegistry1, meterRegistry, addedMeterSubregistries) -> new GemFireCacheImpl(
+                isClient1, poolFactory1, internalDistributedSystem, cacheConfig1,
+                useAsyncEventListeners1, typeRegistry1, meterRegistry, addedMeterSubregistries));
   }
 
   @VisibleForTesting
@@ -197,11 +204,16 @@ public class InternalCacheBuilder {
             CompositeMeterRegistry compositeMeterRegistry = compositeMeterRegistryFactory
                 .create(systemId, memberName, hostName);
 
+            for (MeterRegistry meterSubregistry : meterSubregistries) {
+              compositeMeterRegistry.add(meterSubregistry);
+            }
+
             metricsSessionInitializer.accept(compositeMeterRegistry);
 
             cache =
                 internalCacheConstructor.construct(isClient, poolFactory, internalDistributedSystem,
-                    cacheConfig, useAsyncEventListeners, typeRegistry, compositeMeterRegistry);
+                    cacheConfig, useAsyncEventListeners, typeRegistry, compositeMeterRegistry,
+                    meterSubregistries);
 
             internalDistributedSystem.setCache(cache);
             cache.initialize();
@@ -334,9 +346,17 @@ public class InternalCacheBuilder {
     return this;
   }
 
+  /**
+   * @see CacheFactory#addMeterSubregistry(MeterRegistry)
+   */
+  public InternalCacheBuilder addMeterSubregistry(MeterRegistry subregistry) {
+    meterSubregistries.add(subregistry);
+    return this;
+  }
+
   private Optional<InternalDistributedSystem> findInternalDistributedSystem() {
     InternalDistributedSystem internalDistributedSystem = null;
-    if (configProperties.isEmpty() && !ALLOW_MULTIPLE_SYSTEMS) {
+    if (configProperties.isEmpty() && !allowMultipleSystems()) {
       // any ds will do
       internalDistributedSystem = singletonSystemSupplier.get();
       validateUsabilityOfSecurityCallbacks(internalDistributedSystem, cacheConfig);
@@ -354,7 +374,7 @@ public class InternalCacheBuilder {
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,
       Supplier<? extends InternalCache> singletonCacheSupplier) {
-    InternalCache cache = ALLOW_MULTIPLE_SYSTEMS
+    InternalCache cache = allowMultipleSystems()
         ? systemCacheSupplier.get()
         : singletonCacheSupplier.get();
 
@@ -406,11 +426,16 @@ public class InternalCacheBuilder {
     }
   }
 
+  private static boolean allowMultipleSystems() {
+    return Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY);
+  }
+
   @VisibleForTesting
   interface InternalCacheConstructor {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
         InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-        boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry);
+        boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
+        Set<MeterRegistry> addedMeterSubregistries);
   }
 
   @VisibleForTesting

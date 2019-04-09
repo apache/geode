@@ -15,7 +15,11 @@
 package org.apache.geode.internal.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -34,6 +38,7 @@ import org.junit.Test;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.metrics.CacheLifecycleMetricsSession.CacheLifecycle;
+import org.apache.geode.internal.metrics.CacheLifecycleMetricsSession.ErrorLogger;
 import org.apache.geode.metrics.MetricsPublishingService;
 
 public class CacheLifecycleMetricsSessionTest {
@@ -212,6 +217,78 @@ public class CacheLifecycleMetricsSessionTest {
     metricsSession.cacheClosed(mock(InternalCache.class));
 
     verify(theCacheLifecycle).removeListener(same(metricsSession));
+  }
+
+  @Test
+  public void cacheCreated_logsErrorMessage_ifMetricsPublishingServiceStartThrowsRuntimeException() {
+    MetricsPublishingService metricsPublishingService =
+        metricsPublishingService("metricsPublishingService");
+    String theClassName = metricsPublishingService.getClass().getName();
+    RuntimeException theException = new RuntimeException("theExceptionMessage");
+    doThrow(theException).when(metricsPublishingService).start(any());
+    List<MetricsPublishingService> metricsPublishingServices =
+        Collections.singletonList(metricsPublishingService);
+    ErrorLogger errorLogger = mock(ErrorLogger.class);
+    metricsSession = new CacheLifecycleMetricsSession(mock(CacheLifecycle.class), compositeRegistry,
+        metricsPublishingServices, errorLogger);
+
+    metricsSession.cacheCreated(mock(InternalCache.class));
+
+    verify(errorLogger).logError(anyString(), eq("start"), same(theClassName), same(theException));
+  }
+
+  @Test
+  public void cacheCreated_logsErrorMessage_ifMetricsPublishingServiceStartThrowsError() {
+    MetricsPublishingService metricsPublishingService =
+        metricsPublishingService("metricsPublishingService");
+    String theClassName = metricsPublishingService.getClass().getName();
+    Error theError = new Error("theErrorMessage");
+    doThrow(theError).when(metricsPublishingService).start(any());
+    List<MetricsPublishingService> metricsPublishingServices =
+        Collections.singletonList(metricsPublishingService);
+    ErrorLogger errorLogger = mock(ErrorLogger.class);
+    metricsSession = new CacheLifecycleMetricsSession(mock(CacheLifecycle.class), compositeRegistry,
+        metricsPublishingServices, errorLogger);
+
+    metricsSession.cacheCreated(mock(InternalCache.class));
+
+    verify(errorLogger).logError(anyString(), eq("start"), same(theClassName), same(theError));
+  }
+
+  @Test
+  public void cacheClosed_logsErrorMessage_ifMetricsPublishingServiceStopThrowsRuntimeException() {
+    MetricsPublishingService metricsPublishingService =
+        metricsPublishingService("metricsPublishingService");
+    String theClassName = metricsPublishingService.getClass().getName();
+    RuntimeException theException = new RuntimeException("theExceptionMessage");
+    doThrow(theException).when(metricsPublishingService).stop();
+    List<MetricsPublishingService> metricsPublishingServices =
+        Collections.singletonList(metricsPublishingService);
+    ErrorLogger errorLogger = mock(ErrorLogger.class);
+    metricsSession = new CacheLifecycleMetricsSession(mock(CacheLifecycle.class), compositeRegistry,
+        metricsPublishingServices, errorLogger);
+
+    metricsSession.cacheClosed(mock(InternalCache.class));
+
+    verify(errorLogger).logError(anyString(), eq("stop"), same(theClassName), same(theException));
+  }
+
+  @Test
+  public void cacheClosed_logsErrorMessage_ifMetricsPublishingServiceStopThrowsError() {
+    MetricsPublishingService metricsPublishingService =
+        metricsPublishingService("metricsPublishingService");
+    String theClassName = metricsPublishingService.getClass().getName();
+    Error theError = new Error("theErrorMessage");
+    doThrow(theError).when(metricsPublishingService).stop();
+    List<MetricsPublishingService> metricsPublishingServices =
+        Collections.singletonList(metricsPublishingService);
+    ErrorLogger errorLogger = mock(ErrorLogger.class);
+    metricsSession = new CacheLifecycleMetricsSession(mock(CacheLifecycle.class), compositeRegistry,
+        metricsPublishingServices, errorLogger);
+
+    metricsSession.cacheClosed(mock(InternalCache.class));
+
+    verify(errorLogger).logError(anyString(), eq("stop"), same(theClassName), same(theError));
   }
 
   private MetricsPublishingService metricsPublishingService(String name) {

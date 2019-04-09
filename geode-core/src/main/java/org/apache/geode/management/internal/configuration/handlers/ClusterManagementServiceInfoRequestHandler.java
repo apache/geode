@@ -26,6 +26,9 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 
@@ -57,6 +60,14 @@ public class ClusterManagementServiceInfoRequestHandler implements TcpHandler {
     }
 
     info.setHostName(hostName);
+
+    if (StringUtils.isNotBlank(config.getSecurityManager())) {
+      info.setSecured(true);
+    }
+
+    SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(config, SecurableCommunicationChannel.WEB);
+    info.setSSL(sslConfig.isEnabled());
 
     return info;
   }

@@ -2465,8 +2465,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             mbr = jmsg.getMemberID();
             int port = jmsg.getFailureDetectionPort();
             if (!joinReqs.contains(mbr)) {
-              joinReqs.add(mbr);
-              joinPorts.put(mbr, port);
+              if (mbr.getVmViewId() >= 0 && oldMembers.contains(mbr)) {
+                // already joined in a previous view
+                logger.info("Ignoring join request from member {} who has already joined", mbr);
+              } else {
+                joinReqs.add(mbr);
+                joinPorts.put(mbr, port);
+              }
             }
             break;
           case LEAVE_REQUEST_MESSAGE:
@@ -2553,7 +2558,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       }
 
       for (InternalDistributedMember mbr : joinReqs) {
-        mbr.setVmViewId(newView.getViewId());
+        if (mbr.getVmViewId() < 0) {
+          mbr.setVmViewId(newView.getViewId());
+        }
       }
 
       if (isShutdown()) {

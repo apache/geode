@@ -556,13 +556,6 @@ public class OpExecutorImplJUnitTest {
       return new DummyConnection(new ServerLocation("localhost", currentServer++ % numServers));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.apache.geode.cache.client.internal.pooling.ConnectionManager#borrowConnection(org.apache.
-     * geode.distributed.internal.ServerLocation, long)
-     */
     @Override
     public Connection borrowConnection(ServerLocation server, long aquireTimeout,
         boolean onlyUseExistingCnx) {
@@ -589,7 +582,8 @@ public class OpExecutorImplJUnitTest {
     public void start(ScheduledExecutorService backgroundProcessor) {}
 
     @Override
-    public Connection exchangeConnection(Connection conn, Set excludedServers, long aquireTimeout) {
+    public Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers,
+        long aquireTimeout) {
       if (excludedServers.size() >= numServers) {
         throw new NoAvailableServersException();
       }
@@ -601,17 +595,6 @@ public class OpExecutorImplJUnitTest {
     public int getConnectionCount() {
       return 0;
     }
-
-    @Override
-    public Connection getConnection(Connection conn) {
-      return conn;
-    }
-
-    @Override
-    public void activate(Connection conn) {}
-
-    @Override
-    public void passivate(Connection conn, boolean accessed) {}
   }
 
   private class DummyConnection implements Connection {

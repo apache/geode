@@ -2448,4 +2448,9 @@ public class CacheCreation implements InternalCache {
   public MeterRegistry getMeterRegistry() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
+
+  @Override
+  public Set<MeterRegistry> getMeterSubregistries() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
 }

@@ -19,18 +19,15 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
-public class VersionCommand extends InternalGfshCommand {
+public class VersionCommand extends OfflineGfshCommand {
   @CliCommand(value = {CliStrings.VERSION}, help = CliStrings.VERSION__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result version(@CliOption(key = {CliStrings.VERSION__FULL}, specifiedDefaultValue = "true",
-      unspecifiedDefaultValue = "false", help = CliStrings.VERSION__FULL__HELP) boolean full) {
-    Gfsh gfsh = Gfsh.getCurrentInstance();
-
-    return ResultBuilder.createInfoResult(gfsh.getVersion(full));
+  public ResultModel version(
+      @CliOption(key = {CliStrings.VERSION__FULL}, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false", help = CliStrings.VERSION__FULL__HELP) boolean full) {
+    return ResultModel.createInfo(getGfsh().getVersion(full));
   }
 }

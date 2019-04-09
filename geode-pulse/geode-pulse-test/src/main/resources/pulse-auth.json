@@ -6,6 +6,19 @@
         "DATA:READ",
         "CLUSTER:READ"
       ]
+    },
+    {
+      "name": "clusterReader",
+      "operationsAllowed": [
+        "CLUSTER:READ"
+      ]
+    },
+    {
+      "name": "manager",
+      "operationsAllowed": [
+        "DATA:MANAGE",
+        "CLUSTER:MANAGE"
+      ]
     }
   ],
   "users": [
@@ -15,7 +28,20 @@
       "roles": [
         "pulse"
       ]
+    },
+    {
+      "name": "cluster",
+      "password": "12345",
+      "roles": [
+        "clusterReader"
+      ]
+    },
+    {
+      "name": "manager",
+      "password": "12345",
+      "roles": [
+        "manager"
+      ]
     }
   ]
-
 }

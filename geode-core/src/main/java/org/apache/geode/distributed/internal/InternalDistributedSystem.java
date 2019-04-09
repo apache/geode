@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -44,6 +43,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -58,6 +58,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
@@ -146,13 +147,6 @@ public class InternalDistributedSystem extends DistributedSystem
       GEMFIRE_PREFIX + "ALLOW_MULTIPLE_SYSTEMS";
 
   /**
-   * Feature flag to enable multiple caches within a JVM.
-   */
-  @MutableForTesting
-  public static boolean ALLOW_MULTIPLE_SYSTEMS =
-      Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY);
-
-  /**
    * If auto-reconnect is going on this will hold a reference to it
    */
   @MakeNotStatic
@@ -195,6 +189,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
    *
+   * <p>
    * Otherwise, create a new InternalDistributedSystem with the given properties, or connect to an
    * existing one with the same properties.
    */
@@ -204,8 +199,10 @@ public class InternalDistributedSystem extends DistributedSystem
       config = new Properties();
     }
 
-    if (ALLOW_MULTIPLE_SYSTEMS) {
-      return InternalDistributedSystem.newInstance(config);
+    if (Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY)) {
+      return new Builder(config)
+          .setSecurityConfig(securityConfig)
+          .build();
     }
 
     synchronized (existingSystemsLock) {
@@ -253,8 +250,9 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       // Make a new connection to the distributed system
-      InternalDistributedSystem newSystem =
-          InternalDistributedSystem.newInstance(config, securityConfig);
+      InternalDistributedSystem newSystem = new Builder(config)
+          .setSecurityConfig(securityConfig)
+          .build();
       addSystem(newSystem);
       return newSystem;
     }
@@ -417,79 +415,6 @@ public class InternalDistributedSystem extends DistributedSystem
     this.deltaEnabledOnServer = deltaEnabledOnServer;
   }
 
-  ///////////////////// Static Methods /////////////////////
-
-  /**
-   * Creates a new instance of <code>InternalDistributedSystem</code> with the given configuration.
-   */
-  public static InternalDistributedSystem newInstance(Properties config) {
-    return newInstance(config, null);
-  }
-
-  public static InternalDistributedSystem newInstance(Properties config,
-      SecurityConfig securityConfig) {
-    if (securityConfig == null) {
-      return newInstance(config, null, null);
-    } else {
-      return newInstance(config, securityConfig.getSecurityManager(),
-          securityConfig.getPostProcessor());
-    }
-  }
-
-  public static InternalDistributedSystem newInstance(Properties config,
-      SecurityManager securityManager, PostProcessor postProcessor) {
-    boolean success = false;
-    InternalDataSerializer.checkSerializationVersion();
-    try {
-      SystemFailure.startThreads();
-      InternalDistributedSystem newSystem = new InternalDistributedSystem(config);
-      newSystem.initialize(securityManager, postProcessor);
-      reconnectAttemptCounter = 0; // reset reconnect count since we just got a new connection
-      notifyConnectListeners(newSystem);
-      success = true;
-      return newSystem;
-    } finally {
-      if (!success) {
-        SystemFailure.stopThreads();
-      }
-    }
-  }
-
-  /**
-   * Creates a non-functional instance for testing.
-   *
-   * @param distributionManager the distribution manager for the test instance
-   * @param properties properties to configure the test instance
-   */
-  public static InternalDistributedSystem newInstanceForTesting(
-      DistributionManager distributionManager, Properties properties) {
-    StatisticsManagerFactory statisticsManagerFactory = defaultStatisticsManagerFactory();
-
-    return newInstanceForTesting(
-        distributionManager, properties, statisticsManagerFactory);
-  }
-
-  /**
-   * Creates a non-functional instance for testing.
-   *
-   * @param distributionManager the distribution manager for the test instance
-   * @param properties properties to configure the test instance
-   * @param statisticsManagerFactory the statistics manager factory for the test instance
-   */
-  static InternalDistributedSystem newInstanceForTesting(DistributionManager distributionManager,
-      Properties properties, StatisticsManagerFactory statisticsManagerFactory) {
-    ConnectionConfigImpl connectionConfig = new ConnectionConfigImpl(properties);
-
-    InternalDistributedSystem internalDistributedSystem =
-        new InternalDistributedSystem(connectionConfig, statisticsManagerFactory);
-
-    internalDistributedSystem.config = new RuntimeDistributionConfigImpl(internalDistributedSystem);
-    internalDistributedSystem.dm = distributionManager;
-    internalDistributedSystem.isConnected = true;
-
-    return internalDistributedSystem;
-  }
-
   public static boolean removeSystem(InternalDistributedSystem oldSystem) {
     return DistributedSystem.removeSystem(oldSystem);
   }
@@ -595,32 +520,8 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * Creates a new {@code InternalDistributedSystem} with the given configuration properties.
-   * Does all of the magic of finding the "default" values of properties.
-   * <p>
-   * See {@link #connect} for a list of exceptions that may be thrown.
-   *
-   * @param configurationProperties properties to configure the connection
-   */
-  private InternalDistributedSystem(Properties configurationProperties) {
-    this(new ConnectionConfigImpl(configurationProperties));
-  }
-
-  /**
    * Creates a new {@code InternalDistributedSystem} with the given configuration.
-   * <p>
-   * See {@link #connect} for a list of exceptions that may be thrown.
    *
-   * @param config the configuration for the connection
-   */
-  private InternalDistributedSystem(ConnectionConfig config) {
-    this(config, defaultStatisticsManagerFactory());
-    isReconnectingDS = config.isReconnecting();
-    quorumChecker = config.quorumChecker();
-  }
-
-  /**
-   * Creates a new {@code InternalDistributedSystem} with the given configuration.
    * <p>
    * See {@link #connect} for a list of exceptions that may be thrown.
    *
@@ -639,6 +540,8 @@ public class InternalDistributedSystem extends DistributedSystem
     DSFIDFactory.registerTypes();
 
     originalConfig = config.distributionConfig();
+    isReconnectingDS = config.isReconnecting();
+    quorumChecker = config.quorumChecker();
 
     ((DistributionConfigImpl) this.originalConfig).checkForDisallowedDefaults(); // throws
                                                                                  // IllegalStateEx
@@ -653,8 +556,6 @@ public class InternalDistributedSystem extends DistributedSystem
         statisticsManagerFactory.create(originalConfig.getName(), startTime, statsDisabled);
   }
 
-
-  //////////////////// Instance Methods ////////////////////
   public SecurityService getSecurityService() {
     return this.securityService;
   }
@@ -912,6 +813,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
     this.reconnected = this.attemptingToReconnect;
     this.attemptingToReconnect = false;
+    reconnectAttemptCounter = 0; // reset reconnect count since we just got a new connection
   }
 
   private void startSampler() {
@@ -1665,6 +1567,8 @@ public class InternalDistributedSystem extends DistributedSystem
           } // synchronized (this)
         } // synchronized (GemFireCache.class)
 
+        securityService.close();
+
         if (!isShutdownHook) {
           shutdownListeners = doDisconnects(attemptingToReconnect);
         }
@@ -2064,6 +1968,14 @@ public class InternalDistributedSystem extends DistributedSystem
       synchronized (connectListeners) {
         connectListeners.add(listener);
         return existingSystems;
+      }
+    }
+  }
+
+  public static void removeConnectListener(ConnectListener listener) {
+    synchronized (existingSystemsLock) {
+      synchronized (connectListeners) {
+        connectListeners.remove(listener);
       }
     }
   }
@@ -2538,11 +2450,13 @@ public class InternalDistributedSystem extends DistributedSystem
     // reconnecting for lost roles then this will be null
     String cacheXML = null;
     List<CacheServerCreation> cacheServerCreation = null;
+    Set<MeterRegistry> meterRegistries = null;
 
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       cacheXML = cache.getCacheConfig().getCacheXMLDescription();
       cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
+      meterRegistries = cache.getMeterSubregistries();
     }
 
     DistributionConfig oldConfig = ids.getConfig();
@@ -2724,9 +2638,12 @@ public class InternalDistributedSystem extends DistributedSystem
             do {
               retry = false;
               try {
-                cache = new InternalCacheBuilder()
-                    .setCacheXMLDescription(cacheXML)
-                    .create(reconnectDS);
+                InternalCacheBuilder cacheBuilder = new InternalCacheBuilder()
+                    .setCacheXMLDescription(cacheXML);
+                for (MeterRegistry meterRegistry : meterRegistries) {
+                  cacheBuilder.addMeterSubregistry(meterRegistry);
+                }
+                cache = cacheBuilder.create(reconnectDS);
 
                 if (!cache.isClosed()) {
                   createAndStartCacheServers(cacheServerCreation, cache);
@@ -3048,5 +2965,89 @@ public class InternalDistributedSystem extends DistributedSystem
         return new StatisticsRegistry(name, startTime);
       }
     };
+  }
+
+  public static class Builder {
+
+    private final Properties configProperties;
+
+    private SecurityConfig securityConfig;
+
+    public Builder(Properties configProperties) {
+      this.configProperties = configProperties;
+    }
+
+    public Builder setSecurityConfig(SecurityConfig securityConfig) {
+      this.securityConfig = securityConfig;
+      return this;
+    }
+
+    /**
+     * Builds and initializes new instance of InternalDistributedSystem.
+     */
+    public InternalDistributedSystem build() {
+      if (securityConfig == null) {
+        securityConfig = new SecurityConfig(null, null);
+      }
+
+      boolean stopThreads = true;
+      InternalDataSerializer.checkSerializationVersion();
+      try {
+        SystemFailure.startThreads();
+        InternalDistributedSystem newSystem =
+            new InternalDistributedSystem(new ConnectionConfigImpl(
+                configProperties), defaultStatisticsManagerFactory());
+        newSystem
+            .initialize(securityConfig.getSecurityManager(), securityConfig.getPostProcessor());
+        notifyConnectListeners(newSystem);
+        stopThreads = false;
+        return newSystem;
+      } finally {
+        if (stopThreads) {
+          SystemFailure.stopThreads();
+        }
+      }
+    }
+  }
+
+  @VisibleForTesting
+  public static class BuilderForTesting {
+
+    private final Properties configProperties;
+
+    private DistributionManager distributionManager;
+    private StatisticsManagerFactory statisticsManagerFactory = defaultStatisticsManagerFactory();
+
+    public BuilderForTesting(Properties configProperties) {
+      this.configProperties = configProperties;
+    }
+
+    public BuilderForTesting setDistributionManager(DistributionManager distributionManager) {
+      this.distributionManager = distributionManager;
+      return this;
+    }
+
+    public BuilderForTesting setStatisticsManagerFactory(
+        StatisticsManagerFactory statisticsManagerFactory) {
+      this.statisticsManagerFactory = statisticsManagerFactory;
+      return this;
+    }
+
+    /**
+     * Builds instance without initializing it for testing.
+     */
+    public InternalDistributedSystem build() {
+      ConnectionConfigImpl connectionConfig = new ConnectionConfigImpl(configProperties);
+
+      InternalDistributedSystem internalDistributedSystem =
+          new InternalDistributedSystem(connectionConfig, statisticsManagerFactory);
+
+      internalDistributedSystem.config =
+          new RuntimeDistributionConfigImpl(internalDistributedSystem);
+      internalDistributedSystem.dm = distributionManager;
+      internalDistributedSystem.isConnected = true;
+
+      return internalDistributedSystem;
+    }
   }
 }

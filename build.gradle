@@ -23,24 +23,32 @@ buildscript {
   }
 
   dependencies {
-    // Newer versions of the nebula plugins require gradle-info-plugin 4.0.2 or higher, which in
-    // depends on JGit 5.0.  Conversely, gradle-git relies of JGit 4.0.
-    // Be mindful of potential classpath issues when updating any of these three dependencies.
-    classpath "com.netflix.nebula:nebula-project-plugin:5.1.0"
-    classpath "com.netflix.nebula:gradle-lint-plugin:10.1.0"
-    classpath "org.ajoberstar:gradle-git:1.7.2"
-
-    classpath "gradle.plugin.org.nosphere.apache:creadur-rat-gradle:0.3.1"
-    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.2'
-    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.10.0"
+    classpath "com.netflix.nebula:nebula-project-plugin:6.0.2"
+    classpath "com.netflix.nebula:gradle-lint-plugin:11.4.4"
+    classpath "org.ajoberstar.grgit:grgit-gradle:3.1.1"
+    classpath "org.nosphere.apache:creadur-rat-gradle:0.4.0"
+    classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:3.21.1"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.8"
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0'
-    classpath 'io.spring.gradle:dependency-management-plugin:1.0.6.RELEASE'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
+    classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE'
   }
 }
 
 apply plugin: 'wrapper'
 apply plugin: 'nebula.facet'
+apply plugin: 'java-library'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+apply from: "${scriptDir}/lint.gradle"
+apply from: "${scriptDir}/resolve-dependencies.gradle"
+apply from: "${scriptDir}/sonar.gradle"
+apply from: "${scriptDir}/rat.gradle"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+compileJava.options.encoding = 'UTF-8'
 
 wrapper {
   gradleVersion = minimumGradleVersion
@@ -66,33 +74,14 @@ allprojects {
   }
 }
 
-apply from: "${scriptDir}/java.gradle"
-apply from: "${scriptDir}/ide.gradle"
-apply from: "${scriptDir}/dependency-resolution.gradle"
-apply from: "${scriptDir}/test.gradle"
-apply from: "${scriptDir}/code-analysis.gradle"
-apply from: "${scriptDir}/sonar.gradle"
-apply from: "${scriptDir}/rat.gradle"
-apply from: "${scriptDir}/docker.gradle"
-apply from: "${scriptDir}/spotless.gradle"
-apply from: "${scriptDir}/lint.gradle"
-apply from: "${scriptDir}/resolve-dependencies.gradle"
+task combineReports(type: TestReport) {
+  description 'Combines the test reports.'
+  destinationDir = file "${rootProject.buildDir}/reports/combined"
 
-subprojects {
-  apply plugin: 'com.github.ben-manes.versions'
-}
-
-task devBuild(dependsOn: [":assemble"]) {
-  description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
-  // spotless targets are not available until after evaluation.
-  subprojects {
-    afterEvaluate {
-      this.devBuild.dependsOn(project.spotlessApply)
-    }
+  doLast {
+    println "All test reports at ${rootProject.buildDir}/reports/combined"
   }
 }
-
-
 
 ext.readScmInfo = { proj ->
   // Attempt to read git information, or else return UNKNOWN
@@ -123,7 +112,7 @@ ext.readScmInfo = { proj ->
   }
 }
 
-task writeBuildInfo {
+tasks.register('writeBuildInfo') {
   def buildInfo = file "$buildDir/.buildinfo"
   def scmInfo = this.readScmInfo("geode-core")
 
@@ -135,6 +124,12 @@ task writeBuildInfo {
       scmInfo.store(fos, '')
     }
   }
+}
+
+tasks.register('devBuild') {
+  description "A convenience target for a typical developer workflow: apply spotless and assemble all classes."
+  dependsOn tasks.named('assemble')
+  // Each subproject injects its SpotlessApply as a dependency to this task in the standard config
 }
 
 tasks.register('generate') {
@@ -181,3 +176,9 @@ if (project.hasProperty('askpass')) {
     }
   }
 }
+
+gradle.taskGraph.whenReady({ graph ->
+  tasks.getByName('combineReports').reportOn rootProject.subprojects.collect {
+    it.tasks.withType(Test)
+  }.flatten()
+})

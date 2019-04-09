@@ -14,6 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+evaluationDependsOn(':geode-core')
+
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply plugin: 'war'
 
 apply from: "${project.projectDir}/../gradle/publish.gradle"
@@ -160,9 +164,7 @@ artifacts {
 war {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   classpath configurations.runtimeClasspath
-  classpath project(':geode-core').webJar.archivePath
 }
-war.dependsOn(':geode-core:webJar')
 uiTest.dependsOn war
 uiTest.finalizedBy rootProject.combineReports
 rootProject.combineReports.mustRunAfter uiTest

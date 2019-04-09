@@ -153,14 +153,12 @@ public class OpExecutorImpl implements ExecutablePool {
       // while we're performing the op. It will be reset
       // if the op succeeds.
       localConnection.set(null);
-      try {
-        this.connectionManager.activate(conn);
-      } catch (ConnectionDestroyedException ex) {
+      if (!conn.activate()) {
         conn = connectionManager.borrowConnection(serverTimeout);
       }
     }
     try {
-      Set attemptedServers = null;
+      Set<ServerLocation> attemptedServers = null;
 
       for (int attempt = 0; true; attempt++) {
         // when an op is retried we may need to try to recover the previous
@@ -183,7 +181,7 @@ public class OpExecutorImpl implements ExecutablePool {
           handleException(e, conn, attempt, attempt >= retries && retries != -1);
           if (null == attemptedServers) {
             // don't allocate this until we need it
-            attemptedServers = new HashSet();
+            attemptedServers = new HashSet<>();
           }
           attemptedServers.add(conn.getServer());
           try {
@@ -206,7 +204,7 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     } finally {
       if (threadLocalConnections) {
-        this.connectionManager.passivate(conn, success);
+        conn.passivate(success);
         // Fix for 43718. If the thread local was set to a different
         // connection deeper in the call stack, return that connection
         // and set our connection on the thread local.
@@ -415,7 +413,7 @@ public class OpExecutorImpl implements ExecutablePool {
         this.affinityServerLocation.set(conn.getServer());
       }
       if (useThreadLocalConnection(op, pingOp)) {
-        this.connectionManager.passivate(conn, success);
+        conn.passivate(success);
         setThreadLocalConnectionForSingleHop(server, conn);
       }
       if (returnCnx) {
@@ -445,15 +443,13 @@ public class OpExecutorImpl implements ExecutablePool {
     }
     boolean borrow = true;
     if (conn != null) {
-      try {
-        this.connectionManager.activate(conn);
+      if (conn.activate()) {
         borrow = false;
         if (!conn.getServer().equals(server)) {
           // poolLoadConditioningMonitor can replace the connection's
           // endpoint from underneath us. fixes bug 45151
           borrow = true;
         }
-      } catch (ConnectionDestroyedException e) {
       }
     }
     if (conn == null || borrow) {
@@ -870,7 +866,7 @@ public class OpExecutorImpl implements ExecutablePool {
       // This should not be reached, but keeping this code here in case it is
       // reached.
       if (conn.getServer().getUserId() == -1) {
-        Connection connImpl = this.connectionManager.getConnection(conn);
+        Connection connImpl = conn.getWrappedConnection();
         conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, this.pool));
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -922,7 +918,7 @@ public class OpExecutorImpl implements ExecutablePool {
         PoolImpl pool =
             (PoolImpl) PoolManagerImpl.getPMI().find(this.endpointManager.getPoolName());
         if (!pool.getMultiuserAuthentication()) {
-          Connection connImpl = this.connectionManager.getConnection(conn);
+          Connection connImpl = conn.getWrappedConnection();
           conn.getServer().setUserId((Long) AuthenticateUserOp.executeOn(connImpl, this));
           return conn.execute(op);
         } else {

@@ -39,6 +39,7 @@ import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.connectors.util.internal.DescribeMappingResult;
 import org.apache.geode.connectors.util.internal.MappingCommandUtils;
+import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -84,11 +85,21 @@ public class DescribeMappingCommand extends GfshCommand {
       if (groups == null) {
         groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
       }
+      ArrayList<String> groupsArray = new ArrayList<String>();
+      boolean isProxyRegion = false;
       for (String group : groups) {
         CacheConfig cacheConfig = getCacheConfig(configService, group);
         RegionConfig regionConfig = checkForRegion(regionName, cacheConfig, group);
+        if (MappingCommandUtils.isAccessor(regionConfig.getRegionAttributes())) {
+          isProxyRegion = true;
+          continue;
+        }
+        groupsArray.add(group);
         describeMappingResults
             .addAll(getMappingsFromRegionConfig(cacheConfig, regionConfig, group));
+      }
+      if (groupsArray.size() == 0 && isProxyRegion) {
+        return ResultModel.createInfo(MappingConstants.THERE_IS_NO_JDBC_MAPPING_ON_PROXY_REGION);
       }
     } catch (PreconditionException ex) {
       return ResultModel.createError(ex.getMessage());
@@ -110,7 +121,8 @@ public class DescribeMappingCommand extends GfshCommand {
   }
 
   private DescribeMappingResult buildDescribeMappingResult(RegionMapping regionMapping,
-      String regionName, boolean synchronous, String group) {
+      String regionName, boolean synchronous,
+      String group) {
     LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
     attributes.put(REGION_NAME, regionName);
     attributes.put(PDX_NAME, regionMapping.getPdxName());
@@ -163,7 +175,8 @@ public class DescribeMappingCommand extends GfshCommand {
   }
 
   private ArrayList<DescribeMappingResult> getMappingsFromRegionConfig(CacheConfig cacheConfig,
-      RegionConfig regionConfig, String group) {
+      RegionConfig regionConfig,
+      String group) {
     ArrayList<DescribeMappingResult> results = new ArrayList<>();
     for (RegionMapping mapping : MappingCommandUtils.getMappingsFromRegionConfig(cacheConfig,
         regionConfig,

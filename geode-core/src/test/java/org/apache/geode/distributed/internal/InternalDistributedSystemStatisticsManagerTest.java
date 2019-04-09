@@ -67,8 +67,10 @@ public class InternalDistributedSystemStatisticsManagerTest {
     initMocks(this);
     when(statisticsManagerFactory.create(any(), anyLong(), anyBoolean()))
         .thenReturn(statisticsManager);
-    internalDistributedSystem = InternalDistributedSystem.newInstanceForTesting(distributionManager,
-        new Properties(), statisticsManagerFactory);
+    internalDistributedSystem = new InternalDistributedSystem.BuilderForTesting(new Properties())
+        .setDistributionManager(distributionManager)
+        .setStatisticsManagerFactory(statisticsManagerFactory)
+        .build();
   }
 
   @Test
@@ -81,8 +83,11 @@ public class InternalDistributedSystemStatisticsManagerTest {
         .create(any(), anyLong(), eq(false)))
             .thenReturn(statisticsManagerCreatedByFactory);
 
-    InternalDistributedSystem result = InternalDistributedSystem
-        .newInstanceForTesting(distributionManager, new Properties(), statisticsManagerFactory);
+    InternalDistributedSystem result =
+        new InternalDistributedSystem.BuilderForTesting(new Properties())
+            .setDistributionManager(distributionManager)
+            .setStatisticsManagerFactory(statisticsManagerFactory)
+            .build();
 
     assertThat(result.getStatisticsManager())
         .isSameAs(statisticsManagerCreatedByFactory);

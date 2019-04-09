@@ -15,8 +15,8 @@
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
@@ -37,7 +37,7 @@ public class ManagementClientCreateRegion {
 
     RegionConfig config = new RegionConfig();
     config.setName(regionName);
-    config.setType(RegionShortcut.REPLICATE);
+    config.setType(RegionType.REPLICATE);
 
     ClusterManagementResult result = cms.create(config, "cluster");
 

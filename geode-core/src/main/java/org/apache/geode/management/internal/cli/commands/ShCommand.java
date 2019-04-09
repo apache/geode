@@ -24,37 +24,32 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
-public class ShCommand extends InternalGfshCommand {
+public class ShCommand extends OfflineGfshCommand {
   @CliCommand(value = {CliStrings.SH}, help = CliStrings.SH__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
-  public Result sh(
+  public ResultModel sh(
       @CliOption(key = {"", CliStrings.SH__COMMAND}, mandatory = true,
           help = CliStrings.SH__COMMAND__HELP) String command,
       @CliOption(key = CliStrings.SH__USE_CONSOLE, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
-          help = CliStrings.SH__USE_CONSOLE__HELP) boolean useConsole) {
-    Result result;
-    try {
-      result =
-          ResultBuilder.buildResult(executeCommand(Gfsh.getCurrentInstance(), command, useConsole));
-    } catch (IllegalStateException | IOException e) {
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-      LogWrapper.getInstance(getCache())
-          .warning("Unable to execute command \"" + command + "\". Reason:" + e.getMessage() + ".");
-    }
+          help = CliStrings.SH__USE_CONSOLE__HELP) boolean useConsole)
+      throws IOException {
+    ResultModel result = new ResultModel();
+    InfoResultModel info = result.getInfoSection("info");
+
+    executeCommand(info, Gfsh.getCurrentInstance(), command, useConsole);
+
     return result;
   }
 
-  private static InfoResultData executeCommand(Gfsh gfsh, String userCommand, boolean useConsole)
+  private void executeCommand(InfoResultModel result, Gfsh gfsh, String userCommand,
+      boolean useConsole)
       throws IOException {
-    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
 
     String cmdToExecute = userCommand;
     String cmdExecutor = "/bin/sh";
@@ -77,7 +72,7 @@ public class ShCommand extends InternalGfshCommand {
 
     String lineRead;
     while ((lineRead = input.readLine()) != null) {
-      infoResultData.addLine(lineRead);
+      result.addLine(lineRead);
     }
 
     proc.getOutputStream().close();
@@ -90,6 +85,5 @@ public class ShCommand extends InternalGfshCommand {
       Thread.currentThread().interrupt();
       throw new IllegalStateException(e.getMessage(), e);
     }
-    return infoResultData;
   }
 }

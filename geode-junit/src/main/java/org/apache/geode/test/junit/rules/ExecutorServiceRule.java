@@ -25,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +47,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  *
  * {@literal @}Test
  * public void doTest() throws Exception {
- *   Future<Void> result = executorServiceRule.runAsync(() -> {
+ *   Future&lt;Void&gt; result = executorServiceRule.runAsync(() -> {
  *     try {
  *       hangLatch.await();
  *     } catch (InterruptedException e) {
@@ -171,8 +172,11 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * @throws RejectedExecutionException if this task cannot be accepted for execution
    * @throws NullPointerException if command is null
    */
-  public void execute(Runnable command) {
-    executor.execute(command);
+  public void execute(ThrowingRunnable command) {
+    executor.submit((Callable<Void>) () -> {
+      command.run();
+      return null;
+    });
   }
 
   /**
@@ -205,8 +209,13 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @throws NullPointerException if the task is null
    */
-  public <T> Future<T> submit(Runnable task, T result) {
-    return executor.submit(task, result);
+  public <T> Future<T> submit(ThrowingRunnable task, T result) {
+    FutureTask<T> futureTask = new FutureTask<>(() -> {
+      task.run();
+      return result;
+    });
+    executor.submit(futureTask);
+    return futureTask;
   }
 
   /**
@@ -218,8 +227,13 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * @throws RejectedExecutionException if the task cannot be scheduled for execution
    * @throws NullPointerException if the task is null
    */
-  public Future<?> submit(Runnable task) {
-    return executor.submit(task);
+  public Future<Void> submit(ThrowingRunnable task) {
+    FutureTask<Void> futureTask = new FutureTask<>(() -> {
+      task.run();
+      return null;
+    });
+    executor.submit(futureTask);
+    return futureTask;
   }
 
   /**
@@ -291,6 +305,22 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     }
 
     return dumpWriter.toString();
+  }
+
+  /**
+   * This interface replaces {@link Runnable} in cases when execution of {@link #run()} method may
+   * throw exception.
+   *
+   * <p>
+   * Useful for capturing lambdas that throw exceptions.
+   */
+  @FunctionalInterface
+  public interface ThrowingRunnable {
+    /**
+     * @throws Exception The exception that may be thrown
+     * @see Runnable#run()
+     */
+    void run() throws Exception;
   }
 
   /**

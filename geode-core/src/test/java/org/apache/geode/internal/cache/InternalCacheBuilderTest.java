@@ -35,7 +35,9 @@ import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,7 +74,7 @@ public class InternalCacheBuilderTest {
         throw new AssertionError("throwing system constructor");
       };
   private static final InternalCacheConstructor THROWING_CACHE_CONSTRUCTOR =
-      (a, b, c, d, e, f, g) -> {
+      (a, b, c, d, e, f, g, addedMeterSubregistries) -> {
         throw new AssertionError("throwing cache constructor");
       };
 
@@ -94,8 +96,6 @@ public class InternalCacheBuilderTest {
 
     when(nullSingletonSystemSupplier.get()).thenReturn(null);
     when(nullSingletonCacheSupplier.get()).thenReturn(null);
-
-    InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS = false;
   }
 
   @Test
@@ -191,7 +191,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), any(), any(),
-        anyBoolean(), any(), same(theCompositeMeterRegistry));
+        anyBoolean(), any(), same(theCompositeMeterRegistry), any());
   }
 
   @Test
@@ -244,7 +244,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(constructedSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -299,7 +299,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(singletonSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -351,7 +351,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(singletonSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -465,7 +465,7 @@ public class InternalCacheBuilderTest {
         .create(givenSystem);
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -517,7 +517,7 @@ public class InternalCacheBuilderTest {
         .create(givenSystem);
 
     verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any());
+        anyBoolean(), any(), any(), any());
   }
 
   @Test
@@ -621,6 +621,27 @@ public class InternalCacheBuilderTest {
     verify(givenSystem).setCache(same(singletonCache));
   }
 
+  @Test
+  public void addMeterRegistry_createsCache_withGivenMeterRegistry() {
+    MeterRegistry theMeterRegistry = new SimpleMeterRegistry();
+
+    CompositeMeterRegistry theCompositeMeterRegistry = new CompositeMeterRegistry();
+    when(compositeMeterRegistryFactory.create(anyInt(), any(), any()))
+        .thenReturn(theCompositeMeterRegistry);
+
+    InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
+        new Properties(), new CacheConfig(),
+        compositeMeterRegistryFactory, metricsSessionInitializer,
+        nullSingletonSystemSupplier, constructorOf(constructedSystem()),
+        nullSingletonCacheSupplier, constructorOf(constructedCache()));
+
+    internalCacheBuilder
+        .addMeterSubregistry(theMeterRegistry)
+        .create();
+
+    assertThat(theCompositeMeterRegistry.getRegistries()).containsExactly(theMeterRegistry);
+  }
+
   private InternalDistributedSystem constructedSystem() {
     return systemWith("constructedSystem", ANY_SYSTEM_ID, ANY_MEMBER_NAME, ANY_HOST_NAME);
   }
@@ -673,8 +694,9 @@ public class InternalCacheBuilderTest {
   private static InternalCacheConstructor constructorOf(InternalCache constructedCache) {
     InternalCacheConstructor constructor =
         mock(InternalCacheConstructor.class, "internal cache constructor");
-    when(constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any()))
-        .thenReturn(constructedCache);
+    when(
+        constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any(), any()))
+            .thenReturn(constructedCache);
     return constructor;
   }
 

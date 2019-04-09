@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 dependencies {
@@ -27,6 +29,6 @@ dependencies {
   integrationTestCompile('redis.clients:jedis')
   distributedTestCompile('redis.clients:jedis')
   testCompile('org.mockito:mockito-core')
-  testCompile(project(':geode-junit'));
-  integrationTestCompile(project(':geode-junit'));
+  testCompile(project(':geode-junit'))
+  integrationTestCompile(project(':geode-junit'))
 }

@@ -31,13 +31,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
@@ -45,17 +42,15 @@ import org.apache.geode.cache.configuration.RegionConfig;
 @WebAppConfiguration
 public class RegionManagementIntegrationTest {
 
-  static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
-
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  private MockMvc mockMvc;
+  // needs to be used together with any BaseLocatorContextLoader
+  private LocatorWebContext context;
 
   @Before
   public void before() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-        .build();
+    context = new LocatorWebContext(webApplicationContext);
   }
 
   @Test
@@ -63,25 +58,39 @@ public class RegionManagementIntegrationTest {
   public void sanityCheck() throws Exception {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
-    regionConfig.setType(RegionShortcut.REPLICATE);
+    regionConfig.setType(RegionType.REPLICATE);
 
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 
-    mockMvc.perform(post("/v2/regions")
-        .with(POST_PROCESSOR)
-        .content(json))
+    context.perform(post("/v2/regions").content(json))
         .andExpect(status().isInternalServerError())
         .andExpect(jsonPath("$.statusCode", is("ERROR")))
         .andExpect(jsonPath("$.statusMessage",
-            is("no members found to create cache element")));
+            is("no members found in cluster to create cache element")));
+  }
+
+  @Test
+  @WithMockUser
+  public void invalidType() throws Exception {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("customers");
+    regionConfig.setType("LOCAL");
+
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(regionConfig);
+
+    context.perform(post("/v2/regions").content(json))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.statusCode", is("ILLEGAL_ARGUMENT")))
+        .andExpect(jsonPath("$.statusMessage",
+            is("Type LOCAL is not supported in Management V2 API.")));
   }
 
   @Test
   @WithMockUser
   public void ping() throws Exception {
-    mockMvc.perform(get("/v2/ping")
-        .with(POST_PROCESSOR))
+    context.perform(get("/v2/ping"))
         .andExpect(content().string("pong"));
   }
 }

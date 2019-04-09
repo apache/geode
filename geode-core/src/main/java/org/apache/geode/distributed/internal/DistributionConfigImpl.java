@@ -91,7 +91,6 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.memcached.GemFireMemcachedServer;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
