@@ -28,7 +28,7 @@ import org.springframework.shell.core.CommandMarker;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
-import org.apache.geode.management.internal.cli.commands.InternalGfshCommand;
+import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 
 /**
@@ -50,7 +50,7 @@ public class ConnectionsCommandManagerJUnitTest {
   public void testCommandManagerLoadCommands() {
     Set<String> packagesToScan = new HashSet<>();
     packagesToScan.add(GfshCommand.class.getPackage().getName());
-    packagesToScan.add(InternalGfshCommand.class.getPackage().getName());
+    packagesToScan.add(VersionCommand.class.getPackage().getName());
 
     ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packagesToScan);
     ServiceLoader<CommandMarker> loader =
@@ -63,7 +63,7 @@ public class ConnectionsCommandManagerJUnitTest {
     // geode's commands
     foundClasses = scanner.scanPackagesForClassesImplementing(CommandMarker.class,
         GfshCommand.class.getPackage().getName(),
-        InternalGfshCommand.class.getPackage().getName());
+        VersionCommand.class.getPackage().getName());
 
     while (iterator.hasNext()) {
       foundClasses.add(iterator.next().getClass());
