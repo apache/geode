@@ -127,24 +127,28 @@ if (project.hasProperty("forceTest")) {
 }
 
 task repeatDistributedTest(type: RepeatTest) {
+  forkEvery 1
   dependsOn { distributedTest.taskDependencies }
   classpath = project.sourceSets.distributedTest.runtimeClasspath
   testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
 }
 
 task repeatIntegrationTest(type: RepeatTest) {
+  forkEvery 1
   dependsOn { integrationTest.taskDependencies }
   classpath = project.sourceSets.integrationTest.runtimeClasspath
   testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
 }
 
 task repeatAcceptanceTest(type: RepeatTest) {
+  forkEvery 1
   dependsOn { acceptanceTest.taskDependencies }
   classpath = project.sourceSets.acceptanceTest.runtimeClasspath
   testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
 }
 
 task repeatUpgradeTest(type: RepeatTest) {
+  forkEvery 1
   dependsOn { upgradeTest.taskDependencies }
   classpath = project.sourceSets.upgradeTest.runtimeClasspath
   testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs

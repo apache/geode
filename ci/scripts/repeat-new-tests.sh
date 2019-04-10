@@ -92,7 +92,6 @@ append_to_test_targets "repeatUpgradeTest" "$UPGRADE_TEST_CHANGES"
 
 export GRADLE_TASK="compileTestJava compileIntegrationTestJava compileDistributedTestJava $TEST_TARGETS"
 export GRADLE_TASK_OPTIONS="-Prepeat=50 -PfailOnNoMatchingTests=false"
-export PARALLEL_GRADLE=false
 
 echo "GRADLE_TASK_OPTIONS=${GRADLE_TASK_OPTIONS}"
 echo "GRADLE_TASK=${GRADLE_TASK}"
