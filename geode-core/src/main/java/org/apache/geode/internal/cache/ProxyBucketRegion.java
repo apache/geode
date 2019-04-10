@@ -352,10 +352,12 @@ public class ProxyBucketRegion implements Bucket {
   @Override
   public Set<InternalDistributedMember> getBucketOwners() {
     Set<InternalDistributedMember> s = this.advisor.adviseInitialized();
+    if (s.isEmpty()) {
+      // getBucketOwners needs to return a modifiable set.
+      // adviseInitialized returns an unmodifiable set when it is empty.
+      s = new HashSet<>();
+    }
     if (isHosting()) {
-      if (s.isEmpty()) {
-        s = new HashSet<>();
-      }
       s.add(this.partitionedRegion.getDistributionManager().getId());
     }
     return s;
