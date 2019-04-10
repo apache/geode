@@ -44,7 +44,7 @@ import org.apache.geode.management.api.RestfulEndpoint;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(propOrder = {"regionAttributes"})
 @Experimental
-public class BasicRegionConfig implements CacheElement, RestfulEndpoint {
+public class BasicRegionConfig extends CacheElement implements RestfulEndpoint {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 

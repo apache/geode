@@ -66,7 +66,7 @@ import org.apache.geode.annotations.Experimental;
 @XmlType(name = "disk-store-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"diskDirs"})
 @Experimental
-public class DiskStoreType implements CacheElement {
+public class DiskStoreType extends CacheElement {
 
   @XmlElement(name = "disk-dirs", namespace = "http://geode.apache.org/schema/cache")
   protected DiskDirsType diskDirs;

@@ -343,7 +343,7 @@ public class RegionConfig extends BasicRegionConfig {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  public static class Index implements CacheElement, Serializable {
+  public static class Index extends CacheElement {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")

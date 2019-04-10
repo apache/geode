@@ -58,7 +58,7 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void persistenceIsNull() throws Exception {
     service = new LocatorClusterManagementService(cache, null);
-    result = service.create(regionConfig, "cluster");
+    result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage())
         .contains("Cluster configuration service needs to be enabled");
@@ -71,14 +71,14 @@ public class LocatorClusterManagementServiceTest {
     cacheConfig.addRegion(regionConfig);
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
 
-    assertThatThrownBy(() -> service.create(regionConfig, "cluster"))
+    assertThatThrownBy(() -> service.create(regionConfig))
         .isInstanceOf(EntityExistsException.class)
         .hasMessageContaining("cache element test already exists");
   }
 
   @Test
   public void validationFailed() throws Exception {
-    assertThatThrownBy(() -> service.create(regionConfig, "cluster"))
+    assertThatThrownBy(() -> service.create(regionConfig))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Name of the region has to be specified");
   }
@@ -88,7 +88,7 @@ public class LocatorClusterManagementServiceTest {
     regionConfig.setName("test");
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
     doReturn(Collections.emptySet()).when(service).findMembers(any());
-    result = service.create(regionConfig, "cluster");
+    result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage())
         .contains("no members found in cluster to create cache element");
@@ -105,7 +105,7 @@ public class LocatorClusterManagementServiceTest {
 
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
     regionConfig.setName("test");
-    result = service.create(regionConfig, "cluster");
+    result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage())
         .contains("Failed to apply the update on all members");
