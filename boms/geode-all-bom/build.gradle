@@ -19,10 +19,9 @@ plugins {
   id 'maven-publish'
 }
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply from: "${rootDir}/${scriptDir}/java.gradle"
 apply plugin: 'geode-dependency-constraints'
-
-apply from: "${project.projectDir}/../../gradle/publish.gradle"
+apply from: "${rootDir}/${scriptDir}/publish.gradle"
 
 jar.enabled = false
 
@@ -50,8 +49,8 @@ publishing {
                 && !project(':boms').allprojects.contains(p)) {
               def geodeDependency =
                   thisNode.dependencyManagement.dependencies*.appendNode('dependency')
-               geodeDependency*.appendNode('groupId')*.setValue('org.apache.geode')
-               geodeDependency*.appendNode('artifactId')*.setValue((p.findProperty('artifactName') ?: p.name))
+               geodeDependency*.appendNode('groupId')*.setValue(p.group)
+               geodeDependency*.appendNode('artifactId')*.setValue(p.name)
                geodeDependency*.appendNode('version')*.setValue(p.version.toString())
             }
           }
