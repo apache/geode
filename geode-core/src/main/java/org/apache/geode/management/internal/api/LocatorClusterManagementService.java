@@ -65,7 +65,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
 
     // initialize the list of validators
-    validators.put(BasicRegionConfig.class, new RegionConfigValidator());
+    validators.put(BasicRegionConfig.class, new RegionConfigValidator(cache));
   }
 
   @VisibleForTesting

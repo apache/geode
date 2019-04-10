@@ -19,12 +19,16 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.security.SecurityServiceFactory;
 
 public class RegionConfigValidatorTest {
 
@@ -33,8 +37,18 @@ public class RegionConfigValidatorTest {
 
   @Before
   public void before() throws Exception {
-    validator = new RegionConfigValidator();
+    InternalCache cache = mock(InternalCache.class);
+    when(cache.getSecurityService()).thenReturn(SecurityServiceFactory.create());
+    validator = new RegionConfigValidator(cache);
     config = new RegionConfig();
+  }
+
+  @Test
+  public void checkSecurityForDiskAccess() {
+    config.setName("regionName");
+    config.setType(RegionType.REPLICATE_PERSISTENT);
+    validator.validate(config);
+    assertThat(config.getType()).isEqualTo("REPLICATE_PERSISTENT");
   }
 
   @Test

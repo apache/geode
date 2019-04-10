@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -48,7 +47,6 @@ public class BasicRegionConfig extends CacheElement implements RestfulEndpoint {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
-  @ApiModelProperty(hidden = true)
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
 
@@ -81,9 +79,7 @@ public class BasicRegionConfig extends CacheElement implements RestfulEndpoint {
   /**
    * Gets the value of the name property.
    *
-   * possible object is
-   * {@link String }
-   *
+   * possible object is {@link String }
    */
   public String getName() {
     return name;
@@ -92,9 +88,7 @@ public class BasicRegionConfig extends CacheElement implements RestfulEndpoint {
   /**
    * Sets the value of the name property.
    *
-   * allowed object is
-   * {@link String }
-   *
+   * allowed object is {@link String }
    */
   public void setName(String value) throws IllegalArgumentException {
     if (value == null) {
@@ -116,9 +110,7 @@ public class BasicRegionConfig extends CacheElement implements RestfulEndpoint {
   /**
    * Gets the value of the type property.
    *
-   * possible object is
-   * {@link String }
-   *
+   * possible object is {@link String }
    */
   public String getType() {
     return type;
@@ -127,9 +119,7 @@ public class BasicRegionConfig extends CacheElement implements RestfulEndpoint {
   /**
    * Sets the value of the type property.
    *
-   * allowed object is
-   * {@link String }
-   *
+   * allowed object is {@link String }
    */
   public void setType(RegionType regionType) {
     if (regionType != null) {
