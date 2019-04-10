@@ -2634,14 +2634,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return (Set) this.dm.getAdminMemberSet();
   }
 
+  @SuppressWarnings("unchecked")
+  private Set<DistributedMember> asDistributedMemberSet(
+      Set<InternalDistributedMember> internalDistributedMembers) {
+    return (Set<DistributedMember>) (Set) internalDistributedMembers;
+  }
+
   @Override
   public Set<DistributedMember> getMembers(Region region) {
     if (region instanceof DistributedRegion) {
       DistributedRegion distributedRegion = (DistributedRegion) region;
-      return (Set<DistributedMember>) distributedRegion.getDistributionAdvisor().adviseCacheOp();
+      return asDistributedMemberSet(distributedRegion.getDistributionAdvisor().adviseCacheOp());
     } else if (region instanceof PartitionedRegion) {
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
-      return (Set<DistributedMember>) partitionedRegion.getRegionAdvisor().adviseAllPRNodes();
+      return asDistributedMemberSet(partitionedRegion.getRegionAdvisor().adviseAllPRNodes());
     } else {
       return Collections.emptySet();
     }
