@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
@@ -54,12 +55,6 @@ public class EndpointManagerImpl implements EndpointManager {
     listener.addListener(new EndpointListenerForBridgeMembership());
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.EndpointManager#referenceEndpoint(org.apache.geode.
-   * distributed.internal.ServerLocation)
-   */
   @Override
   public Endpoint referenceEndpoint(ServerLocation server, DistributedMember memberId) {
     Endpoint endpoint = endpointMap.get(server);
@@ -89,13 +84,6 @@ public class EndpointManagerImpl implements EndpointManager {
     return endpoint;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.cache.client.internal.EndpointManager#serverCrashed(org.apache.geode.cache.
-   * client.internal.Endpoint)
-   */
   @Override
   public void serverCrashed(Endpoint endpoint) {
     removeEndpoint(endpoint, true);
@@ -119,7 +107,7 @@ public class EndpointManagerImpl implements EndpointManager {
       poolStats.setServerCount(endpointMap.size());
     }
     if (removedEndpoint) {
-      PoolImpl pool = (PoolImpl) PoolManager.find(this.poolName);
+      PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       if (pool != null && pool.getMultiuserAuthentication()) {
         int size = 0;
         ArrayList<ProxyCache> proxyCaches = pool.getProxyCacheList();
@@ -164,21 +152,11 @@ public class EndpointManagerImpl implements EndpointManager {
 
 
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.EndpointManager#getEndpointMap()
-   */
   @Override
   public Map<ServerLocation, Endpoint> getEndpointMap() {
     return endpointMap;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.EndpointManager#close()
-   */
   @Override
   public synchronized void close() {
     for (ConnectionStats stats : statMap.values()) {
@@ -190,24 +168,11 @@ public class EndpointManagerImpl implements EndpointManager {
     listener.clear();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.client.internal.EndpointManager#addListener(org.apache.geode.cache.
-   * client.internal.EndpointManagerImpl.EndpointListener)
-   */
   @Override
   public void addListener(EndpointManager.EndpointListener listener) {
     this.listener.addListener(listener);
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.cache.client.internal.EndpointManager#removeListener(org.apache.geode.cache.
-   * client.internal.EndpointManagerImpl.EndpointListener)
-   */
   @Override
   public void removeListener(EndpointManager.EndpointListener listener) {
     this.listener.removeListener(listener);
@@ -217,17 +182,15 @@ public class EndpointManagerImpl implements EndpointManager {
     ConnectionStats stats = statMap.get(location);
     if (stats == null) {
       String statName = poolName + "-" + location.toString();
-      PoolImpl pool = (PoolImpl) PoolManager.find(this.poolName);
+      PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       if (pool != null) {
         if (pool.getGatewaySender() != null) {
           stats = new ConnectionStats(new DummyStatisticsFactory(), statName,
-              this.poolStats/* , this.gatewayStats */);
+              poolStats/* , this.gatewayStats */);
         }
       }
       if (stats == null) {
-        stats = new ConnectionStats(ds, statName, this.poolStats/*
-                                                                 * , this.gatewayStats
-                                                                 */);
+        stats = new ConnectionStats(ds, statName, poolStats);
       }
       statMap.put(location, stats);
     }
@@ -251,8 +214,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   protected static class EndpointListenerBroadcaster implements EndpointManager.EndpointListener {
 
-    private volatile Set/* <EndpointListener> */<EndpointListener> endpointListeners =
-        Collections.emptySet();
+    private volatile Set<EndpointListener> endpointListeners = Collections.emptySet();
 
     public synchronized void addListener(EndpointManager.EndpointListener listener) {
       HashSet<EndpointListener> tmpListeners = new HashSet<>(endpointListeners);

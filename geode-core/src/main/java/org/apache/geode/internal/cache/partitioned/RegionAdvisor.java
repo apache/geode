@@ -56,7 +56,6 @@ import org.apache.geode.internal.cache.BucketPersistenceAdvisor;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
-import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PRHARedundancyProvider.DataStoreBuckets;
@@ -83,7 +82,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * this queue. The thread that uses this queue is a waiting pool thread. Any thread using this
    * queue must synchronize on this queue.
    */
-  private final Queue volunteeringQueue = new ConcurrentLinkedQueue();
+  private final Queue<Runnable> volunteeringQueue = new ConcurrentLinkedQueue<>();
 
   /**
    * Semaphore with {@link #VOLUNTEERING_THREAD_COUNT} number of permits to control number of
@@ -102,10 +101,10 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
   private RegionAdvisor(PartitionedRegion region) {
     super(region);
-    synchronized (this.preInitQueueMonitor) {
-      this.preInitQueue = new ConcurrentLinkedQueue<>();
+    synchronized (preInitQueueMonitor) {
+      preInitQueue = new ConcurrentLinkedQueue<>();
     }
-    this.clientBucketProfilesMap = new ConcurrentHashMap<>();
+    clientBucketProfilesMap = new ConcurrentHashMap<>();
   }
 
   public static RegionAdvisor createRegionAdvisor(PartitionedRegion region) {
@@ -119,7 +118,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   public synchronized void initializeRegionAdvisor() {
-    if (this.buckets != null) {
+    if (buckets != null) {
       return;
     }
     PartitionedRegion p = getPartitionedRegion();
@@ -132,7 +131,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       bucs[i] = new ProxyBucketRegion(i, p, args);
       bucs[i].initialize();
     }
-    this.buckets = bucs;
+    buckets = bucs;
   }
 
   /**
@@ -141,8 +140,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * established on the sender.
    */
   public void processProfilesQueuedDuringInitialization() {
-    synchronized (this.preInitQueueMonitor) {
-      Iterator pi = this.preInitQueue.iterator();
+    synchronized (preInitQueueMonitor) {
+      Iterator pi = preInitQueue.iterator();
       boolean finishedInitQueue = false;
       try {
         while (pi.hasNext()) {
@@ -167,7 +166,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                   "applying queued member departure for all buckets for {}", qbp.memberId);
             }
-            for (ProxyBucketRegion bucket : this.buckets) {
+            for (ProxyBucketRegion bucket : buckets) {
               BucketAdvisor ba = bucket.getBucketAdvisor();
               ba.removeId(qbp.memberId, crashed, qbp.destroyed, qbp.fromMembershipListener);
             } // for
@@ -176,8 +175,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                   "applying queued profile removal for all buckets for {}", qbp.memberId);
             }
-            for (int i = 0; i < this.buckets.length; i++) {
-              BucketAdvisor ba = this.buckets[i].getBucketAdvisor();
+            for (int i = 0; i < buckets.length; i++) {
+              BucketAdvisor ba = buckets[i].getBucketAdvisor();
               int serial = qbp.serials[i];
               if (serial != ILLEGAL_SERIAL) {
                 ba.removeIdWithSerial(qbp.memberId, serial, qbp.destroyed);
@@ -187,8 +186,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         } // while
         finishedInitQueue = true;
       } finally {
-        this.preInitQueue = null; // prevent further additions to the queue
-        this.preInitQueueMonitor.notifyAll();
+        preInitQueue = null; // prevent further additions to the queue
+        preInitQueueMonitor.notifyAll();
         if (!finishedInitQueue && !getAdvisee().getCancelCriterion().isCancelInProgress()) {
           logger.error("Failed to process all queued BucketProfiles for {}",
               getAdvisee());
@@ -208,8 +207,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *
    * @return the volunteering queue for use by this PR's BucketAdvisors
    */
-  public Queue getVolunteeringQueue() {
-    return this.volunteeringQueue;
+  public Queue<Runnable> getVolunteeringQueue() {
+    return volunteeringQueue;
   }
 
   /**
@@ -219,7 +218,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return the semaphore for controlling number of volunteering threads
    */
   public Semaphore getVolunteeringSemaphore() {
-    return this.volunteeringSemaphore;
+    return volunteeringSemaphore;
   }
 
   /**
@@ -227,9 +226,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    */
   public Map<Integer, List<BucketServerLocation66>> getAllClientBucketProfiles() {
     Map<Integer, List<BucketServerLocation66>> bucketToServerLocations = new HashMap<>();
-    for (Integer bucketId : this.clientBucketProfilesMap.keySet()) {
+    for (Integer bucketId : clientBucketProfilesMap.keySet()) {
       ArrayList<BucketServerLocation66> clientBucketProfiles = new ArrayList<>();
-      for (BucketProfile profile : this.clientBucketProfilesMap.get(bucketId)) {
+      for (BucketProfile profile : clientBucketProfilesMap.get(bucketId)) {
         if (profile.isHosting) {
           ServerBucketProfile cProfile = (ServerBucketProfile) profile;
           Set<BucketServerLocation66> bucketServerLocations = cProfile.getBucketServerLocations();
@@ -273,7 +272,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     Map<Integer, List<BucketServerLocation66>> testMap =
         new HashMap<>(getAllClientBucketProfiles());
     for (Integer bucketId : testMap.keySet()) {
-      Set<ServerBucketProfile> parr = new HashSet<>(this.clientBucketProfilesMap.get(bucketId));
+      Set<ServerBucketProfile> parr = new HashSet<>(clientBucketProfilesMap.get(bucketId));
       map.put(bucketId, parr);
     }
 
@@ -293,34 +292,22 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
 
   public Set<ServerBucketProfile> getClientBucketProfiles(Integer bucketId) {
-    return this.clientBucketProfilesMap.get(bucketId);
+    return clientBucketProfilesMap.get(bucketId);
   }
 
   public void setClientBucketProfiles(Integer bucketId, Set<ServerBucketProfile> profiles) {
-    this.clientBucketProfilesMap.put(bucketId, Collections.unmodifiableSet(profiles));
+    clientBucketProfilesMap.put(bucketId, Collections.unmodifiableSet(profiles));
   }
 
   /**
    * Close the bucket advisors, releasing any locks for primary buckets
-   *
-   * @return returns a list of primary bucket IDs
-   *
    */
-  public List closeBucketAdvisors() {
-    List<Integer> primariesHeld = Collections.emptyList();
+  public void closeBucketAdvisors() {
     if (buckets != null) {
-      for (int i = 0; i < buckets.length; i++) {
-        ProxyBucketRegion pbr = buckets[i];
-        if (pbr.isPrimary()) {
-          if (primariesHeld.isEmpty()) {
-            primariesHeld = new ArrayList<>();
-          }
-          primariesHeld.add(i);
-        }
+      for (ProxyBucketRegion pbr : buckets) {
         pbr.close();
       }
     }
-    return primariesHeld;
   }
 
   /**
@@ -329,7 +316,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   @Override
   public void close() {
     super.close();
-    if (this.buckets != null) {
+    if (buckets != null) {
       for (ProxyBucketRegion bucket : buckets) {
         bucket.close();
       }
@@ -343,7 +330,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     // Calling super.removeId triggers redundancy satisfaction, so the bucket
     // advisors must have up to data information at that point.
     boolean removeBuckets = true;
-    synchronized (this.preInitQueueMonitor) {
+    synchronized (preInitQueueMonitor) {
       if (preInitQueue != null) {
         // Queue profile during pre-initialization
         QueuedBucketProfile qbf = new QueuedBucketProfile((InternalDistributedMember) memberId,
@@ -378,7 +365,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
       logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
           "RegionAdvisor#removeId: removing member from region {}: {}; removed = {}; crashed = {}",
-          this.getPartitionedRegion().getName(), memberId, removedId, crashed);
+          getPartitionedRegion().getName(), memberId, removedId, crashed);
     }
 
     return removedId;
@@ -398,34 +385,34 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
       logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
           "RegionAdvisor#removeIdAndBuckets: removing member from region {}: {}; buckets = ({}) serials",
-          this.getPartitionedRegion().getName(), memberId,
+          getPartitionedRegion().getName(), memberId,
           (serials == null ? "null" : serials.length));
     }
 
-    synchronized (this.preInitQueueMonitor) {
-      if (this.preInitQueue != null) {
+    synchronized (preInitQueueMonitor) {
+      if (preInitQueue != null) {
         // Queue profile during pre-initialization
         QueuedBucketProfile qbf = new QueuedBucketProfile(memberId, serials, regionDestroyed);
-        this.preInitQueue.add(qbf);
+        preInitQueue.add(qbf);
         return;
       }
     }
 
     // OK, apply the update NOW
-    if (this.buckets != null) {
+    if (buckets != null) {
       Objects.requireNonNull(serials);
       if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
         logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
             "RegionAdvisor#removeIdAndBuckets: removing buckets for member{};{}", memberId, this);
       }
-      for (int i = 0; i < this.buckets.length; i++) {
+      for (int i = 0; i < buckets.length; i++) {
         int s = serials[i];
         if (s != ILLEGAL_SERIAL) {
           if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
             logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                 "RegionAdvisor#removeIdAndBuckets: removing bucket #{} serial {}", i, s);
           }
-          this.buckets[i].getBucketAdvisor().removeIdWithSerial(memberId, s, regionDestroyed);
+          buckets[i].getBucketAdvisor().removeIdWithSerial(memberId, s, regionDestroyed);
         }
       }
 
@@ -444,20 +431,20 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       return;
     }
     for (int i = 0; i < buckets.length; i++) {
-      if (sick && !this.buckets[i].getBucketOwners().contains(member)) {
+      if (sick && !buckets[i].getBucketOwners().contains(member)) {
         continue;
       }
-      this.buckets[i].setBucketSick(member, sick);
+      buckets[i].setBucketSick(member, sick);
       if (logger.isDebugEnabled()) {
         logger.debug("Marked bucket ({}) {}", getPartitionedRegion().bucketStringForLogs(i),
-            (this.buckets[i].isBucketSick() ? "sick" : "healthy"));
+            (buckets[i].isBucketSick() ? "sick" : "healthy"));
       }
     }
   }
 
   public void updateBucketStatus(int bucketId, DistributedMember member, boolean profileRemoved) {
     if (profileRemoved) {
-      this.buckets[bucketId].setBucketSick(member, false);
+      buckets[bucketId].setBucketSick(member, false);
 
     } else {
       ResourceAdvisor advisor = getPartitionedRegion().getCache().getResourceAdvisor();
@@ -466,7 +453,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         logger.debug("updateBucketStatus:({}):member:{}:sick:{}",
             getPartitionedRegion().bucketStringForLogs(bucketId), member, sick);
       }
-      this.buckets[bucketId].setBucketSick(member, sick);
+      buckets[bucketId].setBucketSick(member, sick);
     }
   }
 
@@ -480,10 +467,10 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     if (MemoryThresholds.isLowMemoryExceptionDisabled()) {
       return;
     }
-    assert this.buckets != null;
-    assert this.buckets[bucketId] != null;
-    if (this.buckets[bucketId].isBucketSick()) {
-      Set<DistributedMember> sm = this.buckets[bucketId].getSickMembers();
+    assert buckets != null;
+    assert buckets[bucketId] != null;
+    if (buckets[bucketId].isBucketSick()) {
+      Set<DistributedMember> sm = buckets[bucketId].getSickMembers();
       if (sm.isEmpty()) {
         // check again as this list is obtained under synchronization
         // fixes bug 50845
@@ -545,13 +532,13 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
     public PartitionProfile(InternalDistributedMember memberId, int version) {
       super(memberId, version);
-      this.isPartitioned = true;
+      isPartitioned = true;
     }
 
     @Override
     protected int getIntInfo() {
       int s = super.getIntInfo();
-      if (this.requiresNotification)
+      if (requiresNotification)
         s |= REQUIRES_NOTIFICATION_MASK;
       return s;
     }
@@ -559,24 +546,24 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     @Override
     protected void setIntInfo(int s) {
       super.setIntInfo(s);
-      this.requiresNotification = (s & REQUIRES_NOTIFICATION_MASK) != 0;
+      requiresNotification = (s & REQUIRES_NOTIFICATION_MASK) != 0;
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.localMaxMemory = in.readInt();
-      this.isDataStore = this.localMaxMemory > 0;
-      this.fixedPAttrs = DataSerializer.readObject(in);
-      this.shutDownAllStatus = in.readInt();
+      localMaxMemory = in.readInt();
+      isDataStore = localMaxMemory > 0;
+      fixedPAttrs = DataSerializer.readObject(in);
+      shutDownAllStatus = in.readInt();
     }
 
     @Override
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
-      out.writeInt(this.localMaxMemory);
-      DataSerializer.writeObject(this.fixedPAttrs, out);
-      out.writeInt(this.shutDownAllStatus);
+      out.writeInt(localMaxMemory);
+      DataSerializer.writeObject(fixedPAttrs, out);
+      out.writeInt(shutDownAllStatus);
     }
 
     @Override
@@ -587,14 +574,14 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     @Override
     public void fillInToString(StringBuilder sb) {
       super.fillInToString(sb);
-      sb.append("; isDataStore=").append(this.isDataStore).append("; requiresNotification=")
-          .append(this.requiresNotification).append("; localMaxMemory=").append(this.localMaxMemory)
-          .append("; numBuckets=").append(this.numBuckets);
-      if (this.fixedPAttrs != null) {
-        sb.append("; FixedPartitionAttributes=").append(this.fixedPAttrs);
+      sb.append("; isDataStore=").append(isDataStore).append("; requiresNotification=")
+          .append(requiresNotification).append("; localMaxMemory=").append(localMaxMemory)
+          .append("; numBuckets=").append(numBuckets);
+      if (fixedPAttrs != null) {
+        sb.append("; FixedPartitionAttributes=").append(fixedPAttrs);
       }
-      sb.append("; filterProfile=").append(this.filterProfile);
-      sb.append("; shutDownAllStatus=").append(this.shutDownAllStatus);
+      sb.append("; filterProfile=").append(filterProfile);
+      sb.append("; shutDownAllStatus=").append(shutDownAllStatus);
     }
 
     @Override
@@ -607,15 +594,15 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
 
   public int getNumDataStores() {
     final int numProfs = getNumProfiles();
-    if (this.lastActiveProfiles != numProfs) {
-      this.numDataStores = adviseDataStore().size();
-      this.lastActiveProfiles = numProfs;
+    if (lastActiveProfiles != numProfs) {
+      numDataStores = adviseDataStore().size();
+      lastActiveProfiles = numProfs;
     }
-    return this.numDataStores;
+    return numDataStores;
   }
 
   public Set<InternalDistributedMember> adviseDataStore() {
-    return this.adviseDataStore(false);
+    return adviseDataStore(false);
   }
 
   /**
@@ -839,7 +826,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     return remotePrimaryFPAs;
   }
 
-  public Set adviseAllPRNodes() {
+  public Set<InternalDistributedMember> adviseAllPRNodes() {
     return adviseFilter(profile -> {
       CacheProfile prof = (CacheProfile) profile;
       return prof.isPartitioned;
@@ -870,7 +857,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *
    * @since GemFire 5.1
    */
-  public Set adviseRequiresNotification(final EntryEventImpl event) {
+  public Set<InternalDistributedMember> adviseRequiresNotification() {
     return adviseFilter(profile -> {
       if (profile instanceof PartitionProfile) {
         PartitionProfile prof = (PartitionProfile) profile;
@@ -911,10 +898,10 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   public boolean isPrimaryForBucket(int bucketId) {
-    if (this.buckets == null) {
+    if (buckets == null) {
       return false;
     }
-    return this.buckets[bucketId].isPrimary();
+    return buckets[bucketId].isPrimary();
   }
 
   /**
@@ -925,14 +912,14 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return true if the bucket is currently being hosted locally
    */
   public boolean isBucketLocal(int bucketId) {
-    if (this.buckets == null) {
+    if (buckets == null) {
       return false;
     }
-    return this.buckets[bucketId].getHostedBucketRegion() != null;
+    return buckets[bucketId].getHostedBucketRegion() != null;
   }
 
   public boolean areBucketsInitialized() {
-    return this.buckets != null;
+    return buckets != null;
   }
 
   /**
@@ -944,8 +931,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return the bucket identified by bucketId
    */
   public Bucket getBucket(int bucketId) {
-    Assert.assertTrue(this.buckets != null);
-    ProxyBucketRegion pbr = this.buckets[bucketId];
+    Assert.assertTrue(buckets != null);
+    ProxyBucketRegion pbr = buckets[bucketId];
     Bucket ret = pbr.getHostedBucketRegion();
     if (ret != null) {
       return ret;
@@ -961,8 +948,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return the bucket advisor identified by bucketId
    */
   public BucketAdvisor getBucketAdvisor(int bucketId) {
-    Assert.assertTrue(this.buckets != null);
-    ProxyBucketRegion pbr = this.buckets[bucketId];
+    Assert.assertTrue(buckets != null);
+    ProxyBucketRegion pbr = buckets[bucketId];
     Bucket ret = pbr.getHostedBucketRegion();
     if (ret != null) {
       return ret.getBucketAdvisor();
@@ -972,7 +959,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   public Map<Integer, BucketAdvisor> getAllBucketAdvisors() {
-    Assert.assertTrue(this.buckets != null);
+    Assert.assertTrue(buckets != null);
     Map<Integer, BucketAdvisor> map = new HashMap<>();
     for (ProxyBucketRegion pbr : buckets) {
       Bucket ret = pbr.getHostedBucketRegion();
@@ -988,13 +975,13 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return array of serial numbers for buckets created locally
    */
   public int[] getBucketSerials() {
-    if (this.buckets == null) {
+    if (buckets == null) {
       return new int[0];
     }
-    int[] result = new int[this.buckets.length];
+    int[] result = new int[buckets.length];
 
     for (int i = 0; i < result.length; i++) {
-      ProxyBucketRegion pbr = this.buckets[i];
+      ProxyBucketRegion pbr = buckets[i];
       Bucket b = pbr.getCreatedBucketRegion();
       if (b == null) {
         result[i] = ILLEGAL_SERIAL;
@@ -1015,15 +1002,15 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *         shutdown cancellation
    */
   public Bucket getBucketPostInit(int bucketId) {
-    synchronized (this.preInitQueueMonitor) {
+    synchronized (preInitQueueMonitor) {
       boolean interrupted = false;
       try {
-        while (this.preInitQueue != null) {
+        while (preInitQueue != null) {
           try {
-            this.preInitQueueMonitor.wait(); // spurious wakeup ok
+            preInitQueueMonitor.wait(); // spurious wakeup ok
           } catch (InterruptedException e) {
             interrupted = true;
-            this.getAdvisee().getCancelCriterion().checkCancelInProgress(e);
+            getAdvisee().getCancelCriterion().checkCancelInProgress(e);
           }
         }
       } finally {
@@ -1042,8 +1029,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return the Node managing the primary copy of the bucket
    */
   public InternalDistributedMember getPrimaryMemberForBucket(int bucketId) {
-    Assert.assertTrue(this.buckets != null);
-    Bucket b = this.buckets[bucketId];
+    Assert.assertTrue(buckets != null);
+    Bucket b = buckets[bucketId];
     return b.getBucketAdvisor().getPrimary();
   }
 
@@ -1054,14 +1041,14 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return the member, possibly null if no member is available
    */
   public InternalDistributedMember getPreferredNode(int bucketId) {
-    Assert.assertTrue(this.buckets != null);
-    Bucket b = this.buckets[bucketId];
+    Assert.assertTrue(buckets != null);
+    Bucket b = buckets[bucketId];
     return b.getBucketAdvisor().getPreferredNode();
   }
 
   public boolean isStorageAssignedForBucket(int bucketId) {
-    Assert.assertTrue(this.buckets != null);
-    return this.buckets[bucketId].getBucketRedundancy() >= 0;
+    Assert.assertTrue(buckets != null);
+    return buckets[bucketId].getBucketRedundancy() >= 0;
   }
 
   /**
@@ -1074,8 +1061,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     if (!wait) {
       return isStorageAssignedForBucket(bucketId);
     } else {
-      Assert.assertTrue(this.buckets != null);
-      return this.buckets[bucketId].getBucketAdvisor().waitForRedundancy(minRedundancy);
+      Assert.assertTrue(buckets != null);
+      return buckets[bucketId].getBucketAdvisor().waitForRedundancy(minRedundancy);
     }
   }
 
@@ -1086,8 +1073,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *         bucket.
    */
   public int getBucketRedundancy(int bucketId) {
-    Assert.assertTrue(this.buckets != null);
-    return this.buckets[bucketId].getBucketRedundancy();
+    Assert.assertTrue(buckets != null);
+    return buckets[bucketId].getBucketRedundancy();
   }
 
   /**
@@ -1097,8 +1084,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return a set of {@link InternalDistributedMember}s that own the bucket
    */
   public Set<InternalDistributedMember> getBucketOwners(int bucketId) {
-    Assert.assertTrue(this.buckets != null);
-    return this.buckets[bucketId].getBucketOwners();
+    Assert.assertTrue(buckets != null);
+    return buckets[bucketId].getBucketOwners();
   }
 
   /**
@@ -1107,21 +1094,21 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return set of Integer bucketIds
    */
   public Set<Integer> getBucketSet() {
-    Assert.assertTrue(this.buckets != null);
+    Assert.assertTrue(buckets != null);
     return new BucketSet();
   }
 
 
   public ProxyBucketRegion[] getProxyBucketArray() {
-    return this.buckets;
+    return buckets;
   }
 
   private class BucketSet extends AbstractSet<Integer> {
     final ProxyBucketRegion[] pbrs;
 
     BucketSet() {
-      this.pbrs = RegionAdvisor.this.buckets;
-      Assert.assertTrue(this.pbrs != null);
+      pbrs = buckets;
+      Assert.assertTrue(pbrs != null);
     }
 
     /*
@@ -1130,7 +1117,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
      */
     @Override
     public int size() {
-      return this.pbrs.length;
+      return pbrs.length;
     }
 
     @Override
@@ -1156,8 +1143,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       @Override
       public boolean hasNext() {
         if (getPartitionedRegion().isFixedPartitionedRegion()) {
-          if (this.currentItem + 1 < BucketSet.this.pbrs.length) {
-            int possibleBucketId = this.currentItem;
+          if (currentItem + 1 < pbrs.length) {
+            int possibleBucketId = currentItem;
             boolean bucketExists = false;
 
             List<FixedPartitionAttributesImpl> fpaList = adviseAllFixedPartitionAttributes();
@@ -1166,7 +1153,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
             if (localFpas != null) {
               fpaList.addAll(localFpas);
             }
-            while (++possibleBucketId < BucketSet.this.pbrs.length && !bucketExists) {
+            while (++possibleBucketId < pbrs.length && !bucketExists) {
               for (FixedPartitionAttributesImpl fpa : fpaList) {
                 if (fpa.hasBucket(possibleBucketId)) {
                   bucketExists = true;
@@ -1179,15 +1166,15 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
             return false;
           }
         } else {
-          return this.currentItem + 1 < BucketSet.this.pbrs.length;
+          return currentItem + 1 < pbrs.length;
         }
       }
 
       @Override
       public Integer next() {
-        if (++this.currentItem < BucketSet.this.pbrs.length) {
-          if (isStorageAssignedForBucket(this.currentItem)) {
-            return this.currentItem;
+        if (++currentItem < pbrs.length) {
+          if (isStorageAssignedForBucket(currentItem)) {
+            return currentItem;
           } else {
             if (getPartitionedRegion().isFixedPartitionedRegion()) {
               boolean bucketExists = false;
@@ -1199,23 +1186,23 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               }
               do {
                 for (FixedPartitionAttributesImpl fpa : fpaList) {
-                  if (fpa.hasBucket(this.currentItem)) {
+                  if (fpa.hasBucket(currentItem)) {
                     bucketExists = true;
                     break;
                   }
                 }
                 if (!bucketExists) {
-                  this.currentItem++;
+                  currentItem++;
                 }
-              } while (this.currentItem < BucketSet.this.pbrs.length && !bucketExists);
+              } while (currentItem < pbrs.length && !bucketExists);
 
               if (bucketExists) {
-                getPartitionedRegion().createBucket(this.currentItem, 0, null);
-                return this.currentItem;
+                getPartitionedRegion().createBucket(currentItem, 0, null);
+                return currentItem;
               }
             } else {
-              getPartitionedRegion().createBucket(this.currentItem, 0, null);
-              return this.currentItem;
+              getPartitionedRegion().createBucket(currentItem, 0, null);
+              return currentItem;
             }
           }
         }
@@ -1235,7 +1222,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   public ArrayList<DataStoreBuckets> adviseFilteredDataStores(
       final Set<InternalDistributedMember> memberFilter) {
     final HashMap<InternalDistributedMember, Integer> memberToPrimaryCount = new HashMap<>();
-    for (ProxyBucketRegion pbr : this.buckets) {
+    for (ProxyBucketRegion pbr : buckets) {
       // quick dirty check
       InternalDistributedMember p = pbr.getBucketAdvisor().basicGetPrimaryMember();
       if (p != null) {
@@ -1291,14 +1278,14 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   @Override
   public void dumpProfiles(String infoMsg) {
     if (logger.isDebugEnabled()) {
-      logger.debug("[dumpProfiles] dumping {}", this.toStringWithProfiles());
+      logger.debug("[dumpProfiles] dumping {}", toStringWithProfiles());
     }
 
     // 1st dump all profiles for this RegionAdvisor
     super.dumpProfiles(infoMsg);
 
     // 2nd dump all profiles for each BucketAdvisor
-    ProxyBucketRegion[] pbrs = this.buckets;
+    ProxyBucketRegion[] pbrs = buckets;
     if (pbrs == null) {
       return;
     }
@@ -1312,8 +1299,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   public void notPrimary(int bucketId, InternalDistributedMember wasPrimary) {
-    Assert.assertTrue(this.buckets != null);
-    ProxyBucketRegion b = this.buckets[bucketId];
+    Assert.assertTrue(buckets != null);
+    ProxyBucketRegion b = buckets[bucketId];
     b.getBucketAdvisor().notPrimary(wasPrimary);
   }
 
@@ -1323,8 +1310,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return set of InternalDistributedMember ids
    */
   public Set advisePrimaryOwners() {
-    Assert.assertTrue(this.buckets != null);
-    ProxyBucketRegion[] bucs = this.buckets;
+    Assert.assertTrue(buckets != null);
+    ProxyBucketRegion[] bucs = buckets;
     HashSet<InternalDistributedMember> hs = new HashSet<>();
     for (int i = 0; i < bucs.length; i++) {
       if (isStorageAssignedForBucket(i)) {
@@ -1365,7 +1352,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    *         {@link BucketVisitor#visit} returning false
    */
   public <T> boolean accept(BucketVisitor<T> visitor, T aggregate) {
-    final ProxyBucketRegion[] bucs = this.buckets;
+    final ProxyBucketRegion[] bucs = buckets;
     Objects.requireNonNull(bucs);
     for (ProxyBucketRegion pbr : bucs) {
       if (!visitor.visit(this, pbr, aggregate)) {
@@ -1389,11 +1376,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @param profile the bucket meta-data from a particular member with the bucket
    */
   void putBucketProfile(int bucketId, BucketProfile profile) {
-    synchronized (this.preInitQueueMonitor) {
-      if (this.preInitQueue != null) {
+    synchronized (preInitQueueMonitor) {
+      if (preInitQueue != null) {
         // Queue profile during pre-initialization
         QueuedBucketProfile qbf = new QueuedBucketProfile(bucketId, profile);
-        this.preInitQueue.add(qbf);
+        preInitQueue.add(qbf);
         return;
       }
     }
@@ -1432,15 +1419,15 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
      * @param p the profile to add
      */
     QueuedBucketProfile(int bId, BucketProfile p) {
-      this.bucketId = bId;
-      this.bucketProfile = p;
-      this.isRemoval = false;
-      this.crashed = false;
-      this.memberDeparted = false;
-      this.memberId = null;
-      this.serials = null;
-      this.destroyed = false;
-      this.fromMembershipListener = false;
+      bucketId = bId;
+      bucketProfile = p;
+      isRemoval = false;
+      crashed = false;
+      memberDeparted = false;
+      memberId = null;
+      serials = null;
+      destroyed = false;
+      fromMembershipListener = false;
     }
 
     /**
@@ -1450,13 +1437,13 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
      */
     QueuedBucketProfile(InternalDistributedMember mbr, boolean crashed, boolean destroyed,
         boolean fromMembershipListener) {
-      this.bucketId = 0;
-      this.bucketProfile = null;
-      this.isRemoval = true;
+      bucketId = 0;
+      bucketProfile = null;
+      isRemoval = true;
       this.crashed = crashed;
-      this.memberDeparted = true;
-      this.memberId = mbr;
-      this.serials = null;
+      memberDeparted = true;
+      memberId = mbr;
+      serials = null;
       this.destroyed = destroyed;
       this.fromMembershipListener = fromMembershipListener;
     }
@@ -1468,19 +1455,19 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
      * @param serials the serials it had
      */
     QueuedBucketProfile(InternalDistributedMember mbr, int[] serials, boolean destroyed) {
-      this.bucketId = 0;
-      this.bucketProfile = null;
-      this.isRemoval = true;
-      this.crashed = false;
-      this.memberDeparted = false;
-      this.memberId = mbr;
+      bucketId = 0;
+      bucketProfile = null;
+      isRemoval = true;
+      crashed = false;
+      memberDeparted = false;
+      memberId = mbr;
       this.serials = serials;
       this.destroyed = destroyed;
-      this.fromMembershipListener = false;
+      fromMembershipListener = false;
     }
   }
 
-  public Set adviseBucketProfileExchange() {
+  public Set<InternalDistributedMember> adviseBucketProfileExchange() {
     return adviseDataStore();
   }
 
@@ -1504,7 +1491,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @return the total number of buckets created anywhere for this PR
    */
   public int getCreatedBucketsCount() {
-    final ProxyBucketRegion[] bucs = this.buckets;
+    final ProxyBucketRegion[] bucs = buckets;
     if (bucs == null) {
       return 0;
     }
@@ -1525,7 +1512,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * @since GemFire 5.5
    */
   public ArrayList getBucketRegionProfiles() {
-    final ProxyBucketRegion[] bucs = this.buckets;
+    final ProxyBucketRegion[] bucs = buckets;
     if (bucs == null) {
       return null;
     }
@@ -1576,8 +1563,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       ((PartitionedRegion) getAdvisee()).removeCriticalMember(profile.peerMemberId);
     }
 
-    if (this.buckets != null) {
-      for (ProxyBucketRegion bucket : this.buckets) {
+    if (buckets != null) {
+      for (ProxyBucketRegion bucket : buckets) {
         bucket.getBucketAdvisor().checkForLostPrimaryElector(profile);
       }
     }
@@ -1600,30 +1587,30 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     public BucketProfileAndId() {}
 
     public int getId() {
-      return this.id;
+      return id;
     }
 
     BucketProfile getBucketProfile() {
-      return this.bp;
+      return bp;
     }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.id = in.readInt();
-      this.isServerBucketProfile = in.readBoolean();
-      if (this.isServerBucketProfile)
-        this.bp = new ServerBucketProfile();
+      id = in.readInt();
+      isServerBucketProfile = in.readBoolean();
+      if (isServerBucketProfile)
+        bp = new ServerBucketProfile();
       else
-        this.bp = new BucketProfile();
+        bp = new BucketProfile();
 
-      InternalDataSerializer.invokeFromData(this.bp, in);
+      InternalDataSerializer.invokeFromData(bp, in);
     }
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      out.writeInt(this.id);
-      out.writeBoolean(this.isServerBucketProfile);
-      InternalDataSerializer.invokeToData(this.bp, out);
+      out.writeInt(id);
+      out.writeBoolean(isServerBucketProfile);
+      InternalDataSerializer.invokeToData(bp, out);
     }
 
     @Override
@@ -1648,11 +1635,11 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         while (!profileChanged && pr != null && !pr.isDestroyed()) {
           // the advisee might have been destroyed due to initialization failure
           try {
-            this.wait(1000);
+            wait(1000);
           } catch (InterruptedException ignored) {
           }
         }
-        this.profileChanged = false;
+        profileChanged = false;
       }
     }
 
@@ -1665,8 +1652,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     public void profileRemoved(Profile profile, boolean regionDestroyed) {
       // if a profile is gone, notify
       synchronized (this) {
-        this.profileChanged = true;
-        this.notifyAll();
+        profileChanged = true;
+        notifyAll();
       }
     }
 
@@ -1674,8 +1661,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     public void profileUpdated(Profile profile) {
       // when updated, notify the loop in GFC to check the list again
       synchronized (this) {
-        this.profileChanged = true;
-        this.notifyAll();
+        profileChanged = true;
+        notifyAll();
       }
     }
   }
