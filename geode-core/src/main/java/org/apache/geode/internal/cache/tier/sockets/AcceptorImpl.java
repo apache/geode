@@ -1840,7 +1840,10 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       logger.info(":Cache server: Initializing {} server-to-client communication socket: {}",
           isPrimaryServerToClient ? "primary" : "secondary", socket);
       try {
-        acceptor.getCacheClientNotifier().registerClient(socket, isPrimaryServerToClient,
+
+        ClientRegistrationMetadata clientRegistrationMetadata =
+            createClientRegistrationMetadata(socket);
+        acceptor.getCacheClientNotifier().registerClient(clientRegistrationMetadata, socket, isPrimaryServerToClient,
             acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
       } catch (IOException ex) {
         closeSocket(socket);
@@ -1858,6 +1861,19 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
           }
         }
       }
+    }
+
+    private ClientRegistrationMetadata createClientRegistrationMetadata(final Socket socket) throws IOException {
+      ClientRegistrationMetadata clientRegistrationMetadata;
+      try {
+        clientRegistrationMetadata = new ClientRegistrationMetadata(acceptor.cache, socket);
+      } catch (Exception e) {
+        throw new IOException(
+            String.format(
+                "ClientRegistrationMetadata object could not be created. Exception occurred was %s",
+                e));
+      }
+      return clientRegistrationMetadata;
     }
   }
 }

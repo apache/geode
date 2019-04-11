@@ -129,6 +129,7 @@ public class CacheClientNotifier {
   private final Map<ClientProxyMembershipID, Queue<InternalCacheEvent>> registeringProxyEventQueues =
       new ConcurrentHashMap<>();
   private final Object registeringProxyEventQueuesLock = new Object();
+  private final SocketMessageWriter socketMessageWriter = new SocketMessageWriter();
 
   @MakeNotStatic
   private static volatile CacheClientNotifier ccnSingleton;
@@ -144,7 +145,7 @@ public class CacheClientNotifier {
       ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver) {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, acceptorStats, maximumMessageCount,
-          messageTimeToLive, listener, overflowAttributesList, isGatewayReceiver);
+          messageTimeToLive, listener, isGatewayReceiver);
     }
 
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -160,104 +161,26 @@ public class CacheClientNotifier {
   }
 
   /**
-   * Writes a given message to the output stream
-   *
-   * @param dos the <code>DataOutputStream</code> to use for writing the message
-   * @param type a byte representing the message type
-   * @param p_msg the message to be written; can be null
-   */
-  private void writeMessage(DataOutputStream dos, byte type, String p_msg, Version clientVersion)
-      throws IOException {
-    writeHandshakeMessage(dos, type, p_msg, clientVersion, (byte) 0x00, 0);
-  }
-
-  private void writeHandshakeMessage(DataOutputStream dos, byte type, String p_msg,
-      Version clientVersion, byte endpointType, int queueSize) throws IOException {
-    String msg = p_msg;
-
-    // write the message type
-    dos.writeByte(type);
-
-    dos.writeByte(endpointType);
-    dos.writeInt(queueSize);
-
-    if (msg == null) {
-      msg = "";
-    }
-    dos.writeUTF(msg);
-    if (clientVersion != null && clientVersion.compareTo(Version.GFE_61) >= 0) {
-      // get all the instantiators.
-      Instantiator[] instantiators = InternalInstantiator.getInstantiators();
-      HashMap instantiatorMap = new HashMap();
-      if (instantiators != null && instantiators.length > 0) {
-        for (Instantiator instantiator : instantiators) {
-          ArrayList instantiatorAttributes = new ArrayList();
-          instantiatorAttributes.add(instantiator.getClass().toString().substring(6));
-          instantiatorAttributes.add(instantiator.getInstantiatedClass().toString().substring(6));
-          instantiatorMap.put(instantiator.getId(), instantiatorAttributes);
-        }
-      }
-      DataSerializer.writeHashMap(instantiatorMap, dos);
-
-      // get all the dataserializers.
-      DataSerializer[] dataSerializers = InternalDataSerializer.getSerializers();
-      HashMap<Integer, ArrayList<String>> dsToSupportedClasses =
-          new HashMap<Integer, ArrayList<String>>();
-      HashMap<Integer, String> dataSerializersMap = new HashMap<Integer, String>();
-      if (dataSerializers != null && dataSerializers.length > 0) {
-        for (DataSerializer dataSerializer : dataSerializers) {
-          dataSerializersMap.put(dataSerializer.getId(),
-              dataSerializer.getClass().toString().substring(6));
-          if (clientVersion.compareTo(Version.GFE_6516) >= 0) {
-            ArrayList<String> supportedClassNames = new ArrayList<String>();
-            for (Class clazz : dataSerializer.getSupportedClasses()) {
-              supportedClassNames.add(clazz.getName());
-            }
-            dsToSupportedClasses.put(dataSerializer.getId(), supportedClassNames);
-          }
-        }
-      }
-      DataSerializer.writeHashMap(dataSerializersMap, dos);
-      if (clientVersion.compareTo(Version.GFE_6516) >= 0) {
-        DataSerializer.writeHashMap(dsToSupportedClasses, dos);
-      }
-      if (clientVersion.compareTo(Version.GEODE_1_5_0) >= 0) {
-        dos.writeInt(CLIENT_PING_TASK_PERIOD);
-      }
-    }
-    dos.flush();
-  }
-
-  /**
-   * Writes an exception message to the socket
-   *
-   * @param dos the <code>DataOutputStream</code> to use for writing the message
-   * @param type a byte representing the exception type
-   * @param ex the exception to be written; should not be null
-   */
-  private void writeException(DataOutputStream dos, byte type, Exception ex, Version clientVersion)
-      throws IOException {
-    writeMessage(dos, type, ex.toString(), clientVersion);
-  }
-
-  /**
    * Registers a new client updater that wants to receive updates with this server.
    *
    * @param socket The socket over which the server communicates with the client.
+   * @param isPrimary whether server is the primary subscription end point for this client
+   * @param acceptorId id of the acceptor used to clean up the client connection
+   * @param notifyBySubscription whether the Server is running in NotifyBySubscription mode
+   * @throws IOException can occur during de-serialization or if the socket is closed
    */
-  public void registerClient(final Socket socket, final boolean isPrimary, final long acceptorId,
+  public void registerClient(final ClientRegistrationMetadata clientRegistrationMetadata, final Socket socket, final boolean isPrimary, final long acceptorId,
       final boolean notifyBySubscription) throws IOException {
     long startTime = this.statistics.startTime();
 
-    ClientRegistrationMetadata clientRegistrationMetadata =
-        createClientRegistrationMetadata(socket);
-
     ClientProxyMembershipID clientProxyMembershipID =
-        clientRegistrationMetadata.clientProxyMembershipID;
-    DataOutputStream dataOutputStream = clientRegistrationMetadata.dataOutputStream;
-    Version clientVersion = clientRegistrationMetadata.clientVersion;
+        clientRegistrationMetadata.getClientProxyMembershipID();
+    DataOutputStream dataOutputStream = clientRegistrationMetadata.getDataOutputStream();
+    Version clientVersion = clientRegistrationMetadata.getClientVersion();
 
     try {
+      validateClientAgainstDenyList(clientRegistrationMetadata, clientProxyMembershipID);
+
       Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient =
           createRegisteringProxyEventQueue(clientProxyMembershipID);
 
@@ -292,7 +215,7 @@ public class CacheClientNotifier {
           (clientProxyMembershipID != null
               ? clientProxyMembershipID : "unknown"),
           ex));
-      writeException(dataOutputStream,
+      socketMessageWriter.writeException(dataOutputStream,
           CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
           ex,
           clientVersion);
@@ -302,14 +225,31 @@ public class CacheClientNotifier {
     this.statistics.endClientRegistration(startTime);
   }
 
+  private void validateClientAgainstDenyList(ClientRegistrationMetadata clientRegistrationMetadata,
+                                             ClientProxyMembershipID clientProxyMembershipID)
+      throws IOException {
+    if (getDenylistedClient().contains(clientProxyMembershipID)) {
+      Exception deniedException = new Exception("This client is denylisted by server");
+      socketMessageWriter.writeException(clientRegistrationMetadata.getDataOutputStream(), Handshake.REPLY_INVALID,
+          deniedException, clientRegistrationMetadata.getClientVersion());
+      throw new IOException(deniedException.toString());
+    }
+  }
+
   /**
-   * Registers a new client that wants to receive updates with this server.
+   * Continues the registration of a new client that wants to receive updates with this server.
    *
    * @param socket The socket over which the server communicates with the client.
-   * @param proxyId The distributed member id of the client being registered
-   * @param proxy The <code>CacheClientProxy</code> of the given <code>proxyId</code>
-   *
-   * @return CacheClientProxy for the registered client
+   * @param clientRegistrationMetadata contains registration info pertaining to the client
+   * @param isPrimary whether server is the primary subscription end point for this client
+   * @param acceptorId id of the acceptor used to clean up the client connection
+   * @param notifyBySubscription whether the Server is running in NotifyBySubscription mode
+   * @throws IOException can occur during de-serialization or if the socket is closed
+   * @throws CacheException A generic exception, which indicates a cache error has occurred.
+   * @throws ClassNotFoundException thrown when the ClientProxyMembershipID class is not found
+   * @throws NoSuchMethodException potentially thrown by performPostAuthorization
+   * @throws InvocationTargetException potentially thrown by performPostAuthorization
+   * @throws IllegalAccessException potentially thrown by performPostAuthorization
    */
   void registerClient(final Socket socket,
       final ClientRegistrationMetadata clientRegistrationMetadata, final boolean isPrimary,
@@ -317,9 +257,9 @@ public class CacheClientNotifier {
       throws IOException, CacheException, ClassNotFoundException, NoSuchMethodException,
       InvocationTargetException, IllegalAccessException {
     ClientProxyMembershipID clientProxyMembershipID =
-        clientRegistrationMetadata.clientProxyMembershipID;
-    byte clientConflation = clientRegistrationMetadata.clientConflation;
-    Version clientVersion = clientRegistrationMetadata.clientVersion;
+        clientRegistrationMetadata.getClientProxyMembershipID();
+    byte clientConflation = clientRegistrationMetadata.getClientConflation();
+    Version clientVersion = clientRegistrationMetadata.getClientVersion();
 
     CacheClientProxy cacheClientProxy = getClientProxy(clientProxyMembershipID);
     DistributedMember member = clientProxyMembershipID.getDistributedMember();
@@ -472,7 +412,7 @@ public class CacheClientNotifier {
       DataOutputStream dos =
           new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
       // write the message type, message length and the error message (if any)
-      writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion, endpointType,
+      socketMessageWriter.writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion, endpointType,
           queueSize);
     } catch (IOException ioe) {// remove the added proxy if we get IOException.
       if (cacheClientProxy != null) {
@@ -527,21 +467,7 @@ public class CacheClientNotifier {
     securityLogWriter.warning(
         String.format("An exception was thrown for client [%s]. %s",
             clientProxyMembershipID, ex));
-    writeException(dataOutputStream, replyExceptionAuthenticationFailed, ex, clientVersion);
-  }
-
-  private ClientRegistrationMetadata createClientRegistrationMetadata(
-      final Socket socket) throws IOException {
-    ClientRegistrationMetadata clientRegistrationMetadata;
-    try {
-      clientRegistrationMetadata = new ClientRegistrationMetadata(socket);
-    } catch (Exception e) {
-      throw new IOException(
-          String.format(
-              "ClientRegistrationMetadata object could not be created. Exception occurred was %s",
-              e));
-    }
-    return clientRegistrationMetadata;
+    socketMessageWriter.writeException(dataOutputStream, replyExceptionAuthenticationFailed, ex, clientVersion);
   }
 
   private Queue<InternalCacheEvent> createRegisteringProxyEventQueue(
@@ -555,13 +481,13 @@ public class CacheClientNotifier {
 
   private void drainAllEventsReceivedWhileInitializingClient(
       final ClientProxyMembershipID clientProxyMembershipID,
-      final CacheClientNotifier.ClientRegistrationMetadata clientRegistrationMetadata,
+      final ClientRegistrationMetadata clientRegistrationMetadata,
       final Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient) {
     // As an optimization, we drain as many events from the queue as we can
     // before taking out a lock to drain the remaining events
     if (logger.isDebugEnabled()) {
       logger.debug("Draining events from initialization queue for client proxy "
-          + clientRegistrationMetadata.clientProxyMembershipID
+          + clientRegistrationMetadata.getClientProxyMembershipID()
           + " without synchronization");
     }
 
@@ -1003,15 +929,15 @@ public class CacheClientNotifier {
       final DistributedSystem system, final String authenticator) {
     final Object subjectOrPrincipal;
 
-    if (clientRegistrationMetadata.clientCredentials != null) {
+    if (clientRegistrationMetadata.getClientCredentials() != null) {
       if (securityLogWriter.fineEnabled()) {
         securityLogWriter
             .fine("CacheClientNotifier: verifying credentials for proxyID: "
-                + clientRegistrationMetadata.clientProxyMembershipID);
+                + clientRegistrationMetadata.getClientProxyMembershipID());
       }
       subjectOrPrincipal = Handshake
           .verifyCredentials(authenticator,
-              clientRegistrationMetadata.clientCredentials,
+              clientRegistrationMetadata.getClientCredentials(),
               system.getSecurityProperties(),
               this.logWriter, this.securityLogWriter, member,
               this.cache.getSecurityService());
@@ -1942,7 +1868,7 @@ public class CacheClientNotifier {
    */
   private CacheClientNotifier(InternalCache cache, CacheServerStats acceptorStats,
       int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
-      List overflowAttributesList, boolean isGatewayReceiver) {
+                              boolean isGatewayReceiver) {
     // Set the Cache
     setCache(cache);
     this.acceptorStats = acceptorStats;
@@ -2328,141 +2254,6 @@ public class CacheClientNotifier {
           logger.debug("{} client is no longer denylisted", proxyID);
         }
       }
-    }
-  }
-
-  private class ClientRegistrationMetadata {
-    private final ClientProxyMembershipID clientProxyMembershipID;
-    private final byte clientConflation;
-    private final Properties clientCredentials;
-    private final Version clientVersion;
-    private final DataInputStream dataInputStream;
-    private final DataOutputStream dataOutputStream;
-
-    ClientRegistrationMetadata(final Socket socket) throws IOException, ClassNotFoundException {
-      DataInputStream unversionedDataInputStream = new DataInputStream(socket.getInputStream());
-      DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
-
-      clientVersion = getAndValidateClientVersion(socket, unversionedDataInputStream,
-          unversionedDataOutputStream);
-
-      if (oldClientRequiresVersionedStreams(clientVersion)) {
-        dataInputStream = new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
-        dataOutputStream =
-            new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
-      } else {
-        dataInputStream = unversionedDataInputStream;
-        dataOutputStream = unversionedDataOutputStream;
-      }
-
-      // Read and ignore the reply code. This is used on the client to server
-      // handshake.
-      dataInputStream.readByte(); // replyCode
-
-      // Read the ports and throw them away. We no longer need them
-      int numberOfPorts = dataInputStream.readInt();
-      for (int i = 0; i < numberOfPorts; i++) {
-        dataInputStream.readInt();
-      }
-
-      clientProxyMembershipID = getAndValidateClientProxyMembershipID();
-
-      clientConflation = getAndValidateClientConflation();
-
-      clientCredentials =
-          Handshake.readCredentials(dataInputStream, dataOutputStream,
-              getCache().getDistributedSystem(), getCache().getSecurityService());
-    }
-
-    private Version getAndValidateClientVersion(final Socket socket,
-        final DataInputStream dataInputStream, final DataOutputStream dataOutputStream)
-        throws IOException {
-      short clientVersionOrdinal = Version.readOrdinal(dataInputStream);
-      Version clientVersion;
-
-      try {
-        clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);
-        if (isUnsupportedClientVersion(clientVersion)) {
-          throw (new UnsupportedVersionException(clientVersionOrdinal));
-        }
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: Registering client with version: {}", this, clientVersion);
-        }
-      } catch (UnsupportedVersionException e) {
-        UnsupportedVersionException unsupportedVersionException = e;
-        SocketAddress socketAddress = socket.getRemoteSocketAddress();
-
-        if (socketAddress != null) {
-          String sInfo = " Client: " + socketAddress.toString() + ".";
-          unsupportedVersionException = new UnsupportedVersionException(e.getMessage() + sInfo);
-        }
-
-        logger.warn(
-            "CacheClientNotifier: Registering client version is unsupported.  Error details: ",
-            unsupportedVersionException);
-
-        writeException(dataOutputStream,
-            CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
-            unsupportedVersionException, null);
-
-        throw new IOException(unsupportedVersionException.toString());
-      }
-
-      return clientVersion;
-    }
-
-    private boolean doesClientSupportExtractOverrides() {
-      return clientVersion.compareTo(Version.GFE_603) >= 0;
-    }
-
-    private boolean oldClientRequiresVersionedStreams(final Version clientVersion) {
-      return Version.CURRENT.compareTo(clientVersion) > 0;
-    }
-
-    private boolean isUnsupportedClientVersion(final Version clientVersion) {
-      return Version.GFE_57.compareTo(clientVersion) > 0;
-    }
-
-    private ClientProxyMembershipID getAndValidateClientProxyMembershipID()
-        throws IOException, ClassNotFoundException {
-      ClientProxyMembershipID clientProxyMembershipID =
-          ClientProxyMembershipID.readCanonicalized(dataInputStream);
-
-      if (getDenylistedClient().contains(clientProxyMembershipID)) {
-        Exception deniedException = new Exception("This client is denylisted by server");
-        writeException(dataOutputStream, Handshake.REPLY_INVALID,
-            deniedException, clientVersion);
-        throw new IOException(deniedException.toString());
-      }
-
-      return clientProxyMembershipID;
-    }
-
-    private byte getAndValidateClientConflation()
-        throws IOException {
-      final byte clientConflation;
-      if (doesClientSupportExtractOverrides()) {
-        byte[] overrides =
-            Handshake.extractOverrides(new byte[] {(byte) dataInputStream.read()});
-        clientConflation = overrides[0];
-      } else {
-        clientConflation = (byte) dataInputStream.read();
-      }
-
-      switch (clientConflation) {
-        case Handshake.CONFLATION_DEFAULT:
-        case Handshake.CONFLATION_OFF:
-        case Handshake.CONFLATION_ON:
-          break;
-        default:
-          IllegalArgumentException illegalArgumentException =
-              new IllegalArgumentException("Invalid conflation byte");
-          writeException(dataOutputStream, Handshake.REPLY_INVALID,
-              illegalArgumentException, clientVersion);
-          throw new IOException(illegalArgumentException.toString());
-      }
-
-      return clientConflation;
     }
   }
 }
