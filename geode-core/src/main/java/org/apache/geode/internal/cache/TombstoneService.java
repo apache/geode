@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,10 +37,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.CacheTime;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.versions.CompactVersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -58,6 +60,10 @@ import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 public class TombstoneService {
   private static final Logger logger = LogService.getLogger();
 
+  @VisibleForTesting
+  public static final long REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT =
+      Long.getLong(GEMFIRE_PREFIX + "tombstone-timeout", 600000L);
+
   /**
    * The default tombstone expiration period, in milliseconds for replicates and partitions.
    * <p>
@@ -68,8 +74,11 @@ public class TombstoneService {
    * The default is 600,000 milliseconds (10 minutes).
    */
   @MutableForTesting
-  public static long REPLICATE_TOMBSTONE_TIMEOUT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-timeout", 600000L);
+  public static long REPLICATE_TOMBSTONE_TIMEOUT = REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT;
+
+  @VisibleForTesting
+  public static final long NON_REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT =
+      Long.getLong(GEMFIRE_PREFIX + "non-replicated-tombstone-timeout", 480000);
 
   /**
    * The default tombstone expiration period in millis for non-replicate/partition regions. This
@@ -81,22 +90,32 @@ public class TombstoneService {
    * The default is 480,000 milliseconds (8 minutes)
    */
   @MutableForTesting
-  public static long NON_REPLICATE_TOMBSTONE_TIMEOUT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "non-replicated-tombstone-timeout", 480000);
+  public static long NON_REPLICATE_TOMBSTONE_TIMEOUT = NON_REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT;
+
+  @VisibleForTesting
+  public static final int EXPIRED_TOMBSTONE_LIMIT_DEFAULT =
+      Integer.getInteger(GEMFIRE_PREFIX + "tombstone-gc-threshold", 100000);
 
   /**
    * The max number of tombstones in an expired batch. This covers all replicated regions, including
    * PR buckets. The default is 100,000 expired tombstones.
    */
   @MutableForTesting
-  public static int EXPIRED_TOMBSTONE_LIMIT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-threshold", 100000);
+  public static int EXPIRED_TOMBSTONE_LIMIT = EXPIRED_TOMBSTONE_LIMIT_DEFAULT;
+
+  @VisibleForTesting
+  public static final long DEFUNCT_TOMBSTONE_SCAN_INTERVAL_DEFAULT =
+      Long.getLong(GEMFIRE_PREFIX + "tombstone-scan-interval", 60000);
 
   /**
    * The interval to scan for expired tombstones in the queues
    */
   public static final long DEFUNCT_TOMBSTONE_SCAN_INTERVAL =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "tombstone-scan-interval", 60000);
+      DEFUNCT_TOMBSTONE_SCAN_INTERVAL_DEFAULT;
+
+  @VisibleForTesting
+  public static final double GC_MEMORY_THRESHOLD_DEFAULT =
+      Integer.getInteger(GEMFIRE_PREFIX + "tombstone-gc-memory-threshold", 30) * 0.01;
 
   /**
    * The threshold percentage of free max memory that will trigger tombstone GCs. The default
@@ -104,20 +123,28 @@ public class TombstoneService {
    * start evicting cache data.
    */
   @MutableForTesting
-  public static double GC_MEMORY_THRESHOLD =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "tombstone-gc-memory-threshold",
-          30 /* 100-HeapLRUCapacityController.DEFAULT_HEAP_PERCENTAGE */) * 0.01;
+  public static double GC_MEMORY_THRESHOLD = GC_MEMORY_THRESHOLD_DEFAULT;
+
+  @VisibleForTesting
+  public static final boolean FORCE_GC_MEMORY_EVENTS_DEFAULT = false;
 
   /** this is a test hook for causing the tombstone service to act as though free memory is low */
   @MutableForTesting
-  public static boolean FORCE_GC_MEMORY_EVENTS = false;
+  public static boolean FORCE_GC_MEMORY_EVENTS = FORCE_GC_MEMORY_EVENTS_DEFAULT;
+
+  @VisibleForTesting
+  public static final long MAX_SLEEP_TIME_DEFAULT = 10000;
+
   /** maximum time a sweeper will sleep, in milliseconds. */
   @MutableForTesting
-  public static long MAX_SLEEP_TIME = 10000;
+  public static long MAX_SLEEP_TIME = MAX_SLEEP_TIME_DEFAULT;
 
+  @VisibleForTesting
+  public static final boolean IDLE_EXPIRATION_DEFAULT = false;
+
+  /** dunit test hook for forced batch expiration */
   @MutableForTesting
-  public static boolean IDLE_EXPIRATION = false; // dunit test hook for forced batch
-                                                 // expiration
+  public static boolean IDLE_EXPIRATION = IDLE_EXPIRATION_DEFAULT;
 
   /**
    * two sweepers, one for replicated regions (including PR buckets) and one for other regions. They
