@@ -41,6 +41,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
@@ -66,7 +67,7 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
  */
 @SuppressWarnings("rawtypes")
 public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryContext,
-    RegionAttributes, HasDiskRegion, RegionMapOwner, DiskExceptionHandler {
+    RegionAttributes, HasDiskRegion, RegionMapOwner, DiskExceptionHandler, DiskRecoveryStore {
 
   @Override
   CachePerfStats getCachePerfStats();
@@ -428,4 +429,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   }
 
   Map<Object, Object> getEntryUserAttributes();
+
+  int getTombstoneCount();
+
+  Region.Entry getEntry(Object key, boolean allowTombstones);
 }
