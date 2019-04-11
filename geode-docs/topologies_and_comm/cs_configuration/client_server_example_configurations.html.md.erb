@@ -102,7 +102,7 @@ private static void runPublisher() {
     ClientCache cache = ccf.create();
     ClientRegionFactory<String,String> regionFactory = 
         cache.createClientRegionFactory(PROXY);
-    Region<String, Strini> region = regionFactory.create("DATA");
+    Region<String, String> region = regionFactory.create("DATA");
 
     //... do work ...
 
