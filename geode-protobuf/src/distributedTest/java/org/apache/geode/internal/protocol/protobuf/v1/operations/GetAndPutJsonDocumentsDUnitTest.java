@@ -65,9 +65,7 @@ public class GetAndPutJsonDocumentsDUnitTest {
 
   /** this JSON document is used by the "put" the tests */
   private static final String jsonDocument =
-      "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
-          + "  \"age\" : 1275," + System.lineSeparator() + "  \"nationality\" : \"french\","
-          + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
+      "{\"name\":\"Charlemagne\",\"age\":1275,\"nationality\":\"french\",\"emailAddress\":\"none\"}";
 
   private static final PdxDocument pdxDocument =
       new PdxDocument("Charlemagne", 1275, "french", "none");

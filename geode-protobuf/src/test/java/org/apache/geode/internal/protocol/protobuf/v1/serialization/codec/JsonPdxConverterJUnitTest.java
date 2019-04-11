@@ -92,9 +92,7 @@ public class JsonPdxConverterJUnitTest {
 
     String encodedJSON = new JsonPdxConverter().encode(pdxInstance);
 
-    String lineSeparator = System.lineSeparator();
-    String expectedJsonString = "{" + lineSeparator + "" + "  \"string\" : \"someString\","
-        + lineSeparator + "" + "  \"boolean\" : true" + lineSeparator + "}";
+    String expectedJsonString = "{\"string\":\"someString\",\"boolean\":true}";
     assertEquals(expectedJsonString, encodedJSON);
   }
 
