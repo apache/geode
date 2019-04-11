@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.RuleChain;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -79,11 +80,14 @@ public class GetAndPutJsonDocumentsDUnitTest {
 
   private MemberVM storingVM;
 
-  @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(1);
 
-  @Rule
   public ServerStarterRule serverStarterRule = new ServerStarterRule();
+
+  @Rule
+  public RuleChain chain = RuleChain.outerRule(clusterStartupRule)
+      .around(serverStarterRule);
+
   private InternalCache cache;
   private Region<String, Object> testRegion;
 
