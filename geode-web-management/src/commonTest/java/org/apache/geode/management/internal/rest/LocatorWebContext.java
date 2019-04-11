@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -36,7 +38,6 @@ public class LocatorWebContext {
   static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
   private WebApplicationContext webApplicationContext;
   private MockMvc mockMvc;
-  private MockMvcClientHttpRequestFactory requestFactory;
 
 
   /**
@@ -45,20 +46,34 @@ public class LocatorWebContext {
    */
   public LocatorWebContext(WebApplicationContext webApplicationContext) {
     this.webApplicationContext = webApplicationContext;
-    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .addFilter(new ManagementLoggingFilter())
-        .build();
-
-    requestFactory = new MockMvcClientHttpRequestFactory(mockMvc);
   }
 
   public LocatorStarterRule getLocator() {
     return (LocatorStarterRule) webApplicationContext.getServletContext().getAttribute("locator");
   }
 
+  public MockMvcClientHttpRequestFactory getRequestFactory(String username, String password) {
+    MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/");
+    requestBuilder.with(httpBasic(username, password));
+
+    return getMockMvcRequestFactory(requestBuilder);
+  }
+
   public MockMvcClientHttpRequestFactory getRequestFactory() {
-    return requestFactory;
+    MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/");
+
+    return getMockMvcRequestFactory(requestBuilder);
+  }
+
+  private MockMvcClientHttpRequestFactory getMockMvcRequestFactory(
+      MockHttpServletRequestBuilder requestBuilder) {
+    mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+        .apply(springSecurity())
+        .defaultRequest(requestBuilder)
+        .addFilter(new ManagementLoggingFilter())
+        .build();
+
+    return new MockMvcClientHttpRequestFactory(mockMvc);
   }
 
   public ResultActions perform(RequestBuilder builder) throws Exception {
