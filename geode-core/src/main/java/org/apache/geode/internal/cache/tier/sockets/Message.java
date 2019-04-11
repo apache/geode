@@ -111,8 +111,6 @@ public class Message {
   @Immutable
   private static final byte[] FALSE = defineFalse();
 
-  private static final int NO_HEADER_READ_TIMEOUT = 0;
-
   private static byte[] defineTrue() {
     try (HeapDataOutputStream hdos = new HeapDataOutputStream(10, null)) {
       BlobHelper.serializeTo(Boolean.TRUE, hdos);
@@ -665,16 +663,22 @@ public class Message {
     cb.clear();
   }
 
-  private void readHeaderAndBody(int headerReadTimeoutMillis) throws IOException {
+  private void readHeaderAndBody(boolean setHeaderReadTimeout, int headerReadTimeoutMillis)
+      throws IOException {
     clearParts();
     // TODO: for server changes make sure sc is not null as this class also used by client
 
-    int timeout = socket.getSoTimeout();
-    try {
+    int oldTimeout = -1;
+    if (setHeaderReadTimeout) {
+      oldTimeout = socket.getSoTimeout();
       socket.setSoTimeout(headerReadTimeoutMillis);
+    }
+    try {
       fetchHeader();
     } finally {
-      socket.setSoTimeout(timeout);
+      if (setHeaderReadTimeout) {
+        socket.setSoTimeout(oldTimeout);
+      }
     }
 
     final ByteBuffer cb = getCommBuffer();
@@ -1133,7 +1137,7 @@ public class Message {
   public void receiveWithHeaderReadTimeout(int timeoutMillis) throws IOException {
     if (this.socket != null) {
       synchronized (getCommBuffer()) {
-        readHeaderAndBody(timeoutMillis);
+        readHeaderAndBody(true, timeoutMillis);
       }
     } else {
       throw new IOException("Dead Connection");
@@ -1144,7 +1148,13 @@ public class Message {
    * Populates the state of this {@code Message} with information received via its socket
    */
   public void receive() throws IOException {
-    receiveWithHeaderReadTimeout(NO_HEADER_READ_TIMEOUT);
+    if (this.socket != null) {
+      synchronized (getCommBuffer()) {
+        readHeaderAndBody(false, -1);
+      }
+    } else {
+      throw new IOException("Dead Connection");
+    }
   }
 
   public void receive(ServerConnection sc, int maxMessageLength, Semaphore dataLimiter,
