@@ -26,7 +26,7 @@ import org.apache.geode.internal.size.SizeClassOnceObjectSizer;
  *
  * You should use a sizer with a {@link EvictionAttributes#createLRUHeapAttributes(ObjectSizer)} or
  * {@link EvictionAttributes#createLRUMemoryAttributes(ObjectSizer)} if you want to use a faster or
- * more accurate method of sizing than provided by the default object sizer, which is {#link
+ * more accurate method of sizing than provided by the default object sizer, which is
  * {@link #SIZE_CLASS_ONCE}
  *
  *
