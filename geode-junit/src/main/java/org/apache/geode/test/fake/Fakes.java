@@ -27,7 +27,6 @@ import java.util.Properties;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.LogWriter;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -43,7 +42,6 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
-import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;

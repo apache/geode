@@ -18,13 +18,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,8 +46,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -60,7 +56,6 @@ import org.apache.geode.cache.InterestRegistrationListener;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.query.CqException;
@@ -75,12 +70,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.CacheClientStatus;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -169,7 +160,8 @@ public class CacheClientNotifier {
    * @param notifyBySubscription whether the Server is running in NotifyBySubscription mode
    * @throws IOException can occur during de-serialization or if the socket is closed
    */
-  public void registerClient(final ClientRegistrationMetadata clientRegistrationMetadata, final Socket socket, final boolean isPrimary, final long acceptorId,
+  public void registerClient(final ClientRegistrationMetadata clientRegistrationMetadata,
+      final Socket socket, final boolean isPrimary, final long acceptorId,
       final boolean notifyBySubscription) throws IOException {
     long startTime = this.statistics.startTime();
 
@@ -185,7 +177,7 @@ public class CacheClientNotifier {
           createRegisteringProxyEventQueue(clientProxyMembershipID);
 
       try {
-        registerClient(socket, clientRegistrationMetadata, isPrimary, acceptorId,
+        registerClientInternal(clientRegistrationMetadata, socket, isPrimary, acceptorId,
             notifyBySubscription);
       } finally {
         drainAllEventsReceivedWhileInitializingClient(
@@ -226,12 +218,12 @@ public class CacheClientNotifier {
   }
 
   private void validateClientAgainstDenyList(ClientRegistrationMetadata clientRegistrationMetadata,
-                                             ClientProxyMembershipID clientProxyMembershipID)
+      ClientProxyMembershipID clientProxyMembershipID)
       throws IOException {
     if (getDenylistedClient().contains(clientProxyMembershipID)) {
       Exception deniedException = new Exception("This client is denylisted by server");
-      socketMessageWriter.writeException(clientRegistrationMetadata.getDataOutputStream(), Handshake.REPLY_INVALID,
-          deniedException, clientRegistrationMetadata.getClientVersion());
+      socketMessageWriter.writeException(clientRegistrationMetadata.getDataOutputStream(),
+          Handshake.REPLY_INVALID, deniedException, clientRegistrationMetadata.getClientVersion());
       throw new IOException(deniedException.toString());
     }
   }
@@ -239,8 +231,8 @@ public class CacheClientNotifier {
   /**
    * Continues the registration of a new client that wants to receive updates with this server.
    *
-   * @param socket The socket over which the server communicates with the client.
    * @param clientRegistrationMetadata contains registration info pertaining to the client
+   * @param socket The socket over which the server communicates with the client.
    * @param isPrimary whether server is the primary subscription end point for this client
    * @param acceptorId id of the acceptor used to clean up the client connection
    * @param notifyBySubscription whether the Server is running in NotifyBySubscription mode
@@ -251,8 +243,9 @@ public class CacheClientNotifier {
    * @throws InvocationTargetException potentially thrown by performPostAuthorization
    * @throws IllegalAccessException potentially thrown by performPostAuthorization
    */
-  void registerClient(final Socket socket,
-      final ClientRegistrationMetadata clientRegistrationMetadata, final boolean isPrimary,
+  void registerClientInternal(final ClientRegistrationMetadata clientRegistrationMetadata,
+      final Socket socket,
+      final boolean isPrimary,
       final long acceptorId, final boolean notifyBySubscription)
       throws IOException, CacheException, ClassNotFoundException, NoSuchMethodException,
       InvocationTargetException, IllegalAccessException {
@@ -412,8 +405,8 @@ public class CacheClientNotifier {
       DataOutputStream dos =
           new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
       // write the message type, message length and the error message (if any)
-      socketMessageWriter.writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion, endpointType,
-          queueSize);
+      socketMessageWriter.writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion,
+          endpointType, queueSize);
     } catch (IOException ioe) {// remove the added proxy if we get IOException.
       if (cacheClientProxy != null) {
         boolean keepProxy = cacheClientProxy.close(false, false); // do not check for queue, just
@@ -467,7 +460,8 @@ public class CacheClientNotifier {
     securityLogWriter.warning(
         String.format("An exception was thrown for client [%s]. %s",
             clientProxyMembershipID, ex));
-    socketMessageWriter.writeException(dataOutputStream, replyExceptionAuthenticationFailed, ex, clientVersion);
+    socketMessageWriter.writeException(dataOutputStream, replyExceptionAuthenticationFailed, ex,
+        clientVersion);
   }
 
   private Queue<InternalCacheEvent> createRegisteringProxyEventQueue(
@@ -1868,7 +1862,7 @@ public class CacheClientNotifier {
    */
   private CacheClientNotifier(InternalCache cache, CacheServerStats acceptorStats,
       int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
-                              boolean isGatewayReceiver) {
+      boolean isGatewayReceiver) {
     // Set the Cache
     setCache(cache);
     this.acceptorStats = acceptorStats;

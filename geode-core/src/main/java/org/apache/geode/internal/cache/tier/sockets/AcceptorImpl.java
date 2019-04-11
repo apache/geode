@@ -64,6 +64,7 @@ import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -1840,34 +1841,48 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       logger.info(":Cache server: Initializing {} server-to-client communication socket: {}",
           isPrimaryServerToClient ? "primary" : "secondary", socket);
       try {
-
         ClientRegistrationMetadata clientRegistrationMetadata =
             createClientRegistrationMetadata(socket);
-        acceptor.getCacheClientNotifier().registerClient(clientRegistrationMetadata, socket, isPrimaryServerToClient,
+
+        acceptor.getCacheClientNotifier().registerClient(clientRegistrationMetadata, socket,
+            isPrimaryServerToClient,
             acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
-      } catch (IOException ex) {
+      } catch (final IllegalArgumentException e) {
+        /*
+         * If the cause is an UnsupportedVersionException, we have already written the exception
+         * details to the output stream in the ClientRegistrationMetadata constructor's error
+         * handling, so we return gracefully. If not, we will rethrow the exception as it
+         * is unexpected.
+         */
+        if (!(e.getCause() instanceof UnsupportedVersionException)) {
+          throw e;
+        }
+      } catch (final IOException e) {
         closeSocket(socket);
         if (acceptor.isRunning()) {
           if (!acceptor.loggedAcceptError) {
             acceptor.loggedAcceptError = true;
-            if (ex instanceof SocketTimeoutException) {
+            if (e instanceof SocketTimeoutException) {
               logger
                   .warn("Cache server: failed accepting client connection due to socket timeout.");
             } else {
               logger.warn("Cache server: failed accepting client connection " +
-                  ex,
-                  ex);
+                  e,
+                  e);
             }
           }
         }
       }
     }
 
-    private ClientRegistrationMetadata createClientRegistrationMetadata(final Socket socket) throws IOException {
+    private ClientRegistrationMetadata createClientRegistrationMetadata(final Socket socket)
+        throws IOException {
       ClientRegistrationMetadata clientRegistrationMetadata;
       try {
         clientRegistrationMetadata = new ClientRegistrationMetadata(acceptor.cache, socket);
-      } catch (Exception e) {
+      } catch (final IllegalArgumentException e) {
+        throw e;
+      } catch (final Exception e) {
         throw new IOException(
             String.format(
                 "ClientRegistrationMetadata object could not be created. Exception occurred was %s",

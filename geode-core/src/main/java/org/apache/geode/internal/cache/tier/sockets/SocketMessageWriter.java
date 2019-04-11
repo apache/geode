@@ -33,7 +33,7 @@ public class SocketMessageWriter {
 
 
   public void writeHandshakeMessage(DataOutputStream dos, byte type, String p_msg,
-                                     Version clientVersion, byte endpointType, int queueSize) throws IOException {
+      Version clientVersion, byte endpointType, int queueSize) throws IOException {
     String msg = p_msg;
 
     // write the message type

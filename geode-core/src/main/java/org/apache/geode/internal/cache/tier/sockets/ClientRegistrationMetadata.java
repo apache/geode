@@ -28,12 +28,11 @@ import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.logging.LogService;
 
-public class ClientRegistrationMetadata {
+class ClientRegistrationMetadata {
   private final ClientProxyMembershipID clientProxyMembershipID;
   private final byte clientConflation;
   private final Properties clientCredentials;
@@ -43,10 +42,11 @@ public class ClientRegistrationMetadata {
   private final SocketMessageWriter socketMessageWriter;
   private static final Logger logger = LogService.getLogger();
 
-  ClientRegistrationMetadata(final InternalCache cache, final Socket socket) throws IOException, ClassNotFoundException {
+  ClientRegistrationMetadata(final InternalCache cache, final Socket socket)
+      throws IOException, ClassNotFoundException {
     DataInputStream unversionedDataInputStream = new DataInputStream(socket.getInputStream());
     DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
-    socketMessageWriter  = new SocketMessageWriter();
+    socketMessageWriter = new SocketMessageWriter();
 
     clientVersion = getAndValidateClientVersion(socket, unversionedDataInputStream,
         unversionedDataOutputStream);
@@ -79,44 +79,36 @@ public class ClientRegistrationMetadata {
             cache.getDistributedSystem(), cache.getSecurityService());
   }
 
-  public ClientProxyMembershipID getClientProxyMembershipID() {
+  ClientProxyMembershipID getClientProxyMembershipID() {
     return clientProxyMembershipID;
   }
 
-  public byte getClientConflation() {
+  byte getClientConflation() {
     return clientConflation;
   }
 
-  public Properties getClientCredentials() {
+  Properties getClientCredentials() {
     return clientCredentials;
   }
 
-  public Version getClientVersion() {
+  Version getClientVersion() {
     return clientVersion;
   }
 
-  public DataInputStream getDataInputStream() {
-    return dataInputStream;
-  }
-
-  public DataOutputStream getDataOutputStream() {
+  DataOutputStream getDataOutputStream() {
     return dataOutputStream;
   }
 
-  public SocketMessageWriter getSocketMessageWriter() {
-    return socketMessageWriter;
-  }
-
   private Version getAndValidateClientVersion(final Socket socket,
-                                              final DataInputStream dataInputStream, final DataOutputStream dataOutputStream)
+      final DataInputStream dataInputStream, final DataOutputStream dataOutputStream)
       throws IOException {
     short clientVersionOrdinal = Version.readOrdinal(dataInputStream);
-    Version clientVersion;
+    final Version clientVersion;
 
     try {
       clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);
-      if (isUnsupportedClientVersion(clientVersion)) {
-        throw (new UnsupportedVersionException(clientVersionOrdinal));
+      if (isVersion57orOlder(clientVersion)) {
+        throw new UnsupportedVersionException(clientVersionOrdinal);
       }
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Registering client with version: {}", this, clientVersion);
@@ -138,7 +130,7 @@ public class ClientRegistrationMetadata {
           CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
           unsupportedVersionException, null);
 
-      throw new IOException(unsupportedVersionException.toString());
+      throw new IllegalArgumentException(unsupportedVersionException);
     }
 
     return clientVersion;
@@ -152,7 +144,7 @@ public class ClientRegistrationMetadata {
     return Version.CURRENT.compareTo(clientVersion) > 0;
   }
 
-  private boolean isUnsupportedClientVersion(final Version clientVersion) {
+  private boolean isVersion57orOlder(final Version clientVersion) {
     return Version.GFE_57.compareTo(clientVersion) > 0;
   }
 
@@ -160,8 +152,6 @@ public class ClientRegistrationMetadata {
       throws IOException, ClassNotFoundException {
     ClientProxyMembershipID clientProxyMembershipID =
         ClientProxyMembershipID.readCanonicalized(dataInputStream);
-
-
 
     return clientProxyMembershipID;
   }
