@@ -160,6 +160,10 @@ public class PhiAccrualFailureDetector {
 
   public synchronized void heartbeat(long timestampMillis) {
     Long lastTimestampMillis = this.lastTimestampMillis.getAndSet(timestampMillis);
+    /** bruce s.: for Apache Geode, don't record duplicate heartbeats */
+    if (lastTimestampMillis != null && lastTimestampMillis == timestampMillis) {
+      return;
+    }
     if (lastTimestampMillis != null) {
       long interval = timestampMillis - lastTimestampMillis;
       if (isAvailable(timestampMillis)) {
