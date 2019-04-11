@@ -21,6 +21,7 @@ import static org.apache.geode.management.internal.rest.controllers.AbstractMana
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,8 +60,12 @@ public class RegionManagementController extends AbstractManagementController {
       @RequestParam(required = false) String id,
       @RequestParam(required = false) String group) {
     BasicRegionConfig filter = new BasicRegionConfig();
-    filter.setName(id);
-    filter.setGroup(group);
+    if (StringUtils.isNotBlank(id)) {
+      filter.setName(id);
+    }
+    if (StringUtils.isNotBlank(group)) {
+      filter.setGroup(group);
+    }
     ClusterManagementResult result = clusterManagementService.list(filter);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
