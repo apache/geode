@@ -44,18 +44,18 @@ resources:
 - name: google-geode-builder
   type: git
   source:
-    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/google-geode-builder
+    {{ github_access() | indent(4) }}
 
 - name: google-windows-geode-builder
   type: git
   source:
-    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/google-windows-geode-builder
+    {{ github_access() | indent(4) }}
 
 - name: alpine-docker-image
   type: docker-image
@@ -67,10 +67,10 @@ resources:
 - name: alpine-tools-dockerfile
   type: git
   source:
-    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/alpine-tools/*
+    {{ github_access() | indent(4) }}
 
 - name: alpine-tools-docker-image
   type: docker-image
@@ -82,10 +82,10 @@ resources:
 - name: test-container-dockerfile
   type: git
   source:
-    {{ github_access() | indent(4) }}
     branch: ((geode-build-branch))
     paths:
     - ci/images/test-container/*
+    {{ github_access() | indent(4) }}
 
 - name: test-container-docker-image
   type: docker-image
