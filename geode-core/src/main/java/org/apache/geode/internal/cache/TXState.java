@@ -876,7 +876,7 @@ public class TXState implements TXStateInterface {
   }
 
   void doCleanup() {
-    IllegalArgumentException iae = null;
+    RuntimeException exception = null;
     try {
       this.closed = true;
       this.seenEvents.clear();
@@ -886,8 +886,8 @@ public class TXState implements TXStateInterface {
         final long conflictStart = CachePerfStats.getStatTime();
         try {
           this.locks.cleanup(getCache().getInternalDistributedSystem());
-        } catch (IllegalArgumentException e) {
-          iae = e;
+        } catch (IllegalArgumentException | IllegalMonitorStateException e) {
+          exception = e;
         }
         if (CachePerfStats.enableClockStats)
           this.proxy.getTxMgr().getCachePerfStats()
@@ -918,8 +918,6 @@ public class TXState implements TXStateInterface {
                     "Exception while unlocking bucket region {} this is probably because the bucket was destroyed and never locked initially.",
                     r.getFullPath(), rde);
               }
-            } finally {
-
             }
           }
         }
@@ -930,8 +928,8 @@ public class TXState implements TXStateInterface {
         this.completionGuard.notifyAll();
       }
 
-      if (iae != null && !this.proxy.getCache().isClosed()) {
-        throw iae;
+      if (exception != null && !this.proxy.getCache().isClosed()) {
+        throw exception;
       }
     }
   }

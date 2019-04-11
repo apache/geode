@@ -40,12 +40,15 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 public class TXStateTest {
   private TXStateProxyImpl txStateProxy;
   private CommitConflictException exception;
   private TransactionDataNodeHasDepartedException transactionDataNodeHasDepartedException;
   private SingleThreadJTAExecutor executor;
+  private InternalCache cache;
+  private InternalDistributedSystem internalDistributedSystem;
 
   @Before
   public void setup() {
@@ -53,8 +56,11 @@ public class TXStateTest {
     exception = new CommitConflictException("");
     transactionDataNodeHasDepartedException = new TransactionDataNodeHasDepartedException("");
     executor = mock(SingleThreadJTAExecutor.class);
+    cache = mock(InternalCache.class);
+    internalDistributedSystem = mock(InternalDistributedSystem.class);
 
     when(txStateProxy.getTxMgr()).thenReturn(mock(TXManagerImpl.class));
+    when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
   }
 
   @Test
@@ -221,6 +227,74 @@ public class TXStateTest {
         () -> txState.txReadEntry(keyInfo, internalRegion, true, expectedValue, false))
             .isInstanceOf(EntryNotFoundException.class);
     verify(txRegionState, never()).cleanupNonDirtyEntries(internalRegion);
+  }
+
+  @Test
+  public void doCleanupContinuesWhenReleasingLockGotIllegalArgumentExceptionIfCacheIsClosing() {
+    TXState txState = spy(new TXState(txStateProxy, false));
+    txState.locks = mock(TXLockRequest.class);
+    doReturn(cache).when(txStateProxy).getCache();
+    doThrow(new IllegalArgumentException()).when(txState.locks).cleanup(internalDistributedSystem);
+    when(cache.isClosed()).thenReturn(true);
+    TXRegionState regionState1 = mock(TXRegionState.class);
+    InternalRegion region1 = mock(InternalRegion.class);
+    txState.regions.put(region1, regionState1);
+
+    txState.doCleanup();
+
+    verify(regionState1).cleanup(region1);
+  }
+
+  @Test
+  public void doCleanupContinuesWhenReleasingLockGotIllegalMonitorStateExceptionIfCacheIsClosing() {
+    TXState txState = spy(new TXState(txStateProxy, false));
+    txState.locks = mock(TXLockRequest.class);
+    doReturn(cache).when(txStateProxy).getCache();
+    doThrow(new IllegalMonitorStateException()).when(txState.locks)
+        .cleanup(internalDistributedSystem);
+    when(cache.isClosed()).thenReturn(true);
+    TXRegionState regionState1 = mock(TXRegionState.class);
+    InternalRegion region1 = mock(InternalRegion.class);
+    txState.regions.put(region1, regionState1);
+
+    txState.doCleanup();
+
+    verify(regionState1).cleanup(region1);
+  }
+
+  @Test
+  public void doCleanupThrowsWhenReleasingLockGotIllegalArgumentExceptionIfCacheIsNotClosing() {
+    TXState txState = spy(new TXState(txStateProxy, false));
+    txState.locks = mock(TXLockRequest.class);
+    doReturn(cache).when(txStateProxy).getCache();
+    doThrow(new IllegalArgumentException()).when(txState.locks).cleanup(internalDistributedSystem);
+    when(cache.isClosed()).thenReturn(false);
+    TXRegionState regionState1 = mock(TXRegionState.class);
+    InternalRegion region1 = mock(InternalRegion.class);
+    txState.regions.put(region1, regionState1);
+
+    Throwable thrown = catchThrowable(() -> txState.doCleanup());
+
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
+    verify(regionState1).cleanup(region1);
+  }
+
+  @Test
+  public void doCleanupThrowsWhenReleasingLockGotIllegalMonitorStateExceptionIfCacheIsNotClosing() {
+    TXState txState = spy(new TXState(txStateProxy, false));
+    txState.locks = mock(TXLockRequest.class);
+    doReturn(cache).when(txStateProxy).getCache();
+    doThrow(new IllegalMonitorStateException()).when(txState.locks)
+        .cleanup(internalDistributedSystem);
+    when(cache.isClosed()).thenReturn(false);
+    TXRegionState regionState1 = mock(TXRegionState.class);
+    InternalRegion region1 = mock(InternalRegion.class);
+    txState.regions.put(region1, regionState1);
+
+    Throwable thrown = catchThrowable(() -> txState.doCleanup());
+
+    assertThat(thrown).isInstanceOf(IllegalMonitorStateException.class);
+    verify(regionState1).cleanup(region1);
   }
 
 }
