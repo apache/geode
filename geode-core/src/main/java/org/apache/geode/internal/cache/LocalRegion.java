@@ -1828,6 +1828,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /** internally we often need to get an entry whether it is a tombstone or not */
+  @Override
   public Region.Entry getEntry(Object key, boolean allowTombstones) {
     return getDataView().getEntry(getKeyInfo(key), this, allowTombstones);
   }
@@ -3351,6 +3352,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     cachePerfStats.incEntryCount(-delta);
   }
 
+  @Override
   public int getTombstoneCount() {
     return tombstoneCount.get();
   }
