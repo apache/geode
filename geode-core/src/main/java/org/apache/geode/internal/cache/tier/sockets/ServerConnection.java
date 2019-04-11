@@ -115,7 +115,10 @@ public abstract class ServerConnection implements Runnable {
   @MakeNotStatic
   private static final ConcurrentHashMap<Integer, LinkedBlockingQueue<ByteBuffer>> commBufferMap =
       new ConcurrentHashMap<>(4, 0.75f, 1);
+
   private ServerConnectionCollection serverConnectionCollection;
+
+  private ProcessingMessageTimer processingMessageTimer = new ProcessingMessageTimer();
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
@@ -220,9 +223,6 @@ public abstract class ServerConnection implements Runnable {
    * 'client-server', 'gateway-gateway' and 'monitor-server'.
    */
   protected final CommunicationMode communicationMode;
-
-  private long processingMessageStartTime = -1;
-  private final Object processingMessageLock = new Object();
 
   @MakeNotStatic
   private static final ConcurrentHashMap<ClientProxyMembershipID, ClientUserAuths> proxyIdVsClientUserAuths =
@@ -742,6 +742,11 @@ public abstract class ServerConnection implements Runnable {
 
   public boolean getProcessMessages() {
     return processMessages;
+  }
+
+  @VisibleForTesting
+  void setProcessMessages(boolean processMessages) {
+    this.processMessages = processMessages;
   }
 
   protected void doHandshake() {
@@ -1311,36 +1316,19 @@ public abstract class ServerConnection implements Runnable {
   }
 
   void setProcessingMessage() {
-    synchronized (processingMessageLock) {
-      // go ahead and reset it if it is already set
-      processingMessageStartTime = System.currentTimeMillis();
-    }
+    processingMessageTimer.setProcessingMessage();
   }
 
   void updateProcessingMessage() {
-    synchronized (processingMessageLock) {
-      // only update it if it was already set by setProcessingMessage
-      if (processingMessageStartTime != -1) {
-        processingMessageStartTime = System.currentTimeMillis();
-      }
-    }
+    processingMessageTimer.updateProcessingMessage();
   }
 
   private void setNotProcessingMessage() {
-    synchronized (processingMessageLock) {
-      processingMessageStartTime = -1;
-    }
+    processingMessageTimer.setNotProcessingMessage();
   }
 
   long getCurrentMessageProcessingTime() {
-    long result;
-    synchronized (processingMessageLock) {
-      result = processingMessageStartTime;
-    }
-    if (result != -1) {
-      result = System.currentTimeMillis() - result;
-    }
-    return result;
+    return processingMessageTimer.getCurrentMessageProcessingTime();
   }
 
   boolean hasBeenTimedOutOnClient() {
@@ -1351,7 +1339,7 @@ public abstract class ServerConnection implements Runnable {
        * This is a buffer that we add to client readTimeout value before we cleanup the connection.
        * This buffer time helps prevent EOF in the client instead of SocketTimeout
        */
-      synchronized (processingMessageLock) {
+      synchronized (processingMessageTimer.processingMessageLock) {
         // If a message is currently being processed and it has been
         // being processed for more than the client read timeout,
         // then return true
@@ -1859,5 +1847,45 @@ public abstract class ServerConnection implements Runnable {
           new AuthorizeRequestPP(postAuthzFactoryName, getProxyID(), principal, getCache());
     }
     return setUserAuthorizeAndPostAuthorizeRequest(authzRequest, postAuthzRequest);
+  }
+
+  static class ProcessingMessageTimer {
+    public static final long NOT_PROCESSING = -1l;
+
+    private long processingMessageStartTime = NOT_PROCESSING;
+    private final Object processingMessageLock = new Object();
+
+    void setProcessingMessage() {
+      synchronized (processingMessageLock) {
+        // go ahead and reset it if it is already set
+        processingMessageStartTime = System.currentTimeMillis();
+      }
+    }
+
+    void updateProcessingMessage() {
+      synchronized (processingMessageLock) {
+        // only update it if it was already set by setProcessingMessage
+        if (processingMessageStartTime != NOT_PROCESSING) {
+          processingMessageStartTime = System.currentTimeMillis();
+        }
+      }
+    }
+
+    void setNotProcessingMessage() {
+      synchronized (processingMessageLock) {
+        processingMessageStartTime = NOT_PROCESSING;
+      }
+    }
+
+    long getCurrentMessageProcessingTime() {
+      long result;
+      synchronized (processingMessageLock) {
+        result = processingMessageStartTime;
+      }
+      if (result != NOT_PROCESSING) {
+        result = System.currentTimeMillis() - result;
+      }
+      return result;
+    }
   }
 }
