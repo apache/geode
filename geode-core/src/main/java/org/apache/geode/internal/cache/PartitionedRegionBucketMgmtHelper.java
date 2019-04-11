@@ -12,13 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.SetUtils;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 
 
@@ -27,7 +26,7 @@ import org.apache.geode.internal.cache.partitioned.Bucket;
  *
  *
  */
-class PartitionedRegionBucketMgmtHelper {
+public class PartitionedRegionBucketMgmtHelper {
 
   /**
    *
@@ -35,14 +34,14 @@ class PartitionedRegionBucketMgmtHelper {
    * @return true if it is allowed to be recovered
    * @since GemFire 5.9
    */
-  static boolean bucketIsAllowedOnThisHost(Bucket b, InternalDistributedMember moveSource) {
+  public static boolean bucketIsAllowedOnThisHost(Bucket b, InternalDistributedMember moveSource) {
     if (b.getDistributionManager().enforceUniqueZone()) {
       Set<InternalDistributedMember> hostingMembers = b.getBucketOwners();
       Set<InternalDistributedMember> buddyMembers =
           b.getDistributionManager().getMembersInThisZone();
-      boolean disjoint = Collections.disjoint(hostingMembers, buddyMembers);
+      boolean intersects = SetUtils.intersectsWith(hostingMembers, buddyMembers);
       boolean sourceIsOneThisHost = moveSource != null && buddyMembers.contains(moveSource);
-      return disjoint || sourceIsOneThisHost;
+      return !intersects || sourceIsOneThisHost;
     } else {
       return true;
     }

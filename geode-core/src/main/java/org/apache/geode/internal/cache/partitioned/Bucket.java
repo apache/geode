@@ -12,12 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.partitioned;
 
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisee;
 import org.apache.geode.internal.cache.HasDiskRegion;
@@ -65,7 +63,7 @@ public interface Bucket extends CacheDistributionAdvisee, HasDiskRegion {
    * @return set of members
    * @since GemFire 5.9
    */
-  Set<InternalDistributedMember> getBucketOwners();
+  Set/* InternalDistributedMembers */ getBucketOwners();
 
   PersistenceAdvisor getPersistenceAdvisor();
 

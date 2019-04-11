@@ -20,11 +20,15 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.StoppableNonReentrantLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 
@@ -34,56 +38,61 @@ import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock
  * progress at the same time.
  */
 public class UnsharedImageState implements ImageState {
+  private static final Logger logger = LogService.getLogger();
 
   private final StoppableNonReentrantLock giiLock; // used for gii
   private final StoppableReentrantReadWriteLock riLock; // used for ri
   /**
    * Using CM as a Set of keys
    */
-  private volatile ConcurrentMap<Object, Boolean> destroyedEntryKeys;
+  private volatile ConcurrentMap destroyedEntryKeys;
   private volatile boolean regionInvalidated = false;
-  private volatile boolean mayDoRecovery;
+  private volatile boolean mayDoRecovery = false;
   private volatile boolean inRecovery = false;
   private volatile boolean clearRegionFlag = false;
   private volatile RegionVersionVector clearRVV;
   private volatile boolean wasRegionClearedDuringGII = false;
+  private volatile DiskAccessException dae = null;
   private volatile ConcurrentHashSet<VersionTagEntry> versionTags;
   private volatile ConcurrentHashSet<VersionSource> leftMembers;
 
+
+
   UnsharedImageState(final boolean isClient, final boolean isReplicate, final boolean mayDoRecovery,
       CancelCriterion stopper) {
-    riLock = isClient ? new StoppableReentrantReadWriteLock(stopper) : null;
-    giiLock = isReplicate ? new StoppableNonReentrantLock(stopper) : null;
-    destroyedEntryKeys = new ConcurrentHashMap<>();
+    this.riLock = isClient ? new StoppableReentrantReadWriteLock(stopper) : null;
+
+    this.giiLock = isReplicate ? new StoppableNonReentrantLock(stopper) : null;
+    this.destroyedEntryKeys = new ConcurrentHashMap();
     initVersionTagsSet();
     initFailedMembersSet();
     this.mayDoRecovery = mayDoRecovery;
     if (mayDoRecovery) {
-      inRecovery = true; // default to true to fix 41147
+      this.inRecovery = true; // default to true to fix 41147
     }
   }
 
   @Override
   public boolean isReplicate() {
-    return giiLock != null;
+    return this.giiLock != null;
   }
 
   @Override
   public boolean isClient() {
-    return riLock != null;
+    return this.riLock != null;
   }
 
   @Override
   public void init() {
     if (isReplicate()) {
-      wasRegionClearedDuringGII = false;
+      this.wasRegionClearedDuringGII = false;
     }
   }
 
   @Override
   public boolean getRegionInvalidated() {
     if (isReplicate()) {
-      return regionInvalidated;
+      return this.regionInvalidated;
     } else {
       return false;
     }
@@ -92,21 +101,21 @@ public class UnsharedImageState implements ImageState {
   @Override
   public void setRegionInvalidated(boolean b) {
     if (isReplicate()) {
-      regionInvalidated = b;
+      this.regionInvalidated = b;
     }
   }
 
   @Override
   public void setInRecovery(boolean b) {
-    if (mayDoRecovery) {
-      inRecovery = b;
+    if (this.mayDoRecovery) {
+      this.inRecovery = b;
     }
   }
 
   @Override
   public boolean getInRecovery() {
-    if (mayDoRecovery) {
-      return inRecovery;
+    if (this.mayDoRecovery) {
+      return this.inRecovery;
     } else {
       return false;
     }
@@ -117,64 +126,77 @@ public class UnsharedImageState implements ImageState {
     // assert if ri then readLock held
     // assert if gii then lock held
     if (isReplicate() || isClient()) {
-      destroyedEntryKeys.put(key, Boolean.TRUE);
+      this.destroyedEntryKeys.put(key, Boolean.TRUE);
     }
   }
 
   @Override
   public void removeDestroyedEntry(Object key) {
-    destroyedEntryKeys.remove(key);
+    this.destroyedEntryKeys.remove(key);
   }
 
   @Override
   public boolean hasDestroyedEntry(Object key) {
-    return destroyedEntryKeys.containsKey(key);
+    return this.destroyedEntryKeys.containsKey(key);
   }
 
   @Override
-  public Iterator<Object> getDestroyedEntries() {
+  public Iterator getDestroyedEntries() {
     // assert if ri then writeLock held
     // assert if gii then lock held
-    Iterator<Object> result = destroyedEntryKeys.keySet().iterator();
-    destroyedEntryKeys = new ConcurrentHashMap<>();
+    Iterator result = this.destroyedEntryKeys.keySet().iterator();
+    this.destroyedEntryKeys = new ConcurrentHashMap();
     return result;
   }
 
   private void initVersionTagsSet() {
-    versionTags = new ConcurrentHashSet<>(16);
+    this.versionTags = new ConcurrentHashSet<VersionTagEntry>(16);
   }
 
   @Override
   public void addVersionTag(Object key, VersionTag<?> tag) {
-    versionTags.add(new VersionTagEntryImpl(key, tag.getMemberID(), tag.getRegionVersion()));
+    this.versionTags.add(new VersionTagEntryImpl(key, tag.getMemberID(), tag.getRegionVersion()));
   }
 
   @Override
   public Iterator<VersionTagEntry> getVersionTags() {
-    Iterator<VersionTagEntry> result = versionTags.iterator();
+    Iterator<VersionTagEntry> result = this.versionTags.iterator();
     initVersionTagsSet();
     return result;
   }
 
   private void initFailedMembersSet() {
-    leftMembers = new ConcurrentHashSet<>(16);
+    this.leftMembers = new ConcurrentHashSet<VersionSource>(16);
   }
 
   @Override
   public void addLeftMember(VersionSource<?> mbr) {
-    leftMembers.add(mbr);
+    this.leftMembers.add(mbr);
   }
 
   @Override
   public Set<VersionSource> getLeftMembers() {
-    Set<VersionSource> result = leftMembers;
+    Set<VersionSource> result = this.leftMembers;
     initFailedMembersSet();
     return result;
   }
 
   @Override
   public boolean hasLeftMembers() {
-    return leftMembers.size() > 0;
+    return this.leftMembers.size() > 0;
+  }
+
+  public void dumpDestroyedEntryKeys() {
+    if (this.destroyedEntryKeys == null) {
+      logger.info("region has no destroyedEntryKeys in its image state");
+    } else {
+      logger.info("dump of image state destroyed entry keys of size {}",
+          this.destroyedEntryKeys.size());
+      for (Iterator it = this.destroyedEntryKeys.keySet().iterator(); it.hasNext();) {
+        Object key = it.next();
+        logger.info("key={}", key);
+      }
+    }
   }
 
   /**
@@ -182,16 +204,16 @@ public class UnsharedImageState implements ImageState {
    */
   @Override
   public int getDestroyedEntriesCount() {
-    return destroyedEntryKeys.size();
+    return this.destroyedEntryKeys.size();
   }
 
   @Override
   public void setClearRegionFlag(boolean isClearOn, RegionVersionVector rvv) {
     if (isReplicate()) {
-      clearRegionFlag = isClearOn;
+      this.clearRegionFlag = isClearOn;
       if (isClearOn) {
-        clearRVV = rvv; // will be used to selectively clear content
-        wasRegionClearedDuringGII = true;
+        this.clearRVV = rvv; // will be used to selectively clear content
+        this.wasRegionClearedDuringGII = true;
       }
     }
   }
@@ -199,7 +221,7 @@ public class UnsharedImageState implements ImageState {
   @Override
   public boolean getClearRegionFlag() {
     if (isReplicate()) {
-      return clearRegionFlag;
+      return this.clearRegionFlag;
     } else {
       return false;
     }
@@ -208,7 +230,7 @@ public class UnsharedImageState implements ImageState {
   @Override
   public RegionVersionVector getClearRegionVersionVector() {
     if (isReplicate()) {
-      return clearRVV;
+      return this.clearRVV;
     }
     return null;
   }
@@ -220,9 +242,9 @@ public class UnsharedImageState implements ImageState {
   @Override
   public boolean wasRegionClearedDuringGII() {
     if (isReplicate()) {
-      boolean result = wasRegionClearedDuringGII;
+      boolean result = this.wasRegionClearedDuringGII;
       if (result) {
-        wasRegionClearedDuringGII = false;
+        this.wasRegionClearedDuringGII = false;
       }
       return result;
     } else {
@@ -232,32 +254,32 @@ public class UnsharedImageState implements ImageState {
 
   @Override
   public void lockGII() {
-    giiLock.lock();
+    this.giiLock.lock();
   }
 
   @Override
   public void unlockGII() {
-    giiLock.unlock();
+    this.giiLock.unlock();
   }
 
   @Override
   public void readLockRI() {
-    riLock.readLock().lock();
+    this.riLock.readLock().lock();
   }
 
   @Override
   public void readUnlockRI() {
-    riLock.readLock().unlock();
+    this.riLock.readLock().unlock();
   }
 
   @Override
   public void writeLockRI() {
-    riLock.writeLock().lock();
+    this.riLock.writeLock().lock();
   }
 
   @Override
   public void writeUnlockRI() {
-    riLock.writeLock().unlock();
+    this.riLock.writeLock().unlock();
   }
 
   /** tracks RVV versions applied to the region during GII */

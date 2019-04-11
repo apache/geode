@@ -1807,11 +1807,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     Set<InternalDistributedMember> recipients =
         bucketRegion.getCacheDistributionAdvisor().adviseUpdate(event);
-    Set<InternalDistributedMember> twoMessages =
-        bucketRegion.getBucketAdvisor().adviseRequiresTwoMessages();
+    Set<Object> twoMessages = bucketRegion.getBucketAdvisor().adviseRequiresTwoMessages();
     CacheDistributionAdvisor cda = partitionedRegion.getCacheDistributionAdvisor();
     FilterRoutingInfo filterRouting = cda.adviseFilterRouting(event, recipients);
-    Set<InternalDistributedMember> adjunctRecipients =
+    Set<Object> adjunctRecipients =
         bucketRegion.getAdjunctReceivers(event, recipients, twoMessages, filterRouting);
     Set cacheServerMembers = cda.adviseCacheServers();
     return !Collections.disjoint(adjunctRecipients, cacheServerMembers);

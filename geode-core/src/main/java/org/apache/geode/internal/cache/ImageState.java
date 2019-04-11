@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.util.Iterator;
@@ -42,7 +41,7 @@ public interface ImageState /* extends Lock */ {
 
   boolean hasDestroyedEntry(Object key);
 
-  java.util.Iterator<Object> getDestroyedEntries();
+  java.util.Iterator getDestroyedEntries();
 
   /**
    * returns count of entries that have been destroyed by concurrent operations while in token mode
