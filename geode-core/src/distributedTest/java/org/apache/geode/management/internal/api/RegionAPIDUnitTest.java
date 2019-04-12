@@ -118,7 +118,8 @@ public class RegionAPIDUnitTest {
     CacheConfig cacheConfig =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService()
             .getCacheConfig("cluster");
-    ManagedRegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+    ManagedRegionConfig regionConfig =
+        CacheElement.findElement(cacheConfig.getRegions(), regionName);
     assertThat(regionConfig.getType()).isEqualTo(type);
   }
 
