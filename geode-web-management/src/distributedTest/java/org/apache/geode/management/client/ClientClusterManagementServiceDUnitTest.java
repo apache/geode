@@ -16,6 +16,7 @@
 package org.apache.geode.management.client;
 
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.List;
@@ -71,12 +72,12 @@ public class ClientClusterManagementServiceDUnitTest {
   public void createAndListRegion() {
     BasicRegionConfig region = new BasicRegionConfig();
     region.setName("customer");
-    region.setType(RegionType.REPLICATE_PERSISTENT);
+    region.setType(RegionType.REPLICATE);
 
     ClusterManagementResult result = client.create(region);
 
     // in StressNewTest, this will be run multiple times without restarting the locator
-    assertThat(result.getStatusCode()).isIn(ClusterManagementResult.StatusCode.OK,
+    assertManagementResult(result).hasStatusCode(ClusterManagementResult.StatusCode.OK,
         ClusterManagementResult.StatusCode.ENTITY_EXISTS);
 
     // list region when regions are not created in a group
