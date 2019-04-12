@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -32,128 +33,98 @@ import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 public class GatewayReceiverMBeanBridge extends ServerBridge {
 
-  private GatewayReceiver rcv;
+  private final GatewayReceiver gatewayReceiver;
 
   private StatsRate createRequestRate;
-
   private StatsRate updateRequestRate;
-
   private StatsRate destroyRequestRate;
-
   private StatsRate eventsReceivedRate;
 
-  public GatewayReceiverMBeanBridge(GatewayReceiver rcv) {
-    super();
-    this.rcv = rcv;
-    initializeReceiverStats();
-  }
-
-  void destroyServer() {
-    removeServer();
-  }
-
-  protected void startServer() {
-    CacheServer server = rcv.getServer();
-    addServer(server);
-  }
-
-  protected void stopServer() {
-    removeServer();
-  }
-
+  @VisibleForTesting
   public GatewayReceiverMBeanBridge() {
-    super();
+    this(null);
+  }
+
+  GatewayReceiverMBeanBridge(GatewayReceiver gatewayReceiver) {
+    this.gatewayReceiver = gatewayReceiver;
     initializeReceiverStats();
   }
 
-  public void addGatewayReceiverStats(GatewayReceiverStats stats) {
-    monitor.addStatisticsToMonitor(stats.getStats());
+  @Override
+  public int getClientConnectionCount() {
+    // we can't rely on ServerBridge as the HostStatSampler might not have ran between the last
+    // statistical update and the time at which this method is called.
+    return !isRunning() ? 0
+        : ((CacheServerImpl) gatewayReceiver.getServer()).getAcceptor().getClientServerCnxCount();
   }
-
 
   @Override
   public void stopMonitor() {
     monitor.stopListener();
   }
 
-  public String getBindAddress() {
-    return rcv.getBindAddress();
+  public void addGatewayReceiverStats(GatewayReceiverStats stats) {
+    monitor.addStatisticsToMonitor(stats.getStats());
   }
 
+  public String getBindAddress() {
+    return gatewayReceiver.getBindAddress();
+  }
 
   public int getPort() {
-    return rcv.getPort();
+    return gatewayReceiver.getPort();
   }
 
   public int getSocketBufferSize() {
-    return rcv.getSocketBufferSize();
+    return gatewayReceiver.getSocketBufferSize();
   }
-
 
   public boolean isRunning() {
-    return rcv.isRunning();
+    return gatewayReceiver.isRunning();
   }
-
 
   public void start() throws Exception {
     try {
-      rcv.start();
+      gatewayReceiver.start();
     } catch (Exception e) {
       throw new Exception(e.getMessage());
     }
   }
-
 
   public void stop() throws Exception {
     try {
-      rcv.stop();
+      gatewayReceiver.stop();
     } catch (Exception e) {
       throw new Exception(e.getMessage());
     }
   }
 
-
   public int getEndPort() {
-    return rcv.getEndPort();
+    return gatewayReceiver.getEndPort();
   }
-
 
   public String[] getGatewayTransportFilters() {
-    List<GatewayTransportFilter> transPortfilters = rcv.getGatewayTransportFilters();
-    String[] filtersStr = null;
-    if (transPortfilters != null && transPortfilters.size() > 0) {
-      filtersStr = new String[transPortfilters.size()];
+    List<GatewayTransportFilter> transportFilters = gatewayReceiver.getGatewayTransportFilters();
+    String[] transportFiltersStringArray = null;
+    if (transportFilters != null && !transportFilters.isEmpty()) {
+      transportFiltersStringArray = new String[transportFilters.size()];
     } else {
-      return filtersStr;
+      return transportFiltersStringArray;
     }
     int j = 0;
-    for (GatewayTransportFilter filter : transPortfilters) {
-      filtersStr[j] = filter.toString();
+    for (GatewayTransportFilter filter : transportFilters) {
+      transportFiltersStringArray[j] = filter.toString();
       j++;
     }
-    return filtersStr;
-
+    return transportFiltersStringArray;
   }
-
 
   public int getStartPort() {
-    return rcv.getEndPort();
+    return gatewayReceiver.getStartPort();
   }
-
 
   public int getMaximumTimeBetweenPings() {
-    return rcv.getMaximumTimeBetweenPings();
-  }
-
-
-  /** Statistics Related Counters **/
-
-
-  private void initializeReceiverStats() {
-    createRequestRate = new StatsRate(StatsKey.CREAT_REQUESTS, StatType.INT_TYPE, monitor);
-    updateRequestRate = new StatsRate(StatsKey.UPDATE_REQUESTS, StatType.INT_TYPE, monitor);
-    destroyRequestRate = new StatsRate(StatsKey.DESTROY_REQUESTS, StatType.INT_TYPE, monitor);
-    eventsReceivedRate = new StatsRate(StatsKey.EVENTS_RECEIVED, StatType.INT_TYPE, monitor);
+    return gatewayReceiver.getMaximumTimeBetweenPings();
   }
 
   public float getCreateRequestsRate() {
@@ -180,20 +151,24 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
     return eventsReceivedRate.getRate();
   }
 
-  @Override
-  public int getClientConnectionCount() {
-    // See GEODE-5248: we can't rely on ServerBridge as the HostStatSampler might not have ran
-    // between the last statistical update and the time at which this method is called.
-    return (!isRunning()) ? 0
-        : ((CacheServerImpl) rcv.getServer()).getAcceptor().getClientServerCnxCount();
+  protected void startServer() {
+    CacheServer server = gatewayReceiver.getServer();
+    addServer(server);
+  }
+
+  protected void stopServer() {
+    removeServer();
+  }
+
+  void destroyServer() {
+    removeServer();
   }
 
   String[] getConnectedGatewaySenders() {
-    Set<String> uniqueIds;
-    AcceptorImpl acceptor = ((CacheServerImpl) rcv.getServer()).getAcceptor();
+    AcceptorImpl acceptor = ((CacheServerImpl) gatewayReceiver.getServer()).getAcceptor();
     Set<ServerConnection> serverConnections = acceptor.getAllServerConnections();
-    if (serverConnections != null && serverConnections.size() > 0) {
-      uniqueIds = new HashSet<>();
+    if (serverConnections != null && !serverConnections.isEmpty()) {
+      Set<String> uniqueIds = new HashSet<>();
       for (ServerConnection conn : serverConnections) {
         uniqueIds.add(conn.getMembershipID());
       }
@@ -209,10 +184,14 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
           / getStatistic(StatsKey.TOTAL_BATCHES).longValue();
 
       return ManagementConstants.nanoSeconds.toMillis(processTimeInNano);
-    } else {
-      return 0;
     }
-
+    return 0;
   }
 
+  private void initializeReceiverStats() {
+    createRequestRate = new StatsRate(StatsKey.CREAT_REQUESTS, StatType.INT_TYPE, monitor);
+    updateRequestRate = new StatsRate(StatsKey.UPDATE_REQUESTS, StatType.INT_TYPE, monitor);
+    destroyRequestRate = new StatsRate(StatsKey.DESTROY_REQUESTS, StatType.INT_TYPE, monitor);
+    eventsReceivedRate = new StatsRate(StatsKey.EVENTS_RECEIVED, StatType.INT_TYPE, monitor);
+  }
 }

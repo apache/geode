@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.bean.stats;
 
+import static org.apache.geode.internal.cache.wan.GatewayReceiverStats.createGatewayReceiverStats;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -25,16 +26,15 @@ import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.management.internal.beans.GatewayReceiverMBeanBridge;
 import org.apache.geode.test.junit.categories.JMXTest;
 
-@Category({JMXTest.class})
-public class GatewayReceiverStatsJUnitTest extends MBeanStatsTestCase {
+@Category(JMXTest.class)
+public class GatewayReceiverStatsIntegrationTest extends MBeanStatsTestCase {
 
   private GatewayReceiverMBeanBridge bridge;
-
   private GatewayReceiverStats receiverStats;
 
   @Override
   public void init() {
-    receiverStats = GatewayReceiverStats.createGatewayReceiverStats("Test Sock Name");
+    receiverStats = createGatewayReceiverStats("Test Sock Name");
 
     bridge = new GatewayReceiverMBeanBridge();
     bridge.addGatewayReceiverStats(receiverStats);
