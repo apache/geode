@@ -421,7 +421,6 @@ public class RegionMapPut extends AbstractRegionMapPut {
               isCompressedOffHeap(event), event.getRegion().getCache())) {
             logger.info("retried putIfAbsent found same value already in cache "
                 + "- allowing the operation.  entry={}; event={}", getRegionEntry(), getEvent());
-            event.setPossibleDuplicate(true);
             this.overwritePutIfAbsent = true;
             return true;
           }
@@ -434,8 +433,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
 
 
   private boolean isCompressedOffHeap(EntryEventImpl event) {
-    return event.getContext() != null ? false
-        : event.getRegion().getAttributes().getOffHeap()
+    return event.getRegion().getAttributes().getOffHeap()
             && event.getRegion().getAttributes().getCompressor() != null;
   }
 
