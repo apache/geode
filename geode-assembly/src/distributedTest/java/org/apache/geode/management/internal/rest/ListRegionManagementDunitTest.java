@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -25,10 +26,12 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -61,15 +64,27 @@ public class ListRegionManagementDunitTest {
     regionConfig.setName("customers1");
     regionConfig.setGroup("group1");
     client.create(regionConfig);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 1);
 
     regionConfig = new RegionConfig();
     regionConfig.setName("customers2");
     regionConfig.setGroup("group2");
     client.create(regionConfig);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 1);
 
     regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     client.create(regionConfig);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers", 2);
+
+    // create a region that belongs to multiple groups
+    regionConfig = new RegionConfig();
+    regionConfig.setName("customers4");
+    regionConfig.setGroup("group1");
+    client.create(regionConfig);
+    regionConfig.setGroup("group2");
+    client.create(regionConfig);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers4", 2);
   }
 
   @Before
@@ -82,9 +97,9 @@ public class ListRegionManagementDunitTest {
     // list all
     List<CacheElement> regions = client.list(filter).getResult();
     assertThat(regions.stream().map(CacheElement::getId).collect(Collectors.toList()))
-        .containsExactlyInAnyOrder("customers", "customers1", "customers2");
+        .containsExactlyInAnyOrder("customers", "customers1", "customers2", "customers4");
     assertThat(regions.stream().map(CacheElement::getConfigGroup).collect(Collectors.toList()))
-        .containsExactlyInAnyOrder("cluster", "group1", "group2");
+        .containsExactlyInAnyOrder("cluster", "group1", "group2", "group1,group2");
   }
 
   @Test
@@ -99,14 +114,41 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
+  public void testEntryCount() throws Exception {
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("/customers");
+      region.put("k1", "v1");
+      region.put("k2", "v2");
+    });
+
+    // wait till entry size are correctly gathered by the mbean
+    locator.invoke(() -> {
+      await().untilAsserted(
+          () -> assertThat(ClusterStartupRule.memberStarter.getRegionMBean("/customers")
+              .getSystemRegionEntryCount()).isEqualTo(2));
+    });
+
+    filter.setName("customers");
+    List<CacheElement> regions = client.list(filter).getResult();
+    assertThat(regions).hasSize(1);
+    RuntimeRegionConfig regionConfig = (RuntimeRegionConfig) regions.get(0);
+    assertThat(regionConfig.getName()).isEqualTo("customers");
+    assertThat(regionConfig).isInstanceOf(RuntimeRegionConfig.class);
+    assertThat(regionConfig.getEntryCount()).isEqualTo(2);
+  }
+
+  @Test
   public void listGroup1() throws Exception {
     // list group1
     filter.setGroup("group1");
     List<CacheElement> regions = client.list(filter).getResult();
-    assertThat(regions).hasSize(1);
-    assertThat(regions.get(0).getId()).isEqualTo("customers1");
-    assertThat(regions.get(0).getConfigGroup()).isEqualTo("group1");
-    assertThat(regions.get(0).getGroup()).isEqualTo("group1");
+    assertThat(regions).hasSize(2);
+    // when filtering by group, the returned list should not have group info
+    assertThat(regions.get(0).getGroup()).isNull();
+    assertThat(regions.get(1).getGroup()).isNull();
+
+    assertThat(regions.stream().map(CacheElement::getId).collect(Collectors.toList()))
+        .containsExactlyInAnyOrder("customers1", "customers4");
   }
 
   @Test
@@ -114,10 +156,12 @@ public class ListRegionManagementDunitTest {
     // list group1
     filter.setGroup("group2");
     List<CacheElement> regions = client.list(filter).getResult();
-    assertThat(regions).hasSize(1);
-    assertThat(regions.get(0).getId()).isEqualTo("customers2");
-    assertThat(regions.get(0).getConfigGroup()).isEqualTo("group2");
-    assertThat(regions.get(0).getGroup()).isEqualTo("group2");
+    assertThat(regions).hasSize(2);
+
+    assertThat(regions.get(0).getGroup()).isNull();
+
+    assertThat(regions.stream().map(CacheElement::getId).collect(Collectors.toList()))
+        .containsExactlyInAnyOrder("customers2", "customers4");
   }
 
   @Test

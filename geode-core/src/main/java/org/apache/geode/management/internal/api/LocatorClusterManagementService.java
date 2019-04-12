@@ -63,7 +63,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ConfigurationPersistenceService persistenceService) {
     this(cache, persistenceService, new HashMap(), new HashMap());
     // initialize the list of managers
-    managers.put(RegionConfig.class, new RegionConfigManager());
+    managers.put(RegionConfig.class, new RegionConfigManager(cache));
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
 
     // initialize the list of validators
@@ -174,16 +174,35 @@ public class LocatorClusterManagementService implements ClusterManagementService
       if (StringUtils.isBlank(filter.getGroup()) || group.equals(filter.getConfigGroup())) {
         CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
         List<CacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
-        // only set the group attribute when the config level is not in the cluster level
-        if (!group.equals("cluster")) {
-          listInGroup.stream().forEach(e -> e.setGroup(group));
+
+        // only compute the group information when we are getting all the groups
+        if (StringUtils.isBlank(filter.getGroup())) {
+          if (!"cluster".equals(group)) {
+            listInGroup.stream().forEach(e -> e.setGroup(group));
+          }
+          for (CacheElement element : listInGroup) {
+            CacheElement exist = CacheElement.findElement(elements, element.getId());
+            if (exist != null) {
+              // combine the group names
+              String combined = exist.getConfigGroup() + "," + element.getConfigGroup();
+              exist.setGroup(sortedCommaSeparatedList(combined));
+            } else {
+              elements.add(element);
+            }
+          }
+        } else {
+          elements.addAll(listInGroup);
         }
-        elements.addAll(listInGroup);
       }
     }
 
     result.setResult(elements);
     return result;
+  }
+
+  private static String sortedCommaSeparatedList(String combined) {
+    return Arrays
+        .stream(combined.split(",")).sorted().collect(Collectors.joining(","));
   }
 
   @Override

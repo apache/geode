@@ -178,6 +178,17 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
     this.type = refid;
   }
 
+  public RegionConfig(RegionConfig config) {
+    this.regionAttributes = config.getRegionAttributes();
+    this.type = config.getType();
+    this.entries = config.getEntries();
+    this.indexes = config.getIndexes();
+    this.name = config.getName();
+    this.regionElements = config.getCustomRegionElements();
+    this.regions = config.getRegions();
+    this.setGroup(config.getGroup());
+  }
+
   @Override
   public String getEndpoint() {
     return REGION_CONFIG_ENDPOINT;
