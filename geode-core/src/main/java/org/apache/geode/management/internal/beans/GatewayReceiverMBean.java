@@ -189,10 +189,6 @@ public class GatewayReceiverMBean extends NotificationBroadcasterSupport
     return bridge.getTotalSentBytes();
   }
 
-  public void stopMonior() {
-    bridge.stopMonitor();
-  }
-
   @Override
   public String[] getConnectedGatewaySenders() {
     return bridge.getConnectedGatewaySenders();
