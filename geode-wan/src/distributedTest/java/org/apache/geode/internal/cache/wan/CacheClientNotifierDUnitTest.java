@@ -45,7 +45,7 @@ import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -99,8 +99,8 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
 
       @Override
       public void run() throws Exception {
-        List<CacheServer> cacheServers =
-            ((GemFireCacheImpl) cache).getCacheServersAndGatewayReceiver();
+        List<CacheServerImpl> cacheServers =
+            ((InternalCache) cache).getCacheServersAndGatewayReceiver();
         CacheServerImpl server = null;
         for (CacheServer cs : cacheServers) {
           if (cs.getPort() == serverPort) {
@@ -251,7 +251,7 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     }
 
     InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
+    cache = (InternalCache) CacheFactory.create(ds);
 
     assertNotNull(cache);
     CacheServerTestUtil.disableShufflingOfEndpoints();

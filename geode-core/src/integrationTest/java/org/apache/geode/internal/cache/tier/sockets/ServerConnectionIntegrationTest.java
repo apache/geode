@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,7 +30,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -44,7 +44,7 @@ import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class ServerConnectionIntegrationTest {
 
   private AcceptorImpl acceptor;
@@ -55,33 +55,55 @@ public class ServerConnectionIntegrationTest {
 
   @Before
   public void setUp() throws IOException {
-    acceptor = mock(AcceptorImpl.class);
-
     InetAddress inetAddress = mock(InetAddress.class);
-    when(inetAddress.getHostAddress()).thenReturn("localhost");
 
+    acceptor = mock(AcceptorImpl.class);
     socket = mock(Socket.class);
-    when(socket.getInetAddress()).thenReturn(inetAddress);
-
     cache = mock(InternalCache.class);
     securityService = mock(SecurityService.class);
-
     stats = mock(CacheServerStats.class);
+
+    when(inetAddress.getHostAddress()).thenReturn("localhost");
+    when(socket.getInetAddress()).thenReturn(inetAddress);
   }
 
-  class TestMessage extends Message {
+  /**
+   * This test sets up a TestConnection which will register with the ClientHealthMonitor and then
+   * block waiting to receive a fake message. This message will arrive just after the health monitor
+   * times out this connection and kills it. The test then makes sure that the connection correctly
+   * handles the terminated state and exits.
+   */
+  @Test
+  public void terminatingConnectionHandlesNewRequestsGracefully() {
+    ClientHealthMonitor.createInstance(cache, 100, mock(CacheClientNotifierStats.class));
+    ClientHealthMonitor clientHealthMonitor = ClientHealthMonitor.getInstance();
+
+    when(cache.getCacheTransactionManager()).thenReturn(mock(TXManagerImpl.class));
+    when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    when(acceptor.getConnectionListener()).thenReturn(mock(ConnectionListener.class));
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+
+    TestServerConnection testServerConnection =
+        new TestServerConnection(socket, cache, mock(CachedRegionHelper.class), stats, 0, 0, null,
+            CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
+
+    assertThatCode(() -> testServerConnection.run()).doesNotThrowAnyException();
+  }
+
+  private static class TestMessage extends Message {
+
     private final Lock lock = new ReentrantLock();
     private final Condition testGate = lock.newCondition();
-    private boolean signalled = false;
+    private volatile boolean signalled;
 
-    public TestMessage() {
+    TestMessage() {
       super(3, Version.CURRENT);
       messageType = MessageType.REQUEST;
       securePart = new Part();
     }
 
     @Override
-    public void receive() throws IOException {
+    public void receive() {
       try {
         lock.lock();
         testGate.await(10, TimeUnit.SECONDS);
@@ -95,40 +117,45 @@ public class ServerConnectionIntegrationTest {
       }
     }
 
-    public void continueProcessing() {
+    void continueProcessing() {
       lock.lock();
-      testGate.signal();
+      testGate.signalAll();
       signalled = true;
       lock.unlock();
     }
   }
 
-  class TestServerConnection extends OriginalServerConnection {
+  private static class TestServerConnection extends OriginalServerConnection {
 
-    private TestMessage testMessage;
+    private volatile TestMessage testMessage;
 
     /**
-     * Creates a new <code>ServerConnection</code> that processes messages received from an edge
-     * client over a given <code>Socket</code>.
+     * Creates a new {@code ServerConnection} that processes messages received from an edge
+     * client over a given {@code Socket}.
      */
-    public TestServerConnection(Socket socket, InternalCache internalCache,
-        CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
-        String communicationModeStr, byte communicationMode, Acceptor acceptor,
-        SecurityService securityService) {
-      super(socket, internalCache, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
-          communicationMode, acceptor, securityService);
+    TestServerConnection(Socket socket, InternalCache internalCache,
+        CachedRegionHelper cachedRegionHelper, CacheServerStats stats, int hsTimeout,
+        int socketBufferSize, String communicationModeStr, byte communicationMode,
+        Acceptor acceptor, SecurityService securityService) {
+      super(socket, internalCache, cachedRegionHelper, stats, hsTimeout, socketBufferSize,
+          communicationModeStr, communicationMode, acceptor, securityService, null);
 
-      setClientDisconnectCleanly(); // Not clear where this is supposed to be set in the timeout
-      // path
+      // Not clear where this is supposed to be set in the timeout path
+      setClientDisconnectCleanly();
     }
 
     @Override
     protected void doHandshake() {
+      long fakeId = -1;
       ClientProxyMembershipID proxyID = mock(ClientProxyMembershipID.class);
-      when(proxyID.getDistributedMember()).thenReturn(mock(InternalDistributedMember.class));
       ServerSideHandshake handshake = mock(ServerSideHandshake.class);
+      MessageIdExtractor extractor = mock(MessageIdExtractor.class);
+
+      when(extractor.getUniqueIdFromMessage(getRequestMessage(), handshake.getEncryptor(),
+          Connection.DEFAULT_CONNECTION_ID)).thenReturn(fakeId);
       when(handshake.getMembershipId()).thenReturn(proxyID);
       when(handshake.getVersion()).thenReturn(Version.CURRENT);
+      when(proxyID.getDistributedMember()).thenReturn(mock(InternalDistributedMember.class));
 
       setHandshake(handshake);
       setProxyId(proxyID);
@@ -138,10 +165,6 @@ public class ServerConnectionIntegrationTest {
 
       setFakeRequest();
 
-      long fakeId = -1;
-      MessageIdExtractor extractor = mock(MessageIdExtractor.class);
-      when(extractor.getUniqueIdFromMessage(getRequestMessage(), handshake.getEncryptor(),
-          Connection.DEFAULT_CONNECTION_ID)).thenReturn(fakeId);
       setMessageIdExtractor(extractor);
     }
 
@@ -155,28 +178,5 @@ public class ServerConnectionIntegrationTest {
       testMessage = new TestMessage();
       setRequestMessage(testMessage);
     }
-  }
-
-  /**
-   * This test sets up a TestConnection which will register with the ClientHealthMonitor and then
-   * block waiting to receive a fake message. This message will arrive just after the health monitor
-   * times out this connection and kills it. The test then makes sure that the connection correctly
-   * handles the terminated state and exits.
-   */
-  @Test
-  public void terminatingConnectionHandlesNewRequestsGracefully() throws Exception {
-    when(cache.getCacheTransactionManager()).thenReturn(mock(TXManagerImpl.class));
-    ClientHealthMonitor.createInstance(cache, 100, mock(CacheClientNotifierStats.class));
-    ClientHealthMonitor clientHealthMonitor = ClientHealthMonitor.getInstance();
-    when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
-    when(acceptor.getConnectionListener()).thenReturn(mock(ConnectionListener.class));
-    when(securityService.isIntegratedSecurity()).thenReturn(true);
-
-    TestServerConnection testServerConnection =
-        new TestServerConnection(socket, cache, mock(CachedRegionHelper.class), stats, 0, 0, null,
-            CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
-    MockitoAnnotations.initMocks(this);
-
-    testServerConnection.run();
   }
 }

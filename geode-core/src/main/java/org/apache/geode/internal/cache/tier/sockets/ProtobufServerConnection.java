@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.BufferedOutputStream;
@@ -31,12 +30,14 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Holds the socket and protocol handler for the new client protocol.
  */
-public class ProtobufServerConnection extends ServerConnection {
+class ProtobufServerConnection extends ServerConnection {
+
   // The new protocol lives in a separate module and gets loaded when this class is instantiated.
   private final ClientProtocolProcessor protocolProcessor;
   private boolean cleanedUp;
@@ -44,18 +45,20 @@ public class ProtobufServerConnection extends ServerConnection {
   private final BufferedOutputStream output;
 
   /**
-   * Creates a new <code>ProtobufServerConnection</code> that processes messages received from an
-   * edge client over a given <code>Socket</code>.
+   * Creates a new {@code ProtobufServerConnection} that processes messages received from an
+   * edge client over a given {@code Socket}.
    */
-  public ProtobufServerConnection(Socket socket, InternalCache c, CachedRegionHelper helper,
-      CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
-      byte communicationMode, Acceptor acceptor, ClientProtocolProcessor clientProtocolProcessor,
-      SecurityService securityService) throws IOException {
-    super(socket, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
-        communicationMode, acceptor, securityService);
-    this.protocolProcessor = clientProtocolProcessor;
+  ProtobufServerConnection(final Socket socket, final InternalCache internalCache,
+      final CachedRegionHelper cachedRegionHelper, final CacheServerStats stats,
+      final int hsTimeout, final int socketBufferSize, final String communicationModeStr,
+      final byte communicationMode, final Acceptor acceptor,
+      final ClientProtocolProcessor clientProtocolProcessor, final SecurityService securityService,
+      final GatewayReceiverMetrics gatewayReceiverMetrics) throws IOException {
+    super(socket, internalCache, cachedRegionHelper, stats, hsTimeout, socketBufferSize,
+        communicationModeStr, communicationMode, acceptor, securityService, gatewayReceiverMetrics);
+    protocolProcessor = clientProtocolProcessor;
 
-    this.output = new BufferedOutputStream(socket.getOutputStream(), socketBufferSize);
+    output = new BufferedOutputStream(socket.getOutputStream(), socketBufferSize);
     setClientProxyMembershipId();
 
     doHandShake(CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), 0);
@@ -63,7 +66,7 @@ public class ProtobufServerConnection extends ServerConnection {
 
   @Override
   protected void doOneMessage() {
-    Socket socket = this.getSocket();
+    Socket socket = getSocket();
     try {
       InputStream inputStream = socket.getInputStream();
 
@@ -80,27 +83,27 @@ public class ProtobufServerConnection extends ServerConnection {
       }
 
       if (protocolProcessor.socketProcessingIsFinished()) {
-        this.setFlagProcessMessagesAsFalse();
+        setFlagProcessMessagesAsFalse();
       }
     } catch (EOFException e) {
-      this.setFlagProcessMessagesAsFalse();
+      setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
       logger.debug("Encountered EOF while processing message: {}", e);
     } catch (IOException | IncompatibleVersionException e) {
-      if (!socket.isClosed()) { // GEODE-4300, IOException may be thrown thrown on EOF
+      if (!socket.isClosed()) {
         logger.warn(e);
       }
-      this.setFlagProcessMessagesAsFalse();
+      setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
     } finally {
-      acceptor.getClientHealthMonitor().receivedPing(this.clientProxyMembershipID);
+      acceptor.getClientHealthMonitor().receivedPing(clientProxyMembershipID);
     }
   }
 
   private void setClientProxyMembershipId() {
     ServerLocation serverLocation = new ServerLocation(
-        ((InetSocketAddress) this.getSocket().getRemoteSocketAddress()).getHostName(),
-        this.getSocketPort());
+        ((InetSocketAddress) getSocket().getRemoteSocketAddress()).getHostName(),
+        getSocketPort());
     DistributedMember distributedMember = new InternalDistributedMember(serverLocation);
     // no handshake for new client protocol.
     clientProxyMembershipID = new ClientProxyMembershipID(distributedMember);

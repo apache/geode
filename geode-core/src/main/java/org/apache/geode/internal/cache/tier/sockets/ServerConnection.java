@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
@@ -68,6 +67,7 @@ import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
@@ -123,6 +123,8 @@ public abstract class ServerConnection implements Runnable {
   private ServerConnectionCollection serverConnectionCollection;
 
   private final ProcessingMessageTimer processingMessageTimer = new ProcessingMessageTimer();
+
+  private final GatewayReceiverMetrics gatewayReceiverMetrics;
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
@@ -259,10 +261,11 @@ public abstract class ServerConnection implements Runnable {
    * Creates a new {@code ServerConnection} that processes messages received from an edge
    * client over a given {@code Socket}.
    */
-  public ServerConnection(Socket socket, InternalCache internalCache, CachedRegionHelper helper,
-      CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
-      byte communicationMode, Acceptor acceptor, SecurityService securityService) {
-
+  public ServerConnection(final Socket socket, final InternalCache internalCache,
+      final CachedRegionHelper cachedRegionHelper, final CacheServerStats stats,
+      final int hsTimeout, final int socketBufferSize, final String communicationModeStr,
+      final byte communicationMode, final Acceptor acceptor, final SecurityService securityService,
+      final GatewayReceiverMetrics gatewayReceiverMetrics) {
     StringBuilder buffer = new StringBuilder(100);
     if (((AcceptorImpl) acceptor).isGatewayReceiver()) {
       buffer.append("GatewayReceiver connection from [");
@@ -276,7 +279,8 @@ public abstract class ServerConnection implements Runnable {
 
     this.stats = stats;
     this.acceptor = (AcceptorImpl) acceptor;
-    crHelper = helper;
+    this.gatewayReceiverMetrics = gatewayReceiverMetrics;
+    crHelper = cachedRegionHelper;
     logWriter = (InternalLogWriter) internalCache.getLogger();
     securityLogWriter = (InternalLogWriter) internalCache.getSecurityLoggerI18n();
     this.communicationMode = CommunicationMode.fromModeNumber(communicationMode);
@@ -306,6 +310,10 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
+  public GatewayReceiverMetrics getGatewayReceiverMetrics() {
+    return gatewayReceiverMetrics;
+  }
+
   public AcceptorImpl getAcceptor() {
     return acceptor;
   }
@@ -327,13 +335,12 @@ public abstract class ServerConnection implements Runnable {
       if (handshake == null) {
         ServerSideHandshake readHandshake;
         try {
-
           readHandshake = handshakeFactory.readHandshake(getSocket(), getHandShakeTimeout(),
               getCommunicationMode(), getDistributedSystem(), getSecurityService());
 
         } catch (SocketTimeoutException timeout) {
           logger.warn("{}: Handshake reply code timeout, not received with in {} ms",
-              new Object[] {getName(), handshakeTimeout});
+              getName(), handshakeTimeout);
           failConnectionAttempt();
           return false;
         } catch (EOFException | SocketException e) {
@@ -391,7 +398,7 @@ public abstract class ServerConnection implements Runnable {
           }
         }
         // is this branch ever taken?
-        crHelper.checkCancelInProgress(null); // bug 37113?
+        crHelper.checkCancelInProgress(null);
         logger.warn("Received Unknown handshake reply code.");
         refuseHandshake("Received Unknown handshake reply code.", Handshake.REPLY_INVALID);
         return false;
@@ -512,7 +519,6 @@ public abstract class ServerConnection implements Runnable {
       return clientUserAuths.putUserAuth(userAuthAttr);
     } catch (NullPointerException exception) {
       if (isTerminated()) {
-        // Bug #52023.
         throw new IOException("Server connection is terminated.");
       }
       throw exception;
@@ -582,10 +588,8 @@ public abstract class ServerConnection implements Runnable {
             if (proxy != null && !proxy.isPaused()) {
               // The handshake refusal message must be smaller than 127 bytes.
               String handshakeRefusalMessage =
-                  String.format("Duplicate durable clientId (%s)",
-                      proxyId.getDurableId());
-              logger.warn("{} : {}",
-                  new Object[] {name, handshakeRefusalMessage});
+                  String.format("Duplicate durable clientId (%s)", proxyId.getDurableId());
+              logger.warn("{} : {}", name, handshakeRefusalMessage);
               refuseHandshake(handshakeRefusalMessage,
                   Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT);
               return result;
@@ -647,7 +651,7 @@ public abstract class ServerConnection implements Runnable {
 
   private boolean isFiringMembershipEvents() {
     return acceptor.isRunning()
-        && !(acceptor.getCachedRegionHelper().getCache()).isClosed()
+        && !acceptor.getCachedRegionHelper().getCache().isClosed()
         && !acceptor.getCachedRegionHelper().getCache().getCancelCriterion().isCancelInProgress();
   }
 
@@ -763,7 +767,7 @@ public abstract class ServerConnection implements Runnable {
     }
     if (TEST_VERSION_AFTER_HANDSHAKE_FLAG) {
       short testVersionAfterHandshake = 4;
-      Assert.assertTrue((handshake.getVersion().ordinal() == testVersionAfterHandshake),
+      Assert.assertTrue(handshake.getVersion().ordinal() == testVersionAfterHandshake,
           "Found different version after handshake");
       TEST_VERSION_AFTER_HANDSHAKE_FLAG = false;
     }
@@ -789,7 +793,7 @@ public abstract class ServerConnection implements Runnable {
         // a message has been read. This is a bit of a hack. I think this thread should be
         // interrupted, but currently AcceptorImpl doesn't keep track of the threads that it
         // launches.
-        if (!processMessages || (crHelper.isShutdown())) {
+        if (!processMessages || crHelper.isShutdown()) {
           if (logger.isDebugEnabled()) {
             logger.debug("{} ignoring message of type {} from client {} due to shutdown.",
                 getName(), MessageType.getString(message.getMessageType()), proxyId);
@@ -1030,7 +1034,6 @@ public abstract class ServerConnection implements Runnable {
   }
 
   public byte[] setCredentials(Message message) {
-
     try {
       // need to get connection id from secure part of message, before that need to insure
       // encryption of id
@@ -1041,7 +1044,6 @@ public abstract class ServerConnection implements Runnable {
       // need to generate unique-id for client
       // need to send back in response with encryption
       if (!AcceptorImpl.isAuthenticationRequired() && message.isSecureMode()) {
-        // TODO (ashetkar)
         /*
          * This means that client and server VMs have different security settings. The server does
          * not have any security settings specified while client has.
@@ -1157,9 +1159,8 @@ public abstract class ServerConnection implements Runnable {
         || messageType == MessageType.GET_CLIENT_PR_METADATA
         || messageType == MessageType.GET_CLIENT_PARTITION_ATTRIBUTES;
 
-    // we allow older clients to not send credentials for a handful of messages
-    // if and only if a system property is set. This allows a rolling upgrade
-    // to be performed.
+    // we allow older clients to not send credentials for a handful of messages if and only if a
+    // system property is set. This allows a rolling upgrade to be performed.
     if (!isInternalMessage && allowOldInternalMessages) {
       isInternalMessage = messageType == MessageType.GETCQSTATS_MSG_TYPE
           || messageType == MessageType.MONITORCQ_MSG_TYPE
@@ -1179,8 +1180,6 @@ public abstract class ServerConnection implements Runnable {
 
   @Override
   public void run() {
-    setOwner();
-
     if (getAcceptor().isSelector()) {
       boolean finishedMessage = false;
       try {
@@ -1189,21 +1188,20 @@ public abstract class ServerConnection implements Runnable {
           getAcceptor().setTLCommBuffer();
           doOneMessage();
           if (processMessages && !crHelper.isShutdown()) {
-            registerWithSelector(); // finished message so reregister
+            // finished message so reregister
+            registerWithSelector();
             finishedMessage = true;
           }
         }
       } catch (ClosedChannelException | CancelException ignore) {
         // ok shutting down
       } catch (IOException ex) {
-        logger.warn(ex + " : Unexpected Exception");
+        logger.warn("Unexpected Exception", ex);
         setClientDisconnectedException(ex);
       } catch (AuthenticationRequiredException ex) {
-        logger.warn(ex.toString() + " : Unexpected Exception");
+        logger.warn("Unexpected Exception", ex);
       } finally {
         getAcceptor().releaseTLCommBuffer();
-        // DistributedSystem.releaseThreadsSockets();
-        unsetOwner();
         setNotProcessingMessage();
         // unset request specific timeout
         unsetRequestSpecificTimeout();
@@ -1333,7 +1331,8 @@ public abstract class ServerConnection implements Runnable {
 
   boolean hasBeenTimedOutOnClient() {
     int timeout = getClientReadTimeout();
-    if (timeout > 0) { // 0 means no timeout
+    // 0 means no timeout
+    if (timeout > 0) {
       timeout = timeout + TIMEOUT_BUFFER_FOR_CONNECTION_CLEANUP_MS;
       /*
        * This is a buffer that we add to client readTimeout value before we cleanup the connection.
@@ -1349,8 +1348,7 @@ public abstract class ServerConnection implements Runnable {
       return String.valueOf(theSocket.getInetAddress()) + ':' +
           theSocket.getPort() + " timeout: " + theSocket.getSoTimeout();
     } catch (Exception e) {
-      return String.format("Error in getSocketString: %s",
-          e.getLocalizedMessage());
+      return String.format("Error in getSocketString: %s", e.getLocalizedMessage());
     }
   }
 
@@ -1363,30 +1361,13 @@ public abstract class ServerConnection implements Runnable {
     if (justProcessed - latestBatchIdReplied != 1) {
       stats.incOutOfOrderBatchIds();
       logger.warn("Batch IDs are out of order. Setting latestBatchId to: {}. It was: {}",
-          new Object[] {justProcessed,
-              latestBatchIdReplied});
+          justProcessed, latestBatchIdReplied);
     }
     latestBatchIdReplied = justProcessed;
   }
 
   public int getLatestBatchIdReplied() {
     return latestBatchIdReplied;
-  }
-
-  private final Object ownerLock = new Object();
-
-  private void setOwner() { // TODO:KIRK
-    synchronized (ownerLock) {
-      owner = Thread.currentThread();
-    }
-  }
-
-  private void unsetOwner() { // TODO:KIRK
-    synchronized (ownerLock) {
-      owner = null;
-      // clear the interrupted bit since our thread is in a thread pool
-      Thread.interrupted();
-    }
   }
 
   void initStreams(Socket s, int socketBufferSize, MessageStats messageStats) {
@@ -1435,8 +1416,7 @@ public abstract class ServerConnection implements Runnable {
     if (isClosed()) {
       return false;
     }
-    if (communicationMode.isWAN()
-        || communicationMode.isCountedAsClientServerConnection()) {
+    if (communicationMode.isWAN() || communicationMode.isCountedAsClientServerConnection()) {
       getAcceptor().decClientServerCnxCount();
     }
 
@@ -1676,7 +1656,7 @@ public abstract class ServerConnection implements Runnable {
 
   @Deprecated
   public InternalLogWriter getLogWriter() {
-    return logWriter; // TODO:LOG:CONVERT: remove getLogWriter after callers are converted
+    return logWriter;
   }
 
   // this is for old client before(<6.5), from 6.5 userAuthId comes in user request
@@ -1706,8 +1686,7 @@ public abstract class ServerConnection implements Runnable {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(requestMessage,
           handshake.getEncryptor(), connectionId);
     } else {
-      throw new AuthenticationRequiredException(
-          "No security credentials are provided");
+      throw new AuthenticationRequiredException("No security credentials are provided");
     }
     return uniqueId;
   }
@@ -1869,7 +1848,9 @@ public abstract class ServerConnection implements Runnable {
     return setUserAuthorizeAndPostAuthorizeRequest(authzRequest, postAuthzRequest);
   }
 
+  @VisibleForTesting
   static class ProcessingMessageTimer {
+
     @VisibleForTesting
     static final long NOT_PROCESSING = -1L;
 

@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.internal.InternalDistributedSystem.AL
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -46,6 +47,7 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.fake.Fakes;
 
@@ -252,34 +254,77 @@ public class GemFireCacheImplTest {
   public void addGatewayReceiverDoesNotAllowMoreThanOneReceiver() {
     GatewayReceiver receiver = mock(GatewayReceiver.class);
     GatewayReceiver receiver2 = mock(GatewayReceiver.class);
-
     gemFireCacheImpl = createGemFireCacheImpl();
     gemFireCacheImpl.addGatewayReceiver(receiver);
-    assertEquals(1, gemFireCacheImpl.getGatewayReceivers().size());
+    assertThat(gemFireCacheImpl.getGatewayReceivers()).hasSize(1);
 
     gemFireCacheImpl.addGatewayReceiver(receiver2);
 
-    assertEquals(1, gemFireCacheImpl.getGatewayReceivers().size());
-    assertThat(gemFireCacheImpl.getGatewayReceivers()).containsOnly(receiver2);
+    assertThat(gemFireCacheImpl.getGatewayReceivers())
+        .hasSize(1)
+        .containsOnly(receiver2);
+  }
+
+  @Test
+  public void addGatewayReceiverRequiresSuppliedGatewayReceiver() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    Throwable thrown = catchThrowable(() -> gemFireCacheImpl.addGatewayReceiver(null));
+
+    assertThat(thrown).isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void addGatewayReceiverCreatesGatewayReceiverMetrics() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    gemFireCacheImpl.addGatewayReceiver(mock(GatewayReceiver.class));
+
+    assertThat(gemFireCacheImpl.gatewayReceiverMetrics()).isNotNull();
+  }
+
+  @Test
+  public void gatewayReceiverMetricsDoNotExistByDefault() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    assertThat(gemFireCacheImpl.gatewayReceiverMetrics()).isNull();
   }
 
   @Test
   public void removeGatewayReceiverRemovesTheReceiver() {
     GatewayReceiver receiver = mock(GatewayReceiver.class);
-
     gemFireCacheImpl = createGemFireCacheImpl();
     gemFireCacheImpl.addGatewayReceiver(receiver);
-    assertEquals(1, gemFireCacheImpl.getGatewayReceivers().size());
+    assertThat(gemFireCacheImpl.getGatewayReceivers()).hasSize(1);
 
     gemFireCacheImpl.removeGatewayReceiver(receiver);
 
-    assertEquals(0, gemFireCacheImpl.getGatewayReceivers().size());
+    assertThat(gemFireCacheImpl.getGatewayReceivers()).isEmpty();
+  }
+
+  @Test
+  public void removeGatewayReceiverClosesGatewayReceiverMetrics() {
+    GatewayReceiver receiver = mock(GatewayReceiver.class);
+    gemFireCacheImpl = createGemFireCacheImpl();
+    gemFireCacheImpl.addGatewayReceiver(receiver);
+    GatewayReceiverMetrics metrics = gemFireCacheImpl.gatewayReceiverMetrics();
+
+    gemFireCacheImpl.removeGatewayReceiver(receiver);
+
+    assertThat(metrics.isClosed()).isTrue();
+  }
+
+  @Test
+  public void removeGatewayReceiverRemovesGatewayReceiverMetrics() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    assertThat(gemFireCacheImpl.gatewayReceiverMetrics()).isNull();
   }
 
   @Test
   public void removeFromCacheServerShouldRemoveFromCacheServersList() {
     gemFireCacheImpl = createGemFireCacheImpl();
-    CacheServer cacheServer = gemFireCacheImpl.addCacheServer(false);
+    CacheServer cacheServer = gemFireCacheImpl.addCacheServer();
     assertEquals(1, gemFireCacheImpl.getCacheServers().size());
 
     gemFireCacheImpl.removeCacheServer(cacheServer);
@@ -360,6 +405,40 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl = createGemFireCacheImpl();
 
     assertThat(gemFireCacheImpl.getMeterRegistry()).isInstanceOf(MeterRegistry.class);
+  }
+
+  @Test
+  public void addCacheServerForGatewayReceiver_requiresPreviouslyAddedGatewayReceiver() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+
+    Throwable thrown = catchThrowable(
+        () -> gemFireCacheImpl.addCacheServer(mock(GatewayReceiver.class)));
+
+    assertThat(thrown).isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void addCacheServerForGatewayReceiver_requiresSuppliedGatewayReceiver() {
+    GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
+    gemFireCacheImpl = createGemFireCacheImpl();
+    gemFireCacheImpl.addGatewayReceiver(gatewayReceiver);
+
+    Throwable thrown = catchThrowable(
+        () -> gemFireCacheImpl.addCacheServer(null));
+
+    assertThat(thrown).isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void addCacheServerForGatewayReceiver_addsCacheServer() {
+    GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
+    gemFireCacheImpl = createGemFireCacheImpl();
+    gemFireCacheImpl.addGatewayReceiver(gatewayReceiver);
+
+    CacheServer gatewayReceiverServer = gemFireCacheImpl.addCacheServer(gatewayReceiver);
+
+    assertThat(gemFireCacheImpl.getCacheServersAndGatewayReceiver())
+        .containsOnly((CacheServerImpl) gatewayReceiverServer);
   }
 
   private static GemFireCacheImpl createGemFireCacheImpl() {

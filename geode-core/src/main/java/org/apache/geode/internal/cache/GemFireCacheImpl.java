@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Objects.requireNonNull;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
 
 import java.io.BufferedReader;
@@ -92,6 +93,7 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
@@ -202,6 +204,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
@@ -591,6 +594,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final MeterRegistry meterRegistry;
   private final Set<MeterRegistry> meterSubregistries;
+  private final AtomicReference<GatewayReceiverMetrics> gatewayReceiverMetrics =
+      new AtomicReference<>();
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
@@ -3701,16 +3706,31 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public CacheServer addCacheServer() {
-    return addCacheServer(false);
-  }
-
-  @Override
-  public CacheServer addCacheServer(boolean isGatewayReceiver) {
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
 
-    CacheServerImpl cacheServer = new CacheServerImpl(this, isGatewayReceiver);
+    CacheServerImpl cacheServer = new CacheServerImpl(this, securityService, meterRegistry);
     this.allCacheServers.add(cacheServer);
+
+    sendAddCacheServerProfileMessage();
+    return cacheServer;
+  }
+
+  @Override
+  public CacheServer addCacheServer(GatewayReceiver receiver) {
+    throwIfClient();
+    stopper.checkCancelInProgress(null);
+
+    GatewayReceiverMetrics metrics = gatewayReceiverMetrics.get();
+    requireNonNull(receiver, "GatewayReceiver must be supplied to add a server endpoint.");
+    requireNonNull(gatewayReceiver.get(),
+        "GatewayReceiver must be added before adding a server endpoint.");
+    requireNonNull(metrics,
+        "GatewayReceiverMetrics must be added before adding a server endpoint.");
+
+    CacheServerImpl cacheServer =
+        new CacheServerImpl(this, securityService, meterRegistry, receiver, metrics);
+    allCacheServers.add(cacheServer);
 
     sendAddCacheServerProfileMessage();
     return cacheServer;
@@ -3796,14 +3816,22 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public void addGatewayReceiver(GatewayReceiver receiver) {
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
+    requireNonNull(receiver, "GatewayReceiver must be supplied.");
+    gatewayReceiverMetrics.set(new GatewayReceiverMetrics(meterRegistry));
     gatewayReceiver.set(receiver);
   }
 
   @Override
   public void removeGatewayReceiver(GatewayReceiver receiver) {
     throwIfClient();
+    gatewayReceiverMetrics.getAndSet(null).close();
     this.stopper.checkCancelInProgress(null);
     gatewayReceiver.set(null);
+  }
+
+  @VisibleForTesting
+  GatewayReceiverMetrics gatewayReceiverMetrics() {
+    return gatewayReceiverMetrics.get();
   }
 
   @Override
@@ -3932,7 +3960,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public List getCacheServersAndGatewayReceiver() {
+  public List<CacheServerImpl> getCacheServersAndGatewayReceiver() {
     return this.allCacheServers;
   }
 

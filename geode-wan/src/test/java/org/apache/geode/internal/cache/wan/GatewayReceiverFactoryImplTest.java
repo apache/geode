@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,7 +59,8 @@ public class GatewayReceiverFactoryImplTest {
     InternalCache cacheCreation = mock(CacheCreation.class, "CacheCreation");
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
-    when(gemFireCacheImpl.addCacheServer(true)).thenReturn(mock(CacheServerImpl.class));
+    when(gemFireCacheImpl.addCacheServer(isA(GatewayReceiver.class)))
+        .thenReturn(mock(CacheServerImpl.class));
     when(gemFireCacheImpl.getDistributedSystem()).thenReturn(system);
     when(gemFireCacheImpl.getInternalDistributedSystem()).thenReturn(system);
 
@@ -67,6 +70,7 @@ public class GatewayReceiverFactoryImplTest {
   @Before
   public void setUp() {
     when(cache.getGatewayReceivers()).thenReturn(Collections.emptySet());
+    when(cache.getMeterRegistry()).thenReturn(new SimpleMeterRegistry());
 
     gatewayReceiverFactory = new GatewayReceiverFactoryImpl(cache);
   }

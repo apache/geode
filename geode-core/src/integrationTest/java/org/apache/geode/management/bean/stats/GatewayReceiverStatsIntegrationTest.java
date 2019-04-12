@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.management.internal.beans.GatewayReceiverMBeanBridge;
@@ -34,7 +35,8 @@ public class GatewayReceiverStatsIntegrationTest extends MBeanStatsTestCase {
 
   @Override
   public void init() {
-    receiverStats = createGatewayReceiverStats("Test Sock Name");
+    StatisticsFactory statisticsFactory = system.getStatisticsManager();
+    receiverStats = createGatewayReceiverStats(statisticsFactory, "Test Sock Name");
 
     bridge = new GatewayReceiverMBeanBridge();
     bridge.addGatewayReceiverStats(receiverStats);

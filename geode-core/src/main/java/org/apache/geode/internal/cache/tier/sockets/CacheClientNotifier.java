@@ -1867,7 +1867,7 @@ public class CacheClientNotifier {
     if (isGatewayReceiver) {
       factory = new DummyStatisticsFactory();
     } else {
-      factory = this.getCache().getDistributedSystem();
+      factory = this.getCache().getInternalDistributedSystem().getStatisticsManager();
     }
     this.statistics = new CacheClientNotifierStats(factory);
 

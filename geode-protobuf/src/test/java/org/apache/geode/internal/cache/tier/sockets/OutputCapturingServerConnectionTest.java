@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -40,15 +39,14 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class OutputCapturingServerConnectionTest {
 
   @Rule
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Test
-  public void testEOFDoesNotCauseWarningMessage() throws IOException, IncompatibleVersionException {
+  public void testEOFDoesNotCauseWarningMessage() throws Exception {
     Socket socketMock = mock(Socket.class);
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
     when(socketMock.isClosed()).thenReturn(true);
@@ -79,22 +77,22 @@ public class OutputCapturingServerConnectionTest {
   private ProtobufServerConnection getServerConnection(Socket socketMock,
       ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
       throws IOException {
+    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
+    CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
     ClientHealthMonitor clientHealthMonitorMock = mock(ClientHealthMonitor.class);
-    when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
     InetSocketAddress inetSocketAddressStub = InetSocketAddress.createUnresolved("localhost", 9071);
     InetAddress inetAddressStub = mock(InetAddress.class);
+
+    when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
+    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
     when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
     when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
     when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
 
-    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
-    CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
-    when(cachedRegionHelper.getCache()).thenReturn(cache);
     return new ProtobufServerConnection(socketMock, cache, cachedRegionHelper,
         mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
-        clientProtocolProcessorMock, mock(SecurityService.class));
+        clientProtocolProcessorMock, mock(SecurityService.class), null);
   }
-
 }

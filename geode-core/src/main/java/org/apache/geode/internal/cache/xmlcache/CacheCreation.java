@@ -1143,11 +1143,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public CacheServer addCacheServer() {
-    return addCacheServer(false);
+    return addCacheServer(null);
   }
 
   @Override
-  public CacheServer addCacheServer(boolean isGatewayReceiver) {
+  public CacheServer addCacheServer(GatewayReceiver gatewayReceiver) {
     CacheServer bridge = new CacheServerCreation(this, false);
     this.bridgeServers.add(bridge);
     return bridge;
@@ -1275,7 +1275,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public List getCacheServersAndGatewayReceiver() {
+  public List<CacheServerImpl> getCacheServersAndGatewayReceiver() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
