@@ -38,9 +38,9 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
@@ -241,7 +241,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
       return null;
     }
 
-    CacheServerImpl cacheServerImpl = (CacheServerImpl) cacheServers.get(0);
-    return cacheServerImpl.getAcceptor();
+    InternalCacheServer cacheServer = (InternalCacheServer) cacheServers.get(0);
+    return (AcceptorImpl) cacheServer.getAcceptor();
   }
 }

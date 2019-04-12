@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -87,6 +88,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -1225,12 +1227,21 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     await().untilAsserted(() -> {
       assertEquals(1, internalCache.getCacheServers().size());
       CacheServerImpl bs = (CacheServerImpl) (internalCache.getCacheServers().iterator().next());
-      assertEquals(1, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
+      assertEquals(1, getAcceptorImpl(bs).getCacheClientNotifier().getClientProxies().size());
     });
     CacheServerImpl bs = (CacheServerImpl) internalCache.getCacheServers().iterator().next();
     CacheClientProxy ccp =
-        bs.getAcceptor().getCacheClientNotifier().getClientProxies().iterator().next();
+        getAcceptorImpl(bs).getCacheClientNotifier().getClientProxies().iterator().next();
     return ccp.getHARegion().getName();
+  }
+
+  private AcceptorImpl getAcceptorImpl(CacheServerImpl server) {
+    try {
+      Method getAcceptor = server.getClass().getMethod("getAcceptor");
+      return (AcceptorImpl) getAcceptor.invoke(server);
+    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public static class GetDataSerializableFunction implements Function, DataSerializable {

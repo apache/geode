@@ -279,7 +279,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
 
   InternalRegion getRegionByPathForProcessing(String path);
 
-  List getCacheServersAndGatewayReceiver();
+  List<InternalCacheServer> getCacheServersAndGatewayReceiver();
 
   boolean isGlobalRegionInitializing(String fullPath);
 
@@ -313,9 +313,11 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
 
   void removeGatewayReceiver(GatewayReceiver receiver);
 
-  CacheServer addCacheServer(boolean isGatewayReceiver);
+  InternalCacheServer addGatewayReceiverServer(GatewayReceiver receiver);
 
   boolean removeCacheServer(CacheServer cacheServer);
+
+  boolean removeGatewayReceiverServer(InternalCacheServer receiverServer);
 
   /**
    * A test-hook allowing you to alter the cache setting established by

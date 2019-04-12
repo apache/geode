@@ -248,7 +248,7 @@ public class AcceptorImplClientQueueDistributedTest implements Serializable {
   }
 
   private int initializeCacheServerWithSubscription(InternalCache cache) throws IOException {
-    CacheServer cacheServer1 = cache.addCacheServer(false);
+    CacheServer cacheServer1 = cache.addCacheServer();
     ClientSubscriptionConfig clientSubscriptionConfig = cacheServer1.getClientSubscriptionConfig();
     clientSubscriptionConfig.setEvictionPolicy("entry");
     clientSubscriptionConfig.setCapacity(5);

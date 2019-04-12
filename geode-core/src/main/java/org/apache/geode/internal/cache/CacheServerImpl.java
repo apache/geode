@@ -16,18 +16,16 @@ package org.apache.geode.internal.cache;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.getInteger;
-import static java.lang.Integer.valueOf;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
@@ -51,7 +49,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.cache.server.internal.LoadMonitor;
-import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
@@ -68,13 +65,17 @@ import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorBuilder;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.OriginalServerConnection;
-import org.apache.geode.internal.cache.tier.sockets.ProtobufServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
@@ -94,14 +95,19 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private final SecurityService securityService;
 
+  private final AcceptorBuilder acceptorBuilder;
+
+  private final boolean sendResourceEvents;
+
+  private final boolean includeMembershipGroups;
+
   /**
-   * The server connection factory, that provides either a {@link OriginalServerConnection} or a new
-   * {@link ProtobufServerConnection}
+   * The server connection factory, that provides a {@link ServerConnection}.
    */
   private final ServerConnectionFactory serverConnectionFactory = new ServerConnectionFactory();
 
   /** The acceptor that does the actual serving */
-  private volatile AcceptorImpl acceptor;
+  private volatile Acceptor acceptor;
 
   /**
    * The advisor used by this cache server.
@@ -117,13 +123,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   private volatile LoadMonitor loadMonitor;
 
-  /**
-   * boolean that represents whether this server is a GatewayReceiver or a simple BridgeServer
-   */
-  private boolean isGatewayReceiver;
-
-  private List<GatewayTransportFilter> gatewayTransportFilters = Collections.emptyList();
-
   /** is this a server created by a launcher as opposed to by an application or XML? */
   private boolean isDefaultServer;
 
@@ -134,23 +133,33 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   private int serialNumber; // changed on each start
 
+  private final Supplier<SocketCreator> socketCreatorSupplier;
+  private final CacheClientNotifierProvider cacheClientNotifierProvider;
+  private final ClientHealthMonitorProvider clientHealthMonitorProvider;
+  private final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider;
+
   public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = Boolean.getBoolean(
       DistributionConfig.GEMFIRE_PREFIX + "cache-server.enable-notify-by-subscription-false");
 
-
-  // ////////////////////// Constructors //////////////////////
-
-  /**
-   * Creates a new{@code BridgeServerImpl} that serves the contents of the give {@code Cache}. It
-   * has the default configuration.
-   */
-  public CacheServerImpl(InternalCache cache, boolean isGatewayReceiver) {
+  CacheServerImpl(final InternalCache cache,
+      final SecurityService securityService,
+      final AcceptorBuilder acceptorBuilder,
+      final boolean sendResourceEvents,
+      final boolean includeMembershipGroups,
+      final Supplier<SocketCreator> socketCreatorSupplier,
+      final CacheClientNotifierProvider cacheClientNotifierProvider,
+      final ClientHealthMonitorProvider clientHealthMonitorProvider,
+      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
     super(cache);
-    this.isGatewayReceiver = isGatewayReceiver;
-    this.securityService = cache.getSecurityService();
+    this.securityService = securityService;
+    this.acceptorBuilder = acceptorBuilder;
+    this.sendResourceEvents = sendResourceEvents;
+    this.includeMembershipGroups = includeMembershipGroups;
+    this.socketCreatorSupplier = socketCreatorSupplier;
+    this.cacheClientNotifierProvider = cacheClientNotifierProvider;
+    this.clientHealthMonitorProvider = clientHealthMonitorProvider;
+    this.cacheServerAdvisorProvider = cacheServerAdvisorProvider;
   }
-
-  // //////////////////// Instance Methods ///////////////////
 
   @Override
   public CancelCriterion getCancelCriterion() {
@@ -166,10 +175,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       throw new IllegalStateException(
           "A cache server's configuration cannot be changed once it is running.");
     }
-  }
-
-  public boolean isGatewayReceiver() {
-    return this.isGatewayReceiver;
   }
 
   @Override
@@ -263,10 +268,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     super.setLoadProbe(loadProbe);
   }
 
-  public void setGatewayTransportFilter(List<GatewayTransportFilter> transportFilters) {
-    this.gatewayTransportFilters = transportFilters;
-  }
-
   @Override
   public int getMessageTimeToLive() {
     return this.messageTimeToLive;
@@ -331,28 +332,46 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.notifyBySubscription = true;
       }
     }
-    this.advisor = CacheServerAdvisor.createCacheServerAdvisor(this);
+    this.advisor = cacheServerAdvisorProvider.apply(this);
     this.loadMonitor = new LoadMonitor(loadProbe, maxConnections, loadPollInterval,
         FORCE_LOAD_UPDATE_FREQUENCY, advisor);
-    List overflowAttributesList = new LinkedList();
-    ClientSubscriptionConfig csc = this.getClientSubscriptionConfig();
-    overflowAttributesList.add(0, csc.getEvictionPolicy());
-    overflowAttributesList.add(1, valueOf(csc.getCapacity()));
-    overflowAttributesList.add(2, valueOf(this.port));
-    String diskStoreName = csc.getDiskStoreName();
-    if (diskStoreName != null) {
-      overflowAttributesList.add(3, diskStoreName);
-      overflowAttributesList.add(4, true); // indicator to use diskstore
-    } else {
-      overflowAttributesList.add(3, csc.getOverflowDirectory());
-      overflowAttributesList.add(4, false);
-    }
 
-    this.acceptor = new AcceptorImpl(getPort(), getBindAddress(), getNotifyBySubscription(),
-        getSocketBufferSize(), getMaximumTimeBetweenPings(), this.cache, getMaxConnections(),
-        getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), this.loadMonitor,
-        overflowAttributesList, this.isGatewayReceiver, this.gatewayTransportFilters,
-        this.tcpNoDelay, serverConnectionFactory, 120000);
+    ClientSubscriptionConfig clientSubscriptionConfig = getClientSubscriptionConfig();
+    String diskStoreName = clientSubscriptionConfig.getDiskStoreName();
+    OverflowAttributes overflowAttributes = new OverflowAttributes() {
+
+      @Override
+      public String getEvictionPolicy() {
+        return clientSubscriptionConfig.getEvictionPolicy();
+      }
+
+      @Override
+      public int getQueueCapacity() {
+        return clientSubscriptionConfig.getCapacity();
+      }
+
+      @Override
+      public int getPort() {
+        return port;
+      }
+
+      @Override
+      public boolean isDiskStore() {
+        return diskStoreName != null;
+      }
+
+      @Override
+      public String getOverflowDirectory() {
+        return clientSubscriptionConfig.getOverflowDirectory();
+      }
+
+      @Override
+      public String getDiskStoreName() {
+        return diskStoreName;
+      }
+    };
+
+    acceptor = createAcceptor(overflowAttributes);
 
     this.acceptor.start();
     this.advisor.handshake();
@@ -363,8 +382,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     // Creating ClientHealthMonitoring region.
     // Force initialization on current cache
     ClientHealthMonitoringRegion.getInstance(this.cache);
-    this.cache.getLogger()
-        .config(String.format("CacheServer Configuration:  %s", getConfig()));
+    logger.info(String.format("CacheServer Configuration:  %s", getConfig()));
 
     /*
      * If the stopped cache server is restarted, we'll need to re-register the client membership
@@ -387,19 +405,24 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       ClientMembership.registerClientMembershipListener(listener);
     }
 
-    if (!isGatewayReceiver) {
-      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
+    if (sendResourceEvents) {
+      InternalDistributedSystem system = cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
     }
-
   }
 
+  @Override
+  public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
+    acceptorBuilder.forServer(this);
+    return acceptorBuilder.create(overflowAttributes);
+  }
 
   /**
    * Gets the address that this cache server can be contacted on from external processes.
    *
    * @since GemFire 5.7
    */
+  @Override
   public String getExternalAddress() {
     return getExternalAddress(true);
   }
@@ -441,8 +464,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.loadMonitor.stop();
       }
     } catch (RuntimeException e) {
-      cache.getLogger()
-          .warning("CacheServer - Error closing load monitor", e);
+      logger.warn("CacheServer - Error closing load monitor", e);
       firstException = e;
     }
 
@@ -451,8 +473,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.advisor.close();
       }
     } catch (RuntimeException e) {
-      cache.getLogger()
-          .warning("CacheServer - Error closing advisor", e);
+      logger.warn("CacheServer - Error closing advisor", e);
       firstException = e;
     }
 
@@ -484,11 +505,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
     txMgr.removeHostedTXStatesForClients();
 
-    if (!isGatewayReceiver) {
-      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
+    if (sendResourceEvents) {
+      InternalDistributedSystem system = cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
     }
-
   }
 
   private String getConfig() {
@@ -528,7 +548,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * @return the internal acceptor
    */
   @Override
-  public AcceptorImpl getAcceptor() {
+  public Acceptor getAcceptor() {
     return this.acceptor;
   }
 
@@ -692,7 +712,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   @Override
   public InternalDistributedSystem getSystem() {
-    return (InternalDistributedSystem) this.cache.getDistributedSystem();
+    return cache.getInternalDistributedSystem();
   }
 
   @Override
@@ -716,9 +736,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * Returns an array of all the groups of this cache server. This includes those from the groups
    * gemfire property and those explicitly added to this server.
    */
+  @Override
   public String[] getCombinedGroups() {
     ArrayList<String> groupList = new ArrayList<String>();
-    if (!this.isGatewayReceiver) {
+    if (includeMembershipGroups) {
       for (String g : MemberAttributes.parseGroups(null, getSystem().getConfig().getGroups())) {
         if (!groupList.contains(g)) {
           groupList.add(g);
@@ -798,5 +819,40 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   @Override
   public Set getInterestRegistrationListeners() {
     return getCacheClientNotifier().getInterestRegistrationListeners();
+  }
+
+  @Override
+  public ConnectionListener getConnectionListener() {
+    return loadMonitor;
+  }
+
+  @Override
+  public ServerConnectionFactory getServerConnectionFactory() {
+    return serverConnectionFactory;
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    return securityService;
+  }
+
+  @Override
+  public long getTimeLimitMillis() {
+    return 120_000;
+  }
+
+  @Override
+  public Supplier<SocketCreator> getSocketCreatorSupplier() {
+    return socketCreatorSupplier;
+  }
+
+  @Override
+  public CacheClientNotifierProvider getCacheClientNotifierProvider() {
+    return cacheClientNotifierProvider;
+  }
+
+  @Override
+  public ClientHealthMonitorProvider getClientHealthMonitorProvider() {
+    return clientHealthMonitorProvider;
   }
 }

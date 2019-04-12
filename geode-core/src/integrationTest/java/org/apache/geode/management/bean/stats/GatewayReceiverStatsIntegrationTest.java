@@ -14,30 +14,78 @@
  */
 package org.apache.geode.management.bean.stats;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.internal.cache.wan.GatewayReceiverStats.createGatewayReceiverStats;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.management.internal.beans.GatewayReceiverMBeanBridge;
 import org.apache.geode.test.junit.categories.JMXTest;
 
 @Category(JMXTest.class)
-public class GatewayReceiverStatsIntegrationTest extends MBeanStatsTestCase {
+public class GatewayReceiverStatsIntegrationTest {
 
+  private static final long SLEEP = 100;
+  private static final long TIMEOUT = 4 * 1000;
+
+  private InternalDistributedSystem system;
   private GatewayReceiverMBeanBridge bridge;
   private GatewayReceiverStats receiverStats;
 
-  @Override
-  public void init() {
-    receiverStats = createGatewayReceiverStats("Test Sock Name");
+  @Before
+  public void setUp() throws Exception {
+    Properties configProperties = new Properties();
+    configProperties.setProperty(MCAST_PORT, "0");
+    configProperties.setProperty(ENABLE_TIME_STATISTICS, "true");
+    configProperties.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
+    configProperties.setProperty(STATISTIC_SAMPLE_RATE, "60000");
 
-    bridge = new GatewayReceiverMBeanBridge();
+    system = (InternalDistributedSystem) DistributedSystem.connect(configProperties);
+    assertNotNull(system.getStatSampler());
+    assertNotNull(system.getStatSampler().waitForSampleCollector(TIMEOUT));
+
+    new CacheFactory().create();
+
+    StatisticsFactory statisticsFactory = system.getStatisticsManager();
+    receiverStats = createGatewayReceiverStats(statisticsFactory, "Test Sock Name");
+
+    GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
+    InternalCacheServer receiverServer = mock(InternalCacheServer.class);
+
+    when(gatewayReceiver.getServer()).thenReturn(receiverServer);
+
+    bridge = new GatewayReceiverMBeanBridge(gatewayReceiver);
     bridge.addGatewayReceiverStats(receiverStats);
+
+    sample();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    system.disconnect();
+    system = null;
   }
 
   @Test
@@ -193,5 +241,10 @@ public class GatewayReceiverStatsIntegrationTest extends MBeanStatsTestCase {
 
   private int getCurrentClients() {
     return bridge.getCurrentClients();
+  }
+
+  private void sample() throws InterruptedException {
+    system.getStatSampler().getSampleCollector().sample(NanoTimer.getTime());
+    Thread.sleep(SLEEP);
   }
 }

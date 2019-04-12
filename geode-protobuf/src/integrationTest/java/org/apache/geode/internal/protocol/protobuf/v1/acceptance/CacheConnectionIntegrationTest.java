@@ -15,10 +15,12 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
@@ -46,6 +48,9 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.Cache;
@@ -56,8 +61,8 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
@@ -74,12 +79,13 @@ import org.apache.geode.util.test.TestUtil;
  * Test that using the magic byte to indicate intend ot use ProtoBuf messages works
  */
 @Category(ClientServerTest.class)
-@RunWith(value = Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class CacheConnectionJUnitTest {
-  private final String TEST_KEY = "testKey";
-  private final String TEST_VALUE = "testValue";
-  private final String TEST_REGION = "testRegion";
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+public class CacheConnectionIntegrationTest {
+
+  private static final String TEST_KEY = "testKey";
+  private static final String TEST_VALUE = "testValue";
+  private static final String TEST_REGION = "testRegion";
 
   /*
    * This file was generated with the following command:
@@ -87,9 +93,9 @@ public class CacheConnectionJUnitTest {
    * -keystore default.keystore -keypass password -storepass password \
    * -ext san=ip:127.0.0.1 -storetype jks
    */
-  private final String DEFAULT_STORE = "default.keystore";
-  private final String SSL_PROTOCOLS = "any";
-  private final String SSL_CIPHERS = "any";
+  private static final String DEFAULT_STORE = "default.keystore";
+  private static final String SSL_PROTOCOLS_VALUE = "any";
+  private static final String SSL_CIPHERS_VALUE = "any";
 
 
   private Cache cache;
@@ -98,19 +104,19 @@ public class CacheConnectionJUnitTest {
   private Socket socket;
   private OutputStream outputStream;
 
-  @Parameterized.Parameter()
+  @Parameter()
   public boolean useSSL;
 
-  @Parameterized.Parameters(name = "use ssl {0}")
+  @Parameters(name = "use ssl {0}")
   public static Collection<Boolean> data() {
     return Arrays.asList(false, true);
   }
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
   public TestName testName = new TestName();
@@ -192,13 +198,12 @@ public class CacheConnectionJUnitTest {
 
   @Test
   public void testConnectionCountIsProperlyDecremented() throws Exception {
-    List<CacheServer> cacheServers = this.cache.getCacheServers();
+    List<CacheServer> cacheServers = cache.getCacheServers();
     assertEquals(1, cacheServers.size());
     CacheServer cacheServer = cacheServers.stream().findFirst().get();
-    AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+    Acceptor acceptor = ((InternalCacheServer) cacheServer).getAcceptor();
 
-    await()
-        .until(() -> acceptor.getClientServerCnxCount() == 1);
+    await().until(() -> acceptor.getClientServerConnectionCount() == 1);
 
     // make a request to the server
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
@@ -211,8 +216,7 @@ public class CacheConnectionJUnitTest {
     // make sure socket is still open
     assertFalse(socket.isClosed());
     socket.close();
-    await()
-        .until(() -> acceptor.getClientServerCnxCount() == 0);
+    await().until(() -> acceptor.getClientServerConnectionCount() == 0);
   }
 
   private void validatePutResponse(Socket socket,
@@ -224,35 +228,36 @@ public class CacheConnectionJUnitTest {
   private ClientProtocol.Message deserializeResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer)
       throws InvalidProtocolMessageException, IOException {
-    ClientProtocol.Message message =
-        protobufProtocolSerializer.deserialize(socket.getInputStream());
-    return message;
+    return protobufProtocolSerializer.deserialize(socket.getInputStream());
   }
 
   private void updatePropertiesForSSLCache(Properties properties) {
-    String keyStore = TestUtil.getResourcePath(CacheConnectionJUnitTest.class, DEFAULT_STORE);
-    String trustStore = TestUtil.getResourcePath(CacheConnectionJUnitTest.class, DEFAULT_STORE);
+    String keyStore = TestUtil.getResourcePath(CacheConnectionIntegrationTest.class, DEFAULT_STORE);
+    String trustStore =
+        TestUtil.getResourcePath(CacheConnectionIntegrationTest.class, DEFAULT_STORE);
 
-    properties.put(SSL_ENABLED_COMPONENTS, "server");
-    properties.put(ConfigurationProperties.SSL_PROTOCOLS, SSL_PROTOCOLS);
-    properties.put(ConfigurationProperties.SSL_CIPHERS, SSL_CIPHERS);
-    properties.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(true));
+    properties.setProperty(SSL_ENABLED_COMPONENTS, "server");
+    properties.setProperty(SSL_PROTOCOLS, SSL_PROTOCOLS_VALUE);
+    properties.setProperty(SSL_CIPHERS, SSL_CIPHERS_VALUE);
+    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf(true));
 
-    properties.put(SSL_KEYSTORE_TYPE, "jks");
-    properties.put(SSL_KEYSTORE, keyStore);
-    properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_TRUSTSTORE, trustStore);
-    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "jks");
+    properties.setProperty(SSL_KEYSTORE, keyStore);
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_TRUSTSTORE, trustStore);
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
   }
 
   private Socket getSSLSocket() throws IOException {
-    String keyStorePath = TestUtil.getResourcePath(CacheConnectionJUnitTest.class, DEFAULT_STORE);
-    String trustStorePath = TestUtil.getResourcePath(CacheConnectionJUnitTest.class, DEFAULT_STORE);
+    String keyStorePath =
+        TestUtil.getResourcePath(CacheConnectionIntegrationTest.class, DEFAULT_STORE);
+    String trustStorePath =
+        TestUtil.getResourcePath(CacheConnectionIntegrationTest.class, DEFAULT_STORE);
 
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setEnabled(true);
-    sslConfig.setCiphers(SSL_CIPHERS);
-    sslConfig.setProtocols(SSL_PROTOCOLS);
+    sslConfig.setCiphers(SSL_CIPHERS_VALUE);
+    sslConfig.setProtocols(SSL_PROTOCOLS_VALUE);
     sslConfig.setRequireAuth(true);
     sslConfig.setKeystoreType("jks");
     sslConfig.setKeystore(keyStorePath);

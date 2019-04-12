@@ -19,11 +19,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.management.internal.ManagementConstants;
@@ -41,11 +40,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   private StatsRate eventsReceivedRate;
 
   @VisibleForTesting
-  public GatewayReceiverMBeanBridge() {
-    this(null);
-  }
-
-  GatewayReceiverMBeanBridge(GatewayReceiver gatewayReceiver) {
+  public GatewayReceiverMBeanBridge(GatewayReceiver gatewayReceiver) {
     this.gatewayReceiver = gatewayReceiver;
     initializeReceiverStats();
   }
@@ -54,8 +49,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   public int getClientConnectionCount() {
     // we can't rely on ServerBridge as the HostStatSampler might not have ran between the last
     // statistical update and the time at which this method is called.
-    return !isRunning() ? 0
-        : ((CacheServerImpl) gatewayReceiver.getServer()).getAcceptor().getClientServerCnxCount();
+    return !isRunning() ? 0 : getReceiverServer().getAcceptor().getClientServerConnectionCount();
   }
 
   @Override
@@ -152,8 +146,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   }
 
   protected void startServer() {
-    CacheServer server = gatewayReceiver.getServer();
-    addServer(server);
+    addServer(getReceiverServer());
   }
 
   protected void stopServer() {
@@ -165,7 +158,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   }
 
   String[] getConnectedGatewaySenders() {
-    AcceptorImpl acceptor = ((CacheServerImpl) gatewayReceiver.getServer()).getAcceptor();
+    Acceptor acceptor = getReceiverServer().getAcceptor();
     Set<ServerConnection> serverConnections = acceptor.getAllServerConnections();
     if (serverConnections != null && !serverConnections.isEmpty()) {
       Set<String> uniqueIds = new HashSet<>();
@@ -193,5 +186,9 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
     updateRequestRate = new StatsRate(StatsKey.UPDATE_REQUESTS, StatType.INT_TYPE, monitor);
     destroyRequestRate = new StatsRate(StatsKey.DESTROY_REQUESTS, StatType.INT_TYPE, monitor);
     eventsReceivedRate = new StatsRate(StatsKey.EVENTS_RECEIVED, StatType.INT_TYPE, monitor);
+  }
+
+  private InternalCacheServer getReceiverServer() {
+    return (InternalCacheServer) gatewayReceiver.getServer();
   }
 }

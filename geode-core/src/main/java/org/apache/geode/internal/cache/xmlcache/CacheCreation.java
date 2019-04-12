@@ -127,6 +127,7 @@ import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -1143,18 +1144,23 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public CacheServer addCacheServer() {
-    return addCacheServer(false);
-  }
-
-  @Override
-  public CacheServer addCacheServer(boolean isGatewayReceiver) {
     CacheServer bridge = new CacheServerCreation(this, false);
     this.bridgeServers.add(bridge);
     return bridge;
   }
 
   @Override
+  public InternalCacheServer addGatewayReceiverServer(GatewayReceiver gatewayReceiver) {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
   public boolean removeCacheServer(final CacheServer cacheServer) {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  public boolean removeGatewayReceiverServer(InternalCacheServer receiverServer) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
@@ -1275,7 +1281,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public List getCacheServersAndGatewayReceiver() {
+  public List<InternalCacheServer> getCacheServersAndGatewayReceiver() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

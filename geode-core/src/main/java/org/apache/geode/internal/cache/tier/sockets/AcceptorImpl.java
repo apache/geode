@@ -55,15 +55,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
@@ -85,6 +86,9 @@ import org.apache.geode.internal.cache.partitioned.AllBucketProfilesUpdateMessag
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -93,8 +97,6 @@ import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
 import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -106,7 +108,7 @@ import org.apache.geode.internal.util.ArrayUtils;
  * @since GemFire 2.0.2
  */
 @SuppressWarnings("deprecation")
-public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
+public class AcceptorImpl implements Acceptor, Runnable {
   private static final Logger logger = LogService.getLogger();
 
   private static final boolean isJRockit = System.getProperty("java.vm.name").contains("JRockit");
@@ -157,7 +159,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * THE selector for the cache server; null if no selector.
    */
   private final Selector selector;
-  // private final Selector tmpSel;
+
   /**
    * Used for managing direct byte buffer for client comms; null if no selector.
    */
@@ -214,7 +216,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       Integer.getInteger(ACCEPT_TIMEOUT_PROPERTY_NAME, DEFAULT_ACCEPT_TIMEOUT_MS);
 
   /**
-   * The mininum value of max-connections
+   * The minimum value of max-connections
    */
   static final int MINIMUM_MAX_CONNECTIONS = 16;
 
@@ -332,7 +334,9 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private static boolean isPostAuthzCallbackPresent;
 
   private final boolean isGatewayReceiver;
+
   private final List<GatewayTransportFilter> gatewayTransportFilters;
+
   private final SocketCreator socketCreator;
 
   private final SecurityService securityService;
@@ -340,6 +344,9 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private final ServerConnectionFactory serverConnectionFactory;
 
   /**
+   * Constructs an AcceptorImpl for use within a CacheServer.
+   *
+   * <p>
    * Initializes this acceptor thread to listen for connections on the given port.
    *
    * @param port The port on which this acceptor listens for connections. If {@code 0}, a
@@ -352,26 +359,74 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * @param internalCache The GemFire cache whose contents is served to clients
    * @param maxConnections the maximum number of connections allowed in the server pool
    * @param maxThreads the maximum number of threads allowed in the server pool
+   * @param securityService the SecurityService to use for authentication and authorization
+   *
    * @see SocketCreator#createServerSocket(int, int, InetAddress)
    * @see ClientHealthMonitor
+   *
    * @since GemFire 5.7
    */
-  public AcceptorImpl(int port, String bindHostName, boolean notifyBySubscription,
-      int socketBufferSize, int maximumTimeBetweenPings,
-      InternalCache internalCache,
-      int maxConnections, int maxThreads, int maximumMessageCount,
-      int messageTimeToLive,
-      ConnectionListener listener, List overflowAttributesList,
-      boolean isGatewayReceiver,
-      List<GatewayTransportFilter> transportFilter, boolean tcpNoDelay,
-      ServerConnectionFactory serverConnectionFactory, long timeLimitMillis) throws IOException {
-    securityService = internalCache.getSecurityService();
-    this.bindHostName = calcBindHostName(internalCache, bindHostName);
-    connectionListener = listener == null ? new ConnectionListenerAdapter() : listener;
-    this.notifyBySubscription = notifyBySubscription;
+  AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
+      final int socketBufferSize, final int maximumTimeBetweenPings,
+      final InternalCache internalCache, final int maxConnections, final int maxThreads,
+      final int maximumMessageCount, final int messageTimeToLive,
+      final ConnectionListener connectionListener, final OverflowAttributes overflowAttributes,
+      final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
+      final long timeLimitMillis, final SecurityService securityService,
+      final Supplier<SocketCreator> socketCreatorSupplier,
+      final CacheClientNotifierProvider cacheClientNotifierProvider,
+      final ClientHealthMonitorProvider clientHealthMonitorProvider) throws IOException {
+    this(port, bindHostName, notifyBySubscription, socketBufferSize, maximumTimeBetweenPings,
+        internalCache, maxConnections, maxThreads, maximumMessageCount, messageTimeToLive,
+        connectionListener, overflowAttributes, tcpNoDelay, serverConnectionFactory,
+        timeLimitMillis, securityService, socketCreatorSupplier, cacheClientNotifierProvider,
+        clientHealthMonitorProvider, false, Collections.emptyList());
+  }
+
+  /**
+   * Constructs an AcceptorImpl for use within a GatewayReceiver.
+   *
+   * <p>
+   * Initializes this acceptor thread to listen for connections on the given port.
+   *
+   * @param port The port on which this acceptor listens for connections. If {@code 0}, a
+   *        random port will be chosen.
+   * @param bindHostName The ip address or host name this acceptor listens on for connections. If
+   *        {@code null} or "" then all local addresses are used
+   * @param socketBufferSize The buffer size for server-side sockets
+   * @param maximumTimeBetweenPings The maximum time between client pings. This value is used by the
+   *        {@code ClientHealthMonitor} to monitor the health of this server's clients.
+   * @param internalCache The GemFire cache whose contents is served to clients
+   * @param maxConnections the maximum number of connections allowed in the server pool
+   * @param maxThreads the maximum number of threads allowed in the server pool
+   * @param securityService the SecurityService to use for authentication and authorization
+   * @param gatewayReceiver the GatewayReceiver that will use this AcceptorImpl instance
+   * @param gatewayReceiverMetrics the GatewayReceiverMetrics to use for exposing metrics
+   * @param gatewayTransportFilters List of GatewayTransportFilters
+   */
+  AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
+      final int socketBufferSize, final int maximumTimeBetweenPings,
+      final InternalCache internalCache, final int maxConnections, final int maxThreads,
+      final int maximumMessageCount, final int messageTimeToLive,
+      final ConnectionListener connectionListener, final OverflowAttributes overflowAttributes,
+      final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
+      final long timeLimitMillis, final SecurityService securityService,
+      final Supplier<SocketCreator> socketCreatorSupplier,
+      final CacheClientNotifierProvider cacheClientNotifierProvider,
+      final ClientHealthMonitorProvider clientHealthMonitorProvider,
+      final boolean isGatewayReceiver,
+      final List<GatewayTransportFilter> gatewayTransportFilters) throws IOException {
+    this.securityService = securityService;
+
     this.isGatewayReceiver = isGatewayReceiver;
-    gatewayTransportFilters = transportFilter;
+    this.gatewayTransportFilters = gatewayTransportFilters;
+
+    this.bindHostName = calcBindHostName(internalCache, bindHostName);
+    this.connectionListener =
+        connectionListener == null ? new ConnectionListenerAdapter() : connectionListener;
+    this.notifyBySubscription = notifyBySubscription;
     this.serverConnectionFactory = serverConnectionFactory;
+
     {
       int tmp_maxConnections = maxConnections;
       if (tmp_maxConnections < MINIMUM_MAX_CONNECTIONS) {
@@ -437,14 +492,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
 
     {
-      if (!isGatewayReceiver) {
-        // If configured use SSL properties for cache-server
-        socketCreator =
-            SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER);
-      } else {
-        socketCreator = SocketCreatorFactory
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY);
-      }
+      socketCreator = socketCreatorSupplier.get();
 
       final InternalCache gc;
       if (getCachedRegionHelper() != null) {
@@ -504,7 +552,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         for (;;) {
           try {
             serverSock = socketCreator.createServerSocket(port, backLog, getBindAddress(),
-                gatewayTransportFilters, socketBufferSize);
+                this.gatewayTransportFilters, socketBufferSize);
             break;
           } catch (SocketException e) {
             if (!treatAsBindException(e) || System.currentTimeMillis() > tilt) {
@@ -529,40 +577,43 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       } // !isSelector
 
       if (port == 0) {
-        port = serverSock.getLocalPort();
+        localPort = serverSock.getLocalPort();
+      } else {
+        localPort = port;
       }
       {
-        InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+        InternalDistributedSystem ds = internalCache.getInternalDistributedSystem();
         if (ds != null) {
           DistributionManager dm = ds.getDistributionManager();
           if (dm != null && dm.getDistributionManagerId().getPort() == 0
               && dm instanceof LonerDistributionManager) {
             // a server with a loner distribution manager - update it's port number
-            ((LonerDistributionManager) dm).updateLonerPort(port);
+            ((LonerDistributionManager) dm).updateLonerPort(localPort);
           }
         }
       }
-      localPort = port;
       String sockName = getServerName();
       logger.info("Cache server connection listener bound to address {} with backlog {}.",
-          new Object[] {sockName, backLog});
-      if (isGatewayReceiver) {
-        stats = GatewayReceiverStats.createGatewayReceiverStats(sockName);
+          sockName, backLog);
+      StatisticsFactory statisticsFactory =
+          internalCache.getInternalDistributedSystem().getStatisticsManager();
+      if (isGatewayReceiver()) {
+        stats = GatewayReceiverStats.createGatewayReceiverStats(statisticsFactory, sockName);
       } else {
-        stats = new CacheServerStats(sockName);
+        stats = new CacheServerStats(statisticsFactory, sockName);
       }
-
     }
 
     cache = internalCache;
     crHelper = new CachedRegionHelper(cache);
 
-    clientNotifier = CacheClientNotifier.getInstance(cache, stats, maximumMessageCount,
-        messageTimeToLive, connectionListener, overflowAttributesList, isGatewayReceiver);
+    clientNotifier = cacheClientNotifierProvider.get(internalCache, stats, maximumMessageCount,
+        messageTimeToLive, this.connectionListener, overflowAttributes, isGatewayReceiver());
+
     this.socketBufferSize = socketBufferSize;
 
     // Create the singleton ClientHealthMonitor
-    healthMonitor = ClientHealthMonitor.getInstance(internalCache, maximumTimeBetweenPings,
+    healthMonitor = clientHealthMonitorProvider.get(internalCache, maximumTimeBetweenPings,
         clientNotifier.getStats());
 
     pool = initializeServerConnectionThreadPool();
@@ -641,10 +692,12 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     return null;
   }
 
+  @Override
   public long getAcceptorId() {
     return acceptorId;
   }
 
+  @Override
   public CacheServerStats getStats() {
     return stats;
   }
@@ -652,6 +705,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * Returns true if this acceptor is using a selector to detect client events.
    */
+  @Override
   public boolean isSelector() {
     return maxThreads > 0;
   }
@@ -719,14 +773,15 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
   }
 
-  void registerSC(ServerConnection sc) {
+  @Override
+  public void registerServerConnection(ServerConnection serverConnection) {
     synchronized (syncLock) {
       if (!isRunning()) {
-        finishCon(sc);
+        finishCon(serverConnection);
         return;
       }
     }
-    getSelectorQueue().offer(sc);
+    getSelectorQueue().offer(serverConnection);
     wakeupSelector();
   }
 
@@ -740,10 +795,11 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
   }
 
-  void unregisterSC(ServerConnection sc) {
+  @Override
+  public void unregisterServerConnection(ServerConnection serverConnection) {
     // removed syncLock synchronization to fix bug 37104
     synchronized (allSCsLock) {
-      allSCs.remove(sc);
+      allSCs.remove(serverConnection);
       Iterator it = allSCs.iterator();
       ServerConnection[] again = new ServerConnection[allSCs.size()];
       for (int i = 0; i < again.length; i++) {
@@ -814,6 +870,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * @see SystemFailure#emergencyClose()
    */
+  @Override
   public void emergencyClose() {
     ServerSocket ss = serverSock;
     if (ss != null) {
@@ -1137,8 +1194,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     return name;
   }
 
-
-  InetAddress getServerInetAddr() {
+  @Override
+  public InetAddress getServerInetAddress() {
     return serverSock.getInetAddress();
   }
 
@@ -1343,11 +1400,13 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     clientServerCnxCount.incrementAndGet();
   }
 
-  void decClientServerCnxCount() {
+  @Override
+  public void decClientServerConnectionCount() {
     clientServerCnxCount.decrementAndGet();
   }
 
-  public int getClientServerCnxCount() {
+  @Override
+  public int getClientServerConnectionCount() {
     return clientServerCnxCount.get();
   }
 
@@ -1387,7 +1446,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         socket);
     boolean notForQueue = communicationMode != ClientToServerForQueue;
     if (notForQueue) {
-      int curCnt = getClientServerCnxCount();
+      int curCnt = getClientServerConnectionCount();
       if (curCnt >= maxConnections) {
         logger.warn(
             "Rejected connection from {} because current connection count of {} is greater than or equal to the configured max of {}",
@@ -1447,8 +1506,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
   }
 
-  void refuseHandshake(OutputStream out, String message, byte exception) throws IOException {
-
+  @Override
+  public void refuseHandshake(OutputStream out, String message, byte exception) throws IOException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(32, Version.CURRENT);
     DataOutputStream dos = new DataOutputStream(hdos);
     // Write refused reply
@@ -1572,7 +1631,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
   }
 
-  void notifyCacheMembersOfClose() {
+  @Override
+  public void notifyCacheMembersOfClose() {
     if (logger.isDebugEnabled()) {
       logger.debug("sending messages to all peers for removing this server..");
     }
@@ -1658,12 +1718,12 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    *         will be listened to.
    * @since GemFire 5.7
    */
-  private static String calcBindHostName(Cache cache, String bindName) {
+  private static String calcBindHostName(InternalCache cache, String bindName) {
     if (bindName != null && !bindName.isEmpty()) {
       return bindName;
     }
 
-    InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
+    InternalDistributedSystem system = cache.getInternalDistributedSystem();
     DistributionConfig config = system.getConfig();
     String hostName = null;
 
@@ -1694,6 +1754,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    *
    * @since GemFire 5.7
    */
+  @Override
   public String getExternalAddress() {
     String result = bindHostName;
     boolean needCanonicalHostName = false;
@@ -1733,18 +1794,22 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     return clientNotifier;
   }
 
+  @Override
   public CachedRegionHelper getCachedRegionHelper() {
     return crHelper;
   }
 
-  ClientHealthMonitor getClientHealthMonitor() {
+  @Override
+  public ClientHealthMonitor getClientHealthMonitor() {
     return healthMonitor;
   }
 
-  ConnectionListener getConnectionListener() {
+  @Override
+  public ConnectionListener getConnectionListener() {
     return connectionListener;
   }
 
+  @Override
   public boolean isGatewayReceiver() {
     return isGatewayReceiver;
   }
@@ -1754,7 +1819,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   // IBM J9 sometimes reports "listen failed" instead of BindException
-  // see bug #40589
   private static boolean treatAsBindException(SocketException se) {
     if (se instanceof BindException) {
       return true;
@@ -1771,6 +1835,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     return isPostAuthzCallbackPresent;
   }
 
+  @Override
   public Set<ServerConnection> getAllServerConnections() {
     return Collections.unmodifiableSet(allSCs);
   }
@@ -1780,6 +1845,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * ConcurrentModificationException. JMX MBeans/Commands need to iterate over this list to get
    * client info.
    */
+  @Override
   public ServerConnection[] getAllServerConnectionList() {
     return allSCList;
   }

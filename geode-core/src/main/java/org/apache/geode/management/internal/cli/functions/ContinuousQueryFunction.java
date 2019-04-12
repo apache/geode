@@ -22,7 +22,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -44,9 +44,9 @@ public class ContinuousQueryFunction implements InternalFunction {
       if (cache.getCacheServers().size() > 0) {
         CacheServerImpl server = (CacheServerImpl) cache.getCacheServers().iterator().next();
         if (server != null) {
-          AcceptorImpl acceptorImpl = server.getAcceptor();
-          if (acceptorImpl != null) {
-            CacheClientNotifier cacheClientNotifier = acceptorImpl.getCacheClientNotifier();
+          Acceptor acceptor = server.getAcceptor();
+          if (acceptor != null) {
+            CacheClientNotifier cacheClientNotifier = acceptor.getCacheClientNotifier();
             if (cacheClientNotifier != null) {
               Collection<CacheClientProxy> cacheClientProxySet =
                   cacheClientNotifier.getClientProxies();
@@ -76,7 +76,7 @@ public class ContinuousQueryFunction implements InternalFunction {
 
               // try getting from server connections
               if (foundClientinCCP == false) {
-                ServerConnection[] serverConnections = acceptorImpl.getAllServerConnectionList();
+                ServerConnection[] serverConnections = acceptor.getAllServerConnectionList();
 
                 for (ServerConnection conn : serverConnections) {
                   ClientProxyMembershipID cliIdFrmProxy = conn.getProxyID();

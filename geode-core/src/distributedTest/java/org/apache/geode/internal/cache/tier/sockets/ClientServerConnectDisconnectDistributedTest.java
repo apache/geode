@@ -32,8 +32,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.FilterProfile;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -143,7 +143,7 @@ public class ClientServerConnectDisconnectDistributedTest implements Serializabl
     Cache cache = ClusterStartupRule.getCache();
     List<CacheServer> cacheServers = cache.getCacheServers();
     CacheServer cacheServer = cacheServers.get(0);
-    return ((CacheServerImpl) cacheServer).getAcceptor();
+    return (AcceptorImpl) ((InternalCacheServer) cacheServer).getAcceptor();
   }
 
   private void verifyServerConnectionSubjectsAreLoggedIn(AcceptorImpl acceptor) {
