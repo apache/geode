@@ -37,5 +37,5 @@ public interface ConfigurationManager<T extends CacheElement> {
 
   void delete(T config, CacheConfig existing);
 
-  List<T> list(T filterConfig, CacheConfig existing);
+  List<? extends T> list(T filterConfig, CacheConfig existing);
 }

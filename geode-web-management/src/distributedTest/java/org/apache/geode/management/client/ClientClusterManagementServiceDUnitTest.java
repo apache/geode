@@ -16,7 +16,10 @@
 package org.apache.geode.management.client;
 
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,6 +33,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.BasicRegionConfig;
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -64,17 +69,28 @@ public class ClientClusterManagementServiceDUnitTest {
 
   @Test
   @WithMockUser
-  public void createRegion() {
+  public void createAndListRegion() {
     BasicRegionConfig region = new BasicRegionConfig();
     region.setName("customer");
-    region.setType(RegionType.REPLICATE_PERSISTENT);
+    region.setType(RegionType.REPLICATE);
 
     ClusterManagementResult result = client.create(region);
 
     // in StressNewTest, this will be run multiple times without restarting the locator
-    assertThat(result.getStatusCode()).isIn(ClusterManagementResult.StatusCode.OK,
+    assertManagementResult(result).hasStatusCode(ClusterManagementResult.StatusCode.OK,
         ClusterManagementResult.StatusCode.ENTITY_EXISTS);
+
+    // list region when regions are not created in a group
+    BasicRegionConfig noFilter = new BasicRegionConfig();
+    ClusterManagementResult list = client.list(noFilter);
+    List<CacheElement> regions = list.getResult();
+    assertThat(regions.size()).isEqualTo(1);
+    RegionConfig cacheElement = (RegionConfig) regions.get(0);
+    assertThat(cacheElement.getId()).isEqualTo("customer");
+    assertThat(cacheElement.getType()).isEqualTo("REPLICATE");
+    assertThat(cacheElement.getConfigGroup()).isEqualTo("cluster");
   }
+
 
   @Test
   @WithMockUser

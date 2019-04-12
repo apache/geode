@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
@@ -37,7 +38,7 @@ import org.apache.geode.security.ResourcePermission;
 public class RegionConfigValidatorTest {
 
   private RegionConfigValidator validator;
-  private RegionConfig config;
+  private BasicRegionConfig config;
   private SecurityService securityService;
 
   @Before
@@ -46,7 +47,7 @@ public class RegionConfigValidatorTest {
     securityService = mock(SecurityService.class);
     when(cache.getSecurityService()).thenReturn(securityService);
     validator = new RegionConfigValidator(cache);
-    config = new RegionConfig();
+    config = new BasicRegionConfig();
   }
 
   @Test
@@ -66,7 +67,9 @@ public class RegionConfigValidatorTest {
     config.setType(RegionType.REPLICATE);
     validator.validate(config);
 
-    verify(securityService, times(0)).authorize(any());
+    verify(securityService, times(0)).authorize(
+        any(ResourcePermission.Resource.class),
+        any(ResourcePermission.Operation.class), any(ResourcePermission.Target.class));
     assertThat(config.getType()).isEqualTo("REPLICATE");
   }
 
@@ -84,7 +87,6 @@ public class RegionConfigValidatorTest {
     config.setName("regionName");
     validator.validate(config);
 
-    verify(securityService, times(0)).authorize(any());
     assertThat(config.getType()).isEqualTo("PARTITION");
   }
 
@@ -93,8 +95,6 @@ public class RegionConfigValidatorTest {
     assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining("Name of the region has to be specified");
-
-    verify(securityService, times(0)).authorize(any());
   }
 
   @Test
@@ -103,8 +103,6 @@ public class RegionConfigValidatorTest {
     assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining("Region names may not begin with a double-underscore");
-
-    verify(securityService, times(0)).authorize(any());
   }
 
   @Test
@@ -114,7 +112,25 @@ public class RegionConfigValidatorTest {
         IllegalArgumentException.class)
         .hasMessageContaining(
             "Region names may only be alphanumeric and may contain hyphens or underscores");
+  }
 
-    verify(securityService, times(0)).authorize(any());
+  @Test
+  public void invalidGroup() throws Exception {
+    config.setName("test");
+    config.setGroup("cluster");
+    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "cluster is a reserved group name");
+  }
+
+  @Test
+  public void invalidObject() throws Exception {
+    RegionConfig config = new RegionConfig();
+    config.setName("test");
+    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Use BasicRegionConfig to configure your region");
   }
 }

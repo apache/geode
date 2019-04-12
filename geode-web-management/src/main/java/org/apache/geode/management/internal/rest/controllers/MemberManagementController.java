@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.MemberConfig.MEMBER_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,7 +38,7 @@ public class MemberManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
   public ResponseEntity<ClusterManagementResult> getMember(
-      @PathVariable(name = "id", required = false) String id) {
+      @PathVariable(name = "id") String id) {
     MemberConfig config = new MemberConfig();
     config.setId(id);
     ClusterManagementResult result = clusterManagementService.list(config);
@@ -53,9 +54,9 @@ public class MemberManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> listMembers(
-      @RequestParam(required = false) String id) {
+      @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
     MemberConfig filter = new MemberConfig();
-    if (id != null) {
+    if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
     }
     ClusterManagementResult result = clusterManagementService.list(filter);
