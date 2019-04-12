@@ -67,7 +67,7 @@ public class ClientClusterManagementServiceDUnitTest {
   public void createRegion() {
     BasicRegionConfig region = new BasicRegionConfig();
     region.setName("customer");
-    region.setType(RegionType.REPLICATE);
+    region.setType(RegionType.REPLICATE_PERSISTENT);
 
     ClusterManagementResult result = client.create(region);
 

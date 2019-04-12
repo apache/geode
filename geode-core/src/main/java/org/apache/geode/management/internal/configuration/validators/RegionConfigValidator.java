@@ -19,9 +19,16 @@ import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionNameValidation;
+import org.apache.geode.security.ResourcePermission;
 
 public class RegionConfigValidator implements ConfigurationValidator<BasicRegionConfig> {
+  private InternalCache cache;
+
+  public RegionConfigValidator(InternalCache cache) {
+    this.cache = cache;
+  }
 
   @Override
   public void validate(BasicRegionConfig config)
@@ -41,9 +48,17 @@ public class RegionConfigValidator implements ConfigurationValidator<BasicRegion
       // by management v2 api.
       try {
         RegionType.valueOf(type);
+
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException(
             String.format("Type %s is not supported in Management V2 API.", type));
+      }
+
+      // additional authorization
+      if (config.getRegionAttributes().getDataPolicy().isPersistent()) {
+        cache.getSecurityService()
+            .authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
+                ResourcePermission.Target.DISK);
       }
     }
 
