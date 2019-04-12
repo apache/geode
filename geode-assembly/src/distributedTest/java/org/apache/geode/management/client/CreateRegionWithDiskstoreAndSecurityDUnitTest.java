@@ -17,9 +17,12 @@ package org.apache.geode.management.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionAttributesType;
@@ -42,6 +45,10 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   private MemberVM server;
   private MemberVM locator;
 
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private File diskStoreDir;
+
   @Before
   public void before() throws Exception {
     locator = cluster.startLocatorVM(0,
@@ -50,15 +57,15 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     server = cluster.startServerVM(1,
         s -> s.withConnectionToLocator(locatorPort)
             .withCredential("cluster", "cluster"));
-
     gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         "data,cluster", "data,cluster");
+    diskStoreDir = temporaryFolder.newFolder();
   }
 
   @Test
   public void createReplicateRegionWithDiskstoreWithoutDataManage() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        cluster.getWorkingDirRoot())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath())).statusIsSuccess();
 
     ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("REGION1");
@@ -80,7 +87,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreWithoutClusterWrite() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        cluster.getWorkingDirRoot())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath())).statusIsSuccess();
 
     ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("REGION1");
@@ -102,7 +109,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreSuccess() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        cluster.getWorkingDirRoot())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath())).statusIsSuccess();
 
     ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("REGION1");

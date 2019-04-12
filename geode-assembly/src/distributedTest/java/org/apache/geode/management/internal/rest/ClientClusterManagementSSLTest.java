@@ -31,10 +31,8 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.springframework.web.client.ResourceAccessException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -50,20 +48,18 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class ClientClusterManagementSSLTest {
 
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(2);
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule(2);
 
-  private static MemberVM locator, server;
+  private MemberVM locator, server;
   private ClusterManagementService cmsClient;
   private ManagedRegionConfig region;
-  private static SSLContext sslContext;
-  private static HostnameVerifier hostnameVerifier;
+  private SSLContext sslContext;
+  private HostnameVerifier hostnameVerifier;
 
-  @ClassRule
-  public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  @Before
+  public void before() throws Exception {
 
-  @BeforeClass
-  public static void beforeClass() throws Exception {
     File keyFile = new File(ClientClusterManagementSSLTest.class.getClassLoader()
         .getResource("ssl/trusted.keystore").getFile());
     Properties sslProps = new Properties();
@@ -88,10 +84,7 @@ public class ClientClusterManagementSSLTest {
 
     sslContext = SSLContext.getDefault();
     hostnameVerifier = new NoopHostnameVerifier();
-  }
 
-  @Before
-  public void before() throws Exception {
     region = new ManagedRegionConfig();
     region.setName("customer");
   }
