@@ -1708,13 +1708,12 @@ public class PRHARedundancyProvider {
         new ArrayList<ProxyBucketRegion>(proxyBucketArray.length);
 
 
-    allBucketsRecoveredFromDisk = new CountDownLatch(proxyBucketArray.length);
-
     /*
      * Start the redundancy logger before recovering any proxy buckets.
      */
     startRedundancyLogger(proxyBucketArray.length);
 
+    allBucketsRecoveredFromDisk = new CountDownLatch(proxyBucketArray.length);
     /*
      * Spawn a separate thread for bucket that we previously hosted to recover that bucket.
      *
