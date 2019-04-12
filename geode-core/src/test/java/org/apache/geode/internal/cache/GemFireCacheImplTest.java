@@ -249,8 +249,24 @@ public class GemFireCacheImplTest {
   }
 
   @Test
-  public void removeGatewayReceiverShouldRemoveFromReceiversList() {
+  public void addGatewayReceiverDoesNotAllowMoreThanOneReceiver() {
     GatewayReceiver receiver = mock(GatewayReceiver.class);
+    GatewayReceiver receiver2 = mock(GatewayReceiver.class);
+
+    gemFireCacheImpl = createGemFireCacheImpl();
+    gemFireCacheImpl.addGatewayReceiver(receiver);
+    assertEquals(1, gemFireCacheImpl.getGatewayReceivers().size());
+
+    gemFireCacheImpl.addGatewayReceiver(receiver2);
+
+    assertEquals(1, gemFireCacheImpl.getGatewayReceivers().size());
+    assertThat(gemFireCacheImpl.getGatewayReceivers()).containsOnly(receiver2);
+  }
+
+  @Test
+  public void removeGatewayReceiverRemovesTheReceiver() {
+    GatewayReceiver receiver = mock(GatewayReceiver.class);
+
     gemFireCacheImpl = createGemFireCacheImpl();
     gemFireCacheImpl.addGatewayReceiver(receiver);
     assertEquals(1, gemFireCacheImpl.getGatewayReceivers().size());
@@ -259,7 +275,6 @@ public class GemFireCacheImplTest {
 
     assertEquals(0, gemFireCacheImpl.getGatewayReceivers().size());
   }
-
 
   @Test
   public void removeFromCacheServerShouldRemoveFromCacheServersList() {
