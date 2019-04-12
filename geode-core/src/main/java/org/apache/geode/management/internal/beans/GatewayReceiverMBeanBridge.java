@@ -137,7 +137,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
 
 
   public int getStartPort() {
-    return rcv.getEndPort();
+    return rcv.getStartPort();
   }
 
 
