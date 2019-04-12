@@ -18,6 +18,8 @@ package org.apache.geode.internal.cache.map;
 
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
@@ -27,10 +29,12 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.ValueComparisonHelper;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -38,11 +42,14 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 
 public class RegionMapPut extends AbstractRegionMapPut {
+  protected static final Logger logger = LogService.getLogger();
+
   private final CacheModificationLock cacheModificationLock;
   private final EntryEventSerialization entryEventSerialization;
   private final boolean ifNew;
   private final boolean ifOld;
   private final boolean overwriteDestroyed;
+  private boolean overwritePutIfAbsent;
   private final boolean requireOldValue;
   private final boolean retrieveOldValueForDelta;
   private final boolean replaceOnClient;
@@ -102,6 +109,10 @@ public class RegionMapPut extends AbstractRegionMapPut {
 
   boolean isReplaceOnClient() {
     return replaceOnClient;
+  }
+
+  boolean isOverwritePutIfAbsent() {
+    return overwritePutIfAbsent;
   }
 
   boolean isCacheWrite() {
@@ -214,6 +225,9 @@ public class RegionMapPut extends AbstractRegionMapPut {
   protected void unsetOldValueForDelta() {
     OffHeapHelper.release(getOldValueForDelta());
     setOldValueForDelta(null);
+    if (this.overwritePutIfAbsent) {
+      getEvent().setOldValue(null);
+    }
   }
 
   @Override
@@ -396,10 +410,33 @@ public class RegionMapPut extends AbstractRegionMapPut {
   private boolean checkCreatePreconditions() {
     if (isIfNew()) {
       if (!getRegionEntry().isDestroyedOrRemoved()) {
+        // retain the version stamp of the existing entry for use in processing failures
+        EntryEventImpl event = getEvent();
+        if (event.getRegion().getConcurrencyChecksEnabled() &&
+            event.getOperation() == Operation.PUT_IF_ABSENT &&
+            !event.hasValidVersionTag() &&
+            event.isPossibleDuplicate()) {
+          if (ValueComparisonHelper.checkEquals(getRegionEntry().getValue(),
+              getEvent().basicGetNewValue(),
+              isCompressedOffHeap(event), event.getRegion().getCache())) {
+            logger.info("retried putIfAbsent found same value already in cache "
+                + "- allowing the operation.  entry={}; event={}", getRegionEntry(), getEvent());
+            event.setPossibleDuplicate(true);
+            this.overwritePutIfAbsent = true;
+            return true;
+          }
+        }
         return false;
       }
     }
     return true;
+  }
+
+
+  private boolean isCompressedOffHeap(EntryEventImpl event) {
+    return event.getContext() != null ? false
+        : event.getRegion().getAttributes().getOffHeap()
+            && event.getRegion().getAttributes().getCompressor() != null;
   }
 
   private boolean checkExpectedOldValuePrecondition() {
