@@ -24,6 +24,7 @@ org/apache/geode/internal/alerting/AlertingSession$State
 org/apache/geode/internal/cache/DiskStoreMonitor$DiskState
 org/apache/geode/internal/cache/InitialImageOperation$GIITestHook
 org/apache/geode/internal/cache/Oplog$OPLOG_TYPE
+org/apache/geode/internal/cache/ServerBuilder$SocketCreatorType
 org/apache/geode/internal/cache/UserSpecifiedDiskStoreAttributes
 org/apache/geode/internal/cache/backup/BackupWriterFactory
 org/apache/geode/internal/cache/backup/BackupWriterFactory$1
@@ -33,6 +34,7 @@ org/apache/geode/internal/cache/client/protocol/exception/ServiceLoadingFailureE
 org/apache/geode/internal/cache/client/protocol/exception/ServiceVersionNotFoundException
 org/apache/geode/internal/cache/tier/CommunicationMode
 org/apache/geode/internal/cache/tier/InternalClientMembership$EventType
+org/apache/geode/internal/cache/tier/sockets/CacheClientNotifier$1
 org/apache/geode/internal/cache/tier/sockets/ClientUpdateMessageImpl$ClientCqConcurrentMap
 org/apache/geode/internal/cache/tier/sockets/ClientUpdateMessageImpl$CqNameToOpHashMap
 org/apache/geode/internal/cache/tx/RemoteClearMessage$Operation

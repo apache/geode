@@ -19,10 +19,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestRegistrationListener;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
@@ -34,7 +34,15 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * A remote (serializable) implementation of <code>BridgeServer</code> that is passed between
@@ -139,9 +147,49 @@ public class RemoteBridgeServer extends AbstractCacheServer
    * not running.
    */
   @Override
-  public Cache getCache() {
+  public InternalCache getCache() {
     throw new UnsupportedOperationException(
         "Cannot get the Cache of a remote BridgeServer.");
+  }
+
+  @Override
+  public ConnectionListener getConnectionListener() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public ServerConnectionFactory getServerConnectionFactory() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public long getTimeLimitMillis() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public Supplier<SocketCreator> getSocketCreatorSupplier() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public CacheClientNotifier.CacheClientNotifierProvider getCacheClientNotifierProvider() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public ClientHealthMonitor.ClientHealthMonitorProvider getClientHealthMonitorProvider() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public String[] getCombinedGroups() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
   @Override
@@ -230,6 +278,16 @@ public class RemoteBridgeServer extends AbstractCacheServer
 
   @Override
   public Acceptor getAcceptor() {
+    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
+  }
+
+  @Override
+  public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
+    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
+  }
+
+  @Override
+  public String getExternalAddress() {
     throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
   }
 

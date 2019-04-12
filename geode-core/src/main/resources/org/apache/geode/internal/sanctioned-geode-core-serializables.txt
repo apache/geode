@@ -351,7 +351,6 @@ org/apache/geode/internal/cache/snapshot/SnapshotOptionsImpl,true,1,filter:org/a
 org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedArgs,true,1,exporter:org/apache/geode/distributed/DistributedMember,options:org/apache/geode/cache/snapshot/SnapshotOptions
 org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedExportFunction,true,1
 org/apache/geode/internal/cache/tier/BatchException,true,-6707074107791305564,_index:int
-org/apache/geode/internal/cache/tier/sockets/CacheClientNotifier$2,false,this$0:org/apache/geode/internal/cache/tier/sockets/CacheClientNotifier
 org/apache/geode/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher$1,true,0,this$0:org/apache/geode/internal/cache/tier/sockets/CacheClientProxy$MessageDispatcher
 org/apache/geode/internal/cache/tier/sockets/ClientTombstoneMessage$TOperation,false
 org/apache/geode/internal/cache/tier/sockets/MessageTooLargeException,true,-8970585803331525833
