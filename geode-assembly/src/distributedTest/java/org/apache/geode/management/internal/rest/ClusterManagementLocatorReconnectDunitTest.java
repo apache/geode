@@ -25,9 +25,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -67,7 +67,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
   }
 
   private void makeRestCallAndVerifyResult(String regionName) throws Exception {
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName(regionName);
     regionConfig.setType(RegionType.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();

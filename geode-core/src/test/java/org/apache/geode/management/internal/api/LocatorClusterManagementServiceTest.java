@@ -30,8 +30,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -44,7 +44,7 @@ public class LocatorClusterManagementServiceTest {
   private LocatorClusterManagementService service;
   private InternalCache cache;
   private ConfigurationPersistenceService persistenceService;
-  private BasicRegionConfig regionConfig;
+  private ManagedRegionConfig regionConfig;
   private ClusterManagementResult result;
 
   @Before
@@ -52,7 +52,7 @@ public class LocatorClusterManagementServiceTest {
     cache = mock(InternalCache.class);
     persistenceService = mock(ConfigurationPersistenceService.class);
     service = spy(new LocatorClusterManagementService(cache, persistenceService));
-    regionConfig = new BasicRegionConfig();
+    regionConfig = new ManagedRegionConfig();
   }
 
   @Test

@@ -37,9 +37,9 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.springframework.web.client.ResourceAccessException;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -55,7 +55,7 @@ public class ClientClusterManagementSSLTest {
 
   private static MemberVM locator, server;
   private ClusterManagementService cmsClient;
-  private BasicRegionConfig region;
+  private ManagedRegionConfig region;
   private static SSLContext sslContext;
   private static HostnameVerifier hostnameVerifier;
 
@@ -92,7 +92,7 @@ public class ClientClusterManagementSSLTest {
 
   @Before
   public void before() throws Exception {
-    region = new BasicRegionConfig();
+    region = new ManagedRegionConfig();
     region.setName("customer");
   }
 
@@ -163,7 +163,7 @@ public class ClientClusterManagementSSLTest {
       // when getting the service from the server, we don't need to provide the host information
       ClusterManagementService cmsClient =
           ClusterManagementServiceProvider.getService("dataManage", "dataManage");
-      BasicRegionConfig region = new BasicRegionConfig();
+      ManagedRegionConfig region = new ManagedRegionConfig();
       region.setName("orders");
       cmsClient.create(region);
 

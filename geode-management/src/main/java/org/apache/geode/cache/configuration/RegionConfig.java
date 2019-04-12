@@ -41,7 +41,7 @@ import org.apache.geode.annotations.Experimental;
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"indexes", "regionElements", "entries", "regions"})
 @Experimental
-public class RegionConfig extends BasicRegionConfig {
+public class RegionConfig extends ManagedRegionConfig {
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
   protected List<Index> indexes;
   @XmlAnyElement(lax = true)
@@ -59,8 +59,8 @@ public class RegionConfig extends BasicRegionConfig {
     super(name, type);
   }
 
-  // a convenience constructor to turn a BasicRegionConfig into RegionConfig
-  public RegionConfig(BasicRegionConfig regionConfig) {
+  // a convenience constructor to turn a ManagedRegionConfig into RegionConfig
+  public RegionConfig(ManagedRegionConfig regionConfig) {
     this.name = regionConfig.getName();
     this.type = regionConfig.getType();
     this.regionAttributes = regionConfig.getRegionAttributes();

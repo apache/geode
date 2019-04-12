@@ -719,7 +719,7 @@ public class CacheConfig {
     return this.regions;
   }
 
-  public void addRegion(BasicRegionConfig regionConfig) {
+  public void addRegion(ManagedRegionConfig regionConfig) {
     getRegions().add(new RegionConfig(regionConfig));
   }
 

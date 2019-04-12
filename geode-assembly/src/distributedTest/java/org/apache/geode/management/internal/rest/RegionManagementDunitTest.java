@@ -24,9 +24,9 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -53,7 +53,7 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createsRegion() throws Exception {
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();
@@ -83,7 +83,7 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createsRegionUsingClusterManagementClient() throws Exception {
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("customers2");
     regionConfig.setType(RegionType.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();
@@ -148,7 +148,7 @@ public class RegionManagementDunitTest {
     CacheConfig cacheConfig =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService()
             .getCacheConfig("cluster");
-    BasicRegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+    ManagedRegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
     assertThat(regionConfig.getType()).isEqualTo(type);
   }
 

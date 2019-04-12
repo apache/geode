@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -44,7 +44,7 @@ public class CacheConfigDAODUnitTest {
       ConfigurationPersistenceService ccService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       ccService.updateCacheConfig("cluster", cc -> {
-        BasicRegionConfig regionConfig = new BasicRegionConfig();
+        ManagedRegionConfig regionConfig = new ManagedRegionConfig();
         regionConfig.setName("regionB");
         regionConfig.setType(RegionType.REPLICATE);
         cc.addRegion(regionConfig);

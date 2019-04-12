@@ -32,7 +32,7 @@ public class CacheElementJsonMappingTest {
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   private static MemberConfig member;
-  private static BasicRegionConfig region;
+  private static ManagedRegionConfig region;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -40,7 +40,7 @@ public class CacheElementJsonMappingTest {
     member.setId("server");
     member.setPid("123");
 
-    region = new BasicRegionConfig();
+    region = new ManagedRegionConfig();
     region.setName("test");
   }
 
@@ -50,7 +50,7 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
     assertThat(json).contains("class").contains("\"name\":\"test\"");
 
-    BasicRegionConfig config = mapper.readValue(json, BasicRegionConfig.class);
+    ManagedRegionConfig config = mapper.readValue(json, ManagedRegionConfig.class);
     assertThat(config.getName()).isEqualTo(region.getName());
   }
 
@@ -89,14 +89,14 @@ public class CacheElementJsonMappingTest {
 
     ClusterManagementResult result1 = mapper.readValue(json, ClusterManagementResult.class);
     assertThat(result1.getResult()).hasSize(2);
-    assertThat(result1.getResult().get(0)).isInstanceOf(BasicRegionConfig.class);
+    assertThat(result1.getResult().get(0)).isInstanceOf(ManagedRegionConfig.class);
     assertThat(result1.getResult().get(1)).isInstanceOf(MemberConfig.class);
   }
 
   @Test
   public void deserializeWithoutTypeInfo() throws Exception {
     String json = "{'name':'test'}";
-    BasicRegionConfig config = mapper.readValue(json, BasicRegionConfig.class);
+    ManagedRegionConfig config = mapper.readValue(json, ManagedRegionConfig.class);
     assertThat(config.getName()).isEqualTo("test");
   }
 

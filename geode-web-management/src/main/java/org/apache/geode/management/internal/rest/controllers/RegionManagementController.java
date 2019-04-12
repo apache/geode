@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.cache.configuration.BasicRegionConfig.REGION_CONFIG_ENDPOINT;
+import static org.apache.geode.cache.configuration.ManagedRegionConfig.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 
 @Controller("regionManagement")
@@ -47,7 +47,7 @@ public class RegionManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> createRegion(
-      @RequestBody BasicRegionConfig regionConfig) {
+      @RequestBody ManagedRegionConfig regionConfig) {
     ClusterManagementResult result =
         clusterManagementService.create(regionConfig);
     return new ResponseEntity<>(result,
@@ -59,7 +59,7 @@ public class RegionManagementController extends AbstractManagementController {
   public ResponseEntity<ClusterManagementResult> listRegion(
       @RequestParam(required = false) String id,
       @RequestParam(required = false) String group) {
-    BasicRegionConfig filter = new BasicRegionConfig();
+    ManagedRegionConfig filter = new ManagedRegionConfig();
     if (StringUtils.isNotBlank(id)) {
       filter.setName(id);
     }

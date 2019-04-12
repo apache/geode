@@ -25,8 +25,8 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -45,7 +45,7 @@ public class ListRegionManagementDunitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static BasicRegionConfig filter;
+  private static ManagedRegionConfig filter;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -57,24 +57,24 @@ public class ListRegionManagementDunitTest {
     gfsh.connect(locator);
 
     // create regions
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("customers1");
     regionConfig.setGroup("group1");
     client.create(regionConfig);
 
-    regionConfig = new BasicRegionConfig();
+    regionConfig = new ManagedRegionConfig();
     regionConfig.setName("customers2");
     regionConfig.setGroup("group2");
     client.create(regionConfig);
 
-    regionConfig = new BasicRegionConfig();
+    regionConfig = new ManagedRegionConfig();
     regionConfig.setName("customers");
     client.create(regionConfig);
   }
 
   @Before
   public void before() throws Exception {
-    filter = new BasicRegionConfig();
+    filter = new ManagedRegionConfig();
   }
 
   @Test

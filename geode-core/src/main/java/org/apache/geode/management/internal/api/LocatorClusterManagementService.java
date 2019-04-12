@@ -30,9 +30,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -64,11 +64,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ConfigurationPersistenceService persistenceService) {
     this(cache, persistenceService, new HashMap(), new HashMap());
     // initialize the list of managers
-    managers.put(BasicRegionConfig.class, new RegionConfigManager());
+    managers.put(ManagedRegionConfig.class, new RegionConfigManager());
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
 
     // initialize the list of validators
-    validators.put(BasicRegionConfig.class, new RegionConfigValidator(cache));
+    validators.put(ManagedRegionConfig.class, new RegionConfigValidator(cache));
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
   }
 

@@ -15,16 +15,16 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionNameValidation;
 import org.apache.geode.security.ResourcePermission;
 
-public class RegionConfigValidator implements ConfigurationValidator<BasicRegionConfig> {
+public class RegionConfigValidator implements ConfigurationValidator<ManagedRegionConfig> {
   private InternalCache cache;
 
   public RegionConfigValidator(InternalCache cache) {
@@ -32,10 +32,10 @@ public class RegionConfigValidator implements ConfigurationValidator<BasicRegion
   }
 
   @Override
-  public void validate(BasicRegionConfig config)
+  public void validate(ManagedRegionConfig config)
       throws IllegalArgumentException {
     if (config instanceof RegionConfig) {
-      throw new IllegalArgumentException("Use BasicRegionConfig to configure your region.");
+      throw new IllegalArgumentException("Use ManagedRegionConfig to configure your region.");
     }
 
     if (config.getName() == null) {
@@ -75,7 +75,7 @@ public class RegionConfigValidator implements ConfigurationValidator<BasicRegion
   }
 
   @Override
-  public boolean exists(BasicRegionConfig config, CacheConfig existing) {
+  public boolean exists(ManagedRegionConfig config, CacheConfig existing) {
     return CacheElement.exists(existing.getRegions(), config.getId());
   }
 }

@@ -25,9 +25,9 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -61,7 +61,7 @@ public class RegionAPIDUnitTest {
   public void createsPartitionedRegion() {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
-      BasicRegionConfig config = new BasicRegionConfig();
+      ManagedRegionConfig config = new ManagedRegionConfig();
       config.setName(regionName);
       config.setType(RegionType.PARTITION);
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
@@ -86,7 +86,7 @@ public class RegionAPIDUnitTest {
   public void createsReplicatedRegion() {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
-      BasicRegionConfig config = new BasicRegionConfig();
+      ManagedRegionConfig config = new ManagedRegionConfig();
       config.setName(regionName);
       config.setType(RegionType.REPLICATE);
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
@@ -103,7 +103,7 @@ public class RegionAPIDUnitTest {
   public void defaultTypeIsPartition() throws Exception {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
-      BasicRegionConfig config = new BasicRegionConfig();
+      ManagedRegionConfig config = new ManagedRegionConfig();
       config.setName(regionName);
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config);
@@ -118,7 +118,7 @@ public class RegionAPIDUnitTest {
     CacheConfig cacheConfig =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService()
             .getCacheConfig("cluster");
-    BasicRegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+    ManagedRegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
     assertThat(regionConfig.getType()).isEqualTo(type);
   }
 

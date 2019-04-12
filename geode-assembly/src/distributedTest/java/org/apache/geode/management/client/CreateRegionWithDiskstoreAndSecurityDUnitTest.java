@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.examples.SimpleSecurityManager;
@@ -60,7 +60,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
         cluster.getWorkingDirRoot())).statusIsSuccess();
 
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("REGION1");
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
 
@@ -82,7 +82,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
         cluster.getWorkingDirRoot())).statusIsSuccess();
 
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("REGION1");
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
 
@@ -104,7 +104,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
         cluster.getWorkingDirRoot())).statusIsSuccess();
 
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    ManagedRegionConfig regionConfig = new ManagedRegionConfig();
     regionConfig.setName("REGION1");
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
 

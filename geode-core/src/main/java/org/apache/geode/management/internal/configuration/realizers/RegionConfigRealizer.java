@@ -28,8 +28,8 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 
-public class RegionConfigRealizer implements ConfigurationRealizer<BasicRegionConfig> {
+public class RegionConfigRealizer implements ConfigurationRealizer<ManagedRegionConfig> {
   public RegionConfigRealizer() {}
 
   /**
@@ -47,7 +47,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<BasicRegionCo
    * @param regionConfig the name in the regionConfig can not contain sub-regions.
    */
   @Override
-  public void create(BasicRegionConfig regionConfig, Cache cache) {
+  public void create(ManagedRegionConfig regionConfig, Cache cache) {
     RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
     factory.create(regionConfig.getName());
   }
@@ -60,7 +60,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<BasicRegionCo
    * @param regionConfig the name in regionConfig is ignored.
    * @param regionPath this is the full path of the region
    */
-  public void create(BasicRegionConfig regionConfig, String regionPath, Cache cache) {
+  public void create(ManagedRegionConfig regionConfig, String regionPath, Cache cache) {
     RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
     RegionPath regionPathData = new RegionPath(regionPath);
     String regionName = regionPathData.getName();
@@ -285,15 +285,15 @@ public class RegionConfigRealizer implements ConfigurationRealizer<BasicRegionCo
   }
 
   @Override
-  public boolean exists(BasicRegionConfig config, Cache cache) {
+  public boolean exists(ManagedRegionConfig config, Cache cache) {
     return false;
   }
 
   @Override
-  public void update(BasicRegionConfig config, Cache cache) {}
+  public void update(ManagedRegionConfig config, Cache cache) {}
 
   @Override
-  public void delete(BasicRegionConfig config, Cache cache) {}
+  public void delete(ManagedRegionConfig config, Cache cache) {}
 
 
 }

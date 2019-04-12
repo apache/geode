@@ -23,31 +23,31 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.ManagedRegionConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 
-public class RegionConfigManager implements ConfigurationManager<BasicRegionConfig> {
+public class RegionConfigManager implements ConfigurationManager<ManagedRegionConfig> {
 
   public RegionConfigManager() {}
 
   @Override
-  public void add(BasicRegionConfig configElement, CacheConfig existingConfig) {
+  public void add(ManagedRegionConfig configElement, CacheConfig existingConfig) {
     existingConfig.addRegion(configElement);
   }
 
   @Override
-  public void update(BasicRegionConfig config, CacheConfig existing) {
+  public void update(ManagedRegionConfig config, CacheConfig existing) {
     throw new NotImplementedException("Not implemented yet");
   }
 
   @Override
-  public void delete(BasicRegionConfig config, CacheConfig existing) {
+  public void delete(ManagedRegionConfig config, CacheConfig existing) {
     throw new NotImplementedException("Not implemented yet");
   }
 
   @Override
-  public List<RegionConfig> list(BasicRegionConfig filter, CacheConfig existing) {
+  public List<RegionConfig> list(ManagedRegionConfig filter, CacheConfig existing) {
     if (StringUtils.isBlank(filter.getName())) {
       return existing.getRegions();
     }
