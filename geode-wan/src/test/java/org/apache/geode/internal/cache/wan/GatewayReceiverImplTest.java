@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreator;
 
-public class GatewayReceiverImplJUnitTest {
+public class GatewayReceiverImplTest {
 
   @Test
   public void getHostOnUnstartedGatewayShouldReturnLocalhost() throws UnknownHostException {
@@ -49,7 +49,7 @@ public class GatewayReceiverImplJUnitTest {
   }
 
   @Test
-  public void getHostOnRunningGatewayShouldReturnCacheServerAddress() throws IOException {
+  public void getHostOnRunningGatewayShouldReturnCacheServerAddress() {
     InternalCache cache = mock(InternalCache.class);
     CacheServerImpl server = mock(CacheServerImpl.class);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
@@ -83,8 +83,7 @@ public class GatewayReceiverImplJUnitTest {
   }
 
   @Test
-  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromCacheServers()
-      throws IOException {
+  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromCacheServers() {
     InternalCache cache = mock(InternalCache.class);
     CacheServerImpl server = mock(CacheServerImpl.class);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
@@ -100,8 +99,7 @@ public class GatewayReceiverImplJUnitTest {
   }
 
   @Test
-  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromReceivers()
-      throws IOException {
+  public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromReceivers() {
     InternalCache cache = mock(InternalCache.class);
     CacheServerImpl server = mock(CacheServerImpl.class);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
