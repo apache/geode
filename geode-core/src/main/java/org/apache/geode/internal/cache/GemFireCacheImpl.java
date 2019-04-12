@@ -68,6 +68,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -420,18 +421,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private final Set<AsyncEventQueue> allAsyncEventQueues = new CopyOnWriteArraySet<>();
 
-  /**
-   * Controls updates to the list of all gateway receivers
-   *
-   * @see #allGatewayReceivers
-   */
-  private final Object allGatewayReceiversLock = new Object();
-
-  /**
-   * the list of all gateway Receivers. It may be fetched safely (for enumeration), but updates must
-   * by synchronized via {@link #allGatewayReceiversLock}
-   */
-  private volatile Set<GatewayReceiver> allGatewayReceivers = Collections.emptySet();
+  private final AtomicReference<GatewayReceiver> gatewayReceiver = new AtomicReference<>();
 
   /**
    * PartitionedRegion instances (for required-events notification
@@ -3800,28 +3790,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public void addGatewayReceiver(GatewayReceiver receiver) {
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
-    synchronized (this.allGatewayReceiversLock) {
-      Set<GatewayReceiver> newReceivers = new HashSet<>(this.allGatewayReceivers.size() + 1);
-      if (!this.allGatewayReceivers.isEmpty()) {
-        newReceivers.addAll(this.allGatewayReceivers);
-      }
-      newReceivers.add(receiver);
-      this.allGatewayReceivers = Collections.unmodifiableSet(newReceivers);
-    }
+    gatewayReceiver.set(receiver);
   }
 
   @Override
   public void removeGatewayReceiver(GatewayReceiver receiver) {
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
-    synchronized (this.allGatewayReceiversLock) {
-      Set<GatewayReceiver> newReceivers = new HashSet<>(this.allGatewayReceivers.size() + 1);
-      if (!this.allGatewayReceivers.isEmpty()) {
-        newReceivers.addAll(this.allGatewayReceivers);
-      }
-      newReceivers.remove(receiver);
-      this.allGatewayReceivers = Collections.unmodifiableSet(newReceivers);
-    }
+    gatewayReceiver.set(null);
   }
 
   @Override
@@ -3871,7 +3847,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public Set<GatewayReceiver> getGatewayReceivers() {
-    return this.allGatewayReceivers;
+    GatewayReceiver receiver = gatewayReceiver.get();
+    if (receiver == null) {
+      return Collections.emptySet();
+    }
+    return Collections.singleton(receiver);
   }
 
   @Override
