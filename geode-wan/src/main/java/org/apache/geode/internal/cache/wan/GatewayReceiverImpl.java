@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.server.CacheServer;
@@ -45,6 +46,8 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   private static final Logger logger = LogService.getLogger();
 
   private final InternalCache cache;
+
+  private final GatewayReceiverMetrics metrics;
   private final String hostnameForSenders;
   private final int startPort;
   private final int endPort;
@@ -57,10 +60,11 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   private CacheServer receiver;
   private int port;
 
-  GatewayReceiverImpl(InternalCache cache, int startPort, int endPort, int timeBetPings,
-      int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
-      boolean manualStart) {
+  GatewayReceiverImpl(InternalCache cache, MeterRegistry meterRegistry, int startPort, int endPort,
+      int timeBetPings, int buffSize, String bindAdd, List<GatewayTransportFilter> filters,
+      String hostnameForSenders, boolean manualStart) {
     this.cache = cache;
+    metrics = new GatewayReceiverMetrics(meterRegistry);
     this.hostnameForSenders = hostnameForSenders;
     this.startPort = startPort;
     this.endPort = endPort;
@@ -69,6 +73,10 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     this.bindAdd = bindAdd;
     this.filters = filters;
     this.manualStart = manualStart;
+  }
+
+  public GatewayReceiverMetrics getMetrics() {
+    return metrics;
   }
 
   @Override

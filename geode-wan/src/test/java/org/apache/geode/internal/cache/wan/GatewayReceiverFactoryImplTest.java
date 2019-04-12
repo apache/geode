@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,6 +68,7 @@ public class GatewayReceiverFactoryImplTest {
   @Before
   public void setUp() {
     when(cache.getGatewayReceivers()).thenReturn(Collections.emptySet());
+    when(cache.getMeterRegistry()).thenReturn(new SimpleMeterRegistry());
 
     gatewayReceiverFactory = new GatewayReceiverFactoryImpl(cache);
   }
