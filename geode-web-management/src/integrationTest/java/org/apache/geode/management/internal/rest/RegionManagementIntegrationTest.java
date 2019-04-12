@@ -83,15 +83,25 @@ public class RegionManagementIntegrationTest {
   }
 
   @Test
+  public void invalidGroup() throws Exception {
+    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    regionConfig.setName("customers");
+    regionConfig.setGroup("cluster");
+
+    assertManagementResult(client.create(regionConfig))
+        .failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("cluster is a reserved group name");
+  }
+
+  @Test
   public void invalidConfigObject() throws Exception {
     RegionConfig config = new RegionConfig();
     config.setName("customers");
-    ClusterManagementResult result = client.create(config);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode())
-        .isEqualTo(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
-    assertThat(result.getStatusMessage())
-        .contains("Use BasicRegionConfig to configure your region");
+    assertManagementResult(client.create(config))
+        .failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("Use BasicRegionConfig to configure your region");
   }
 
 
