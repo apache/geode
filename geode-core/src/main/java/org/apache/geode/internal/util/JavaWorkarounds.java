@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.util;
 
 import java.util.Map;
@@ -19,10 +20,13 @@ import java.util.function.Function;
 
 public class JavaWorkarounds {
 
-
-  // This is a workaround for computeIfAbsent which unnecessarily takes out a write lock in the case
-  // where the entry for the key exists already. This only affects pre Java 9 jdks
-  // https://bugs.openjdk.java.net/browse/JDK-8161372
+  /**
+   * This is a workaround for computeIfAbsent which unnecessarily takes out a write lock in the case
+   * where the entry for the key exists already. This only affects pre Java 9 jdks
+   * https://bugs.openjdk.java.net/browse/JDK-8161372
+   *
+   * @see Map#computeIfAbsent(Object, Function)
+   */
   public static <K, V> V computeIfAbsent(Map<K, V> map, K key,
       Function<? super K, ? extends V> mappingFunction) {
     V existingValue = map.get(key);
