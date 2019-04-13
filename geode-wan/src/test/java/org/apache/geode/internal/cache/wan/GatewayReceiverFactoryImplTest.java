@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,7 +59,8 @@ public class GatewayReceiverFactoryImplTest {
     InternalCache cacheCreation = mock(CacheCreation.class, "CacheCreation");
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
-    when(gemFireCacheImpl.addCacheServer(true)).thenReturn(mock(CacheServerImpl.class));
+    when(gemFireCacheImpl.addCacheServer(isA(GatewayReceiver.class)))
+        .thenReturn(mock(CacheServerImpl.class));
     when(gemFireCacheImpl.getDistributedSystem()).thenReturn(system);
     when(gemFireCacheImpl.getInternalDistributedSystem()).thenReturn(system);
 

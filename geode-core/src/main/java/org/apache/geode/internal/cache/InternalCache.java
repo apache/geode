@@ -313,7 +313,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
 
   void removeGatewayReceiver(GatewayReceiver receiver);
 
-  CacheServer addCacheServer(boolean isGatewayReceiver);
+  CacheServer addCacheServer(GatewayReceiver receiver);
 
   boolean removeCacheServer(CacheServer cacheServer);
 

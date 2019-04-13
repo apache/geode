@@ -173,7 +173,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   @Override
   public void start() {
     if (receiver == null) {
-      receiver = cache.addCacheServer(true);
+      receiver = cache.addCacheServer(this);
     }
     if (receiver.isRunning()) {
       logger.warn("Gateway Receiver is already running");

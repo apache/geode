@@ -3695,15 +3695,22 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public CacheServer addCacheServer() {
-    return addCacheServer(false);
-  }
-
-  @Override
-  public CacheServer addCacheServer(boolean isGatewayReceiver) {
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
 
-    CacheServerImpl cacheServer = new CacheServerImpl(this, isGatewayReceiver);
+    CacheServerImpl cacheServer = new CacheServerImpl(this);
+    this.allCacheServers.add(cacheServer);
+
+    sendAddCacheServerProfileMessage();
+    return cacheServer;
+  }
+
+  @Override
+  public CacheServer addCacheServer(GatewayReceiver receiver) {
+    throwIfClient();
+    this.stopper.checkCancelInProgress(null);
+
+    CacheServerImpl cacheServer = new CacheServerImpl(this, receiver);
     this.allCacheServers.add(cacheServer);
 
     sendAddCacheServerProfileMessage();

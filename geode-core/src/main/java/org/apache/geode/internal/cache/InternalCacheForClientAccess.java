@@ -1126,8 +1126,8 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public CacheServer addCacheServer(boolean isGatewayReceiver) {
-    return delegate.addCacheServer(isGatewayReceiver);
+  public CacheServer addCacheServer(GatewayReceiver receiver) {
+    return delegate.addCacheServer(receiver);
   }
 
   @Override

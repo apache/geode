@@ -32,4 +32,8 @@ public class GatewayReceiverMetrics {
   public void close() {
     meterRegistry.remove(eventsReceivedCounter);
   }
+
+  public Counter getEventsReceivedCounter() {
+    return eventsReceivedCounter;
+  }
 }

@@ -279,7 +279,7 @@ public class GemFireCacheImplTest {
   @Test
   public void removeFromCacheServerShouldRemoveFromCacheServersList() {
     gemFireCacheImpl = createGemFireCacheImpl();
-    CacheServer cacheServer = gemFireCacheImpl.addCacheServer(false);
+    CacheServer cacheServer = gemFireCacheImpl.addCacheServer();
     assertEquals(1, gemFireCacheImpl.getCacheServers().size());
 
     gemFireCacheImpl.removeCacheServer(cacheServer);

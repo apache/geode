@@ -67,6 +67,7 @@ import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
@@ -118,7 +119,10 @@ public abstract class ServerConnection implements Runnable {
   @MakeNotStatic
   private static final ConcurrentHashMap<Integer, LinkedBlockingQueue<ByteBuffer>> commBufferMap =
       new ConcurrentHashMap<>(4, 0.75f, 1);
+
   private ServerConnectionCollection serverConnectionCollection;
+
+  private final GatewayReceiverMetrics gatewayReceiverMetrics;
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
@@ -283,6 +287,7 @@ public abstract class ServerConnection implements Runnable {
     randomConnectionIdGen = new Random(hashCode());
 
     this.securityService = securityService;
+    gatewayReceiverMetrics = null; // TODO:KIRK
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
@@ -302,6 +307,10 @@ public abstract class ServerConnection implements Runnable {
         logger.debug("While creating server connection", e);
       }
     }
+  }
+
+  public GatewayReceiverMetrics getGatewayReceiverMetrics() {
+    return gatewayReceiverMetrics;
   }
 
   public AcceptorImpl getAcceptor() {

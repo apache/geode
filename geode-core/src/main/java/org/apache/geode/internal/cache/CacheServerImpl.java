@@ -51,6 +51,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.cache.server.internal.LoadMonitor;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
@@ -134,6 +135,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   private int serialNumber; // changed on each start
 
+  private final GatewayReceiver gatewayReceiver;
+
   public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = Boolean.getBoolean(
       DistributionConfig.GEMFIRE_PREFIX + "cache-server.enable-notify-by-subscription-false");
 
@@ -144,10 +147,20 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * Creates a new{@code BridgeServerImpl} that serves the contents of the give {@code Cache}. It
    * has the default configuration.
    */
-  public CacheServerImpl(InternalCache cache, boolean isGatewayReceiver) {
+  public CacheServerImpl(InternalCache cache) {
+    this(cache, null);
+  }
+
+  public CacheServerImpl(InternalCache cache, GatewayReceiver gatewayReceiver) {
+    this(cache, cache.getSecurityService(), gatewayReceiver);
+  }
+
+  private CacheServerImpl(InternalCache cache, SecurityService securityService,
+      GatewayReceiver gatewayReceiver) {
     super(cache);
-    this.isGatewayReceiver = isGatewayReceiver;
-    this.securityService = cache.getSecurityService();
+    isGatewayReceiver = gatewayReceiver != null;
+    this.securityService = securityService;
+    this.gatewayReceiver = gatewayReceiver;
   }
 
   // //////////////////// Instance Methods ///////////////////
@@ -348,11 +361,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       overflowAttributesList.add(4, false);
     }
 
-    this.acceptor = new AcceptorImpl(getPort(), getBindAddress(), getNotifyBySubscription(),
-        getSocketBufferSize(), getMaximumTimeBetweenPings(), this.cache, getMaxConnections(),
-        getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), this.loadMonitor,
-        overflowAttributesList, this.isGatewayReceiver, this.gatewayTransportFilters,
-        this.tcpNoDelay, serverConnectionFactory, 120000);
+    this.acceptor = createAcceptor(overflowAttributesList);
 
     this.acceptor.start();
     this.advisor.handshake();
@@ -392,6 +401,14 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
     }
 
+  }
+
+  AcceptorImpl createAcceptor(List overflowAttributesList) throws IOException {
+    return new AcceptorImpl(getPort(), getBindAddress(), getNotifyBySubscription(),
+        getSocketBufferSize(), getMaximumTimeBetweenPings(), this.cache, getMaxConnections(),
+        getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), this.loadMonitor,
+        overflowAttributesList, this.isGatewayReceiver, this.gatewayTransportFilters,
+        this.tcpNoDelay, serverConnectionFactory, 120000);
   }
 
 
