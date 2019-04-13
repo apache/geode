@@ -215,7 +215,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
                 .info(st + " CCP states: " + getAllClientProxyState());
             CacheServerTestUtil.getCache().getLogger().info(st + " CHM states: "
                 + printMap(
-                    ClientHealthMonitor._instance.getConnectedClients(null)));
+                    ClientHealthMonitor.getInstance().getConnectedClients(null)));
           }
         };
     server1VM.invoke(s);
