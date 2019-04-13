@@ -858,7 +858,7 @@ public class CacheClientNotifier {
       synchronized (registeringProxyEventQueuesLock) {
         // After taking out the lock, we need to determine if the client is still actually
         // registering since there is a small race where it may have finished registering
-        // after we pulled the queue out of the eventsReceivedWhileRegisteringClient collection
+        // after we pulled the queue out of the registeringProxyEventQueues collection
         ClientProxyMembershipID clientProxyMembershipID =
             eventsReceivedWhileRegisteringClient.getKey();
         if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
