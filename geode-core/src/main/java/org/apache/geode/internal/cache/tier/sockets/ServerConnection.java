@@ -37,6 +37,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
@@ -118,7 +119,7 @@ public abstract class ServerConnection implements Runnable {
 
   private ServerConnectionCollection serverConnectionCollection;
 
-  private ProcessingMessageTimer processingMessageTimer = new ProcessingMessageTimer();
+  private final ProcessingMessageTimer processingMessageTimer = new ProcessingMessageTimer();
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
@@ -1339,14 +1340,7 @@ public abstract class ServerConnection implements Runnable {
        * This is a buffer that we add to client readTimeout value before we cleanup the connection.
        * This buffer time helps prevent EOF in the client instead of SocketTimeout
        */
-      synchronized (processingMessageTimer.processingMessageLock) {
-        // If a message is currently being processed and it has been
-        // being processed for more than the client read timeout,
-        // then return true
-        if (getCurrentMessageProcessingTime() > timeout) {
-          return true;
-        }
-      }
+      return getCurrentMessageProcessingTime() > timeout;
     }
     return false;
   }
@@ -1850,38 +1844,39 @@ public abstract class ServerConnection implements Runnable {
   }
 
   static class ProcessingMessageTimer {
-    public static final long NOT_PROCESSING = -1l;
+    @VisibleForTesting
+    static final long NOT_PROCESSING = -1L;
 
-    private long processingMessageStartTime = NOT_PROCESSING;
-    private final Object processingMessageLock = new Object();
+    @VisibleForTesting
+    final AtomicLong processingMessageStartTime = new AtomicLong(NOT_PROCESSING);
 
+    /**
+     * Set or resets time regardless if already set.
+     */
     void setProcessingMessage() {
-      synchronized (processingMessageLock) {
-        // go ahead and reset it if it is already set
-        processingMessageStartTime = System.currentTimeMillis();
-      }
+      processingMessageStartTime.set(System.currentTimeMillis());
     }
 
+    /**
+     * Updates time if previously set.
+     */
     void updateProcessingMessage() {
-      synchronized (processingMessageLock) {
-        // only update it if it was already set by setProcessingMessage
-        if (processingMessageStartTime != NOT_PROCESSING) {
-          processingMessageStartTime = System.currentTimeMillis();
+      final long current = processingMessageStartTime.get();
+      if (NOT_PROCESSING != current) {
+        final long now = System.currentTimeMillis();
+        if (now > current) {
+          // if another thread sets to -1 or updates the time we don't need to update the time.
+          processingMessageStartTime.compareAndSet(current, now);
         }
       }
     }
 
     void setNotProcessingMessage() {
-      synchronized (processingMessageLock) {
-        processingMessageStartTime = NOT_PROCESSING;
-      }
+      processingMessageStartTime.set(NOT_PROCESSING);
     }
 
     long getCurrentMessageProcessingTime() {
-      long result;
-      synchronized (processingMessageLock) {
-        result = processingMessageStartTime;
-      }
+      long result = processingMessageStartTime.get();
       if (result != NOT_PROCESSING) {
         result = System.currentTimeMillis() - result;
       }

@@ -59,18 +59,20 @@ public class ProcessingMessageTimerTest {
   public void updateWhenSetWillReset() throws InterruptedException {
     ProcessingMessageTimer timer = new ProcessingMessageTimer();
     timer.setProcessingMessage();
+    final long previous = timer.processingMessageStartTime.get();
     Thread.sleep(2);
     timer.updateProcessingMessage();
-    assertThat(timer.getCurrentMessageProcessingTime()).isEqualTo(0);
+    assertThat(timer.processingMessageStartTime.get()).isNotEqualTo(previous);
   }
 
   @Test
   public void setWhenSetWillReset() throws InterruptedException {
     ProcessingMessageTimer timer = new ProcessingMessageTimer();
     timer.setProcessingMessage();
+    final long previous = timer.processingMessageStartTime.get();
     Thread.sleep(2);
     timer.setProcessingMessage();
-    assertThat(timer.getCurrentMessageProcessingTime()).isEqualTo(0);
+    assertThat(timer.processingMessageStartTime.get()).isNotEqualTo(previous);
   }
 
   @Test
