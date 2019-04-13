@@ -33,50 +33,60 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.logging.LogService;
 
 class ClientRegistrationMetadata {
-  private final ClientProxyMembershipID clientProxyMembershipID;
-  private final byte clientConflation;
-  private final Properties clientCredentials;
-  private final Version clientVersion;
-  private final DataInputStream dataInputStream;
-  private final DataOutputStream dataOutputStream;
+  private final InternalCache cache;
+  private final Socket socket;
   private final SocketMessageWriter socketMessageWriter;
   private static final Logger logger = LogService.getLogger();
+  private ClientProxyMembershipID clientProxyMembershipID;
+  private byte clientConflation;
+  private Properties clientCredentials;
+  private Version clientVersion;
+  private DataInputStream dataInputStream;
+  private DataOutputStream dataOutputStream;
 
-  ClientRegistrationMetadata(final InternalCache cache, final Socket socket)
-      throws IOException, ClassNotFoundException {
+  ClientRegistrationMetadata(final InternalCache cache, final Socket socket) {
+    this.cache = cache;
+    this.socket = socket;
+    this.socketMessageWriter = new SocketMessageWriter();
+  }
+
+  boolean initialize() throws IOException {
     DataInputStream unversionedDataInputStream = new DataInputStream(socket.getInputStream());
     DataOutputStream unversionedDataOutputStream = new DataOutputStream(socket.getOutputStream());
-    socketMessageWriter = new SocketMessageWriter();
 
-    clientVersion = getAndValidateClientVersion(socket, unversionedDataInputStream,
-        unversionedDataOutputStream);
+    if (getAndValidateClientVersion(socket, unversionedDataInputStream,
+        unversionedDataOutputStream)) {
+      if (oldClientRequiresVersionedStreams(clientVersion)) {
+        dataInputStream = new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
+        dataOutputStream =
+            new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
+      } else {
+        dataInputStream = unversionedDataInputStream;
+        dataOutputStream = unversionedDataOutputStream;
+      }
 
-    if (oldClientRequiresVersionedStreams(clientVersion)) {
-      dataInputStream = new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
-      dataOutputStream =
-          new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
-    } else {
-      dataInputStream = unversionedDataInputStream;
-      dataOutputStream = unversionedDataOutputStream;
+      // Read and ignore the reply code. This is used on the client to server
+      // handshake.
+      dataInputStream.readByte(); // replyCode
+
+      // Read the ports and throw them away. We no longer need them
+      int numberOfPorts = dataInputStream.readInt();
+      for (int i = 0; i < numberOfPorts; i++) {
+        dataInputStream.readInt();
+      }
+
+      getAndValidateClientProxyMembershipID();
+
+      if (getAndValidateClientConflation()) {
+        clientCredentials =
+            Handshake.readCredentials(dataInputStream, dataOutputStream,
+                cache.getDistributedSystem(), cache.getSecurityService());
+
+        return true;
+      }
     }
 
-    // Read and ignore the reply code. This is used on the client to server
-    // handshake.
-    dataInputStream.readByte(); // replyCode
-
-    // Read the ports and throw them away. We no longer need them
-    int numberOfPorts = dataInputStream.readInt();
-    for (int i = 0; i < numberOfPorts; i++) {
-      dataInputStream.readInt();
-    }
-
-    clientProxyMembershipID = getAndValidateClientProxyMembershipID();
-
-    clientConflation = getAndValidateClientConflation();
-
-    clientCredentials =
-        Handshake.readCredentials(dataInputStream, dataOutputStream,
-            cache.getDistributedSystem(), cache.getSecurityService());
+    return false;
   }
 
   ClientProxyMembershipID getClientProxyMembershipID() {
@@ -99,16 +109,15 @@ class ClientRegistrationMetadata {
     return dataOutputStream;
   }
 
-  private Version getAndValidateClientVersion(final Socket socket,
+  private boolean getAndValidateClientVersion(final Socket socket,
       final DataInputStream dataInputStream, final DataOutputStream dataOutputStream)
       throws IOException {
     short clientVersionOrdinal = Version.readOrdinal(dataInputStream);
-    final Version clientVersion;
 
     try {
       clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);
       if (isVersion57orOlder(clientVersion)) {
-        throw new UnsupportedVersionException(clientVersionOrdinal);
+        throw new IOException(new UnsupportedVersionException(clientVersionOrdinal));
       }
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Registering client with version: {}", this, clientVersion);
@@ -130,10 +139,10 @@ class ClientRegistrationMetadata {
           CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
           unsupportedVersionException, null);
 
-      throw new IllegalArgumentException(unsupportedVersionException);
+      return false;
     }
 
-    return clientVersion;
+    return true;
   }
 
   private boolean doesClientSupportExtractOverrides() {
@@ -148,17 +157,17 @@ class ClientRegistrationMetadata {
     return Version.GFE_57.compareTo(clientVersion) > 0;
   }
 
-  private ClientProxyMembershipID getAndValidateClientProxyMembershipID()
-      throws IOException, ClassNotFoundException {
-    ClientProxyMembershipID clientProxyMembershipID =
-        ClientProxyMembershipID.readCanonicalized(dataInputStream);
-
-    return clientProxyMembershipID;
+  private void getAndValidateClientProxyMembershipID()
+      throws IOException {
+    try {
+      clientProxyMembershipID = ClientProxyMembershipID.readCanonicalized(dataInputStream);
+    } catch (ClassNotFoundException ex) {
+      throw new IOException(ex);
+    }
   }
 
-  private byte getAndValidateClientConflation()
+  private boolean getAndValidateClientConflation()
       throws IOException {
-    final byte clientConflation;
     if (doesClientSupportExtractOverrides()) {
       byte[] overrides =
           Handshake.extractOverrides(new byte[] {(byte) dataInputStream.read()});
@@ -175,11 +184,13 @@ class ClientRegistrationMetadata {
       default:
         IllegalArgumentException illegalArgumentException =
             new IllegalArgumentException("Invalid conflation byte");
+
         socketMessageWriter.writeException(dataOutputStream, Handshake.REPLY_INVALID,
             illegalArgumentException, clientVersion);
-        throw new IOException(illegalArgumentException.toString());
+
+        return false;
     }
 
-    return clientConflation;
+    return true;
   }
 }

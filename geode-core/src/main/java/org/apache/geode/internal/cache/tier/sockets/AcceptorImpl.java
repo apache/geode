@@ -1842,11 +1842,13 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
           isPrimaryServerToClient ? "primary" : "secondary", socket);
       try {
         ClientRegistrationMetadata clientRegistrationMetadata =
-            createClientRegistrationMetadata(socket);
+            new ClientRegistrationMetadata(acceptor.cache, socket);
 
-        acceptor.getCacheClientNotifier().registerClient(clientRegistrationMetadata, socket,
-            isPrimaryServerToClient,
-            acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
+        if (clientRegistrationMetadata.initialize()) {
+          acceptor.getCacheClientNotifier().registerClient(clientRegistrationMetadata, socket,
+              isPrimaryServerToClient,
+              acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
+        }
       } catch (final IllegalArgumentException e) {
         /*
          * If the cause is an UnsupportedVersionException, we have already written the exception
@@ -1873,22 +1875,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
           }
         }
       }
-    }
-
-    private ClientRegistrationMetadata createClientRegistrationMetadata(final Socket socket)
-        throws IOException {
-      ClientRegistrationMetadata clientRegistrationMetadata;
-      try {
-        clientRegistrationMetadata = new ClientRegistrationMetadata(acceptor.cache, socket);
-      } catch (final IllegalArgumentException e) {
-        throw e;
-      } catch (final Exception e) {
-        throw new IOException(
-            String.format(
-                "ClientRegistrationMetadata object could not be created. Exception occurred was %s",
-                e));
-      }
-      return clientRegistrationMetadata;
     }
   }
 }

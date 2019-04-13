@@ -155,10 +155,10 @@ public class CacheClientNotifier {
    * Registers a new client updater that wants to receive updates with this server.
    *
    * @param socket The socket over which the server communicates with the client.
-   * @param isPrimary whether server is the primary subscription end point for this client
-   * @param acceptorId id of the acceptor used to clean up the client connection
-   * @param notifyBySubscription whether the Server is running in NotifyBySubscription mode
-   * @throws IOException can occur during de-serialization or if the socket is closed
+   * @param isPrimary Whether server is the primary subscription end point for this client
+   * @param acceptorId ID of the acceptor used to clean up the client connection
+   * @param notifyBySubscription Whether the Server is running in NotifyBySubscription mode
+   * @throws IOException Can occur if there are issues communicating over the socket
    */
   public void registerClient(final ClientRegistrationMetadata clientRegistrationMetadata,
       final Socket socket, final boolean isPrimary, final long acceptorId,
@@ -185,23 +185,21 @@ public class CacheClientNotifier {
             clientRegistrationMetadata,
             eventsReceivedWhileRegisteringClient);
       }
-    } catch (AuthenticationRequiredException ex) {
+    } catch (final AuthenticationRequiredException ex) {
       handleAuthenticationException(clientProxyMembershipID, dataOutputStream, clientVersion,
           ex, Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED);
-      return;
-    } catch (AuthenticationFailedException ex) {
+    } catch (final AuthenticationFailedException ex) {
       handleAuthenticationException(clientProxyMembershipID, dataOutputStream, clientVersion, ex,
           Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
-      return;
     } catch (final CacheException e) {
       logger.warn(String.format("%s :registerClient: Exception encountered in registration %s",
           this, e),
           e);
-      IOException io = new IOException(
+      IOException ioException = new IOException(
           String.format("Exception occurred while trying to register interest due to : %s",
-              e.getMessage()));
-      io.initCause(e);
-      throw io;
+              e.getMessage()),
+          e);
+      throw ioException;
     } catch (final Exception ex) {
       logger.warn(String.format("An exception was thrown for client [%s]. %s",
           (clientProxyMembershipID != null
@@ -211,7 +209,6 @@ public class CacheClientNotifier {
           CommunicationMode.UnsuccessfulServerToClient.getModeNumber(),
           ex,
           clientVersion);
-      return;
     }
 
     this.statistics.endClientRegistration(startTime);
@@ -231,17 +228,17 @@ public class CacheClientNotifier {
   /**
    * Continues the registration of a new client that wants to receive updates with this server.
    *
-   * @param clientRegistrationMetadata contains registration info pertaining to the client
+   * @param clientRegistrationMetadata Contains registration info pertaining to the client
    * @param socket The socket over which the server communicates with the client.
-   * @param isPrimary whether server is the primary subscription end point for this client
-   * @param acceptorId id of the acceptor used to clean up the client connection
-   * @param notifyBySubscription whether the Server is running in NotifyBySubscription mode
-   * @throws IOException can occur during de-serialization or if the socket is closed
+   * @param isPrimary Whether server is the primary subscription end point for this client
+   * @param acceptorId ID of the acceptor used to clean up the client connection
+   * @param notifyBySubscription Whether the Server is running in NotifyBySubscription mode
+   * @throws IOException Can occur if there are issues communicating over the socket
    * @throws CacheException A generic exception, which indicates a cache error has occurred.
-   * @throws ClassNotFoundException thrown when the ClientProxyMembershipID class is not found
-   * @throws NoSuchMethodException potentially thrown by performPostAuthorization
-   * @throws InvocationTargetException potentially thrown by performPostAuthorization
-   * @throws IllegalAccessException potentially thrown by performPostAuthorization
+   * @throws ClassNotFoundException Thrown when the ClientProxyMembershipID class is not found
+   * @throws NoSuchMethodException Potentially thrown by performPostAuthorization
+   * @throws InvocationTargetException Potentially thrown by performPostAuthorization
+   * @throws IllegalAccessException Potentially thrown by performPostAuthorization
    */
   void registerClientInternal(final ClientRegistrationMetadata clientRegistrationMetadata,
       final Socket socket,
@@ -639,7 +636,7 @@ public class CacheClientNotifier {
     }
   }
 
-  private ClientUpdateMessageImpl constructClientMessage(InternalCacheEvent event) {
+  ClientUpdateMessageImpl constructClientMessage(InternalCacheEvent event) {
     ClientUpdateMessageImpl clientMessage = null;
     EnumListenerEvent operation = event.getEventType();
 
@@ -679,7 +676,6 @@ public class CacheClientNotifier {
   private void singletonNotifyClients(InternalCacheEvent event, ClientUpdateMessage cmsg) {
     FilterInfo filterInfo = event.getLocalFilterInfo();
 
-    FilterProfile regionProfile = ((LocalRegion) event.getRegion()).getFilterProfile();
     if (filterInfo != null) {
       // if the routing was made using an old profile we need to recompute it
       if (logger.isTraceEnabled()) {
@@ -704,6 +700,8 @@ public class CacheClientNotifier {
     if (clientMessage == null) {
       return;
     }
+
+    FilterProfile regionProfile = ((LocalRegion) event.getRegion()).getFilterProfile();
 
     Set<ClientProxyMembershipID> filterClients =
         getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
@@ -858,6 +856,9 @@ public class CacheClientNotifier {
     for (final Map.Entry<ClientProxyMembershipID, Queue<InternalCacheEvent>> eventsReceivedWhileRegisteringClient : registeringProxyEventQueues
         .entrySet()) {
       synchronized (registeringProxyEventQueuesLock) {
+        // After taking out the lock, we need to determine if the client is still actually
+        // registering since there is a small race where it may have finished registering
+        // after we pulled the queue out of the eventsReceivedWhileRegisteringClient collection
         ClientProxyMembershipID clientProxyMembershipID =
             eventsReceivedWhileRegisteringClient.getKey();
         if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
