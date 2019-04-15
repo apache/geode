@@ -170,28 +170,37 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     List<CacheElement> elements = new ArrayList<>();
-    for (String group : persistenceService.getGroups()) {
-      if (StringUtils.isBlank(filter.getGroup()) || group.equals(filter.getConfigGroup())) {
-        CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-        List<CacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
 
-        // only compute the group information when we are getting all the groups
-        if (StringUtils.isBlank(filter.getGroup())) {
+    boolean filterHasGroup = StringUtils.isNotBlank(filter.getGroup());
+    for (String group : persistenceService.getGroups()) {
+      // simply skip if filter group does not equal to current group
+      if (filterHasGroup && !group.equals(filter.getConfigGroup())) {
+        continue;
+      }
+
+      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+      List<CacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
+
+      for (CacheElement element : listInGroup) {
+        if (filterHasGroup) {
+          elements.add(element);
+        }
+        // in case different groups have the same entity, we will need to consolidate the
+        // group information. this should only happen if we are not filtering on specific
+        // group.
+        else {
+          // group information is only shown when we are not filtering by group
           if (!"cluster".equals(group)) {
-            listInGroup.stream().forEach(e -> e.setGroup(group));
+            element.setGroup(group);
           }
-          for (CacheElement element : listInGroup) {
-            CacheElement exist = CacheElement.findElement(elements, element.getId());
-            if (exist != null) {
-              // combine the group names
-              String combined = exist.getConfigGroup() + "," + element.getConfigGroup();
-              exist.setGroup(sortedCommaSeparatedList(combined));
-            } else {
-              elements.add(element);
-            }
+          CacheElement exist = CacheElement.findElement(elements, element.getId());
+          if (exist != null) {
+            // combine the group names
+            String combined = exist.getConfigGroup() + "," + element.getConfigGroup();
+            exist.setGroup(sortedCommaSeparatedList(combined));
+          } else {
+            elements.add(element);
           }
-        } else {
-          elements.addAll(listInGroup);
         }
       }
     }
