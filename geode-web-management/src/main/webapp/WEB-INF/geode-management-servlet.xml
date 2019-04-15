@@ -58,7 +58,6 @@
   
   <bean id="objectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean"
         p:failOnEmptyBeans="true"
-        p:indentOutput="true"
         p:simpleDateFormat="MM/dd/yyyy"
     >
     <property name="featuresToEnable">
@@ -74,6 +73,7 @@
         <util:constant static-field="com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES"/>
       </array>
     </property>
+    <property name="serializationInclusion" value="NON_EMPTY"/>
   </bean>
 
   <bean class="org.apache.geode.management.internal.rest.security.RestSecurityConfiguration"/>

@@ -106,6 +106,6 @@ public class CacheElementJsonMappingTest {
     assertThat(region.getConfigGroup()).isEqualTo("cluster");
 
     String json = mapper.writeValueAsString(region);
-    assertThat(json).contains("\"group\":null");
+    assertThat(json).doesNotContain("\"group\"");
   }
 }

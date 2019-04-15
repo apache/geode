@@ -15,6 +15,7 @@
 
 package org.apache.geode.util.internal;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +33,7 @@ public class GeodeJsonMapper {
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
     mapper.configure(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL, true);
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     return mapper;
   }
 }
