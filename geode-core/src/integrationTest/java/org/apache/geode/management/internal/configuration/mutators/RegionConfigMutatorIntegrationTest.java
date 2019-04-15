@@ -20,9 +20,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
@@ -32,11 +32,11 @@ public class RegionConfigMutatorIntegrationTest {
   public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
   private RegionConfigManager mutator;
-  private BasicRegionConfig config;
+  private RegionConfig config;
 
   @Before
   public void before() throws Exception {
-    config = new BasicRegionConfig();
+    config = new RegionConfig();
     mutator = new RegionConfigManager();
   }
 

@@ -7,9 +7,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -53,7 +53,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegion() {
-    BasicRegionConfig region = new BasicRegionConfig();
+    RegionConfig region = new RegionConfig();
     region.setName("customer");
 
     ClusterManagementResult result = cmsClient.create(region);
@@ -69,7 +69,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithNullGroup() {
-    BasicRegionConfig region = new BasicRegionConfig();
+    RegionConfig region = new RegionConfig();
     region.setName("orders");
 
     ClusterManagementResult result = cmsClient.create(region);
@@ -82,7 +82,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithInvalidName() throws Exception {
-    BasicRegionConfig region = new BasicRegionConfig();
+    RegionConfig region = new RegionConfig();
     region.setName("__test");
 
     ClusterManagementResult result = cmsClient.create(region);
@@ -93,7 +93,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithGroup() {
-    BasicRegionConfig region = new BasicRegionConfig();
+    RegionConfig region = new RegionConfig();
     region.setName("company");
     region.setGroup(groupA);
 

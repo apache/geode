@@ -32,7 +32,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
@@ -70,7 +69,7 @@ public class ClientClusterManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void createAndListRegion() {
-    BasicRegionConfig region = new BasicRegionConfig();
+    RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.REPLICATE);
 
@@ -81,7 +80,7 @@ public class ClientClusterManagementServiceDUnitTest {
         ClusterManagementResult.StatusCode.ENTITY_EXISTS);
 
     // list region when regions are not created in a group
-    BasicRegionConfig noFilter = new BasicRegionConfig();
+    RegionConfig noFilter = new RegionConfig();
     ClusterManagementResult list = client.list(noFilter);
     List<CacheElement> regions = list.getResult();
     assertThat(regions.size()).isEqualTo(1);

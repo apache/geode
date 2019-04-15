@@ -17,12 +17,15 @@ package org.apache.geode.management.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionAttributesType;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -39,6 +42,11 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  private File diskStoreDir;
+
   private MemberVM server;
   private MemberVM locator;
 
@@ -53,14 +61,16 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
 
     gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         "data,cluster", "data,cluster");
+
+    diskStoreDir = temporaryFolder.newFolder();
   }
 
   @Test
   public void createReplicateRegionWithDiskstoreWithoutDataManage() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        cluster.getWorkingDirRoot())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath())).statusIsSuccess();
 
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
 
@@ -80,9 +90,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreWithoutClusterWrite() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        cluster.getWorkingDirRoot())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath())).statusIsSuccess();
 
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
 
@@ -102,9 +112,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreSuccess() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        cluster.getWorkingDirRoot())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath())).statusIsSuccess();
 
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
 

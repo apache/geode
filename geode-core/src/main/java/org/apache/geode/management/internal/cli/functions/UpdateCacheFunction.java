@@ -24,8 +24,8 @@ import org.apache.commons.collections.map.HashedMap;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
@@ -35,7 +35,7 @@ public class UpdateCacheFunction extends CliFunction<List> {
   @Immutable
   private static final Map<Class, ConfigurationRealizer> realizers = new HashedMap();
   static {
-    realizers.put(BasicRegionConfig.class, new RegionConfigRealizer());
+    realizers.put(RegionConfig.class, new RegionConfigRealizer());
   }
 
   public enum CacheElementOperation {

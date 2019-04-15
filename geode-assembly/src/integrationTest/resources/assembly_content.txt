@@ -286,7 +286,6 @@ javadoc/org/apache/geode/cache/client/SubscriptionNotEnabledException.html
 javadoc/org/apache/geode/cache/client/package-frame.html
 javadoc/org/apache/geode/cache/client/package-summary.html
 javadoc/org/apache/geode/cache/client/package-tree.html
-javadoc/org/apache/geode/cache/configuration/BasicRegionConfig.html
 javadoc/org/apache/geode/cache/configuration/CacheConfig.AsyncEventQueue.html
 javadoc/org/apache/geode/cache/configuration/CacheConfig.CacheServer.html
 javadoc/org/apache/geode/cache/configuration/CacheConfig.GatewayHub.Gateway.GatewayEndpoint.html
