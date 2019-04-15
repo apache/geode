@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,10 +31,10 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -46,10 +47,6 @@ public class GatewayReceiverCommandTest {
   private Message clientMessage;
   @Mock
   private ServerConnection serverConnection;
-  @Mock
-  private SecurityService securityService;
-  @Mock
-  private InternalCache cache;
 
   private long start;
 
@@ -60,17 +57,22 @@ public class GatewayReceiverCommandTest {
     start = 1;
     meterRegistry = new SimpleMeterRegistry();
 
-    when(cache.getMeterRegistry()).thenReturn(meterRegistry);
     when(clientMessage.getPart(anyInt())).thenReturn(mock(Part.class));
-    when(serverConnection.getCache()).thenReturn(cache);
     when(serverConnection.getCacheServerStats()).thenReturn(mock(GatewayReceiverStats.class));
     when(serverConnection.getResponseMessage()).thenReturn(mock(Message.class));
+    when(serverConnection.getGatewayReceiverMetrics())
+        .thenReturn(new GatewayReceiverMetrics(meterRegistry));
+  }
+
+  @After
+  public void tearDown() {
+    meterRegistry.close();
   }
 
   @Test
   public void cmdExecuteIncrementsEventsReceivedCounter() throws Exception {
     GatewayReceiverCommand command = new GatewayReceiverCommand();
-    command.cmdExecute(clientMessage, serverConnection, securityService, start);
+    command.cmdExecute(clientMessage, serverConnection, mock(SecurityService.class), start);
 
     Counter counter = meterRegistry.find("cache.gatewayreceiver.events.received")
         .counter();

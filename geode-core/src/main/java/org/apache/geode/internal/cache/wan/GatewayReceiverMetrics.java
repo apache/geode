@@ -29,11 +29,11 @@ public class GatewayReceiverMetrics {
         .register(meterRegistry);
   }
 
-  public void close() {
-    meterRegistry.remove(eventsReceivedCounter);
-  }
-
   public Counter getEventsReceivedCounter() {
     return eventsReceivedCounter;
+  }
+
+  public void close() {
+    meterRegistry.remove(eventsReceivedCounter);
   }
 }
