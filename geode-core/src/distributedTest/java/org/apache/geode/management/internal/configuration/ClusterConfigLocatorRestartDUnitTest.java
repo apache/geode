@@ -97,12 +97,12 @@ public class ClusterConfigLocatorRestartDUnitTest {
 
 
     Properties properties = new Properties();
-    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
+    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "30000");
 
     MemberVM locator0 = rule.startLocatorVM(0, properties);
     MemberVM locator1 = rule.startLocatorVM(1, properties, locator0.getPort());
 
-    MemberVM server2 = rule.startServerVM(2, properties, locator0.getPort(), locator1.getPort());
+    rule.startServerVM(2, properties, locator0.getPort(), locator1.getPort());
     MemberVM server3 = rule.startServerVM(3, properties, locator0.getPort(), locator1.getPort());
 
     // Shut down hard
