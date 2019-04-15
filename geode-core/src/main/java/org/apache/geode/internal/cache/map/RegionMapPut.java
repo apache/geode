@@ -225,7 +225,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
   protected void unsetOldValueForDelta() {
     OffHeapHelper.release(getOldValueForDelta());
     setOldValueForDelta(null);
-    if (this.overwritePutIfAbsent) {
+    if (isOverwritePutIfAbsent()) {
       getEvent().setOldValue(null);
     }
   }
@@ -412,17 +412,25 @@ public class RegionMapPut extends AbstractRegionMapPut {
       if (!getRegionEntry().isDestroyedOrRemoved()) {
         // retain the version stamp of the existing entry for use in processing failures
         EntryEventImpl event = getEvent();
-        if (event.getRegion().getConcurrencyChecksEnabled() &&
+        if (getOwner().getConcurrencyChecksEnabled() &&
             event.getOperation() == Operation.PUT_IF_ABSENT &&
             !event.hasValidVersionTag() &&
             event.isPossibleDuplicate()) {
-          if (ValueComparisonHelper.checkEquals(getRegionEntry().getValue(),
-              getEvent().basicGetNewValue(),
-              isCompressedOffHeap(event), event.getRegion().getCache())) {
-            logger.info("retried putIfAbsent found same value already in cache "
-                + "- allowing the operation.  entry={}; event={}", getRegionEntry(), getEvent());
-            this.overwritePutIfAbsent = true;
-            return true;
+          Object retainedValue = getRegionEntry().getValueRetain(getOwner());
+          try {
+            if (ValueComparisonHelper.checkEquals(retainedValue,
+                getEvent().getRawNewValue(),
+                isCompressedOffHeap(event), getOwner().getCache())) {
+              if (logger.isDebugEnabled()) {
+                logger.debug("retried putIfAbsent found same value already in cache "
+                    + "- allowing the operation.  entry={}; event={}", getRegionEntry(),
+                    getEvent());
+              }
+              this.overwritePutIfAbsent = true;
+              return true;
+            }
+          } finally {
+            OffHeapHelper.release(retainedValue);
           }
         }
         return false;
@@ -434,7 +442,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
 
   private boolean isCompressedOffHeap(EntryEventImpl event) {
     return event.getRegion().getAttributes().getOffHeap()
-            && event.getRegion().getAttributes().getCompressor() != null;
+        && event.getRegion().getAttributes().getCompressor() != null;
   }
 
   private boolean checkExpectedOldValuePrecondition() {
@@ -446,7 +454,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
       // We already called setOldValueInEvent so the event will have the old value.
       @Unretained
       Object v = event.getRawOldValue();
-      // Note that v will be null instead of INVALID because setOldValue
+      // Note that v will be null instead of INVALID because setOldValue`
       // converts INVALID to null.
       // But checkExpectedOldValue handle this and says INVALID equals null.
       if (!AbstractRegionEntry.checkExpectedOldValue(getExpectedOldValue(), v, event.getRegion())) {
