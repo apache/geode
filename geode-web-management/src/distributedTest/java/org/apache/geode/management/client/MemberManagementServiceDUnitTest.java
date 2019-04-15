@@ -18,7 +18,6 @@ package org.apache.geode.management.client;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -104,8 +103,7 @@ public class MemberManagementServiceDUnitTest {
   public void noMatchWithFilter() throws Exception {
     webContext.perform(get("/v2/members?id=server"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result", iterableWithSize(0)));
+        .andExpect(jsonPath("$.statusCode", is("OK")));
   }
 
   @Test
