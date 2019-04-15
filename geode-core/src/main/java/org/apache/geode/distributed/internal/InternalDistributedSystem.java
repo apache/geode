@@ -2464,6 +2464,10 @@ public class InternalDistributedSystem extends DistributedSystem
     configProps.putAll(this.config.toSecurityProperties());
 
     int timeOut = oldConfig.getMaxWaitTimeForReconnect();
+    int memberTimeout = oldConfig.getMemberTimeout();
+    final int intervalsAllowedForFailureDetection = 4;
+    timeOut = Math.max(timeOut, memberTimeout * intervalsAllowedForFailureDetection);
+
     int maxTries = oldConfig.getMaxNumReconnectTries();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
