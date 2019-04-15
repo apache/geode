@@ -87,6 +87,7 @@ import org.apache.geode.test.junit.categories.PersistenceTest;
 
 @Category(PersistenceTest.class)
 @RunWith(JUnitParamsRunner.class)
+@SuppressWarnings("serial")
 public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase {
 
   private static final int TEST_REPLICATED_TOMBSTONE_TIMEOUT = 1_000;
@@ -372,6 +373,8 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     VM vm1 = getVM(1);
 
     vm0.invoke(() -> {
+      getCache();
+
       PartitionAttributesFactory<String, String> partitionAttributesFactory =
           new PartitionAttributesFactory<>();
       partitionAttributesFactory.setRedundantCopies(1);
@@ -392,6 +395,8 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     // Create a cache and region, do an update to change the version no. and
     // restart the cache and region.
     vm1.invoke(() -> {
+      getCache();
+
       PartitionAttributesFactory<String, String> partitionAttributesFactory =
           new PartitionAttributesFactory<>();
       partitionAttributesFactory.setRedundantCopies(1);
@@ -700,6 +705,8 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   }
 
   private void createRegionWithAsyncPersistence(VM vm) {
+    getCache();
+
     File dir = getDiskDirForVM(vm);
     dir.mkdirs();
 
@@ -721,6 +728,8 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   }
 
   private InternalRegion createRegion(VM vm0) {
+    getCache();
+
     File dir = getDiskDirForVM(vm0);
     dir.mkdirs();
 
@@ -759,6 +768,8 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
   }
 
   private Region createAsyncRegionWithSmallQueue(VM vm0) {
+    getCache();
+
     File dir = getDiskDirForVM(vm0);
     dir.mkdirs();
 

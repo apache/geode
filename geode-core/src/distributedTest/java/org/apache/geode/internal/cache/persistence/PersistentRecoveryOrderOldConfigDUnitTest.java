@@ -27,6 +27,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 
 @Category(PersistenceTest.class)
+@SuppressWarnings("serial")
 public class PersistentRecoveryOrderOldConfigDUnitTest extends PersistentRecoveryOrderDUnitTest {
 
   @Override

@@ -96,6 +96,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector
  */
 @Category(PersistenceTest.class)
 @RunWith(JUnitParamsRunner.class)
+@SuppressWarnings("serial")
 public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBase {
 
   private static final AtomicBoolean SAW_REQUEST_IMAGE_MESSAGE = new AtomicBoolean();
@@ -526,7 +527,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
             DistributionMessage message) {
           if (message instanceof PrepareNewPersistentMemberMessage) {
             DistributionMessageObserver.setInstance(null);
-            getSystem().disconnect();
+            system = dm.getSystem();
+            disconnectFromDS();
           }
         }
       });
@@ -541,6 +543,10 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     assertThat(thrown).hasRootCauseInstanceOf(DistributedSystemDisconnectedException.class);
 
     closeRegion(vm0);
+
+    vm1.invoke(() -> {
+      await().until(() -> system != null && system.isDisconnected());
+    });
 
     // This wait for VM0 to come back
     AsyncInvocation createPersistentRegionInVM1 = createPersistentRegionAsync(vm1);
@@ -559,27 +565,6 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       assertThat(diskRegion.getOfflineMembers()).isEmpty();
       assertThat(diskRegion.getOnlineMembers()).hasSize(1);
     });
-  }
-
-  private Object getEntry(VM vm, String key) {
-    return vm.invoke(() -> getCache().getRegion(regionName).get(key));
-  }
-
-  private RegionVersionVector getRVV(VM vm) throws IOException, ClassNotFoundException {
-    byte[] result = vm.invoke(() -> {
-      InternalRegion region = (InternalRegion) getCache().getRegion(regionName);
-
-      RegionVersionVector regionVersionVector = region.getVersionVector();
-      regionVersionVector = regionVersionVector.getCloneForTransmission();
-      HeapDataOutputStream outputStream = new HeapDataOutputStream(Version.CURRENT);
-
-      // Using gemfire serialization because RegionVersionVector is not java serializable
-      DataSerializer.writeObject(regionVersionVector, outputStream);
-      return outputStream.toByteArray();
-    });
-
-    ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
-    return DataSerializer.readObject(new DataInputStream(inputStream));
   }
 
   /**
@@ -684,36 +669,6 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     assertSameRVV(rvv1, rvv0);
   }
 
-  private SerializableRunnable addSleepBeforeSendAbstractUpdateMessage() {
-    return new SerializableRunnable() {
-      @Override
-      public void run() {
-        DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
-
-          @Override
-          public void beforeSendMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-            if (message instanceof AbstractUpdateMessage) {
-              try {
-                Thread.sleep(2000);
-              } catch (InterruptedException e) {
-                errorCollector.addError(e);
-              }
-            }
-          }
-
-          @Override
-          public void afterProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-            if (message instanceof AbstractUpdateMessage) {
-              DistributionMessageObserver.setInstance(null);
-            }
-          }
-        });
-      }
-    };
-  }
-
   /**
    * Tests that even non persistent regions can transmit the list of crashed members to other
    * persistent regions, So that the persistent regions can negotiate who has the latest data during
@@ -815,18 +770,13 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
             DistributionMessage message) {
           if (message instanceof RequestImageMessage) {
             DistributionMessageObserver.setInstance(null);
+            system = dm.getSystem();
             disconnectFromDS();
             synchronized (SAW_REQUEST_IMAGE_MESSAGE) {
               SAW_REQUEST_IMAGE_MESSAGE.set(true);
               SAW_REQUEST_IMAGE_MESSAGE.notifyAll();
             }
           }
-        }
-
-        @Override
-        public void afterProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
-
         }
       });
     });
@@ -847,6 +797,10 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
     waitForBlockedInitialization(vm0);
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
+
+    vm1.invoke(() -> {
+      await().until(() -> system != null && system.isDisconnected());
+    });
 
     // Now create the region again. The initialization should
     // work (the observer was cleared when we disconnected from the DS.
@@ -1030,7 +984,6 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   /**
    * Tests to make sure that we stop waiting for a member that we revoke.
-   *
    */
   @Test
   public void testCompactFromAdmin() {
@@ -1225,8 +1178,61 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     }
   }
 
+  private Object getEntry(VM vm, String key) {
+    return vm.invoke(() -> getCache().getRegion(regionName).get(key));
+  }
+
+  private RegionVersionVector getRVV(VM vm) throws IOException, ClassNotFoundException {
+    byte[] result = vm.invoke(() -> {
+      InternalRegion region = (InternalRegion) getCache().getRegion(regionName);
+
+      RegionVersionVector regionVersionVector = region.getVersionVector();
+      regionVersionVector = regionVersionVector.getCloneForTransmission();
+      HeapDataOutputStream outputStream = new HeapDataOutputStream(Version.CURRENT);
+
+      // Using gemfire serialization because RegionVersionVector is not java serializable
+      DataSerializer.writeObject(regionVersionVector, outputStream);
+      return outputStream.toByteArray();
+    });
+
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
+    return DataSerializer.readObject(new DataInputStream(inputStream));
+  }
+
+  private SerializableRunnable addSleepBeforeSendAbstractUpdateMessage() {
+    return new SerializableRunnable() {
+      @Override
+      public void run() {
+        DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+
+          @Override
+          public void beforeSendMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
+            if (message instanceof AbstractUpdateMessage) {
+              try {
+                Thread.sleep(2000);
+              } catch (InterruptedException e) {
+                errorCollector.addError(e);
+              }
+            }
+          }
+
+          @Override
+          public void afterProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
+            if (message instanceof AbstractUpdateMessage) {
+              DistributionMessageObserver.setInstance(null);
+            }
+          }
+        });
+      }
+    };
+  }
+
   private AsyncInvocation createPersistentRegionAsync(VM vm, boolean diskSynchronous) {
     return vm.invokeAsync(() -> {
+      getCache();
+
       File dir = getDiskDirForVM(vm);
       dir.mkdirs();
 
