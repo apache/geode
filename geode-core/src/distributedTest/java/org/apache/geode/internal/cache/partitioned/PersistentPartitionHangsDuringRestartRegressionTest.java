@@ -15,17 +15,17 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_JMX;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.addVMEventListener;
+import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.removeVMEventListener;
+import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -46,9 +46,11 @@ import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
-import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
+import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -66,9 +68,11 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
 
   private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
 
+  /** WAIT_TO_BOUNCE latch is never counted down -- it prevents responding to RequestImageMessage */
+  private static final CountDownLatch WAIT_TO_BOUNCE = new CountDownLatch(99);
+
   private static volatile CountDownLatch beforeBounceLatch;
   private static volatile CountDownLatch afterBounceLatch;
-  private static volatile CountDownLatch waitToBounce;
 
   private final transient VMEventListener vmEventListener = new VMEventListener() {
     @Override
@@ -111,7 +115,12 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
   @After
   public void tearDown() {
     removeVMEventListener(vmEventListener);
-    invokeInEveryVM(() -> InternalResourceManager.setResourceObserver(null));
+    for (VM vm : toArray(getAllVMs(), getController())) {
+      vm.invoke(() -> {
+        DistributionMessageObserver.setInstance(null);
+        InternalResourceManager.setResourceObserver(null);
+      });
+    }
   }
 
   /**
@@ -136,11 +145,8 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
     });
 
     vm0.invoke(() -> {
-      // waitToBounce latch is never counted down -- it prevents responding to RequestImageMessage
-      waitToBounce = new CountDownLatch(1);
-      // Add a hook to disconnect from the distributed system when the initial image message shows
-      // up.
-      DistributionMessageObserver.setInstance(new BounceWhenImageRequested());
+      // notify controller and then wait to bounce
+      DistributionMessageObserver.setInstance(new WaitToBounceWhenImageRequested());
     });
 
     addVMEventListener(vmEventListener);
@@ -173,13 +179,12 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
     CountDownLatch recoveryDone = new CountDownLatch(1);
 
     if (redundancy > 0) {
-      InternalResourceManager.ResourceObserver observer =
-          new InternalResourceManager.ResourceObserverAdapter() {
-            @Override
-            public void recoveryFinished(Region region) {
-              recoveryDone.countDown();
-            }
-          };
+      ResourceObserver observer = new ResourceObserverAdapter() {
+        @Override
+        public void recoveryFinished(Region region) {
+          recoveryDone.countDown();
+        }
+      };
 
       InternalResourceManager.setResourceObserver(observer);
     } else {
@@ -198,7 +203,7 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
 
     regionFactory.create(partitionedRegionName);
 
-    recoveryDone.await(2, MINUTES);
+    recoveryDone.await(TIMEOUT_MILLIS, MILLISECONDS);
   }
 
   private void createData(final int startKey, final int endKey, final String value,
@@ -229,20 +234,19 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
     return cache;
   }
 
-  private class BounceWhenImageRequested extends DistributionMessageObserver
+  private class WaitToBounceWhenImageRequested extends DistributionMessageObserver
       implements Serializable {
     @Override
     public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
-      if (message instanceof InitialImageOperation.RequestImageMessage) {
-        InitialImageOperation.RequestImageMessage requestImageMessage =
-            (InitialImageOperation.RequestImageMessage) message;
+      if (message instanceof RequestImageMessage) {
+        RequestImageMessage requestImageMessage = (RequestImageMessage) message;
         // Don't bounce until we see a bucket
         if (requestImageMessage.regionPath.contains("_B_")) {
           DistributionMessageObserver.setInstance(null);
           addIgnoredException(CancelException.class);
           vmController.invoke(() -> beforeBounceLatch.countDown());
           try {
-            waitToBounce.await(TIMEOUT_MILLIS, MILLISECONDS);
+            WAIT_TO_BOUNCE.await(TIMEOUT_MILLIS, MILLISECONDS);
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
           }
