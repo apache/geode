@@ -3088,42 +3088,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   void checkPutIfAbsentResult(EntryEventImpl event, Object value, Object result) {
     if (result != null) {
-      // we may see a non null result possibly due to retry
-      if (event.hasRetried() && putIfAbsentResultHasSameValue(true, value, result)) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("retried putIfAbsent and result is the value to be put,"
-              + " treat as a successful putIfAbsent");
-        }
-      } else {
-        // customers don't see this exception
-        throw new EntryNotFoundException("entry existed for putIfAbsent");
-      }
+      throw new EntryNotFoundException("entry existed for putIfAbsent");
     }
-  }
-
-  boolean putIfAbsentResultHasSameValue(boolean isClient, Object valueToBePut, Object result) {
-    if (Token.isInvalid(result) || result == null) {
-      return valueToBePut == null;
-    }
-
-    boolean isCompressedOffHeap =
-        isClient ? false : getAttributes().getOffHeap() && getAttributes().getCompressor() != null;
-    return ValueComparisonHelper.checkEquals(valueToBePut, result, isCompressedOffHeap, getCache());
-  }
-
-  boolean bridgePutIfAbsentResultHasSameValue(byte[] valueToBePut, boolean isValueToBePutObject,
-      Object result) {
-    if (Token.isInvalid(result) || result == null) {
-      return valueToBePut == null;
-    }
-
-    boolean isCompressedOffHeap =
-        getAttributes().getOffHeap() && getAttributes().getCompressor() != null;
-    if (isValueToBePutObject) {
-      return ValueComparisonHelper.checkEquals(EntryEventImpl.deserialize(valueToBePut), result,
-          isCompressedOffHeap, getCache());
-    }
-    return ValueComparisonHelper.checkEquals(valueToBePut, result, isCompressedOffHeap, getCache());
   }
 
   /**
@@ -10923,22 +10889,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       if (generateEventID()) {
-        event.setNewEventId(this.cache.getDistributedSystem());
+        event.setNewEventId(cache.getDistributedSystem());
       }
       final Object oldValue = null;
       final boolean ifNew = true;
       final boolean ifOld = false;
       final boolean requireOldValue = true;
       if (!basicPut(event, ifNew, ifOld, oldValue, requireOldValue)) {
-        Object result = event.getOldValue();
-        if (event.isPossibleDuplicate() && putIfAbsentResultHasSameValue(false, value, result)) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("possible duplicate putIfAbsent event and result is the value to be put,"
-                + " treat this as a successful putIfAbsent");
-          }
-          return null;
-        }
-        return result;
+        return event.getOldValue();
       } else {
         if (!getDataView().isDeferredStats()) {
           getCachePerfStats().endPut(startPut, false);
@@ -11138,6 +11096,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
       // if this is a replayed operation we may already have a version tag
       event.setVersionTag(clientEvent.getVersionTag());
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
 
       // Set the new value to the input byte[] if it isn't null
       if (value != null) {
@@ -11176,19 +11135,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         clientEvent.setVersionTag(event.getVersionTag());
         clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
       } else {
-        if (value != null) {
-          assert (value instanceof byte[]);
-        }
-        if (event.isPossibleDuplicate()
-            && bridgePutIfAbsentResultHasSameValue((byte[]) value, isObject, oldValue)) {
-          // result is possibly due to the retry
-          if (logger.isDebugEnabled()) {
-            logger.debug("retried putIfAbsent and got oldValue as the value to be put,"
-                + " treat this as a successful putIfAbsent");
-          }
-          return null;
-        }
-
         if (oldValue == null) {
           // fix for 42189, putIfAbsent on server can return null if the
           // operation was not performed (oldValue in cache was null).
