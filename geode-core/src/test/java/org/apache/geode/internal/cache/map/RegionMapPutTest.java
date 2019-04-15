@@ -134,6 +134,27 @@ public class RegionMapPutTest {
   }
 
   @Test
+  public void doesNotSetEventOldValueIfRetriedPutIfAbsentOperation() {
+    final byte[] bytes = new byte[] {1, 2, 3, 4, 5};
+    givenExistingRegionEntry();
+    when(existingRegionEntry.getValue()).thenReturn(bytes);
+    when(internalRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    givenPutIfAbsentOperation(bytes); // duplicate operation
+    doPut();
+    verify(event).setOldValue(null, true);
+    assertThat(instance.isOverwritePutIfAbsent()).isTrue();
+  }
+
+  private void givenPutIfAbsentOperation(byte[] bytes) {
+    when(event.isPossibleDuplicate()).thenReturn(true);
+    when(event.basicGetNewValue()).thenReturn(bytes);
+    when(event.getOperation()).thenReturn(Operation.PUT_IF_ABSENT);
+    when(event.hasValidVersionTag()).thenReturn(false);
+    ifNew = true;
+    ifOld = false;
+  }
+
+  @Test
   public void setsEventOldValueToExistingRegionEntryValue_ifOperationGuaranteesOldValue() {
     givenExistingRegionEntry();
     givenAnOperationThatGuaranteesOldValue();

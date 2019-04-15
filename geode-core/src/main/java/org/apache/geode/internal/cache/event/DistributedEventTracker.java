@@ -128,6 +128,13 @@ public class DistributedEventTracker implements EventTracker {
   }
 
   @Override
+  public void clear() {
+    recordedEvents.clear();
+    recordedBulkOps.clear();
+    recordedBulkOpVersionTags.clear();
+  }
+
+  @Override
   public Map<ThreadIdentifier, EventSequenceNumberHolder> getState() {
     Map<ThreadIdentifier, EventSequenceNumberHolder> result = new HashMap<>(recordedEvents.size());
     for (Map.Entry<ThreadIdentifier, EventSequenceNumberHolder> entry : recordedEvents.entrySet()) {

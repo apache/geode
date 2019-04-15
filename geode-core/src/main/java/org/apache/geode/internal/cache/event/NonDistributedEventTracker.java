@@ -50,6 +50,11 @@ public class NonDistributedEventTracker implements EventTracker {
   }
 
   @Override
+  public void clear() {
+    // nothing to clear
+  }
+
+  @Override
   public Map<ThreadIdentifier, EventSequenceNumberHolder> getState() {
     return null;
   }
