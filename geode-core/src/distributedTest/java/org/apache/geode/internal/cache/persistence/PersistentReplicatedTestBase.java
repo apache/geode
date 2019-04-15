@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.persistence;
 
 import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,19 +46,19 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
   private File diskDir;
 
   @Before
-  public void setUpPersistentReplicatedTestBase() throws IOException {
+  public void setUpPersistentReplicatedTestBase() {
     invokeInEveryVM(() -> regionName = getUniqueName() + "Region");
     regionName = getUniqueName() + "Region";
 
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
-    deleteDirectory(diskDir);
+    deleteQuietly(diskDir);
     diskDir.mkdir();
     diskDir.deleteOnExit();
   }
 
   @After
-  public void tearDownPersistentReplicatedTestBase() throws IOException {
-    deleteDirectory(diskDir);
+  public void tearDownPersistentReplicatedTestBase() {
+    deleteQuietly(diskDir);
   }
 
   void waitForBlockedInitialization(VM vm) {
@@ -72,6 +73,8 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   void createPersistentRegionWithoutCompaction(VM vm) {
     vm.invoke(() -> {
+      getCache();
+
       File dir = getDiskDirForVM(vm);
       dir.mkdirs();
 
@@ -143,6 +146,8 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   AsyncInvocation createPersistentRegionAsync(VM vm) {
     return vm.invokeAsync(() -> {
+      getCache();
+
       File dir = getDiskDirForVM(vm);
       dir.mkdirs();
 
