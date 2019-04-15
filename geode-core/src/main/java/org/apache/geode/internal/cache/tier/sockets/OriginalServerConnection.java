@@ -18,9 +18,11 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.IOException;
 import java.net.Socket;
 
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -40,11 +42,15 @@ public class OriginalServerConnection extends ServerConnection {
    *
    */
   public OriginalServerConnection(Socket socket, InternalCache internalCache,
-      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
-      String communicationModeStr, byte communicationMode, Acceptor acceptor,
+      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout,
+      int socketBufferSize,
+      String communicationModeStr, byte communicationMode,
+      Acceptor acceptor,
+      GatewayReceiver gatewayReceiver,
+      GatewayReceiverMetrics gatewayReceiverMetrics,
       SecurityService securityService) {
     super(socket, internalCache, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
-        communicationMode, acceptor, securityService);
+        communicationMode, acceptor, gatewayReceiver, gatewayReceiverMetrics, securityService);
 
     initStreams(socket, socketBufferSize, stats);
   }

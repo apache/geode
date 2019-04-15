@@ -116,7 +116,7 @@ public class ServerConnectionIntegrationTest {
         String communicationModeStr, byte communicationMode, Acceptor acceptor,
         SecurityService securityService) {
       super(socket, internalCache, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
-          communicationMode, acceptor, securityService);
+          communicationMode, acceptor, null, null, securityService);
 
       setClientDisconnectCleanly(); // Not clear where this is supposed to be set in the timeout
       // path

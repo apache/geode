@@ -17,6 +17,9 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_REFUSED;
+import static org.apache.geode.internal.net.SocketCreatorFactory.getSocketCreatorForComponent;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.GATEWAY;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.SERVER;
 
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -55,18 +58,22 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -85,6 +92,7 @@ import org.apache.geode.internal.cache.partitioned.AllBucketProfilesUpdateMessag
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -93,8 +101,6 @@ import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
 import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -112,6 +118,9 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private static final boolean isJRockit = System.getProperty("java.vm.name").contains("JRockit");
   private static final int HANDSHAKER_DEFAULT_POOL_SIZE = 4;
   private static final int CLIENT_QUEUE_INITIALIZATION_POOL_SIZE = 16;
+
+  private final GatewayReceiver gatewayReceiver;
+  private final GatewayReceiverMetrics gatewayReceiverMetrics;
 
   private final CacheServerStats stats;
   private final int maxConnections;
@@ -331,7 +340,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   @MakeNotStatic
   private static boolean isPostAuthzCallbackPresent;
 
-  private final boolean isGatewayReceiver;
+
   private final List<GatewayTransportFilter> gatewayTransportFilters;
   private final SocketCreator socketCreator;
 
@@ -362,16 +371,37 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       int maxConnections, int maxThreads, int maximumMessageCount,
       int messageTimeToLive,
       ConnectionListener listener, List overflowAttributesList,
-      boolean isGatewayReceiver,
+      MeterRegistry meterRegistry, GatewayReceiver gatewayReceiver,
       List<GatewayTransportFilter> transportFilter, boolean tcpNoDelay,
       ServerConnectionFactory serverConnectionFactory, long timeLimitMillis) throws IOException {
+    this(port, bindHostName, notifyBySubscription, socketBufferSize, maximumTimeBetweenPings,
+        internalCache, maxConnections, maxThreads, maximumMessageCount, messageTimeToLive, listener,
+        overflowAttributesList, meterRegistry, gatewayReceiver, transportFilter, tcpNoDelay,
+        serverConnectionFactory, timeLimitMillis,
+        gatewayReceiver == null ? () -> getSocketCreatorForComponent(SERVER)
+            : () -> getSocketCreatorForComponent(GATEWAY));
+  }
+
+  @VisibleForTesting
+  AcceptorImpl(int port, String bindHostName, boolean notifyBySubscription,
+      int socketBufferSize, int maximumTimeBetweenPings,
+      InternalCache internalCache,
+      int maxConnections, int maxThreads, int maximumMessageCount,
+      int messageTimeToLive,
+      ConnectionListener listener, List overflowAttributesList,
+      MeterRegistry meterRegistry, GatewayReceiver gatewayReceiver,
+      List<GatewayTransportFilter> transportFilter, boolean tcpNoDelay,
+      ServerConnectionFactory serverConnectionFactory, long timeLimitMillis,
+      Supplier<SocketCreator> socketCreatorSupplier) throws IOException {
     securityService = internalCache.getSecurityService();
     this.bindHostName = calcBindHostName(internalCache, bindHostName);
     connectionListener = listener == null ? new ConnectionListenerAdapter() : listener;
     this.notifyBySubscription = notifyBySubscription;
-    this.isGatewayReceiver = isGatewayReceiver;
+    this.gatewayReceiver = gatewayReceiver;
+
     gatewayTransportFilters = transportFilter;
     this.serverConnectionFactory = serverConnectionFactory;
+
     {
       int tmp_maxConnections = maxConnections;
       if (tmp_maxConnections < MINIMUM_MAX_CONNECTIONS) {
@@ -437,14 +467,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
 
     {
-      if (!isGatewayReceiver) {
-        // If configured use SSL properties for cache-server
-        socketCreator =
-            SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER);
-      } else {
-        socketCreator = SocketCreatorFactory
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY);
-      }
+      socketCreator = socketCreatorSupplier.get();
 
       final InternalCache gc;
       if (getCachedRegionHelper() != null) {
@@ -546,10 +569,12 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       String sockName = getServerName();
       logger.info("Cache server connection listener bound to address {} with backlog {}.",
           new Object[] {sockName, backLog});
-      if (isGatewayReceiver) {
+      if (isGatewayReceiver()) {
         stats = GatewayReceiverStats.createGatewayReceiverStats(sockName);
+        gatewayReceiverMetrics = new GatewayReceiverMetrics(meterRegistry);
       } else {
         stats = new CacheServerStats(sockName);
+        gatewayReceiverMetrics = null;
       }
 
     }
@@ -558,7 +583,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     crHelper = new CachedRegionHelper(cache);
 
     clientNotifier = CacheClientNotifier.getInstance(cache, stats, maximumMessageCount,
-        messageTimeToLive, connectionListener, overflowAttributesList, isGatewayReceiver);
+        messageTimeToLive, connectionListener, overflowAttributesList, isGatewayReceiver());
     this.socketBufferSize = socketBufferSize;
 
     // Create the singleton ClientHealthMonitor
@@ -576,6 +601,10 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
     isPostAuthzCallbackPresent =
         postAuthzFactoryName != null && !postAuthzFactoryName.isEmpty();
+  }
+
+  GatewayReceiverMetrics getGatewayReceiverMetrics() {
+    return gatewayReceiverMetrics;
   }
 
   private ExecutorService initializeHandshakerThreadPool() throws IOException {
@@ -1411,7 +1440,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     ServerConnection serverConn =
         serverConnectionFactory.makeServerConnection(socket, cache, crHelper, stats,
             handshakeTimeout, socketBufferSize, communicationMode.toString(),
-            communicationMode.getModeNumber(), this, securityService);
+            communicationMode.getModeNumber(), this, gatewayReceiver, gatewayReceiverMetrics,
+            securityService);
 
     synchronized (allSCsLock) {
       allSCs.add(serverConn);
@@ -1746,7 +1776,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   }
 
   public boolean isGatewayReceiver() {
-    return isGatewayReceiver;
+    return gatewayReceiver != null;
   }
 
   public List<GatewayTransportFilter> getGatewayTransportFilters() {

@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import org.apache.geode.cache.IncompatibleVersionException;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -31,6 +32,7 @@ import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -50,9 +52,10 @@ public class ProtobufServerConnection extends ServerConnection {
   public ProtobufServerConnection(Socket socket, InternalCache c, CachedRegionHelper helper,
       CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
       byte communicationMode, Acceptor acceptor, ClientProtocolProcessor clientProtocolProcessor,
+      GatewayReceiver gatewayReceiver, GatewayReceiverMetrics gatewayReceiverMetrics,
       SecurityService securityService) throws IOException {
     super(socket, c, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
-        communicationMode, acceptor, securityService);
+        communicationMode, acceptor, gatewayReceiver, gatewayReceiverMetrics, securityService);
     this.protocolProcessor = clientProtocolProcessor;
 
     this.output = new BufferedOutputStream(socket.getOutputStream(), socketBufferSize);

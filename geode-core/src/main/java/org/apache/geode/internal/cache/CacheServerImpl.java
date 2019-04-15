@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -76,7 +77,6 @@ import org.apache.geode.internal.cache.tier.sockets.OriginalServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ProtobufServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
@@ -92,8 +92,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private static final int FORCE_LOAD_UPDATE_FREQUENCY = getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
-
-  private final SecurityService securityService;
 
   /**
    * The server connection factory, that provides either a {@link OriginalServerConnection} or a new
@@ -118,10 +116,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   private volatile LoadMonitor loadMonitor;
 
-  /**
-   * boolean that represents whether this server is a GatewayReceiver or a simple BridgeServer
-   */
-  private boolean isGatewayReceiver;
 
   private List<GatewayTransportFilter> gatewayTransportFilters = Collections.emptyList();
 
@@ -135,6 +129,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   private int serialNumber; // changed on each start
 
+  private final MeterRegistry meterRegistry;
+
   private final GatewayReceiver gatewayReceiver;
 
   public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = Boolean.getBoolean(
@@ -147,19 +143,14 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * Creates a new{@code BridgeServerImpl} that serves the contents of the give {@code Cache}. It
    * has the default configuration.
    */
-  public CacheServerImpl(InternalCache cache) {
-    this(cache, null);
+  public CacheServerImpl(InternalCache cache, MeterRegistry meterRegistry) {
+    this(cache, meterRegistry, null);
   }
 
-  public CacheServerImpl(InternalCache cache, GatewayReceiver gatewayReceiver) {
-    this(cache, cache.getSecurityService(), gatewayReceiver);
-  }
-
-  private CacheServerImpl(InternalCache cache, SecurityService securityService,
+  public CacheServerImpl(InternalCache cache, MeterRegistry meterRegistry,
       GatewayReceiver gatewayReceiver) {
     super(cache);
-    isGatewayReceiver = gatewayReceiver != null;
-    this.securityService = securityService;
+    this.meterRegistry = meterRegistry;
     this.gatewayReceiver = gatewayReceiver;
   }
 
@@ -182,7 +173,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   public boolean isGatewayReceiver() {
-    return this.isGatewayReceiver;
+    return gatewayReceiver != null;
   }
 
   @Override
@@ -396,7 +387,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       ClientMembership.registerClientMembershipListener(listener);
     }
 
-    if (!isGatewayReceiver) {
+    if (gatewayReceiver == null) {
       InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
     }
@@ -407,7 +398,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return new AcceptorImpl(getPort(), getBindAddress(), getNotifyBySubscription(),
         getSocketBufferSize(), getMaximumTimeBetweenPings(), this.cache, getMaxConnections(),
         getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), this.loadMonitor,
-        overflowAttributesList, this.isGatewayReceiver, this.gatewayTransportFilters,
+        overflowAttributesList, meterRegistry, gatewayReceiver, this.gatewayTransportFilters,
         this.tcpNoDelay, serverConnectionFactory, 120000);
   }
 
@@ -501,7 +492,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
     txMgr.removeHostedTXStatesForClients();
 
-    if (!isGatewayReceiver) {
+    if (gatewayReceiver == null) {
       InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
     }
@@ -735,7 +726,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   public String[] getCombinedGroups() {
     ArrayList<String> groupList = new ArrayList<String>();
-    if (!this.isGatewayReceiver) {
+    if (gatewayReceiver == null) {
       for (String g : MemberAttributes.parseGroups(null, getSystem().getConfig().getGroups())) {
         if (!groupList.contains(g)) {
           groupList.add(g);

@@ -3698,7 +3698,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
 
-    CacheServerImpl cacheServer = new CacheServerImpl(this);
+    CacheServerImpl cacheServer = new CacheServerImpl(this, meterRegistry);
     this.allCacheServers.add(cacheServer);
 
     sendAddCacheServerProfileMessage();
@@ -3710,7 +3710,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
 
-    CacheServerImpl cacheServer = new CacheServerImpl(this, receiver);
+    CacheServerImpl cacheServer = new CacheServerImpl(this, meterRegistry, receiver);
     this.allCacheServers.add(cacheServer);
 
     sendAddCacheServerProfileMessage();

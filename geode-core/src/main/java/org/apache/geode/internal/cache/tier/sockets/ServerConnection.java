@@ -53,6 +53,7 @@ import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -121,6 +122,8 @@ public abstract class ServerConnection implements Runnable {
       new ConcurrentHashMap<>(4, 0.75f, 1);
 
   private ServerConnectionCollection serverConnectionCollection;
+
+  private final GatewayReceiver gatewayReceiver;
 
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
 
@@ -262,8 +265,12 @@ public abstract class ServerConnection implements Runnable {
    * client over a given {@code Socket}.
    */
   public ServerConnection(Socket socket, InternalCache internalCache, CachedRegionHelper helper,
-      CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
-      byte communicationMode, Acceptor acceptor, SecurityService securityService) {
+      CacheServerStats stats, int hsTimeout, int socketBufferSize,
+      String communicationModeStr,
+      byte communicationMode, Acceptor acceptor,
+      GatewayReceiver gatewayReceiver,
+      GatewayReceiverMetrics gatewayReceiverMetrics,
+      SecurityService securityService) {
 
     StringBuilder buffer = new StringBuilder(100);
     if (((AcceptorImpl) acceptor).isGatewayReceiver()) {
@@ -278,6 +285,8 @@ public abstract class ServerConnection implements Runnable {
 
     this.stats = stats;
     this.acceptor = (AcceptorImpl) acceptor;
+    this.gatewayReceiver = gatewayReceiver;
+    this.gatewayReceiverMetrics = gatewayReceiverMetrics;
     crHelper = helper;
     logWriter = (InternalLogWriter) internalCache.getLogger();
     securityLogWriter = (InternalLogWriter) internalCache.getSecurityLoggerI18n();
@@ -287,7 +296,6 @@ public abstract class ServerConnection implements Runnable {
     randomConnectionIdGen = new Random(hashCode());
 
     this.securityService = securityService;
-    gatewayReceiverMetrics = null; // TODO:KIRK
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {

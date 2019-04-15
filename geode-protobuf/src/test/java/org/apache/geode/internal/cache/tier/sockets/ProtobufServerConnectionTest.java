@@ -133,7 +133,7 @@ public class ProtobufServerConnectionTest {
     return new ProtobufServerConnection(socketMock, cache, cachedRegionHelper,
         mock(CacheServerStats.class), 0, 1024, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
-        clientProtocolProcessorMock, mock(SecurityService.class));
+        clientProtocolProcessorMock, null, null, mock(SecurityService.class));
   }
 
   private ProtobufServerConnection getServerConnection(

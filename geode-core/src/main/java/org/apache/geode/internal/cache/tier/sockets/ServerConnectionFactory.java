@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
@@ -29,6 +30,7 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingF
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -53,8 +55,12 @@ public class ServerConnectionFactory {
   }
 
   public ServerConnection makeServerConnection(Socket socket, InternalCache cache,
-      CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
-      String communicationModeStr, byte communicationMode, Acceptor acceptor,
+      CachedRegionHelper helper, CacheServerStats stats,
+      int hsTimeout, int socketBufferSize,
+      String communicationModeStr, byte communicationMode,
+      Acceptor acceptor,
+      GatewayReceiver gatewayReceiver,
+      GatewayReceiverMetrics gatewayReceiverMetrics,
       SecurityService securityService) throws IOException {
     if (ProtobufClientServerProtocol.getModeNumber() == communicationMode) {
       if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
@@ -62,7 +68,8 @@ public class ServerConnectionFactory {
       } else {
         try {
           return createProtobufServerConnection(socket, cache, helper, stats, hsTimeout,
-              socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService);
+              socketBufferSize, communicationModeStr, communicationMode, acceptor, gatewayReceiver,
+              gatewayReceiverMetrics, securityService);
         } catch (ServiceLoadingFailureException ex) {
           throw new IOException("Could not load protobuf client protocol", ex);
         } catch (ServiceVersionNotFoundException ex) {
@@ -71,13 +78,16 @@ public class ServerConnectionFactory {
       }
     } else {
       return new OriginalServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
-          communicationModeStr, communicationMode, acceptor, securityService);
+          communicationModeStr, communicationMode, acceptor, gatewayReceiver,
+          gatewayReceiverMetrics, securityService);
     }
   }
 
   private ServerConnection createProtobufServerConnection(Socket socket, InternalCache cache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
+      GatewayReceiver gatewayReceiver,
+      GatewayReceiverMetrics gatewayReceiverMetrics,
       SecurityService securityService) throws IOException {
     ClientProtocolService service =
         getClientProtocolService(cache.getDistributedSystem(), acceptor.getServerName());
@@ -85,6 +95,7 @@ public class ServerConnectionFactory {
     ClientProtocolProcessor processor = service.createProcessorForCache(cache, securityService);
 
     return new ProtobufServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
-        communicationModeStr, communicationMode, acceptor, processor, securityService);
+        communicationModeStr, communicationMode, acceptor, processor, gatewayReceiver,
+        gatewayReceiverMetrics, securityService);
   }
 }

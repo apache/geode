@@ -177,12 +177,4 @@ public class GatewayReceiverImplTest {
     assertEquals(2, callCount.get());
     verify(server, times(3)).start(); // 2 failed tries, 1 succeeded
   }
-
-  @Test
-  public void createsGatewayReceiverMetrics() {
-    GatewayReceiverImpl gatewayReceiverImpl =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2010, 5, 100, null, null, null, true);
-
-    assertThat(gatewayReceiverImpl.getMetrics()).isNotNull();
-  }
 }
