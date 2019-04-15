@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
@@ -38,7 +37,7 @@ import org.apache.geode.security.ResourcePermission;
 public class RegionConfigValidatorTest {
 
   private RegionConfigValidator validator;
-  private BasicRegionConfig config;
+  private RegionConfig config;
   private SecurityService securityService;
 
   @Before
@@ -47,7 +46,7 @@ public class RegionConfigValidatorTest {
     securityService = mock(SecurityService.class);
     when(cache.getSecurityService()).thenReturn(securityService);
     validator = new RegionConfigValidator(cache);
-    config = new BasicRegionConfig();
+    config = new RegionConfig();
   }
 
   @Test
@@ -122,15 +121,5 @@ public class RegionConfigValidatorTest {
         IllegalArgumentException.class)
         .hasMessageContaining(
             "cluster is a reserved group name");
-  }
-
-  @Test
-  public void invalidObject() throws Exception {
-    RegionConfig config = new RegionConfig();
-    config.setName("test");
-    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
-        IllegalArgumentException.class)
-        .hasMessageContaining(
-            "Use BasicRegionConfig to configure your region");
   }
 }

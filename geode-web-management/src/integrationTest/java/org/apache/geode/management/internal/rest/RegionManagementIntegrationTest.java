@@ -29,7 +29,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -59,7 +58,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void sanityCheck() throws Exception {
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 
@@ -72,7 +71,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void invalidType() throws Exception {
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType("LOCAL");
 
@@ -84,7 +83,7 @@ public class RegionManagementIntegrationTest {
 
   @Test
   public void invalidGroup() throws Exception {
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setGroup("cluster");
 
@@ -93,17 +92,6 @@ public class RegionManagementIntegrationTest {
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
         .containsStatusMessage("cluster is a reserved group name");
   }
-
-  @Test
-  public void invalidConfigObject() throws Exception {
-    RegionConfig config = new RegionConfig();
-    config.setName("customers");
-    assertManagementResult(client.create(config))
-        .failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("Use BasicRegionConfig to configure your region");
-  }
-
 
   @Test
   @WithMockUser

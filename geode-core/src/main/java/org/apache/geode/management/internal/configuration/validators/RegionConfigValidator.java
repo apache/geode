@@ -33,9 +33,6 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
   @Override
   public void validate(RegionConfig config)
       throws IllegalArgumentException {
-    if (config instanceof RegionConfig) {
-      throw new IllegalArgumentException("Use BasicRegionConfig to configure your region.");
-    }
 
     if (config.getName() == null) {
       throw new IllegalArgumentException("Name of the region has to be specified.");
