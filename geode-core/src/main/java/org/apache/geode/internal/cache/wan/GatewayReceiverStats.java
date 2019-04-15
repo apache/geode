@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.wan;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 
 public class GatewayReceiverStats extends CacheServerStats {
@@ -94,8 +93,8 @@ public class GatewayReceiverStats extends CacheServerStats {
 
   // ///////////////////// Constructors ///////////////////////
 
-  public static GatewayReceiverStats createGatewayReceiverStats(String ownerName) {
-    StatisticsFactory f = InternalDistributedSystem.getAnyInstance();
+  public static GatewayReceiverStats createGatewayReceiverStats(StatisticsFactory f,
+      String ownerName) {
     StatisticDescriptor[] descriptors = new StatisticDescriptor[] {
         f.createIntCounter(DUPLICATE_BATCHES_RECEIVED,
             "number of batches which have already been seen by this GatewayReceiver",

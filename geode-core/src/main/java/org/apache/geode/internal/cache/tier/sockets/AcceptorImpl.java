@@ -555,7 +555,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         port = serverSock.getLocalPort();
       }
       {
-        InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+        InternalDistributedSystem ds = internalCache.getInternalDistributedSystem();
         if (ds != null) {
           DistributionManager dm = ds.getDistributionManager();
           if (dm != null && dm.getDistributionManagerId().getPort() == 0
@@ -570,7 +570,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       logger.info("Cache server connection listener bound to address {} with backlog {}.",
           new Object[] {sockName, backLog});
       if (isGatewayReceiver()) {
-        stats = GatewayReceiverStats.createGatewayReceiverStats(sockName);
+        stats = GatewayReceiverStats.createGatewayReceiverStats(
+            internalCache.getInternalDistributedSystem().getStatisticsManager(), sockName);
         gatewayReceiverMetrics = new GatewayReceiverMetrics(meterRegistry);
       } else {
         stats = new CacheServerStats(sockName);
