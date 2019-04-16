@@ -630,7 +630,9 @@ public abstract class JdbcDistributedTest implements Serializable {
 
       String key = "emp1";
       ClusterStartupRule.getCache().getRegion(REGION_NAME).put(key, pdxEmployee1);
-      assertTableHasEmployeeData(1, pdxEmployee1, key);
+      await().untilAsserted(() -> {
+        assertTableHasEmployeeData(1, pdxEmployee1, key);
+      });
     });
   }
 
@@ -647,7 +649,9 @@ public abstract class JdbcDistributedTest implements Serializable {
 
       String key = "emp1";
       ClusterStartupRule.getCache().getRegion(REGION_NAME).put(key, pdxEmployee1);
-      assertTableHasEmployeeData(1, pdxEmployee1, key);
+      await().untilAsserted(() -> {
+        assertTableHasEmployeeData(1, pdxEmployee1, key);
+      });
     });
   }
 
