@@ -1882,6 +1882,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       Set<InternalDistributedMember> cacheOpReceivers, Set<InternalDistributedMember> twoMessages,
       FilterRoutingInfo routing) {
     Operation op = event.getOperation();
+    if (op == null) {
+      return Collections.emptySet();
+    }
     if (op.isUpdate() || op.isCreate() || op.isDestroy() || op.isInvalidate()) {
       // this method can safely assume that the operation is being distributed from
       // the primary bucket holder to other nodes
