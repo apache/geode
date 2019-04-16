@@ -180,7 +180,7 @@ public class CacheClientNotifier {
         registerClientInternal(clientRegistrationMetadata, socket, isPrimary, acceptorId,
             notifyBySubscription);
       } finally {
-        drainAllEventsReceivedWhileInitializingClient(
+        drainAllEventsReceivedWhileRegisteringClient(
             clientProxyMembershipID,
             clientRegistrationMetadata,
             eventsReceivedWhileRegisteringClient);
@@ -470,28 +470,28 @@ public class CacheClientNotifier {
     return eventsReceivedWhileRegisteringClient;
   }
 
-  private void drainAllEventsReceivedWhileInitializingClient(
+  private void drainAllEventsReceivedWhileRegisteringClient(
       final ClientProxyMembershipID clientProxyMembershipID,
       final ClientRegistrationMetadata clientRegistrationMetadata,
       final Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient) {
     // As an optimization, we drain as many events from the queue as we can
     // before taking out a lock to drain the remaining events
     if (logger.isDebugEnabled()) {
-      logger.debug("Draining events from initialization queue for client proxy "
+      logger.debug("Draining events from registration queue for client proxy "
           + clientRegistrationMetadata.getClientProxyMembershipID()
           + " without synchronization");
     }
 
-    drainEventsReceivedWhileInitializingClient(clientProxyMembershipID,
+    drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID,
         eventsReceivedWhileRegisteringClient);
 
     synchronized (registeringProxyEventQueuesLock) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Draining remaining events from initialization queue for client proxy "
+        logger.debug("Draining remaining events from registration queue for client proxy "
             + clientProxyMembershipID + " with synchronization");
       }
 
-      drainEventsReceivedWhileInitializingClient(clientProxyMembershipID,
+      drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID,
           eventsReceivedWhileRegisteringClient);
 
       registeringProxyEventQueues.remove(clientProxyMembershipID);
@@ -751,10 +751,10 @@ public class CacheClientNotifier {
     }
   }
 
-  private void drainEventsReceivedWhileInitializingClient(final ClientProxyMembershipID proxyID,
-      final Queue<InternalCacheEvent> eventsReceivedWhileInitializingClient) {
+  private void drainEventsReceivedWhileRegisteringClient(final ClientProxyMembershipID proxyID,
+      final Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient) {
     InternalCacheEvent queuedEvent;
-    while ((queuedEvent = eventsReceivedWhileInitializingClient.poll()) != null) {
+    while ((queuedEvent = eventsReceivedWhileRegisteringClient.poll()) != null) {
       FilterProfile filterProfile =
           ((DistributedRegion) queuedEvent.getRegion()).getFilterProfile();
 
