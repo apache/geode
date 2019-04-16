@@ -62,7 +62,8 @@ public class ServerSerializableObjectHttpMessageConverter
   @Override
   protected boolean supports(final Class<?> type) {
     if (logger.isTraceEnabled()) {
-      logger.trace(String.format("%1$s.supports(%2$s)", getClass().getName(), type.getName()),
+      logger.trace(String.format("%1$s.supports(%2$s)", getClass().getName(),
+          type == null ? null : type.getName()),
           new Throwable());
     }
 
