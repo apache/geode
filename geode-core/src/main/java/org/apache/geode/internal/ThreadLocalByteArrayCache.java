@@ -23,11 +23,21 @@ import java.lang.ref.SoftReference;
  */
 public class ThreadLocalByteArrayCache {
   private final ThreadLocal<SoftReference<byte[]>> cache = new ThreadLocal<>();
+  private final int maximumArraySize;
+
+  /**
+   * @param maximumArraySize byte arrays larger than this size will not be cached
+   */
+  public ThreadLocalByteArrayCache(int maximumArraySize) {
+    this.maximumArraySize = maximumArraySize;
+  }
 
   /**
    * Returns a byte array whose length it at least minimumLength.
    * NOTE: the same thread can not safely call this method again
    * until it has finished using the byte array returned by a previous call.
+   * If minimumLength is larger than this cache's maximumArraySize
+   * then the returned byte array will not be cached.
    *
    * @param minimumLength the minimum length of the byte array
    * @return a byte array, owned by this thread, whose length is at least minimumLength.
@@ -37,7 +47,9 @@ public class ThreadLocalByteArrayCache {
     byte[] result = (reference != null) ? reference.get() : null;
     if (result == null || result.length < minimumLength) {
       result = new byte[minimumLength];
-      cache.set(new SoftReference<byte[]>(result));
+      if (minimumLength <= maximumArraySize) {
+        cache.set(new SoftReference<byte[]>(result));
+      }
     }
     return result;
   }

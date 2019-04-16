@@ -2595,7 +2595,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   @MakeNotStatic("not tied to the cache lifecycle")
   private static final ThreadLocalByteArrayCache threadLocalByteArrayCache =
-      new ThreadLocalByteArrayCache();
+      new ThreadLocalByteArrayCache(65535);
 
   private static String readStringBytesFromDataInput(DataInput dataInput, int len)
       throws IOException {

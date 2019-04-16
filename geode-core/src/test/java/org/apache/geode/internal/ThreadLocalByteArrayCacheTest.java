@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 
 public class ThreadLocalByteArrayCacheTest {
-  private ThreadLocalByteArrayCache instance = new ThreadLocalByteArrayCache();
+  private ThreadLocalByteArrayCache instance = new ThreadLocalByteArrayCache(2);
 
   @Test
   public void emptyArrayReturned() {
@@ -46,6 +46,16 @@ public class ThreadLocalByteArrayCacheTest {
 
     assertThat(byteArrayOne).hasSize(1);
     assertThat(byteArrayZero).isSameAs(byteArrayOne);
+  }
+
+  @Test
+  public void requestsLargerThanMaximumAreNotCached() {
+    byte[] byteArrayLarge = instance.get(100);
+    byte[] byteArrayZero = instance.get(0);
+
+    assertThat(byteArrayLarge).hasSize(100);
+    assertThat(byteArrayZero).isNotSameAs(byteArrayLarge);
+
   }
 
   @Test
