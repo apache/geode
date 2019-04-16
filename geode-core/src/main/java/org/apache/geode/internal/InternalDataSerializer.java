@@ -2593,6 +2593,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return in.readUTF();
   }
 
+  @MakeNotStatic("not tied to the cache lifecycle")
   private static final ThreadLocalByteArrayCache threadLocalByteArrayCache =
       new ThreadLocalByteArrayCache();
 
