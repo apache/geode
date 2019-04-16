@@ -21,9 +21,10 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 
-
+@Experimental
 public class ClusterManagementResult {
   // this error code should include a one-to-one mapping to the http status code returned
   // by the controller

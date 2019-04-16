@@ -15,14 +15,10 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.hamcrest.Matchers.is;
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,8 +29,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.BasicRegionConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.client.ClusterManagementServiceProvider;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
@@ -48,43 +47,50 @@ public class RegionManagementIntegrationTest {
   // needs to be used together with any BaseLocatorContextLoader
   private LocatorWebContext context;
 
+  private ClusterManagementService client;
+
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
+    client = ClusterManagementServiceProvider.getService(context.getRequestFactory());
   }
 
   @Test
   @WithMockUser
   public void sanityCheck() throws Exception {
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 
-    ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(regionConfig);
-
-    context.perform(post("/v2/regions").content(json))
-        .andExpect(status().isInternalServerError())
-        .andExpect(jsonPath("$.statusCode", is("ERROR")))
-        .andExpect(jsonPath("$.statusMessage",
-            is("no members found in cluster to create cache element")));
+    assertManagementResult(client.create(regionConfig))
+        .failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ERROR)
+        .containsStatusMessage("no members found in cluster to create cache element");
   }
 
   @Test
   @WithMockUser
   public void invalidType() throws Exception {
-    BasicRegionConfig regionConfig = new BasicRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType("LOCAL");
 
-    ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(regionConfig);
+    assertManagementResult(client.create(regionConfig))
+        .failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("Type LOCAL is not supported in Management V2 API.");
+  }
 
-    context.perform(post("/v2/regions").content(json))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.statusCode", is("ILLEGAL_ARGUMENT")))
-        .andExpect(jsonPath("$.statusMessage",
-            is("Type LOCAL is not supported in Management V2 API.")));
+  @Test
+  public void invalidGroup() throws Exception {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("customers");
+    regionConfig.setGroup("cluster");
+
+    assertManagementResult(client.create(regionConfig))
+        .failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("cluster is a reserved group name");
   }
 
   @Test

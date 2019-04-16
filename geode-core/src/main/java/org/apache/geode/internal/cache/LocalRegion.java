@@ -1467,8 +1467,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * optimized to only allow one thread to do a search/load, other threads wait on a future
-   *
    * @param isCreate true if call found no entry; false if updating an existing entry
    * @param localValue the value retrieved from the region for this object.
    * @param disableCopyOnRead if true then do not make a copy
@@ -1481,8 +1479,67 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws TimeoutException, CacheLoaderException {
-
     @Retained
+    Object result;
+    if (isProxy()) {
+      result =
+          getObject(keyInfo, isCreate, generateCallbacks, localValue, disableCopyOnRead, preferCD,
+              requestingClient, clientEvent, returnTombstones);
+    } else {
+      result = optimizedGetObject(keyInfo, isCreate, generateCallbacks, localValue,
+          disableCopyOnRead, preferCD,
+          requestingClient, clientEvent, returnTombstones);
+    }
+    return result;
+  }
+
+
+  private Object getObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
+      Object localValue, boolean disableCopyOnRead, boolean preferCD,
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) {
+    Object result;
+    boolean partitioned = getDataPolicy().withPartitioning();
+    if (!partitioned) {
+      localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD,
+          clientEvent, false, false);
+
+      // stats have now been updated
+      if (localValue != null && !Token.isInvalid(localValue)) {
+        result = localValue;
+        return result;
+      }
+      isCreate = localValue == null;
+      result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks, localValue,
+          disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
+
+    } else {
+      // For PRs we don't want to deserialize the value and we can't use findObjectInSystem
+      // because it can invoke code that is transactional.
+      result =
+          getSharedDataView().findObject(keyInfo, this, isCreate, generateCallbacks, localValue,
+              disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
+    }
+
+    if (result == null && localValue != null) {
+      if (localValue != Token.TOMBSTONE || returnTombstones) {
+        result = localValue;
+      }
+    }
+    // findObjectInSystem does not call conditionalCopy
+    if (!disableCopyOnRead) {
+      result = conditionalCopy(result);
+    }
+    return result;
+  }
+
+  /**
+   * optimized to only allow one thread to do a search/load, other threads wait on a future
+   */
+  private Object optimizedGetObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
+      Object localValue, boolean disableCopyOnRead, boolean preferCD,
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) {
     Object result = null;
     FutureResult thisFuture = new FutureResult(stopper);
     Future otherFuture = (Future) getFutures.putIfAbsent(keyInfo.getKey(), thisFuture);
@@ -1498,7 +1555,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (!preferCD && result instanceof CachedDeserializable) {
             CachedDeserializable cd = (CachedDeserializable) result;
             // fix for bug 43023
-            if (!disableCopyOnRead && isCopyOnRead()) {
+            if (!disableCopyOnRead && (isCopyOnRead() || isProxy())) {
               result = cd.getDeserializedWritableCopy(null, null);
             } else {
               result = cd.getDeserializedForReading();
@@ -1514,7 +1571,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           }
           return result;
         }
-        // if value == null, try our own search/load
       } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
         // TODO check a CancelCriterion here?
@@ -1526,52 +1582,26 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             "unexpected exception", e);
       }
     }
-    // didn't find a future, do one more probe for the entry to catch a race
-    // condition where the future was just removed by another thread
     try {
-      boolean partitioned = getDataPolicy().withPartitioning();
-      if (!partitioned) {
-        localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD,
-            clientEvent, false, false);
+      result =
+          getObject(keyInfo, isCreate, generateCallbacks, localValue, disableCopyOnRead, preferCD,
+              requestingClient, clientEvent, returnTombstones);
 
-        // stats have now been updated
-        if (localValue != null && !Token.isInvalid(localValue)) {
-          result = localValue;
-          return result;
-        }
-        isCreate = localValue == null;
-        result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks, localValue,
-            disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
-
-      } else {
-
-        // For PRs we don't want to deserialize the value and we can't use findObjectInSystem
-        // because it can invoke code that is transactional.
-        result =
-            getSharedDataView().findObject(keyInfo, this, isCreate, generateCallbacks, localValue,
-                disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
-      }
-
-      if (result == null && localValue != null) {
-        if (localValue != Token.TOMBSTONE || returnTombstones) {
-          result = localValue;
-        }
-      }
-      // findObjectInSystem does not call conditionalCopy
     } finally {
-      if (result != null) {
-        VersionTag tag = clientEvent == null ? null : clientEvent.getVersionTag();
-        thisFuture.set(new Object[] {result, tag});
-      } else {
-        thisFuture.set(null);
+      if (otherFuture == null) {
+        if (result != null) {
+          VersionTag tag = clientEvent == null ? null : clientEvent.getVersionTag();
+          thisFuture.set(new Object[] {result, tag});
+        } else {
+          thisFuture.set(null);
+        }
+        getFutures.remove(keyInfo.getKey());
       }
-      getFutures.remove(keyInfo.getKey());
     }
-    if (!disableCopyOnRead) {
-      result = conditionalCopy(result);
-    }
+
     return result;
   }
+
 
   /**
    * Returns true if get should give a copy; false if a reference.
@@ -1777,10 +1807,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     Set<InternalDistributedMember> recipients =
         bucketRegion.getCacheDistributionAdvisor().adviseUpdate(event);
-    Set<Object> twoMessages = bucketRegion.getBucketAdvisor().adviseRequiresTwoMessages();
+    Set<InternalDistributedMember> twoMessages =
+        bucketRegion.getBucketAdvisor().adviseRequiresTwoMessages();
     CacheDistributionAdvisor cda = partitionedRegion.getCacheDistributionAdvisor();
     FilterRoutingInfo filterRouting = cda.adviseFilterRouting(event, recipients);
-    Set<Object> adjunctRecipients =
+    Set<InternalDistributedMember> adjunctRecipients =
         bucketRegion.getAdjunctReceivers(event, recipients, twoMessages, filterRouting);
     Set cacheServerMembers = cda.adviseCacheServers();
     return !Collections.disjoint(adjunctRecipients, cacheServerMembers);
@@ -1798,6 +1829,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /** internally we often need to get an entry whether it is a tombstone or not */
+  @Override
   public Region.Entry getEntry(Object key, boolean allowTombstones) {
     return getDataView().getEntry(getKeyInfo(key), this, allowTombstones);
   }
@@ -3098,44 +3130,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @VisibleForTesting
   void checkPutIfAbsentResult(EntryEventImpl event, Object value, Object result) {
     if (result != null) {
-      // we may see a non null result possibly due to retry
-      if (event.hasRetried() && putIfAbsentResultHasSameValue(true, value, result)) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("retried putIfAbsent and result is the value to be put,"
-              + " treat as a successful putIfAbsent");
-        }
-      } else {
-        // customers don't see this exception
-        throw new EntryNotFoundException("entry existed for putIfAbsent");
-      }
+      throw new EntryNotFoundException("entry existed for putIfAbsent");
     }
-  }
-
-  @VisibleForTesting
-  boolean putIfAbsentResultHasSameValue(boolean isClient, Object valueToBePut, Object result) {
-    if (Token.isInvalid(result) || result == null) {
-      return valueToBePut == null;
-    }
-
-    boolean isCompressedOffHeap =
-        isClient ? false : getAttributes().getOffHeap() && getAttributes().getCompressor() != null;
-    return ValueComparisonHelper.checkEquals(valueToBePut, result, isCompressedOffHeap, getCache());
-  }
-
-  @VisibleForTesting
-  boolean bridgePutIfAbsentResultHasSameValue(byte[] valueToBePut, boolean isValueToBePutObject,
-      Object result) {
-    if (Token.isInvalid(result) || result == null) {
-      return valueToBePut == null;
-    }
-
-    boolean isCompressedOffHeap =
-        getAttributes().getOffHeap() && getAttributes().getCompressor() != null;
-    if (isValueToBePutObject) {
-      return ValueComparisonHelper.checkEquals(EntryEventImpl.deserialize(valueToBePut), result,
-          isCompressedOffHeap, getCache());
-    }
-    return ValueComparisonHelper.checkEquals(valueToBePut, result, isCompressedOffHeap, getCache());
   }
 
   /**
@@ -3321,6 +3317,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     cachePerfStats.incEntryCount(-delta);
   }
 
+  @Override
   public int getTombstoneCount() {
     return tombstoneCount.get();
   }
@@ -10593,15 +10590,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         final boolean ifOld = false;
         final boolean requireOldValue = true;
         if (!basicPut(event, ifNew, ifOld, oldValue, requireOldValue)) {
-          Object result = event.getOldValue();
-          if (event.isPossibleDuplicate() && putIfAbsentResultHasSameValue(false, value, result)) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("possible duplicate putIfAbsent event and result is the value to be put,"
-                  + " treat this as a successful putIfAbsent");
-            }
-            return null;
-          }
-          return result;
+          return event.getOldValue();
         } else {
           if (!getDataView().isDeferredStats()) {
             getCachePerfStats().endPut(startPut, false);
@@ -10802,6 +10791,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
       // if this is a replayed operation we may already have a version tag
       event.setVersionTag(clientEvent.getVersionTag());
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
 
       // Set the new value to the input byte[] if it isn't null
       if (value != null) {
@@ -10840,19 +10830,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         clientEvent.setVersionTag(event.getVersionTag());
         clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
       } else {
-        if (value != null) {
-          assert (value instanceof byte[]);
-        }
-        if (event.isPossibleDuplicate()
-            && bridgePutIfAbsentResultHasSameValue((byte[]) value, isObject, oldValue)) {
-          // result is possibly due to the retry
-          if (logger.isDebugEnabled()) {
-            logger.debug("retried putIfAbsent and got oldValue as the value to be put,"
-                + " treat this as a successful putIfAbsent");
-          }
-          return null;
-        }
-
         if (oldValue == null) {
           // fix for 42189, putIfAbsent on server can return null if the
           // operation was not performed (oldValue in cache was null).

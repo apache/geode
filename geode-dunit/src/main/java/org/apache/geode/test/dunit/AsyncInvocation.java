@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.dunit;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -46,7 +48,7 @@ import org.apache.geode.SystemFailure;
  */
 public class AsyncInvocation<V> implements Future<V> {
 
-  private static final long DEFAULT_JOIN_MILLIS = 60 * 1000;
+  private static final long DEFAULT_JOIN_MILLIS = getTimeout().getValueInMS();
 
   private final Thread thread;
 

@@ -62,7 +62,8 @@ public class GfshCommandIntegrationTest {
     gfsh.executeAndAssertThat(
         "start locator --properties-file=unknown --J=-Dgemfire.security-password=bob")
         .statusIsError();
-    gfsh.executeAndAssertThat("connect --password=secret").statusIsError();
+    gfsh.executeAndAssertThat("connect --jmx-manager=localhost[999] --password=secret")
+        .statusIsError();
 
     List<LogEvent> logEvents = listAppender.getEvents();
     assertThat(logEvents.size()).as("There should be exactly 2 log events").isEqualTo(2);
@@ -71,7 +72,7 @@ public class GfshCommandIntegrationTest {
     assertThat(logEvents.get(0).getMessage().getFormattedMessage()).isEqualTo(
         "Executing command: start locator --properties-file=unknown --J=-Dgemfire.security-password=********");
     assertThat(logEvents.get(1).getMessage().getFormattedMessage())
-        .isEqualTo("Executing command: connect --password=********");
+        .isEqualTo("Executing command: connect --jmx-manager=localhost[999] --password=********");
 
     logger.removeAppender(listAppender);
   }

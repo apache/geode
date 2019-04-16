@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.RuleChain;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -65,9 +66,7 @@ public class GetAndPutJsonDocumentsDUnitTest {
 
   /** this JSON document is used by the "put" the tests */
   private static final String jsonDocument =
-      "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
-          + "  \"age\" : 1275," + System.lineSeparator() + "  \"nationality\" : \"french\","
-          + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
+      "{\"name\":\"Charlemagne\",\"age\":1275,\"nationality\":\"french\",\"emailAddress\":\"none\"}";
 
   private static final PdxDocument pdxDocument =
       new PdxDocument("Charlemagne", 1275, "french", "none");
@@ -81,11 +80,14 @@ public class GetAndPutJsonDocumentsDUnitTest {
 
   private MemberVM storingVM;
 
-  @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(1);
 
-  @Rule
   public ServerStarterRule serverStarterRule = new ServerStarterRule();
+
+  @Rule
+  public RuleChain chain = RuleChain.outerRule(clusterStartupRule)
+      .around(serverStarterRule);
+
   private InternalCache cache;
   private Region<String, Object> testRegion;
 

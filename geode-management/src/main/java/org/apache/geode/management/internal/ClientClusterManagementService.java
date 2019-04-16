@@ -42,9 +42,9 @@ import org.apache.geode.management.api.RestfulEndpoint;
  * <p/>
  * In order to manipulate Geode components (Regions, etc.) clients can construct instances of {@link
  * CacheElement}s and call the corresponding
- * {@link ClientClusterManagementService#create(CacheElement,
- * String)}, {@link ClientClusterManagementService#delete(CacheElement, String)} or {@link
- * ClientClusterManagementService#update(CacheElement, String)} method. The returned {@link
+ * {@link ClientClusterManagementService#create(CacheElement)},
+ * {@link ClientClusterManagementService#delete(CacheElement)} or
+ * {@link ClientClusterManagementService#update(CacheElement)} method. The returned {@link
  * ClusterManagementResult} will contain all necessary information about the outcome of the call.
  * This will include the result of persisting the config as part of the cluster configuration as
  * well as creating the actual component in the cluster.
@@ -127,18 +127,10 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public ClusterManagementResult list(CacheElement config) {
     String endPoint = getEndpoint(config);
-    String id = config.getId();
-
-    // return restTemplate
-    // .getForEntity(VERSION + endPoint + ((id == null) ? "" : "/{id}"),
-    // ClusterManagementResult.class, id)
-    // .getBody();
-
     return restTemplate
-        .getForEntity(VERSION + endPoint + ((id == null) ? "" : "/?id=" + id),
-            ClusterManagementResult.class)
+        .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
+            ClusterManagementResult.class, config.getId(), config.getGroup())
         .getBody();
-
   }
 
   public RestTemplate getRestTemplate() {

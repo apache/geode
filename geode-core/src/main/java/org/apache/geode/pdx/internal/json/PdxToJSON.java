@@ -27,7 +27,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -85,7 +84,6 @@ public class PdxToJSON {
   private void enableDisableJSONGeneratorFeature(JsonGenerator jg) {
     jg.enable(Feature.ESCAPE_NON_ASCII);
     jg.disable(Feature.AUTO_CLOSE_TARGET);
-    jg.setPrettyPrinter(new DefaultPrettyPrinter());
     if (PDXTOJJSON_UNQUOTEFIELDNAMES)
       jg.disable(Feature.QUOTE_FIELD_NAMES);
   }

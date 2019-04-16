@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementResultTest {
   private ClusterManagementResult result;
@@ -103,6 +104,13 @@ public class ClusterManagementResultTest {
     result.addMemberStatus("member-2", false, "message-2");
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ERROR);
+  }
 
+  @Test
+  public void deserialize() throws Exception {
+    String json = "{\"statusCode\":\"OK\"}";
+    ClusterManagementResult result =
+        GeodeJsonMapper.getMapper().readValue(json, ClusterManagementResult.class);
+    assertThat(result.getResult()).isNotNull().isEmpty();
   }
 }

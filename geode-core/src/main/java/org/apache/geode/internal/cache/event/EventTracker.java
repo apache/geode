@@ -133,4 +133,9 @@ public interface EventTracker {
    */
   boolean isInitialImageProvider(DistributedMember mbr);
 
+  /**
+   * clear the tracker
+   */
+  void clear();
+
 }

@@ -121,6 +121,7 @@ tests:
   GRADLE_TASK: repeatTest
   execute_test_timeout: 2h15m
   PARALLEL_DUNIT: "true"
+  PARALLEL_GRADLE: "false"
 - name: "WindowsAcceptance"
   CPUS: "16"
   RAM: "64"

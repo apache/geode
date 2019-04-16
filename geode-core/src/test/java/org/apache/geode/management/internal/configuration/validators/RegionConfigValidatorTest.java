@@ -19,22 +19,45 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.ResourcePermission;
 
 public class RegionConfigValidatorTest {
 
   private RegionConfigValidator validator;
   private RegionConfig config;
+  private SecurityService securityService;
 
   @Before
   public void before() throws Exception {
-    validator = new RegionConfigValidator();
+    InternalCache cache = mock(InternalCache.class);
+    securityService = mock(SecurityService.class);
+    when(cache.getSecurityService()).thenReturn(securityService);
+    validator = new RegionConfigValidator(cache);
     config = new RegionConfig();
+  }
+
+  @Test
+  public void checkSecurityForDiskAccess() {
+    config.setName("regionName");
+    config.setType(RegionType.REPLICATE_PERSISTENT);
+    validator.validate(config);
+
+    verify(securityService).authorize(ResourcePermission.Resource.CLUSTER,
+        ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
+    assertThat(config.getType()).isEqualTo("REPLICATE_PERSISTENT");
   }
 
   @Test
@@ -42,6 +65,10 @@ public class RegionConfigValidatorTest {
     config.setName("regionName");
     config.setType(RegionType.REPLICATE);
     validator.validate(config);
+
+    verify(securityService, times(0)).authorize(
+        any(ResourcePermission.Resource.class),
+        any(ResourcePermission.Operation.class), any(ResourcePermission.Target.class));
     assertThat(config.getType()).isEqualTo("REPLICATE");
   }
 
@@ -58,6 +85,7 @@ public class RegionConfigValidatorTest {
   public void defaultsTypeToPartitioned() {
     config.setName("regionName");
     validator.validate(config);
+
     assertThat(config.getType()).isEqualTo("PARTITION");
   }
 
@@ -83,5 +111,15 @@ public class RegionConfigValidatorTest {
         IllegalArgumentException.class)
         .hasMessageContaining(
             "Region names may only be alphanumeric and may contain hyphens or underscores");
+  }
+
+  @Test
+  public void invalidGroup() throws Exception {
+    config.setName("test");
+    config.setGroup("cluster");
+    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "cluster is a reserved group name");
   }
 }

@@ -719,10 +719,6 @@ public class CacheConfig {
     return this.regions;
   }
 
-  public void addRegion(BasicRegionConfig regionConfig) {
-    getRegions().add(new RegionConfig(regionConfig));
-  }
-
   /**
    * Gets the value of the functionService property.
    *
