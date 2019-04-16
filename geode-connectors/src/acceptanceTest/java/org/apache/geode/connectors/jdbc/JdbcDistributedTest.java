@@ -361,8 +361,8 @@ public abstract class JdbcDistributedTest implements Serializable {
       });
     }
 
-    for (MemberVM server : Arrays.asList(accessor1, accessor2)) {
-      accessor2.invoke(() -> {
+    for (MemberVM accessor : Arrays.asList(accessor1, accessor2)) {
+      accessor.invoke(() -> {
         PdxInstance pdxEmployee1 =
             ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
                 .writeString("id", "id2").writeString("name", "Emp2").writeInt("age", 56).create();
