@@ -16,11 +16,13 @@
  */
 package org.apache.geode.internal;
 
+import java.lang.ref.SoftReference;
+
 /**
  * Provides a simple thread local cache of a single byte array.
  */
 public class ThreadLocalByteArrayCache {
-  private final ThreadLocal<byte[]> cache = new ThreadLocal<byte[]>();
+  private final ThreadLocal<SoftReference<byte[]>> cache = new ThreadLocal<>();
 
   /**
    * Returns a byte array whose length it at least minimumLength.
@@ -31,10 +33,11 @@ public class ThreadLocalByteArrayCache {
    * @return a byte array, owned by this thread, whose length is at least minimumLength.
    */
   public byte[] get(int minimumLength) {
-    byte[] result = cache.get();
+    SoftReference<byte[]> reference = cache.get();
+    byte[] result = (reference != null) ? reference.get() : null;
     if (result == null || result.length < minimumLength) {
       result = new byte[minimumLength];
-      cache.set(result);
+      cache.set(new SoftReference<byte[]>(result));
     }
     return result;
   }
