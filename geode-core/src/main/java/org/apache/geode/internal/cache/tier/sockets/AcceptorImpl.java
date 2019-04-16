@@ -64,7 +64,6 @@ import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -1849,28 +1848,18 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
               isPrimaryServerToClient,
               acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
         }
-      } catch (final IllegalArgumentException e) {
-        /*
-         * If the cause is an UnsupportedVersionException, we have already written the exception
-         * details to the output stream in the ClientRegistrationMetadata constructor's error
-         * handling, so we return gracefully. If not, we will rethrow the exception as it
-         * is unexpected.
-         */
-        if (!(e.getCause() instanceof UnsupportedVersionException)) {
-          throw e;
-        }
-      } catch (final IOException e) {
+      } catch (final IOException ex) {
         closeSocket(socket);
         if (acceptor.isRunning()) {
           if (!acceptor.loggedAcceptError) {
             acceptor.loggedAcceptError = true;
-            if (e instanceof SocketTimeoutException) {
+            if (ex instanceof SocketTimeoutException) {
               logger
                   .warn("Cache server: failed accepting client connection due to socket timeout.");
             } else {
               logger.warn("Cache server: failed accepting client connection " +
-                  e,
-                  e);
+                  ex,
+                  ex);
             }
           }
         }

@@ -182,11 +182,8 @@ class ClientRegistrationMetadata {
       case Handshake.CONFLATION_ON:
         break;
       default:
-        IllegalArgumentException illegalArgumentException =
-            new IllegalArgumentException("Invalid conflation byte");
-
         socketMessageWriter.writeException(dataOutputStream, Handshake.REPLY_INVALID,
-            illegalArgumentException, clientVersion);
+            new IllegalArgumentException("Invalid conflation byte"), clientVersion);
 
         return false;
     }
