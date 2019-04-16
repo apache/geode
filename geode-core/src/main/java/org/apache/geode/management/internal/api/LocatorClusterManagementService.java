@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -57,8 +58,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private static final Logger logger = LogService.getLogger();
   private InternalCache cache;
   private ConfigurationPersistenceService persistenceService;
-  private HashMap<Class, ConfigurationManager> managers;
-  private HashMap<Class, ConfigurationValidator> validators;
+  private Map<Class, ConfigurationManager> managers;
+  private Map<Class, ConfigurationValidator> validators;
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
@@ -74,7 +75,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   @VisibleForTesting
   public LocatorClusterManagementService(InternalCache cache,
-      ConfigurationPersistenceService persistenceService, HashMap managers, HashMap validators) {
+      ConfigurationPersistenceService persistenceService, Map managers, Map validators) {
     this.cache = cache;
     this.persistenceService = persistenceService;
     this.managers = managers;

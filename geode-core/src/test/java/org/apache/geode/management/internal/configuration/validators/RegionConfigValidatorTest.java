@@ -113,13 +113,4 @@ public class RegionConfigValidatorTest {
             "Region names may only be alphanumeric and may contain hyphens or underscores");
   }
 
-  @Test
-  public void invalidGroup() throws Exception {
-    config.setName("test");
-    config.setGroup("cluster");
-    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
-        IllegalArgumentException.class)
-        .hasMessageContaining(
-            "cluster is a reserved group name");
-  }
 }

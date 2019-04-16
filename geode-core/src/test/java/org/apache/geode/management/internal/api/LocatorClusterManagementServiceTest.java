@@ -15,29 +15,42 @@
 
 package org.apache.geode.management.internal.api;
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.exceptions.EntityExistsException;
+import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
+import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
+import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
+import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -46,12 +59,26 @@ public class LocatorClusterManagementServiceTest {
   private ConfigurationPersistenceService persistenceService;
   private RegionConfig regionConfig;
   private ClusterManagementResult result;
+  private Map<Class, ConfigurationValidator> validators = new HashMap<>();
+  private Map<Class, ConfigurationManager> managers = new HashMap<>();
+  private ConfigurationValidator<RegionConfig> regionValidator;
+  private ConfigurationValidator<CacheElement> cacheElementValidator;
+  private ConfigurationManager<RegionConfig> regionManager;
 
   @Before
   public void before() throws Exception {
+    cacheElementValidator = spy(CacheElementValidator.class);
+    validators.put(CacheElement.class, cacheElementValidator);
+    regionValidator = mock(RegionConfigValidator.class);
+    regionManager = mock(ConfigurationManager.class);
+    validators.put(RegionConfig.class, regionValidator);
+    managers.put(RegionConfig.class, regionManager);
+
+
+
     cache = mock(InternalCache.class);
     persistenceService = mock(ConfigurationPersistenceService.class);
-    service = spy(new LocatorClusterManagementService(cache, persistenceService));
+    service = spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators));
     regionConfig = new RegionConfig();
   }
 
@@ -65,33 +92,14 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void elementAlreadyExist() throws Exception {
-    regionConfig.setName("test");
-    CacheConfig cacheConfig = new CacheConfig();
-    cacheConfig.getRegions().add(regionConfig);
-    when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
-
-    assertThatThrownBy(() -> service.create(regionConfig))
-        .isInstanceOf(EntityExistsException.class)
-        .hasMessageContaining("cache element test already exists");
-  }
-
-  @Test
-  public void validationFailed() throws Exception {
-    assertThatThrownBy(() -> service.create(regionConfig))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Name of the region has to be specified");
-  }
-
-  @Test
-  public void noMemberFound() throws Exception {
-    regionConfig.setName("test");
-    when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
-    doReturn(Collections.emptySet()).when(service).findMembers(any());
-    result = service.create(regionConfig);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusMessage())
-        .contains("no members found in cluster to create cache element");
+  public void validatorIsCalledCorrectly() throws Exception {
+    doReturn(Collections.emptySet()).when(service).findMembers(anyString());
+    assertManagementResult(service.create(regionConfig))
+        .failed().hasStatusCode(ClusterManagementResult.StatusCode.ERROR)
+        .containsStatusMessage("no members found");
+    verify(cacheElementValidator).validate(regionConfig);
+    verify(regionValidator).validate(regionConfig);
+    verify(regionValidator).exists(eq(regionConfig), any());
   }
 
   @Test
@@ -109,5 +117,26 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage())
         .contains("Failed to apply the update on all members");
+  }
+
+  @Test
+  public void non_supportedConfigObject() throws Exception {
+    MemberConfig config = new MemberConfig();
+    assertThatThrownBy(()->service.create(config)).isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Configuration type MemberConfig is not supported");
+  }
+
+  @Test
+  public void listOneGroup() throws Exception {
+    regionConfig.setGroup("cluster");
+    when(persistenceService.getGroups()).thenReturn(Sets.newHashSet("cluster", "group1"));
+
+    service.list(regionConfig);
+    // we only get the cluster's cache config once
+    verify(persistenceService).getCacheConfig("cluster", true);
+    verify(persistenceService, times(0)).getCacheConfig("group1", true);
+
+    // list is only called once
+    verify(regionManager).list(any(), any());
   }
 }
