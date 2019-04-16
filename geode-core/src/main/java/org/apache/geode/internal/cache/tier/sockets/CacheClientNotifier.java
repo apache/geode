@@ -738,6 +738,8 @@ public class CacheClientNotifier {
       conflatable = wrapper;
     }
 
+    logger.info("RYGUY: Starting processing event " + event);
+
     addEventToRegisteringProxyQueues(event, filterClients);
 
     singletonRouteClientMessage(conflatable, filterClients);
