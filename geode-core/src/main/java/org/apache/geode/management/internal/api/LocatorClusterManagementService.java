@@ -203,8 +203,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
           if (!"cluster".equals(group)) {
             element.setGroup(group);
           }
-          CacheElement exist = CacheElement.findElement(elements, element.getId());
-          if (exist != null) {
+
+          int index = elements.indexOf(element);
+          if (index > 0) {
+            CacheElement exist = elements.get(index);
             // combine the group names
             String combined = exist.getConfigGroup() + "," + element.getConfigGroup();
             exist.setGroup(sortedCommaSeparatedList(combined));

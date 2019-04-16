@@ -478,6 +478,28 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
     return getName();
   }
 
+  @Override
+  public boolean equals(Object that) {
+    if (that == null) {
+      return false;
+    }
+
+    if (this == that) {
+      return true;
+    }
+
+    if (!(that instanceof RegionConfig)) {
+      return false;
+    }
+
+    RegionConfig config = (RegionConfig) that;
+
+    if (this.getId().equals(config.getId()) && this.getType().equals(config.getType())) {
+      return true;
+    }
+
+    return false;
+  }
 
   /**
    * <p>
