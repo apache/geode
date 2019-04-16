@@ -53,6 +53,7 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -275,17 +276,18 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
       }
     });
 
-    try (IgnoredException e = addIgnoredException(DiskAccessException.class)) {
-      // Force expiration, with our test hook that should close the cache
-      tombstoneService = getCache().getTombstoneService();
-      tombstoneService.forceBatchExpirationForTests(entryCount / 4);
+    addIgnoredException(DiskAccessException.class);
+    addIgnoredException(RegionDestroyedException.class);
 
-      getCache().close();
+    // Force expiration, with our test hook that should close the cache
+    tombstoneService = getCache().getTombstoneService();
+    tombstoneService.forceBatchExpirationForTests(entryCount / 4);
 
-      // Restart again, and make sure the tombstones are in fact removed
-      region = createRegion(vm0);
-      assertThat(getTombstoneCount(region)).isEqualTo(entryCount / 4);
-    }
+    getCache().close();
+
+    // Restart again, and make sure the tombstones are in fact removed
+    region = createRegion(vm0);
+    assertThat(getTombstoneCount(region)).isEqualTo(entryCount / 4);
   }
 
   /**
