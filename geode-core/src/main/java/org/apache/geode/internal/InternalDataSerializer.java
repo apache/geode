@@ -2593,27 +2593,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return in.readUTF();
   }
 
-  private static class ThreadLocalByteArrayCache {
-    private static final ThreadLocal<byte[]> cache = new ThreadLocal<byte[]>();
-
-    /**
-     * Returns a byte array whose length it at least minimumLength.
-     * NOTE: the same thread can not safely call this method again
-     * until it has finished using the byte array returned by a previous call.
-     *
-     * @param minimumLength the minimum length of the byte array
-     * @return a byte array, owned by this thread, whose length is at least minimumLength.
-     */
-    public static byte[] get(int minimumLength) {
-      byte[] result = cache.get();
-      if (result == null || result.length < minimumLength) {
-        result = new byte[minimumLength];
-        cache.set(result);
-      }
-      return result;
-    }
-  }
-
   private static String readStringBytesFromDataInput(DataInput dataInput, int len)
       throws IOException {
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
