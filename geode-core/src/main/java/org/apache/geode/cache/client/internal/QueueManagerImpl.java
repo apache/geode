@@ -420,12 +420,14 @@ public class QueueManagerImpl implements QueueManager {
 
   private void initializeConnections() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("SubscriptionManager - intitializing connections");
-    }
+    // if (isDebugEnabled) {
+    logger.info("RYGUY: SubscriptionManager - intitializing connections");
+    // }
 
     int queuesNeeded = redundancyLevel == -1 ? -1 : redundancyLevel + 1;
     Set<ServerLocation> excludedServers = new HashSet<>(denyList.getBadServers());
+    logger.info("RYGUY: Deny list bad servers: " + excludedServers);
+
     List<ServerLocation> servers =
         findQueueServers(excludedServers, queuesNeeded, true, false, null);
 
@@ -452,21 +454,35 @@ public class QueueManagerImpl implements QueueManager {
       try {
         connection = factory.createClientToServerConnection(server, true);
       } catch (GemFireSecurityException | GemFireConfigException e) {
+        logger.info("RYGUY: Config or security exception: " + e);
         throw e;
       } catch (Exception e) {
-        if (isDebugEnabled) {
-          logger.debug("SubscriptionManager - Error connected to server: {}", server, e);
-        }
+        // if (isDebugEnabled) {
+        logger.info("RYGUY: SubscriptionManager - Error connected to server:  " + server
+            + "; details: " + e);
+        // }
       }
       if (connection != null) {
         ServerQueueStatus status = connection.getQueueStatus();
         if (status.isRedundant() || status.isPrimary()) {
+          logger.info("RYGUY: Adding connection to old servers list.  Status: " + status
+              + "; connection: " + connection + "; server: " + server);
           oldQueueServers.put(status, connection);
         } else {
+          logger.info("RYGUY: Adding connection to non-redundant list. connection: " + connection
+              + "; server: " + server);
           nonRedundantServers.add(connection);
         }
       }
     }
+
+    logger.info("RYGUY: Old servers final sort:");
+
+    for (Map.Entry oldServer : oldQueueServers.entrySet()) {
+      logger.info("RYGUY key: " + oldServer.getKey() + "; value " + oldServer.getValue());
+    }
+
+    logger.info("RYGUY: Old servers final sort complete");
 
     // This ordering was determined from the old ConnectionProxyImpl code
     //
@@ -488,7 +504,9 @@ public class QueueManagerImpl implements QueueManager {
     Connection newPrimary = null;
     if (!oldQueueServers.isEmpty()) {
       newPrimary = oldQueueServers.remove(oldQueueServers.lastKey());
+      logger.info("RYGUY: New primary: " + newPrimary);
     } else if (!nonRedundantServers.isEmpty()) {
+      logger.info("RYGUY: New primary non-redundant case: " + newPrimary);
       newPrimary = nonRedundantServers.remove(0);
     }
 
@@ -497,22 +515,31 @@ public class QueueManagerImpl implements QueueManager {
     for (Connection connection : nonRedundantServers) {
       QueueConnectionImpl queueConnection = initializeQueueConnection(connection, false, null);
       if (queueConnection != null) {
+        logger.info("RYGUY: Initialized non-primary queue connection: " + connection
+            + "; queue connection: " + queueConnection);
         addToConnectionList(queueConnection, false);
+      } else {
+        logger.info("RYGUY: Non-primary queue connection was null " + connection);
       }
     }
 
     QueueConnectionImpl primaryQueue = null;
     if (newPrimary != null) {
+      logger.info("RYGUY: Initialized primary queue connection: " + primaryQueue);
       primaryQueue = initializeQueueConnection(newPrimary, true, null);
       if (primaryQueue == null) {
+        logger
+            .info("RYGUY: Failed to create primary queue connection, nulling out: " + primaryQueue);
         newPrimary.destroy();
       } else {
         if (!addToConnectionList(primaryQueue, true)) {
+          logger.info("RYGUY: Failed to add primary queue to connection list: " + primaryQueue);
           primaryQueue = null;
         }
       }
     }
 
+    logger.info("RYGUY: New primary already existed! " + newPrimary);
 
     excludedServers.addAll(servers);
 
@@ -524,46 +551,57 @@ public class QueueManagerImpl implements QueueManager {
         logger.debug(
             "SubscriptionManager - Some initial connections failed. Trying to create redundant queues");
       }
+      logger.info("RYGUY: Recovering redundancy, excluded servers: " + excludedServers);
+
       recoverRedundancy(excludedServers, false);
     }
 
     if (redundancyLevel != -1 && primaryQueue == null) {
-      if (isDebugEnabled) {
-        logger.debug(
-            "SubscriptionManager - Intial primary creation failed. Trying to create a new primary");
-      }
+      // if (isDebugEnabled) {
+      logger.info(
+          "RYGUY: SubscriptionManager - Intial primary creation failed. Trying to create a new primary");
+      // }
       while (primaryQueue == null) {
         primaryQueue = createNewPrimary(excludedServers);
+        logger.info("RYGUY: Created new primary server " + primaryQueue);
         if (primaryQueue == null) {
+          logger.info("RYGUY: Failed to create new primary server " + primaryQueue);
           // couldn't find a server to make primary
           break;
         }
         if (!addToConnectionList(primaryQueue, true)) {
+          logger.info("RYGUY: Failed to add new primary server to connection list " + primaryQueue);
           excludedServers.add(primaryQueue.getServer());
           primaryQueue = null;
         }
       }
     }
 
+    logger.info("RYGUY: Created new primary queue! " + primaryQueue);
+
     if (primaryQueue == null) {
-      if (isDebugEnabled) {
-        logger.debug(
-            "SubscriptionManager - Unable to create a new primary queue, using one of the redundant queues");
-      }
+      // if (isDebugEnabled) {
+      logger.info(
+          "RYGUY: SubscriptionManager - Unable to create a new primary queue, using one of the redundant queues");
+      // }
       while (primaryQueue == null) {
         primaryQueue = promoteBackupToPrimary(queueConnections.getBackups());
         if (primaryQueue == null) {
+          logger.info("RYGUY: No backup servers available");
           // no backup servers available
           break;
         }
         if (!addToConnectionList(primaryQueue, true)) {
           synchronized (lock) {
+            logger.info("RYGUY: Failed to add primary queue to connection list: " + primaryQueue);
             // make sure we don't retry this same connection.
             queueConnections = queueConnections.removeConnection(primaryQueue);
           }
           primaryQueue = null;
         }
       }
+
+      logger.info("RYGUY: Primary queue! " + primaryQueue);
     }
 
     if (primaryQueue == null) {
@@ -1252,14 +1290,22 @@ public class QueueManagerImpl implements QueueManager {
     public int compare(ServerQueueStatus s1, ServerQueueStatus s2) {
       // sort primaries to the front of the list
       if (s1.isPrimary() && !s2.isPrimary()) {
+        logger.info("RYGUY: s1 primary and s2 not; s1: " + s1 + "; s2: " + s2);
         return -1;
       } else if (!s1.isPrimary() && s2.isPrimary()) {
+        logger.info("RYGUY: s1 not primary and s2 is; s1: " + s1 + "; s2: " + s2);
         return 1;
       } else {
-        int diff = s1.getServerQueueSize() - s2.getServerQueueSize();
+        final int serverOneQueueSize = s1.getServerQueueSize();
+        final int serverTwoQueueSize = s2.getServerQueueSize();
+        logger.info("RYGUY: s1 queue size: " + serverOneQueueSize + "; s2 queue size: "
+            + serverTwoQueueSize);
+        int diff = serverOneQueueSize - serverTwoQueueSize;
         if (diff != 0) {
           return diff;
         } else {
+          logger.info("RYGUY: Comparing member IDs; s1 member ID " + s1.getMemberId()
+              + "; s2 member ID " + s2.getMemberId());
           return s1.getMemberId().compareTo(s2.getMemberId());
         }
       }
