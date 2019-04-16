@@ -34,6 +34,7 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
@@ -91,6 +92,30 @@ public class RegionManagementIntegrationTest {
         .failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
         .containsStatusMessage("cluster is a reserved group name");
+  }
+
+  @Test
+  public void invalidGroup2() throws Exception {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("customers");
+    regionConfig.setGroup("group1,group2");
+
+    assertManagementResult(client.create(regionConfig))
+        .failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("Group name can not contain comma");
+  }
+
+  @Test
+  public void invalidConfigObject() throws Exception {
+    RuntimeRegionConfig regionConfig = new RuntimeRegionConfig();
+    regionConfig.setName("customers");
+    regionConfig.setGroup("group1");
+
+    assertManagementResult(client.create(regionConfig))
+        .failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("Configuration type RuntimeRegionConfig is not supported");
   }
 
   @Test

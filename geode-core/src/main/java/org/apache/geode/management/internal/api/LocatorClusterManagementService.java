@@ -48,6 +48,7 @@ import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.MemberConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
+import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
@@ -67,6 +68,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
 
     // initialize the list of validators
+    validators.put(CacheElement.class, new CacheElementValidator());
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
   }
 
@@ -88,18 +90,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Cluster configuration service needs to be enabled");
     }
 
-    ClusterManagementResult result = new ClusterManagementResult();
-    ConfigurationManager configurationMutator = managers.get(config.getClass());
+    // first validate common attributes of all configuration object
+    validators.get(CacheElement.class).validate(config);
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
       validator.validate(config);
+      // exit early if config element already exists in cache config
+      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+      if (validator.exists(config, currentPersistedConfig)) {
+        throw new EntityExistsException("cache element " + config.getId() + " already exists.");
+      }
     }
 
-    // exit early if config element already exists in cache config
-    CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-    if (validator.exists(config, currentPersistedConfig)) {
-      throw new EntityExistsException("cache element " + config.getId() + " already exists.");
+    // validate that user used the correct config object type
+    ConfigurationManager configurationManager = managers.get(config.getClass());
+    if (configurationManager == null) {
+      throw new IllegalArgumentException(String.format("Configuration type %s is not supported.",
+          config.getClass().getSimpleName()));
     }
 
     // execute function on all members
@@ -109,6 +117,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       return new ClusterManagementResult(false,
           "no members found in " + group + " to create cache element");
     }
+
+    ClusterManagementResult result = new ClusterManagementResult();
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
@@ -129,7 +139,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     final String finalGroup = group; // the below lambda requires a reference that is final
     persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
       try {
-        configurationMutator.add(config, cacheConfigForGroup);
+        configurationManager.add(config, cacheConfigForGroup);
         result.setStatus(true,
             "successfully persisted config for " + finalGroup);
       } catch (Exception e) {
