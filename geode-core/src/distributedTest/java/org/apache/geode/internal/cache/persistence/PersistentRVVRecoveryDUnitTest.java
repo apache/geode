@@ -15,10 +15,12 @@
 package org.apache.geode.internal.cache.persistence;
 
 import static java.lang.Thread.sleep;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.cache.TombstoneService.EXPIRED_TOMBSTONE_LIMIT_DEFAULT;
 import static org.apache.geode.internal.cache.TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT_DEFAULT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getController;
@@ -92,6 +94,7 @@ import org.apache.geode.test.junit.categories.PersistenceTest;
 public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase {
 
   private static final int TEST_REPLICATED_TOMBSTONE_TIMEOUT = 1_000;
+  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -243,7 +246,9 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
 
     region.getDiskStore().forceCompaction();
 
-    assertThat(tombstoneService.forceBatchExpirationForTests(entryCount / 2)).isTrue();
+    assertThat(
+        tombstoneService.forceBatchExpirationForTests(entryCount / 2, TIMEOUT_MILLIS, MILLISECONDS))
+            .isTrue();
     assertThat(getTombstoneCount(region)).isEqualTo(entryCount / 2);
 
     // After expiring, we should have an oplog available for compaction.
@@ -281,7 +286,9 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
 
     // Force expiration, with our test hook that should close the cache
     tombstoneService = getCache().getTombstoneService();
-    tombstoneService.forceBatchExpirationForTests(entryCount / 4);
+    assertThat(
+        tombstoneService.forceBatchExpirationForTests(entryCount / 4, TIMEOUT_MILLIS, MILLISECONDS))
+            .isTrue();
 
     getCache().close();
 

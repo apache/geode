@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
 import java.util.ArrayList;
@@ -340,10 +341,26 @@ public class TombstoneService {
   /**
    * For test purposes only, force the expiration of a number of tombstones for replicated regions.
    *
+   * @param count Number of tombstones to expire
+   *
    * @return true if the expiration occurred
    */
   public boolean forceBatchExpirationForTests(int count) throws InterruptedException {
-    return this.replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count);
+    return this.replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count, 30, SECONDS);
+  }
+
+  /**
+   * For test purposes only, force the expiration of a number of tombstones for replicated regions.
+   *
+   * @param count Number of tombstones to expire
+   * @param timeout the maximum time to wait
+   * @param unit the time unit of the {@code timeout} argument
+   *
+   * @return true if the expiration occurred
+   */
+  public boolean forceBatchExpirationForTests(int count, long timeout, TimeUnit unit)
+      throws InterruptedException {
+    return this.replicatedTombstoneSweeper.testHook_forceExpiredTombstoneGC(count, timeout, unit);
   }
 
   @Override
@@ -426,7 +443,8 @@ public class TombstoneService {
     protected void handleNoUnexpiredTombstones() {}
 
     @Override
-    boolean testHook_forceExpiredTombstoneGC(int count) throws InterruptedException {
+    boolean testHook_forceExpiredTombstoneGC(int count, long timeout, TimeUnit unit)
+        throws InterruptedException {
       return true;
     }
 
@@ -733,7 +751,8 @@ public class TombstoneService {
     }
 
     @Override
-    boolean testHook_forceExpiredTombstoneGC(int count) throws InterruptedException {
+    boolean testHook_forceExpiredTombstoneGC(int count, long timeout, TimeUnit unit)
+        throws InterruptedException {
       // sync on blockGCLock since expireBatch syncs on it
       synchronized (getBlockGCLock()) {
         testHook_forceBatchExpireCall = new CountDownLatch(1);
@@ -743,9 +762,7 @@ public class TombstoneService {
           testHook_forceExpirationCount += count;
           notifyAll();
         }
-        // Wait for 30 seconds. If we wait longer, we risk hanging the tests if
-        // something goes wrong.
-        return testHook_forceBatchExpireCall.await(30, TimeUnit.SECONDS);
+        return testHook_forceBatchExpireCall.await(timeout, unit);
       } finally {
         testHook_forceBatchExpireCall = null;
       }
@@ -1073,6 +1090,7 @@ public class TombstoneService {
      */
     protected abstract void beforeSleepChecks();
 
-    abstract boolean testHook_forceExpiredTombstoneGC(int count) throws InterruptedException;
+    abstract boolean testHook_forceExpiredTombstoneGC(int count, long timeout, TimeUnit unit)
+        throws InterruptedException;
   } // class TombstoneSweeper
 }
