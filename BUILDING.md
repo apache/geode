@@ -7,7 +7,7 @@ Set the JAVA\_HOME environment variable.  For example:
 | Platform | Command |
 | :---: | --- |
 |  Unix    | ``export JAVA_HOME=/usr/java/jdk1.8.0_121``            |
-|  OSX     | ``export JAVA_HOME=`/usr/libexec/java_home -v 1.8``    |
+|  OSX     | ``export JAVA_HOME=`/usr/libexec/java_home -v 1.8` ``  |
 |  Windows | ``set JAVA_HOME="C:\Program Files\Java\jdk1.8.0_121"`` |
 
 Download the project source from the Releases page at
