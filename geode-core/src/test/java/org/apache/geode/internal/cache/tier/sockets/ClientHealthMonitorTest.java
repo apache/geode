@@ -15,10 +15,12 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,21 +34,28 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  * This is a functional-test for <code>ClientHealthMonitor</code>.
  */
 @Category({ClientServerTest.class})
-public class ClientHealthMonitorJUnitTest {
+public class ClientHealthMonitorTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   private int pingIntervalMillis = 200;
   private int monitorIntervalMillis = 20;
   private ClientHealthMonitor clientHealthMonitor;
+  private CacheClientNotifierStats mockStats;
+  private InternalCache mockCache;
 
   @Before
   public void setUp() {
     System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY,
         Integer.toString(monitorIntervalMillis));
 
-    InternalCache mockCache = mock(InternalCache.class);
-    CacheClientNotifierStats mockStats = mock(CacheClientNotifierStats.class);
+    mockCache = mock(InternalCache.class);
+    mockStats = mock(CacheClientNotifierStats.class);
     clientHealthMonitor = ClientHealthMonitor.getInstance(mockCache, pingIntervalMillis, mockStats);
+  }
+
+  @After
+  public void setup() {
+    ClientHealthMonitor.shutdownInstance();
   }
 
   @Test
@@ -87,6 +96,78 @@ public class ClientHealthMonitorJUnitTest {
 
     // Check that we never tried to terminate the connection
     verify(mockConnection, times(0)).handleTermination(true);
+  }
+
+  @Test
+  public void registerClientNewClientAddedWithCurrentTimeAndIncrementsStat() {
+    ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
+    clientHealthMonitor.registerClient(mockId);
+    assertThat(clientHealthMonitor.getClientHeartbeats().get(mockId)).isNotNull()
+        .isLessThanOrEqualTo(System.currentTimeMillis());
+    verify(mockStats).incClientRegisterRequests();
+  }
+
+  @Test
+  public void registerClientExistingClientDoesNotUpdateTimeOrIncrementStat()
+      throws InterruptedException {
+    ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
+    clientHealthMonitor.registerClient(mockId);
+    Long expectedTime = clientHealthMonitor.getClientHeartbeats().get(mockId);
+
+    Thread.sleep(2);
+    clientHealthMonitor.registerClient(mockId);
+    assertThat(clientHealthMonitor.getClientHeartbeats().get(mockId)).isNotNull()
+        .isEqualTo(expectedTime);
+
+    // incremented 1 time for the initial registerClient.
+    verify(mockStats).incClientRegisterRequests();
+  }
+
+  @Test
+  public void unregisterClientExistingClientIsRemovedAndIncrementsStat() {
+    ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
+    clientHealthMonitor.registerClient(mockId);
+
+    clientHealthMonitor.unregisterClient(mockId, null, true, null);
+    assertThat(clientHealthMonitor.getClientHeartbeats()).doesNotContainKey(mockId);
+    verify(mockStats).incClientUnRegisterRequests();
+  }
+
+  @Test
+  public void unregisterClientMissingClientIsDoesNotIncrementStat() {
+    ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
+    clientHealthMonitor.registerClient(mockId);
+
+    clientHealthMonitor.unregisterClient(mockId, null, true, null);
+    clientHealthMonitor.unregisterClient(mockId, null, true, null);
+    assertThat(clientHealthMonitor.getClientHeartbeats()).doesNotContainKey(mockId);
+
+    // incremented 1 time for the initial unregisterClient.
+    verify(mockStats).incClientUnRegisterRequests();
+  }
+
+  @Test
+  public void receivedPingNewClientRegistersWithCurrentTimeAndIncrementsStat() {
+    ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
+    clientHealthMonitor.receivedPing(mockId);
+    assertThat(clientHealthMonitor.getClientHeartbeats().get(mockId)).isNotNull()
+        .isLessThanOrEqualTo(System.currentTimeMillis());
+    verify(mockStats).incClientRegisterRequests();
+  }
+
+  @Test
+  public void receivedPingExistingClientUpdatesTimeOnly() throws InterruptedException {
+    ClientProxyMembershipID mockId = mock(ClientProxyMembershipID.class);
+    clientHealthMonitor.receivedPing(mockId);
+    Long expectedTime = clientHealthMonitor.getClientHeartbeats().get(mockId);
+
+    Thread.sleep(2);
+    clientHealthMonitor.receivedPing(mockId);
+    assertThat(clientHealthMonitor.getClientHeartbeats().get(mockId)).isNotNull()
+        .isGreaterThan(expectedTime);
+
+    // incremented 1 time for the initial receivedPing.
+    verify(mockStats).incClientRegisterRequests();
   }
 
 }
