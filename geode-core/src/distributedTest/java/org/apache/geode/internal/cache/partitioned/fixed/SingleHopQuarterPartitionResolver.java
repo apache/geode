@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -121,6 +122,12 @@ public class SingleHopQuarterPartitionResolver
     return this.numBuckets;
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(this.resolveProps);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
