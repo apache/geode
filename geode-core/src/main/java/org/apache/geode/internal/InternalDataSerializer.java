@@ -2593,12 +2593,15 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return in.readUTF();
   }
 
+  private static final ThreadLocalByteArrayCache threadLocalByteArrayCache =
+      new ThreadLocalByteArrayCache();
+
   private static String readStringBytesFromDataInput(DataInput dataInput, int len)
       throws IOException {
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading STRING_BYTES of len={}", len);
     }
-    byte[] buf = ThreadLocalByteArrayCache.get(len);
+    byte[] buf = threadLocalByteArrayCache.get(len);
     dataInput.readFully(buf, 0, len);
     return new String(buf, 0, 0, len); // intentionally using deprecated constructor
   }
