@@ -78,7 +78,8 @@ public class LocatorClusterManagementServiceTest {
 
     cache = mock(InternalCache.class);
     persistenceService = mock(ConfigurationPersistenceService.class);
-    service = spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators));
+    service =
+        spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators));
     regionConfig = new RegionConfig();
   }
 
@@ -122,7 +123,7 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void non_supportedConfigObject() throws Exception {
     MemberConfig config = new MemberConfig();
-    assertThatThrownBy(()->service.create(config)).isInstanceOf(IllegalArgumentException.class)
+    assertThatThrownBy(() -> service.create(config)).isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Configuration type MemberConfig is not supported");
   }
 
@@ -132,11 +133,9 @@ public class LocatorClusterManagementServiceTest {
     when(persistenceService.getGroups()).thenReturn(Sets.newHashSet("cluster", "group1"));
 
     service.list(regionConfig);
-    // we only get the cluster's cache config once
+    // even we are listing regions in one group, we still need to go through all the groups
     verify(persistenceService).getCacheConfig("cluster", true);
-    verify(persistenceService, times(0)).getCacheConfig("group1", true);
-
-    // list is only called once
-    verify(regionManager).list(any(), any());
+    verify(persistenceService).getCacheConfig("group1", true);
+    verify(regionManager, times(2)).list(any(), any());
   }
 }

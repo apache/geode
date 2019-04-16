@@ -182,40 +182,33 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     List<CacheElement> elements = new ArrayList<>();
 
-    boolean filterHasGroup = StringUtils.isNotBlank(filter.getGroup());
+    // get a list of all the elements from all groups that satisfy the filter criteria (all filters
+    // have been applied except the group)
     for (String group : persistenceService.getGroups()) {
-      // simply skip if filter group does not equal to current group
-      if (filterHasGroup && !group.equals(filter.getConfigGroup())) {
-        continue;
-      }
-
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
       List<CacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
-
       for (CacheElement element : listInGroup) {
-        if (filterHasGroup) {
+        if (!"cluster".equals(group)) {
+          element.setGroup(group);
+        }
+
+        int index = elements.indexOf(element);
+        if (index >= 0) {
+          CacheElement exist = elements.get(index);
+          // combine the group names
+          String combined = exist.getConfigGroup() + "," + element.getConfigGroup();
+          exist.setGroup(sortedCommaSeparatedList(combined));
+        } else {
           elements.add(element);
         }
-        // in case different groups have the same entity, we will need to consolidate the
-        // group information. this should only happen if we are not filtering on specific
-        // group.
-        else {
-          // group information is only shown when we are not filtering by group
-          if (!"cluster".equals(group)) {
-            element.setGroup(group);
-          }
-
-          int index = elements.indexOf(element);
-          if (index > 0) {
-            CacheElement exist = elements.get(index);
-            // combine the group names
-            String combined = exist.getConfigGroup() + "," + element.getConfigGroup();
-            exist.setGroup(sortedCommaSeparatedList(combined));
-          } else {
-            elements.add(element);
-          }
-        }
       }
+    }
+
+    // filtering by group
+    if (StringUtils.isNotBlank(filter.getGroup())) {
+      elements =
+          elements.stream().filter(e -> e.getConfigGroup().contains(filter.getConfigGroup()))
+              .collect(Collectors.toList());
     }
 
     result.setResult(elements);

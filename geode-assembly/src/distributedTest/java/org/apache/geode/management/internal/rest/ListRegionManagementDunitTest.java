@@ -153,11 +153,14 @@ public class ListRegionManagementDunitTest {
     List<CacheElement> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(3);
     // when filtering by group, the returned list should not have group info
-    assertThat(regions.get(0).getGroup()).isNull();
-    assertThat(regions.get(1).getGroup()).isNull();
+    RegionConfig region = (RegionConfig) CacheElement.findElement(regions, "customers1");
+    assertThat(region.getGroup()).isEqualTo("group1");
 
-    assertThat(regions.stream().map(CacheElement::getId).collect(Collectors.toList()))
-        .containsExactlyInAnyOrder("customers1", "customers2", "customers3");
+    region = (RegionConfig) CacheElement.findElement(regions, "customers2");
+    assertThat(region.getGroup()).isEqualTo("group1");
+
+    region = (RegionConfig) CacheElement.findElement(regions, "customers3");
+    assertThat(region.getGroup()).isEqualTo("group1,group2");
   }
 
   @Test
@@ -167,10 +170,11 @@ public class ListRegionManagementDunitTest {
     List<CacheElement> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(2);
 
-    assertThat(regions.get(0).getGroup()).isNull();
+    CacheElement region = CacheElement.findElement(regions, "customers2");
+    assertThat(region.getGroup()).isEqualTo("group2");
 
-    assertThat(regions.stream().map(CacheElement::getId).collect(Collectors.toList()))
-        .containsExactlyInAnyOrder("customers2", "customers3");
+    region = CacheElement.findElement(regions, "customers3");
+    assertThat(region.getGroup()).isEqualTo("group1,group2");
   }
 
   @Test
@@ -211,6 +215,15 @@ public class ListRegionManagementDunitTest {
         .map(RegionConfig::getType)
         .collect(Collectors.toList()))
             .containsExactlyInAnyOrder("PARTITION", "PARTITION_PROXY");
+  }
+
+  @Test
+  public void listRegionByName3() throws Exception {
+    filter.setName("customers3");
+    List<CacheElement> regions = client.list(filter).getResult();
+    assertThat(regions).hasSize(1);
+    assertThat(regions.get(0).getId()).isEqualTo("customers3");
+    assertThat(regions.get(0).getGroup()).isEqualTo("group1,group2");
   }
 
   @Test

@@ -26,6 +26,7 @@ public class CacheElementValidatorTest {
 
   private CacheElementValidator validator;
   private RegionConfig config;
+
   @Before
   public void before() throws Exception {
     validator = new CacheElementValidator();
