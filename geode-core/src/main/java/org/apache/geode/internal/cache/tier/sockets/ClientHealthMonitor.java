@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
@@ -262,7 +263,7 @@ public class ClientHealthMonitor {
    * @param clientDisconnectedCleanly Whether the client disconnected cleanly or crashed
    */
   void unregisterClient(ClientProxyMembershipID proxyID, AcceptorImpl acceptor,
-                        boolean clientDisconnectedCleanly, Throwable clientDisconnectException) {
+      boolean clientDisconnectedCleanly, Throwable clientDisconnectException) {
     unregisterClient(proxyID, clientDisconnectedCleanly, clientDisconnectException);
     // Unregister any CacheClientProxy instances associated with this member id
     // if this method was invoked from a ServerConnection and the client did
@@ -293,12 +294,17 @@ public class ClientHealthMonitor {
    *
    */
   private void expireTXStates(ClientProxyMembershipID proxyID) {
-    final TXManagerImpl txMgr = (TXManagerImpl) _cache.getCacheTransactionManager();
-    final Set<TXId> txIds =
-        txMgr.getTransactionsForClient((InternalDistributedMember) proxyID.getDistributedMember());
     if (_cache.isClosed()) {
       return;
     }
+
+    final TXManagerImpl txMgr = (TXManagerImpl) _cache.getCacheTransactionManager();
+    if (null == txMgr) {
+      return;
+    }
+
+    final Set<TXId> txIds =
+        txMgr.getTransactionsForClient((InternalDistributedMember) proxyID.getDistributedMember());
     if (!txIds.isEmpty()) {
       txMgr.expireDisconnectedClientTransactions(txIds, true);
     }
@@ -572,6 +578,7 @@ public class ClientHealthMonitor {
    *
    *         Test hook only.
    */
+  @VisibleForTesting
   Map<ClientProxyMembershipID, Long> getClientHeartbeats() {
     synchronized (_clientHeartbeatsLock) {
       return new HashMap<>(_clientHeartbeats);
@@ -680,6 +687,7 @@ public class ClientHealthMonitor {
     boolean timedOut(long current, long lastHeartbeat, long interval);
   }
 
+  @VisibleForTesting
   void testUseCustomHeartbeatCheck(HeartbeatTimeoutCheck check) {
     _clientMonitor.overrideHeartbeatTimeoutCheck(check);
   }
