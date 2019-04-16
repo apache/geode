@@ -1685,6 +1685,10 @@ public class PRHARedundancyProvider {
     final ProxyBucketRegion[] proxyBucketArray =
         persistentLeader.getRegionAdvisor().getProxyBucketArray();
 
+    if (proxyBucketArray.length == 0) {
+      throw new IllegalStateException("Unexpected empty proxy bucket array");
+    }
+
     for (ProxyBucketRegion proxyBucket : proxyBucketArray) {
       proxyBucket.initializePersistenceAdvisor();
     }
@@ -1711,9 +1715,8 @@ public class PRHARedundancyProvider {
     /*
      * Start the redundancy logger before recovering any proxy buckets.
      */
-    startRedundancyLogger(proxyBucketArray.length);
+    createRedundancyLoggerAndStartLoggingThread(proxyBucketArray.length);
 
-    allBucketsRecoveredFromDisk = new CountDownLatch(proxyBucketArray.length);
     /*
      * Spawn a separate thread for bucket that we previously hosted to recover that bucket.
      *
@@ -1784,13 +1787,24 @@ public class PRHARedundancyProvider {
     // }
   }
 
-  void startRedundancyLogger(int proxyBuckets) {
-    if (proxyBuckets > 0) {
-      redundancyLogger = new RedundancyLogger(this);
-      Thread loggingThread = new LoggingThread(
-          "RedundancyLogger for region " + this.prRegion.getName(), false, this.redundancyLogger);
-      loggingThread.start();
-    }
+  void createRedundancyLoggerAndStartLoggingThread(int proxyBuckets) {
+    redundancyLogger = createRedundancyLogger();
+    allBucketsRecoveredFromDisk = createAllBucketsRecoveredFromDisk(proxyBuckets);
+    Thread loggingThread = createRedundancyLoggingThread();
+    loggingThread.start();
+  }
+
+  LoggingThread createRedundancyLoggingThread() {
+    return new LoggingThread(
+        "RedundancyLogger for region " + prRegion.getName(), false, redundancyLogger);
+  }
+
+  CountDownLatch createAllBucketsRecoveredFromDisk(int proxyBuckets) {
+    return new CountDownLatch(proxyBuckets);
+  }
+
+  RedundancyLogger createRedundancyLogger() {
+    return new RedundancyLogger(this);
   }
 
   /**
