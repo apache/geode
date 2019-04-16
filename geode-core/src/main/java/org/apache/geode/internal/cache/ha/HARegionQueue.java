@@ -612,10 +612,10 @@ public class HARegionQueue implements RegionQueue {
     this.giiLock.readLock().lock(); // fix for bug #41681 - durable client misses event
     try {
       if (this.giiCount > 0) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: adding message to GII queue of size {}: {}", this.regionName,
-              giiQueue.size(), object);
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("RYGUY: {}: adding message to GII queue of size {}: {}", this.regionName,
+            giiQueue.size(), object);
+        // }
         HAEventWrapper haContainerKey = null;
 
         if (object instanceof HAEventWrapper) {
