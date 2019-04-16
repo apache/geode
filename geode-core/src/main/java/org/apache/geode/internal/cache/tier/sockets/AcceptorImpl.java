@@ -1848,6 +1848,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
               isPrimaryServerToClient,
               acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
         }
+
+        logger.info(":Cache server: Done initializing");
       } catch (final IOException ex) {
         closeSocket(socket);
         if (acceptor.isRunning()) {
@@ -1863,6 +1865,9 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             }
           }
         }
+      } catch (final Exception ex) {
+        logger.info("RYGUY: Unexpected Exception: " + ex);
+        throw ex;
       }
     }
   }

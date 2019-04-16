@@ -465,6 +465,9 @@ public class CacheClientNotifier {
       final ClientProxyMembershipID clientProxyMembershipID) {
     Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient =
         new ConcurrentLinkedQueue<>();
+
+    logger.info("RYGUY: Adding registration queue for proxy " + clientProxyMembershipID);
+
     registeringProxyEventQueues.put(clientProxyMembershipID,
         eventsReceivedWhileRegisteringClient);
     return eventsReceivedWhileRegisteringClient;
@@ -476,20 +479,20 @@ public class CacheClientNotifier {
       final Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient) {
     // As an optimization, we drain as many events from the queue as we can
     // before taking out a lock to drain the remaining events
-    if (logger.isDebugEnabled()) {
-      logger.debug("Draining events from registration queue for client proxy "
-          + clientRegistrationMetadata.getClientProxyMembershipID()
-          + " without synchronization");
-    }
+    // if (logger.isDebugEnabled()) {
+    logger.info("RYGUY: Draining events from registration queue for client proxy "
+        + clientRegistrationMetadata.getClientProxyMembershipID()
+        + " without synchronization");
+    // }
 
     drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID,
         eventsReceivedWhileRegisteringClient);
 
     synchronized (registeringProxyEventQueuesLock) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Draining remaining events from registration queue for client proxy "
-            + clientProxyMembershipID + " with synchronization");
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.info("RYGUY: Draining remaining events from registration queue for client proxy "
+          + clientProxyMembershipID + " with synchronization");
+      // }
 
       drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID,
           eventsReceivedWhileRegisteringClient);
@@ -501,9 +504,9 @@ public class CacheClientNotifier {
   private boolean initializeProxy(CacheClientProxy l_proxy) throws IOException, CacheException {
     boolean status = false;
     if (!this.isProxyInInitializationMode(l_proxy)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Initializing proxy: {}", l_proxy);
-      }
+      // if (logger.isDebugEnabled()) {
+      logger.info("Initializing proxy: {}", l_proxy);
+      // }
       try {
         // Add client proxy to initialization list. This has to be done before
         // the queue is created so that events can be buffered here for delivery
@@ -548,9 +551,9 @@ public class CacheClientNotifier {
        * (!proxy._messageDispatcher.isAlive()) {
        */
       if (isClientReady || !proxy.isDurable()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("CacheClientNotifier: Notifying proxy to start dispatcher for: {}", proxy);
-        }
+        // if (logger.isDebugEnabled()) {
+        logger.info("CacheClientNotifier: Notifying proxy to start dispatcher for: {}", proxy);
+        // }
         proxy.startOrResumeMessageDispatcher(false);
       }
     } else {
@@ -755,6 +758,9 @@ public class CacheClientNotifier {
       final Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient) {
     InternalCacheEvent queuedEvent;
     while ((queuedEvent = eventsReceivedWhileRegisteringClient.poll()) != null) {
+      logger.info(
+          "RYGUY: Drained queued event from " + proxyID + " registration queue: " + queuedEvent);
+
       FilterProfile filterProfile =
           ((DistributedRegion) queuedEvent.getRegion()).getFilterProfile();
 
@@ -767,6 +773,7 @@ public class CacheClientNotifier {
         // For initializing clients, we will just queue the ClientUpdateMessage instead
         // of an HAEventWrapper. Since this is not the normal hot path for event processing,
         // there isn't much gain from optimizations provided by HAEventWrapper.
+
         ClientUpdateMessageImpl clientUpdateMessage = constructClientMessage(queuedEvent);
 
         queuedEvent.setLocalFilterInfo(filterInfo);
@@ -777,9 +784,13 @@ public class CacheClientNotifier {
             (CacheClientProxy) this._clientProxies.get(proxyID);
 
         if (filterClientIDs.contains(proxyID) && cacheClientProxy != null) {
+          logger.info(
+              "RYGUY: Delivering message for " + proxyID + ", message: " + clientUpdateMessage);
           cacheClientProxy.deliverMessage(clientUpdateMessage);
         }
       }
+
+      logger.info("RYGUY: Getting next event for " + proxyID);
     }
   }
 
@@ -855,20 +866,33 @@ public class CacheClientNotifier {
       final Set<ClientProxyMembershipID> filterClients) {
     for (final Map.Entry<ClientProxyMembershipID, Queue<InternalCacheEvent>> eventsReceivedWhileRegisteringClient : registeringProxyEventQueues
         .entrySet()) {
+      logger.info("RYGUY: Getting init queue before acquiring lock for "
+          + eventsReceivedWhileRegisteringClient.getKey());
       synchronized (registeringProxyEventQueuesLock) {
+        logger.info("RYGUY: Adding event to " + eventsReceivedWhileRegisteringClient.getKey()
+            + " queue: " + event);
         // After taking out the lock, we need to determine if the client is still actually
         // registering since there is a small race where it may have finished registering
         // after we pulled the queue out of the registeringProxyEventQueues collection
         ClientProxyMembershipID clientProxyMembershipID =
             eventsReceivedWhileRegisteringClient.getKey();
         if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
+          logger.info("RYGUY: Proxy " + clientProxyMembershipID + " still registering.");
+
           eventsReceivedWhileRegisteringClient.getValue().add(event);
           // Because this event will be processed and sent when it is drained out of the temporary
           // client registration queue, we do not need to send it to the client at this time.
           // We can prevent the event from being sent to the registering client at this time
           // by removing its client proxy membership ID from the filter clients collection,
           // if it exists.
+          if (filterClients.contains(clientProxyMembershipID)) {
+            logger.info("RYGUY: Filter clients contained proxy " + clientProxyMembershipID
+                + ", event: " + event);
+          }
           filterClients.remove(clientProxyMembershipID);
+        } else {
+          logger.info("RYGUY: Proxy no longer registered:  "
+              + eventsReceivedWhileRegisteringClient.getKey());
         }
       }
     }
