@@ -131,8 +131,8 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   @Override
   public void start() throws IOException {
     if (receiver == null) {
-      // add a cache server and set its port to random port. See defect 45630 for more details.
-      receiver = ((CacheCreation) this.cache).addCacheServer(null);
+      // add a cache server and set its port to random port
+      receiver = cache.addCacheServer();
       receiver.setPort(endPort + 1);
     }
   }

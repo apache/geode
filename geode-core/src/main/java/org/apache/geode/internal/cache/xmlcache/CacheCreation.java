@@ -1143,7 +1143,9 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public CacheServer addCacheServer() {
-    return addCacheServer(null);
+    CacheServer bridge = new CacheServerCreation(this, false);
+    this.bridgeServers.add(bridge);
+    return bridge;
   }
 
   @Override
