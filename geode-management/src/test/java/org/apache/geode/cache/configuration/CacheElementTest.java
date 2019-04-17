@@ -17,16 +17,27 @@ package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementTest {
 
   private CacheElement element;
   private RuntimeCacheElement runtime;
+
+  private static ObjectMapper mapper;
+  private String json;
+
+  @BeforeClass
+  public static void beforeClass() {
+    mapper = GeodeJsonMapper.getMapper();
+  }
 
   @Before
   public void before() throws Exception {
@@ -35,20 +46,49 @@ public class CacheElementTest {
   }
 
   @Test
-  public void noGroup() throws Exception {
+  public void plainRegionConfig() throws Exception {
     assertThat(element.getGroup()).isNull();
     assertThat(element.getConfigGroup()).isEqualTo("cluster");
-    assertThat(runtime.getGroup()).isNull();
-    assertThat(runtime.getGroups()).isNotNull().isEmpty();
+    json = mapper.writeValueAsString(element);
+    System.out.println(json);
+    assertThat(json).doesNotContain("group").doesNotContain("groups");
   }
 
   @Test
-  public void setter() throws Exception {
+  public void plainRuntimeRegionConfig() throws Exception {
+    assertThat(runtime.getGroup()).isNull();
+    assertThat(runtime.getGroups()).isNotNull().isEmpty();
+    json = mapper.writeValueAsString(runtime);
+    System.out.println(json);
+    assertThat(json).doesNotContain("group").doesNotContain("groups");
+  }
+
+
+  @Test
+  public void setterRegionConfigGroup() throws Exception {
     element.setGroup("group1");
-    runtime.getGroups().add("group1");
     assertThat(element.getGroup()).isEqualTo("group1");
     assertThat(element.getConfigGroup()).isEqualTo("group1");
+    json = mapper.writeValueAsString(element);
+    System.out.println(json);
+    assertThat(json).contains("\"group\":\"group1\"").doesNotContain("groups");
+  }
+
+  @Test
+  public void setterRuntimeRegionConfig() throws Exception {
+    runtime.getGroups().add("group1");
     assertThat(runtime.getGroup()).isEqualTo("group1");
-    assertThat(runtime.getGroups()).hasSize(1);
+    json = mapper.writeValueAsString(runtime);
+    System.out.println(json);
+    assertThat(json).contains("\"groups\":[\"group1\"]").doesNotContain("\"group\"");
+  }
+
+  @Test
+  public void copy() throws Exception {
+    RegionConfig config = new RegionConfig();
+    config.setName("test");
+    runtime = new RuntimeRegionConfig(config);
+    assertThat(runtime.getGroup()).isNull();
+    assertThat(runtime.getGroups()).hasSize(0);
   }
 }

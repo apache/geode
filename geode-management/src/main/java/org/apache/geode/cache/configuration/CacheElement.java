@@ -76,6 +76,9 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
 
   @JsonSetter
   public void setGroup(String group) {
+    if (StringUtils.isBlank(group)) {
+      return;
+    }
     groups.clear();
     groups.add(group);
   }

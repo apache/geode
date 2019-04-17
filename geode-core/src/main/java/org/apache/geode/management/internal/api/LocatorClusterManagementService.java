@@ -194,7 +194,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
         int index = elements.indexOf(element);
         if (index >= 0) {
           RuntimeCacheElement exist = elements.get(index);
-          exist.getGroups().add(element.getGroup());
+          exist.getGroups().add(group);
         } else {
           elements.add(element);
         }
