@@ -765,6 +765,8 @@ public class CacheClientNotifier {
 
         FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
 
+        logger.info("RYGUY: Event ID while draining: " + queuedEvent.getEventId());
+
         // For initializing clients, we will just queue the ClientUpdateMessage instead
         // of an HAEventWrapper. Since this is not the normal hot path for event processing,
         // there isn't much gain from optimizations provided by HAEventWrapper.
@@ -866,6 +868,8 @@ public class CacheClientNotifier {
             eventsReceivedWhileRegisteringClient.getKey();
         if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
           logger.info("RYGUY: Adding event to registering client queue: " + event);
+          logger.info("RYGUY: Event ID while adding: " + event.getEventId());
+
           eventsReceivedWhileRegisteringClient.getValue().add(event);
           // Because this event will be processed and sent when it is drained out of the temporary
           // client registration queue, we do not need to send it to the client at this time.
