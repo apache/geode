@@ -2464,6 +2464,14 @@ public class InternalDistributedSystem extends DistributedSystem
     configProps.putAll(this.config.toSecurityProperties());
 
     int timeOut = oldConfig.getMaxWaitTimeForReconnect();
+    int memberTimeout = oldConfig.getMemberTimeout();
+    // we need to make sure that a surviving member is able
+    // to take over coordination before trying to auto-reconnect.
+    // failure detection can take 4 member-timeout intervals
+    // so we set that as a minimum. (suspect, check suspect, final check, send new view)
+    final int intervalsAllowedForFailureDetection = 4;
+    timeOut = Math.max(timeOut, memberTimeout * intervalsAllowedForFailureDetection);
+
     int maxTries = oldConfig.getMaxNumReconnectTries();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();

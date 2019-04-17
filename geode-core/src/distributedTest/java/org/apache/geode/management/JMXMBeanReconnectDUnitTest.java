@@ -16,6 +16,7 @@
 package org.apache.geode.management;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.management.ManagementService.getExistingManagementService;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.getBlackboard;
@@ -85,15 +86,18 @@ public class JMXMBeanReconnectDUnitTest {
 
   @Before
   public void before() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
+
     locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
     locator1.waitTilLocatorFullyStarted();
 
     locator2 = lsRule.startLocatorVM(LOCATOR_2_VM_INDEX, locator2Properties(), locator1.getPort());
     locator2.waitTilLocatorFullyStarted();
 
-    server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, locator1.getPort());
+    server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, properties, locator1.getPort());
     // start an extra server to have more MBeans, but we don't need to use it in these tests
-    lsRule.startServerVM(SERVER_2_VM_INDEX, locator1.getPort());
+    lsRule.startServerVM(SERVER_2_VM_INDEX, properties, locator1.getPort());
 
     gfsh.connectAndVerify(locator1);
     gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + REGION_PATH
@@ -317,7 +321,7 @@ public class JMXMBeanReconnectDUnitTest {
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
     props.setProperty(ConfigurationProperties.NAME, LOCATOR_1_NAME);
-    props.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "5000");
+    props.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
     return props;
   }
 
@@ -326,6 +330,7 @@ public class JMXMBeanReconnectDUnitTest {
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
     props.setProperty(ConfigurationProperties.NAME, LOCATOR_2_NAME);
     props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locator1.getPort() + "]");
+    props.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
     return props;
   }
 }

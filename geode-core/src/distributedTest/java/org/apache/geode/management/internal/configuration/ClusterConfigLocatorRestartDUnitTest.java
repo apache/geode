@@ -17,7 +17,10 @@ package org.apache.geode.management.internal.configuration;
 
 
 
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
+import java.util.Properties;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,10 +64,13 @@ public class ClusterConfigLocatorRestartDUnitTest {
         .addIgnoredException("member unexpectedly shut down shared, unordered connection");
     IgnoredException.addIgnoredException("Connection refused");
 
-    MemberVM locator0 = rule.startLocatorVM(0);
+    Properties properties = new Properties();
+    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "15000");
 
-    rule.startServerVM(1, locator0.getPort());
-    MemberVM server2 = rule.startServerVM(2, locator0.getPort());
+    MemberVM locator0 = rule.startLocatorVM(0, properties);
+
+    rule.startServerVM(1, properties, locator0.getPort());
+    MemberVM server2 = rule.startServerVM(2, properties, locator0.getPort());
 
     addDisconnectListener(locator0);
 
@@ -90,18 +96,21 @@ public class ClusterConfigLocatorRestartDUnitTest {
     IgnoredException.addIgnoredException("Connection refused");
 
 
-    MemberVM locator0 = rule.startLocatorVM(0);
-    MemberVM locator1 = rule.startLocatorVM(1, locator0.getPort());
+    Properties properties = new Properties();
+    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "30000");
 
-    MemberVM server2 = rule.startServerVM(2, locator0.getPort(), locator1.getPort());
-    MemberVM server3 = rule.startServerVM(3, locator0.getPort(), locator1.getPort());
+    MemberVM locator0 = rule.startLocatorVM(0, properties);
+    MemberVM locator1 = rule.startLocatorVM(1, properties, locator0.getPort());
+
+    rule.startServerVM(2, properties, locator0.getPort(), locator1.getPort());
+    MemberVM server3 = rule.startServerVM(3, properties, locator0.getPort(), locator1.getPort());
 
     // Shut down hard
     rule.crashVM(0);
 
     server3.forceDisconnect();
 
-    rule.startServerVM(4, locator1.getPort(), locator0.getPort());
+    rule.startServerVM(4, properties, locator1.getPort(), locator0.getPort());
 
     gfsh.connectAndVerify(locator1);
 
