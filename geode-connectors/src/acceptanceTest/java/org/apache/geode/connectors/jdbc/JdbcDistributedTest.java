@@ -374,10 +374,10 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createJdbcDataSource();
     createPartitionRegionUsingGfshForGroup(false, "datagroup");
-    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
+    createAsyncMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
         "datagroup");
     createPartitionRegionUsingGfshForGroup(true, "accessorgroup");
-    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
+    createAsyncMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
         "accessorgroup");
 
     validateBothServersAndAccessors(server1, server2, accessor1, accessor2);
@@ -396,10 +396,10 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createJdbcDataSource();
     createRegionUsingGfshForGroup(false, "datagroup");
-    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
+    createAsyncMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
         "datagroup");
     createRegionUsingGfshForGroup(true, "accessorgroup");
-    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
+    createAsyncMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
         "accessorgroup");
 
     validateBothServersAndAccessors(server1, server2, accessor1, accessor2);
@@ -904,7 +904,8 @@ public abstract class JdbcDistributedTest implements Serializable {
     gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
   }
 
-  private void createMappingForGroup(String regionName, String connectionName, String pdxClassName,
+  private void createAsyncMappingForGroup(String regionName, String connectionName,
+      String pdxClassName,
       String groupName) {
     final String commandStr = "create jdbc-mapping --region=" + regionName
         + " --data-source=" + connectionName
