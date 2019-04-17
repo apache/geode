@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementJsonMappingTest {
@@ -107,5 +108,55 @@ public class CacheElementJsonMappingTest {
 
     String json = mapper.writeValueAsString(region);
     assertThat(json).doesNotContain("\"group\"");
+  }
+
+  @Test
+  public void group() throws Exception {
+    String json = "{'name':'test','group':'group1'}";
+    RegionConfig regionConfig = mapper.readValue(json, RegionConfig.class);
+    assertThat(regionConfig.getGroup()).isEqualTo("group1");
+  }
+
+  @Test
+  public void groups() throws Exception {
+    String json = "{'name':'test','groups':['group1','group2']}";
+    RegionConfig regionConfig = mapper.readValue(json, RegionConfig.class);
+    assertThat(regionConfig.getGroups()).containsExactlyInAnyOrder("group1", "group2");
+  }
+
+  @Test
+  public void serializeGroup() throws Exception {
+    RegionConfig config = new RegionConfig();
+    config.setName("test");
+    config.setGroup("group1");
+    String json = mapper.writeValueAsString(config);
+    System.out.println(json);
+    assertThat(json)
+        .contains("\"groups\":[\"group1\"]")
+        .doesNotContain("\"group\"");
+  }
+
+  @Test
+  public void serializeMultipleGroup() throws Exception {
+    RuntimeRegionConfig config = new RuntimeRegionConfig();
+    config.setName("test");
+    config.getGroupList().add("group1");
+    config.getGroupList().add("group2");
+    String json = mapper.writeValueAsString(config);
+    System.out.println(json);
+    assertThat(json).contains("\"groups\":[\"group1\",\"group2\"]");
+  }
+
+  @Test
+  public void serializeGroupCluster() throws Exception {
+    RegionConfig config = new RegionConfig();
+    config.setName("test");
+    config.setGroup("cluster");
+    String json = mapper.writeValueAsString(config);
+    System.out.println(json);
+    assertThat(json)
+        .doesNotContain("\"groups\"")
+        .doesNotContain("\"group\"");
+
   }
 }

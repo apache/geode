@@ -188,26 +188,22 @@ public class LocatorClusterManagementService implements ClusterManagementService
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
       List<CacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
       for (CacheElement element : listInGroup) {
-        if (!"cluster".equals(group)) {
-          element.setGroup(group);
-        }
-
+        element.setGroup(group);
         int index = elements.indexOf(element);
         if (index >= 0) {
           CacheElement exist = elements.get(index);
-          // combine the group names
-          String combined = exist.getConfigGroup() + "," + element.getConfigGroup();
-          exist.setGroup(sortedCommaSeparatedList(combined));
+          exist.getGroupList().add(element.getGroup());
         } else {
           elements.add(element);
         }
       }
     }
 
-    // filtering by group
+    // filtering by group. Do this after iterating through all the groups because some region might
+    // belong to multiple groups and we want the "group" field to show that.
     if (StringUtils.isNotBlank(filter.getGroup())) {
       elements =
-          elements.stream().filter(e -> e.getConfigGroup().contains(filter.getConfigGroup()))
+          elements.stream().filter(e -> e.getGroupList().contains(filter.getConfigGroup()))
               .collect(Collectors.toList());
     }
 
@@ -215,10 +211,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
     return result;
   }
 
-  private static String sortedCommaSeparatedList(String combined) {
-    return Arrays
-        .stream(combined.split(",")).sorted().collect(Collectors.joining(","));
-  }
 
   @Override
   public boolean isConnected() {

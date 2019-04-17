@@ -104,11 +104,19 @@ public class ListRegionManagementDunitTest {
   public void listAll() throws Exception {
     // list all
     List<CacheElement> regions = client.list(filter).getResult();
-    assertThat(regions.stream().map(CacheElement::getId).collect(Collectors.toList()))
-        .containsExactlyInAnyOrder("customers", "customers1", "customers2", "customers2",
-            "customers3");
-    assertThat(regions.stream().map(CacheElement::getConfigGroup).collect(Collectors.toList()))
-        .containsExactlyInAnyOrder("cluster", "group1", "group1", "group2", "group1,group2");
+    assertThat(regions).hasSize(5);
+    CacheElement element = CacheElement.findElement(regions, "customers");
+    assertThat(element.getConfigGroup()).isEqualTo("cluster");
+
+    element = CacheElement.findElement(regions, "customers1");
+    assertThat(element.getGroup()).isEqualTo("group1");
+
+    RegionConfig region = (RegionConfig) CacheElement.findElement(regions, "customers2");
+    assertThat(region.getGroup()).isIn("group1", "group2");
+    assertThat(region.getType()).isIn("PARTITION", "PARTITION_PROXY");
+
+    element = CacheElement.findElement(regions, "customers3");
+    assertThat(element.getGroupList()).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
@@ -160,7 +168,7 @@ public class ListRegionManagementDunitTest {
     assertThat(region.getGroup()).isEqualTo("group1");
 
     region = (RegionConfig) CacheElement.findElement(regions, "customers3");
-    assertThat(region.getGroup()).isEqualTo("group1,group2");
+    assertThat(region.getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
@@ -174,7 +182,7 @@ public class ListRegionManagementDunitTest {
     assertThat(region.getGroup()).isEqualTo("group2");
 
     region = CacheElement.findElement(regions, "customers3");
-    assertThat(region.getGroup()).isEqualTo("group1,group2");
+    assertThat(region.getGroupList()).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
@@ -223,7 +231,7 @@ public class ListRegionManagementDunitTest {
     List<CacheElement> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers3");
-    assertThat(regions.get(0).getGroup()).isEqualTo("group1,group2");
+    assertThat(regions.get(0).getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test

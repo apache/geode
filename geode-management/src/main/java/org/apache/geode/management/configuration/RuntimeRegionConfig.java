@@ -15,8 +15,11 @@
 
 package org.apache.geode.management.configuration;
 
+
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.RegionConfig;
 
+@Experimental
 public class RuntimeRegionConfig extends RegionConfig {
   private long entryCount;
 

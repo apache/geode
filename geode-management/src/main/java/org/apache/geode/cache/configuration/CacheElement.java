@@ -18,11 +18,14 @@
 package org.apache.geode.cache.configuration;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,7 +35,7 @@ import org.apache.geode.lang.Identifiable;
 @Experimental
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CacheElement implements Identifiable<String>, Serializable {
-  private String group;
+  private List<String> groups = new ArrayList<>();
 
   public static <T extends CacheElement> boolean exists(List<T> list, String id) {
     return list.stream().anyMatch(o -> o.getId().equals(id));
@@ -46,21 +49,61 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
     list.removeIf(t -> t.getId().equals(id));
   }
 
+  /**
+   * this is the groups to display. If the only group info is "cluster", do
+   * not display it
+   */
   @XmlTransient
-  public String getGroup() {
-    return group;
+  public List<String> getGroups() {
+    // if the only group is "cluster", do not return it for display
+    if (groups.size() == 1 && groups.get(0).equals("cluster")) {
+      return Collections.emptyList();
+    }
+    return Collections.unmodifiableList(groups);
   }
 
+  /**
+   * this is used to access the group list as is and to update the list
+   */
+  @XmlTransient
+  @JsonIgnore
+  public List<String> getGroupList() {
+    return groups;
+  }
+
+  /**
+   * this returns a non-null value
+   * for cluster level element, it will return "cluster" for sure.
+   */
   @XmlTransient
   @JsonIgnore
   public String getConfigGroup() {
+    String group = getGroup();
     if (StringUtils.isBlank(group)) {
       return "cluster";
     }
     return group;
   }
 
+  /**
+   * this returns what's actually set by the user.
+   * this could return null.
+   */
+  @XmlTransient
+  @JsonIgnore
+  public String getGroup() {
+    if (groups.size() > 1) {
+      throw new IllegalStateException("multiple groups are not supported in this case.");
+    }
+    if (groups.size() == 0) {
+      return null;
+    }
+    return groups.get(0);
+  }
+
+  @JsonSetter
   public void setGroup(String group) {
-    this.group = group;
+    groups.clear();
+    groups.add(group);
   }
 }
