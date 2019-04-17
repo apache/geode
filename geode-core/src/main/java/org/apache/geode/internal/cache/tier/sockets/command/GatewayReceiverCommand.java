@@ -96,7 +96,8 @@ public class GatewayReceiverCommand extends BaseCommand {
     int numberOfEvents = numberOfEventsPart.getInt();
     stats.incEventsReceived(numberOfEvents);
 
-    serverConnection.getGatewayReceiverMetrics().getEventsReceivedCounter().increment();
+    serverConnection.getGatewayReceiverMetrics().getEventsReceivedCounter()
+        .increment(numberOfEvents);
 
     // Retrieve the batch id
     Part batchIdPart = clientMessage.getPart(1);
