@@ -25,6 +25,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
@@ -381,6 +382,13 @@ public class TcpServer {
         // client went away - ignore
       } catch (CancelException ignore) {
         // ignore
+      } catch (SocketTimeoutException ex) {
+        String sender = null;
+        if (socket != null) {
+          sender = socket.getInetAddress().getHostAddress();
+        }
+        // Do not want the full stack trace to fill up the logs
+        log.info("Exception in processing request from " + sender + ": " + ex.getMessage());
       } catch (ClassNotFoundException ex) {
         String sender = null;
         if (socket != null) {
