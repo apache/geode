@@ -373,11 +373,19 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void ensureWrappedCapacity() {
-    ByteBuffer buffer = ByteBuffer.allocate(10);
+  public void ensureWrappedCapacityOfSmallMessage() {
+    ByteBuffer buffer = ByteBuffer.allocate(netBufferSize);
     assertThat(
         nioSslEngine.ensureWrappedCapacity(10, buffer, Buffers.BufferType.UNTRACKED, mockStats))
             .isEqualTo(buffer);
+  }
+
+  @Test
+  public void ensureWrappedCapacityWithNoBuffer() {
+    assertThat(
+        nioSslEngine.ensureWrappedCapacity(10, null, Buffers.BufferType.UNTRACKED, mockStats)
+            .capacity())
+                .isEqualTo(netBufferSize);
   }
 
   @Test
