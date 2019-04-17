@@ -117,7 +117,7 @@ import org.apache.geode.security.GemFireSecurityException;
 @SuppressWarnings({"synthetic-access", "deprecation"})
 public class CacheClientNotifier {
   private static final Logger logger = LogService.getLogger();
-  private final Map<ClientProxyMembershipID, Queue<InternalCacheEvent>> registeringProxyEventQueues =
+  private final Map<ClientProxyMembershipID, Queue<ClientRegistrationQueueEvent>> registeringProxyEventQueues =
       new ConcurrentHashMap<>();
   private final Object registeringProxyEventQueuesLock = new Object();
   private final SocketMessageWriter socketMessageWriter = new SocketMessageWriter();
@@ -173,7 +173,7 @@ public class CacheClientNotifier {
     try {
       validateClientAgainstDenyList(clientRegistrationMetadata, clientProxyMembershipID);
 
-      Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient =
+      Queue<ClientRegistrationQueueEvent> eventsReceivedWhileRegisteringClient =
           createRegisteringProxyEventQueue(clientProxyMembershipID);
 
       try {
@@ -461,9 +461,9 @@ public class CacheClientNotifier {
         clientVersion);
   }
 
-  private Queue<InternalCacheEvent> createRegisteringProxyEventQueue(
+  private Queue<ClientRegistrationQueueEvent> createRegisteringProxyEventQueue(
       final ClientProxyMembershipID clientProxyMembershipID) {
-    Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient =
+    Queue<ClientRegistrationQueueEvent> eventsReceivedWhileRegisteringClient =
         new ConcurrentLinkedQueue<>();
     registeringProxyEventQueues.put(clientProxyMembershipID,
         eventsReceivedWhileRegisteringClient);
@@ -473,7 +473,7 @@ public class CacheClientNotifier {
   private void drainAllEventsReceivedWhileRegisteringClient(
       final ClientProxyMembershipID clientProxyMembershipID,
       final ClientRegistrationMetadata clientRegistrationMetadata,
-      final Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient) {
+      final Queue<ClientRegistrationQueueEvent> eventsReceivedWhileRegisteringClient) {
     // As an optimization, we drain as many events from the queue as we can
     // before taking out a lock to drain the remaining events
     if (logger.isDebugEnabled()) {
@@ -735,7 +735,7 @@ public class CacheClientNotifier {
       conflatable = wrapper;
     }
 
-    addEventToRegisteringProxyQueues(event, filterClients);
+    addEventToRegisteringProxyQueues(event, conflatable, filterClients);
 
     singletonRouteClientMessage(conflatable, filterClients);
 
@@ -751,44 +751,82 @@ public class CacheClientNotifier {
     }
   }
 
+  private void addEventToRegisteringProxyQueues(final InternalCacheEvent event,
+      final Conflatable conflatable,
+      final Set<ClientProxyMembershipID> filterClients) {
+    for (final Map.Entry<ClientProxyMembershipID, Queue<ClientRegistrationQueueEvent>> eventsReceivedWhileRegisteringClient : registeringProxyEventQueues
+        .entrySet()) {
+      synchronized (registeringProxyEventQueuesLock) {
+        // After taking out the lock, we need to determine if the client is still actually
+        // registering since there is a small race where it may have finished registering
+        // after we pulled the queue out of the registeringProxyEventQueues collection
+        ClientProxyMembershipID clientProxyMembershipID =
+            eventsReceivedWhileRegisteringClient.getKey();
+        if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
+          if (conflatable instanceof HAEventWrapper) {
+            ((HAEventWrapper) conflatable).incrementPutInProgressCounter();
+          }
+
+          logger.info("RYGUY: Adding event to registering client queue: " + event);
+          logger.info("RYGUY: Event ID while adding: " + event.getEventId());
+
+          eventsReceivedWhileRegisteringClient.getValue()
+              .add(new ClientRegistrationQueueEvent(event, conflatable));
+          // Because this event will be processed and sent when it is drained out of the temporary
+          // client registration queue, we do not need to send it to the client at this time.
+          // We can prevent the event from being sent to the registering client at this time
+          // by removing its client proxy membership ID from the filter clients collection,
+          // if it exists.
+          filterClients.remove(clientProxyMembershipID);
+        } else {
+          logger.info("RYGUY: Proxy ID no longer registered " + clientProxyMembershipID
+              + "; event: " + event);
+        }
+      }
+    }
+  }
+
   private void drainEventsReceivedWhileRegisteringClient(final ClientProxyMembershipID proxyID,
-      final Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient) {
-    InternalCacheEvent queuedEvent;
+      final Queue<ClientRegistrationQueueEvent> eventsReceivedWhileRegisteringClient) {
+    ClientRegistrationQueueEvent queuedEvent;
     while ((queuedEvent = eventsReceivedWhileRegisteringClient.poll()) != null) {
       logger.info("RYGUY: Draining event from registration queue: " + queuedEvent);
+      InternalCacheEvent internalCacheEvent = queuedEvent.internalCacheEvent;
+      Conflatable conflatable = queuedEvent.conflatable;
+
       FilterProfile filterProfile =
-          ((DistributedRegion) queuedEvent.getRegion()).getFilterProfile();
+          ((DistributedRegion) internalCacheEvent.getRegion()).getFilterProfile();
 
       if (filterProfile != null) {
         FilterRoutingInfo filterRoutingInfo =
-            filterProfile.getFilterRoutingInfoPart2(null, queuedEvent);
+            filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent);
 
         FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
 
-        logger.info("RYGUY: Event ID while draining: " + queuedEvent.getEventId());
+        internalCacheEvent.setLocalFilterInfo(filterInfo);
 
-        // We need to enqueue an HAEventWrapper because the event ID will not get
-        // serialized during GII if it we us a raw ClientUpdateMessage here. See the
-        // toData() and fromData() methods for HAEventWrapper and ClientUpdateMessage for more
-        // details.
-        ClientUpdateMessageImpl clientUpdateMessage = constructClientMessage(queuedEvent);
-        HAEventWrapper haEventWrapper = new HAEventWrapper(clientUpdateMessage);
-        haEventWrapper.incrementPutInProgressCounter();
+        ClientUpdateMessageImpl clientUpdateMessage;
 
-        logger.info("RYGUY: Client update message " + clientUpdateMessage);
-        queuedEvent.setLocalFilterInfo(filterInfo);
+        if (conflatable instanceof HAEventWrapper) {
+          clientUpdateMessage =
+              (ClientUpdateMessageImpl) ((HAEventWrapper) conflatable).getClientUpdateMessage();
+        } else {
+          clientUpdateMessage = (ClientUpdateMessageImpl) conflatable;
+        }
 
         Set<ClientProxyMembershipID> filterClientIDs =
-            getFilterClientIDs(queuedEvent, filterProfile, filterInfo, clientUpdateMessage);
+            getFilterClientIDs(internalCacheEvent, filterProfile, filterInfo, clientUpdateMessage);
         CacheClientProxy cacheClientProxy =
             (CacheClientProxy) this._clientProxies.get(proxyID);
 
         if (filterClientIDs.contains(proxyID) && cacheClientProxy != null) {
           logger.info("RYGUY: Delivering to " + proxyID);
-          cacheClientProxy.deliverMessage(haEventWrapper);
+          cacheClientProxy.deliverMessage(conflatable);
         }
 
-        haEventWrapper.decrementPutInProgressCounter();
+        if (conflatable instanceof HAEventWrapper) {
+          ((HAEventWrapper) conflatable).decrementPutInProgressCounter();
+        }
       }
     }
   }
@@ -857,35 +895,6 @@ public class CacheClientNotifier {
       CacheClientProxy ccp = getClientProxy(event.getContext());
       if (ccp != null) {
         ccp.getStatistics().incMessagesNotQueuedOriginator();
-      }
-    }
-  }
-
-  private void addEventToRegisteringProxyQueues(final InternalCacheEvent event,
-      final Set<ClientProxyMembershipID> filterClients) {
-    for (final Map.Entry<ClientProxyMembershipID, Queue<InternalCacheEvent>> eventsReceivedWhileRegisteringClient : registeringProxyEventQueues
-        .entrySet()) {
-      synchronized (registeringProxyEventQueuesLock) {
-        // After taking out the lock, we need to determine if the client is still actually
-        // registering since there is a small race where it may have finished registering
-        // after we pulled the queue out of the registeringProxyEventQueues collection
-        ClientProxyMembershipID clientProxyMembershipID =
-            eventsReceivedWhileRegisteringClient.getKey();
-        if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
-          logger.info("RYGUY: Adding event to registering client queue: " + event);
-          logger.info("RYGUY: Event ID while adding: " + event.getEventId());
-
-          eventsReceivedWhileRegisteringClient.getValue().add(event);
-          // Because this event will be processed and sent when it is drained out of the temporary
-          // client registration queue, we do not need to send it to the client at this time.
-          // We can prevent the event from being sent to the registering client at this time
-          // by removing its client proxy membership ID from the filter clients collection,
-          // if it exists.
-          filterClients.remove(clientProxyMembershipID);
-        } else {
-          logger.info("RYGUY: Proxy ID no longer registered " + clientProxyMembershipID
-              + "; event: " + event);
-        }
       }
     }
   }
@@ -2265,6 +2274,18 @@ public class CacheClientNotifier {
           logger.debug("{} client is no longer denylisted", proxyID);
         }
       }
+    }
+  }
+
+  private class ClientRegistrationQueueEvent {
+    private InternalCacheEvent internalCacheEvent;
+    private Conflatable conflatable;
+
+    public ClientRegistrationQueueEvent(
+        final InternalCacheEvent internalCacheEvent,
+        final Conflatable conflatable) {
+      this.internalCacheEvent = internalCacheEvent;
+      this.conflatable = conflatable;
     }
   }
 }
