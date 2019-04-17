@@ -516,9 +516,9 @@ public class HARegionQueue implements RegionQueue {
               Assert.assertTrue(counterInRegion > max);
               max = counterInRegion;
               this.put(val);
-            } else if (isDebugEnabled) {
-              logger.debug(
-                  "{} bug 44959 encountered: HARegion.putGIIDataInRegion found null eventId in {}",
+            } else {
+              logger.info(
+                  "RYGUY: {} bug 44959 encountered: HARegion.putGIIDataInRegion found null eventId in {}",
                   this.regionName, val);
             }
           }
