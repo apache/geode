@@ -21,8 +21,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.concurrent.CountDownLatch;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,6 +33,10 @@ public class PRHARedundancyProviderTest {
   @Before
   public void setup() {
     PartitionedRegion partitionedRegion = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
+    InternalCache cache = mock(InternalCache.class);
+    DistributedRegion root = mock(DistributedRegion.class);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true)).thenReturn(root);
     provider = spy(new PRHARedundancyProvider(partitionedRegion));
   }
 
@@ -48,16 +50,12 @@ public class PRHARedundancyProviderTest {
 
   @Test
   public void waitForPersistentBucketRecoveryProceedsAfterLatchCountDown() throws Exception {
-    PersistentBucketRecoverer recoverer = mock(PersistentBucketRecoverer.class);
+    PersistentBucketRecoverer recoverer = spy(new PersistentBucketRecoverer(provider, 1));
     doReturn(recoverer).when(provider).getPersistentBucketRecoverer();
-    CountDownLatch latch = spy(new CountDownLatch(1));
-    when(recoverer.getAllBucketsRecoveredFromDiskLatch()).thenReturn(latch);
-    latch.countDown();
+    provider.getPersistentBucketRecoverer().countDown();
 
     provider.waitForPersistentBucketRecovery();
 
-    verify(latch).await();
+    verify(recoverer).await();
   }
-
-
 }

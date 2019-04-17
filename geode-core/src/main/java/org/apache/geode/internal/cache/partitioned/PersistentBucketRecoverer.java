@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -407,7 +408,27 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     }
   }
 
-  public CountDownLatch getAllBucketsRecoveredFromDiskLatch() {
+  public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
+    return allBucketsRecoveredFromDisk.await(timeout, unit);
+  }
+
+  public void await() throws InterruptedException {
+    allBucketsRecoveredFromDisk.await();
+  }
+
+  public void countDown() {
+    allBucketsRecoveredFromDisk.countDown();
+  }
+
+  public boolean hasRecoveryCompleted() {
+    if (allBucketsRecoveredFromDisk.getCount() > 0) {
+      return false;
+    }
+    return true;
+  }
+
+  CountDownLatch getAllBucketsRecoveredFromDiskLatch() {
     return allBucketsRecoveredFromDisk;
   }
+
 }

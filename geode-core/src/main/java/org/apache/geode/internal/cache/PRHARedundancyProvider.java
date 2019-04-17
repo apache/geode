@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -1747,9 +1746,8 @@ public class PRHARedundancyProvider {
             try {
               super.run();
             } finally {
-              CountDownLatch recoveryLatch = getRecoveryLatch();
-              if (recoveryLatch != null) {
-                recoveryLatch.countDown();
+              if (getPersistentBucketRecoverer() != null) {
+                getPersistentBucketRecoverer().countDown();
               }
             }
           }
@@ -1782,9 +1780,8 @@ public class PRHARedundancyProvider {
       }
     } finally {
       for (final ProxyBucketRegion proxyBucket : bucketsNotHostedLocally) {
-        CountDownLatch recoveryLatch = getRecoveryLatch();
-        if (recoveryLatch != null) {
-          recoveryLatch.countDown();
+        if (getPersistentBucketRecoverer() != null) {
+          getPersistentBucketRecoverer().countDown();
         }
       }
     }
@@ -1793,11 +1790,6 @@ public class PRHARedundancyProvider {
     // } finally {
     // lock.unlock();
     // }
-  }
-
-  CountDownLatch getRecoveryLatch() {
-    return getPersistentBucketRecoverer() == null ? null
-        : getPersistentBucketRecoverer().getAllBucketsRecoveredFromDiskLatch();
   }
 
   private PersistentBucketRecoverer createPersistentBucketRecoverer(int proxyBuckets) {
@@ -1996,13 +1988,12 @@ public class PRHARedundancyProvider {
    * whichever happens first.
    */
   protected void waitForPersistentBucketRecoveryOrClose() {
-    CountDownLatch recoveryLatch = getRecoveryLatch();
-    if (recoveryLatch != null) {
+    if (getPersistentBucketRecoverer() != null) {
       boolean interrupted = false;
       while (true) {
         try {
           this.prRegion.getCancelCriterion().checkCancelInProgress(null);
-          boolean done = recoveryLatch.await(
+          boolean done = getPersistentBucketRecoverer().await(
               PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION, TimeUnit.MILLISECONDS);
           if (done) {
             break;
@@ -2028,12 +2019,11 @@ public class PRHARedundancyProvider {
    * currently being closed.
    */
   protected void waitForPersistentBucketRecovery() {
-    CountDownLatch recoveryLatch = getRecoveryLatch();
-    if (recoveryLatch != null) {
+    if (getPersistentBucketRecoverer() != null) {
       boolean interrupted = false;
       while (true) {
         try {
-          recoveryLatch.await();
+          getPersistentBucketRecoverer().await();
           break;
         } catch (InterruptedException e) {
           interrupted = true;
@@ -2049,8 +2039,9 @@ public class PRHARedundancyProvider {
     if (!ColocationHelper.checkMembersColocation(this.prRegion, this.prRegion.getMyId())) {
       return false;
     }
-    CountDownLatch recoveryLatch = getRecoveryLatch();
-    if (recoveryLatch != null && recoveryLatch.getCount() > 0) {
+
+    if (getPersistentBucketRecoverer() != null
+        && !getPersistentBucketRecoverer().hasRecoveryCompleted()) {
       return false;
     }
 
@@ -2059,12 +2050,11 @@ public class PRHARedundancyProvider {
 
     for (PartitionedRegion region : colocatedRegions.values()) {
       PRHARedundancyProvider redundancyProvider = region.getRedundancyProvider();
-      recoveryLatch = redundancyProvider.getRecoveryLatch();
-      if (recoveryLatch != null && recoveryLatch.getCount() > 0) {
+      if (redundancyProvider.getPersistentBucketRecoverer() != null &&
+          !redundancyProvider.getPersistentBucketRecoverer().hasRecoveryCompleted()) {
         return false;
       }
     }
-
     return true;
   }
 
