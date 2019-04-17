@@ -38,25 +38,24 @@ import org.junit.Test;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCreator;
 
 public class GatewayReceiverImplTest {
 
   private InternalCache cache;
-  private CacheServerImpl server;
+  private GatewayReceiverServer server;
   private MeterRegistry meterRegistry;
 
   @Before
   public void setUp() {
     cache = mock(InternalCache.class);
-    server = mock(CacheServerImpl.class);
+    server = mock(GatewayReceiverServer.class);
     meterRegistry = new SimpleMeterRegistry();
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
     when(cache.getInternalDistributedSystem()).thenReturn(system);
-    when(cache.addCacheServer(isA(GatewayReceiver.class))).thenReturn(server);
+    when(cache.addGatewayReceiverServer(isA(GatewayReceiver.class))).thenReturn(server);
     when(server.getExternalAddress()).thenReturn("hello");
   }
 

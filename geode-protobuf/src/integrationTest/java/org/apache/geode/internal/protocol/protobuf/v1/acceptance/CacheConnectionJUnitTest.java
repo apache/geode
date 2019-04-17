@@ -57,7 +57,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
@@ -195,7 +195,7 @@ public class CacheConnectionJUnitTest {
     List<CacheServer> cacheServers = this.cache.getCacheServers();
     assertEquals(1, cacheServers.size());
     CacheServer cacheServer = cacheServers.stream().findFirst().get();
-    AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+    Acceptor acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
 
     await()
         .until(() -> acceptor.getClientServerCnxCount() == 1);

@@ -63,6 +63,7 @@ import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.wan.GatewayReceiverServer;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
@@ -279,7 +280,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
 
   InternalRegion getRegionByPathForProcessing(String path);
 
-  List<CacheServerImpl> getCacheServersAndGatewayReceiver();
+  List<InternalCacheServer> getCacheServersAndGatewayReceiver();
 
   boolean isGlobalRegionInitializing(String fullPath);
 
@@ -313,7 +314,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
 
   void removeGatewayReceiver(GatewayReceiver receiver);
 
-  CacheServer addCacheServer(GatewayReceiver receiver);
+  GatewayReceiverServer addGatewayReceiverServer(GatewayReceiver receiver);
 
   boolean removeCacheServer(CacheServer cacheServer);
 

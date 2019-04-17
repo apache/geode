@@ -15,8 +15,11 @@
 package org.apache.geode.internal.cache.tier;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 
 /**
  * Defines the message listener/acceptor interface which is the GemFire cache server. Multiple
@@ -61,4 +64,24 @@ public interface Acceptor {
    * Returns the CacheClientNotifier used by this Acceptor.
    */
   CacheClientNotifier getCacheClientNotifier();
+
+  CacheServerStats getStats();
+
+  String getExternalAddress();
+
+  void emergencyClose();
+
+  ServerConnection[] getAllServerConnectionList();
+
+  int getClientServerCnxCount();
+
+  Set<ServerConnection> getAllServerConnections();
+
+  CachedRegionHelper getCachedRegionHelper();
+
+  long getAcceptorId();
+
+  boolean isGatewayReceiver();
+
+  boolean isSelector();
 }

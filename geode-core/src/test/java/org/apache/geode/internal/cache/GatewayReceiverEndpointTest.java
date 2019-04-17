@@ -17,30 +17,41 @@ package org.apache.geode.internal.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.InternalCacheServer.EndpointType;
+import org.apache.geode.internal.cache.wan.GatewayReceiverEndpoint;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(ClientServerTest.class)
-public class CacheServerImplTest {
+@Category(WanTest.class)
+public class GatewayReceiverEndpointTest {
 
   private InternalCache cache;
   private SecurityService securityService;
+  private GatewayReceiver gatewayReceiver;
+  private GatewayReceiverMetrics gatewayReceiverMetrics;
 
   @Before
   public void setUp() {
+    MeterRegistry meterRegistry = new SimpleMeterRegistry();
     cache = mock(InternalCache.class);
     securityService = mock(SecurityService.class);
+    gatewayReceiver = mock(GatewayReceiver.class);
+    gatewayReceiverMetrics = new GatewayReceiverMetrics(meterRegistry);
   }
 
   @Test
-  public void isServerEndpoint() {
-    CacheServerImpl server = new CacheServerImpl(cache, securityService);
+  public void isGatewayEndpoint() {
+    GatewayReceiverEndpoint server = new GatewayReceiverEndpoint(cache, securityService,
+        gatewayReceiver, gatewayReceiverMetrics);
 
-    assertThat(server.getEndpointType()).isSameAs(EndpointType.SERVER);
+    assertThat(server.getEndpointType()).isSameAs(EndpointType.GATEWAY);
   }
 }

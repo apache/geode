@@ -197,6 +197,7 @@ import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.snapshot.CacheSnapshotServiceImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
@@ -204,7 +205,9 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewayReceiverEndpoint;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
+import org.apache.geode.internal.cache.wan.GatewayReceiverServer;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
@@ -397,7 +400,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * retrieval operations. It is assumed that the traversal operations on cache servers list vastly
    * outnumber the mutative operations such as add, remove.
    */
-  private final List<CacheServerImpl> allCacheServers = new CopyOnWriteArrayList<>();
+  private final List<InternalCacheServer> allCacheServers = new CopyOnWriteArrayList<>();
 
   /**
    * Controls updates to the list of all gateway senders
@@ -1623,8 +1626,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       System.err.println("DEBUG: Close cache servers");
     }
 
-    for (CacheServerImpl cacheServer : cache.allCacheServers) {
-      AcceptorImpl acceptor = cacheServer.getAcceptor();
+    for (InternalCacheServer cacheServer : cache.allCacheServers) {
+      Acceptor acceptor = cacheServer.getAcceptor();
       if (acceptor != null) {
         acceptor.emergencyClose();
       }
@@ -2549,7 +2552,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     boolean stoppedCacheServer = false;
 
-    for (CacheServerImpl cacheServer : this.allCacheServers) {
+    for (InternalCacheServer cacheServer : this.allCacheServers) {
       if (isDebugEnabled) {
         logger.debug("stopping bridge {}", cacheServer);
       }
@@ -3709,31 +3712,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     throwIfClient();
     this.stopper.checkCancelInProgress(null);
 
-    CacheServerImpl cacheServer = new CacheServerImpl(this, securityService, meterRegistry);
-    this.allCacheServers.add(cacheServer);
+    InternalCacheServer server = new CacheServerImpl(this, securityService);
+    this.allCacheServers.add(server);
 
     sendAddCacheServerProfileMessage();
-    return cacheServer;
-  }
-
-  @Override
-  public CacheServer addCacheServer(GatewayReceiver receiver) {
-    throwIfClient();
-    stopper.checkCancelInProgress(null);
-
-    GatewayReceiverMetrics metrics = gatewayReceiverMetrics.get();
-    requireNonNull(receiver, "GatewayReceiver must be supplied to add a server endpoint.");
-    requireNonNull(gatewayReceiver.get(),
-        "GatewayReceiver must be added before adding a server endpoint.");
-    requireNonNull(metrics,
-        "GatewayReceiverMetrics must be added before adding a server endpoint.");
-
-    CacheServerImpl cacheServer =
-        new CacheServerImpl(this, securityService, meterRegistry, receiver, metrics);
-    allCacheServers.add(cacheServer);
-
-    sendAddCacheServerProfileMessage();
-    return cacheServer;
+    return server;
   }
 
   @Override
@@ -3810,6 +3793,26 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (!(sender.getRemoteDSId() < 0)) {
       this.system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_REMOVE, sender);
     }
+  }
+
+  @Override
+  public GatewayReceiverServer addGatewayReceiverServer(GatewayReceiver receiver) {
+    throwIfClient();
+    stopper.checkCancelInProgress(null);
+
+    GatewayReceiverMetrics metrics = gatewayReceiverMetrics.get();
+    requireNonNull(receiver, "GatewayReceiver must be supplied to add a server endpoint.");
+    requireNonNull(gatewayReceiver.get(),
+        "GatewayReceiver must be added before adding a server endpoint.");
+    requireNonNull(metrics,
+        "GatewayReceiverMetrics must be added before adding a server endpoint.");
+
+    GatewayReceiverEndpoint server =
+        new GatewayReceiverEndpoint(this, securityService, receiver, metrics);
+    allCacheServers.add(server);
+
+    sendAddCacheServerProfileMessage();
+    return server;
   }
 
   @Override
@@ -3943,9 +3946,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public List<CacheServer> getCacheServers() {
     List<CacheServer> cacheServersWithoutReceiver = null;
     if (!this.allCacheServers.isEmpty()) {
-      for (CacheServerImpl cacheServer : this.allCacheServers) {
+      for (InternalCacheServer cacheServer : this.allCacheServers) {
         // If CacheServer is a GatewayReceiver, don't return as part of CacheServers
-        if (!cacheServer.isGatewayReceiver()) {
+        if (cacheServer.getAcceptor().isGatewayReceiver()) {
           if (cacheServersWithoutReceiver == null) {
             cacheServersWithoutReceiver = new ArrayList<>();
           }
@@ -3960,7 +3963,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public List<CacheServerImpl> getCacheServersAndGatewayReceiver() {
+  public List<InternalCacheServer> getCacheServersAndGatewayReceiver() {
     return this.allCacheServers;
   }
 
@@ -4078,7 +4081,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public boolean requiresNotificationFromPR(PartitionedRegion r) {
     boolean hasSerialSenders = hasSerialSenders(r);
     if (!hasSerialSenders) {
-      for (CacheServerImpl server : this.allCacheServers) {
+      for (InternalCacheServer server : this.allCacheServers) {
         if (!server.getNotifyBySubscription()) {
           hasSerialSenders = true;
           break;

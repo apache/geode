@@ -412,7 +412,7 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl = createGemFireCacheImpl();
 
     Throwable thrown = catchThrowable(
-        () -> gemFireCacheImpl.addCacheServer(mock(GatewayReceiver.class)));
+        () -> gemFireCacheImpl.addGatewayReceiverServer(mock(GatewayReceiver.class)));
 
     assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
@@ -424,7 +424,7 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl.addGatewayReceiver(gatewayReceiver);
 
     Throwable thrown = catchThrowable(
-        () -> gemFireCacheImpl.addCacheServer(null));
+        () -> gemFireCacheImpl.addGatewayReceiverServer(null));
 
     assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
@@ -435,7 +435,7 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl = createGemFireCacheImpl();
     gemFireCacheImpl.addGatewayReceiver(gatewayReceiver);
 
-    CacheServer gatewayReceiverServer = gemFireCacheImpl.addCacheServer(gatewayReceiver);
+    CacheServer gatewayReceiverServer = gemFireCacheImpl.addGatewayReceiverServer(gatewayReceiver);
 
     assertThat(gemFireCacheImpl.getCacheServersAndGatewayReceiver())
         .containsOnly((CacheServerImpl) gatewayReceiverServer);

@@ -53,7 +53,13 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   private CacheServer receiver;
 
-  @SuppressWarnings("deprecation")
+  public GatewayReceiverCreation(Cache cache, GatewayReceiver gatewayReceiver) {
+    this(cache, gatewayReceiver.getStartPort(), gatewayReceiver.getEndPort(),
+        gatewayReceiver.getMaximumTimeBetweenPings(), gatewayReceiver.getSocketBufferSize(),
+        gatewayReceiver.getBindAddress(), gatewayReceiver.getGatewayTransportFilters(),
+        gatewayReceiver.getHostnameForSenders(), gatewayReceiver.isManualStart());
+  }
+
   public GatewayReceiverCreation(Cache cache, int startPort, int endPort, int timeBetPings,
       int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
       boolean manualStart) {

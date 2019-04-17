@@ -47,8 +47,8 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
@@ -137,7 +137,7 @@ public class CacheMaxConnectionJUnitTest {
     cacheServer.setMaxThreads(threads);
     cacheServer.start();
 
-    AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+    Acceptor acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
 
     if (isSelector) {
       assertTrue(acceptor.isSelector());

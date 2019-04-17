@@ -38,7 +38,6 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -59,8 +58,8 @@ public class GatewayReceiverFactoryImplTest {
     InternalCache cacheCreation = mock(CacheCreation.class, "CacheCreation");
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
-    when(gemFireCacheImpl.addCacheServer(isA(GatewayReceiver.class)))
-        .thenReturn(mock(CacheServerImpl.class));
+    when(gemFireCacheImpl.addGatewayReceiverServer(isA(GatewayReceiver.class)))
+        .thenReturn(mock(GatewayReceiverServer.class));
     when(gemFireCacheImpl.getDistributedSystem()).thenReturn(system);
     when(gemFireCacheImpl.getInternalDistributedSystem()).thenReturn(system);
 

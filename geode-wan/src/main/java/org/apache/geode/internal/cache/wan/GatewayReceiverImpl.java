@@ -152,7 +152,6 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     }
     receiver.setBindAddress(bindAdd);
     receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
-    ((CacheServerImpl) receiver).setGatewayTransportFilter(filters);
     try {
       receiver.start();
       this.port = port;
@@ -167,7 +166,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   @Override
   public void start() {
     if (receiver == null) {
-      receiver = cache.addCacheServer(this);
+      receiver = cache.addGatewayReceiverServer(this);
     }
     if (receiver.isRunning()) {
       logger.warn("Gateway Receiver is already running");

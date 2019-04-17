@@ -14,10 +14,48 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 public interface InternalCacheServer extends CacheServer {
 
   Acceptor getAcceptor();
+
+  Acceptor createAcceptor(List overflowAttributesList) throws IOException;
+
+  EndpointType getEndpointType();
+
+  String getExternalAddress();
+
+  enum EndpointType {
+    GATEWAY(SecurableCommunicationChannel.GATEWAY, false, false),
+    SERVER(SecurableCommunicationChannel.SERVER, true, true);
+
+    private final SecurableCommunicationChannel channel;
+    private final boolean inheritMembershipGroups;
+    private final boolean notifyResourceEventListeners;
+
+    EndpointType(SecurableCommunicationChannel channel, boolean inheritMembershipGroups,
+        boolean notifyResourceEventListeners) {
+      this.channel = channel;
+      this.inheritMembershipGroups = inheritMembershipGroups;
+      this.notifyResourceEventListeners = notifyResourceEventListeners;
+    }
+
+    public SecurableCommunicationChannel channel() {
+      return channel;
+    }
+
+    public boolean notifyResourceEventListeners() {
+      return notifyResourceEventListeners;
+    }
+
+    public boolean inheritMembershipGroups() {
+      return inheritMembershipGroups;
+    }
+  }
 }

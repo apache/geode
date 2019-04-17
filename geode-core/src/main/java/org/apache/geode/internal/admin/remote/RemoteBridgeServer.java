@@ -18,11 +18,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestRegistrationListener;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
@@ -34,6 +34,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 
 /**
@@ -139,7 +140,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
    * not running.
    */
   @Override
-  public Cache getCache() {
+  public InternalCache getCache() {
     throw new UnsupportedOperationException(
         "Cannot get the Cache of a remote BridgeServer.");
   }
@@ -230,6 +231,21 @@ public class RemoteBridgeServer extends AbstractCacheServer
 
   @Override
   public Acceptor getAcceptor() {
+    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
+  }
+
+  @Override
+  public Acceptor createAcceptor(List overflowAttributesList) throws IOException {
+    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
+  }
+
+  @Override
+  public EndpointType getEndpointType() {
+    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
+  }
+
+  @Override
+  public String getExternalAddress() {
     throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
   }
 

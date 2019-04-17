@@ -44,6 +44,7 @@ import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -415,12 +416,12 @@ public class CacheServerBridge extends ServerBridge {
       return null;
     }
 
-    AcceptorImpl acceptorImpl = server.getAcceptor();
-    if (acceptorImpl == null) {
+    Acceptor acceptor = server.getAcceptor();
+    if (acceptor == null) {
       return null;
     }
 
-    ServerConnection[] serverConnections = acceptorImpl.getAllServerConnectionList();
+    ServerConnection[] serverConnections = acceptor.getAllServerConnectionList();
 
     boolean flag = false;
     if (connInfo.toString().contains("primary=true")) {
