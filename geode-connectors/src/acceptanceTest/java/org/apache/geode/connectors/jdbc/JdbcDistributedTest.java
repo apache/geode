@@ -83,7 +83,6 @@ public abstract class JdbcDistributedTest implements Serializable {
       new DistributedRestoreSystemProperties();
 
   private MemberVM dataserver;
-  private MemberVM accessorserver;
   private MemberVM locator;
   private String connectionUrl;
 
@@ -259,7 +258,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     IgnoredException.addIgnoredException(
         "Error detected when comparing mapping for region \"employees\" with table definition:");
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
     alterTable();
@@ -283,7 +282,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     IgnoredException.addIgnoredException(
         "Error detected when comparing mapping for region \"employees\" with table definition:");
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
     dataserver.invoke(() -> {
@@ -317,7 +316,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     IgnoredException.addIgnoredException(
         "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.");
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
     alterTable();
@@ -373,10 +372,10 @@ public abstract class JdbcDistributedTest implements Serializable {
     MemberVM accessor2 = addServerForGroup(7, "accessorgroup");
 
     createJdbcDataSource();
-    createPartitionRegionUsingGfshForGroup(false, "datagroup");
+    createPartitionedRegionUsingGfshForGroup(false, "datagroup");
     createAsyncMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
         "datagroup");
-    createPartitionRegionUsingGfshForGroup(true, "accessorgroup");
+    createPartitionedRegionUsingGfshForGroup(true, "accessorgroup");
     createAsyncMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
         "accessorgroup");
 
@@ -395,10 +394,10 @@ public abstract class JdbcDistributedTest implements Serializable {
     MemberVM accessor2 = addServerForGroup(7, "accessorgroup");
 
     createJdbcDataSource();
-    createRegionUsingGfshForGroup(false, "datagroup");
+    createReplicatedRegionUsingGfshForGroup(false, "datagroup");
     createAsyncMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
         "datagroup");
-    createRegionUsingGfshForGroup(true, "accessorgroup");
+    createReplicatedRegionUsingGfshForGroup(true, "accessorgroup");
     createAsyncMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
         "accessorgroup");
 
@@ -412,7 +411,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void throwsExceptionWhenNoDataSourceExists() throws Exception {
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     IgnoredException.addIgnoredException(JdbcConnectorException.class);
     final String commandStr = "create jdbc-mapping --region=" + REGION_NAME
         + " --data-source=" + DATA_SOURCE_NAME
@@ -427,7 +426,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   public void serverStartupSucceedsForPartitionedRegionAfterMappingIsCreated()
       throws Exception {
     createTable();
-    createPartitionRegionUsingGfsh();
+    createPartitionedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, false);
     MemberVM server3 =
@@ -466,7 +465,7 @@ public abstract class JdbcDistributedTest implements Serializable {
           "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, "
               + TestDate.DATE_FIELD_NAME + " date not null)");
     });
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, TestDate.class.getName(), true);
     final String key = "emp1";
@@ -501,7 +500,7 @@ public abstract class JdbcDistributedTest implements Serializable {
           "Create Table " + TABLE_NAME + " (id varchar(10) primary key not null, "
               + TestDate.DATE_FIELD_NAME + " time not null)");
     });
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, TestDate.class.getName(), true);
     final String key = "emp1";
@@ -531,7 +530,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     dataserver = startupRule.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort()));
     createTableWithTimeStamp(dataserver, connectionUrl, TABLE_NAME, TestDate.DATE_FIELD_NAME);
 
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, TestDate.class.getName(), true);
     final String key = "emp1";
@@ -569,7 +568,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void putWritesToDB() throws Exception {
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
     dataserver.invoke(() -> {
@@ -586,7 +585,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void putAsyncWritesToDB() throws Exception {
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, false);
     dataserver.invoke(() -> {
@@ -605,7 +604,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void putAsyncWithPartitionWritesToDB() throws Exception {
     createTable();
-    createPartitionRegionUsingGfsh();
+    createPartitionedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, false);
     dataserver.invoke(() -> {
@@ -624,7 +623,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void getReadsFromEmptyDB() throws Exception {
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
     dataserver.invoke(() -> {
@@ -639,7 +638,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void getReadsFromDB() throws Exception {
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, true);
     dataserver.invoke(() -> {
@@ -667,7 +666,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void getReadsFromDBWithCompositeKey() throws Exception {
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(), true, "id,age");
     dataserver.invoke(() -> {
@@ -697,7 +696,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void getReadsFromDBWithAsyncWriter() throws Exception {
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, false);
     dataserver.invoke(() -> {
@@ -729,7 +728,7 @@ public abstract class JdbcDistributedTest implements Serializable {
   @Test
   public void getReadsFromDBWithPdxClassName() throws Exception {
     createTable();
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(), true);
     dataserver.invoke(() -> {
@@ -751,7 +750,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     ClientVM client = getClientVM();
     createClientRegion(client);
 
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, ClassWithSupportedPdxFields.class.getName(), true);
     client.invoke(() -> {
@@ -775,7 +774,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     ClientVM client = getClientVM();
     createClientRegion(client);
 
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, ClassWithSupportedPdxFields.class.getName(), true);
     client.invoke(() -> {
@@ -796,7 +795,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTableForAllSupportedFields();
     ClientVM client = getClientVM();
     createClientRegion(client);
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, ClassWithSupportedPdxFields.class.getName(), true);
     String key = "id1";
@@ -825,7 +824,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     createTableForAllSupportedFields();
     ClientVM client = getClientVM();
     createClientRegion(client);
-    createRegionUsingGfsh();
+    createReplicatedRegionUsingGfsh();
     createJdbcDataSource();
     createMapping(REGION_NAME, DATA_SOURCE_NAME, ClassWithSupportedPdxFields.class.getName(), true);
     String key = "id1";
@@ -876,13 +875,13 @@ public abstract class JdbcDistributedTest implements Serializable {
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 
-  private void createRegionUsingGfsh() {
+  private void createReplicatedRegionUsingGfsh() {
     StringBuffer createRegionCmd = new StringBuffer();
     createRegionCmd.append("create region --name=" + REGION_NAME + " --type=REPLICATE");
     gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
   }
 
-  private void createRegionUsingGfshForGroup(boolean isAccessor, String groupName) {
+  private void createReplicatedRegionUsingGfshForGroup(boolean isAccessor, String groupName) {
     StringBuffer createRegionCmd = new StringBuffer();
     createRegionCmd.append("create region --name=" + REGION_NAME + " --groups=" + groupName
         + " --if-not-exists=true"
@@ -892,7 +891,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     gfsh.executeAndAssertThat(createRegionCmd.toString()).statusIsSuccess();
   }
 
-  private void createPartitionRegionUsingGfshForGroup(boolean isAccessor, String groupName) {
+  private void createPartitionedRegionUsingGfshForGroup(boolean isAccessor, String groupName) {
     StringBuffer createRegionCmd = new StringBuffer();
     createRegionCmd
         .append("create region --name=" + REGION_NAME + " --groups=" + groupName
@@ -917,7 +916,7 @@ public abstract class JdbcDistributedTest implements Serializable {
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 
-  private void createPartitionRegionUsingGfsh() {
+  private void createPartitionedRegionUsingGfsh() {
     StringBuffer createRegionCmd = new StringBuffer();
     createRegionCmd
         .append("create region --name=" + REGION_NAME + " --type=PARTITION --redundant-copies=1");
