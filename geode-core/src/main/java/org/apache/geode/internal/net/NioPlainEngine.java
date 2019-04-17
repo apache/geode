@@ -76,6 +76,7 @@ public class NioPlainEngine implements NioFilter {
       buffer = Buffers.acquireBuffer(bufferType, amount, stats);
       buffer.clear();
       buffer.put(oldBuffer);
+      Buffers.releaseBuffer(bufferType, oldBuffer, stats);
       lastReadPosition = buffer.position();
       lastProcessedPosition = 0;
     }
