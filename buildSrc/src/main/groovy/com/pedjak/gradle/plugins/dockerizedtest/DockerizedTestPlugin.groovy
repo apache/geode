@@ -26,6 +26,7 @@ import org.gradle.api.Action
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.internal.file.DefaultFileCollectionFactory
 import org.gradle.api.tasks.testing.Test
 import org.gradle.initialization.DefaultBuildCancellationToken
 import org.gradle.internal.concurrent.DefaultExecutorFactory
@@ -104,8 +105,11 @@ class DockerizedTestPlugin implements Plugin<Project> {
         def executor = executorFactory.create("Docker container link")
         def buildCancellationToken = new DefaultBuildCancellationToken()
 
+        def defaultfilecollectionFactory = new DefaultFileCollectionFactory(project.fileResolver, null)
         def execHandleFactory = [newJavaExec: { ->
-            new com.pedjak.gradle.plugins.dockerizedtest.DockerizedJavaExecHandleBuilder(extension, project.fileResolver, executor, buildCancellationToken, workerSemaphore)
+            new DockerizedJavaExecHandleBuilder(
+              extension, project.fileResolver, defaultfilecollectionFactory,
+              executor, buildCancellationToken, workerSemaphore)
         }] as JavaExecHandleFactory
         new DefaultWorkerProcessFactory(defaultProcessBuilderFactory.loggingManager,
                 messagingServer,
