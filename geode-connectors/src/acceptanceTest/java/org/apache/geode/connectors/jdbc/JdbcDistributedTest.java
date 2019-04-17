@@ -327,6 +327,33 @@ public abstract class JdbcDistributedTest implements Serializable {
                 "Jdbc mapping for \"employees\" does not match table definition, check logs for more details.");
   }
 
+  private void validateBothServersAndAccessors(MemberVM server1, MemberVM server2,
+      MemberVM accessor1, MemberVM accessor2) {
+    for (MemberVM server : Arrays.asList(server1, server2, accessor1, accessor2)) {
+      server.invoke(() -> {
+        PdxInstance pdxEmployee1 =
+            ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
+                .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
+
+        String pdxkey1 = "pdxkey1";
+        Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+        region.put(pdxkey1, pdxEmployee1);
+        Employee employee1 = new Employee("key1", "name1", 30);
+        region.put("key1", employee1);
+        region.invalidate(pdxkey1);
+        region.invalidate("key1");
+        await().untilAsserted(() -> {
+          assertThat(region.get(pdxkey1)).isNotNull();
+          assertThat(region.get("key1")).isNotNull();
+        });
+        Employee pdxEmployee2 = (Employee) region.get(pdxkey1);
+        Employee employee2 = (Employee) region.get("key1");
+        assertThat(pdxEmployee2.getName()).isEqualTo("Emp1");
+        assertThat(employee2.getName()).isEqualTo("name1");
+      });
+    }
+  }
+
   @Test
   public void startAccessorForPRThenPutAndGet() throws Exception {
     MemberVM server1 = createTableForGroup(4, "datagroup");
@@ -336,49 +363,13 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createJdbcDataSource();
     createPartitionRegionUsingGfshForGroup(false, "datagroup");
-    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(), false,
-        "datagroup", null);
+    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
+        "datagroup");
     createPartitionRegionUsingGfshForGroup(true, "accessorgroup");
-    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(), false,
-        "accessorgroup", null);
+    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
+        "accessorgroup");
 
-    for (MemberVM server : Arrays.asList(server1, server2)) {
-      server.invoke(() -> {
-        PdxInstance pdxEmployee1 =
-            ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
-                .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
-
-        String pdxkey1 = "pdxkey1";
-        Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
-        region.put(pdxkey1, pdxEmployee1);
-        region.put("key1", new Employee("key1", "name1", 30));
-        region.invalidate(pdxkey1);
-        region.invalidate("key1");
-        await().untilAsserted(() -> {
-          assertThat(region.get(pdxkey1)).isNotNull();
-          assertThat(region.get("key1")).isNotNull();
-        });
-      });
-    }
-
-    for (MemberVM accessor : Arrays.asList(accessor1, accessor2)) {
-      accessor.invoke(() -> {
-        PdxInstance pdxEmployee1 =
-            ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
-                .writeString("id", "id2").writeString("name", "Emp2").writeInt("age", 56).create();
-
-        String pdxkey2 = "pdxkey2";
-        Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
-        region.put(pdxkey2, pdxEmployee1);
-        region.put("key2", new Employee("key2", "name2", 30));
-        region.invalidate(pdxkey2);
-        region.invalidate("key2");
-        await().untilAsserted(() -> {
-          assertThat(region.get(pdxkey2)).isNotNull();
-          assertThat(region.get("key2")).isNotNull();
-        });
-      });
-    }
+    validateBothServersAndAccessors(server1, server2, accessor1, accessor2);
 
     for (int i = 4; i <= 7; i++) {
       startupRule.stop(i);
@@ -394,49 +385,13 @@ public abstract class JdbcDistributedTest implements Serializable {
 
     createJdbcDataSource();
     createRegionUsingGfshForGroup(false, "datagroup");
-    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(), false,
-        "datagroup", null);
+    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
+        "datagroup");
     createRegionUsingGfshForGroup(true, "accessorgroup");
-    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(), false,
-        "accessorgroup", null);
+    createMappingForGroup(REGION_NAME, DATA_SOURCE_NAME, Employee.class.getName(),
+        "accessorgroup");
 
-    for (MemberVM server : Arrays.asList(server1, server2)) {
-      server.invoke(() -> {
-        PdxInstance pdxEmployee1 =
-            ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
-                .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
-
-        String pdxkey1 = "pdxkey1";
-        Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
-        region.put(pdxkey1, pdxEmployee1);
-        region.put("key1", new Employee("key1", "name1", 30));
-        region.invalidate(pdxkey1);
-        region.invalidate("key1");
-        await().untilAsserted(() -> {
-          assertThat(region.get(pdxkey1)).isNotNull();
-          assertThat(region.get("key1")).isNotNull();
-        });
-      });
-    }
-
-    for (MemberVM accessor : Arrays.asList(accessor1, accessor2)) {
-      accessor.invoke(() -> {
-        PdxInstance pdxEmployee1 =
-            ClusterStartupRule.getCache().createPdxInstanceFactory(Employee.class.getName())
-                .writeString("id", "id2").writeString("name", "Emp2").writeInt("age", 56).create();
-
-        String pdxkey2 = "pdxkey2";
-        Region<Object, Object> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
-        region.put(pdxkey2, pdxEmployee1);
-        region.put("key2", new Employee("key2", "name2", 30));
-        region.invalidate(pdxkey2);
-        region.invalidate("key2");
-        await().untilAsserted(() -> {
-          assertThat(region.get(pdxkey2)).isNotNull();
-          assertThat(region.get("key2")).isNotNull();
-        });
-      });
-    }
+    validateBothServersAndAccessors(server1, server2, accessor1, accessor2);
 
     for (int i = 4; i <= 7; i++) {
       startupRule.stop(i);
@@ -939,23 +894,15 @@ public abstract class JdbcDistributedTest implements Serializable {
   }
 
   private void createMappingForGroup(String regionName, String connectionName, String pdxClassName,
-      boolean synchronous, String groupName, String ids) {
+      String groupName) {
     final String commandStr = "create jdbc-mapping --region=" + regionName
         + " --data-source=" + connectionName
         + " --table=" + TABLE_NAME
-        + " --synchronous=" + synchronous
+        + " --synchronous=false"
         + " --if-not-exists=true"
         + " --pdx-name=" + pdxClassName
-        + " --groups=" + groupName
-        + ((ids != null) ? (" --id=" + ids) : "");
+        + " --groups=" + groupName;
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
-    if (!synchronous) {
-      final String alterAsyncQueue =
-          "alter async-event-queue --id="
-              + MappingCommandUtils.createAsyncEventQueueName(regionName)
-              + " --batch-size=1 --batch-time-interval=0";
-      gfsh.executeAndAssertThat(alterAsyncQueue).statusIsSuccess();
-    }
   }
 
   private void createPartitionRegionUsingGfsh() {
