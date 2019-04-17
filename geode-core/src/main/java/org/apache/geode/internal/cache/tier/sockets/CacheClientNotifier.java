@@ -767,10 +767,13 @@ public class CacheClientNotifier {
 
         logger.info("RYGUY: Event ID while draining: " + queuedEvent.getEventId());
 
-        // For initializing clients, we will just queue the ClientUpdateMessage instead
-        // of an HAEventWrapper. Since this is not the normal hot path for event processing,
-        // there isn't much gain from optimizations provided by HAEventWrapper.
+        // We need to enqueue an HAEventWrapper because the event ID will not get
+        // serialized during GII if it we us a raw ClientUpdateMessage here. See the
+        // toData() and fromData() methods for HAEventWrapper and ClientUpdateMessage for more
+        // details.
         ClientUpdateMessageImpl clientUpdateMessage = constructClientMessage(queuedEvent);
+        HAEventWrapper haEventWrapper = new HAEventWrapper(clientUpdateMessage);
+        haEventWrapper.incrementPutInProgressCounter();
 
         logger.info("RYGUY: Client update message " + clientUpdateMessage);
         queuedEvent.setLocalFilterInfo(filterInfo);
@@ -782,8 +785,10 @@ public class CacheClientNotifier {
 
         if (filterClientIDs.contains(proxyID) && cacheClientProxy != null) {
           logger.info("RYGUY: Delivering to " + proxyID);
-          cacheClientProxy.deliverMessage(clientUpdateMessage);
+          cacheClientProxy.deliverMessage(haEventWrapper);
         }
+
+        haEventWrapper.decrementPutInProgressCounter();
       }
     }
   }
