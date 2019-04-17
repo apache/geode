@@ -390,7 +390,7 @@ public abstract class DistributedCacheOperation {
 
       Set cachelessNodes = Collections.emptySet();
       Set adviseCacheServers;
-      Set<InternalDistributedMember> cachelessNodesWithNoCacheServer = new HashSet<>();
+      Set<InternalDistributedMember> cachelessNodesWithNoCacheServer = Collections.emptySet();
       if (region.getDistributionConfig().getDeltaPropagation() && this.supportsDeltaPropagation()) {
         cachelessNodes = region.getCacheDistributionAdvisor().adviseEmptys();
         if (!cachelessNodes.isEmpty()) {
@@ -405,8 +405,7 @@ public abstract class DistributedCacheOperation {
           recipients.removeAll(list);
           cachelessNodes.addAll(list);
         }
-
-        cachelessNodesWithNoCacheServer.addAll(cachelessNodes);
+        cachelessNodesWithNoCacheServer = new HashSet<>(cachelessNodes);
         adviseCacheServers = region.getCacheDistributionAdvisor().adviseCacheServers();
         cachelessNodesWithNoCacheServer.removeAll(adviseCacheServers);
       }
@@ -595,7 +594,7 @@ public abstract class DistributedCacheOperation {
             }
           }
 
-          if (cachelessNodesWithNoCacheServer.size() > 0) {
+          if (!cachelessNodesWithNoCacheServer.isEmpty()) {
             msg.resetRecipients();
             msg.setRecipients(cachelessNodesWithNoCacheServer);
             msg.setSendDelta(false);
@@ -608,17 +607,16 @@ public abstract class DistributedCacheOperation {
                 failures = newFailures;
               }
             }
+            // Add it back for size calculation ahead
+            cachelessNodes.addAll(cachelessNodesWithNoCacheServer);
           }
-          // Add it back for size calculation ahead
-          cachelessNodes.addAll(cachelessNodesWithNoCacheServer);
         }
 
         if (failures != null && !failures.isEmpty() && logger.isDebugEnabled()) {
           logger.debug("Failed sending ({}) to {} while processing event:{}", msg, failures, event);
         }
 
-        Set<InternalDistributedMember> adjunctRecipientsWithNoCacheServer =
-            new HashSet<InternalDistributedMember>();
+        Set<InternalDistributedMember> adjunctRecipientsWithNoCacheServer = Collections.emptySet();
         // send partitioned region listener notification messages now
         if (!adjunctRecipients.isEmpty()) {
           if (cachelessNodes.size() > 0) {
@@ -630,8 +628,7 @@ public abstract class DistributedCacheOperation {
               recipients.addAll(cachelessNodes);
             }
           }
-
-          adjunctRecipientsWithNoCacheServer.addAll(adjunctRecipients);
+          adjunctRecipientsWithNoCacheServer = new HashSet<>(adjunctRecipients);
           adviseCacheServers = ((Bucket) region).getPartitionedRegion()
               .getCacheDistributionAdvisor().adviseCacheServers();
           adjunctRecipientsWithNoCacheServer.removeAll(adviseCacheServers);
