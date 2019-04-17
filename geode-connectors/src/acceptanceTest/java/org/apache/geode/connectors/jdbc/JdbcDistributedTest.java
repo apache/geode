@@ -352,6 +352,17 @@ public abstract class JdbcDistributedTest implements Serializable {
         assertThat(employee2.getName()).isEqualTo("name1");
       });
     }
+
+    for (MemberVM server : Arrays.asList(server1, server2)) {
+      server.invoke(() -> {
+        String queueName = MappingCommandUtils.createAsyncEventQueueName(REGION_NAME);
+        AsyncEventQueue queue = ClusterStartupRule.getCache().getAsyncEventQueue(queueName);
+        assertThat(queue).isNotNull();
+        await().untilAsserted(() -> {
+          assertThat(queue.size()).isEqualTo(0);
+        });
+      });
+    }
   }
 
   @Test
