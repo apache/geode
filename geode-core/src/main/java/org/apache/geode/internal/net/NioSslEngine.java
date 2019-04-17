@@ -308,18 +308,17 @@ public class NioSslEngine implements NioFilter {
     }
   }
 
-  /*
-   * NioSslEngine doesn't need to ensure capacity in network buffers because they
-   * are fixed in size by the SslContext. The size recommended by the context is
-   * big enough for the SslEngine to do its work.
-   */
   @Override
   public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
       Buffers.BufferType bufferType, DMStats stats) {
-    if (wrappedBuffer == null) {
-      wrappedBuffer = Buffers.acquireBuffer(bufferType, amount, stats);
+    ByteBuffer buffer = wrappedBuffer;
+    int requiredSize = engine.getSession().getPacketBufferSize();
+    if (buffer == null) {
+      buffer = Buffers.acquireBuffer(bufferType, requiredSize, stats);
+    } else if (buffer.capacity() < requiredSize) {
+      buffer = Buffers.expandWriteBufferIfNeeded(bufferType, buffer, requiredSize, stats);
     }
-    return wrappedBuffer;
+    return buffer;
   }
 
   @Override
