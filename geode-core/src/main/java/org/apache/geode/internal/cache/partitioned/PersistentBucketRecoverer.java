@@ -48,7 +48,7 @@ import org.apache.geode.internal.util.TransformUtils;
  * count down latch in order to determine when it is finished.
  *
  */
-public class RedundancyLogger extends RecoveryRunnable implements PersistentStateListener {
+public class PersistentBucketRecoverer extends RecoveryRunnable implements PersistentStateListener {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -71,14 +71,15 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
 
 
   /**
-   * Creates a new RedundancyLogger.
+   * Creates a new PersistentBucketRecoverer.
    *
    */
-  public RedundancyLogger(PRHARedundancyProvider prhaRedundancyProvider) {
+  public PersistentBucketRecoverer(PRHARedundancyProvider prhaRedundancyProvider,
+      int proxyBuckets) {
     super(prhaRedundancyProvider);
     PartitionedRegion baseRegion = ColocationHelper.getLeaderRegion(redundancyProvider.prRegion);
     List<PartitionedRegion> colocatedRegions =
-        ColocationHelper.getColocatedChildRegions(baseRegion);
+        getColocatedChildRegions(baseRegion);
     List<RegionStatus> allRegions = new ArrayList<RegionStatus>(colocatedRegions.size() + 1);
     if (baseRegion.getDataPolicy().withPersistence()) {
       allRegions.add(new RegionStatus(baseRegion));
@@ -89,12 +90,14 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
       }
     }
 
-    this.regions = Collections.unmodifiableList(allRegions);
-
-
-    this.allBucketsRecoveredFromDisk = redundancyProvider.getAllBucketsRecoveredFromDiskLatch();
-    this.membershipChanged = true;
+    regions = Collections.unmodifiableList(allRegions);
+    allBucketsRecoveredFromDisk = new CountDownLatch(proxyBuckets);
+    membershipChanged = true;
     addListeners();
+  }
+
+  List<PartitionedRegion> getColocatedChildRegions(PartitionedRegion baseRegion) {
+    return ColocationHelper.getColocatedChildRegions(baseRegion);
   }
 
   /**
@@ -124,7 +127,8 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
 
 
   /**
-   * Add this RedundancyLogger as a persistence listener to all the region's bucket advisors.
+   * Add this PersistentBucketRecoverer as a persistence listener to all the region's bucket
+   * advisors.
    */
   private void addListeners() {
     for (RegionStatus region : regions) {
@@ -133,7 +137,8 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
   }
 
   /**
-   * Removes this RedundancyLogger as a persistence listener from all the region's bucket advisors.
+   * Removes this PersistentBucketRecoverer as a persistence listener from all the region's bucket
+   * advisors.
    */
   private void removeListeners() {
     for (RegionStatus region : regions) {
@@ -196,7 +201,7 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
    */
   private class RegionStatus {
     /**
-     * The persistent identifier of the member running this RedundancyLogger.
+     * The persistent identifier of the member running this PersistentBucketRecoverer.
      */
     private final PersistentMemberID thisMember;
 
@@ -223,13 +228,13 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
 
     public void removeListeners() {
       for (ProxyBucketRegion proxyBucket : this.bucketRegions) {
-        proxyBucket.getPersistenceAdvisor().removeListener(RedundancyLogger.this);
+        proxyBucket.getPersistenceAdvisor().removeListener(PersistentBucketRecoverer.this);
       }
     }
 
     public void addListeners() {
       for (ProxyBucketRegion proxyBucket : this.bucketRegions) {
-        proxyBucket.getPersistenceAdvisor().addListener(RedundancyLogger.this);
+        proxyBucket.getPersistenceAdvisor().addListener(PersistentBucketRecoverer.this);
       }
     }
 
@@ -337,7 +342,7 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
       Map<PersistentMemberID, Set<Integer>> allMembersToWaitFor = getMembersToWaitFor(false);
 
       boolean thereAreBucketsToBeRecovered =
-          (RedundancyLogger.this.allBucketsRecoveredFromDisk.getCount() > 0);
+          (PersistentBucketRecoverer.this.allBucketsRecoveredFromDisk.getCount() > 0);
 
       /*
        * Log any offline members the region is waiting for.
@@ -400,5 +405,9 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
       }
       return allWaitingBuckets;
     }
+  }
+
+  public CountDownLatch getAllBucketsRecoveredFromDiskLatch() {
+    return allBucketsRecoveredFromDisk;
   }
 }

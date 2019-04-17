@@ -75,8 +75,8 @@ import org.apache.geode.internal.cache.partitioned.PRLoad;
 import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
 import org.apache.geode.internal.cache.partitioned.PartitionRegionInfoImpl;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
+import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
 import org.apache.geode.internal.cache.partitioned.RecoveryRunnable;
-import org.apache.geode.internal.cache.partitioned.RedundancyLogger;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
@@ -144,12 +144,10 @@ public class PRHARedundancyProvider {
   private final Object shutdownLock = new Object();
   private boolean shutdown = false;
 
-  volatile CountDownLatch allBucketsRecoveredFromDisk;
-
   /**
    * Used to consolidate logging for bucket regions waiting on other members to come online.
    */
-  private RedundancyLogger redundancyLogger = null;
+  private volatile PersistentBucketRecoverer persistentBucketRecoverer = null;
 
   /**
    * Constructor for PRHARedundancyProvider.
@@ -1715,7 +1713,11 @@ public class PRHARedundancyProvider {
     /*
      * Start the redundancy logger before recovering any proxy buckets.
      */
-    createRedundancyLoggerAndStartLoggingThread(proxyBucketArray.length);
+    persistentBucketRecoverer = createPersistentBucketRecoverer(proxyBucketArray.length);
+    Thread loggingThread = new LoggingThread(
+        "PersistentBucketRecoverer for region " + prRegion.getName(), false,
+        persistentBucketRecoverer);
+    loggingThread.start();
 
     /*
      * Spawn a separate thread for bucket that we previously hosted to recover that bucket.
@@ -1745,7 +1747,10 @@ public class PRHARedundancyProvider {
             try {
               super.run();
             } finally {
-              allBucketsRecoveredFromDisk.countDown();
+              CountDownLatch recoveryLatch = getRecoveryLatch();
+              if (recoveryLatch != null) {
+                recoveryLatch.countDown();
+              }
             }
           }
 
@@ -1777,7 +1782,10 @@ public class PRHARedundancyProvider {
       }
     } finally {
       for (final ProxyBucketRegion proxyBucket : bucketsNotHostedLocally) {
-        allBucketsRecoveredFromDisk.countDown();
+        CountDownLatch recoveryLatch = getRecoveryLatch();
+        if (recoveryLatch != null) {
+          recoveryLatch.countDown();
+        }
       }
     }
 
@@ -1787,24 +1795,17 @@ public class PRHARedundancyProvider {
     // }
   }
 
-  void createRedundancyLoggerAndStartLoggingThread(int proxyBuckets) {
-    redundancyLogger = createRedundancyLogger();
-    allBucketsRecoveredFromDisk = createAllBucketsRecoveredFromDisk(proxyBuckets);
-    Thread loggingThread = createRedundancyLoggingThread();
-    loggingThread.start();
+  CountDownLatch getRecoveryLatch() {
+    return getPersistentBucketRecoverer() == null ? null
+        : getPersistentBucketRecoverer().getAllBucketsRecoveredFromDiskLatch();
   }
 
-  LoggingThread createRedundancyLoggingThread() {
-    return new LoggingThread(
-        "RedundancyLogger for region " + prRegion.getName(), false, redundancyLogger);
+  private PersistentBucketRecoverer createPersistentBucketRecoverer(int proxyBuckets) {
+    return new PersistentBucketRecoverer(this, proxyBuckets);
   }
 
-  CountDownLatch createAllBucketsRecoveredFromDisk(int proxyBuckets) {
-    return new CountDownLatch(proxyBuckets);
-  }
-
-  RedundancyLogger createRedundancyLogger() {
-    return new RedundancyLogger(this);
+  PersistentBucketRecoverer getPersistentBucketRecoverer() {
+    return persistentBucketRecoverer;
   }
 
   /**
@@ -1995,7 +1996,7 @@ public class PRHARedundancyProvider {
    * whichever happens first.
    */
   protected void waitForPersistentBucketRecoveryOrClose() {
-    CountDownLatch recoveryLatch = allBucketsRecoveredFromDisk;
+    CountDownLatch recoveryLatch = getRecoveryLatch();
     if (recoveryLatch != null) {
       boolean interrupted = false;
       while (true) {
@@ -2027,7 +2028,7 @@ public class PRHARedundancyProvider {
    * currently being closed.
    */
   protected void waitForPersistentBucketRecovery() {
-    CountDownLatch recoveryLatch = allBucketsRecoveredFromDisk;
+    CountDownLatch recoveryLatch = getRecoveryLatch();
     if (recoveryLatch != null) {
       boolean interrupted = false;
       while (true) {
@@ -2048,8 +2049,8 @@ public class PRHARedundancyProvider {
     if (!ColocationHelper.checkMembersColocation(this.prRegion, this.prRegion.getMyId())) {
       return false;
     }
-
-    if (allBucketsRecoveredFromDisk != null && allBucketsRecoveredFromDisk.getCount() > 0) {
+    CountDownLatch recoveryLatch = getRecoveryLatch();
+    if (recoveryLatch != null && recoveryLatch.getCount() > 0) {
       return false;
     }
 
@@ -2058,8 +2059,8 @@ public class PRHARedundancyProvider {
 
     for (PartitionedRegion region : colocatedRegions.values()) {
       PRHARedundancyProvider redundancyProvider = region.getRedundancyProvider();
-      if (redundancyProvider.allBucketsRecoveredFromDisk != null
-          && redundancyProvider.allBucketsRecoveredFromDisk.getCount() > 0) {
+      recoveryLatch = redundancyProvider.getRecoveryLatch();
+      if (recoveryLatch != null && recoveryLatch.getCount() > 0) {
         return false;
       }
     }
@@ -2335,10 +2336,6 @@ public class PRHARedundancyProvider {
         scheduleRedundancyRecovery(persistentID);
       }
     }
-  }
-
-  public CountDownLatch getAllBucketsRecoveredFromDiskLatch() {
-    return allBucketsRecoveredFromDisk;
   }
 
   private ThreadsMonitoring getThreadMonitorObj() {

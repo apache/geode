@@ -14,24 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 
-import org.apache.geode.internal.cache.partitioned.RedundancyLogger;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
 
 
 public class PRHARedundancyProviderTest {
@@ -44,41 +39,25 @@ public class PRHARedundancyProviderTest {
   }
 
   @Test
-  public void waitForPersistentBucketRecoveryProceedsWhenAllBucketsRecoveredFromDiskLatchIsNull() {
+  public void waitForPersistentBucketRecoveryProceedsWhenPersistentBucketRecovererLatchIsNotSet() {
+    PersistentBucketRecoverer recoverer = mock(PersistentBucketRecoverer.class);
+    doReturn(recoverer).when(provider).getPersistentBucketRecoverer();
+
     provider.waitForPersistentBucketRecovery();
   }
 
   @Test
   public void waitForPersistentBucketRecoveryProceedsAfterLatchCountDown() throws Exception {
-    provider.allBucketsRecoveredFromDisk = spy(new CountDownLatch(1));
-    provider.allBucketsRecoveredFromDisk.countDown();
+    PersistentBucketRecoverer recoverer = mock(PersistentBucketRecoverer.class);
+    doReturn(recoverer).when(provider).getPersistentBucketRecoverer();
+    CountDownLatch latch = spy(new CountDownLatch(1));
+    when(recoverer.getAllBucketsRecoveredFromDiskLatch()).thenReturn(latch);
+    latch.countDown();
 
     provider.waitForPersistentBucketRecovery();
 
-    verify(provider.allBucketsRecoveredFromDisk).await();
+    verify(latch).await();
   }
 
-  @Test
-  public void allBucketsRecoveredFromDiskCountDownLatchIsNotSetIfFailedToCreateRedundancyLogger() {
-    doThrow(new RuntimeException()).when(provider).createRedundancyLogger();
 
-    Throwable thrown =
-        catchThrowable(() -> provider.createRedundancyLoggerAndStartLoggingThread(1));
-
-    assertThat(provider.allBucketsRecoveredFromDisk).isNull();
-    assertThat(thrown).isInstanceOf(RuntimeException.class);
-  }
-
-  @Test
-  public void allBucketsRecoveredFromDiskIsSetBeforeLoggingThreadStarts() {
-    LoggingThread thread = mock(LoggingThread.class);
-    doReturn(mock(RedundancyLogger.class)).when(provider).createRedundancyLogger();
-    doReturn(thread).when(provider).createRedundancyLoggingThread();
-
-    provider.createRedundancyLoggerAndStartLoggingThread(1);
-
-    InOrder inOrder = inOrder(provider, thread);
-    inOrder.verify(provider).createAllBucketsRecoveredFromDisk(1);
-    inOrder.verify(thread).start();
-  }
 }
