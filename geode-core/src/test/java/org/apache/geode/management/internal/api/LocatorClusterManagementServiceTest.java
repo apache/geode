@@ -40,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
@@ -50,6 +51,7 @@ import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
+import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 
@@ -63,13 +65,16 @@ public class LocatorClusterManagementServiceTest {
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
+  private ConfigurationValidator<CacheElement> cacheElementValidator;
   private ConfigurationManager<RegionConfig, RuntimeRegionConfig> regionManager;
 
   @Before
   public void before() throws Exception {
     regionValidator = mock(RegionConfigValidator.class);
     regionManager = mock(ConfigurationManager.class);
+    cacheElementValidator = mock(CacheElementValidator.class);
     validators.put(RegionConfig.class, regionValidator);
+    validators.put(CacheElement.class, cacheElementValidator);
     managers.put(RegionConfig.class, regionManager);
 
     cache = mock(InternalCache.class);
@@ -94,16 +99,9 @@ public class LocatorClusterManagementServiceTest {
     assertManagementResult(service.create(regionConfig))
         .failed().hasStatusCode(ClusterManagementResult.StatusCode.ERROR)
         .containsStatusMessage("no members found");
+    verify(cacheElementValidator).validate(regionConfig);
     verify(regionValidator).validate(regionConfig);
     verify(regionValidator).exists(eq(regionConfig), any());
-  }
-
-  @Test
-  public void cacheElementValidator() throws Exception {
-    regionConfig.setGroup("cluster");
-    assertThatThrownBy(() -> service.create(regionConfig))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("cluster is a reserved group name");
   }
 
   @Test

@@ -49,9 +49,8 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
   }
 
   /**
-   * this is used to access the group list as is and to update the list
+   * All RuntimeXXXConfig needs to override this method and change the accessor to public
    */
-  @XmlTransient
   protected List<String> getGroups() {
     return groups;
   }

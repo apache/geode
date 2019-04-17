@@ -18,8 +18,6 @@ package org.apache.geode.management.configuration;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.RegionConfig;
 
@@ -41,10 +39,6 @@ public class RuntimeRegionConfig extends RegionConfig implements RuntimeCacheEle
     this.entryCount = entrySize;
   }
 
-  /**
-   * this is used to access the group list as is and to update the list
-   */
-  @XmlTransient
   public List<String> getGroups() {
     return super.getGroups();
   }
