@@ -34,7 +34,7 @@ import org.apache.geode.lang.Identifiable;
 @Experimental
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CacheElement implements Identifiable<String>, Serializable {
-  private List<String> groups = new ArrayList<>();
+  protected List<String> groups = new ArrayList<>();
 
   public static <T extends Identifiable> boolean exists(List<T> list, String id) {
     return list.stream().anyMatch(o -> o.getId().equals(id));
@@ -46,13 +46,6 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
 
   public static <T extends Identifiable> void removeElement(List<T> list, String id) {
     list.removeIf(t -> t.getId().equals(id));
-  }
-
-  /**
-   * All RuntimeXXXConfig needs to override this method and change the accessor to public
-   */
-  protected List<String> getGroups() {
-    return groups;
   }
 
   /**

@@ -33,6 +33,4 @@ public interface RuntimeCacheElement extends Identifiable<String>, Serializable 
   @XmlTransient
   @JsonIgnore
   String getGroup();
-
-  void setGroup(String group);
 }

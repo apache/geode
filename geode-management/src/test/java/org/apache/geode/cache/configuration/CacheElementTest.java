@@ -20,43 +20,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.configuration.RuntimeCacheElement;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
+
 public class CacheElementTest {
 
   private CacheElement element;
+  private RuntimeCacheElement runtime;
 
   @Before
   public void before() throws Exception {
     element = new RegionConfig();
+    runtime = new RuntimeRegionConfig();
   }
 
   @Test
   public void noGroup() throws Exception {
     assertThat(element.getGroup()).isNull();
     assertThat(element.getConfigGroup()).isEqualTo("cluster");
-    assertThat(element.getGroups()).isNotNull().isEmpty();
+    assertThat(runtime.getGroup()).isNull();
+    assertThat(runtime.getGroups()).isNotNull().isEmpty();
   }
 
   @Test
   public void setter() throws Exception {
     element.setGroup("group1");
+    runtime.getGroups().add("group1");
     assertThat(element.getGroup()).isEqualTo("group1");
     assertThat(element.getConfigGroup()).isEqualTo("group1");
-    assertThat(element.getGroups()).containsExactly("group1");
-  }
-
-  @Test
-  public void setter_cluster() throws Exception {
-    element.setGroup("cluster");
-    assertThat(element.getGroup()).isEqualTo("cluster");
-    assertThat(element.getConfigGroup()).isEqualTo("cluster");
-    assertThat(element.getGroups()).hasSize(1);
-  }
-
-  @Test
-  public void multipleGroup() {
-    element.getGroups().add("cluster");
-    element.getGroups().add("group1");
-    assertThat(element.getGroups()).containsExactlyInAnyOrder("cluster", "group1");
-    assertThat(element.getGroup()).isEqualTo("cluster");
+    assertThat(runtime.getGroup()).isEqualTo("group1");
+    assertThat(runtime.getGroups()).hasSize(1);
   }
 }

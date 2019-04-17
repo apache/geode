@@ -40,6 +40,6 @@ public class RuntimeRegionConfig extends RegionConfig implements RuntimeCacheEle
   }
 
   public List<String> getGroups() {
-    return super.getGroups();
+    return groups;
   }
 }

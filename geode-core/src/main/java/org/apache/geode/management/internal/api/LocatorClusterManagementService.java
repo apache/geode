@@ -190,7 +190,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
       List<RuntimeCacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
       for (RuntimeCacheElement element : listInGroup) {
-        element.setGroup(group);
+        element.getGroups().add(group);
         int index = elements.indexOf(element);
         if (index >= 0) {
           RuntimeCacheElement exist = elements.get(index);
