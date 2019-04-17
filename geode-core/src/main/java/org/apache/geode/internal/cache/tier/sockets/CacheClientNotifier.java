@@ -755,6 +755,7 @@ public class CacheClientNotifier {
       final Queue<InternalCacheEvent> eventsReceivedWhileRegisteringClient) {
     InternalCacheEvent queuedEvent;
     while ((queuedEvent = eventsReceivedWhileRegisteringClient.poll()) != null) {
+      logger.info("RYGUY: Draining event from registration queue: " + queuedEvent);
       FilterProfile filterProfile =
           ((DistributedRegion) queuedEvent.getRegion()).getFilterProfile();
 
@@ -769,6 +770,7 @@ public class CacheClientNotifier {
         // there isn't much gain from optimizations provided by HAEventWrapper.
         ClientUpdateMessageImpl clientUpdateMessage = constructClientMessage(queuedEvent);
 
+        logger.info("RYGUY: Client update message " + clientUpdateMessage);
         queuedEvent.setLocalFilterInfo(filterInfo);
 
         Set<ClientProxyMembershipID> filterClientIDs =
@@ -777,6 +779,7 @@ public class CacheClientNotifier {
             (CacheClientProxy) this._clientProxies.get(proxyID);
 
         if (filterClientIDs.contains(proxyID) && cacheClientProxy != null) {
+          logger.info("RYGUY: Delivering to " + proxyID);
           cacheClientProxy.deliverMessage(clientUpdateMessage);
         }
       }
@@ -862,6 +865,7 @@ public class CacheClientNotifier {
         ClientProxyMembershipID clientProxyMembershipID =
             eventsReceivedWhileRegisteringClient.getKey();
         if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
+          logger.info("RYGUY: Adding event to registering client queue: " + event);
           eventsReceivedWhileRegisteringClient.getValue().add(event);
           // Because this event will be processed and sent when it is drained out of the temporary
           // client registration queue, we do not need to send it to the client at this time.
@@ -869,6 +873,9 @@ public class CacheClientNotifier {
           // by removing its client proxy membership ID from the filter clients collection,
           // if it exists.
           filterClients.remove(clientProxyMembershipID);
+        } else {
+          logger.info("RYGUY: Proxy ID no longer registered " + clientProxyMembershipID
+              + "; event: " + event);
         }
       }
     }
