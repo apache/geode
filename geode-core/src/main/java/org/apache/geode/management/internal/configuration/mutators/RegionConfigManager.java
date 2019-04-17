@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.configuration.mutators;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +31,8 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
-public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
+public class RegionConfigManager
+    implements ConfigurationManager<RegionConfig, RuntimeRegionConfig> {
   private InternalCache cache;
   private ManagementService managementService;
 
@@ -55,7 +57,7 @@ public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
   }
 
   @Override
-  public List<RegionConfig> list(RegionConfig filter, CacheConfig existing) {
+  public List<RuntimeRegionConfig> list(RegionConfig filter, CacheConfig existing) {
     List<RegionConfig> staticRegionConfigs;
     if (StringUtils.isBlank(filter.getName())) {
       staticRegionConfigs = existing.getRegions();
@@ -65,7 +67,8 @@ public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
               Collectors.toList());
     }
 
-    return staticRegionConfigs.stream().map(config -> {
+    List<RuntimeRegionConfig> results = new ArrayList<>();
+    for (RegionConfig config : staticRegionConfigs) {
       DistributedRegionMXBean distributedRegionMXBean =
           managementService.getDistributedRegionMXBean("/" + config.getName());
       if (distributedRegionMXBean == null) {
@@ -73,7 +76,8 @@ public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
       }
       RuntimeRegionConfig runtimeConfig = new RuntimeRegionConfig(config);
       runtimeConfig.setEntryCount(distributedRegionMXBean.getSystemRegionEntryCount());
-      return runtimeConfig;
-    }).collect(Collectors.toList());
+      results.add(runtimeConfig);
+    }
+    return results;
   }
 }

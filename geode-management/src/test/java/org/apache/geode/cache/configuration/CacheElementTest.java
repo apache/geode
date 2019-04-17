@@ -16,7 +16,6 @@
 package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,14 +49,14 @@ public class CacheElementTest {
     element.setGroup("cluster");
     assertThat(element.getGroup()).isEqualTo("cluster");
     assertThat(element.getConfigGroup()).isEqualTo("cluster");
-    assertThat(element.getGroups()).isNotNull().isEmpty();
+    assertThat(element.getGroups()).hasSize(1);
   }
 
   @Test
   public void multipleGroup() {
-    element.getGroupList().add("cluster");
-    element.getGroupList().add("group1");
+    element.getGroups().add("cluster");
+    element.getGroups().add("group1");
     assertThat(element.getGroups()).containsExactlyInAnyOrder("cluster", "group1");
-    assertThatThrownBy(() -> element.getGroup()).isInstanceOf(IllegalArgumentException.class);
+    assertThat(element.getGroup()).isEqualTo("cluster");
   }
 }

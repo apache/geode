@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.configuration;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
@@ -22,7 +23,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 @Experimental
-public class MemberConfig extends CacheElement implements RestfulEndpoint {
+public class MemberConfig extends CacheElement implements RuntimeCacheElement, RestfulEndpoint {
 
   private static final long serialVersionUID = -6262538068604902018L;
 
@@ -91,5 +92,10 @@ public class MemberConfig extends CacheElement implements RestfulEndpoint {
   @Override
   public String getId() {
     return id;
+  }
+
+  @Override
+  public List<String> getGroups() {
+    return Arrays.asList(getGroup());
   }
 }

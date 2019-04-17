@@ -15,37 +15,24 @@
 
 package org.apache.geode.management.configuration;
 
-
+import java.io.Serializable;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.RegionConfig;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@Experimental
-public class RuntimeRegionConfig extends RegionConfig implements RuntimeCacheElement {
-  private long entryCount;
+import org.apache.geode.lang.Identifiable;
 
-  public RuntimeRegionConfig() {}
-
-  public RuntimeRegionConfig(RegionConfig config) {
-    super(config);
-  }
-
-  public long getEntryCount() {
-    return entryCount;
-  }
-
-  public void setEntryCount(long entrySize) {
-    this.entryCount = entrySize;
-  }
-
-  /**
-   * this is used to access the group list as is and to update the list
-   */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+public interface RuntimeCacheElement extends Identifiable<String>, Serializable {
   @XmlTransient
-  public List<String> getGroups() {
-    return super.getGroups();
-  }
+  List<String> getGroups();
+
+  @XmlTransient
+  @JsonIgnore
+  String getGroup();
+
+  void setGroup(String group);
 }

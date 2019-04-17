@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.ListAssert;
 
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 
 public class ClusterManagementResultAssert
     extends AbstractAssert<ClusterManagementResultAssert, ClusterManagementResult> {
@@ -50,7 +50,7 @@ public class ClusterManagementResultAssert
     return this;
   }
 
-  public ListAssert<CacheElement> hasListResult() {
+  public ListAssert<RuntimeCacheElement> hasListResult() {
     return assertThat(actual.getResult());
   }
 

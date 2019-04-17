@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 
-public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
+public class MemberConfigManager implements ConfigurationManager<MemberConfig, MemberConfig> {
 
   private InternalCache cache;
 

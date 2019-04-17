@@ -19,7 +19,6 @@ package org.apache.geode.cache.configuration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlTransient;
@@ -37,37 +36,23 @@ import org.apache.geode.lang.Identifiable;
 public abstract class CacheElement implements Identifiable<String>, Serializable {
   private List<String> groups = new ArrayList<>();
 
-  public static <T extends CacheElement> boolean exists(List<T> list, String id) {
+  public static <T extends Identifiable> boolean exists(List<T> list, String id) {
     return list.stream().anyMatch(o -> o.getId().equals(id));
   }
 
-  public static <T extends CacheElement> T findElement(List<T> list, String id) {
+  public static <T extends Identifiable> T findElement(List<T> list, String id) {
     return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
   }
 
-  public static <T extends CacheElement> void removeElement(List<T> list, String id) {
+  public static <T extends Identifiable> void removeElement(List<T> list, String id) {
     list.removeIf(t -> t.getId().equals(id));
-  }
-
-  /**
-   * this is the groups to display. If the only group info is "cluster", do
-   * not display it
-   */
-  @XmlTransient
-  public List<String> getGroups() {
-    // if the only group is "cluster", do not return it for display
-    if (groups.size() == 1 && groups.get(0).equals("cluster")) {
-      return Collections.emptyList();
-    }
-    return Collections.unmodifiableList(groups);
   }
 
   /**
    * this is used to access the group list as is and to update the list
    */
   @XmlTransient
-  @JsonIgnore
-  public List<String> getGroupList() {
+  protected List<String> getGroups() {
     return groups;
   }
 
@@ -86,15 +71,11 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
   }
 
   /**
-   * this returns what's actually set by the user.
-   * this could return null.
+   * this returns the first group set by the user
+   * if no group is set, this returns null
    */
   @XmlTransient
-  @JsonIgnore
   public String getGroup() {
-    if (groups.size() > 1) {
-      throw new IllegalArgumentException("Multiple groups are not supported in this case.");
-    }
     if (groups.size() == 0) {
       return null;
     }

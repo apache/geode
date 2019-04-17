@@ -43,16 +43,17 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.MemberConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
+import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
-import org.apache.geode.management.internal.validators.CacheElementValidator;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static final Logger logger = LogService.getLogger();
@@ -69,6 +70,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
 
     // initialize the list of validators
+    validators.put(CacheElement.class, new CacheElementValidator());
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
   }
 
@@ -91,7 +93,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // first validate common attributes of all configuration object
-    new CacheElementValidator().validate(config);
+    validators.get(CacheElement.class).validate(config);
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
@@ -165,11 +167,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   @Override
   public ClusterManagementResult list(CacheElement filter) {
-    ConfigurationManager manager = managers.get(filter.getClass());
+    ConfigurationManager<CacheElement, RuntimeCacheElement> manager =
+        managers.get(filter.getClass());
     ClusterManagementResult result = new ClusterManagementResult();
 
     if (filter instanceof MemberConfig) {
-      List<CacheElement> listResults = manager.list(filter, null);
+      List<RuntimeCacheElement> listResults = manager.list(filter, null);
       result.setResult(listResults);
       return result;
     }
@@ -179,19 +182,19 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Cluster configuration service needs to be enabled");
     }
 
-    List<CacheElement> elements = new ArrayList<>();
+    List<RuntimeCacheElement> elements = new ArrayList<>();
 
     // get a list of all the elements from all groups that satisfy the filter criteria (all filters
     // have been applied except the group)
     for (String group : persistenceService.getGroups()) {
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-      List<CacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
-      for (CacheElement element : listInGroup) {
+      List<RuntimeCacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
+      for (RuntimeCacheElement element : listInGroup) {
         element.setGroup(group);
         int index = elements.indexOf(element);
         if (index >= 0) {
-          CacheElement exist = elements.get(index);
-          exist.getGroupList().add(element.getGroup());
+          RuntimeCacheElement exist = elements.get(index);
+          exist.getGroups().add(element.getGroup());
         } else {
           elements.add(element);
         }
@@ -202,8 +205,15 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // belong to multiple groups and we want the "group" field to show that.
     if (StringUtils.isNotBlank(filter.getGroup())) {
       elements =
-          elements.stream().filter(e -> e.getGroupList().contains(filter.getConfigGroup()))
+          elements.stream().filter(e -> e.getGroups().contains(filter.getConfigGroup()))
               .collect(Collectors.toList());
+    }
+
+    // if "cluster" is the only group of the element, remove it
+    for (RuntimeCacheElement element : elements) {
+      if (element.getGroups().size() == 1 && "cluster".equals(element.getGroup())) {
+        element.getGroups().clear();
+      }
     }
 
     result.setResult(elements);

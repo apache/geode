@@ -35,7 +35,6 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.internal.validators.CacheElementValidator;
 
 /**
  * Implementation of {@link ClusterManagementService} interface which represents the cluster
@@ -108,7 +107,6 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public ClusterManagementResult create(CacheElement config) {
-    new CacheElementValidator().validate(config);
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return restTemplate

@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 
 /**
  * Defines the behavior to mutate a configuration change into a pre-existing cache config from a
@@ -30,12 +31,12 @@ import org.apache.geode.cache.configuration.CacheElement;
  * type {@link CacheElement}, which represents the configuration change.
  */
 @Experimental
-public interface ConfigurationManager<T extends CacheElement> {
+public interface ConfigurationManager<T extends CacheElement, R extends RuntimeCacheElement> {
   void add(T config, CacheConfig existing);
 
   void update(T config, CacheConfig existing);
 
   void delete(T config, CacheConfig existing);
 
-  List<T> list(T filterConfig, CacheConfig existing);
+  List<R> list(T filterConfig, CacheConfig existing);
 }

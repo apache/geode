@@ -40,13 +40,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
@@ -62,7 +63,7 @@ public class LocatorClusterManagementServiceTest {
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
-  private ConfigurationManager<RegionConfig> regionManager;
+  private ConfigurationManager<RegionConfig, RuntimeRegionConfig> regionManager;
 
   @Before
   public void before() throws Exception {
@@ -144,10 +145,10 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void aRegionInClusterAndGroup1() throws Exception {
     when(persistenceService.getGroups()).thenReturn(Sets.newHashSet("cluster", "group1"));
-    RegionConfig region1 = new RegionConfig();
+    RuntimeRegionConfig region1 = new RuntimeRegionConfig();
     region1.setName("region1");
     region1.setType("REPLICATE");
-    RegionConfig region2 = new RegionConfig();
+    RuntimeRegionConfig region2 = new RuntimeRegionConfig();
     region2.setName("region1");
     region2.setType("REPLICATE");
 
@@ -156,9 +157,9 @@ public class LocatorClusterManagementServiceTest {
 
     // this is to make sure when 'cluster" is in one of the group, it will show
     // the cluster and the other group name
-    List<CacheElement> results = service.list(new RegionConfig()).getResult();
+    List<RuntimeCacheElement> results = service.list(new RegionConfig()).getResult();
     assertThat(results).hasSize(1);
-    RegionConfig result = (RegionConfig) results.get(0);
+    RuntimeRegionConfig result = (RuntimeRegionConfig) results.get(0);
     assertThat(result.getName()).isEqualTo("region1");
     assertThat(result.getGroups()).containsExactlyInAnyOrder("cluster", "group1");
   }
