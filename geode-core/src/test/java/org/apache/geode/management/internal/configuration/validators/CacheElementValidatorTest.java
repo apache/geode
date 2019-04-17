@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.internal.validators.CacheElementValidator;
 
 public class CacheElementValidatorTest {
 
@@ -34,7 +35,7 @@ public class CacheElementValidatorTest {
   }
 
   @Test
-  public void invalidGroup() throws Exception {
+  public void invalidGroup_cluster() throws Exception {
     config.setName("test");
     config.setGroup("cluster");
     assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
@@ -44,12 +45,23 @@ public class CacheElementValidatorTest {
   }
 
   @Test
-  public void multipleGroup() throws Exception {
+  public void invalidGroupName() throws Exception {
     config.setName("test");
     config.setGroup("group1,group2");
     assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
             "Group name can not contain comma");
+  }
+
+  @Test
+  public void multipleGroup() throws Exception {
+    config.setName("test");
+    config.getGroupList().add("group1");
+    config.getGroupList().add("group2");
+    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Multiple groups are not supported");
   }
 }

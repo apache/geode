@@ -58,6 +58,6 @@ public class CacheElementTest {
     element.getGroupList().add("cluster");
     element.getGroupList().add("group1");
     assertThat(element.getGroups()).containsExactlyInAnyOrder("cluster", "group1");
-    assertThatThrownBy(() -> element.getGroup()).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> element.getGroup()).isInstanceOf(IllegalArgumentException.class);
   }
 }

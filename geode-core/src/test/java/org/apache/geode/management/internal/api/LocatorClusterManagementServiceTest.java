@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +49,6 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
-import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 
@@ -62,19 +62,14 @@ public class LocatorClusterManagementServiceTest {
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
-  private ConfigurationValidator<CacheElement> cacheElementValidator;
   private ConfigurationManager<RegionConfig> regionManager;
 
   @Before
   public void before() throws Exception {
-    cacheElementValidator = spy(CacheElementValidator.class);
-    validators.put(CacheElement.class, cacheElementValidator);
     regionValidator = mock(RegionConfigValidator.class);
     regionManager = mock(ConfigurationManager.class);
     validators.put(RegionConfig.class, regionValidator);
     managers.put(RegionConfig.class, regionManager);
-
-
 
     cache = mock(InternalCache.class);
     persistenceService = mock(ConfigurationPersistenceService.class);
@@ -98,9 +93,16 @@ public class LocatorClusterManagementServiceTest {
     assertManagementResult(service.create(regionConfig))
         .failed().hasStatusCode(ClusterManagementResult.StatusCode.ERROR)
         .containsStatusMessage("no members found");
-    verify(cacheElementValidator).validate(regionConfig);
     verify(regionValidator).validate(regionConfig);
     verify(regionValidator).exists(eq(regionConfig), any());
+  }
+
+  @Test
+  public void cacheElementValidator() throws Exception {
+    regionConfig.setGroup("cluster");
+    assertThatThrownBy(() -> service.create(regionConfig))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("cluster is a reserved group name");
   }
 
   @Test
@@ -137,5 +139,27 @@ public class LocatorClusterManagementServiceTest {
     verify(persistenceService).getCacheConfig("cluster", true);
     verify(persistenceService).getCacheConfig("group1", true);
     verify(regionManager, times(2)).list(any(), any());
+  }
+
+  @Test
+  public void aRegionInClusterAndGroup1() throws Exception {
+    when(persistenceService.getGroups()).thenReturn(Sets.newHashSet("cluster", "group1"));
+    RegionConfig region1 = new RegionConfig();
+    region1.setName("region1");
+    region1.setType("REPLICATE");
+    RegionConfig region2 = new RegionConfig();
+    region2.setName("region1");
+    region2.setType("REPLICATE");
+
+    when(regionManager.list(any(), any())).thenReturn(Arrays.asList(region1))
+        .thenReturn(Arrays.asList(region2));
+
+    // this is to make sure when 'cluster" is in one of the group, it will show
+    // the cluster and the other group name
+    List<CacheElement> results = service.list(new RegionConfig()).getResult();
+    assertThat(results).hasSize(1);
+    RegionConfig result = (RegionConfig) results.get(0);
+    assertThat(result.getName()).isEqualTo("region1");
+    assertThat(result.getGroups()).containsExactlyInAnyOrder("cluster", "group1");
   }
 }

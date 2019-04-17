@@ -55,7 +55,7 @@ public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
   }
 
   @Override
-  public List<RuntimeRegionConfig> list(RegionConfig filter, CacheConfig existing) {
+  public List<RegionConfig> list(RegionConfig filter, CacheConfig existing) {
     List<RegionConfig> staticRegionConfigs;
     if (StringUtils.isBlank(filter.getName())) {
       staticRegionConfigs = existing.getRegions();

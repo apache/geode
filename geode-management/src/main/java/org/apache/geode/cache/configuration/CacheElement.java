@@ -93,7 +93,7 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
   @JsonIgnore
   public String getGroup() {
     if (groups.size() > 1) {
-      throw new IllegalStateException("multiple groups are not supported in this case.");
+      throw new IllegalArgumentException("Multiple groups are not supported in this case.");
     }
     if (groups.size() == 0) {
       return null;

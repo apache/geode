@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -88,10 +89,9 @@ public class RegionManagementIntegrationTest {
     regionConfig.setName("customers");
     regionConfig.setGroup("cluster");
 
-    assertManagementResult(client.create(regionConfig))
-        .failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("cluster is a reserved group name");
+    assertThatThrownBy(() -> client.create(regionConfig))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("cluster is a reserved group name");
   }
 
   @Test
@@ -100,10 +100,9 @@ public class RegionManagementIntegrationTest {
     regionConfig.setName("customers");
     regionConfig.setGroup("group1,group2");
 
-    assertManagementResult(client.create(regionConfig))
-        .failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("Group name can not contain comma");
+    assertThatThrownBy(() -> client.create(regionConfig))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Group name can not contain comma");
   }
 
   @Test

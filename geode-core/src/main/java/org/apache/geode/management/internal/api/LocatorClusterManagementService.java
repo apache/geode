@@ -49,10 +49,10 @@ import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.MemberConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
-import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
+import org.apache.geode.management.internal.validators.CacheElementValidator;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static final Logger logger = LogService.getLogger();
@@ -69,7 +69,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
 
     // initialize the list of validators
-    validators.put(CacheElement.class, new CacheElementValidator());
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
   }
 
@@ -92,7 +91,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // first validate common attributes of all configuration object
-    validators.get(CacheElement.class).validate(config);
+    new CacheElementValidator().validate(config);
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {

@@ -13,16 +13,14 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.configuration.validators;
+package org.apache.geode.management.internal.validators;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 
 /**
  * this is used to validate all the common attributes of CacheElement, eg. group
  */
-public class CacheElementValidator implements ConfigurationValidator<CacheElement> {
-  @Override
+public class CacheElementValidator {
   public void validate(CacheElement config) throws IllegalArgumentException {
     if ("cluster".equalsIgnoreCase(config.getGroup())) {
       throw new IllegalArgumentException(
@@ -33,10 +31,5 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
       throw new IllegalArgumentException(
           "Group name can not contain comma.");
     }
-  }
-
-  @Override
-  public boolean exists(CacheElement config, CacheConfig persistedConfig) {
-    return false;
   }
 }
