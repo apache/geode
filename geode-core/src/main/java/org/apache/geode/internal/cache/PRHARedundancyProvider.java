@@ -1708,15 +1708,11 @@ public class PRHARedundancyProvider {
     ArrayList<ProxyBucketRegion> bucketsHostedLocally =
         new ArrayList<ProxyBucketRegion>(proxyBucketArray.length);
 
-
+    persistentBucketRecoverer = createPersistentBucketRecoverer(proxyBucketArray.length);
     /*
      * Start the redundancy logger before recovering any proxy buckets.
      */
-    persistentBucketRecoverer = createPersistentBucketRecoverer(proxyBucketArray.length);
-    Thread loggingThread = new LoggingThread(
-        "PersistentBucketRecoverer for region " + prRegion.getName(), false,
-        persistentBucketRecoverer);
-    loggingThread.start();
+    persistentBucketRecoverer.startLoggingThread();
 
     /*
      * Spawn a separate thread for bucket that we previously hosted to recover that bucket.
@@ -1737,7 +1733,6 @@ public class PRHARedundancyProvider {
     for (final ProxyBucketRegion proxyBucket : proxyBucketArray) {
       if (proxyBucket.getPersistenceAdvisor().wasHosting()) {
         final RecoveryRunnable recoveryRunnable = new RecoveryRunnable(this) {
-
 
           @Override
           public void run() {
@@ -1989,22 +1984,8 @@ public class PRHARedundancyProvider {
    */
   protected void waitForPersistentBucketRecoveryOrClose() {
     if (getPersistentBucketRecoverer() != null) {
-      boolean interrupted = false;
-      while (true) {
-        try {
-          this.prRegion.getCancelCriterion().checkCancelInProgress(null);
-          boolean done = getPersistentBucketRecoverer().await(
-              PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION, TimeUnit.MILLISECONDS);
-          if (done) {
-            break;
-          }
-        } catch (InterruptedException e) {
-          interrupted = true;
-        }
-      }
-      if (interrupted) {
-        Thread.currentThread().interrupt();
-      }
+      getPersistentBucketRecoverer().await(
+          PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION, TimeUnit.MILLISECONDS);
     }
 
     List<PartitionedRegion> colocatedRegions =
@@ -2020,18 +2001,7 @@ public class PRHARedundancyProvider {
    */
   protected void waitForPersistentBucketRecovery() {
     if (getPersistentBucketRecoverer() != null) {
-      boolean interrupted = false;
-      while (true) {
-        try {
-          getPersistentBucketRecoverer().await();
-          break;
-        } catch (InterruptedException e) {
-          interrupted = true;
-        }
-      }
-      if (interrupted) {
-        Thread.currentThread().interrupt();
-      }
+      getPersistentBucketRecoverer().await();
     }
   }
 

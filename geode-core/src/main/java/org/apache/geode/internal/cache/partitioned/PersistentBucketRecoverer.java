@@ -39,15 +39,15 @@ import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.util.TransformUtils;
 
 /**
  * Consolidates logging during the recovery of ProxyRegionBuckets that are not hosted by this
- * member. This logger is meant to run in its own thread and utilizes the PRHARedundancyProvider's
- * count down latch in order to determine when it is finished.
- *
+ * member. The logger is meant to run in its own thread.
+ * It uses a count down latch to determine whether the recovery is finished.
  */
 public class PersistentBucketRecoverer extends RecoveryRunnable implements PersistentStateListener {
 
@@ -95,10 +95,18 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     allBucketsRecoveredFromDisk = new CountDownLatch(proxyBuckets);
     membershipChanged = true;
     addListeners();
+
   }
 
   List<PartitionedRegion> getColocatedChildRegions(PartitionedRegion baseRegion) {
     return ColocationHelper.getColocatedChildRegions(baseRegion);
+  }
+
+  public void startLoggingThread() {
+    Thread loggingThread = new LoggingThread(
+        "PersistentBucketRecoverer for region " + redundancyProvider.prRegion.getName(), false,
+        this);
+    loggingThread.start();
   }
 
   /**
@@ -157,7 +165,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
   public void run2() {
     try {
       boolean warningLogged = false;
-      while (this.allBucketsRecoveredFromDisk.getCount() > 0) {
+      while (getLatchCount() > 0) {
         int sleepMillis = SLEEP_PERIOD;
         // reduce the first log time from 15secs so that higher layers can
         // report sooner to user
@@ -342,8 +350,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
       Map<PersistentMemberID, Set<Integer>> offlineMembers = getMembersToWaitFor(true);
       Map<PersistentMemberID, Set<Integer>> allMembersToWaitFor = getMembersToWaitFor(false);
 
-      boolean thereAreBucketsToBeRecovered =
-          (PersistentBucketRecoverer.this.allBucketsRecoveredFromDisk.getCount() > 0);
+      boolean thereAreBucketsToBeRecovered = (getLatchCount() > 0);
 
       /*
        * Log any offline members the region is waiting for.
@@ -408,12 +415,37 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     }
   }
 
-  public boolean await(long timeout, TimeUnit unit) throws InterruptedException {
-    return allBucketsRecoveredFromDisk.await(timeout, unit);
+  public void await(long timeout, TimeUnit unit) {
+    boolean interrupted = false;
+    while (true) {
+      try {
+        redundancyProvider.prRegion.getCancelCriterion().checkCancelInProgress(null);
+        boolean done = allBucketsRecoveredFromDisk.await(timeout, unit);
+        if (done) {
+          break;
+        }
+      } catch (InterruptedException e) {
+        interrupted = true;
+      }
+    }
+    if (interrupted) {
+      Thread.currentThread().interrupt();
+    }
   }
 
-  public void await() throws InterruptedException {
-    allBucketsRecoveredFromDisk.await();
+  public void await() {
+    boolean interrupted = false;
+    while (true) {
+      try {
+        getAllBucketsRecoveredFromDiskLatch().await();
+        break;
+      } catch (InterruptedException e) {
+        interrupted = true;
+      }
+    }
+    if (interrupted) {
+      Thread.currentThread().interrupt();
+    }
   }
 
   public void countDown() {
@@ -421,10 +453,14 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
   }
 
   public boolean hasRecoveryCompleted() {
-    if (allBucketsRecoveredFromDisk.getCount() > 0) {
+    if (getLatchCount() > 0) {
       return false;
     }
     return true;
+  }
+
+  long getLatchCount() {
+    return allBucketsRecoveredFromDisk.getCount();
   }
 
   CountDownLatch getAllBucketsRecoveredFromDiskLatch() {

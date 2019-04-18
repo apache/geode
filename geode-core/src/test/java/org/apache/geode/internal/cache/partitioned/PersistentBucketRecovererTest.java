@@ -42,7 +42,6 @@ public class PersistentBucketRecovererTest {
         new PersistentBucketRecoverer(provider, numberOfProxyBuckets);
 
     assertThat(recoverer.getAllBucketsRecoveredFromDiskLatch()).isNotNull();
-    assertThat(recoverer.getAllBucketsRecoveredFromDiskLatch().getCount())
-        .isEqualTo(numberOfProxyBuckets);
+    assertThat(recoverer.getLatchCount()).isEqualTo(numberOfProxyBuckets);
   }
 }
