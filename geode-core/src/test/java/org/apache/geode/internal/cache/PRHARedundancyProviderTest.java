@@ -15,14 +15,16 @@
 package org.apache.geode.internal.cache;
 
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-
-import java.util.concurrent.CountDownLatch;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
 
 
 public class PRHARedundancyProviderTest {
@@ -31,21 +33,29 @@ public class PRHARedundancyProviderTest {
   @Before
   public void setup() {
     PartitionedRegion partitionedRegion = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
+    InternalCache cache = mock(InternalCache.class);
+    DistributedRegion root = mock(DistributedRegion.class);
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true)).thenReturn(root);
     provider = spy(new PRHARedundancyProvider(partitionedRegion));
   }
 
   @Test
-  public void waitForPersistentBucketRecoveryProceedsWhenAllBucketsRecoveredFromDiskLatchIsNull() {
+  public void waitForPersistentBucketRecoveryProceedsWhenPersistentBucketRecovererLatchIsNotSet() {
+    PersistentBucketRecoverer recoverer = mock(PersistentBucketRecoverer.class);
+    doReturn(recoverer).when(provider).getPersistentBucketRecoverer();
+
     provider.waitForPersistentBucketRecovery();
   }
 
   @Test
   public void waitForPersistentBucketRecoveryProceedsAfterLatchCountDown() throws Exception {
-    provider.allBucketsRecoveredFromDisk = spy(new CountDownLatch(1));
-    provider.allBucketsRecoveredFromDisk.countDown();
+    PersistentBucketRecoverer recoverer = spy(new PersistentBucketRecoverer(provider, 1));
+    doReturn(recoverer).when(provider).getPersistentBucketRecoverer();
+    provider.getPersistentBucketRecoverer().countDown();
 
     provider.waitForPersistentBucketRecovery();
 
-    verify(provider.allBucketsRecoveredFromDisk).await();
+    verify(recoverer).await();
   }
 }
