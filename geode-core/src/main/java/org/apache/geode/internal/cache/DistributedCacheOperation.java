@@ -405,9 +405,11 @@ public abstract class DistributedCacheOperation {
           recipients.removeAll(list);
           cachelessNodes.addAll(list);
         }
-        cachelessNodesWithNoCacheServer = new HashSet<>(cachelessNodes);
-        adviseCacheServers = region.getCacheDistributionAdvisor().adviseCacheServers();
-        cachelessNodesWithNoCacheServer.removeAll(adviseCacheServers);
+        if (!cachelessNodes.isEmpty()) {
+          cachelessNodesWithNoCacheServer = new HashSet<>(cachelessNodes);
+          adviseCacheServers = region.getCacheDistributionAdvisor().adviseCacheServers();
+          cachelessNodesWithNoCacheServer.removeAll(adviseCacheServers);
+        }
       }
 
       if (recipients.isEmpty() && adjunctRecipients.isEmpty() && needsOldValueInCacheOp.isEmpty()
