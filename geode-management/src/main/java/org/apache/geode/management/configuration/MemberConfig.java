@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.configuration;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
@@ -94,8 +93,7 @@ public class MemberConfig extends CacheElement implements RuntimeCacheElement, R
     return id;
   }
 
-  @Override
   public List<String> getGroups() {
-    return Arrays.asList(getGroup());
+    return groups;
   }
 }

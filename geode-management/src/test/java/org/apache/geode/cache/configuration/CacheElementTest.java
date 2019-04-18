@@ -91,4 +91,12 @@ public class CacheElementTest {
     assertThat(runtime.getGroup()).isNull();
     assertThat(runtime.getGroups()).hasSize(0);
   }
+
+  @Test
+  public void setGroup() throws Exception {
+    element.setGroup("group1");
+    assertThat(element.getGroup()).isEqualTo("group1");
+    element.setGroup("");
+    assertThat(element.getGroup()).isNull();
+  }
 }
