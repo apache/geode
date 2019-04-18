@@ -248,7 +248,7 @@ public class CacheClientNotifierIntegrationTest {
     when(mockInternalDistributedSystem.getDistributionManager())
         .thenReturn(mockDistributionManager);
     when(mockInternalDistributedSystem.getClock()).thenReturn(mock(DSClock.class));
-    StatisticsManager  mockStatisticsManager = mock(StatisticsManager.class);
+    StatisticsManager mockStatisticsManager = mock(StatisticsManager.class);
 
     when(mockInternalDistributedSystem.getStatisticsManager()).thenReturn(mockStatisticsManager);
     when(mockStatisticsManager.createAtomicStatistics(any(StatisticsType.class),

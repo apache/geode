@@ -72,9 +72,9 @@ public class GatewayReceiverCommandTest {
         .thenReturn(new GatewayReceiverMetrics(meterRegistry));
 
     /*
-     This is to take a specific fork through the code so that we can just test incrementing
-     the metric and not the GatewayReceiverCommand.cmdExecute in its entirety.
-    */
+     * This is to take a specific fork through the code so that we can just test incrementing
+     * the metric and not the GatewayReceiverCommand.cmdExecute in its entirety.
+     */
     when(serverConnection.getLatestBatchIdReplied()).thenReturn(latestBatchToCauseDuplicatePath);
 
   }
