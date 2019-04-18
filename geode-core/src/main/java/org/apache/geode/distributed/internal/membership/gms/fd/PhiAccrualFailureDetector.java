@@ -20,6 +20,10 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
+
 /**
  * <p>
  * Ported to Geode from https://github.com/komamitsu/phi-accural-failure-detector. Javadoc
@@ -49,6 +53,8 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  */
 public class PhiAccrualFailureDetector {
+  private static final Logger logger = LogService.getLogger();
+
   private final double threshold;
   private final double minStdDeviationMillis;
   private final long acceptableHeartbeatPauseMillis;
@@ -150,12 +156,15 @@ public class PhiAccrualFailureDetector {
 
   public boolean isAvailable(long timestampMillis) {
     double currentPhi = phi(timestampMillis);
-    return currentPhi < threshold;
+    return Double.isNaN(currentPhi) || currentPhi < threshold;
   }
 
   public boolean isAvailable() {
-    double currentPhi = phi(System.currentTimeMillis());
-    return currentPhi < threshold;
+    return isAvailable(System.currentTimeMillis());
+  }
+
+  public int heartbeatCount() {
+    return this.heartbeatHistory.size();
   }
 
   public synchronized void heartbeat(long timestampMillis) {
@@ -170,6 +179,10 @@ public class PhiAccrualFailureDetector {
         heartbeatHistory.add(interval);
       }
     }
+  }
+
+  public long getLastTimestampMillis() {
+    return lastTimestampMillis.get();
   }
 
   public void heartbeat() {
@@ -249,6 +262,10 @@ public class PhiAccrualFailureDetector {
       intervalSum.addAndGet(interval);
       squaredIntervalSum.addAndGet(pow2(interval));
       return this;
+    }
+
+    private int size() {
+      return intervals.size();
     }
 
     private long pow2(long x) {

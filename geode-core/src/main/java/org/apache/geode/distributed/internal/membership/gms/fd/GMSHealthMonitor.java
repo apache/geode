@@ -59,6 +59,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
@@ -131,7 +132,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   public static final long MEMBER_SUSPECT_COLLECTION_INTERVAL =
       Long.getLong("geode.suspect-member-collection-interval", 200);
 
-  private volatile long currentTimeStamp;
+  private volatile long currentTimeStamp = System.currentTimeMillis();
 
   /**
    * this member's ID
@@ -198,6 +199,11 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private DMStats stats;
 
   /**
+   * Interval to run the Monitor task
+   */
+  private long monitorInterval;
+
+  /**
    * this class is to avoid garbage
    */
   private static class TimeStamp {
@@ -229,6 +235,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
     final long memberTimeoutInMillis;
 
+    /**
+     * Here we use the same threshold for detecting JVM pauses as the StatSampler
+     */
+    private final long MONITOR_DELAY_THRESHOLD =
+        Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
+
     public Monitor(long memberTimeout) {
       memberTimeoutInMillis = memberTimeout;
     }
@@ -240,15 +252,31 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         return;
       }
 
+      long oldTimeStamp = currentTimeStamp;
+      currentTimeStamp = System.currentTimeMillis();
+
       NetView myView = GMSHealthMonitor.this.currentView;
       if (myView == null) {
         return;
       }
+
+
+      if (currentTimeStamp - oldTimeStamp > monitorInterval + MONITOR_DELAY_THRESHOLD) {
+        // delay in running this task - don't suspect anyone for a while
+        for (InternalDistributedMember member : myView.getMembers()) {
+          PhiAccrualFailureDetector detector = memberDetectors.get(member);
+          if (detector != null) {
+            detector.heartbeat(currentTimeStamp);
+          }
+        }
+        return;
+      }
+
       // if (myView.getCoordinator().equals(localAddress)) {
       // for phi accrual we need to periodically check all members
       for (InternalDistributedMember member : myView.getMembers()) {
         PhiAccrualFailureDetector detector =
-            getOrCreatePhiAccrualFailureDetector(member, currentTimeStamp);
+            getOrCreatePhiAccrualFailureDetector(member);
         if (!detector.isAvailable()) {
           checkMember(member);
         }
@@ -317,13 +345,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
         GMSHealthMonitor.this.stats.incTcpFinalCheckRequestsReceived();
         GMSMember gmbr = (GMSMember) GMSHealthMonitor.this.localAddress.getNetMember();
         UUID myUUID = gmbr.getUUID();
+        long myUUIDlsbs = (myUUID == null ? 0 : myUUID.getLeastSignificantBits());
+        long myUUIDmsbs = (myUUID == null ? 0 : myUUID.getMostSignificantBits());
         // during reconnect or rapid restart we will have a zero viewId but there may still
         // be an old ID in the membership view that we do not want to respond to
         int myVmViewId = gmbr.getVmViewId();
         if (playingDead) {
           logger.debug("HealthMonitor: simulating sick member in health check");
-        } else if (uuidLSBs == myUUID.getLeastSignificantBits()
-            && uuidMSBs == myUUID.getMostSignificantBits()
+        } else if (uuidLSBs == myUUIDlsbs
+            && uuidMSBs == myUUIDmsbs
             && (vmViewId == myVmViewId || myVmViewId < 0)) {
           logger.debug("HealthMonitor: sending OK reply");
           out.write(OK);
@@ -388,8 +418,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * Record member activity at a specified time
    */
   private void contactedBy(InternalDistributedMember sender, long timeStamp) {
-
-    PhiAccrualFailureDetector detector = getOrCreatePhiAccrualFailureDetector(sender, timeStamp);
+    PhiAccrualFailureDetector detector = getOrCreatePhiAccrualFailureDetector(sender);
     detector.heartbeat(timeStamp);
     if (suspectedMemberIds.containsKey(sender)) {
       memberUnsuspected(sender);
@@ -399,8 +428,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
 
   public PhiAccrualFailureDetector getOrCreatePhiAccrualFailureDetector(
-      InternalDistributedMember member,
-      long timeStamp) {
+      InternalDistributedMember member) {
     PhiAccrualFailureDetector detector = GMSHealthMonitor.this.memberDetectors.get(member);
 
     if (detector == null) {
@@ -413,7 +441,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       final int minStdDev = Integer.getInteger("geode.phiAccrualMinimumStandardDeviation", 100);
       detector = new PhiAccrualFailureDetector(
           threshold, sampleSize, minStdDev, memberTimeout, memberTimeout);
-      detector.heartbeat(timeStamp);
+      detector.heartbeat(currentTimeStamp);
       memberDetectors.put(member, detector);
     }
     return detector;
@@ -498,7 +526,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             pingResp.wait(memberTimeout);
           }
           PhiAccrualFailureDetector detector = memberDetectors.get(member);
-          if (detector != null && detector.isAvailable()) {
+          if (detector != null && detector.getLastTimestampMillis() > startTime) {
             return true;
           }
           if (pingResp.getResponseMsg() == null) {
@@ -654,8 +682,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
     checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
     Monitor m = this.new Monitor(memberTimeout);
-    long delay = memberTimeout / LOGICAL_INTERVAL;
-    monitorFuture = scheduler.scheduleAtFixedRate(m, delay, delay, TimeUnit.MILLISECONDS);
+    monitorInterval = memberTimeout / LOGICAL_INTERVAL;
+    monitorFuture =
+        scheduler.scheduleAtFixedRate(m, monitorInterval, monitorInterval, TimeUnit.MILLISECONDS);
     serverSocketExecutor =
         LoggingExecutors.newCachedThreadPool("Geode Failure Detection Server thread ", true);
   }
@@ -812,6 +841,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   public synchronized void installView(NetView newView) {
     synchronized (suspectRequestsInView) {
       suspectRequestsInView.clear();
+    }
+    long time = System.currentTimeMillis();
+    for (InternalDistributedMember member : newView.getMembers()) {
+      if (!member.equals(this.localAddress)) {
+        getOrCreatePhiAccrualFailureDetector(member);
+      }
     }
     for (Iterator<InternalDistributedMember> it = memberDetectors.keySet().iterator(); it
         .hasNext();) {
@@ -1013,7 +1048,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private void memberUnsuspected(InternalDistributedMember mbr) {
     synchronized (suspectRequestsInView) {
       if (suspectedMemberIds.remove(mbr) != null) {
-        logger.info("No longer suspecting {}", mbr);
+        logger.info("Removing {} from suspect list", mbr);
       }
       Collection<SuspectRequest> suspectRequests = suspectRequestsInView.get(currentView);
       if (suspectRequests != null) {
@@ -1336,7 +1371,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
       if (!pinged && !isStopping) {
         PhiAccrualFailureDetector detector = memberDetectors.get(mbr);
-        if (detector == null || !detector.isAvailable()) {
+        if (detector == null || detector.getLastTimestampMillis() < startTime) {
           logger.info("Availability check failed for member {}", mbr);
           // if the final check fails & this VM is the coordinator we don't need to do another final
           // check
@@ -1364,15 +1399,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           }
           failed = true;
         } else {
-          if (detector != null) {
-            logger.info(
-                "Availability check failed but detected recent message traffic for suspect member {} its phi rating is at {}",
-                mbr, detector.phi());
-          } else {
-            logger.info(
-                "Availability check failed and there is no phi detector for this member yet the check passed: {}",
-                mbr);
-          }
+          logger.info(
+              "Availability check failed but detected recent message traffic for suspect member "
+                  + mbr);
         }
       }
 
