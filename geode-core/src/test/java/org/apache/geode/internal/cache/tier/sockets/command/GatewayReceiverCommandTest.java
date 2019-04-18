@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,17 +51,32 @@ public class GatewayReceiverCommandTest {
   private long start;
 
   private MeterRegistry meterRegistry;
+  @Mock
+  private Part numberOfEventsPart;
+  @Mock
+  private Part batchPart;
 
   @Before
   public void setUp() {
     start = 1;
+    final int batchID = 1;
+    final int numberOfEventsID = 0;
+    final int latestBatchToCauseDuplicatePath = 1;
     meterRegistry = new SimpleMeterRegistry();
+    when(clientMessage.getPart(eq(numberOfEventsID))).thenReturn(numberOfEventsPart);
+    when(clientMessage.getPart(eq(batchID))).thenReturn(batchPart);
 
-    when(clientMessage.getPart(anyInt())).thenReturn(mock(Part.class));
     when(serverConnection.getCacheServerStats()).thenReturn(mock(GatewayReceiverStats.class));
     when(serverConnection.getResponseMessage()).thenReturn(mock(Message.class));
     when(serverConnection.getGatewayReceiverMetrics())
         .thenReturn(new GatewayReceiverMetrics(meterRegistry));
+
+    /*
+     This is to take a specific fork through the code so that we can just test incrementing
+     the metric and not the GatewayReceiverCommand.cmdExecute in its entirety.
+    */
+    when(serverConnection.getLatestBatchIdReplied()).thenReturn(latestBatchToCauseDuplicatePath);
+
   }
 
   @After
@@ -71,13 +86,16 @@ public class GatewayReceiverCommandTest {
 
   @Test
   public void cmdExecuteIncrementsEventsReceivedCounter() throws Exception {
+    final int numberOfEvents = 1;
     GatewayReceiverCommand command = new GatewayReceiverCommand();
     Counter counter = meterRegistry.find("cache.gatewayreceiver.events.received")
         .counter();
     assertThat(counter.count()).isEqualTo(0);
 
+    when(numberOfEventsPart.getInt()).thenReturn(numberOfEvents);
+    when(batchPart.getInt()).thenReturn(numberOfEvents);
     command.cmdExecute(clientMessage, serverConnection, mock(SecurityService.class), start);
 
-    assertThat(counter.count()).isEqualTo(1);
+    assertThat(counter.count()).isEqualTo(numberOfEvents);
   }
 }
