@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.test.junit.assertions.ResultModelAssert.assertResultModel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,6 +30,7 @@ import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.result.FileResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class CreateMappingCommandInterceptorTest {
 
@@ -43,7 +45,7 @@ public class CreateMappingCommandInterceptorTest {
   @Test
   public void preExecutionGivenNullPdxClassFileReturnsOK() {
     when(gfshParseResult.getParamValue(MappingConstants.PDX_CLASS_FILE)).thenReturn(null);
-    Result result = (Result) interceptor.preExecution(gfshParseResult);
+    ResultModel result = (ResultModel) interceptor.preExecution(gfshParseResult);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
   }
 
@@ -51,9 +53,10 @@ public class CreateMappingCommandInterceptorTest {
   public void preExecutionGivenNonExistingPdxClassFileReturnsError() {
     when(gfshParseResult.getParamValue(MappingConstants.PDX_CLASS_FILE))
         .thenReturn("NonExistingFile");
-    Result result = (Result) interceptor.preExecution(gfshParseResult);
+    ResultModel result = (ResultModel) interceptor.preExecution(gfshParseResult);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.nextLine()).contains("NonExistingFile not found.");
+    assertResultModel(result).hasInfoResultModel("info").hasOutput()
+        .contains("NonExistingFile not found.");
   }
 
   @Test
@@ -61,9 +64,10 @@ public class CreateMappingCommandInterceptorTest {
     File tempFolder = testFolder.newFolder("tempFolder");
     when(gfshParseResult.getParamValue(MappingConstants.PDX_CLASS_FILE))
         .thenReturn(tempFolder.getAbsolutePath());
-    Result result = (Result) interceptor.preExecution(gfshParseResult);
+    ResultModel result = (ResultModel) interceptor.preExecution(gfshParseResult);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.nextLine()).contains(tempFolder.getAbsolutePath() + " is not a file.");
+    assertResultModel(result).hasInfoResultModel("info").hasOutput()
+        .contains(tempFolder.getAbsolutePath() + " is not a file.");
   }
 
   @Test
@@ -71,9 +75,9 @@ public class CreateMappingCommandInterceptorTest {
     File tempFile = testFolder.newFile("tempFile");
     when(gfshParseResult.getParamValue(MappingConstants.PDX_CLASS_FILE))
         .thenReturn(tempFile.getAbsolutePath());
-    Result result = (Result) interceptor.preExecution(gfshParseResult);
+    ResultModel result = (ResultModel) interceptor.preExecution(gfshParseResult);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.nextLine())
+    assertResultModel(result).hasInfoResultModel("info").hasOutput()
         .contains(tempFile.getAbsolutePath() + " must end with \".jar\" or \".class\".");
   }
 

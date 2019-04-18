@@ -47,4 +47,8 @@ public class ResultModelAssert extends AbstractAssert<ResultModelAssert, ResultM
     assertThat(dataSection).isNotNull();
     return new TabularResultModelAssert(dataSection);
   }
+
+  public static ResultModelAssert assertResultModel(ResultModel model) {
+    return new ResultModelAssert(model);
+  }
 }
