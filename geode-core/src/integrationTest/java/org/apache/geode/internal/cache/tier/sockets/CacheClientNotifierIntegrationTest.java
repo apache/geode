@@ -73,6 +73,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category(ClientSubscriptionTest.class)
@@ -225,7 +226,6 @@ public class CacheClientNotifierIntegrationTest {
   private InternalCache createMockInternalCache() {
     InternalCache mockInternalCache = mock(InternalCache.class);
     InternalDistributedSystem mockInternalDistributedSystem = createMockInternalDistributedSystem();
-
     when(mockInternalCache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
     when(mockInternalCache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
     when(mockInternalCache.getDistributedSystem()).thenReturn(mockInternalDistributedSystem);
@@ -248,7 +248,11 @@ public class CacheClientNotifierIntegrationTest {
     when(mockInternalDistributedSystem.getDistributionManager())
         .thenReturn(mockDistributionManager);
     when(mockInternalDistributedSystem.getClock()).thenReturn(mock(DSClock.class));
+    StatisticsManager  mockStatisticsManager = mock(StatisticsManager.class);
 
+    when(mockInternalDistributedSystem.getStatisticsManager()).thenReturn(mockStatisticsManager);
+    when(mockStatisticsManager.createAtomicStatistics(any(StatisticsType.class),
+        any(String.class))).thenReturn(mock(Statistics.class));
     return mockInternalDistributedSystem;
   }
 
