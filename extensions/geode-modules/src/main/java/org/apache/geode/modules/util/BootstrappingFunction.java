@@ -31,6 +31,8 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -60,14 +62,22 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     // Register as membership listener
     registerAsMembershipListener(cache);
 
-    // Register functions
-    registerFunctions();
+    if (!isLocator(cache)) {
+      // Register functions
+      registerFunctions();
+    }
 
     // Return status
     context.getResultSender().lastResult(Boolean.TRUE);
   }
 
-  private Cache verifyCacheExists() {
+  protected boolean isLocator(Cache cache) {
+    DistributedSystem system = cache.getDistributedSystem();
+    InternalDistributedMember member = (InternalDistributedMember) system.getDistributedMember();
+    return member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
+  }
+
+  protected Cache verifyCacheExists() {
     int timeToWait = 0;
     Cache cache = null;
     while (timeToWait < TIME_TO_WAIT_FOR_CACHE) {
@@ -104,7 +114,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     dm.addMembershipListener(this);
   }
 
-  private void registerFunctions() {
+  protected void registerFunctions() {
     // Synchronize so that these functions aren't registered twice. The
     // constructor for the CreateRegionFunction creates a meta region.
     registerFunctionLock.lock();
