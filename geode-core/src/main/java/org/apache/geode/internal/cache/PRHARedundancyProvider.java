@@ -1708,11 +1708,7 @@ public class PRHARedundancyProvider {
     ArrayList<ProxyBucketRegion> bucketsHostedLocally =
         new ArrayList<ProxyBucketRegion>(proxyBucketArray.length);
 
-    persistentBucketRecoverer = createPersistentBucketRecoverer(proxyBucketArray.length);
-    /*
-     * Start the redundancy logger before recovering any proxy buckets.
-     */
-    persistentBucketRecoverer.startLoggingThread();
+    createPersistentBucketRecoverer(proxyBucketArray.length);
 
     /*
      * Spawn a separate thread for bucket that we previously hosted to recover that bucket.
@@ -1774,10 +1770,8 @@ public class PRHARedundancyProvider {
         proxyBucket.recoverFromDiskRecursively();
       }
     } finally {
-      for (final ProxyBucketRegion proxyBucket : bucketsNotHostedLocally) {
-        if (getPersistentBucketRecoverer() != null) {
-          getPersistentBucketRecoverer().countDown();
-        }
+      if (getPersistentBucketRecoverer() != null) {
+        getPersistentBucketRecoverer().countDown(bucketsNotHostedLocally.size());
       }
     }
 
@@ -1787,8 +1781,9 @@ public class PRHARedundancyProvider {
     // }
   }
 
-  private PersistentBucketRecoverer createPersistentBucketRecoverer(int proxyBuckets) {
-    return new PersistentBucketRecoverer(this, proxyBuckets);
+  private void createPersistentBucketRecoverer(int proxyBuckets) {
+    persistentBucketRecoverer = new PersistentBucketRecoverer(this, proxyBuckets);
+    persistentBucketRecoverer.startLoggingThread();
   }
 
   PersistentBucketRecoverer getPersistentBucketRecoverer() {

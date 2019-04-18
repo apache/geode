@@ -19,6 +19,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -28,14 +29,23 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 
 public class PersistentBucketRecovererTest {
-  @Test
-  public void allBucketsRecoveredFromDiskCountDownLatchIsSet() {
-    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
-    InternalCache cache = mock(InternalCache.class);
-    DistributedRegion root = mock(DistributedRegion.class);
+  private PartitionedRegion partitionedRegion;
+  private InternalCache cache;
+  private DistributedRegion root;
+  private PRHARedundancyProvider provider;
+
+  @Before
+  public void setUp() {
+    partitionedRegion = mock(PartitionedRegion.class, RETURNS_DEEP_STUBS);
+    cache = mock(InternalCache.class);
+    root = mock(DistributedRegion.class);
     when(partitionedRegion.getCache()).thenReturn(cache);
     when(cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true)).thenReturn(root);
-    PRHARedundancyProvider provider = new PRHARedundancyProvider(partitionedRegion);
+    provider = new PRHARedundancyProvider(partitionedRegion);
+  }
+
+  @Test
+  public void allBucketsRecoveredFromDiskCountDownLatchIsSet() {
     int numberOfProxyBuckets = 5;
 
     PersistentBucketRecoverer recoverer =
@@ -43,5 +53,17 @@ public class PersistentBucketRecovererTest {
 
     assertThat(recoverer.getAllBucketsRecoveredFromDiskLatch()).isNotNull();
     assertThat(recoverer.getLatchCount()).isEqualTo(numberOfProxyBuckets);
+  }
+
+  @Test
+  public void latchCanBeCountedDown() {
+    int numberOfProxyBuckets = 5;
+    PersistentBucketRecoverer recoverer =
+        new PersistentBucketRecoverer(provider, numberOfProxyBuckets);
+
+    assertThat(recoverer.getLatchCount()).isEqualTo(numberOfProxyBuckets);
+    recoverer.countDown(numberOfProxyBuckets);
+
+    recoverer.await();
   }
 }

@@ -452,6 +452,13 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     allBucketsRecoveredFromDisk.countDown();
   }
 
+  public void countDown(int size) {
+    while (size > 0) {
+      allBucketsRecoveredFromDisk.countDown();
+      --size;
+    }
+  }
+
   public boolean hasRecoveryCompleted() {
     if (getLatchCount() > 0) {
       return false;
