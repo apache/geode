@@ -32,7 +32,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 public class RegionConfigManager
-    implements ConfigurationManager<RegionConfig, RuntimeRegionConfig> {
+    implements ConfigurationManager<RegionConfig> {
   private InternalCache cache;
   private ManagementService managementService;
 

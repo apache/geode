@@ -66,7 +66,7 @@ public class LocatorClusterManagementServiceTest {
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
   private ConfigurationValidator<CacheElement> cacheElementValidator;
-  private ConfigurationManager<RegionConfig, RuntimeRegionConfig> regionManager;
+  private ConfigurationManager<RegionConfig> regionManager;
 
   @Before
   public void before() throws Exception {
@@ -150,8 +150,10 @@ public class LocatorClusterManagementServiceTest {
     region2.setName("region1");
     region2.setType("REPLICATE");
 
-    when(regionManager.list(any(), any())).thenReturn(Arrays.asList(region1))
-        .thenReturn(Arrays.asList(region2));
+    List clusterRegions = Arrays.asList(region1);
+    List group1Regions = Arrays.asList(region2);
+    when(regionManager.list(any(), any())).thenReturn(clusterRegions)
+        .thenReturn(group1Regions);
 
     // this is to make sure when 'cluster" is in one of the group, it will show
     // the cluster and the other group name
