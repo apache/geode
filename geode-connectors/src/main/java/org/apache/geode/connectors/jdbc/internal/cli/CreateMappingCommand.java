@@ -50,7 +50,6 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -60,8 +59,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.FileResult;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -433,25 +430,24 @@ public class CreateMappingCommand extends SingleGfshCommand {
   public static class Interceptor extends AbstractCliAroundInterceptor {
 
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public Object preExecution(GfshParseResult parseResult) {
       String pdxClassFileName = (String) parseResult.getParamValue(CREATE_MAPPING__PDX_CLASS_FILE);
 
       if (StringUtils.isBlank(pdxClassFileName)) {
-        return new ModelCommandResult(ResultModel.createInfo(""));
+        return ResultModel.createInfo("");
       }
 
       FileResult fileResult = new FileResult();
       File pdxClassFile = new File(pdxClassFileName);
       if (!pdxClassFile.exists()) {
-        return ResultBuilder.createUserErrorResult(pdxClassFile + " not found.");
+        return ResultModel.createError(pdxClassFile + " not found.");
       }
       if (!pdxClassFile.isFile()) {
-        return ResultBuilder.createUserErrorResult(pdxClassFile + " is not a file.");
+        return ResultModel.createError(pdxClassFile + " is not a file.");
       }
       String fileExtension = FilenameUtils.getExtension(pdxClassFileName);
       if (!fileExtension.equalsIgnoreCase("jar") && !fileExtension.equalsIgnoreCase("class")) {
-        return ResultBuilder
-            .createUserErrorResult(pdxClassFile + " must end with \".jar\" or \".class\".");
+        return ResultModel.createError(pdxClassFile + " must end with \".jar\" or \".class\".");
       }
       fileResult.addFile(pdxClassFile);
 

@@ -53,7 +53,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.FileResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -209,7 +208,7 @@ public class DeployCommand extends GfshCommand {
               + "MB\n\nContinue? ";
 
       if (readYesNo(message, Response.YES) == Response.NO) {
-        return ResultBuilder.createShellClientAbortOperationResult(
+        return ResultModel.createError(
             "Aborted deploy of " + fileResult.getFormattedFileList() + ".");
       }
 
