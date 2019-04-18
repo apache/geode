@@ -19,6 +19,7 @@ plugins {
   id 'java-platform'
   id 'maven-publish'
   id 'geode-dependency-constraints'
+  id 'signing'
 }
 
 
@@ -62,13 +63,6 @@ publishing {
           }
         }
         withXml {
-          // Dependency constraints publish the scope of those constraints.
-          // We remove these from our published bom, as they should apply at all scopes.
-          asNode().dependencyManagement.dependencies.dependency.each {
-            dep -> dep.remove(dep['scope'])
-          }
-        }
-        withXml {
           // Published Geode artifacts are constrained to match the version of this BOM.
           // We exclude any child of the :boms subproject
           def thisNode = asNode()
@@ -80,6 +74,7 @@ publishing {
                geodeDependency*.appendNode('groupId')*.setValue(p.group)
                geodeDependency*.appendNode('artifactId')*.setValue(p.name)
                geodeDependency*.appendNode('version')*.setValue(p.version.toString())
+               geodeDependency*.appendNode('scope')*.setValue('compile')
             }
           }
           thisNode
@@ -94,6 +89,26 @@ publishing {
       }
     }
   }
+  repositories {
+    maven {
+      // Use specified mavenRepository if provided, else use release or snapshot defaults.
+      url = project.findProperty("mavenRepository") ?:
+        project.isReleaseVersion ? project.mavenReleaseUrl : project.mavenSnapshotUrl
+      if (url.toString().startsWith("http") || url.toString().startsWith("sftp")) {
+        // Username / password credentials are only supported for http, https, and sftp repos.
+        // See the Gradle documentation on Repository Types for more information.
+        credentials {
+          username project.findProperty("mavenUsername")
+          password project.findProperty("mavenPassword")
+        }
+      }
+    }
+  }
+}
+
+signing {
+  required({project.isReleaseVersion && project.hasProperty('signing.keyId') && project.hasProperty('signing.secretKeyRingFile')})
+  sign publishing.publications.maven
 }
 
 apply from: "${rootDir}/${scriptDir}/check-pom.gradle"
