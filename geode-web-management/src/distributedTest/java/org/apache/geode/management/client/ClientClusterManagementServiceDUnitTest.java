@@ -19,8 +19,6 @@ package org.apache.geode.management.client;
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,7 +30,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -68,7 +65,7 @@ public class ClientClusterManagementServiceDUnitTest {
 
   @Test
   @WithMockUser
-  public void createAndListRegion() {
+  public void createRegion() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.REPLICATE);
@@ -78,16 +75,6 @@ public class ClientClusterManagementServiceDUnitTest {
     // in StressNewTest, this will be run multiple times without restarting the locator
     assertManagementResult(result).hasStatusCode(ClusterManagementResult.StatusCode.OK,
         ClusterManagementResult.StatusCode.ENTITY_EXISTS);
-
-    // list region when regions are not created in a group
-    RegionConfig noFilter = new RegionConfig();
-    ClusterManagementResult list = client.list(noFilter);
-    List<CacheElement> regions = list.getResult();
-    assertThat(regions.size()).isEqualTo(1);
-    RegionConfig cacheElement = (RegionConfig) regions.get(0);
-    assertThat(cacheElement.getId()).isEqualTo("customer");
-    assertThat(cacheElement.getType()).isEqualTo("REPLICATE");
-    assertThat(cacheElement.getConfigGroup()).isEqualTo("cluster");
   }
 
 

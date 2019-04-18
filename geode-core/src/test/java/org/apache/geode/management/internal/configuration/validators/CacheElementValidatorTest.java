@@ -12,42 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.configuration.mutators;
 
-import static org.assertj.core.api.Assertions.assertThat;
+package org.apache.geode.management.internal.configuration.validators;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-public class RegionConfigMutatorIntegrationTest {
+public class CacheElementValidatorTest {
 
-  @Rule
-  public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
-
-  private RegionConfigManager mutator;
+  private CacheElementValidator validator;
   private RegionConfig config;
 
   @Before
   public void before() throws Exception {
+    validator = new CacheElementValidator();
     config = new RegionConfig();
-    mutator = new RegionConfigManager(locator.getCache());
   }
 
   @Test
-  public void sanity() throws Exception {
-    config.setType(RegionType.REPLICATE);
+  public void invalidGroup_cluster() throws Exception {
     config.setName("test");
-    CacheConfig cacheConfig =
-        locator.getLocator().getConfigurationPersistenceService().getCacheConfig("cluster", true);
-
-    mutator.add(config, cacheConfig);
-    assertThat(CacheElement.findElement(cacheConfig.getRegions(), config.getId())).isNotNull();
+    config.setGroup("cluster");
+    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "cluster is a reserved group name");
   }
 }

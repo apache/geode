@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.configuration.mutators;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,10 +26,20 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.DistributedRegionMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
-public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
+public class RegionConfigManager
+    implements ConfigurationManager<RegionConfig> {
+  private InternalCache cache;
+  private ManagementService managementService;
 
-  public RegionConfigManager() {}
+  public RegionConfigManager(InternalCache cache) {
+    this.cache = cache;
+    this.managementService = ManagementService.getExistingManagementService(cache);
+  }
 
   @Override
   public void add(RegionConfig configElement, CacheConfig existingConfig) {
@@ -46,11 +57,27 @@ public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
   }
 
   @Override
-  public List<RegionConfig> list(RegionConfig filter, CacheConfig existing) {
+  public List<RuntimeRegionConfig> list(RegionConfig filter, CacheConfig existing) {
+    List<RegionConfig> staticRegionConfigs;
     if (StringUtils.isBlank(filter.getName())) {
-      return existing.getRegions();
+      staticRegionConfigs = existing.getRegions();
+    } else {
+      staticRegionConfigs =
+          existing.getRegions().stream().filter(r -> filter.getName().equals(r.getName())).collect(
+              Collectors.toList());
     }
-    return existing.getRegions().stream().filter(r -> filter.getName().equals(r.getName())).collect(
-        Collectors.toList());
+
+    List<RuntimeRegionConfig> results = new ArrayList<>();
+    for (RegionConfig config : staticRegionConfigs) {
+      DistributedRegionMXBean distributedRegionMXBean =
+          managementService.getDistributedRegionMXBean("/" + config.getName());
+      if (distributedRegionMXBean == null) {
+        throw new IllegalStateException("Can't get the region mbean info for " + config.getName());
+      }
+      RuntimeRegionConfig runtimeConfig = new RuntimeRegionConfig(config);
+      runtimeConfig.setEntryCount(distributedRegionMXBean.getSystemRegionEntryCount());
+      results.add(runtimeConfig);
+    }
+    return results;
   }
 }

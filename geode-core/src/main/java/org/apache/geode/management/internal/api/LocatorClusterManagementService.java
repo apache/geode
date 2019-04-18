@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,12 +43,14 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.MemberConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
+import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
@@ -56,23 +59,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private static final Logger logger = LogService.getLogger();
   private InternalCache cache;
   private ConfigurationPersistenceService persistenceService;
-  private HashMap<Class, ConfigurationManager> managers;
-  private HashMap<Class, ConfigurationValidator> validators;
+  private Map<Class, ConfigurationManager> managers;
+  private Map<Class, ConfigurationValidator> validators;
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
     this(cache, persistenceService, new HashMap(), new HashMap());
     // initialize the list of managers
-    managers.put(RegionConfig.class, new RegionConfigManager());
+    managers.put(RegionConfig.class, new RegionConfigManager(cache));
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
 
     // initialize the list of validators
+    validators.put(CacheElement.class, new CacheElementValidator());
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
   }
 
   @VisibleForTesting
   public LocatorClusterManagementService(InternalCache cache,
-      ConfigurationPersistenceService persistenceService, HashMap managers, HashMap validators) {
+      ConfigurationPersistenceService persistenceService, Map managers, Map validators) {
     this.cache = cache;
     this.persistenceService = persistenceService;
     this.managers = managers;
@@ -88,18 +92,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Cluster configuration service needs to be enabled");
     }
 
-    ClusterManagementResult result = new ClusterManagementResult();
-    ConfigurationManager configurationMutator = managers.get(config.getClass());
+    // first validate common attributes of all configuration object
+    validators.get(CacheElement.class).validate(config);
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
       validator.validate(config);
+      // exit early if config element already exists in cache config
+      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+      if (validator.exists(config, currentPersistedConfig)) {
+        throw new EntityExistsException("cache element " + config.getId() + " already exists.");
+      }
     }
 
-    // exit early if config element already exists in cache config
-    CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-    if (validator.exists(config, currentPersistedConfig)) {
-      throw new EntityExistsException("cache element " + config.getId() + " already exists.");
+    // validate that user used the correct config object type
+    ConfigurationManager configurationManager = managers.get(config.getClass());
+    if (configurationManager == null) {
+      throw new IllegalArgumentException(String.format("Configuration type %s is not supported.",
+          config.getClass().getSimpleName()));
     }
 
     // execute function on all members
@@ -109,6 +119,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       return new ClusterManagementResult(false,
           "no members found in " + group + " to create cache element");
     }
+
+    ClusterManagementResult result = new ClusterManagementResult();
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
@@ -129,7 +141,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     final String finalGroup = group; // the below lambda requires a reference that is final
     persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
       try {
-        configurationMutator.add(config, cacheConfigForGroup);
+        configurationManager.add(config, cacheConfigForGroup);
         result.setStatus(true,
             "successfully persisted config for " + finalGroup);
       } catch (Exception e) {
@@ -159,7 +171,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ClusterManagementResult result = new ClusterManagementResult();
 
     if (filter instanceof MemberConfig) {
-      List<CacheElement> listResults = manager.list(filter, null);
+      List<RuntimeCacheElement> listResults = manager.list(filter, null);
       result.setResult(listResults);
       return result;
     }
@@ -169,22 +181,45 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Cluster configuration service needs to be enabled");
     }
 
-    List<CacheElement> elements = new ArrayList<>();
+    List<RuntimeCacheElement> resultList = new ArrayList<>();
+
+    // get a list of all the resultList from all groups that satisfy the filter criteria (all
+    // filters
+    // have been applied except the group)
     for (String group : persistenceService.getGroups()) {
-      if (StringUtils.isBlank(filter.getGroup()) || group.equals(filter.getConfigGroup())) {
-        CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-        List<CacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
-        // only set the group attribute when the config level is not in the cluster level
-        if (!group.equals("cluster")) {
-          listInGroup.stream().forEach(e -> e.setGroup(group));
+      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+      List<RuntimeCacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
+      for (RuntimeCacheElement element : listInGroup) {
+        element.getGroups().add(group);
+        int index = resultList.indexOf(element);
+        if (index >= 0) {
+          RuntimeCacheElement exist = resultList.get(index);
+          exist.getGroups().add(group);
+        } else {
+          resultList.add(element);
         }
-        elements.addAll(listInGroup);
       }
     }
 
-    result.setResult(elements);
+    // filtering by group. Do this after iterating through all the groups because some region might
+    // belong to multiple groups and we want the "group" field to show that.
+    if (StringUtils.isNotBlank(filter.getGroup())) {
+      resultList =
+          resultList.stream().filter(e -> e.getGroups().contains(filter.getConfigGroup()))
+              .collect(Collectors.toList());
+    }
+
+    // if "cluster" is the only group of the element, remove it
+    for (RuntimeCacheElement element : resultList) {
+      if (element.getGroups().size() == 1 && "cluster".equals(element.getGroup())) {
+        element.getGroups().clear();
+      }
+    }
+
+    result.setResult(resultList);
     return result;
   }
+
 
   @Override
   public boolean isConnected() {

@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Objects;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -176,6 +177,17 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
   public RegionConfig(String name, String refid) {
     this.name = name;
     this.type = refid;
+  }
+
+  public RegionConfig(RegionConfig config) {
+    this.regionAttributes = config.getRegionAttributes();
+    this.type = config.getType();
+    this.entries = config.getEntries();
+    this.indexes = config.getIndexes();
+    this.name = config.getName();
+    this.regionElements = config.getCustomRegionElements();
+    this.regions = config.getRegions();
+    this.setGroup(config.getGroup());
   }
 
   @Override
@@ -467,6 +479,18 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
     return getName();
   }
 
+  @Override
+  public boolean equals(Object that) {
+    if (this == that) {
+      return true;
+    }
+    if (that == null || getClass() != that.getClass()) {
+      return false;
+    }
+    RegionConfig config = (RegionConfig) that;
+    return Objects.equal(getName(), config.getName()) &&
+        Objects.equal(getType(), config.getType());
+  }
 
   /**
    * <p>

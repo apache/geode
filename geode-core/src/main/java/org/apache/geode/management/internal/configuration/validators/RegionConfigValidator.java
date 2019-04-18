@@ -40,11 +40,6 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
 
     RegionNameValidation.validate(config.getName());
 
-    if ("cluster".equalsIgnoreCase(config.getGroup())) {
-      throw new IllegalArgumentException(
-          "cluster is a reserved group name. Do not use it for member groups.");
-    }
-
     if (config.getType() == null) {
       RegionType defaultRegion = RegionType.PARTITION;
       config.setType(defaultRegion);
