@@ -80,7 +80,7 @@ public class CommandRequest {
   }
 
   public boolean hasFileList() {
-    return (getFileList() != null);
+    return (getFileList() != null && getFileList().size() > 0);
   }
 
   protected GfshParseResult getParseResult() {

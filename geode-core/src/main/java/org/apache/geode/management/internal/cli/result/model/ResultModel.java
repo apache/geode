@@ -76,13 +76,7 @@ public class ResultModel {
   private Map<String, AbstractResultModel> sections = new LinkedHashMap<>();
   private Result.Status status = Result.Status.OK;
   private Object configObject;
-  // this is used by commands (e.g. ExportConfigCommand) saving the file content in the memory and
-  // transfer the byte[] in json string back to the client
-  private Map<String, FileResultModel> files = new LinkedHashMap<>();
-
-  // this is used by commands (e.g ExportlogsCommand) that can download file to the client when in
-  // http connection
-  private Path fileToDownload;
+  private List<FileResultModel> files = new ArrayList<>();
 
   @JsonIgnore
   public Object getConfigObject() {
@@ -145,29 +139,25 @@ public class ResultModel {
     this.sections = content;
   }
 
-  public Map<String, FileResultModel> getFiles() {
+  public List<FileResultModel> getFiles() {
     return files;
   }
 
-  public void setFiles(Map<String, FileResultModel> files) {
+  public void setFiles(List<FileResultModel> files) {
     this.files = files;
   }
 
+  /**
+   * @param fileName: only the name part of the file, no directory infomation
+   * @param content: the content to be saved to the file
+   */
   public void addFile(String fileName, String content) {
     FileResultModel fileModel = new FileResultModel(fileName, content);
-    files.put(fileName, fileModel);
+    files.add(fileModel);
   }
 
   public void addFile(File file, int fileType) {
-    files.put(file.getName(), new FileResultModel(file, fileType));
-  }
-
-  public Path getFileToDownload() {
-    return fileToDownload;
-  }
-
-  public void setFileToDownload(Path fileToDownload) {
-    this.fileToDownload = fileToDownload;
+    files.add(new FileResultModel(file, fileType));
   }
 
   /**
@@ -362,8 +352,6 @@ public class ResultModel {
     return result;
   }
 
-
-
   public static ResultModel createMemberStatusResult(List<CliFunctionResult> functionResults,
       boolean ignoreIgnorable, boolean ignorePartialFailure) {
     return createMemberStatusResult(functionResults, null, null, ignoreIgnorable,
@@ -403,13 +391,18 @@ public class ResultModel {
   /**
    * this saves the file data in this result model to the specified directory, and add appropriate
    * information to the result model to indicate the result of the file save.
+   * this only applies to the commands that saves the file content in byte[], not download the
+   * files over http channel
    *
    */
   public void saveFileTo(File dir) throws IOException {
-    if (getFiles().size() == 0 || dir == null) {
+    InfoResultModel info = addInfo("fileSave");
+    if (files.size() == 0) {
+      info.addLine("No file found to be saved.");
+      setStatus(Result.Status.ERROR);
       return;
     }
-    InfoResultModel info = addInfo("fileSave");
+
     if (!dir.exists() && !dir.mkdirs()) {
       info.addLine(dir.getAbsolutePath() + " can not be created.");
       setStatus(Result.Status.ERROR);
@@ -426,8 +419,52 @@ public class ResultModel {
       return;
     }
 
-    for (FileResultModel fileResult : files.values()) {
+    for (FileResultModel fileResult : files) {
       info.addLine(fileResult.saveFile(dir));
     }
+
+  }
+
+  @JsonIgnore
+  public Path getFileToDownload() {
+    if (files.size() != 1) {
+      return null;
+    }
+    File file = files.get(0).getFile();
+    if (file == null) {
+      return null;
+    }
+    return file.toPath();
+  }
+
+  @JsonIgnore
+  public List<File> getFileList() {
+    return files.stream().filter(f -> f.getFile() != null).map(FileResultModel::getFile)
+        .collect(
+            Collectors.toList());
+  }
+
+  /**
+   * Calculates the total file size of all files associated with this result.
+   *
+   * @return Total file size.
+   */
+  public long computeFileSizeTotal() {
+    long byteCount = 0;
+    for (FileResultModel file : files) {
+      byteCount += file.getLength();
+    }
+    return byteCount;
+  }
+
+  /**
+   * Get a comma separated list of all files associated with this result.
+   *
+   * @return Comma separated list of files.
+   */
+  @JsonIgnore
+  public String getFormattedFileList() {
+    return files.stream().map(FileResultModel::getFilename)
+        .collect(Collectors.joining(", "));
   }
 }

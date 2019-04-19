@@ -29,7 +29,6 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class CreateMappingCommandInterceptorTest {
@@ -86,11 +85,9 @@ public class CreateMappingCommandInterceptorTest {
     File tempFile = testFolder.newFile("tempFile.class");
     when(gfshParseResult.getParamValue(MappingConstants.PDX_CLASS_FILE))
         .thenReturn(tempFile.getAbsolutePath());
-    Result result = (Result) interceptor.preExecution(gfshParseResult);
+    ResultModel result = interceptor.preExecution(gfshParseResult);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result).isInstanceOf(FileResult.class);
-    FileResult fileResult = (FileResult) result;
-    assertThat(fileResult.getFiles()).containsExactly(tempFile);
+    assertThat(result.getFileList()).containsExactly(tempFile);
   }
 
   @Test
@@ -98,11 +95,9 @@ public class CreateMappingCommandInterceptorTest {
     File tempFile = testFolder.newFile("tempFile.jar");
     when(gfshParseResult.getParamValue(MappingConstants.PDX_CLASS_FILE))
         .thenReturn(tempFile.getAbsolutePath());
-    Result result = (Result) interceptor.preExecution(gfshParseResult);
+    ResultModel result = interceptor.preExecution(gfshParseResult);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result).isInstanceOf(FileResult.class);
-    FileResult fileResult = (FileResult) result;
-    assertThat(fileResult.getFiles()).containsExactly(tempFile);
+    assertThat(result.getFileList()).containsExactly(tempFile);
   }
 
 }

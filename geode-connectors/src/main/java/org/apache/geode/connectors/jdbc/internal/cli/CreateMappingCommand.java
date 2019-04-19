@@ -58,7 +58,7 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.result.FileResult;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -430,14 +430,14 @@ public class CreateMappingCommand extends SingleGfshCommand {
   public static class Interceptor extends AbstractCliAroundInterceptor {
 
     @Override
-    public Object preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       String pdxClassFileName = (String) parseResult.getParamValue(CREATE_MAPPING__PDX_CLASS_FILE);
 
       if (StringUtils.isBlank(pdxClassFileName)) {
         return ResultModel.createInfo("");
       }
 
-      FileResult fileResult = new FileResult();
+      ResultModel result = new ResultModel();
       File pdxClassFile = new File(pdxClassFileName);
       if (!pdxClassFile.exists()) {
         return ResultModel.createError(pdxClassFile + " not found.");
@@ -449,9 +449,9 @@ public class CreateMappingCommand extends SingleGfshCommand {
       if (!fileExtension.equalsIgnoreCase("jar") && !fileExtension.equalsIgnoreCase("class")) {
         return ResultModel.createError(pdxClassFile + " must end with \".jar\" or \".class\".");
       }
-      fileResult.addFile(pdxClassFile);
+      result.addFile(pdxClassFile, FileResultModel.FILE_TYPE_FILE);
 
-      return fileResult;
+      return result;
     }
   }
 

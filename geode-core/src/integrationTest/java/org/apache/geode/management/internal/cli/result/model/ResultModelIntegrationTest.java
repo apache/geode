@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.result.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,9 +51,8 @@ public class ResultModelIntegrationTest {
   }
 
   @Test
-  public void savesToNoWhereDoesNothing() throws IOException {
-    result.saveFileTo(null);
-    assertThat(result.getInfoSections()).hasSize(0);
+  public void savesToNullThrowException() throws IOException {
+    assertThatThrownBy(() -> result.saveFileTo(null)).isInstanceOf(NullPointerException.class);
   }
 
   @Test
