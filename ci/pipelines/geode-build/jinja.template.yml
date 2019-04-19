@@ -374,7 +374,7 @@ jobs:
         AWS_DEFAULT_REGION: us-west-2
         AWS_REGION: us-west-2
         ARTIFACT_BUCKET: ((artifact-bucket))
-        BENCHMARK_BRANCH: {{benchmarks.branch}}
+        BENCHMARKS_BRANCH: {{benchmarks.branch}}
         BASELINE_BRANCH: {{benchmarks.baseline_branch}}
         BASELINE_VERSION: {{benchmarks.baseline_version}}
       run:
