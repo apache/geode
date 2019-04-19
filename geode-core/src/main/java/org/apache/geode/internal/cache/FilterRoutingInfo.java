@@ -383,7 +383,9 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       size += interestedClients == null ? 4 : interestedClients.size() * 8 + 5;
       size += interestedClientsInv == null ? 4 : interestedClientsInv.size() * 8 + 5;
       size += cqs == null ? 0 : cqs.size() * 12;
-      hdos = new HeapDataOutputStream(size, null);
+      byte[] myData = InternalDataSerializer.getThreadLocalByteArray(size);
+      hdos = new HeapDataOutputStream(myData);
+      hdos.disallowExpansion();
       if (this.cqs == null) {
         hdos.writeBoolean(false);
       } else {
@@ -399,12 +401,8 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       }
       InternalDataSerializer.writeSetOfLongs(this.interestedClients, this.longIDs, hdos);
       InternalDataSerializer.writeSetOfLongs(this.interestedClientsInv, this.longIDs, hdos);
-      if (out instanceof HeapDataOutputStream) {
-        ((ObjToByteArraySerializer) out).writeAsSerializedByteArray(hdos);
-      } else {
-        byte[] myData = hdos.toByteArray();
-        DataSerializer.writeByteArray(myData, out);
-      }
+      hdos.finishWriting();
+      DataSerializer.writeByteArray(myData, hdos.size(), out);
     }
 
     public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
