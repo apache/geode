@@ -125,6 +125,9 @@ public class PhiAccrualFailureDetector {
     heartbeatHistory = new HeartbeatHistory(maxSampleSize);
     heartbeatHistory.add(firstHeartbeatEstimateMillis - stdDeviationMillis)
         .add(firstHeartbeatEstimateMillis + stdDeviationMillis);
+
+    // Bruce: record the estimate as the last timestamp received
+    lastTimestampMillis.set(firstHeartbeatEstimateMillis);
   }
 
   private double ensureValidStdDeviation(double stdDeviationMillis) {
@@ -156,7 +159,11 @@ public class PhiAccrualFailureDetector {
 
   public boolean isAvailable(long timestampMillis) {
     double currentPhi = phi(timestampMillis);
-    return Double.isNaN(currentPhi) || currentPhi < threshold;
+    if (Double.isNaN(currentPhi)) {
+      // There isn't enough history to compute a valid Phi so we use a timestamp check
+      return (getLastTimestampMillis() >= timestampMillis - acceptableHeartbeatPauseMillis);
+    }
+    return currentPhi < threshold;
   }
 
   public boolean isAvailable() {
@@ -183,6 +190,10 @@ public class PhiAccrualFailureDetector {
 
   public long getLastTimestampMillis() {
     return lastTimestampMillis.get();
+  }
+
+  public double getThreshold() {
+    return threshold;
   }
 
   public void heartbeat() {

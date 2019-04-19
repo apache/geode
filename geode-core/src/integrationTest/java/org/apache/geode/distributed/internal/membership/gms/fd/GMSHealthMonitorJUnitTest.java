@@ -214,27 +214,6 @@ public class GMSHealthMonitorJUnitTest {
     assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
   }
 
-  @Test
-  public void testHMNextNeighborAfterTimeout() throws Exception {
-    System.out.println("testHMNextNeighborAfterTimeout starting");
-
-    installAView();
-    InternalDistributedMember initialNeighbor = mockMembers.get(myAddressIndex + 1);
-
-    await("wait for new neighbor")
-        .until(() -> gmsHealthMonitor.getNextNeighbor() != initialNeighbor);
-    InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
-
-    // neighbor should change. In order to not be a flaky test we don't demand
-    // that it be myAddressIndex+2 but just require that the neighbor being
-    // monitored has changed
-    System.out.println("testHMNextNeighborAfterTimeout ending");
-    Assert.assertNotNull(gmsHealthMonitor.getView());
-    Assert.assertNotEquals("neighbor to not be " + neighbor + "; my ID is "
-        + mockMembers.get(myAddressIndex) + ";  view=" + gmsHealthMonitor.getView(),
-        initialNeighbor, neighbor);
-  }
-
   /**
    * it checks neighbor before member-timeout, it should be same
    */
@@ -303,6 +282,7 @@ public class GMSHealthMonitorJUnitTest {
     long startTime = System.currentTimeMillis();
     installAView();
     InternalDistributedMember neighbor = gmsHealthMonitor.getNextNeighbor();
+    assertFalse(neighbor.equals(joinLeave.getMemberID()));
 
     await().until(() -> gmsHealthMonitor.isSuspectMember(neighbor));
     long endTime = System.currentTimeMillis();

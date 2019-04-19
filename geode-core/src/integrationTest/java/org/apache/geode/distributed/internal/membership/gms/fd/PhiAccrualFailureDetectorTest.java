@@ -19,6 +19,8 @@ package org.apache.geode.distributed.internal.membership.gms.fd;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Random;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -73,5 +75,40 @@ public class PhiAccrualFailureDetectorTest {
       assertTrue(failureDetector.phi(timestampMillis) < 0.1);
       assertTrue(failureDetector.isAvailable(timestampMillis));
     }
+  }
+
+  @Test
+  public void isAvailableTest() throws Exception {
+    double threshold = 10;
+    int historySize = 200;
+    double stddev = 100;
+    long now = System.currentTimeMillis();
+    long[] intervals =
+        new long[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, -14, -15, -16, -17, -18, -19, -20};
+    int heartbeatInterval = 5000;
+    int acceptableHeartbeatPauseMillis = heartbeatInterval / 2;
+    Random random = new Random();
+    PhiAccrualFailureDetector detector =
+        new PhiAccrualFailureDetector(threshold, historySize, stddev,
+            acceptableHeartbeatPauseMillis, now);
+    long heartbeatTime = 0;
+    for (long l = 1; l <= historySize; l++) {
+      long deviation = getDeviation(heartbeatInterval, random);
+      detector.heartbeat(now + (l * heartbeatInterval) + deviation);
+    }
+    for (long l : intervals) {
+      if (l > 0) {
+        long deviation = getDeviation(heartbeatInterval, random);
+        detector.heartbeat(now + (heartbeatInterval * (l + historySize)) + deviation);
+      }
+      l = Math.abs(l);
+      heartbeatTime = now + (heartbeatInterval * (l + historySize));
+      System.out.println("heartbeat " + l + " phi= " + detector.phi(heartbeatTime));
+    }
+    assertFalse("phi=" + detector.phi(heartbeatTime), detector.isAvailable(heartbeatTime));
+  }
+
+  public int getDeviation(int heartbeatInterval, Random random) {
+    return 0; // random.nextInt(heartbeatInterval / 4);
   }
 }
