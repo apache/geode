@@ -146,6 +146,9 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
       Profile profile = locProfiles[i];
       collection = profileCollector.collect(profile, compareTo, collection);
     }
+    if (collection == null) {
+      collection = Collections.emptyList();
+    }
     return collection;
   }
 

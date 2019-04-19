@@ -1095,9 +1095,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           list.add(cp.gatewaySenderIds);
         }
       }
-      if (list == null) {
-        list = Collections.emptyList();
-      }
       return list;
     }
   }
@@ -1123,9 +1120,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           list.add(allAsyncEventIds);
           list.add(cp.asyncEventQueueIds);
         }
-      }
-      if (list == null) {
-        list = Collections.emptyList();
       }
       return list;
     }

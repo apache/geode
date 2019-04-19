@@ -1284,6 +1284,9 @@ public class DistributionAdvisor {
     for (Profile profile : locProfiles) {
       collection = profileCollector.collect(profile, compareTo, collection);
     }
+    if (collection == null) {
+      collection = Collections.emptyList();
+    }
     return collection;
   }
 
