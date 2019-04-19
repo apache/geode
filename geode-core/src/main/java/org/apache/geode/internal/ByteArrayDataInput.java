@@ -42,6 +42,14 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   public ByteArrayDataInput() {}
 
+  public ByteArrayDataInput(byte[] bytes) {
+    initialize(bytes, null);
+  }
+
+  public ByteArrayDataInput(byte[] bytes, Version version) {
+    initialize(bytes, version);
+  }
+
   /**
    * Initialize this byte array stream with given byte array and version.
    *

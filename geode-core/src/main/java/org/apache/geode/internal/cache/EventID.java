@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.IOException;
@@ -39,11 +37,11 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -310,13 +308,13 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * have UUID bytes in the memberID. Newer clients don't require this.
    */
   public InternalDistributedMember getDistributedMember(Version targetVersion) {
-    ByteArrayInputStream bais = new ByteArrayInputStream(this.membershipID);
-    DataInputStream dis = new DataInputStream(bais);
+    Version disVersion = null;
     if (targetVersion.compareTo(Version.GEODE_1_1_0) < 0) {
       // GEODE-3153: clients expect to receive UUID bytes, which are only
       // read if the stream's version is 1.0.0-incubating
-      dis = new VersionedDataInputStream(dis, Version.GFE_90);
+      disVersion = Version.GFE_90;
     }
+    ByteArrayDataInput dis = new ByteArrayDataInput(membershipID, disVersion);
     InternalDistributedMember result = null;
     try {
       result = InternalDistributedMember.readEssentialData(dis);
@@ -506,7 +504,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     Object mbr;
     try {
       mbr = InternalDistributedMember
-          .readEssentialData(new DataInputStream(new ByteArrayInputStream(membershipID)));
+          .readEssentialData(new ByteArrayDataInput(membershipID));
     } catch (Exception e) {
       mbr = membershipID; // punt and use the bytes
     }

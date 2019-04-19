@@ -14,12 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,11 +29,11 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataSerializable;
 
 /**
@@ -490,13 +487,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
      */
     private void deserialize() {
       try {
-        InputStream is = new ByteArrayInputStream(myData);
-        DataInputStream dis;
-        if (this.myDataVersion != null) {
-          dis = new VersionedDataInputStream(is, this.myDataVersion);
-        } else {
-          dis = new DataInputStream(is);
-        }
+        ByteArrayDataInput dis = new ByteArrayDataInput(myData, myDataVersion);
         boolean hasCQs = dis.readBoolean();
         if (hasCQs) {
           int numEntries = InternalDataSerializer.readArrayLength(dis);
