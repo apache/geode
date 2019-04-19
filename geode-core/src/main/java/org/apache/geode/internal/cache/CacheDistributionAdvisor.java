@@ -1081,40 +1081,61 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     return result;
   }
 
-  public List<Set<String>> adviseSameGatewaySenderIds(final Set<String> allGatewaySenderIds) {
-    final List<Set<String>> differSenderIds = new ArrayList<>();
-    fetchProfiles(profile -> {
+  private static class SameGatewaySenderIdsCollector implements ProfileCollector<Set<String>> {
+    @Override
+    public List<Set<String>> collect(Profile profile, Set<String> allGatewaySenderIds,
+        List<Set<String>> list) {
       if (profile instanceof CacheProfile) {
         final CacheProfile cp = (CacheProfile) profile;
-        if (allGatewaySenderIds.equals(cp.gatewaySenderIds)) {
-          return true;
-        } else {
-          differSenderIds.add(allGatewaySenderIds);
-          differSenderIds.add(cp.gatewaySenderIds);
-          return false;
+        if (!allGatewaySenderIds.equals(cp.gatewaySenderIds)) {
+          if (list == null) {
+            list = new ArrayList<>();
+          }
+          list.add(allGatewaySenderIds);
+          list.add(cp.gatewaySenderIds);
         }
       }
-      return false;
-    });
-    return differSenderIds;
+      if (list == null) {
+        list = Collections.emptyList();
+      }
+      return list;
+    }
   }
 
-  public List<Set<String>> adviseSameAsyncEventQueueIds(final Set<String> allAsyncEventIds) {
-    final List<Set<String>> differAsycnQueueIds = new ArrayList<>();
-    fetchProfiles(profile -> {
+  private static final SameGatewaySenderIdsCollector sameGatewaySenderIdsCollector =
+      new SameGatewaySenderIdsCollector();
+
+  public List<Set<String>> adviseSameGatewaySenderIds(final Set<String> allGatewaySenderIds) {
+    return collectProfiles(sameGatewaySenderIdsCollector, allGatewaySenderIds);
+  }
+
+
+  private static class SameAsyncEventQueueIdsCollector implements ProfileCollector<Set<String>> {
+    @Override
+    public List<Set<String>> collect(Profile profile, Set<String> allAsyncEventIds,
+        List<Set<String>> list) {
       if (profile instanceof CacheProfile) {
         final CacheProfile cp = (CacheProfile) profile;
-        if (allAsyncEventIds.equals(cp.asyncEventQueueIds)) {
-          return true;
-        } else {
-          differAsycnQueueIds.add(allAsyncEventIds);
-          differAsycnQueueIds.add(cp.asyncEventQueueIds);
-          return false;
+        if (!allAsyncEventIds.equals(cp.asyncEventQueueIds)) {
+          if (list == null) {
+            list = new ArrayList<>();
+          }
+          list.add(allAsyncEventIds);
+          list.add(cp.asyncEventQueueIds);
         }
       }
-      return false;
-    });
-    return differAsycnQueueIds;
+      if (list == null) {
+        list = Collections.emptyList();
+      }
+      return list;
+    }
+  }
+
+  private static final SameAsyncEventQueueIdsCollector sameAsyncEventQueueIdsCollector =
+      new SameAsyncEventQueueIdsCollector();
+
+  public List<Set<String>> adviseSameAsyncEventQueueIds(final Set<String> allAsyncEventIds) {
+    return collectProfiles(sameAsyncEventQueueIdsCollector, allAsyncEventIds);
   }
 
 }

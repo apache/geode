@@ -1277,6 +1277,16 @@ public class DistributionAdvisor {
     return result;
   }
 
+  protected <E> List<E> collectProfiles(ProfileCollector<E> profileCollector, E compareTo) {
+    initializationGate();
+    List<E> collection = null;
+    Profile[] locProfiles = profiles;
+    for (Profile profile : locProfiles) {
+      collection = profileCollector.collect(profile, compareTo, collection);
+    }
+    return collection;
+  }
+
   /** Provide recipients for profile update. */
   public Set adviseProfileUpdate() {
     return adviseGeneric();
@@ -1371,6 +1381,10 @@ public class DistributionAdvisor {
   /** Filter interface */
   protected interface Filter {
     boolean include(Profile profile);
+  }
+
+  protected interface ProfileCollector<E> {
+    List<E> collect(Profile profile, E compareTo, List<E> list);
   }
 
   /**

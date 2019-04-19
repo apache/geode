@@ -110,8 +110,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     initializationGate();
     List result = null;
     {
-      JmxManagerAdvisee advisee = (JmxManagerAdvisee) getAdvisee();
-      Profile myp = advisee.getMyMostRecentProfile();
+      Profile myp = getMyMostRecentProfile();
       if (f == null || f.include(myp)) {
         if (result == null) {
           result = new ArrayList();
@@ -136,6 +135,25 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
     return result;
   }
+
+  @Override
+  protected <E> List<E> collectProfiles(ProfileCollector<E> profileCollector, E compareTo) {
+    initializationGate();
+    List<E> collection = null;
+    collection = profileCollector.collect(getMyMostRecentProfile(), compareTo, collection);
+    Profile[] locProfiles = this.profiles; // grab current profiles
+    for (int i = 0; i < locProfiles.length; i++) {
+      Profile profile = locProfiles[i];
+      collection = profileCollector.collect(profile, compareTo, collection);
+    }
+    return collection;
+  }
+
+  private Profile getMyMostRecentProfile() {
+    JmxManagerAdvisee advisee = (JmxManagerAdvisee) getAdvisee();
+    return advisee.getMyMostRecentProfile();
+  }
+
 
   /**
    * Message used to push event updates to remote VMs
