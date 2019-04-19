@@ -34,7 +34,6 @@ CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}"
 RESULTS_DIR=$(pwd)/results/benchmarks-${CLUSTER_TAG}
 
 CLUSTER_COUNT=4
-BENCHMARKS_BRANCH=develop
 
 pushd geode
 GEODE_SHA=$(git rev-parse --verify HEAD)
