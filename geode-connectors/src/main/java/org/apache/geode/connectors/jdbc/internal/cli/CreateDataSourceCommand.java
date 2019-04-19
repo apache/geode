@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -77,8 +76,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           + "For example 'pool.name1' configures the pool and 'name2' configures the database in the following: "
           + "--pool-properties={'name':'pool.name1','value':'value1'},{'name':'name2','value':'value2'}";
   static final String DRIVER_JAR = "driver jar";
-  static final String DRIVER_JAR_HELP = "Used to specify a jdbc driver jar to be deployed to the cluster before data source creation. "
-      + "This parameter can be used to prevent errors related to missing or incompatible drivers.";
+  static final String DRIVER_JAR_HELP =
+      "Used to specify a jdbc driver jar to be deployed to the cluster before data source creation. "
+          + "This parameter can be used to prevent errors related to missing or incompatible drivers.";
 
   @CliCommand(value = CREATE_DATA_SOURCE, help = CREATE_DATA_SOURCE__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
@@ -103,12 +103,13 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
           help = POOL_PROPERTIES_HELP) PoolProperty[] poolProperties) {
 
-    if(driverJar != null && !driverJar.equals("")) {
+    if (driverJar != null && !driverJar.equals("")) {
       DeployCommand deployCommand = new DeployCommand();
       try {
-      deployCommand.deploy(null, new String[] {driverJar}, null); }
-      catch (Exception ex) {
-        ResultModel.createError("An exception was thrown while trying to deploy the driver jar: " + ex.getMessage());
+        deployCommand.deploy(null, new String[] {driverJar}, null);
+      } catch (Exception ex) {
+        ResultModel.createError(
+            "An exception was thrown while trying to deploy the driver jar: " + ex.getMessage());
       }
     }
 

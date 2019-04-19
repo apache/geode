@@ -99,6 +99,25 @@ public class CreateDataSourceCommandDUnitTest {
     verifyThatNonExistentClassCausesGfshToError();
   }
 
+  @Test
+  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
+    String URL = "jdbc:mysql://localhost/";
+    IgnoredException.addIgnoredException(
+        "No suitable driver");
+    // create the data-source
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=myuser --password=mypass --pooled=false --url=\""
+            + URL + "\"")
+        .statusIsError().containsOutput("No suitable driver");
+
+    String jarFile = "/Users/extensions/workspace/geode/geode-connectors/src/distributedTest/java/org/apache/geode/connectors/jdbc/internal/cli/mysql-connector-java-8.0.15.jar";
+    //gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=myuser --password=mypass --pooled=false --url=\""
+            + URL + "\" --driver-jar=\"" + jarFile + "\"").doesNotContainOutput("No suitable driver");
+  }
+
   private void verifyThatNonExistentClassCausesGfshToError() {
     SerializableRunnableIF IgnoreClassNotFound = () -> {
       IgnoredException ex =
