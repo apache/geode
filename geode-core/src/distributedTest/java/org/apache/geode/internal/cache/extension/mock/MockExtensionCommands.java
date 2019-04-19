@@ -17,20 +17,26 @@ package org.apache.geode.internal.cache.extension.mock;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.cli.Result.Status;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -69,7 +75,7 @@ public class MockExtensionCommands extends GfshCommand {
    */
   @CliCommand(value = CREATE_MOCK_REGION_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public ResultModel createMockRegionExtension(
+  public Result createMockRegionExtension(
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
@@ -87,7 +93,7 @@ public class MockExtensionCommands extends GfshCommand {
    */
   @CliCommand(value = ALTER_MOCK_REGION_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public ResultModel alterMockRegionExtension(
+  public Result alterMockRegionExtension(
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
@@ -104,7 +110,7 @@ public class MockExtensionCommands extends GfshCommand {
    */
   @CliCommand(value = DESTROY_MOCK_REGION_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public ResultModel destroyMockRegionExtension(
+  public Result destroyMockRegionExtension(
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName) {
     return executeFunctionOnAllMembersTabulateResultPersist(
         DestroyMockRegionExtensionFunction.INSTANCE, true,
@@ -120,7 +126,7 @@ public class MockExtensionCommands extends GfshCommand {
    */
   @CliCommand(value = CREATE_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public ResultModel createMockCacheExtension(
+  public Result createMockCacheExtension(
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
         CreateMockCacheExtensionFunction.INSTANCE, true,
@@ -136,7 +142,7 @@ public class MockExtensionCommands extends GfshCommand {
    */
   @CliCommand(value = ALTER_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public ResultModel alterMockCacheExtension(
+  public Result alterMockCacheExtension(
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
         AlterMockCacheExtensionFunction.INSTANCE, true,
@@ -151,7 +157,7 @@ public class MockExtensionCommands extends GfshCommand {
    */
   @CliCommand(value = DESTROY_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public ResultModel destroyMockCacheExtension() {
+  public Result destroyMockCacheExtension() {
     return executeFunctionOnAllMembersTabulateResultPersist(
         DestroyMockCacheExtensionFunction.INSTANCE, false);
   }
@@ -167,29 +173,47 @@ public class MockExtensionCommands extends GfshCommand {
    * @return {@link TabularResultData}
    * @since GemFire 8.1
    */
-  protected ResultModel executeFunctionOnAllMembersTabulateResultPersist(final Function function,
+  protected Result executeFunctionOnAllMembersTabulateResultPersist(final Function function,
       final boolean addXmlElement, final Object... args) {
-    final Set<DistributedMember> members = findMembers(null, null);
+    InternalCache cache = GemFireCacheImpl.getInstance();
+    final Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
 
-    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(function, args, members);
+    @SuppressWarnings("unchecked")
+    final ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
+        (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) CliUtil
+            .executeFunction(function, args, members);
+    final List<CliFunctionResult> functionResults =
+        (List<CliFunctionResult>) resultCollector.getResult();
 
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
+    final TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
+    final String errorPrefix = "ERROR: ";
+    for (CliFunctionResult functionResult : functionResults) {
+      boolean success = functionResult.isSuccessful();
+      tabularResultData.accumulate("Member", functionResult.getMemberIdOrName());
+      if (success) {
+        tabularResultData.accumulate("Status", functionResult.getMessage());
+        xmlEntity.set(functionResult.getXmlEntity());
+      } else {
+        tabularResultData.accumulate("Status", errorPrefix + functionResult.getMessage());
+        tabularResultData.setStatus(Status.ERROR);
+      }
+    }
 
-    XmlEntity xmlEntity = functionResults.stream()
-        .filter(CliFunctionResult::isSuccessful)
-        .map(CliFunctionResult::getXmlEntity).findFirst().orElse(null);
+    final Result result = ResultBuilder.buildResult(tabularResultData);
 
     InternalConfigurationPersistenceService ccService =
         InternalLocator.getLocator().getConfigurationPersistenceService();
     System.out.println("MockExtensionCommands: persisting xmlEntity=" + xmlEntity);
-    if (xmlEntity != null) {
+    if (null != xmlEntity.get()) {
       if (addXmlElement) {
-        ccService.addXmlEntity(xmlEntity, null);
+        ccService.addXmlEntity(xmlEntity.get(), null);
       } else {
-        ccService.deleteXmlEntity(xmlEntity, null);
+        ccService.deleteXmlEntity(xmlEntity.get(), null);
       }
     }
 
-    return ResultModel.createMemberStatusResult(functionResults);
+    return result;
   }
 
 }
