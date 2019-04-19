@@ -21,8 +21,15 @@ import static java.util.stream.Collectors.toSet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -362,6 +369,9 @@ public class JarDeployer implements Serializable {
           logger.info("Registering new version of jar: {}", deployedJar);
           DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
           newVersionToOldVersion.put(deployedJar, oldJar);
+
+          addToSystemClasspath(deployedJar);
+
         }
       }
 
@@ -384,6 +394,23 @@ public class JarDeployer implements Serializable {
     }
 
     return deployedJars;
+  }
+
+  private static void addToSystemClasspath(DeployedJar jar) {
+    File jarFile = jar.getFile();
+    Method method = null;
+    try {
+      method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] {URL.class});
+      method.setAccessible(true);
+      method.invoke(ClassLoader.getSystemClassLoader(), new Object[] {jarFile.toURI().toURL()});
+      // Class.forName("org.apache.derby.jdbc.AutoloadedDriver");
+      Class driver = ClassLoader.getSystemClassLoader().loadClass("com.mysql.jdbc.Driver");
+      DriverManager.registerDriver((Driver) driver.newInstance());
+    } catch (NoSuchMethodException | MalformedURLException | IllegalAccessException
+        | InvocationTargetException | ClassNotFoundException | InstantiationException
+        | SQLException e) {
+      e.printStackTrace();
+    }
   }
 
   /**

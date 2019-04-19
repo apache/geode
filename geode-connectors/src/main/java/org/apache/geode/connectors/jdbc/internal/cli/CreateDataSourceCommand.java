@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +32,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
+import org.apache.geode.management.internal.cli.commands.DeployCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -74,6 +76,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           + "Otherwise the name value pair will be used to configure the database data source. "
           + "For example 'pool.name1' configures the pool and 'name2' configures the database in the following: "
           + "--pool-properties={'name':'pool.name1','value':'value1'},{'name':'name2','value':'value2'}";
+  static final String DRIVER_JAR = "driver jar";
+  static final String DRIVER_JAR_HELP = "Used to specify a jdbc driver jar to be deployed to the cluster before data source creation. "
+      + "This parameter can be used to prevent errors related to missing or incompatible drivers.";
 
   @CliCommand(value = CREATE_DATA_SOURCE, help = CREATE_DATA_SOURCE__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE,
@@ -85,6 +90,8 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           help = POOLED_DATA_SOURCE_FACTORY_CLASS__HELP) String pooledDataSourceFactoryClass,
       @CliOption(key = URL, mandatory = true,
           help = URL__HELP) String url,
+      @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
+          help = CliStrings.DEPLOY__JAR__HELP) String jar,
       @CliOption(key = NAME, mandatory = true, help = NAME__HELP) String name,
       @CliOption(key = USERNAME, help = USERNAME__HELP) String username,
       @CliOption(key = PASSWORD, help = PASSWORD__HELP) String password,
@@ -92,8 +99,18 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
       @CliOption(key = POOLED, help = POOLED__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "true") boolean pooled,
+      @CliOption(key = DRIVER_JAR, help = DRIVER_JAR_HELP) String driverJar,
       @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
           help = POOL_PROPERTIES_HELP) PoolProperty[] poolProperties) {
+
+    if(driverJar != null && !driverJar.equals("")) {
+      DeployCommand deployCommand = new DeployCommand();
+      try {
+      deployCommand.deploy(null, new String[] {driverJar}, null); }
+      catch (Exception ex) {
+        ResultModel.createError("An exception was thrown while trying to deploy the driver jar: " + ex.getMessage());
+      }
+    }
 
     JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();
     if (pooled) {
@@ -133,6 +150,17 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     }
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
+
+    // DeployCommand deployCommand = new DeployCommand();
+    // ResultModel deployResult = deployCommand.deploy(new String[] {}, new String[] {jar}, "");
+    // int i = 0;
+    // for (DistributedMember member : targetMembers) {
+    // i++;
+    // List<String> jarNames = new ArrayList<>();
+    // TabularResultModel deployInfo = deployResult.getTableSection("deployResult");
+    // System.out.println("SAJ: " + deployInfo.getValuesInRow(i));
+    // }
+
     if (targetMembers.size() > 0) {
       Object[] arguments = new Object[] {configuration, true};
       List<CliFunctionResult> jndiCreationResult = executeAndGetFunctionResult(
