@@ -75,7 +75,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           + "Otherwise the name value pair will be used to configure the database data source. "
           + "For example 'pool.name1' configures the pool and 'name2' configures the database in the following: "
           + "--pool-properties={'name':'pool.name1','value':'value1'},{'name':'name2','value':'value2'}";
-  static final String DRIVER_JAR = "driver jar";
+  static final String DRIVER_JAR = "driver-jar";
   static final String DRIVER_JAR_HELP =
       "Used to specify a jdbc driver jar to be deployed to the cluster before data source creation. "
           + "This parameter can be used to prevent errors related to missing or incompatible drivers.";
@@ -106,9 +106,14 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     if (driverJar != null && !driverJar.equals("")) {
       DeployCommand deployCommand = new DeployCommand();
       try {
-        deployCommand.deploy(null, new String[] {driverJar}, null);
+        ResultModel deployResult = deployCommand.deploy(new String[] {}, new String[] {driverJar}, null);
+        if(!deployResult.isSuccessful()) {
+          return deployResult;
+        }
       } catch (Exception ex) {
-        ResultModel.createError(
+        ex.printStackTrace(System.out);
+        System.out.println("GGG: Exception caught while deploying driver jar, exception class is: " + ex);
+        return ResultModel.createError(
             "An exception was thrown while trying to deploy the driver jar: " + ex.getMessage());
       }
     }

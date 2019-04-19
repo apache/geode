@@ -104,18 +104,22 @@ public class CreateDataSourceCommandDUnitTest {
     String URL = "jdbc:mysql://localhost/";
     IgnoredException.addIgnoredException(
         "No suitable driver");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mySqlUser'@'localhost'");
+    IgnoredException.addIgnoredException(
+        "Failed to connect to \"mySqlDataSource\". See log for details");
     // create the data-source
     gfsh.executeAndAssertThat(
-        "create data-source --name=mySqlDataSource --username=myuser --password=mypass --pooled=false --url=\""
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
             + URL + "\"")
         .statusIsError().containsOutput("No suitable driver");
 
-    String jarFile = "/Users/extensions/workspace/geode/geode-connectors/src/distributedTest/java/org/apache/geode/connectors/jdbc/internal/cli/mysql-connector-java-8.0.15.jar";
+    String jarFile = "/Users/bross/dev/geode/geode-connectors/src/distributedTest/java/org/apache/geode/connectors/jdbc/internal/cli/mysql-connector-java-8.0.15.jar";
     //gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
 
     gfsh.executeAndAssertThat(
-        "create data-source --name=mySqlDataSource --username=myuser --password=mypass --pooled=false --url=\""
-            + URL + "\" --driver-jar=\"" + jarFile + "\"").doesNotContainOutput("No suitable driver");
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+            + URL + "\" --driver-jar=" + jarFile).containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
   }
 
   private void verifyThatNonExistentClassCausesGfshToError() {
