@@ -25,14 +25,15 @@ public class ManagementClientCreateRegion {
   public static void main(String[] args) throws Exception {
     String regionName = args[0];
     boolean useSsl = Boolean.parseBoolean(args[1]);
+    int httpPort = Integer.parseInt(args[2]);
 
     ClusterManagementService cms;
     if (useSsl) {
       // The default SSLContext will pull in all necessary javax.net.ssl properties
-      cms = ClusterManagementServiceProvider.getService("localhost", 7070,
+      cms = ClusterManagementServiceProvider.getService("localhost", httpPort,
           SSLContext.getDefault(), null, null, null);
     } else {
-      cms = ClusterManagementServiceProvider.getService("localhost", 7070);
+      cms = ClusterManagementServiceProvider.getService("localhost", httpPort);
     }
 
     RegionConfig config = new RegionConfig();

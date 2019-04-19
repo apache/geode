@@ -38,6 +38,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -90,27 +91,34 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     File outputJar = new File(tempDir.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, new File(filePath));
 
+    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int locatorPort = availablePorts[0];
+    int httpPort = availablePorts[1];
     GfshExecution startCluster =
-        GfshScript.of("start locator " + getSslParameters(),
-            "start server --locators=localhost[10334]")
+        GfshScript.of(String.format("start locator --port=%d --J=-Dgemfire.http-service-port=%d %s",
+            locatorPort,
+            httpPort,
+            getSslParameters()),
+            String.format("start server --locators=localhost[%d] --server-port=0", locatorPort))
             .withName("startCluster").execute(gfsh);
 
 
     assertThat(startCluster.getProcess().exitValue())
         .as("Cluster did not start correctly").isEqualTo(0);
 
-    Process process = launchClientProcess(outputJar);
+    Process process = launchClientProcess(outputJar, httpPort);
 
     boolean exited = process.waitFor(10, TimeUnit.SECONDS);
     assertThat(exited).as("Process did not exit within 10 seconds").isTrue();
     assertThat(process.exitValue()).as("Process did not exit with 0 return code").isEqualTo(0);
 
-    GfshExecution listRegionsResult = GfshScript.of("connect", "list regions")
+    GfshExecution listRegionsResult = GfshScript
+        .of(String.format("connect --locator=localhost[%d]", locatorPort), "list regions")
         .withName("listRegions").execute(gfsh);
     assertThat(listRegionsResult.getOutputText()).contains("REGION1");
   }
 
-  private Process launchClientProcess(File outputJar) throws IOException {
+  private Process launchClientProcess(File outputJar, int httpPort) throws IOException {
     Path javaBin = Paths.get(System.getProperty("java.home"), "bin", "java");
 
     ProcessBuilder pBuilder = new ProcessBuilder();
@@ -152,6 +160,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     command.add("ManagementClientCreateRegion");
     command.add("REGION1");
     command.add(useSsl.toString());
+    command.add("" + httpPort);
 
     pBuilder.command(command);
 
