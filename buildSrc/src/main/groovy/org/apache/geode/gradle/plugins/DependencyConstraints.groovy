@@ -150,7 +150,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
         api(group: 'io.swagger', name: 'swagger-annotations', version: '1.5.20')
-        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '0.25.0.RELEASE')
+        api(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '0.25.1.RELEASE')
         api(group: 'org.springframework.ldap', name: 'spring-ldap-core', version: '2.3.2.RELEASE')
         api(group: 'org.springframework.shell', name: 'spring-shell', version: '1.2.0.RELEASE')
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
@@ -225,7 +225,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('selenium-support')
     }
 
-    dependencySet(group: 'org.springframework.security', version: '4.2.8.RELEASE') {
+    dependencySet(group: 'org.springframework.security', version: '5.1.5.RELEASE') {
       entry('spring-security-config')
       entry('spring-security-core')
       entry('spring-security-ldap')
@@ -233,7 +233,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-web')
     }
 
-    dependencySet(group: 'org.springframework', version: '4.3.20.RELEASE') {
+    dependencySet(group: 'org.springframework', version: '5.1.6.RELEASE') {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')
