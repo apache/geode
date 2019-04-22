@@ -57,6 +57,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     int locatorPort = locator.getPort();
     server = cluster.startServerVM(1,
         s -> s.withConnectionToLocator(locatorPort)
+            .withProperty("groups", "group-1")
             .withCredential("cluster", "cluster"));
 
     gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
@@ -117,9 +118,11 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
+    regionConfig.setGroup("group-1");
 
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setDiskStoreName("DISKSTORE");
+    attributes.setDiskSynchronous(false);
     regionConfig.setRegionAttributes(attributes);
 
     ClusterManagementService client =
@@ -127,6 +130,12 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
             "data,cluster", "data,cluster");
     ClusterManagementResult result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
+
+    gfsh.executeAndAssertThat("describe disk-store --name=DISKSTORE --member=server-1")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("describe region --name=REGION1").statusIsSuccess()
+        .hasTableSection().hasColumn("Value").contains("DISKSTORE");
   }
 
 }
