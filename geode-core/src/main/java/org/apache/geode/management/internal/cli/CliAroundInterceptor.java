@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli;
 
 import java.nio.file.Path;
 
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.GfshExecutionStrategy;
 
@@ -32,20 +31,10 @@ public interface CliAroundInterceptor {
   /**
    * called by the OperationInvoker before the command is executed
    */
-  default Object preExecution(GfshParseResult parseResult) {
+  default ResultModel preExecution(GfshParseResult parseResult) {
     return ResultModel.createInfo("");
   }
 
-  /**
-   * called by the OperationInvoker after the command is executed
-   *
-   * @param tempFile if the command's isFileDownloadOverHttp is true, the is the File downloaded
-   *        after the http response is processed.
-   */
-  default CommandResult postExecution(GfshParseResult parseResult, CommandResult commandResult,
-      Path tempFile) throws Exception {
-    return commandResult;
-  }
 
   default ResultModel postExecution(GfshParseResult parseResult, ResultModel resultModel,
       Path tempFile) throws Exception {

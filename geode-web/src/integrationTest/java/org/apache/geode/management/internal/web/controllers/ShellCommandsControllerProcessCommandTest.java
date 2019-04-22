@@ -15,10 +15,13 @@
 package org.apache.geode.management.internal.web.controllers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -30,59 +33,48 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
 
-import org.apache.geode.management.internal.cli.CommandResponseBuilder;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class ShellCommandsControllerProcessCommandTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private ShellCommandsController controller;
-  private CommandResult fakeResult;
+  private ResultModel fakeResult;
 
   @Before
-  public void setup() {
-
-    controller = new ShellCommandsController() {
-      @Override
-      protected String processCommand(String command, final Map<String, String> environment,
-          MultipartFile[] fileData) {
-        return CommandResponseBuilder.createCommandResponseJson("someMember", fakeResult);
-      }
-    };
+  public void setup() throws IOException {
+    controller = spy(ShellCommandsController.class);
   }
 
   @Test
   public void infoOkResult() throws IOException {
-    fakeResult = new LegacyCommandResult(new InfoResultData("Some info message"));
-
+    fakeResult = ResultModel.createInfo("Some info message");
+    doReturn(fakeResult.toJson()).when(controller).processCommand(anyString(), any(), any());
     ResponseEntity<InputStreamResource> responseJsonStream = controller.command("xyz", null);
     assertThatContentTypeEquals(responseJsonStream, MediaType.APPLICATION_JSON);
 
     String responseJson = toString(responseJsonStream);
-    CommandResult result = ResultBuilder.fromJson(responseJson);
+    ResultModel result = ResultModel.fromJson(responseJson);
 
-    assertThat(result.nextLine()).isEqualTo(fakeResult.nextLine());
+    assertThat(result.getInfoSection("info").getContent().get(0))
+        .isEqualTo(fakeResult.getInfoSection("info").getContent().get(0));
   }
 
   @Test
   public void errorResult() throws IOException {
-    ErrorResultData errorResultData = new ErrorResultData("Some error message");
-    fakeResult = new LegacyCommandResult(errorResultData);
-
+    fakeResult = ResultModel.createError("Some error message");
+    doReturn(fakeResult.toJson()).when(controller).processCommand(anyString(), any(), any());
     ResponseEntity<InputStreamResource> responseJsonStream = controller.command("xyz", null);
     assertThatContentTypeEquals(responseJsonStream, MediaType.APPLICATION_JSON);
 
     String responseJson = toString(responseJsonStream);
-    CommandResult result = ResultBuilder.fromJson(responseJson);
+    ResultModel result = ResultModel.fromJson(responseJson);
 
-    assertThat(result.nextLine()).isEqualTo(fakeResult.nextLine());
+    assertThat(result.getInfoSection("info").getContent().get(0))
+        .isEqualTo(fakeResult.getInfoSection("info").getContent().get(0));
   }
 
   @Test
@@ -90,8 +82,10 @@ public class ShellCommandsControllerProcessCommandTest {
     File tempFile = temporaryFolder.newFile();
     FileUtils.writeStringToFile(tempFile, "some file contents", "UTF-8");
 
-    fakeResult = new LegacyCommandResult(tempFile.toPath());
+    fakeResult = new ResultModel();
+    fakeResult.addFile(tempFile, FileResultModel.FILE_TYPE_FILE);
 
+    doReturn(fakeResult.toJson()).when(controller).processCommand(anyString(), any(), any());
     ResponseEntity<InputStreamResource> responseFileStream = controller.command("xyz", null);
 
     assertThatContentTypeEquals(responseFileStream, MediaType.APPLICATION_OCTET_STREAM);

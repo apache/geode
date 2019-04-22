@@ -145,6 +145,9 @@ public class HttpRequester {
     return response.getBody();
   }
 
+  /**
+   * @return either a json representation of ResultModel or a Path
+   */
   public Object executeWithResponseExtractor(URI url) {
     return restTemplate.execute(url, HttpMethod.POST, this::addHeaderValues, this::extractResponse);
   }
@@ -153,6 +156,9 @@ public class HttpRequester {
     addHeaderValues(request.getHeaders());
   }
 
+  /**
+   * @return either a json representation of ResultModel or a Path
+   */
   Object extractResponse(ClientHttpResponse response) throws IOException {
     MediaType mediaType = response.getHeaders().getContentType();
     if (mediaType.equals(MediaType.APPLICATION_JSON)) {

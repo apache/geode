@@ -263,7 +263,10 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   @Override
-  public Object processCommand(final CommandRequest commandRequest) {
+  /**
+   * this should only returns a json representation of ResultModel
+   */
+  public String processCommand(final CommandRequest commandRequest) {
     List<String> stagedFilePaths = null;
 
     try {

@@ -29,8 +29,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class OnlineCommandProcessorTest {
@@ -39,7 +38,7 @@ public class OnlineCommandProcessorTest {
   SecurityService securityService;
   CommandExecutor executor;
   OnlineCommandProcessor onlineCommandProcessor;
-  Result result;
+  ResultModel result;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -49,7 +48,7 @@ public class OnlineCommandProcessorTest {
     properties = new Properties();
     securityService = mock(SecurityService.class);
     executor = mock(CommandExecutor.class);
-    result = mock(Result.class);
+    result = mock(ResultModel.class);
     when(executor.execute(any())).thenReturn(result);
 
     onlineCommandProcessor =
@@ -75,7 +74,7 @@ public class OnlineCommandProcessorTest {
 
   @Test
   public void executeReturnsExecutorResult() throws Exception {
-    Object commandResult = onlineCommandProcessor.executeCommand("start locator");
+    ResultModel commandResult = onlineCommandProcessor.executeCommand("start locator");
     assertThat(commandResult).isSameAs(result);
   }
 
@@ -88,8 +87,8 @@ public class OnlineCommandProcessorTest {
 
   @Test
   public void handlesParsingError() throws Exception {
-    Object commandResult = onlineCommandProcessor.executeCommand("foo --bar");
-    assertThat(commandResult).isInstanceOf(CommandResult.class);
+    ResultModel commandResult = onlineCommandProcessor.executeCommand("foo --bar");
+    assertThat(commandResult).isInstanceOf(ResultModel.class);
     assertThat(commandResult.toString()).contains("Could not parse command string. foo --bar");
   }
 }

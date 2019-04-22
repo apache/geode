@@ -17,8 +17,8 @@ package org.apache.geode.internal.cache.extension.mock;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -30,13 +30,12 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -47,7 +46,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  *
  * @since GemFire 8.1
  */
-public class MockExtensionCommands extends GfshCommand {
+public class MockExtensionCommands implements CommandMarker {
 
   public static final String OPTION_VALUE = "value";
 
@@ -182,38 +181,26 @@ public class MockExtensionCommands extends GfshCommand {
     final ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
         (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) CliUtil
             .executeFunction(function, args, members);
-    final List<CliFunctionResult> functionResults =
-        (List<CliFunctionResult>) resultCollector.getResult();
+    final List<CliFunctionResult> functionResults = resultCollector.getResult();
 
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-    final TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    final String errorPrefix = "ERROR: ";
-    for (CliFunctionResult functionResult : functionResults) {
-      boolean success = functionResult.isSuccessful();
-      tabularResultData.accumulate("Member", functionResult.getMemberIdOrName());
-      if (success) {
-        tabularResultData.accumulate("Status", functionResult.getMessage());
-        xmlEntity.set(functionResult.getXmlEntity());
-      } else {
-        tabularResultData.accumulate("Status", errorPrefix + functionResult.getMessage());
-        tabularResultData.setStatus(Status.ERROR);
-      }
-    }
+    ResultModel resultModel = ResultModel.createMemberStatusResult(functionResults);
 
-    final Result result = ResultBuilder.buildResult(tabularResultData);
+    XmlEntity xmlEntity = functionResults.stream().filter(CliFunctionResult::isSuccessful)
+        .map(CliFunctionResult::getXmlEntity)
+        .findFirst().orElse(null);
 
     InternalConfigurationPersistenceService ccService =
         InternalLocator.getLocator().getConfigurationPersistenceService();
     System.out.println("MockExtensionCommands: persisting xmlEntity=" + xmlEntity);
-    if (null != xmlEntity.get()) {
+    if (xmlEntity != null) {
       if (addXmlElement) {
-        ccService.addXmlEntity(xmlEntity.get(), null);
+        ccService.addXmlEntity(xmlEntity, null);
       } else {
-        ccService.deleteXmlEntity(xmlEntity.get(), null);
+        ccService.deleteXmlEntity(xmlEntity, null);
       }
     }
 
-    return result;
+    return new ModelCommandResult(resultModel);
   }
 
 }
