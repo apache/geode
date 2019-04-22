@@ -18,12 +18,13 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -46,8 +47,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -358,6 +362,18 @@ public class JarDeployer implements Serializable {
 
   }
 
+  public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars, String driverName)
+      throws ClassNotFoundException {
+    for (DeployedJar deployedJar : deployedJars) {
+      if (deployedJar != null) {
+        if (StringUtils.isNotBlank(driverName)) {
+          addToSystemClasspathAndRegisterDriver(deployedJar, driverName);
+        }
+      }
+    }
+    return registerNewVersions(deployedJars);
+  }
+
   public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars)
       throws ClassNotFoundException {
     lock.lock();
@@ -369,9 +385,10 @@ public class JarDeployer implements Serializable {
           logger.info("Registering new version of jar: {}", deployedJar);
           DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
           newVersionToOldVersion.put(deployedJar, oldJar);
-
-          addToSystemClasspath(deployedJar);
-
+          String driverClassName = getJdbcDriverName(deployedJar);
+          if (StringUtils.isNotBlank(driverClassName)) {
+            addToSystemClasspathAndRegisterDriver(deployedJar, driverClassName);
+          }
         }
       }
 
@@ -396,19 +413,49 @@ public class JarDeployer implements Serializable {
     return deployedJars;
   }
 
-  private static void addToSystemClasspath(DeployedJar jar) {
+  private static String getJdbcDriverName(DeployedJar jar) {
+    File jarFile = jar.getFile();
+    try {
+      FileInputStream fis = new FileInputStream(jarFile.getAbsolutePath());
+      BufferedInputStream bis = new BufferedInputStream(fis);
+      ZipInputStream zis = new ZipInputStream(bis);
+      ZipEntry ze = null;
+      String driverClassName = null;
+      while ((ze = zis.getNextEntry()) != null) {
+        if (!ze.getName().equals("META-INF/services/java.sql.Driver")) {
+          continue;
+        }
+        int size = (int) ze.getSize();
+        byte[] b = new byte[(int) size];
+        int rb = 0;
+        int chunk = 0;
+        while (((int) size - rb) > 0) {
+          chunk = zis.read(b, rb, (int) size - rb);
+          if (chunk == -1) {
+            break;
+          }
+          rb += chunk;
+        }
+        return new String(b);
+      }
+      return null;
+    } catch (IOException ex) {
+      return null;
+    }
+  }
+
+  private static void addToSystemClasspathAndRegisterDriver(DeployedJar jar,
+      String driverClassName) {
     File jarFile = jar.getFile();
     Method method = null;
     try {
       method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] {URL.class});
       method.setAccessible(true);
       method.invoke(ClassLoader.getSystemClassLoader(), new Object[] {jarFile.toURI().toURL()});
-      // Class.forName("org.apache.derby.jdbc.AutoloadedDriver");
-      Class driver = ClassLoader.getSystemClassLoader().loadClass("com.mysql.jdbc.Driver");
+      Class driver = ClassLoader.getSystemClassLoader().loadClass(driverClassName);
       DriverManager.registerDriver((Driver) driver.newInstance());
-    } catch (NoSuchMethodException | MalformedURLException | IllegalAccessException
-        | InvocationTargetException | ClassNotFoundException | InstantiationException
-        | SQLException e) {
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+        | ClassNotFoundException | InstantiationException | SQLException | IOException e) {
       e.printStackTrace();
     }
   }
@@ -422,7 +469,7 @@ public class JarDeployer implements Serializable {
    *         already deployed.
    * @throws IOException When there's an error saving the JAR file to disk
    */
-  public List<DeployedJar> deploy(final Map<String, File> stagedJarFiles)
+  public List<DeployedJar> deploy(final Map<String, File> stagedJarFiles, String driverName)
       throws IOException, ClassNotFoundException {
     List<DeployedJar> deployedJars = new ArrayList<>(stagedJarFiles.size());
 
@@ -439,7 +486,7 @@ public class JarDeployer implements Serializable {
         deployedJars.add(deployWithoutRegistering(fileName, stagedJarFiles.get(fileName)));
       }
 
-      return registerNewVersions(deployedJars);
+      return registerNewVersions(deployedJars, driverName);
     } finally {
       lock.unlock();
     }
@@ -480,7 +527,7 @@ public class JarDeployer implements Serializable {
     jarFiles.put(jarName, stagedJarFile);
 
     try {
-      List<DeployedJar> deployedJars = deploy(jarFiles);
+      List<DeployedJar> deployedJars = deploy(jarFiles, null);
       if (deployedJars == null || deployedJars.size() == 0) {
         return null;
       }

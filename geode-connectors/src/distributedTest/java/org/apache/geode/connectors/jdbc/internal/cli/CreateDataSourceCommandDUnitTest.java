@@ -123,7 +123,7 @@ public class CreateDataSourceCommandDUnitTest {
     String jarFile = mySqlDriverFile.getAbsolutePath();
     // String jarFile = "/Users/gzhou/Downloads/mysql-connector-java-8.0.15.jar";
     // String jarFile =
-    // "/Users/bross/dev/geode/geode-connectors/src/distributedTest/java/org/apache/geode/connectors/jdbc/internal/cli/mysql-connector-java-8.0.15.jar";
+    // "/Users/pivotal/workspace/gemfire-greenplum/mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar";
     gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
 
     gfsh.executeAndAssertThat(

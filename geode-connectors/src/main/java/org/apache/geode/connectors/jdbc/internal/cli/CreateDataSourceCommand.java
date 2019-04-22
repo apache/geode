@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand.DATASOURCE_TYPE;
-import org.apache.geode.management.internal.cli.commands.DeployCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -103,22 +102,22 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
       @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
           help = POOL_PROPERTIES_HELP) PoolProperty[] poolProperties) {
 
-    if (driverJar != null && !driverJar.equals("")) {
-      DeployCommand deployCommand = new DeployCommand();
-      try {
-        ResultModel deployResult =
-            deployCommand.deploy(new String[] {}, new String[] {driverJar}, null);
-        if (!deployResult.isSuccessful()) {
-          return deployResult;
-        }
-      } catch (Exception ex) {
-        ex.printStackTrace(System.out);
-        System.out
-            .println("GGG: Exception caught while deploying driver jar, exception class is: " + ex);
-        return ResultModel.createError(
-            "An exception was thrown while trying to deploy the driver jar: " + ex.getMessage());
-      }
-    }
+    // if (driverJar != null && !driverJar.equals("")) {
+    // DeployCommand deployCommand = new DeployCommand();
+    // try {
+    // ResultModel deployResult =
+    // deployCommand.deploy(new String[] {}, new String[] {driverJar}, null);
+    // if (!deployResult.isSuccessful()) {
+    // return deployResult;
+    // }
+    // } catch (Exception ex) {
+    // ex.printStackTrace(System.out);
+    // System.out
+    // .println("GGG: Exception caught while deploying driver jar, exception class is: " + ex);
+    // return ResultModel.createError(
+    // "An exception was thrown while trying to deploy the driver jar: " + ex.getMessage());
+    // }
+    // }
 
     JndiBindingsType.JndiBinding configuration = new JndiBindingsType.JndiBinding();
     if (pooled) {
@@ -158,16 +157,6 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     }
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
-
-    // DeployCommand deployCommand = new DeployCommand();
-    // ResultModel deployResult = deployCommand.deploy(new String[] {}, new String[] {jar}, "");
-    // int i = 0;
-    // for (DistributedMember member : targetMembers) {
-    // i++;
-    // List<String> jarNames = new ArrayList<>();
-    // TabularResultModel deployInfo = deployResult.getTableSection("deployResult");
-    // System.out.println("SAJ: " + deployInfo.getValuesInRow(i));
-    // }
 
     if (targetMembers.size() > 0) {
       Object[] arguments = new Object[] {configuration, true};
