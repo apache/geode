@@ -106,13 +106,15 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
     if (driverJar != null && !driverJar.equals("")) {
       DeployCommand deployCommand = new DeployCommand();
       try {
-        ResultModel deployResult = deployCommand.deploy(new String[] {}, new String[] {driverJar}, null);
-        if(!deployResult.isSuccessful()) {
+        ResultModel deployResult =
+            deployCommand.deploy(new String[] {}, new String[] {driverJar}, null);
+        if (!deployResult.isSuccessful()) {
           return deployResult;
         }
       } catch (Exception ex) {
         ex.printStackTrace(System.out);
-        System.out.println("GGG: Exception caught while deploying driver jar, exception class is: " + ex);
+        System.out
+            .println("GGG: Exception caught while deploying driver jar, exception class is: " + ex);
         return ResultModel.createError(
             "An exception was thrown while trying to deploy the driver jar: " + ex.getMessage());
       }

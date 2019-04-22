@@ -17,8 +17,10 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+import java.io.File;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -34,6 +36,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
+import org.apache.geode.util.test.TestUtil;
 
 public class CreateDataSourceCommandDUnitTest {
 
@@ -114,12 +117,26 @@ public class CreateDataSourceCommandDUnitTest {
             + URL + "\"")
         .statusIsError().containsOutput("No suitable driver");
 
-    String jarFile = "/Users/bross/dev/geode/geode-connectors/src/distributedTest/java/org/apache/geode/connectors/jdbc/internal/cli/mysql-connector-java-8.0.15.jar";
-    //gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
+    assertThat(mySqlDriverFile).exists();
+    String jarFile = mySqlDriverFile.getAbsolutePath();
+    // String jarFile = "/Users/gzhou/Downloads/mysql-connector-java-8.0.15.jar";
+    // String jarFile =
+    // "/Users/bross/dev/geode/geode-connectors/src/distributedTest/java/org/apache/geode/connectors/jdbc/internal/cli/mysql-connector-java-8.0.15.jar";
+    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
 
     gfsh.executeAndAssertThat(
         "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
-            + URL + "\" --driver-jar=" + jarFile).containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
+            + URL + "\" --driver-jar=" + jarFile)
+        .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
+  }
+
+  private File loadTestResource(String fileName) {
+    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    Assertions.assertThat(filePath).isNotNull();
+
+    return new File(filePath);
   }
 
   private void verifyThatNonExistentClassCausesGfshToError() {
