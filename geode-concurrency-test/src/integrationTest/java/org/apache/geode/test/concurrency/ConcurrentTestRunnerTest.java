@@ -30,7 +30,7 @@ public class ConcurrentTestRunnerTest {
   public void confirmThatInParallelRunsConcurrently() {
     // We only need FailingTest to fail once for the following
     // assertion to pass. ConcurrentTestRunner runs FailingTest
-    // 1000 times by default. It will stop running it once it
+    // 2000 times by default. It will stop running it once it
     // sees it fail, which is what we want to see because it
     // confirms that running inParallel actually runs concurrently.
     assertThat(JUnitCore.runClasses(CheckForConcurrency.class).wasSuccessful()).isFalse();

@@ -35,7 +35,7 @@ import org.apache.geode.test.concurrency.Runner;
  * Simple runner that just runs the test in a loop
  */
 public class LoopRunner implements Runner {
-  private static final int DEFAULT_COUNT = 1000;
+  private static final int DEFAULT_COUNT = 2000;
 
   @Override
   public List<Throwable> runTestMethod(Method child) {
