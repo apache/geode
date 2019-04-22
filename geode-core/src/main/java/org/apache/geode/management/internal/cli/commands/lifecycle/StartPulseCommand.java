@@ -22,17 +22,15 @@ import java.net.URI;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 
 public class StartPulseCommand extends OfflineGfshCommand {
@@ -40,48 +38,36 @@ public class StartPulseCommand extends OfflineGfshCommand {
   @CliCommand(value = CliStrings.START_PULSE, help = CliStrings.START_PULSE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
       CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
-  public Result startPulse(@CliOption(key = CliStrings.START_PULSE__URL,
+  public ResultModel startPulse(@CliOption(key = CliStrings.START_PULSE__URL,
       unspecifiedDefaultValue = "http://localhost:7070/pulse",
-      help = CliStrings.START_PULSE__URL__HELP) final String url) {
-    try {
-      if (StringUtils.isNotBlank(url)) {
-        browse(URI.create(url));
-        return ResultBuilder.createInfoResult(CliStrings.START_PULSE__RUN);
-      } else {
-        if (isConnectedAndReady()) {
-          OperationInvoker operationInvoker = getGfsh().getOperationInvoker();
+      help = CliStrings.START_PULSE__URL__HELP) final String url) throws IOException {
+    if (StringUtils.isNotBlank(url)) {
+      browse(URI.create(url));
+      return ResultModel.createInfo(CliStrings.START_PULSE__RUN);
+    } else {
+      if (isConnectedAndReady()) {
+        OperationInvoker operationInvoker = getGfsh().getOperationInvoker();
 
-          ObjectName managerObjectName = (ObjectName) operationInvoker.getAttribute(
-              ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "ManagerObjectName");
+        ObjectName managerObjectName = (ObjectName) operationInvoker.getAttribute(
+            ManagementConstants.OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN, "ManagerObjectName");
 
-          String pulseURL =
-              (String) operationInvoker.getAttribute(managerObjectName.toString(), "PulseURL");
+        String pulseURL =
+            (String) operationInvoker.getAttribute(managerObjectName.toString(), "PulseURL");
 
-          if (StringUtils.isNotBlank(pulseURL)) {
-            browse(URI.create(pulseURL));
-            return ResultBuilder
-                .createInfoResult(CliStrings.START_PULSE__RUN + " with URL: " + pulseURL);
-          } else {
-            String pulseMessage = (String) operationInvoker
-                .getAttribute(managerObjectName.toString(), "StatusMessage");
-            return (StringUtils.isNotBlank(pulseMessage)
-                ? ResultBuilder.createGemFireErrorResult(pulseMessage)
-                : ResultBuilder.createGemFireErrorResult(CliStrings.START_PULSE__URL__NOTFOUND));
-          }
+        if (StringUtils.isNotBlank(pulseURL)) {
+          browse(URI.create(pulseURL));
+          return ResultModel.createError(CliStrings.START_PULSE__RUN + " with URL: " + pulseURL);
         } else {
-          return ResultBuilder.createUserErrorResult(CliStrings
-              .format(CliStrings.GFSH_MUST_BE_CONNECTED_FOR_LAUNCHING_0, "GemFire Pulse"));
+          String pulseMessage = (String) operationInvoker
+              .getAttribute(managerObjectName.toString(), "StatusMessage");
+          return (StringUtils.isNotBlank(pulseMessage)
+              ? ResultModel.createError(pulseMessage)
+              : ResultModel.createError(CliStrings.START_PULSE__URL__NOTFOUND));
         }
+      } else {
+        return ResultModel.createError(CliStrings
+            .format(CliStrings.GFSH_MUST_BE_CONNECTED_FOR_LAUNCHING_0, "GemFire Pulse"));
       }
-    } catch (Exception e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_PULSE__ERROR, t.getMessage()));
     }
   }
 

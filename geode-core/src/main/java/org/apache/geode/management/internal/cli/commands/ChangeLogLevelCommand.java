@@ -39,9 +39,6 @@ import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -101,10 +98,7 @@ public class ChangeLogLevelCommand extends GfshCommand {
     Object[] functionArgs = new Object[1];
     functionArgs[0] = logLevel;
 
-    CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData section = compositeResultData.addSection("section");
-    TabularResultData resultTable = section.addTable("ChangeLogLevel");
-    resultTable = resultTable.setHeader("Summary");
+    ResultModel result = new ResultModel();
 
     Execution execution = FunctionService.onMembers(dsMembers).setArguments(functionArgs);
     if (execution == null) {
@@ -113,7 +107,7 @@ public class ChangeLogLevelCommand extends GfshCommand {
     List<?> resultList =
         (List<?>) this.executeFunction(logFunction, functionArgs, dsMembers).getResult();
 
-    ResultModel result = new ResultModel();
+
     TabularResultModel tableInfo = result.addTable("result");
     tableInfo.setColumnHeader(CliStrings.CHANGE_LOGLEVEL__COLUMN_MEMBER,
         CliStrings.CHANGE_LOGLEVEL__COLUMN_STATUS);

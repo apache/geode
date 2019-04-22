@@ -30,8 +30,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CompositeResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -44,8 +42,6 @@ public class ListClientCommand extends GfshCommand {
       operation = ResourcePermission.Operation.READ)
   public ResultModel listClient() throws Exception {
     ResultModel result = new ResultModel();
-    CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-    CompositeResultData.SectionResultData section = compositeResultData.addSection("section1");
 
     TabularResultModel resultTable = result.addTable("clientList");
     String headerText = "Client List";

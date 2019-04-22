@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Version;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -40,7 +39,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderCreateFunction;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -223,7 +221,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
 
   public static class Interceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       Boolean parallel =
           (Boolean) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__PARALLEL);
       OrderPolicy orderPolicy =
@@ -232,16 +230,16 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           (Integer) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS);
 
       if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
-        return ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             "Must specify --order-policy when --dispatcher-threads is larger than 1.");
       }
 
       if (parallel && orderPolicy == OrderPolicy.THREAD) {
-        return ResultBuilder.createUserErrorResult(
+        return ResultModel.createError(
             "Parallel Gateway Sender can not be created with THREAD OrderPolicy");
       }
 
-      return ResultBuilder.createInfoResult("");
+      return ResultModel.createInfo("");
     }
   }
 }

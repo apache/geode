@@ -29,65 +29,52 @@ import java.util.TreeSet;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.GemFireException;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.OfflineGfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.InfoResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class StartVsdCommand extends OfflineGfshCommand {
   @CliCommand(value = CliStrings.START_VSD, help = CliStrings.START_VSD__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_M_AND_M, CliStrings.TOPIC_GEODE_STATISTICS})
-  public Result startVsd(@CliOption(key = CliStrings.START_VSD__FILE,
-      help = CliStrings.START_VSD__FILE__HELP) final String[] statisticsArchiveFilePathnames) {
-    try {
-      String geodeHome = System.getenv("GEODE_HOME");
+  public ResultModel startVsd(@CliOption(key = CliStrings.START_VSD__FILE,
+      help = CliStrings.START_VSD__FILE__HELP) final String[] statisticsArchiveFilePathnames)
+      throws Exception {
 
-      assertState(StringUtils.isNotBlank(geodeHome), CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
+    String geodeHome = System.getenv("GEODE_HOME");
 
-      assertState(IOUtils.isExistingPathname(getPathToVsd()),
-          String.format(CliStrings.START_VSD__NOT_FOUND_ERROR_MESSAGE, geodeHome));
+    assertState(org.apache.commons.lang3.StringUtils.isNotBlank(geodeHome),
+        CliStrings.GEODE_HOME_NOT_FOUND_ERROR_MESSAGE);
 
-      String[] vsdCommandLine = createdVsdCommandLine(statisticsArchiveFilePathnames);
+    assertState(IOUtils.isExistingPathname(getPathToVsd()),
+        String.format(CliStrings.START_VSD__NOT_FOUND_ERROR_MESSAGE, geodeHome));
 
-      if (isDebugging()) {
-        getGfsh().printAsInfo(
-            String.format("GemFire VSD command-line (%1$s)", Arrays.toString(vsdCommandLine)));
-      }
+    String[] vsdCommandLine = createdVsdCommandLine(statisticsArchiveFilePathnames);
 
-      Process vsdProcess = Runtime.getRuntime().exec(vsdCommandLine);
-
-      getGfsh().printAsInfo(CliStrings.START_VSD__RUN);
-
-      String vsdProcessOutput = waitAndCaptureProcessStandardErrorStream(vsdProcess);
-
-      InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-
-      if (StringUtils.isNotBlank(vsdProcessOutput)) {
-        infoResultData.addLine(StringUtils.LINE_SEPARATOR);
-        infoResultData.addLine(vsdProcessOutput);
-      }
-
-      return ResultBuilder.buildResult(infoResultData);
-    } catch (GemFireException | IllegalStateException | IllegalArgumentException
-        | FileNotFoundException e) {
-      return ResultBuilder.createShellClientErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(
-          String.format(CliStrings.START_VSD__ERROR_MESSAGE, t.getMessage()));
+    if (isDebugging()) {
+      getGfsh().printAsInfo(
+          String.format("GemFire VSD command-line (%1$s)", Arrays.toString(vsdCommandLine)));
     }
+
+    Process vsdProcess = Runtime.getRuntime().exec(vsdCommandLine);
+
+    getGfsh().printAsInfo(CliStrings.START_VSD__RUN);
+
+    String vsdProcessOutput = waitAndCaptureProcessStandardErrorStream(vsdProcess);
+
+    ResultModel result = new ResultModel();
+    InfoResultModel info = result.addInfo("info");
+
+    if (org.apache.commons.lang3.StringUtils.isNotBlank(vsdProcessOutput)) {
+      info.addLine(vsdProcessOutput);
+    }
+
+    return result;
   }
 
   protected String[] createdVsdCommandLine(final String[] statisticsArchiveFilePathnames)
