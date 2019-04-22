@@ -318,6 +318,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
 
   boolean removeCacheServer(CacheServer cacheServer);
 
+  boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer);
+
   /**
    * A test-hook allowing you to alter the cache setting established by
    * CacheFactory.setPdxReadSerialized()

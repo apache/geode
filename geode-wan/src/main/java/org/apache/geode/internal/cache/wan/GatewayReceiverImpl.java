@@ -23,7 +23,6 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.server.CacheServer;
@@ -32,7 +31,6 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
@@ -56,10 +54,10 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   private final List<GatewayTransportFilter> filters;
   private final String bindAdd;
 
-  private CacheServer receiver;
+  private GatewayReceiverServer receiver;
   private int port;
 
-  GatewayReceiverImpl(InternalCache cache, MeterRegistry meterRegistry, int startPort, int endPort,
+  GatewayReceiverImpl(InternalCache cache, int startPort, int endPort,
       int timeBetPings, int buffSize, String bindAdd, List<GatewayTransportFilter> filters,
       String hostnameForSenders, boolean manualStart) {
     this.cache = cache;
@@ -81,7 +79,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   @Override
   public String getHost() {
     if (receiver != null) {
-      return ((CacheServerImpl) receiver).getExternalAddress();
+      return receiver.getExternalAddress();
     }
 
     if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
@@ -157,8 +155,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       this.port = port;
       return true;
     } catch (IOException e) {
-      logger.info("Failed to create server socket on  {}[{}]",
-          bindAdd, port);
+      logger.info("Failed to create server socket on {}[{}]", bindAdd, port);
       return false;
     }
   }

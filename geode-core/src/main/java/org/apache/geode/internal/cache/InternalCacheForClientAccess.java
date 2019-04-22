@@ -1137,6 +1137,11 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  public boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer) {
+    return delegate.removeCacheServer(receiverServer);
+  }
+
+  @Override
   public void setReadSerializedForTest(boolean value) {
     delegate.setReadSerializedForTest(value);
   }

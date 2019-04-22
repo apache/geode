@@ -15,13 +15,27 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.SocketAddress;
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.InternalCacheServer.EndpointType;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -30,17 +44,38 @@ public class CacheServerImplTest {
 
   private InternalCache cache;
   private SecurityService securityService;
+  private SocketCreator socketCreator;
+  private CacheClientNotifier cacheClientNotifier;
+  private ClientHealthMonitor clientHealthMonitor;
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     cache = mock(InternalCache.class);
     securityService = mock(SecurityService.class);
+    socketCreator = mock(SocketCreator.class);
+    cacheClientNotifier = mock(CacheClientNotifier.class);
+    clientHealthMonitor = mock(ClientHealthMonitor.class);
+
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    ServerSocket serverSocket = mock(ServerSocket.class);
+
+    when(cache.getDistributedSystem()).thenReturn(system);
+    when(cache.getInternalDistributedSystem()).thenReturn(system);
+    when(serverSocket.getLocalSocketAddress()).thenReturn(mock(SocketAddress.class));
+    when(socketCreator.createServerSocket(anyInt(), anyInt(), any(), any(), anyInt()))
+        .thenReturn(serverSocket);
+    when(system.getConfig()).thenReturn(mock(DistributionConfig.class));
+    when(system.getProperties()).thenReturn(new Properties());
   }
 
   @Test
-  public void isServerEndpoint() {
-    CacheServerImpl server = new CacheServerImpl(cache, securityService);
+  public void isServerEndpoint() throws IOException {
+    OverflowAttributes overflowAttributes = mock(OverflowAttributes.class);
+    InternalCacheServer server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
 
-    assertThat(server.getEndpointType()).isSameAs(EndpointType.SERVER);
+    Acceptor acceptor = server.createAcceptor(overflowAttributes);
+
+    assertThat(acceptor.isGatewayReceiver()).isFalse();
   }
 }

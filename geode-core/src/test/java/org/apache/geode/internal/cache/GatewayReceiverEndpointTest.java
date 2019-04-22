@@ -15,19 +15,40 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.SocketAddress;
+import java.util.Properties;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.wan.GatewayReceiver;
-import org.apache.geode.internal.cache.InternalCacheServer.EndpointType;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.wan.GatewayReceiverEndpoint;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category(WanTest.class)
@@ -37,21 +58,59 @@ public class GatewayReceiverEndpointTest {
   private SecurityService securityService;
   private GatewayReceiver gatewayReceiver;
   private GatewayReceiverMetrics gatewayReceiverMetrics;
+  private SocketCreator socketCreator;
+  private CacheClientNotifier cacheClientNotifier;
+  private ClientHealthMonitor clientHealthMonitor;
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     MeterRegistry meterRegistry = new SimpleMeterRegistry();
+    InternalDistributedSystem system = mock(InternalDistributedSystem.class);
+    DistributionConfig config = mock(DistributionConfig.class);
+    ServerSocket serverSocket = mock(ServerSocket.class);
+    StatisticsManager statisticsManager = mock(StatisticsManager.class);
+
     cache = mock(InternalCache.class);
     securityService = mock(SecurityService.class);
     gatewayReceiver = mock(GatewayReceiver.class);
     gatewayReceiverMetrics = new GatewayReceiverMetrics(meterRegistry);
+    socketCreator = mock(SocketCreator.class);
+    cacheClientNotifier = mock(CacheClientNotifier.class);
+    clientHealthMonitor = mock(ClientHealthMonitor.class);
+
+    when(cache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
+    when(cache.getDistributedSystem()).thenReturn(system);
+    when(cache.getInternalDistributedSystem()).thenReturn(system);
+    when(serverSocket.getLocalSocketAddress()).thenReturn(mock(SocketAddress.class));
+    when(socketCreator.createServerSocket(anyInt(), anyInt(), any(), any(), anyInt()))
+        .thenReturn(serverSocket);
+    when(statisticsManager.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
+    when(statisticsManager.createType(any(), any(), any())).thenReturn(mock(StatisticsType.class));
+    when(system.getConfig()).thenReturn(config);
+    when(system.getProperties()).thenReturn(new Properties());
+    when(system.getStatisticsManager()).thenReturn(statisticsManager);
+
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+  }
+
+  @After
+  public void tearDown() {
+    if (CacheClientNotifier.getInstance() != null) {
+      CacheClientNotifier.getInstance().shutdown(0);
+    }
+    ClientHealthMonitor.shutdownInstance();
+    SocketCreatorFactory.close();
   }
 
   @Test
-  public void isGatewayEndpoint() {
-    GatewayReceiverEndpoint server = new GatewayReceiverEndpoint(cache, securityService,
-        gatewayReceiver, gatewayReceiverMetrics);
+  public void isGatewayEndpoint() throws IOException {
+    OverflowAttributes overflowAttributes = mock(OverflowAttributes.class);
+    InternalCacheServer server = new GatewayReceiverEndpoint(cache, securityService,
+        gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
+        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
 
-    assertThat(server.getEndpointType()).isSameAs(EndpointType.GATEWAY);
+    Acceptor acceptor = server.createAcceptor(overflowAttributes);
+
+    assertThat(acceptor.isGatewayReceiver()).isTrue();
   }
 }

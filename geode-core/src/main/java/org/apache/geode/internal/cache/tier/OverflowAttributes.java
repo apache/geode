@@ -12,19 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tier;
 
-import java.io.IOException;
+public interface OverflowAttributes {
 
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.OverflowAttributes;
+  String getEvictionPolicy();
 
-public interface InternalCacheServer extends CacheServer {
+  int getQueueCapacity();
 
-  Acceptor getAcceptor();
+  int getPort();
 
-  Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException;
+  boolean isDiskStore();
 
-  String getExternalAddress();
+  String getOverflowDirectory();
+
+  String getDiskStoreName();
 }

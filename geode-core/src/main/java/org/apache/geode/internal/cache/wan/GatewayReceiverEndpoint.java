@@ -14,14 +14,23 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.net.SocketCreatorFactory.getSocketCreatorForComponent;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.GATEWAY;
+
 import java.io.IOException;
-import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 
 public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayReceiverServer {
@@ -29,26 +38,53 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
   private final GatewayReceiver gatewayReceiver;
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
 
+  private final Supplier<SocketCreator> socketCreatorSupplier;
+  private final CacheClientNotifierProvider cacheClientNotifierProvider;
+  private final ClientHealthMonitorProvider clientHealthMonitorProvider;
 
   public GatewayReceiverEndpoint(final InternalCache cache, final SecurityService securityService,
       final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics) {
+    this(cache, securityService, gatewayReceiver, gatewayReceiverMetrics,
+        () -> getSocketCreatorForComponent(GATEWAY), CacheClientNotifier.singletonProvider(),
+        ClientHealthMonitor.singletonProvider());
+  }
+
+  public GatewayReceiverEndpoint(final InternalCache cache, final SecurityService securityService,
+      final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
+      final Supplier<SocketCreator> socketCreatorSupplier,
+      final CacheClientNotifierProvider cacheClientNotifierProvider,
+      final ClientHealthMonitorProvider clientHealthMonitorProvider) {
     super(cache, securityService);
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
+    this.socketCreatorSupplier = socketCreatorSupplier;
+    this.cacheClientNotifierProvider = cacheClientNotifierProvider;
+    this.clientHealthMonitorProvider = clientHealthMonitorProvider;
   }
 
   @Override
-  public EndpointType getEndpointType() {
-    return EndpointType.GATEWAY;
-  }
-
-  @Override
-  public Acceptor createAcceptor(List overflowAttributesList) throws IOException {
+  public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
     return new AcceptorImpl(getPort(), getBindAddress(), getNotifyBySubscription(),
         getSocketBufferSize(), getMaximumTimeBetweenPings(), getCache(), getMaxConnections(),
         getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), connectionListener(),
-        overflowAttributesList, getTcpNoDelay(), serverConnectionFactory(), timeLimitMillis(),
-        securityService(),
-        gatewayReceiver, gatewayReceiverMetrics, gatewayReceiver.getGatewayTransportFilters());
+        overflowAttributes, getTcpNoDelay(), serverConnectionFactory(), timeLimitMillis(),
+        securityService(), gatewayReceiver, gatewayReceiverMetrics,
+        gatewayReceiver.getGatewayTransportFilters(), socketCreatorSupplier,
+        cacheClientNotifierProvider, clientHealthMonitorProvider);
+  }
+
+  @Override
+  protected void notifyResourceEventStart() {
+    // nothing
+  }
+
+  @Override
+  protected void notifyResourceEventStop() {
+    // nothing
+  }
+
+  @Override
+  protected boolean inheritMembershipGroups() {
+    return false;
   }
 }

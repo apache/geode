@@ -827,4 +827,36 @@ public class ClientHealthMonitor {
       } // while
     }
   } // ClientHealthMonitorThread
+
+  public static ClientHealthMonitorProvider singletonProvider() {
+    return new ClientHealthMonitorSingleton();
+  }
+
+  public static ClientHealthMonitorGetter singletonGetter() {
+    return new ClientHealthMonitorSingleton();
+  }
+
+  public interface ClientHealthMonitorProvider {
+    ClientHealthMonitor get(InternalCache cache, int maximumTimeBetweenPings,
+        CacheClientNotifierStats stats);
+  }
+
+  public interface ClientHealthMonitorGetter {
+    ClientHealthMonitor get();
+  }
+
+  private static class ClientHealthMonitorSingleton
+      implements ClientHealthMonitorProvider, ClientHealthMonitorGetter {
+
+    @Override
+    public ClientHealthMonitor get(InternalCache cache, int maximumTimeBetweenPings,
+        CacheClientNotifierStats stats) {
+      return getInstance(cache, maximumTimeBetweenPings, stats);
+    }
+
+    @Override
+    public ClientHealthMonitor get() {
+      return getInstance();
+    }
+  }
 }

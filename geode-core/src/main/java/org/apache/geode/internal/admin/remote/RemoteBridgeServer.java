@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
@@ -36,6 +35,7 @@ import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
 
 /**
  * A remote (serializable) implementation of <code>BridgeServer</code> that is passed between
@@ -235,12 +235,7 @@ public class RemoteBridgeServer extends AbstractCacheServer
   }
 
   @Override
-  public Acceptor createAcceptor(List overflowAttributesList) throws IOException {
-    throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
-  }
-
-  @Override
-  public EndpointType getEndpointType() {
+  public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
     throw new UnsupportedOperationException("not implemented on " + getClass().getSimpleName());
   }
 

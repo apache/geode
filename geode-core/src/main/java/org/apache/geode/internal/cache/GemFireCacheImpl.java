@@ -429,6 +429,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final AtomicReference<GatewayReceiver> gatewayReceiver = new AtomicReference<>();
 
+  private final AtomicReference<GatewayReceiverServer> gatewayReceiverServer =
+      new AtomicReference<>();
+
   /**
    * PartitionedRegion instances (for required-events notification
    */
@@ -1633,6 +1636,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
 
+    GatewayReceiverServer receiverServer = cache.gatewayReceiverServer.get();
+    Acceptor acceptor = receiverServer.getAcceptor();
+    if (acceptor != null) {
+      acceptor.emergencyClose();
+    }
+
     if (DEBUG) {
       System.err.println("DEBUG: closing client resources");
     }
@@ -2552,7 +2561,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     boolean stoppedCacheServer = false;
 
-    for (InternalCacheServer cacheServer : this.allCacheServers) {
+    for (InternalCacheServer cacheServer : allCacheServers) {
       if (isDebugEnabled) {
         logger.debug("stopping bridge {}", cacheServer);
       }
@@ -2563,9 +2572,26 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           logger.debug("Ignored cache closure while closing bridge {}", cacheServer, e);
         }
       }
-      this.allCacheServers.remove(cacheServer);
+      allCacheServers.remove(cacheServer);
       stoppedCacheServer = true;
     }
+
+    GatewayReceiverServer removedGatewayReceiverServer = gatewayReceiverServer.getAndSet(null);
+    if (removedGatewayReceiverServer != null) {
+      if (isDebugEnabled) {
+        logger.debug("stopping gateway receiver server {}", removedGatewayReceiverServer);
+      }
+      try {
+        removedGatewayReceiverServer.stop();
+      } catch (CancelException e) {
+        if (isDebugEnabled) {
+          logger.debug("Ignored cache closure while closing gateway receiver server {}",
+              removedGatewayReceiverServer, e);
+        }
+      }
+      stoppedCacheServer = true;
+    }
+
     if (stoppedCacheServer) {
       // now that all the cache servers have stopped empty the static pool of commBuffers it might
       // have used.
@@ -3710,10 +3736,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public CacheServer addCacheServer() {
     throwIfClient();
-    this.stopper.checkCancelInProgress(null);
+    stopper.checkCancelInProgress(null);
 
     InternalCacheServer server = new CacheServerImpl(this, securityService);
-    this.allCacheServers.add(server);
+    allCacheServers.add(server);
 
     sendAddCacheServerProfileMessage();
     return server;
@@ -3721,7 +3747,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public boolean removeCacheServer(CacheServer cacheServer) {
-    boolean removed = this.allCacheServers.remove(cacheServer);
+    boolean removed = allCacheServers.remove(cacheServer);
     sendRemoveCacheServerProfileMessage();
     return removed;
   }
@@ -3807,18 +3833,25 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     requireNonNull(metrics,
         "GatewayReceiverMetrics must be added before adding a server endpoint.");
 
-    GatewayReceiverEndpoint server =
+    GatewayReceiverServer server =
         new GatewayReceiverEndpoint(this, securityService, receiver, metrics);
-    allCacheServers.add(server);
+    gatewayReceiverServer.set(server);
 
     sendAddCacheServerProfileMessage();
     return server;
   }
 
   @Override
+  public boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer) {
+    boolean removed = gatewayReceiverServer.compareAndSet(receiverServer, null);
+    sendRemoveCacheServerProfileMessage();
+    return removed;
+  }
+
+  @Override
   public void addGatewayReceiver(GatewayReceiver receiver) {
     throwIfClient();
-    this.stopper.checkCancelInProgress(null);
+    stopper.checkCancelInProgress(null);
     requireNonNull(receiver, "GatewayReceiver must be supplied.");
     gatewayReceiverMetrics.set(new GatewayReceiverMetrics(meterRegistry));
     gatewayReceiver.set(receiver);
@@ -3828,7 +3861,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public void removeGatewayReceiver(GatewayReceiver receiver) {
     throwIfClient();
     gatewayReceiverMetrics.getAndSet(null).close();
-    this.stopper.checkCancelInProgress(null);
+    stopper.checkCancelInProgress(null);
     gatewayReceiver.set(null);
   }
 
@@ -3944,27 +3977,19 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public List<CacheServer> getCacheServers() {
-    List<CacheServer> cacheServersWithoutReceiver = null;
-    if (!this.allCacheServers.isEmpty()) {
-      for (InternalCacheServer cacheServer : this.allCacheServers) {
-        // If CacheServer is a GatewayReceiver, don't return as part of CacheServers
-        if (cacheServer.getAcceptor().isGatewayReceiver()) {
-          if (cacheServersWithoutReceiver == null) {
-            cacheServersWithoutReceiver = new ArrayList<>();
-          }
-          cacheServersWithoutReceiver.add(cacheServer);
-        }
-      }
-    }
-    if (cacheServersWithoutReceiver == null) {
-      cacheServersWithoutReceiver = Collections.emptyList();
-    }
-    return cacheServersWithoutReceiver;
+    return Collections.unmodifiableList(allCacheServers);
   }
 
   @Override
   public List<InternalCacheServer> getCacheServersAndGatewayReceiver() {
-    return this.allCacheServers;
+    List<InternalCacheServer> allServers = new ArrayList<>(allCacheServers);
+
+    GatewayReceiverServer receiverServer = gatewayReceiverServer.get();
+    if (receiverServer != null) {
+      allServers.add(receiverServer);
+    }
+
+    return Collections.unmodifiableList(allServers);
   }
 
   /**
@@ -4074,21 +4099,29 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Notification adds to the messaging a PR must do on each put/destroy/invalidate operation and
    * should be kept to a minimum
    *
-   * @param r the partitioned region
+   * @param region the partitioned region
    * @return true if the region should deliver all of its events to this cache
    */
   @Override
-  public boolean requiresNotificationFromPR(PartitionedRegion r) {
-    boolean hasSerialSenders = hasSerialSenders(r);
+  public boolean requiresNotificationFromPR(PartitionedRegion region) {
+    boolean hasSerialSenders = hasSerialSenders(region);
+
     if (!hasSerialSenders) {
-      for (InternalCacheServer server : this.allCacheServers) {
+      for (InternalCacheServer server : allCacheServers) {
         if (!server.getNotifyBySubscription()) {
           hasSerialSenders = true;
           break;
         }
       }
-
     }
+
+    if (!hasSerialSenders) {
+      GatewayReceiverServer receiverServer = gatewayReceiverServer.get();
+      if (receiverServer != null && !receiverServer.getNotifyBySubscription()) {
+        hasSerialSenders = true;
+      }
+    }
+
     return hasSerialSenders;
   }
 
@@ -4132,9 +4165,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (isClient()) {
       return false;
     }
-    this.stopper.checkCancelInProgress(null);
+    stopper.checkCancelInProgress(null);
 
-    return this.isServer || !this.allCacheServers.isEmpty();
+    return isServer || !allCacheServers.isEmpty();
   }
 
   @Override

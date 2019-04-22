@@ -129,7 +129,7 @@ public class GatewayReceiverFactoryImpl implements GatewayReceiverFactory {
 
     GatewayReceiver recv = null;
     if (this.cache instanceof GemFireCacheImpl) {
-      recv = new GatewayReceiverImpl(cache, cache.getMeterRegistry(), this.startPort, this.endPort,
+      recv = new GatewayReceiverImpl(cache, this.startPort, this.endPort,
           this.timeBetPings, this.socketBuffSize, this.bindAdd, this.filters,
           this.hostnameForSenders, this.manualStart);
       this.cache.addGatewayReceiver(recv);

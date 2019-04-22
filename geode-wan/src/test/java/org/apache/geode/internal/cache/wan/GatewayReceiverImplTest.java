@@ -31,8 +31,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,13 +43,11 @@ public class GatewayReceiverImplTest {
 
   private InternalCache cache;
   private GatewayReceiverServer server;
-  private MeterRegistry meterRegistry;
 
   @Before
   public void setUp() {
     cache = mock(InternalCache.class);
     server = mock(GatewayReceiverServer.class);
-    meterRegistry = new SimpleMeterRegistry();
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
     when(cache.getInternalDistributedSystem()).thenReturn(system);
@@ -62,7 +58,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void getHostOnUnstartedGatewayShouldReturnLocalhost() throws UnknownHostException {
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
 
     assertEquals(SocketCreator.getLocalHost().getHostName(), gateway.getHost());
   }
@@ -70,7 +66,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void getHostOnRunningGatewayShouldReturnCacheServerAddress() {
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
 
     gateway.start();
 
@@ -81,7 +77,7 @@ public class GatewayReceiverImplTest {
   public void destroyCalledOnRunningGatewayReceiverShouldThrowException() {
     when(server.isRunning()).thenReturn(true);
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
     gateway.start();
 
     Throwable thrown = catchThrowable(() -> gateway.destroy());
@@ -92,7 +88,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromCacheServers() {
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
     gateway.start();
     // sender is mocked already to say running is false
 
@@ -104,7 +100,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromReceivers() {
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
     gateway.start();
     // sender is mocked already to say running is false
 
@@ -117,7 +113,7 @@ public class GatewayReceiverImplTest {
   public void testFailToStartWith2NextPorts() throws IOException {
     doThrow(new SocketException("Address already in use")).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2001, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -131,7 +127,7 @@ public class GatewayReceiverImplTest {
   public void testFailToStartWithSamePort() throws IOException {
     doThrow(new SocketException("Address already in use")).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2000, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2000, 5, 100, null, null, null, true);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -145,7 +141,7 @@ public class GatewayReceiverImplTest {
   public void testFailToStartWithARangeOfPorts() throws IOException {
     doThrow(new SocketException("Address already in use")).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2100, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2100, 5, 100, null, null, null, true);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -168,7 +164,7 @@ public class GatewayReceiverImplTest {
       return 0;
     }).when(server).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, meterRegistry, 2000, 2010, 5, 100, null, null, null, true);
+        new GatewayReceiverImpl(cache, 2000, 2010, 5, 100, null, null, null, true);
 
     gateway.start();
 

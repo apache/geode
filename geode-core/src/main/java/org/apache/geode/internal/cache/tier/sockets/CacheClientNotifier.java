@@ -103,6 +103,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
@@ -133,16 +134,17 @@ public class CacheClientNotifier {
    */
   public static synchronized CacheClientNotifier getInstance(InternalCache cache,
       CacheServerStats acceptorStats, int maximumMessageCount, int messageTimeToLive,
-      ConnectionListener listener, List overflowAttributesList, boolean isGatewayReceiver) {
+      ConnectionListener listener, OverflowAttributes overflowAttributes,
+      boolean isGatewayReceiver) {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, acceptorStats, maximumMessageCount,
-          messageTimeToLive, listener, overflowAttributesList, isGatewayReceiver);
+          messageTimeToLive, listener, overflowAttributes, isGatewayReceiver);
     }
 
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
       // Gateway receiver might have create CCN instance without HaContainer
       // In this case, the HaContainer should be lazily created here
-      ccnSingleton.initHaContainer(overflowAttributesList);
+      ccnSingleton.initHaContainer(overflowAttributes);
     }
     return ccnSingleton;
   }
@@ -1844,7 +1846,7 @@ public class CacheClientNotifier {
    */
   private CacheClientNotifier(InternalCache cache, CacheServerStats acceptorStats,
       int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
-      List overflowAttributesList, boolean isGatewayReceiver) {
+      OverflowAttributes overflowAttributes, boolean isGatewayReceiver) {
     // Set the Cache
     setCache(cache);
     this.acceptorStats = acceptorStats;
@@ -2176,15 +2178,19 @@ public class CacheClientNotifier {
     return haContainer;
   }
 
-  public void initHaContainer(List overflowAttributesList) {
+  public void initHaContainer(OverflowAttributes overflowAttributes) {
     // lazily initialize haContainer in case this CCN instance was created by a gateway receiver
-    if (overflowAttributesList != null
-        && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributesList.get(0))) {
+    if (overflowAttributes != null
+        && !HARegionQueue.HA_EVICTION_POLICY_NONE.equals(overflowAttributes.getEvictionPolicy())) {
       haContainer = new HAContainerRegion(cache.getRegion(Region.SEPARATOR
-          + CacheServerImpl.clientMessagesRegion(cache, (String) overflowAttributesList.get(0),
-              ((Integer) overflowAttributesList.get(1)).intValue(),
-              ((Integer) overflowAttributesList.get(2)).intValue(),
-              (String) overflowAttributesList.get(3), (Boolean) overflowAttributesList.get(4))));
+          + CacheServerImpl.clientMessagesRegion(
+              cache,
+              overflowAttributes.getEvictionPolicy(),
+              overflowAttributes.getQueueCapacity(),
+              overflowAttributes.getPort(),
+              overflowAttributes.isDiskStore() ? overflowAttributes.getDiskStoreName()
+                  : overflowAttributes.getOverflowDirectory(),
+              overflowAttributes.isDiskStore())));
     } else {
       haContainer = new HAContainerMap(new ConcurrentHashMap());
     }
@@ -2230,6 +2236,41 @@ public class CacheClientNotifier {
           logger.debug("{} client is no longer denylisted", proxyID);
         }
       }
+    }
+  }
+
+  public static CacheClientNotifierProvider singletonProvider() {
+    return new SingletonCacheClientNotifier();
+  }
+
+  public static CacheClientNotifierProvider singletonGetter() {
+    return new SingletonCacheClientNotifier();
+  }
+
+  public interface CacheClientNotifierProvider {
+    CacheClientNotifier get(InternalCache cache, CacheServerStats acceptorStats,
+        int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
+        OverflowAttributes overflowAttributes, boolean isGatewayReceiver);
+  }
+
+  public interface CacheClientNotifierGetter {
+    CacheClientNotifier get();
+  }
+
+  private static class SingletonCacheClientNotifier
+      implements CacheClientNotifierProvider, CacheClientNotifierGetter {
+
+    @Override
+    public CacheClientNotifier get(InternalCache cache, CacheServerStats acceptorStats,
+        int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
+        OverflowAttributes overflowAttributes, boolean isGatewayReceiver) {
+      return getInstance(cache, acceptorStats, maximumMessageCount, messageTimeToLive, listener,
+          overflowAttributes, isGatewayReceiver);
+    }
+
+    @Override
+    public CacheClientNotifier get() {
+      return getInstance();
     }
   }
 }

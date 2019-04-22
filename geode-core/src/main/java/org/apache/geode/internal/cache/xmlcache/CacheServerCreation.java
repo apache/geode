@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.xmlcache;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.ClientSession;
@@ -27,6 +26,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.OverflowAttributes;
 
 /**
  * Represents a {@link CacheServer} that is created declaratively.
@@ -254,12 +254,7 @@ public class CacheServerCreation extends AbstractCacheServer {
   }
 
   @Override
-  public Acceptor createAcceptor(List overflowAttributesList) throws IOException {
-    throw new UnsupportedOperationException("Shouldn't be invoked");
-  }
-
-  @Override
-  public EndpointType getEndpointType() {
+  public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 

@@ -1161,6 +1161,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer) {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
   public void setReadSerializedForCurrentThread(final boolean value) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
