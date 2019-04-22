@@ -36,8 +36,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -116,10 +114,9 @@ public class ExportLogsWithMemberGroupDistributedTest {
   @Test
   public void testExportLogsWithGroupAndMemberName() throws Exception {
     connectIfNeeded();
-    CommandResult results =
-        connector.executeCommand("export logs --group=group1 --member=server-1");
-    assertThat(results.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(connector.getGfshOutput()).contains("Can't specify both group and member");
+    connector.executeAndAssertThat("export logs --group=group1 --member=server-1")
+        .statusIsError()
+        .containsOutput("Can't specify both group and member");
   }
 
   private void connectIfNeeded() throws Exception {

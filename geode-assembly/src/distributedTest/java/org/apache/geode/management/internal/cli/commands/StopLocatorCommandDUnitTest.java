@@ -146,7 +146,7 @@ public class StopLocatorCommandDUnitTest {
     gfsh.connectAndVerify(locator);
 
     assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
+    assertThat(gfsh.getGfshOutput()).contains(expectedError);
   }
 
   @Test

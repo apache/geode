@@ -36,7 +36,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -127,7 +126,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.START_GATEWAYSENDER);
     List<String> status = resultData.getValuesInColumn("Result");
     assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
@@ -166,7 +165,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     assertThat(cmdResult).isNotNull();
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.START_GATEWAYSENDER);
     List<String> messages = resultData.getValuesInColumn("Message");
     assertThat(messages.get(0)).contains("is started on member");
@@ -210,7 +209,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.START_GATEWAYSENDER);
     List<String> status = resultData.getValuesInColumn("Result");
     assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK");
@@ -271,7 +270,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.START_GATEWAYSENDER);
     assertThat(resultData.getValuesInColumn("Result"))
         .containsExactlyInAnyOrder("OK", "OK", "OK", "OK");
@@ -322,7 +321,7 @@ public class StartGatewaySenderCommandDUnitTest implements Serializable {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
     assertThat(cmdResult).isNotNull();
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.START_GATEWAYSENDER);
     List<String> status = resultData.getValuesInColumn("Result");
     assertThat(status).containsExactlyInAnyOrder("Error", "OK", "OK");

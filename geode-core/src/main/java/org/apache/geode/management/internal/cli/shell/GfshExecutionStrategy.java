@@ -33,7 +33,7 @@ import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -60,8 +60,8 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    *
    * @param parseResult that should be executed (never presented as null)
    * @return an object which will be rendered by the {@link Shell} implementation (may return null)
-   *         this returns a ModelCommandResult for all the online commands. For offline-commands,
-   *         this can return either a ModelCommandResult or ExitShellRequest
+   *         this returns a CommandResult for all the online commands. For offline-commands,
+   *         this can return either a CommandResult or ExitShellRequest
    * @throws RuntimeException which is handled by the {@link Shell} implementation
    */
   @Override
@@ -76,7 +76,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
 
         Object exeuctionResult = new CommandExecutor().execute((GfshParseResult) parseResult);
         if (exeuctionResult instanceof ResultModel) {
-          return new ModelCommandResult((ResultModel) exeuctionResult);
+          return new CommandResult((ResultModel) exeuctionResult);
         }
         return exeuctionResult;
 
@@ -93,7 +93,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     if (resultModel == null) {
       return null;
     }
-    return new ModelCommandResult(resultModel);
+    return new CommandResult(resultModel);
   }
 
   /**

@@ -119,9 +119,9 @@ public class HeadlessGfshIntegrationTest {
     LinkedBlockingQueue headlessQueue = gfsh.getQueue();
     headlessQueue.clear();
     headlessQueue.put("ERROR RESULT");
-    Object result = gfsh.getResult();
+    CommandResult result = gfsh.getResult();
     assertNotNull(result);
-    assertTrue(((CommandResult) result).getStatus() == Result.Status.ERROR);
-    System.out.println(((CommandResult) result).toString());
+    assertTrue(result.getStatus() == Result.Status.ERROR);
+    System.out.println(result.toString());
   }
 }

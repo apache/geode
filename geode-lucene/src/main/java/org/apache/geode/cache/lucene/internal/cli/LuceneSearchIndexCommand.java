@@ -28,10 +28,10 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -143,10 +143,11 @@ public class LuceneSearchIndexCommand extends LuceneCommandBase {
         }
         Gfsh.println();
 
-        CommandResult commandResult = new ModelCommandResult(resultModel);
+        Result commandResult = new CommandResult(resultModel);
         while (commandResult.hasNextLine()) {
           gfsh.printAsInfo(commandResult.nextLine());
         }
+        commandResult.resetToFirstLine();
 
         gfsh.printAsInfo("\t\tPage " + currentPage + " of " + totalPages);
         String message = ("Press n to move to next page, q to quit and p to previous page : ");

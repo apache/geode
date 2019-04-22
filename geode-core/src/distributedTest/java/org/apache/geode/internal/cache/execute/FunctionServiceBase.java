@@ -128,7 +128,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
   @Test()
   public void defaultCollectorThrowsExceptionAfterFunctionThrowsIllegalState() {
     IgnoredException.addIgnoredException("java.lang.IllegalStateException");
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     thrown.expect(FunctionException.class);
     // GEODE-1762 - clients wrap cause in a ServerOperationException
     // thrown.expectCause(isA(IllegalStateException.class));
@@ -140,7 +140,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test()
   public void defaultCollectorThrowsExceptionAfterFunctionThrowsFunctionException() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     thrown.expect(FunctionException.class);
     ResultCollector rc = getExecution().execute((context) -> {
       throw new FunctionException();
@@ -154,7 +154,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
    */
   @Test()
   public void defaultCollectorThrowsExceptionAfterFunctionReturnsIllegalStateException() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     // GEODE-1762 - clients throw a ServerOperationException
     thrown.expect(Exception.class);
     // thrown.expect(FunctionException.class);
@@ -167,7 +167,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void defaultCollectorThrowsExceptionAfterFunctionReturnsFunctionException() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     thrown.expect(FunctionException.class);
     thrown.expectCause(is((Throwable) null));
     ResultCollector rc = getExecution().execute((context) -> {
@@ -178,7 +178,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void defaultCollectorThrowsExceptionAfterFunctionReturnsIllegalStateExceptionAsIntermediateResult() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     // GEODE-1762 - client throws a ServerOperationException
     thrown.expect(Exception.class);
     // thrown.expect(FunctionException.class);
@@ -192,7 +192,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void defaultCollectorThrowsExceptionAfterFunctionReturnsFunctionExceptionAsIntermediateResult() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     thrown.expect(FunctionException.class);
     thrown.expectCause(is((Throwable) null));
     ResultCollector rc = getExecution().execute((context) -> {
@@ -225,7 +225,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void customCollectorDoesNotSeeExceptionFunctionThrowsIllegalState() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     IgnoredException.addIgnoredException("java.lang.IllegalStateException");
     try {
       ResultCollector rc = getExecution().withCollector(customCollector).execute((context) -> {
@@ -241,7 +241,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void customCollectorDoesNotSeeExceptionFunctionThrowsFunctionException() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     try {
       ResultCollector rc = getExecution().withCollector(customCollector).execute((context) -> {
         throw new FunctionException();
@@ -256,7 +256,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void customCollectorDoesNotSeeExceptionAfterFunctionReturnsIllegalStateException() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     try {
       ResultCollector rc = getExecution().execute((context) -> {
         context.getResultSender().lastResult(new IllegalStateException());
@@ -271,7 +271,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void customCollectorDoesNotSeeExceptionAfterFunctionReturnsIllegalStateExceptionAsIntermediateResult() {
-    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
+    // GEODE-1762 - clients throw from execute, but peers throw from rc.getResultData
     try {
       ResultCollector rc = getExecution().execute((context) -> {
         context.getResultSender().sendResult(new IllegalStateException());

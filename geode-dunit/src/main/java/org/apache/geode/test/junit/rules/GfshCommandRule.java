@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.List;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -252,21 +251,12 @@ public class GfshCommandRule extends DescribedExternalResource {
     gfsh.executeCommand(command);
     CommandResult result;
     try {
-      result = (CommandResult) gfsh.getResult();
+      result = gfsh.getResult();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    if (StringUtils.isBlank(gfsh.outputString) && result != null
-        && !result.getMessageFromContent().isEmpty()) {
-      if (result.getStatus() == Result.Status.ERROR) {
-        gfsh.outputString = result.toString();
-      } else {
-        // print out the message body as the command result
-        List<String> messages = result.getListFromContent("message");
-        for (String line : messages) {
-          gfsh.outputString += line + "\n";
-        }
-      }
+    if (StringUtils.isBlank(gfsh.outputString) && result != null) {
+      gfsh.outputString = result.asString();
     }
     System.out.println("Command result for <" + command + ">: \n" + gfsh.outputString);
     commandResult = result;
@@ -275,7 +265,7 @@ public class GfshCommandRule extends DescribedExternalResource {
 
   public CommandResultAssert executeAndAssertThat(String command) {
     commandResult = executeCommand(command);
-    return new CommandResultAssert(gfsh.outputString, commandResult);
+    return new CommandResultAssert(commandResult);
   }
 
   public String getGfshOutput() {

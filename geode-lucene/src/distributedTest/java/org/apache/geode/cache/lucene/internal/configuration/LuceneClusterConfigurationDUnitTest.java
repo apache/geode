@@ -228,8 +228,9 @@ public class LuceneClusterConfigurationDUnitTest {
     // Verify all members have indexes
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
     gfshConnector.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .tableHasColumnWithExactValuesInExactOrder("Status", "INITIALIZED", "INITIALIZED",
-            "INITIALIZED");
+        .hasTableSection()
+        .hasColumn("Status")
+        .containsExactly("INITIALIZED", "INITIALIZED", "INITIALIZED");
   }
 
   MemberVM createServer(Properties properties, int index) throws Exception {

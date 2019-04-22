@@ -33,8 +33,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -169,7 +168,6 @@ public class MockExtensionCommands implements CommandMarker {
    * @param addXmlElement If <code>true</code> then add result {@link XmlEntity} to the config,
    *        otherwise delete it.
    * @param args Arguments to pass to function.
-   * @return {@link TabularResultData}
    * @since GemFire 8.1
    */
   protected Result executeFunctionOnAllMembersTabulateResultPersist(final Function function,
@@ -200,7 +198,7 @@ public class MockExtensionCommands implements CommandMarker {
       }
     }
 
-    return new ModelCommandResult(resultModel);
+    return new CommandResult(resultModel);
   }
 
 }

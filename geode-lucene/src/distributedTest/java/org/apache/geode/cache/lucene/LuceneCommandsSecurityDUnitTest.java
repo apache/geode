@@ -204,7 +204,7 @@ public class LuceneCommandsSecurityDUnitTest {
     this.gfshShell.disconnect();
   }
 
-  private void verifyResult(UserNameAndExpectedResponse user, CommandResult result) {
+  private void verifyResult(UserNameAndExpectedResponse user, Result result) {
     if (user.getExpectAuthorizationError()) {
       assertEquals(Result.Status.ERROR, result.getStatus());
     } else {

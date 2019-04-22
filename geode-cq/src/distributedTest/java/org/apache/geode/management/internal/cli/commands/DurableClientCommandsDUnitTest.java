@@ -194,9 +194,10 @@ public class DurableClientCommandsDUnitTest {
 
     CommandResult result = gfsh.executeCommand(commandString);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getTableColumnValues("Message")).containsExactlyInAnyOrder(
-        "Closed the durable cq : \"cq1\" for the durable client : \"dc1\".",
-        "No client found with client-id : dc1");
+    assertThat(result.getResultData().getTableSections().get(0).getValuesInColumn("Message"))
+        .containsExactlyInAnyOrder(
+            "Closed the durable cq : \"cq1\" for the durable client : \"dc1\".",
+            "No client found with client-id : dc1");
 
     result = gfsh.executeCommand(commandString);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);

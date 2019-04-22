@@ -81,8 +81,8 @@ public class ConnectCommandTest {
   @Test
   public void whenGfshIsAlreadyConnected() throws Exception {
     when(gfsh.isConnectedAndReady()).thenReturn(true);
-    result = gfshParserRule.executeCommandWithInstance(connectCommand, "connect");
-    assertThat(result.nextLine()).contains("Already connected to");
+    gfshParserRule.executeAndAssertThat(connectCommand, "connect")
+        .containsOutput("Already connected to");
   }
 
   @Test

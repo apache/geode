@@ -143,8 +143,7 @@ public class ShowMissingDiskStoreCommandDUnitTest {
 
     csb = new CommandStringBuilder(CliStrings.SHOW_MISSING_DISK_STORE);
     CommandResult commandResult = gfshConnector.executeCommand(csb.getCommandString());
-    ResultModel result =
-        (ResultModel) commandResult.getResultData();
+    ResultModel result = commandResult.getResultData();
     TabularResultModel tableSection = result.getTableSection("missing-disk-stores");
     List<String> missingDiskStoreIds = tableSection.getValuesInColumn("Disk Store ID");
     assertThat(missingDiskStoreIds).isNull();

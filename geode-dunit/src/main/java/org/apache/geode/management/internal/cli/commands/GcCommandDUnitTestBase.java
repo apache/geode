@@ -28,8 +28,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -112,8 +110,7 @@ public class GcCommandDUnitTestBase {
   public void testGCForInvalidMember() throws Exception {
     String gcCommand = "gc --member=NotAValidMember";
 
-    CommandResult result = gfsh.executeCommand(gcCommand);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("Member NotAValidMember could not be found.");
+    gfsh.executeAndAssertThat(gcCommand).statusIsError()
+        .containsOutput("Member NotAValidMember could not be found.");
   }
 }

@@ -74,7 +74,7 @@ public class StatusLocatorCommandDunitTest {
         gfsh.executeCommand(STATUS_LOCATOR + " --host=localhost --port=" + locator.getPort());
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertStatusCommandOutput(result.getMessageFromContent(), state);
+    assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
   @Test
@@ -86,7 +86,7 @@ public class StatusLocatorCommandDunitTest {
     CommandResult result = gfsh.executeCommand(STATUS_LOCATOR + " --name=" + locatorName);
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertStatusCommandOutput(result.getMessageFromContent(), state);
+    assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
   @Test
@@ -98,7 +98,7 @@ public class StatusLocatorCommandDunitTest {
     CommandResult result = gfsh.executeCommand(STATUS_LOCATOR + " --name=" + locator.getMemberId());
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertStatusCommandOutput(result.getMessageFromContent(), state);
+    assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
   @Test
@@ -111,7 +111,7 @@ public class StatusLocatorCommandDunitTest {
         gfsh.executeCommand(STATUS_LOCATOR + " --dir=" + locator.getWorkingDirectory());
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertStatusCommandOutput(result.getMessageFromContent(), state);
+    assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
   @Test
@@ -126,7 +126,7 @@ public class StatusLocatorCommandDunitTest {
         gfsh.executeCommand(STATUS_LOCATOR + " --dir=" + locator.getWorkingDirectory());
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertStatusCommandOutput(result.getMessageFromContent(), state);
+    assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
   public void assertStatusCommandOutput(String locatorStatusCommandMessage, LocatorState state) {

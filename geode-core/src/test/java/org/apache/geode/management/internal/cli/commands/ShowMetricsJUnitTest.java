@@ -14,14 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
 
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class ShowMetricsJUnitTest {
@@ -32,28 +29,25 @@ public class ShowMetricsJUnitTest {
   @Test
   public void testPortAndRegion() throws Exception {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
-    CommandResult result =
-        parser.executeCommandWithInstance(command, "show metrics --port=0 --region=regionA");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent())
-        .contains("The --region and --port parameters are mutually exclusive");
+    parser.executeAndAssertThat(command, "show metrics --port=0 --region=regionA")
+        .statusIsError()
+        .containsOutput("The --region and --port parameters are mutually exclusive");
   }
 
   @Test
   public void testPortOnly() throws Exception {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
-    CommandResult result = parser.executeCommandWithInstance(command, "show metrics --port=0");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(
-        "If the --port parameter is specified, then the --member parameter must also be specified.");
+    parser.executeAndAssertThat(command, "show metrics --port=0")
+        .statusIsError()
+        .containsOutput(
+            "If the --port parameter is specified, then the --member parameter must also be specified.");
   }
 
   @Test
   public void invalidPortNumber() throws Exception {
     ShowMetricsCommand command = spy(ShowMetricsCommand.class);
-    CommandResult result = parser.executeCommandWithInstance(command, "show metrics --port=abc");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    // When relying on Spring's converters, any command that does not parse is "Invalid"
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    parser.executeAndAssertThat(command, "show metrics --port=abc")
+        .statusIsError()
+        .containsOutput("Invalid command");
   }
 }

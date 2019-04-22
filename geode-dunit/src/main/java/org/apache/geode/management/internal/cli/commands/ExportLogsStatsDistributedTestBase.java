@@ -38,8 +38,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -143,8 +141,7 @@ public class ExportLogsStatsDistributedTestBase {
   @Test
   public void testExportedZipFileTooBig() throws Exception {
     connectIfNeeded();
-    CommandResult result = connector.executeCommand("export logs --file-size-limit=10k");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    connector.executeAndAssertThat("export logs --file-size-limit=10k").statusIsError();
   }
 
   protected String getZipPathFromCommandResult(String message) {

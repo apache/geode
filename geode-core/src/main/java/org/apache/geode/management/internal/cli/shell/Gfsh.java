@@ -61,7 +61,6 @@ import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.LegacyCommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.shell.jline.ANSIHandler;
 import org.apache.geode.management.internal.cli.shell.jline.ANSIHandler.ANSIStyle;
@@ -715,23 +714,10 @@ public class Gfsh extends JLineShell {
               write(commandResult.nextLine(), isError);
             }
           }
+          commandResult.resetToFirstLine();
         }
 
         resultTypeTL.set(null);
-
-        // this only saves the incoming file to the user.dir. We should not rely on this
-        // to save the exported file at this point. All file saving should be done in the
-        // specific command's postExecutor
-        if (result instanceof LegacyCommandResult) {
-          CommandResult cmdResult = (CommandResult) result;
-          if (cmdResult.hasIncomingFiles()) {
-            boolean isAlreadySaved = cmdResult.getNumTimesSaved() > 0;
-            if (!isAlreadySaved) {
-              cmdResult.saveIncomingFiles(null);
-            }
-            Gfsh.println();// Empty line
-          }
-        }
       }
       if (result != null && !(result instanceof Result)) {
         printAsInfo(result.toString());
@@ -897,7 +883,7 @@ public class Gfsh extends JLineShell {
   }
 
   public ResultModel executeScript(File scriptFile, boolean quiet, boolean continueOnError) {
-    ResultModel result = new ResultModel();
+    ResultModel result = null;
     String initialIsQuiet = getEnvProperty(ENV_APP_QUIET_EXECUTION);
     try {
       this.isScriptRunning = true;

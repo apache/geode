@@ -84,6 +84,7 @@ public class CommandExecutor {
         while (customResult.hasNextLine()) {
           info.addLine(customResult.nextLine());
         }
+        customResult.resetToFirstLine();
       }
 
       if (result == null) {

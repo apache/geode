@@ -34,7 +34,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -92,8 +91,7 @@ public class ShowMissingDiskStoreCommand extends GfshCommand {
 
   private ResultModel toMissingDiskStoresTabularResult(
       PersistentMemberDetails[] missingDiskStores,
-      final List<ColocatedRegionDetails> missingColocatedRegions)
-      throws ResultDataException {
+      final List<ColocatedRegionDetails> missingColocatedRegions) {
     ResultModel result = new ResultModel();
 
     boolean hasMissingDiskStores = missingDiskStores.length != 0;

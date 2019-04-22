@@ -33,8 +33,6 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
@@ -62,7 +60,7 @@ public class GfshParserRule extends ExternalResource {
     GfshParseResult parseResult = parse(command);
 
     if (parseResult == null) {
-      return new ModelCommandResult(ResultModel.createError("Invalid command: " + command));
+      return new CommandResult(ResultModel.createError("Invalid command: " + command));
     }
 
     CliAroundInterceptor interceptor = null;
@@ -78,31 +76,27 @@ public class GfshParserRule extends ExternalResource {
           throw new RuntimeException(e);
         }
 
-        Object preExecResult = interceptor.preExecution(parseResult);
+        ResultModel preExecResult = interceptor.preExecution(parseResult);
         if (preExecResult instanceof ResultModel) {
-          if (((ResultModel) preExecResult).getStatus() != Result.Status.OK) {
-            return new ModelCommandResult((ResultModel) preExecResult);
+          if (preExecResult.getStatus() != Result.Status.OK) {
+            return new CommandResult(preExecResult);
           }
         } else {
           if (Result.Status.ERROR.equals(((Result) preExecResult).getStatus())) {
-            return (CommandResult) preExecResult;
+            return new CommandResult(preExecResult);
           }
         }
       }
     }
 
     Object exeResult = commandExecutor.execute(instance, parseResult);
-    if (exeResult instanceof ResultModel) {
-      return new ModelCommandResult((ResultModel) exeResult);
-    }
-
-    return (CommandResult) exeResult;
+    return new CommandResult((ResultModel) exeResult);
   }
 
   public <T> CommandResultAssert executeAndAssertThat(T instance, String command) {
     CommandResult result = executeCommandWithInstance(instance, command);
     System.out.println("Command Result:");
-    System.out.println(ResultBuilder.resultAsString(result));
+    System.out.println(result.asString());
     return new CommandResultAssert(result);
   }
 

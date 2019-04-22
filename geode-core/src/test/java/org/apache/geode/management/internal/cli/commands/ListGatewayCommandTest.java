@@ -33,7 +33,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -74,7 +74,7 @@ public class ListGatewayCommandTest {
             .getConnectedGatewaySenders();
 
     command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
-    new CommandResultAssert(new ModelCommandResult(crd))
+    new CommandResultAssert(new CommandResult(crd))
         .hasTableSection("gatewayReceivers")
         .hasColumn("Senders Connected")
         .containsExactly(
@@ -88,7 +88,7 @@ public class ListGatewayCommandTest {
     doReturn(new String[0]).when(receiverMXBean).getConnectedGatewaySenders();
 
     command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
-    new CommandResultAssert(new ModelCommandResult(crd))
+    new CommandResultAssert(new CommandResult(crd))
         .hasTableSection("gatewayReceivers")
         .hasColumn("Senders Connected").containsExactly("");
   }
@@ -101,7 +101,7 @@ public class ListGatewayCommandTest {
 
     command.accumulateListGatewayResult(crd, Collections.EMPTY_MAP, receiverBeans);
 
-    new CommandResultAssert(new ModelCommandResult(crd))
+    new CommandResultAssert(new CommandResult(crd))
         .hasTableSection("gatewayReceivers")
         .hasColumn("Senders Connected").containsExactly("");
   }

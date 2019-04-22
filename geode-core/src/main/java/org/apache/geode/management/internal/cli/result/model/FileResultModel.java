@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
@@ -140,14 +139,14 @@ public class FileResultModel {
         return fileExistsMessage;
       }
     }
-    if (type == ResultData.FILE_TYPE_TEXT) {
+    if (type == FileResultModel.FILE_TYPE_TEXT) {
       FileWriter fw = new FileWriter(file);
       BufferedWriter bw = new BufferedWriter(fw);
       bw.write(new String(data));
       bw.flush();
       fw.flush();
       fw.close();
-    } else if (type == ResultData.FILE_TYPE_BINARY) {
+    } else if (type == FileResultModel.FILE_TYPE_BINARY) {
       FileOutputStream fos = new FileOutputStream(file);
       fos.write(data);
       fos.flush();

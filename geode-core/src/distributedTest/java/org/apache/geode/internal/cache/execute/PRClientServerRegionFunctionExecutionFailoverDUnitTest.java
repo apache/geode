@@ -295,7 +295,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     // @Override
     // public void run() {
     // ResultCollector rs = FunctionService.onRegion(region).execute(function2);
-    // rs.getResult();
+    // rs.getResultData();
     // }
     // });
 

@@ -26,7 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.assertions.ResultModelAssert;
 
 public class ResultModelIntegrationTest {
@@ -81,9 +81,8 @@ public class ResultModelIntegrationTest {
   @Test
   public void modelCommandResultShouldNotDealWithFiles() throws IOException {
     result.saveFileTo(temporaryFolder.newFolder("test"));
-    ModelCommandResult commandResult = new ModelCommandResult(result);
+    CommandResult commandResult = new CommandResult(result);
     assertThat(commandResult.hasIncomingFiles()).isFalse();
-    assertThat(commandResult.getNumTimesSaved()).isEqualTo(0);
   }
 
   public static ResultModelAssert assertThis(ResultModel model) {

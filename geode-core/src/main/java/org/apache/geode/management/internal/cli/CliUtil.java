@@ -535,6 +535,7 @@ public class CliUtil {
     while (commandResult.hasNextLine()) {
       sb.append(commandResult.nextLine()).append(NEW_LINE);
     }
+    commandResult.resetToFirstLine();
 
     File file = null;
     FileWriter fw;

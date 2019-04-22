@@ -30,7 +30,6 @@ import java.util.logging.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 
 /**
@@ -51,10 +50,6 @@ public class LogWrapper {
 
     if (cache != null && !cache.isClosed()) {
       logger.addHandler(cache.getLogger().getHandler());
-      CommandResponseWriterHandler handler = new CommandResponseWriterHandler();
-      handler.setFilter(record -> record.getLevel().intValue() >= Level.FINE.intValue());
-      handler.setLevel(Level.FINE);
-      logger.addHandler(handler);
     }
     logger.setUseParentHandlers(false);
   }
@@ -391,30 +386,5 @@ public class LogWrapper {
     private String formatDate(Date date) {
       return sdf.format(date);
     }
-  }
-
-  /**
-   * Handler to write to CommandResponseWriter
-   *
-   * @since GemFire 7.0
-   */
-  static class CommandResponseWriterHandler extends Handler {
-
-    public CommandResponseWriterHandler() {
-      setFormatter(new GemFireFormatter());
-    }
-
-    @Override
-    public void publish(LogRecord record) {
-      CommandResponseWriter responseWriter =
-          CommandExecutionContext.getAndCreateIfAbsentCommandResponseWriter();
-      responseWriter.println(getFormatter().format(record));
-    }
-
-    @Override
-    public void flush() {}
-
-    @Override
-    public void close() throws SecurityException {}
   }
 }

@@ -33,9 +33,7 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -138,14 +136,9 @@ public class ShowLogCommandDistributedTestBase implements Serializable {
   @Test
   public void testShowLogInvalidMember() throws Exception {
     writeLogMessages();
-
     String command = "show log --member=NotAValidMember";
-
-    CommandResult result = gfsh.executeCommand(command);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-
-    String output = gfsh.getGfshOutput();
-    assertThat(output).contains("Member NotAValidMember could not be found");
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput("Member NotAValidMember could not be found");
   }
 
   protected static boolean allMembersAreConnected() {

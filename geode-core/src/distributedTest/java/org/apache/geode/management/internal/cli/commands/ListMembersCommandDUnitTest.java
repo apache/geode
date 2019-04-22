@@ -105,16 +105,9 @@ public class ListMembersCommandDUnitTest {
 
   @Test
   public void listMembersInNonExistentGroup() throws Exception {
-    CommandResult result = gfsh.executeCommand(LIST_MEMBER + " --group=foo");
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    String output = result.getMessageFromContent();
-
-    assertThat(output).doesNotContain("locator-0");
-    assertThat(output).doesNotContain("server-1");
-    assertThat(output).doesNotContain("server-2");
-    assertThat(output).doesNotContain("server-3");
-    assertThat(output).contains("No Members Found");
+    gfsh.executeAndAssertThat(LIST_MEMBER + " --group=foo")
+        .statusIsSuccess()
+        .containsOutput("No Members Found")
+        .doesNotContainOutput("locator-0", "server-1", "server-2", "server-3");
   }
 }

@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.Map;
@@ -46,11 +45,9 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.dto.Value1;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -107,11 +104,11 @@ public class QueryCommandDUnitTestBase {
     String query =
         "query --query=\"select ID , status , createTime , pk, floatMinValue from ${DATA_REGION} where ID <= ${PORTFOLIO_ID}"
             + " and status=${STATUS}" + "\" --interactive=false";
-    gfsh.executeCommand("set variable --name=DATA_REGION --value=" + DATA_REGION_NAME_PATH);
-    gfsh.executeCommand("set variable --name=PORTFOLIO_ID --value=3");
-    gfsh.executeCommand("set variable --name=STATUS --value=inactive");
-    CommandResult cmdResult = gfsh.executeCommand(query);
-    assertThat(cmdResult.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat("set variable --name=DATA_REGION --value=" + DATA_REGION_NAME_PATH)
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("set variable --name=PORTFOLIO_ID --value=3").statusIsSuccess();
+    gfsh.executeAndAssertThat("set variable --name=STATUS --value=inactive").statusIsSuccess();
+    gfsh.executeAndAssertThat(query).statusIsSuccess();
   }
 
   @Test
@@ -122,10 +119,8 @@ public class QueryCommandDUnitTestBase {
       String query =
           "query --query=\"select ID , status , createTime , pk, floatMinValue from ${UNSET_REGION} where ID <= ${UNSET_PORTFOLIO_ID}"
               + " and status=${UNSET_STATUS}" + "\" --interactive=false";
-      CommandResult result = gfsh.executeCommand(query);
-      assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-      assertThat(result.getResultData().toString())
-          .contains(String.format("Syntax error in query: %s", ""));
+      gfsh.executeAndAssertThat(query).statusIsError()
+          .containsOutput(String.format("Syntax error in query: %s", ""));
     } finally {
       ex.remove();
     }
@@ -191,7 +186,7 @@ public class QueryCommandDUnitTestBase {
         + "\" --interactive=false";
     CommandResult commandResult = gfsh.executeCommand(query);
     validateSelectResult(commandResult, Boolean.FALSE, -1, new String[] {"Value"});
-    assertThat(commandResult.getResultData().toString())
+    assertThat(commandResult.asString())
         .contains("An IOException was thrown while deserializing");
 
     ex.remove();
@@ -262,25 +257,22 @@ public class QueryCommandDUnitTestBase {
 
   private void validateSelectResult(CommandResult cmdResult, Boolean expectSuccess,
       Integer expectedRows, String[] cols) {
-    if (ResultData.TYPE_MODEL.equals(cmdResult.getType())) {
-      ResultModel rd = (ResultModel) cmdResult.getResultData();
+    ResultModel rd = cmdResult.getResultData();
 
-      Map<String, String> data =
-          rd.getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-      assertThat(data.get("Result")).isEqualTo(expectSuccess.toString());
+    Map<String, String> data =
+        rd.getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
+    assertThat(data.get("Result")).isEqualTo(expectSuccess.toString());
 
-      if (expectSuccess && expectedRows != -1) {
-        assertThat(data.get("Rows")).isEqualTo(expectedRows.toString());
+    if (expectSuccess && expectedRows != -1) {
+      assertThat(data.get("Rows")).isEqualTo(expectedRows.toString());
 
-        if (expectedRows > 0 && cols != null) {
-          Map<String, List<String>> table =
-              rd.getTableSection(DataCommandResult.QUERY_SECTION).getContent();
-          assertThat(table.keySet()).contains(cols);
-        }
+      if (expectedRows > 0 && cols != null) {
+        Map<String, List<String>> table =
+            rd.getTableSection(DataCommandResult.QUERY_SECTION).getContent();
+        assertThat(table.keySet()).contains(cols);
       }
-    } else {
-      fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
     }
+
   }
 
   private Properties locatorProperties() {

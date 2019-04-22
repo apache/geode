@@ -62,7 +62,7 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
 
   /**
    * Returns normally if succeeded to get data, otherwise throws an exception Have to wait outside
-   * this function and when getResult() is called. For the time being get the correct results.
+   * this function and when getResultData() is called. For the time being get the correct results.
    */
   public ResultCollector getPartitionedDataFrom(
       Map<InternalDistributedMember, FunctionRemoteContext> recipMap, PartitionedRegion pr,

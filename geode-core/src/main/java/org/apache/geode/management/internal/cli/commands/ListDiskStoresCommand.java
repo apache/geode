@@ -32,7 +32,6 @@ import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -79,8 +78,7 @@ public class ListDiskStoresCommand extends GfshCommand {
     return distributedSystemMemberDiskStores;
   }
 
-  private ResultModel toTabularResult(final List<DiskStoreDetails> diskStoreList)
-      throws ResultDataException {
+  private ResultModel toTabularResult(final List<DiskStoreDetails> diskStoreList) {
     if (!diskStoreList.isEmpty()) {
       ResultModel result = new ResultModel();
       TabularResultModel diskStoreData =
