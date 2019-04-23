@@ -23,10 +23,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -135,8 +136,15 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     // get txLock and hold it
     final Set participants = Collections.EMPTY_SET;
     final List regionLockReqs = new ArrayList();
-    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXRecoverGrantorMessageProcessor",
-        new HashSet(Arrays.asList(new String[] {"KEY-1", "KEY-2", "KEY-3", "KEY-4"}))));
+
+    Map<Object, Boolean> keymap = new HashMap<Object, Boolean>();
+    keymap.put("KEY-1", true);
+    keymap.put("KEY-2", true);
+    keymap.put("KEY-3", true);
+    keymap.put("KEY-4", true);
+    regionLockReqs
+        .add(new TXRegionLockRequestImpl("/testTXRecoverGrantorMessageProcessor", keymap));
+
     TXLockService dtls = TXLockService.getDTLS();
     TXLockId txLockId = dtls.txLock(regionLockReqs, participants);
 
@@ -201,8 +209,15 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     // get txLock and hold it
     final List regionLockReqs = new ArrayList();
-    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXRecoverGrantorMessageProcessor2",
-        new HashSet(Arrays.asList(new String[] {"KEY-1", "KEY-2", "KEY-3", "KEY-4"}))));
+
+    Map<Object, Boolean> keymap = new HashMap<Object, Boolean>();
+    keymap.put("KEY-1", true);
+    keymap.put("KEY-2", true);
+    keymap.put("KEY-3", true);
+    keymap.put("KEY-4", true);
+    regionLockReqs
+        .add(new TXRegionLockRequestImpl("/testTXRecoverGrantorMessageProcessor2", keymap));
+
     TXLockService dtls = TXLockService.getDTLS();
     TXLockId txLockId = dtls.txLock(regionLockReqs, Collections.EMPTY_SET);
 
@@ -314,10 +329,20 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     final int clientB = 2;
     final Set participants = Collections.EMPTY_SET;
     final List regionLockReqs = new ArrayList();
-    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXLock1",
-        new HashSet(Arrays.asList(new String[] {"KEY-1", "KEY-2", "KEY-3", "KEY-4"}))));
-    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXLock2",
-        new HashSet(Arrays.asList(new String[] {"KEY-A", "KEY-B", "KEY-C", "KEY-D"}))));
+
+    Map<Object, Boolean> keymap1 = new HashMap<Object, Boolean>();
+    keymap1.put("KEY-1", true);
+    keymap1.put("KEY-2", true);
+    keymap1.put("KEY-3", true);
+    keymap1.put("KEY-4", true);
+    Map<Object, Boolean> keymap2 = new HashMap<Object, Boolean>();
+    keymap2.put("KEY-A", true);
+    keymap2.put("KEY-B", true);
+    keymap2.put("KEY-C", true);
+    keymap2.put("KEY-D", true);
+
+    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXLock1", keymap1));
+    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXLock2", keymap2));
 
     // create grantor
     LogWriterUtils.getLogWriter().info("[testTXLock] create grantor");
@@ -429,8 +454,14 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     final int particpantB = 3;
 
     final List regionLockReqs = new ArrayList();
-    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXOriginatorRecoveryProcessor",
-        new HashSet(Arrays.asList(new String[] {"KEY-1", "KEY-2", "KEY-3", "KEY-4"}))));
+
+    Map<Object, Boolean> keymap1 = new HashMap<Object, Boolean>();
+    keymap1.put("KEY-1", true);
+    keymap1.put("KEY-2", true);
+    keymap1.put("KEY-3", true);
+    keymap1.put("KEY-4", true);
+
+    regionLockReqs.add(new TXRegionLockRequestImpl("/testTXOriginatorRecoveryProcessor", keymap1));
 
     // build participants set...
     InternalDistributedMember dmId = null;

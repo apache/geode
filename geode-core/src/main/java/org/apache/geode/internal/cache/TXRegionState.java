@@ -225,7 +225,12 @@ public class TXRegionState {
       // need some local locks
       TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r.getCache(), r);
       if (this.uaMods != null) {
-        rlr.addEntryKeys(this.uaMods.keySet());
+        Iterator<Object> it = this.uaMods.keySet().iterator();
+        while (it.hasNext()) {
+          // add key with isevent set to TRUE, for keep BC
+          rlr.addEntryKey(it.next(), Boolean.TRUE);
+        }
+
       }
       if (!distributedTX && this.entryMods.size() > 0) {
         rlr.addEntryKeys(getLockRequestEntryKeys());
@@ -246,21 +251,21 @@ public class TXRegionState {
   }
 
   /**
-   * Returns a set of entry keys that this tx needs to request a lock for at commit time.
+   * Returns a map of entry keys that this tx needs to request a lock for at commit time.
    *
    * @return <code>null</code> if no entries need to be locked.
    */
-  private Set getLockRequestEntryKeys() {
-    HashSet result = null;
+  private Map getLockRequestEntryKeys() {
+    HashMap<Object, Boolean> result = null;
     Iterator it = this.entryMods.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry me = (Map.Entry) it.next();
       TXEntryState txes = (TXEntryState) me.getValue();
       if (txes.isDirty() && !txes.isOpSearch()) {
         if (result == null) {
-          result = new HashSet();
+          result = new HashMap();
         }
-        result.add(me.getKey());
+        result.put(me.getKey(), txes.isOpAnyEvent(this.region));
       }
     }
     return result;

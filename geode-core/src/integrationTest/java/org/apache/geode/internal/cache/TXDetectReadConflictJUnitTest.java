@@ -17,8 +17,14 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.locks.StampedLock;
 
 import org.junit.After;
 import org.junit.Before;
@@ -28,11 +34,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.DistributionConfig;
-
 
 /**
  * junit test for detecting read conflicts
@@ -101,5 +108,175 @@ public class TXDetectReadConflictJUnitTest {
     assertEquals("value", regionpr.get("key"));
     assertEquals("value1", regionpr.get("key1"));
     mgr.commit();
+  }
+
+  /**
+   * Test that two transactions with only read operations don't produce CommitConflictException
+   * This test fill some initial value on startup and after that create different threads with
+   * region#get operations
+   * Sync two different threads commit time through lock
+   */
+  @Test(/* no exception expected */)
+  public void testDetectReadConflict()
+      throws CacheException, ExecutionException, InterruptedException {
+    cache.close();
+    createCache();
+    TXManagerImpl txMgrImpl = (TXManagerImpl) cache.getCacheTransactionManager();
+    // fill some initial key-value on start
+    txMgrImpl.begin();
+    this.region.put("key1", "value1"); // non-tx
+    txMgrImpl.commit();
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    for (int i = 0; i < 20; i++) {
+      final StampedLock lock = new StampedLock();
+      lock.asWriteLock().lock();
+      //
+      Future<?> future1 = executor.submit(() -> {
+        CacheTransactionManager txMgr2 = cache.getCacheTransactionManager();
+        txMgr2.begin();
+        region.get("key1"); // non-tx
+        lock.asReadLock().lock();
+        txMgr2.commit();
+      });
+      Future<?> future2 = executor.submit(() -> {
+        CacheTransactionManager txMgr3 = cache.getCacheTransactionManager();
+        txMgr3.begin();
+        region.get("key1"); // non-tx
+        lock.asReadLock().lock();
+        txMgr3.commit();
+      });
+      pause(100);
+      lock.asWriteLock().unlock();
+      future1.get();
+      future2.get();
+    }
+  }
+
+  /**
+   * Test that four transactions with only read operations don't produce CommitConflictException
+   * This test fill some initial value on startup and after that create different threads with
+   * region#get operations
+   * Sync two different threads commit time through lock
+   */
+  @Test(/* no exception expected */)
+  public void testDetectReadConflict4RPR()
+      throws CacheException, ExecutionException, InterruptedException {
+    cache.close();
+    createCachePR();
+    TXManagerImpl txMgrImpl = (TXManagerImpl) cache.getCacheTransactionManager();
+    // fill some initial key-value on start
+    txMgrImpl.begin();
+    this.regionpr.put("key1", "value1"); // non-tx
+    txMgrImpl.commit();
+    ExecutorService executor = Executors.newFixedThreadPool(4);
+    for (int i = 0; i < 20; i++) {
+      final StampedLock lock = new StampedLock();
+      lock.asWriteLock().lock();
+      //
+      Future<?> future1 = executor.submit(() -> {
+        CacheTransactionManager txMgr2 = cache.getCacheTransactionManager();
+        txMgr2.begin();
+        regionpr.get("key1"); // non-tx
+        lock.asReadLock().lock();
+        txMgr2.commit();
+      });
+      Future<?> future2 = executor.submit(() -> {
+        CacheTransactionManager txMgr3 = cache.getCacheTransactionManager();
+        txMgr3.begin();
+        regionpr.get("key1"); // non-tx
+        lock.asReadLock().lock();
+        txMgr3.commit();
+      });
+      Future<?> future3 = executor.submit(() -> {
+        CacheTransactionManager txMgr4 = cache.getCacheTransactionManager();
+        txMgr4.begin();
+        regionpr.get("key1"); // non-tx
+        lock.asReadLock().lock();
+        txMgr4.commit();
+      });
+      Future<?> future4 = executor.submit(() -> {
+        CacheTransactionManager txMgr5 = cache.getCacheTransactionManager();
+        txMgr5.begin();
+        regionpr.get("key1"); // non-tx
+        lock.asReadLock().lock();
+        txMgr5.commit();
+      });
+      pause(100);
+      lock.asWriteLock().unlock();
+      future1.get();
+      future2.get();
+      future3.get();
+      future4.get();
+    }
+  }
+
+  /**
+   * Test that four transactions with only mixed operations and read operations on same key
+   * don't produce CommitConflictException
+   * This test fill some initial value on startup and after that create different threads with
+   * region#get operations
+   * Sync two different threads commit time through lock
+   */
+  @Test(/* no exception expected */)
+  public void testDetectReadConflict4RR()
+      throws CacheException, ExecutionException, InterruptedException {
+    cache.close();
+    createCache();
+    TXManagerImpl txMgrImpl = (TXManagerImpl) cache.getCacheTransactionManager();
+    // fill some initial key-value on start
+    txMgrImpl.begin();
+    this.region.put("key1", "value1"); // non-tx
+    txMgrImpl.commit();
+    ExecutorService executor = Executors.newFixedThreadPool(4);
+    for (int i = 0; i < 20; i++) {
+      final StampedLock lock = new StampedLock();
+      lock.asWriteLock().lock();
+      //
+      Future<?> future1 = executor.submit(() -> {
+        CacheTransactionManager txMgr2 = cache.getCacheTransactionManager();
+        txMgr2.begin();
+        region.get("key1"); // non-tx
+        region.put("key2", "value2");
+        lock.asReadLock().lock();
+        txMgr2.commit();
+      });
+      Future<?> future2 = executor.submit(() -> {
+        CacheTransactionManager txMgr3 = cache.getCacheTransactionManager();
+        txMgr3.begin();
+        region.get("key1"); // non-tx
+        region.put("key3", "value3");
+        lock.asReadLock().lock();
+        txMgr3.commit();
+      });
+      Future<?> future3 = executor.submit(() -> {
+        CacheTransactionManager txMgr4 = cache.getCacheTransactionManager();
+        txMgr4.begin();
+        region.get("key1"); // non-tx
+        region.put("key4", "value4");
+        lock.asReadLock().lock();
+        txMgr4.commit();
+      });
+      Future<?> future4 = executor.submit(() -> {
+        CacheTransactionManager txMgr5 = cache.getCacheTransactionManager();
+        txMgr5.begin();
+        region.get("key1"); // non-tx
+        lock.asReadLock().lock();
+        txMgr5.commit();
+      });
+      pause(100);
+      lock.asWriteLock().unlock();
+      future1.get();
+      future2.get();
+      future3.get();
+      future4.get();
+    }
+  }
+
+  private void pause(int msWait) {
+    try {
+      Thread.sleep(msWait);
+    } catch (InterruptedException ignore) {
+      fail("interrupted");
+    }
   }
 }
