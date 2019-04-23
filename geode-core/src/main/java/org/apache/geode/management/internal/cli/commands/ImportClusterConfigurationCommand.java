@@ -48,7 +48,7 @@ import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.result.FileResult;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -201,7 +201,7 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
 
   public static class ImportInterceptor extends AbstractCliAroundInterceptor {
     @Override
-    public Object preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       String zip = parseResult.getParamValueAsString(CliStrings.IMPORT_SHARED_CONFIG__ZIP);
       String xmlFile = parseResult.getParamValueAsString(XML_FILE);
       String group = parseResult.getParamValueAsString(CliStrings.GROUP);
@@ -260,8 +260,8 @@ public class ImportClusterConfigurationCommand extends GfshCommand {
         }
       }
 
-      FileResult result = new FileResult();
-      result.addFile(importedFile);
+      ResultModel result = new ResultModel();
+      result.addFile(importedFile, FileResultModel.FILE_TYPE_FILE);
       return result;
     }
   }

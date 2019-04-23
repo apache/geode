@@ -52,7 +52,7 @@ import org.apache.geode.management.internal.cli.functions.DeployFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
-import org.apache.geode.management.internal.cli.result.FileResult;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -168,7 +168,7 @@ public class DeployCommand extends GfshCommand {
      * @return FileResult object or ResultModel in case of errors
      */
     @Override
-    public Object preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
       String[] jars = (String[]) parseResult.getParamValue("jar");
       String dir = (String) parseResult.getParamValue("dir");
 
@@ -181,14 +181,14 @@ public class DeployCommand extends GfshCommand {
         return ResultModel.createError("Parameters \"jar\" and \"dir\" can not both be specified.");
       }
 
-      FileResult fileResult = new FileResult();
+      ResultModel result = new ResultModel();
       if (jars != null) {
         for (String jar : jars) {
           File jarFile = new File(jar);
           if (!jarFile.exists()) {
             return ResultModel.createError(jar + " not found.");
           }
-          fileResult.addFile(jarFile);
+          result.addFile(jarFile, FileResultModel.FILE_TYPE_FILE);
         }
       } else {
         File fileDir = new File(dir);
@@ -197,22 +197,22 @@ public class DeployCommand extends GfshCommand {
         }
         File[] childJarFile = fileDir.listFiles(CliUtil.JAR_FILE_FILTER);
         for (File file : childJarFile) {
-          fileResult.addFile(file);
+          result.addFile(file, FileResultModel.FILE_TYPE_FILE);
         }
       }
 
       // check if user wants to upload with the computed file size
       String message =
-          "\nDeploying files: " + fileResult.getFormattedFileList() + "\nTotal file size is: "
-              + this.numFormatter.format((double) fileResult.computeFileSizeTotal() / ONE_MB)
+          "\nDeploying files: " + result.getFormattedFileList() + "\nTotal file size is: "
+              + this.numFormatter.format((double) result.computeFileSizeTotal() / ONE_MB)
               + "MB\n\nContinue? ";
 
       if (readYesNo(message, Response.YES) == Response.NO) {
         return ResultModel.createError(
-            "Aborted deploy of " + fileResult.getFormattedFileList() + ".");
+            "Aborted deploy of " + result.getFormattedFileList() + ".");
       }
 
-      return fileResult;
+      return result;
     }
   }
 }

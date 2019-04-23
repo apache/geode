@@ -39,7 +39,6 @@ import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
@@ -188,9 +187,9 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       }
 
       // when the preExecution yields a FileResult, we will get the fileData out of it
-      if (preExecResult instanceof FileResult) {
-        FileResult fileResult = (FileResult) preExecResult;
-        fileData = fileResult.getFiles();
+      if (preExecResult instanceof ResultModel) {
+        ResultModel fileResult = (ResultModel) preExecResult;
+        fileData = fileResult.getFileList();
       }
     }
 

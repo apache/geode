@@ -15,11 +15,10 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -32,11 +31,9 @@ import org.apache.geode.distributed.internal.deadlock.DependencyGraph;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -94,25 +91,12 @@ public class ShowDeadlockCommand extends GfshCommand {
   public static class Interceptor implements CliAroundInterceptor {
     @Override
     public ResultModel postExecution(GfshParseResult parseResult, ResultModel resultModel,
-        Path tempFile) {
+        Path tempFile) throws IOException {
+      String saveAs =
+          parseResult.getParamValueAsString(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__FILE);
 
-      if (resultModel.getFiles().size() != 1) {
-        resultModel.addInfo("No filename found to save");
-        resultModel.setStatus(Result.Status.ERROR);
-        return resultModel;
-      }
-
-      try {
-        for (Map.Entry<String, FileResultModel> entry : resultModel.getFiles().entrySet()) {
-          entry.getValue().saveFile();
-          resultModel.addInfo().addLine(
-              MessageFormat.format(CliStrings.SHOW_DEADLOCK__DEPENDENCIES__REVIEW, entry.getKey()));
-        }
-      } catch (IOException e) {
-        resultModel.addInfo().addLine("Unable to save file: " + e.getMessage());
-        resultModel.setStatus(Result.Status.ERROR);
-      }
-
+      File file = new File(saveAs).getAbsoluteFile();
+      resultModel.saveFileTo(file.getParentFile());
       return resultModel;
     }
   }

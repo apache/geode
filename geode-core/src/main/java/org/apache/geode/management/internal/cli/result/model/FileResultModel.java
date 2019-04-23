@@ -21,7 +21,9 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -33,38 +35,46 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 public class FileResultModel {
   public static final int FILE_TYPE_BINARY = 0;
   public static final int FILE_TYPE_TEXT = 1;
+  public static final int FILE_TYPE_FILE = 2;
 
+  // this saves only the name part of the file, no directory info is saved.
   private String filename;
   private int type;
+
+  // some commands saves file data in bytes like ExportConfigCommand
   private byte[] data;
-  private int length;
+
+  // some commands has files to download over http, like ExportLogCommand
+  // it's also used for uploading files by the preExecutor (like DeployCommand)
+  private File file;
 
   /**
    * This unused constructor is actually used for deserialization
    */
   public FileResultModel() {}
 
-  /**
-   * @param fileName only the name of the file, should not include directory information
-   */
   public FileResultModel(String fileName, String content) {
-    this.filename = fileName;
+    this.filename = FilenameUtils.getName(fileName);
     this.data = content.getBytes();
     this.type = FILE_TYPE_TEXT;
   }
 
   public FileResultModel(File file, int fileType) {
-    if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_TEXT) {
+    if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_FILE) {
       throw new IllegalArgumentException("Unsupported file type is specified.");
     }
 
-    this.filename = file.getName();
+    this.filename = FilenameUtils.getName(file.getName());
     this.type = fileType;
 
-    try {
-      this.data = FileUtils.readFileToByteArray(file);
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to read file: " + file.getAbsolutePath(), e);
+    if (fileType == FILE_TYPE_BINARY) {
+      try {
+        this.data = FileUtils.readFileToByteArray(file);
+      } catch (IOException e) {
+        throw new RuntimeException("Unable to read file: " + file.getAbsolutePath(), e);
+      }
+    } else {
+      this.file = file;
     }
   }
 
@@ -92,17 +102,17 @@ public class FileResultModel {
     this.data = data;
   }
 
-  public int getLength() {
-    return this.data.length;
+  @JsonIgnore
+  public long getLength() {
+    if (type == FILE_TYPE_BINARY || type == FILE_TYPE_TEXT) {
+      return this.data.length;
+    } else {
+      return this.file.length();
+    }
   }
 
-  /**
-   * Save the file to the current working directory
-   *
-   * @return the message you would like to return to the user.
-   */
-  public String saveFile() throws IOException {
-    return saveFile(null);
+  public File getFile() {
+    return file;
   }
 
   /**

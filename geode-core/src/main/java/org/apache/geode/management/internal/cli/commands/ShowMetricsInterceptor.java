@@ -14,21 +14,19 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.commands.ShowMetricsCommand.Category;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class ShowMetricsInterceptor extends AbstractCliAroundInterceptor {
@@ -106,17 +104,15 @@ public class ShowMetricsInterceptor extends AbstractCliAroundInterceptor {
 
   @Override
   public ResultModel postExecution(GfshParseResult parseResult, ResultModel resultModel,
-      Path tempFile) {
-    try {
-      for (Map.Entry<String, FileResultModel> entry : resultModel.getFiles().entrySet()) {
-        entry.getValue().saveFile();
-        resultModel.addInfo().addLine("Metrics saved to: " + entry.getKey());
-      }
-    } catch (IOException e) {
-      resultModel.addInfo().addLine("Unable to save file: " + e.getMessage());
-      resultModel.setStatus(Result.Status.ERROR);
+      Path tempFile) throws IOException {
+    String saveAs = parseResult.getParamValueAsString(CliStrings.SHOW_METRICS__FILE);
+
+    if (saveAs == null) {
+      return resultModel;
     }
 
+    File file = new File(saveAs).getAbsoluteFile();
+    resultModel.saveFileTo(file.getParentFile());
     return resultModel;
   }
 }

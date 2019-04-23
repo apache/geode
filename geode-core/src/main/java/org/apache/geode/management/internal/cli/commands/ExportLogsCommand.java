@@ -42,6 +42,7 @@ import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.functions.SizeExportLogsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.model.FileResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
@@ -195,7 +196,7 @@ public class ExportLogsCommand extends GfshCommand {
       FileUtils.deleteDirectory(tempDir.toFile());
 
       ResultModel result = new ResultModel();
-      result.setFileToDownload(exportedLogsZipFile);
+      result.addFile(exportedLogsZipFile.toFile(), FileResultModel.FILE_TYPE_FILE);
       return result;
     } finally {
       ExportLogsFunction.destroyExportLogsRegion(cache);
