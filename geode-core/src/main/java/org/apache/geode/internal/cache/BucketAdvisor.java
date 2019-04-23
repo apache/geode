@@ -115,7 +115,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * The current state of this BucketAdvisor which tracks which member is primary and whether or not
    * this member is hosting a real Bucket.
    */
-  private byte primaryState = NO_PRIMARY_NOT_HOSTING;
+  private volatile byte primaryState = NO_PRIMARY_NOT_HOSTING;
 
   /**
    * This delegate handles all volunteering for primary status. Lazily created. Protected by
@@ -917,9 +917,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @return true if this advisor has been closed
    */
   protected boolean isClosed() {
-    synchronized (this) {
-      return primaryState == CLOSED;
-    }
+    return primaryState == CLOSED;
   }
 
   /**
@@ -928,9 +926,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @return true if this member is currently marked as primary
    */
   public boolean isPrimary() {
-    synchronized (this) {
-      return primaryState == IS_PRIMARY_HOSTING;
-    }
+    return primaryState == IS_PRIMARY_HOSTING;
   }
 
   /**
@@ -939,9 +935,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @return true if this member is currently volunteering for primary
    */
   private boolean isVolunteering() {
-    synchronized (this) {
-      return primaryState == VOLUNTEERING_HOSTING;
-    }
+    return primaryState == VOLUNTEERING_HOSTING;
   }
 
   /**
@@ -962,11 +956,10 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @return true if this member is currently hosting real bucket
    */
   public boolean isHosting() {
-    synchronized (this) {
-      return primaryState == NO_PRIMARY_HOSTING || primaryState == OTHER_PRIMARY_HOSTING
-          || primaryState == VOLUNTEERING_HOSTING || primaryState == BECOMING_HOSTING
-          || primaryState == IS_PRIMARY_HOSTING;
-    }
+    final byte primaryState = this.primaryState;
+    return primaryState == NO_PRIMARY_HOSTING || primaryState == OTHER_PRIMARY_HOSTING
+        || primaryState == VOLUNTEERING_HOSTING || primaryState == BECOMING_HOSTING
+        || primaryState == IS_PRIMARY_HOSTING;
   }
 
   /**
@@ -1601,10 +1594,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * Returns true if the a primary is known.
    */
   private boolean hasPrimary() {
-    synchronized (this) {
-      return primaryState == OTHER_PRIMARY_NOT_HOSTING
-          || primaryState == OTHER_PRIMARY_HOSTING || primaryState == IS_PRIMARY_HOSTING;
-    }
+    final byte primaryState = this.primaryState;
+    return primaryState == OTHER_PRIMARY_NOT_HOSTING || primaryState == OTHER_PRIMARY_HOSTING
+        || primaryState == IS_PRIMARY_HOSTING;
   }
 
   @Override
