@@ -638,7 +638,68 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     if ((obj == null) || !(obj instanceof InternalDistributedMember)) {
       return false;
     }
-    return compareTo((InternalDistributedMember) obj) == 0;
+    InternalDistributedMember other = (InternalDistributedMember) obj;
+
+    int myPort = getPort();
+    int otherPort = other.getPort();
+    if (myPort != otherPort) {
+      return false;
+    }
+
+    InetAddress myAddr = getInetAddress();
+    InetAddress otherAddr = other.getInetAddress();
+    // Discard null cases
+    if (myAddr == null && otherAddr == null) {
+      return true;
+    } else if (myAddr == null) {
+      return false;
+    } else if (otherAddr == null) {
+      return false;
+    } else if (!myAddr.equals(otherAddr)) {
+      return false;
+    }
+
+    if (!isPartial() && !other.isPartial()) {
+      String myName = getName();
+      String otherName = other.getName();
+      if (myName == null && otherName == null) {
+        // could be equal
+      } else if (myName == null) {
+        return false;
+      } else if (otherName == null) {
+        return false;
+      } else if (!myName.equals(otherName)) {
+        return false;
+      }
+    }
+
+    if (this.uniqueTag == null && other.uniqueTag == null) {
+      // not loners, so look at P2P view ID
+      int thisViewId = getVmViewId();
+      int otherViewId = other.getVmViewId();
+      if (thisViewId >= 0 && otherViewId >= 0) {
+        if (thisViewId != otherViewId) {
+          return false;
+        } // else they're the same, so continue
+      }
+    } else if (this.uniqueTag == null) {
+      return false;
+    } else if (other.uniqueTag == null) {
+      return false;
+    } else if (!this.uniqueTag.equals(other.uniqueTag)) {
+      return false;
+    }
+
+    if (this.netMbr != null && other.netMbr != null) {
+      if (0 != this.netMbr.compareAdditionalData(other.netMbr)) {
+        return false;
+      }
+    }
+
+    // purposely avoid checking roles
+    // @todo Add durableClientAttributes to equals
+
+    return true;
   }
 
   @Override
