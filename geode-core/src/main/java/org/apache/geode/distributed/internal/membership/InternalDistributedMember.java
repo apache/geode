@@ -57,8 +57,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     DataSerializableFixedID, ProfileId, VersionSource<DistributedMember> {
   private static final long serialVersionUID = -2785249969777296507L;
 
-  // whether to show NetMember components in toString()
-  private final boolean SHOW_NETMEMBER =
+  /** whether to show NetMember components in toString() */
+  private static final boolean SHOW_NETMEMBER =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_netmembers");
 
   protected NetMember netMbr; // the underlying member object, e.g. from JGroups
