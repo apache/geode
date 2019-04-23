@@ -3210,22 +3210,15 @@ public class PartitionedRegion extends LocalRegion
     checkReadiness();
     checkForNoAccess();
     discoverJTA();
-    CachePerfStats stats = getCachePerfStats();
-    long start = stats.startGet();
     boolean miss = true;
-    try {
-      // if scope is local and there is no loader, then
-      // don't go further to try and get value
-      Object value = getDataView().findObject(getKeyInfo(key, aCallbackArgument), this,
-          true/* isCreate */, generateCallbacks, null /* no local value */, disableCopyOnRead,
-          preferCD, requestingClient, clientEvent, returnTombstones);
-      if (value != null && !Token.isInvalid(value)) {
-        miss = false;
-      }
-      return value;
-    } finally {
-      stats.endGet(start, miss);
+
+    Object value = getDataView().findObject(getKeyInfo(key, aCallbackArgument), this,
+        true/* isCreate */, generateCallbacks, null /* no local value */, disableCopyOnRead,
+        preferCD, requestingClient, clientEvent, returnTombstones);
+    if (value != null && !Token.isInvalid(value)) {
+      miss = false;
     }
+    return value;
   }
 
   public InternalDistributedMember getOrCreateNodeForBucketRead(int bucketId) {
