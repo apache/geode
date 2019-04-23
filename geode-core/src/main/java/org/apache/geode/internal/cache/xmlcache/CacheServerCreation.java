@@ -304,4 +304,9 @@ public class CacheServerCreation extends AbstractCacheServer {
   public ClientHealthMonitorProvider clientHealthMonitorProvider() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
+
+  @Override
+  public String[] getCombinedGroups() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
 }

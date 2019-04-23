@@ -53,7 +53,8 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   public int getClientConnectionCount() {
     // we can't rely on ServerBridge as the HostStatSampler might not have ran between the last
     // statistical update and the time at which this method is called.
-    return !isRunning() ? 0 : gatewayReceiverServer().getAcceptor().getClientServerCnxCount();
+    return !isRunning() ? 0
+        : gatewayReceiverServer().getCacheServer().getAcceptor().getClientServerCnxCount();
   }
 
   @Override
@@ -150,7 +151,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   }
 
   protected void startServer() {
-    addServer(gatewayReceiverServer());
+    addServer(gatewayReceiverServer().getCacheServer());
   }
 
   protected void stopServer() {
@@ -162,7 +163,7 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
   }
 
   String[] getConnectedGatewaySenders() {
-    Acceptor acceptor = gatewayReceiverServer().getAcceptor();
+    Acceptor acceptor = gatewayReceiverServer().getCacheServer().getAcceptor();
     Set<ServerConnection> serverConnections = acceptor.getAllServerConnections();
     if (serverConnections != null && !serverConnections.isEmpty()) {
       Set<String> uniqueIds = new HashSet<>();

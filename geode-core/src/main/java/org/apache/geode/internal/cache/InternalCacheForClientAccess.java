@@ -1138,7 +1138,7 @@ public class InternalCacheForClientAccess implements InternalCache {
 
   @Override
   public boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer) {
-    return delegate.removeCacheServer(receiverServer);
+    return delegate.removeGatewayReceiverServer(receiverServer);
   }
 
   @Override

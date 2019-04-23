@@ -180,7 +180,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         clientHealthMonitorProvider);
   }
 
-  protected CacheServerImpl(final InternalCache cache,
+  public CacheServerImpl(final InternalCache cache,
       final SecurityService securityService,
       final AcceptorFactory acceptorFactory,
       final CacheServerResourceEventNotifier resourceEventNotifier,
@@ -772,6 +772,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    * Returns an array of all the groups of this cache server. This includes those from the groups
    * gemfire property and those explicitly added to this server.
    */
+  @Override
   public String[] getCombinedGroups() {
     ArrayList<String> groupList = new ArrayList<String>();
     if (includeMembershipGroups) {

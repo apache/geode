@@ -16,5 +16,7 @@ package org.apache.geode.internal.cache.wan;
 
 import org.apache.geode.internal.cache.InternalCacheServer;
 
-public interface GatewayReceiverServer extends InternalCacheServer {
+public interface GatewayReceiverServer {
+
+  InternalCacheServer getCacheServer();
 }

@@ -37,10 +37,11 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHe
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 
-public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayReceiverServer {
+public class GatewayReceiverEndpoint implements GatewayReceiverServer {
 
   private final GatewayReceiver gatewayReceiver;
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
+  private final InternalCacheServer internalCacheServer;
 
   public GatewayReceiverEndpoint(final InternalCache cache,
       final SecurityService securityService,
@@ -74,12 +75,17 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    super(cache, securityService, acceptorFactory, resourceEventNotifier, false,
-        socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
+    internalCacheServer =
+        new CacheServerImpl(cache, securityService, acceptorFactory, resourceEventNotifier, false,
+            socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
 
     acceptorFactory.setGatewayReceiverEndpoint(this);
+  }
+
+  public InternalCacheServer getCacheServer() {
+    return internalCacheServer;
   }
 
   private static class GatewayReceiverAcceptorFactory implements AcceptorFactory {

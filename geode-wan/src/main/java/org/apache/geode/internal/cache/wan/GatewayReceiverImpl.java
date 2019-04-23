@@ -79,7 +79,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   @Override
   public String getHost() {
     if (receiver != null) {
-      return receiver.getExternalAddress();
+      return receiver.getCacheServer().getExternalAddress();
     }
 
     if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
@@ -134,7 +134,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   @Override
   public CacheServer getServer() {
-    return receiver;
+    return receiver.getCacheServer();
   }
 
   private boolean tryToStart(int port) {
@@ -142,16 +142,18 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       return false;
     }
 
-    receiver.setPort(port);
-    receiver.setSocketBufferSize(socketBufferSize);
-    receiver.setMaximumTimeBetweenPings(timeBetPings);
+    CacheServer cacheServer = receiver.getCacheServer();
+
+    cacheServer.setPort(port);
+    cacheServer.setSocketBufferSize(socketBufferSize);
+    cacheServer.setMaximumTimeBetweenPings(timeBetPings);
     if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
-      receiver.setHostnameForClients(hostnameForSenders);
+      cacheServer.setHostnameForClients(hostnameForSenders);
     }
-    receiver.setBindAddress(bindAdd);
-    receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
+    cacheServer.setBindAddress(bindAdd);
+    cacheServer.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
     try {
-      receiver.start();
+      cacheServer.start();
       this.port = port;
       return true;
     } catch (IOException e) {
@@ -165,7 +167,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     if (receiver == null) {
       receiver = cache.addGatewayReceiverServer(this);
     }
-    if (receiver.isRunning()) {
+    if (receiver.getCacheServer().isRunning()) {
       logger.warn("Gateway Receiver is already running");
       return;
     }
@@ -208,7 +210,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     if (!isRunning()) {
       throw new GatewayReceiverException("Gateway Receiver is not running");
     }
-    receiver.stop();
+    receiver.getCacheServer().stop();
   }
 
   @Override
@@ -218,12 +220,11 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       // receiver was not started
       cache.removeGatewayReceiver(this);
     } else {
-      if (receiver.isRunning()) {
+      if (receiver.getCacheServer().isRunning()) {
         throw new GatewayReceiverException(
             "Gateway Receiver is running and needs to be stopped first");
       }
       cache.removeGatewayReceiver(this);
-      cache.removeCacheServer(receiver);
     }
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_DESTROY, this);
@@ -237,7 +238,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   @Override
   public boolean isRunning() {
     if (receiver != null) {
-      return receiver.isRunning();
+      return receiver.getCacheServer().isRunning();
     }
     return false;
   }

@@ -50,4 +50,6 @@ public interface InternalCacheServer extends CacheServer {
   CacheClientNotifierProvider cacheClientNotifierProvider();
 
   ClientHealthMonitorProvider clientHealthMonitorProvider();
+
+  String[] getCombinedGroups();
 }

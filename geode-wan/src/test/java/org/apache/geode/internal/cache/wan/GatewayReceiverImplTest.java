@@ -38,6 +38,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.categories.WanTest;
 
@@ -45,16 +46,20 @@ import org.apache.geode.test.junit.categories.WanTest;
 public class GatewayReceiverImplTest {
 
   private InternalCache cache;
-  private GatewayReceiverServer server;
+  private GatewayReceiverServer receiverServer;
+  private InternalCacheServer server;
 
   @Before
   public void setUp() {
     cache = mock(InternalCache.class);
-    server = mock(GatewayReceiverServer.class);
+    receiverServer = mock(GatewayReceiverServer.class);
+    server = mock(InternalCacheServer.class);
+
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
     when(cache.getInternalDistributedSystem()).thenReturn(system);
-    when(cache.addGatewayReceiverServer(isA(GatewayReceiver.class))).thenReturn(server);
+    when(cache.addGatewayReceiverServer(isA(GatewayReceiver.class))).thenReturn(receiverServer);
+    when(receiverServer.getCacheServer()).thenReturn(server);
     when(server.getExternalAddress()).thenReturn("hello");
   }
 
@@ -78,7 +83,7 @@ public class GatewayReceiverImplTest {
 
   @Test
   public void destroyCalledOnRunningGatewayReceiverShouldThrowException() {
-    when(server.isRunning()).thenReturn(true);
+    when(receiverServer.getCacheServer().isRunning()).thenReturn(true);
     GatewayReceiverImpl gateway =
         new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true);
     gateway.start();
@@ -97,7 +102,8 @@ public class GatewayReceiverImplTest {
 
     gateway.destroy();
 
-    verify(cache).removeCacheServer(server);
+    verify(cache).removeGatewayReceiver(gateway);
+    verify(cache).removeGatewayReceiverServer(receiverServer);
   }
 
   @Test

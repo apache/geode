@@ -90,11 +90,11 @@ public class GatewayReceiverEndpointTest {
   @Test
   public void createdAcceptorIsGatewayEndpoint() throws IOException {
     OverflowAttributes overflowAttributes = mock(OverflowAttributes.class);
-    InternalCacheServer server = new GatewayReceiverEndpoint(cache, securityService,
+    GatewayReceiverEndpoint receiverEndpoint = new GatewayReceiverEndpoint(cache, securityService,
         gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
         (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
 
-    Acceptor acceptor = server.createAcceptor(overflowAttributes);
+    Acceptor acceptor = receiverEndpoint.getCacheServer().createAcceptor(overflowAttributes);
 
     assertThat(acceptor.isGatewayReceiver()).isTrue();
   }
@@ -103,11 +103,11 @@ public class GatewayReceiverEndpointTest {
   public void cacheServer_getCombinedGroups_doesNotIncludeMembershipGroup() {
     String membershipGroup = "group-m0";
     when(config.getGroups()).thenReturn(membershipGroup);
-    GatewayReceiverEndpoint server = new GatewayReceiverEndpoint(cache, securityService,
+    GatewayReceiverEndpoint receiverEndpoint = new GatewayReceiverEndpoint(cache, securityService,
         gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
         (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
 
-    assertThat(server.getCombinedGroups())
+    assertThat(receiverEndpoint.getCacheServer().getCombinedGroups())
         .doesNotContain(membershipGroup);
   }
 }

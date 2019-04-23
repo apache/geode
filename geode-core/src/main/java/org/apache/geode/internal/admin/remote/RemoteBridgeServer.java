@@ -188,6 +188,11 @@ public class RemoteBridgeServer extends AbstractCacheServer
   }
 
   @Override
+  public String[] getCombinedGroups() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
   public ClientSession getClientSession(String durableClientId) {
     String s = "Cannot get a client session for a remote BridgeServer";
     throw new UnsupportedOperationException(s);
