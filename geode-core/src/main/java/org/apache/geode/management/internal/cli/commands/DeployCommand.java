@@ -112,7 +112,8 @@ public class DeployCommand extends GfshCommand {
 
       // this deploys the jars to all the matching servers
       ResultCollector<?, ?> resultCollector =
-          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams, driverClass}, member);
+          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams, driverClass},
+              member);
 
       results.add(((List) resultCollector.getResult()).get(0));
 
@@ -188,11 +189,13 @@ public class DeployCommand extends GfshCommand {
       
       ResultModel result = new ResultModel();
       if (ArrayUtils.isEmpty(jars) && StringUtils.isNotBlank(driverClass)) {
-        return ResultModel.createError("Parameter \"jar\" is required when driver-class is specified.");
+        return ResultModel
+            .createError("Parameter \"jar\" is required when driver-class is specified.");
       }
 
       if (jars.length > 1 && StringUtils.isNotBlank(driverClass)) {
-        return ResultModel.createError("Only a single \"jar\" is allowed when driver-class is specified.");
+        return ResultModel
+            .createError("Only a single \"jar\" is allowed when driver-class is specified.");
       }
 
       if (jars != null) {
