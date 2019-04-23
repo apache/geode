@@ -31,6 +31,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
@@ -43,6 +45,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
@@ -104,7 +107,10 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
     } else {
       status = RegionStatus.VALID;
       try {
-        RegionHelper.validateRegion(this.cache, configuration, region);
+        RegionAttributes existingRegionAttributes = region.getAttributes();
+        RegionAttributes requestedRegionAttributes =
+            RegionHelper.getRegionAttributes(this.cache, configuration);
+        compareRegionAttributes(existingRegionAttributes, requestedRegionAttributes);
       } catch (Exception e) {
         if (!e.getMessage()
             .equals("CacheListeners are not the same")) {
@@ -114,6 +120,43 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       }
     }
     return status;
+  }
+
+  /**
+   * If the existing region was using the DEFAULT diskstore but it was not explicitly linked to the
+   * region using setDiskStore or disk-store-name tags. diskStoreName is set as null. This is
+   * interpreted by Geode as use the DEFAULT diskstore.
+   * This link between the existing region and a diskstore may happen because the diskstore is
+   * named as DEFAULT.
+   * The user may change the default location of the DEFAULT diskstore but the AppServer always
+   * requests it be at the default location.
+   * This comparison with always used to fail and the AppServer could not start up.
+   * The goal of this method is that if both existing region and requested region are using the
+   * DEFAULT diskstore, the existing regions take precedence and the requested ones are ignored.
+   * This is current behavior which can be seen in
+   * {@link RegionAttributesCreation#sameAs(RegionAttributes)}
+   * The logic is to intercept the configurations for the regions and only if the both the regions
+   * have diskStoreName set to null, meaning both should use the DEFAULT diskstore, the diskstore
+   * names are sent as DEFAULT in the configuration and send to geode-core for comparison for rest
+   * of the region attributes.
+   */
+  void compareRegionAttributes(RegionAttributes existingRegionAttributes,
+      RegionAttributes requestedRegionAttributes) {
+    RegionAttributesCreation existingRACreation =
+        new RegionAttributesCreation(existingRegionAttributes, false);
+    EvictionAttributes evictionAttributes = existingRegionAttributes.getEvictionAttributes();
+    if (existingRegionAttributes.getDataPolicy().withPersistence() || (evictionAttributes != null
+        && evictionAttributes.getAction() == EvictionAction.OVERFLOW_TO_DISK)) {
+      if (requestedRegionAttributes.getDiskStoreName() == null
+          && existingRegionAttributes.getDiskStoreName() == null) {
+        AttributesFactory attributesFactory = new AttributesFactory(requestedRegionAttributes);
+        attributesFactory.setDiskStoreName("DEFAULT");
+        requestedRegionAttributes = attributesFactory.create();
+        existingRACreation = new RegionAttributesCreation(existingRegionAttributes, false);
+        existingRACreation.setDiskStoreName("DEFAULT");
+      }
+    }
+    existingRACreation.sameAs(requestedRegionAttributes);
   }
 
   @Override
