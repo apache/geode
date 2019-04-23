@@ -36,6 +36,7 @@ public class ManagementClientCreateRegion {
       cms = ClusterManagementServiceProvider.getService("localhost", httpPort);
     }
 
+    // create region
     RegionConfig config = new RegionConfig();
     config.setName(regionName);
     config.setType(RegionType.REPLICATE);
@@ -45,6 +46,11 @@ public class ManagementClientCreateRegion {
     if (!result.isSuccessful()) {
       throw new RuntimeException(
           "Failure creating region: " + result.getStatusMessage());
+    }
+
+    result = cms.list(new RegionConfig());
+    if (!result.isSuccessful()) {
+      throw new RuntimeException("failed " + result.getStatusMessage());
     }
 
     System.out.println("Successfully created region: " + regionName);

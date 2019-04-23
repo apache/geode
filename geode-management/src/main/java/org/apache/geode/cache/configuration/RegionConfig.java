@@ -21,6 +21,7 @@ package org.apache.geode.cache.configuration;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -30,7 +31,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Objects;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -488,8 +488,8 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
       return false;
     }
     RegionConfig config = (RegionConfig) that;
-    return Objects.equal(getName(), config.getName()) &&
-        Objects.equal(getType(), config.getType());
+    return Objects.equals(getName(), config.getName()) &&
+        Objects.equals(getType(), config.getType());
   }
 
   /**

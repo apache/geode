@@ -34,11 +34,13 @@ import org.apache.geode.management.configuration.RuntimeRegionConfig;
 public class RegionConfigManager
     implements ConfigurationManager<RegionConfig> {
   private InternalCache cache;
-  private ManagementService managementService;
 
   public RegionConfigManager(InternalCache cache) {
     this.cache = cache;
-    this.managementService = ManagementService.getExistingManagementService(cache);
+  }
+
+  ManagementService getManagementService() {
+    return ManagementService.getExistingManagementService(cache);
   }
 
   @Override
@@ -70,12 +72,13 @@ public class RegionConfigManager
     List<RuntimeRegionConfig> results = new ArrayList<>();
     for (RegionConfig config : staticRegionConfigs) {
       DistributedRegionMXBean distributedRegionMXBean =
-          managementService.getDistributedRegionMXBean("/" + config.getName());
-      if (distributedRegionMXBean == null) {
-        throw new IllegalStateException("Can't get the region mbean info for " + config.getName());
+          getManagementService().getDistributedRegionMXBean("/" + config.getName());
+      long entryCount = -1;
+      if (distributedRegionMXBean != null) {
+        entryCount = distributedRegionMXBean.getSystemRegionEntryCount();
       }
       RuntimeRegionConfig runtimeConfig = new RuntimeRegionConfig(config);
-      runtimeConfig.setEntryCount(distributedRegionMXBean.getSystemRegionEntryCount());
+      runtimeConfig.setEntryCount(entryCount);
       results.add(runtimeConfig);
     }
     return results;
