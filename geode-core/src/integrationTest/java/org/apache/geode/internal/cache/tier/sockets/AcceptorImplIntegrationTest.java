@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.internal.net.SocketCreatorFactory.getSocketCreatorForComponent;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.SERVER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.never;
@@ -43,6 +45,7 @@ public class AcceptorImplIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
+
     cache = (InternalCache) new CacheFactory().create();
     serverConnectionFactory = new ServerConnectionFactory();
   }
@@ -111,6 +114,8 @@ public class AcceptorImplIntegrationTest {
         CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, AcceptorImpl.MINIMUM_MAX_CONNECTIONS,
         CacheServer.DEFAULT_MAX_THREADS, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
         CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null, null, CacheServer.DEFAULT_TCP_NO_DELAY,
-        serverConnectionFactory, 1000, cache.getSecurityService());
+        serverConnectionFactory, 1000, cache.getSecurityService(),
+        () -> getSocketCreatorForComponent(SERVER), CacheClientNotifier.singletonProvider(),
+        ClientHealthMonitor.singletonProvider());
   }
 }

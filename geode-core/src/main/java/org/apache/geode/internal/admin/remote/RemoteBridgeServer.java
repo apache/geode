@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -36,6 +37,12 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * A remote (serializable) implementation of <code>BridgeServer</code> that is passed between
@@ -143,6 +150,41 @@ public class RemoteBridgeServer extends AbstractCacheServer
   public InternalCache getCache() {
     throw new UnsupportedOperationException(
         "Cannot get the Cache of a remote BridgeServer.");
+  }
+
+  @Override
+  public ConnectionListener connectionListener() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public ServerConnectionFactory serverConnectionFactory() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public long timeLimitMillis() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public SecurityService securityService() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public Supplier<SocketCreator> socketCreatorSupplier() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public CacheClientNotifier.CacheClientNotifierProvider cacheClientNotifierProvider() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public ClientHealthMonitor.ClientHealthMonitorProvider clientHealthMonitorProvider() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
   @Override

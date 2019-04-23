@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.xmlcache;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestRegistrationListener;
@@ -27,6 +28,12 @@ import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Represents a {@link CacheServer} that is created declaratively.
@@ -260,6 +267,41 @@ public class CacheServerCreation extends AbstractCacheServer {
 
   @Override
   public String getExternalAddress() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public ConnectionListener connectionListener() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public ServerConnectionFactory serverConnectionFactory() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public long timeLimitMillis() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public SecurityService securityService() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public Supplier<SocketCreator> socketCreatorSupplier() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public CacheClientNotifierProvider cacheClientNotifierProvider() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public ClientHealthMonitorProvider clientHealthMonitorProvider() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 }

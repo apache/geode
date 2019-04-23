@@ -68,6 +68,7 @@ import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorFactory;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
@@ -97,6 +98,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
 
   private final SecurityService securityService;
+
+  private final AcceptorFactory acceptorFactory;
 
   private final CacheServerResourceEventNotifier resourceEventNotifier;
 
@@ -155,9 +158,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   // Visible for GatewayReceiverEndpoint
   protected CacheServerImpl(final InternalCache cache, final SecurityService securityService,
+      final AcceptorFactory acceptorFactory,
       final CacheServerResourceEventNotifier resourceEventNotifier,
       final boolean includeMembershipGroups) {
-    this(cache, securityService, resourceEventNotifier, includeMembershipGroups,
+    this(cache, securityService, acceptorFactory, resourceEventNotifier, includeMembershipGroups,
         () -> getSocketCreatorForComponent(SERVER), CacheClientNotifier.singletonProvider(),
         ClientHealthMonitor.singletonProvider());
   }
@@ -167,29 +171,33 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    this(cache, securityService, new CacheServerResourceEventNotifier() {
+    this(cache, securityService, new CacheServerAcceptorFactory(),
+        new CacheServerResourceEventNotifier() {
 
-      @Override
-      public void notifyResourceEventStart() {
-        InternalDistributedSystem system = cache.getInternalDistributedSystem();
-        system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
-      }
+          @Override
+          public void notifyResourceEventStart() {
+            InternalDistributedSystem system = cache.getInternalDistributedSystem();
+            system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
+          }
 
-      @Override
-      public void notifyResourceEventStop() {
-        InternalDistributedSystem system = cache.getInternalDistributedSystem();
-        system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
-      }
-    }, true, socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
+          @Override
+          public void notifyResourceEventStop() {
+            InternalDistributedSystem system = cache.getInternalDistributedSystem();
+            system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
+          }
+        }, true, socketCreatorSupplier, cacheClientNotifierProvider,
+        clientHealthMonitorProvider);
   }
 
   private CacheServerImpl(final InternalCache cache, final SecurityService securityService,
+      final AcceptorFactory acceptorFactory,
       final CacheServerResourceEventNotifier resourceEventNotifier,
       final boolean includeMembershipGroups, final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
     super(cache);
     this.securityService = securityService;
+    this.acceptorFactory = acceptorFactory;
     this.resourceEventNotifier = resourceEventNotifier;
     this.includeMembershipGroups = includeMembershipGroups;
     this.socketCreatorSupplier = socketCreatorSupplier;
@@ -449,12 +457,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
-    return new AcceptorImpl(getPort(), getBindAddress(), getNotifyBySubscription(),
-        getSocketBufferSize(), getMaximumTimeBetweenPings(), getCache(), getMaxConnections(),
-        getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), connectionListener(),
-        overflowAttributes, getTcpNoDelay(), serverConnectionFactory(), timeLimitMillis(),
-        securityService(), socketCreatorSupplier, cacheClientNotifierProvider,
-        clientHealthMonitorProvider);
+    acceptorFactory.accept(this);
+    return acceptorFactory.create(overflowAttributes);
   }
 
   /**
@@ -777,7 +781,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   public String[] getCombinedGroups() {
     ArrayList<String> groupList = new ArrayList<String>();
-    if (includeMembershipGroups()) {
+    if (includeMembershipGroups) {
       for (String g : MemberAttributes.parseGroups(null, getSystem().getConfig().getGroups())) {
         if (!groupList.contains(g)) {
           groupList.add(g);
@@ -859,23 +863,63 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return getCacheClientNotifier().getInterestRegistrationListeners();
   }
 
-  protected ConnectionListener connectionListener() {
+  @Override
+  public ConnectionListener connectionListener() {
     return loadMonitor;
   }
 
-  protected ServerConnectionFactory serverConnectionFactory() {
+  @Override
+  public ServerConnectionFactory serverConnectionFactory() {
     return serverConnectionFactory;
   }
 
-  protected SecurityService securityService() {
+  @Override
+  public SecurityService securityService() {
     return securityService;
   }
 
-  protected long timeLimitMillis() {
+  @Override
+  public long timeLimitMillis() {
     return 120_000;
   }
 
-  private boolean includeMembershipGroups() {
-    return includeMembershipGroups;
+  @Override
+  public Supplier<SocketCreator> socketCreatorSupplier() {
+    return socketCreatorSupplier;
+  }
+
+  @Override
+  public CacheClientNotifierProvider cacheClientNotifierProvider() {
+    return cacheClientNotifierProvider;
+  }
+
+  @Override
+  public ClientHealthMonitorProvider clientHealthMonitorProvider() {
+    return clientHealthMonitorProvider;
+  }
+
+  private static class CacheServerAcceptorFactory implements AcceptorFactory {
+
+    private InternalCacheServer internalCacheServer;
+
+    @Override
+    public void accept(InternalCacheServer internalCacheServer) {
+      this.internalCacheServer = internalCacheServer;
+    }
+
+    @Override
+    public Acceptor create(OverflowAttributes overflowAttributes) throws IOException {
+      return new AcceptorImpl(internalCacheServer.getPort(), internalCacheServer.getBindAddress(),
+          internalCacheServer.getNotifyBySubscription(), internalCacheServer.getSocketBufferSize(),
+          internalCacheServer.getMaximumTimeBetweenPings(), internalCacheServer.getCache(),
+          internalCacheServer.getMaxConnections(), internalCacheServer.getMaxThreads(),
+          internalCacheServer.getMaximumMessageCount(), internalCacheServer.getMessageTimeToLive(),
+          internalCacheServer.connectionListener(), overflowAttributes,
+          internalCacheServer.getTcpNoDelay(), internalCacheServer.serverConnectionFactory(),
+          internalCacheServer.timeLimitMillis(), internalCacheServer.securityService(),
+          internalCacheServer.socketCreatorSupplier(),
+          internalCacheServer.cacheClientNotifierProvider(),
+          internalCacheServer.clientHealthMonitorProvider());
+    }
   }
 }

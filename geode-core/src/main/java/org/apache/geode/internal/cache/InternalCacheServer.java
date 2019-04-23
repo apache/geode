@@ -15,10 +15,17 @@
 package org.apache.geode.internal.cache;
 
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
+import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurityService;
 
 public interface InternalCacheServer extends CacheServer {
 
@@ -27,4 +34,20 @@ public interface InternalCacheServer extends CacheServer {
   Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException;
 
   String getExternalAddress();
+
+  InternalCache getCache();
+
+  ConnectionListener connectionListener();
+
+  ServerConnectionFactory serverConnectionFactory();
+
+  long timeLimitMillis();
+
+  SecurityService securityService();
+
+  Supplier<SocketCreator> socketCreatorSupplier();
+
+  CacheClientNotifierProvider cacheClientNotifierProvider();
+
+  ClientHealthMonitorProvider clientHealthMonitorProvider();
 }

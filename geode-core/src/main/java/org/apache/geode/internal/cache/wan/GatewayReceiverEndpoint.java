@@ -25,8 +25,10 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CacheServerResourceEventNotifier;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorFactory;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
@@ -37,6 +39,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayReceiverServer {
 
+  private final GatewayReceiverAcceptorFactory acceptorFactory;
   private final GatewayReceiver gatewayReceiver;
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
 
@@ -57,33 +60,59 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    this(cache, securityService, new CacheServerResourceEventNotifier() {}, gatewayReceiver,
+    this(cache, securityService, new GatewayReceiverAcceptorFactory(),
+        new CacheServerResourceEventNotifier() {}, gatewayReceiver,
         gatewayReceiverMetrics, socketCreatorSupplier, cacheClientNotifierProvider,
         clientHealthMonitorProvider);
   }
 
   private GatewayReceiverEndpoint(final InternalCache cache, final SecurityService securityService,
+      final GatewayReceiverAcceptorFactory acceptorFactory,
       final CacheServerResourceEventNotifier resourceEventNotifier,
       final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    super(cache, securityService, resourceEventNotifier, false);
+    super(cache, securityService, acceptorFactory, resourceEventNotifier, false);
+    this.acceptorFactory = acceptorFactory;
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
     this.socketCreatorSupplier = socketCreatorSupplier;
     this.cacheClientNotifierProvider = cacheClientNotifierProvider;
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
+
+    this.acceptorFactory.setGatewayReceiverEndpoint(this);
   }
 
-  @Override
-  public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
-    return new AcceptorImpl(getPort(), getBindAddress(), getNotifyBySubscription(),
-        getSocketBufferSize(), getMaximumTimeBetweenPings(), getCache(), getMaxConnections(),
-        getMaxThreads(), getMaximumMessageCount(), getMessageTimeToLive(), connectionListener(),
-        overflowAttributes, getTcpNoDelay(), serverConnectionFactory(), timeLimitMillis(),
-        securityService(), gatewayReceiver, gatewayReceiverMetrics,
-        gatewayReceiver.getGatewayTransportFilters(), socketCreatorSupplier,
-        cacheClientNotifierProvider, clientHealthMonitorProvider);
+  private static class GatewayReceiverAcceptorFactory implements AcceptorFactory {
+
+    private InternalCacheServer internalCacheServer;
+    private GatewayReceiverEndpoint gatewayReceiverEndpoint;
+
+    @Override
+    public void accept(InternalCacheServer internalCacheServer) {
+      this.internalCacheServer = internalCacheServer;
+    }
+
+    public void setGatewayReceiverEndpoint(GatewayReceiverEndpoint gatewayReceiverEndpoint) {
+      this.gatewayReceiverEndpoint = gatewayReceiverEndpoint;
+    }
+
+    @Override
+    public Acceptor create(OverflowAttributes overflowAttributes) throws IOException {
+      return new AcceptorImpl(internalCacheServer.getPort(), internalCacheServer.getBindAddress(),
+          internalCacheServer.getNotifyBySubscription(), internalCacheServer.getSocketBufferSize(),
+          internalCacheServer.getMaximumTimeBetweenPings(), internalCacheServer.getCache(),
+          internalCacheServer.getMaxConnections(), internalCacheServer.getMaxThreads(),
+          internalCacheServer.getMaximumMessageCount(), internalCacheServer.getMessageTimeToLive(),
+          internalCacheServer.connectionListener(), overflowAttributes,
+          internalCacheServer.getTcpNoDelay(), internalCacheServer.serverConnectionFactory(),
+          internalCacheServer.timeLimitMillis(), internalCacheServer.securityService(),
+          gatewayReceiverEndpoint.gatewayReceiver, gatewayReceiverEndpoint.gatewayReceiverMetrics,
+          gatewayReceiverEndpoint.gatewayReceiver.getGatewayTransportFilters(),
+          gatewayReceiverEndpoint.socketCreatorSupplier,
+          gatewayReceiverEndpoint.cacheClientNotifierProvider,
+          gatewayReceiverEndpoint.clientHealthMonitorProvider);
+    }
   }
 }

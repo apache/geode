@@ -376,6 +376,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
     return this.tcpNoDelay;
   }
 
+  @Override
   public InternalCache getCache() {
     return this.cache;
   }
