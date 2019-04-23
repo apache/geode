@@ -382,8 +382,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     this(port, bindHostName, notifyBySubscription, socketBufferSize, maximumTimeBetweenPings,
         internalCache, maxConnections, maxThreads, maximumMessageCount, messageTimeToLive,
         connectionListener, overflowAttributes, tcpNoDelay, serverConnectionFactory,
-        timeLimitMillis, securityService, null, null, Collections.emptyList(),
-        socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
+        timeLimitMillis, securityService, socketCreatorSupplier, cacheClientNotifierProvider,
+        clientHealthMonitorProvider, null, null, Collections.emptyList());
   }
 
   /**
@@ -402,10 +402,10 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * @param internalCache The GemFire cache whose contents is served to clients
    * @param maxConnections the maximum number of connections allowed in the server pool
    * @param maxThreads the maximum number of threads allowed in the server pool
+   * @param securityService the SecurityService to use for authentication and authorization
    * @param gatewayReceiver the GatewayReceiver that will use this AcceptorImpl instance
    * @param gatewayReceiverMetrics the GatewayReceiverMetrics to use for exposing metrics
    * @param gatewayTransportFilters List of GatewayTransportFilters
-   * @param securityService the SecurityService to use for authentication and authorization
    */
   public AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
       final int socketBufferSize, final int maximumTimeBetweenPings,
@@ -414,11 +414,11 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       final ConnectionListener connectionListener, final OverflowAttributes overflowAttributes,
       final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
       final long timeLimitMillis, final SecurityService securityService,
-      final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
-      final List<GatewayTransportFilter> gatewayTransportFilters,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
-      final ClientHealthMonitorProvider clientHealthMonitorProvider) throws IOException {
+      final ClientHealthMonitorProvider clientHealthMonitorProvider,
+      final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
+      final List<GatewayTransportFilter> gatewayTransportFilters) throws IOException {
     this.securityService = securityService;
 
     this.gatewayReceiver = gatewayReceiver;

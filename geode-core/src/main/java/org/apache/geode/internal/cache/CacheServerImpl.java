@@ -156,18 +156,9 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         CacheClientNotifier.singletonProvider(), ClientHealthMonitor.singletonProvider());
   }
 
-  // Visible for GatewayReceiverEndpoint
-  protected CacheServerImpl(final InternalCache cache, final SecurityService securityService,
-      final AcceptorFactory acceptorFactory,
-      final CacheServerResourceEventNotifier resourceEventNotifier,
-      final boolean includeMembershipGroups) {
-    this(cache, securityService, acceptorFactory, resourceEventNotifier, includeMembershipGroups,
-        () -> getSocketCreatorForComponent(SERVER), CacheClientNotifier.singletonProvider(),
-        ClientHealthMonitor.singletonProvider());
-  }
-
   @VisibleForTesting
-  CacheServerImpl(final InternalCache cache, final SecurityService securityService,
+  CacheServerImpl(final InternalCache cache,
+      final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
@@ -189,10 +180,12 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         clientHealthMonitorProvider);
   }
 
-  private CacheServerImpl(final InternalCache cache, final SecurityService securityService,
+  protected CacheServerImpl(final InternalCache cache,
+      final SecurityService securityService,
       final AcceptorFactory acceptorFactory,
       final CacheServerResourceEventNotifier resourceEventNotifier,
-      final boolean includeMembershipGroups, final Supplier<SocketCreator> socketCreatorSupplier,
+      final boolean includeMembershipGroups,
+      final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
     super(cache);

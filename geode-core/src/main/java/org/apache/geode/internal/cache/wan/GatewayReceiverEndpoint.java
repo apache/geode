@@ -39,24 +39,23 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayReceiverServer {
 
-  private final GatewayReceiverAcceptorFactory acceptorFactory;
   private final GatewayReceiver gatewayReceiver;
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
 
-  private final Supplier<SocketCreator> socketCreatorSupplier;
-  private final CacheClientNotifierProvider cacheClientNotifierProvider;
-  private final ClientHealthMonitorProvider clientHealthMonitorProvider;
-
-  public GatewayReceiverEndpoint(final InternalCache cache, final SecurityService securityService,
-      final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics) {
+  public GatewayReceiverEndpoint(final InternalCache cache,
+      final SecurityService securityService,
+      final GatewayReceiver gatewayReceiver,
+      final GatewayReceiverMetrics gatewayReceiverMetrics) {
     this(cache, securityService, gatewayReceiver, gatewayReceiverMetrics,
         () -> getSocketCreatorForComponent(GATEWAY), CacheClientNotifier.singletonProvider(),
         ClientHealthMonitor.singletonProvider());
   }
 
   @VisibleForTesting
-  public GatewayReceiverEndpoint(final InternalCache cache, final SecurityService securityService,
-      final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
+  public GatewayReceiverEndpoint(final InternalCache cache,
+      final SecurityService securityService,
+      final GatewayReceiver gatewayReceiver,
+      final GatewayReceiverMetrics gatewayReceiverMetrics,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
@@ -66,22 +65,21 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
         clientHealthMonitorProvider);
   }
 
-  private GatewayReceiverEndpoint(final InternalCache cache, final SecurityService securityService,
+  private GatewayReceiverEndpoint(final InternalCache cache,
+      final SecurityService securityService,
       final GatewayReceiverAcceptorFactory acceptorFactory,
       final CacheServerResourceEventNotifier resourceEventNotifier,
-      final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
+      final GatewayReceiver gatewayReceiver,
+      final GatewayReceiverMetrics gatewayReceiverMetrics,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    super(cache, securityService, acceptorFactory, resourceEventNotifier, false);
-    this.acceptorFactory = acceptorFactory;
+    super(cache, securityService, acceptorFactory, resourceEventNotifier, false,
+        socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
-    this.socketCreatorSupplier = socketCreatorSupplier;
-    this.cacheClientNotifierProvider = cacheClientNotifierProvider;
-    this.clientHealthMonitorProvider = clientHealthMonitorProvider;
 
-    this.acceptorFactory.setGatewayReceiverEndpoint(this);
+    acceptorFactory.setGatewayReceiverEndpoint(this);
   }
 
   private static class GatewayReceiverAcceptorFactory implements AcceptorFactory {
@@ -108,11 +106,11 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
           internalCacheServer.connectionListener(), overflowAttributes,
           internalCacheServer.getTcpNoDelay(), internalCacheServer.serverConnectionFactory(),
           internalCacheServer.timeLimitMillis(), internalCacheServer.securityService(),
+          internalCacheServer.socketCreatorSupplier(),
+          internalCacheServer.cacheClientNotifierProvider(),
+          internalCacheServer.clientHealthMonitorProvider(),
           gatewayReceiverEndpoint.gatewayReceiver, gatewayReceiverEndpoint.gatewayReceiverMetrics,
-          gatewayReceiverEndpoint.gatewayReceiver.getGatewayTransportFilters(),
-          gatewayReceiverEndpoint.socketCreatorSupplier,
-          gatewayReceiverEndpoint.cacheClientNotifierProvider,
-          gatewayReceiverEndpoint.clientHealthMonitorProvider);
+          gatewayReceiverEndpoint.gatewayReceiver.getGatewayTransportFilters());
     }
   }
 }

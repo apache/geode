@@ -102,9 +102,10 @@ public class AcceptorImplTest {
     Acceptor acceptor = new AcceptorImpl(0, null, false, DEFAULT_SOCKET_BUFFER_SIZE,
         DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, MINIMUM_MAX_CONNECTIONS, 0,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
-        null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService, null, null,
-        Collections.emptyList(), () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor);
+        null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService,
+        () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+        (a, b, c) -> clientHealthMonitor, null, null,
+        Collections.emptyList());
 
     assertThat(acceptor.isGatewayReceiver()).isFalse();
   }
@@ -119,9 +120,10 @@ public class AcceptorImplTest {
     Acceptor acceptor = new AcceptorImpl(0, null, false, DEFAULT_SOCKET_BUFFER_SIZE,
         DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, MINIMUM_MAX_CONNECTIONS, 0,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
-        null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService, gatewayReceiver,
-        gatewayReceiverMetrics, Collections.emptyList(), () -> socketCreator,
-        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+        null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService,
+        () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+        (a, b, c) -> clientHealthMonitor, gatewayReceiver,
+        gatewayReceiverMetrics, Collections.emptyList());
 
     assertThat(acceptor.isGatewayReceiver()).isTrue();
   }
