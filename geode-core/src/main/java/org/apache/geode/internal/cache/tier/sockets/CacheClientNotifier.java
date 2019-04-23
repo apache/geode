@@ -2243,16 +2243,19 @@ public class CacheClientNotifier {
     return new SingletonCacheClientNotifier();
   }
 
+  @SuppressWarnings("unused")
   public static CacheClientNotifierProvider singletonGetter() {
     return new SingletonCacheClientNotifier();
   }
 
+  @FunctionalInterface
   public interface CacheClientNotifierProvider {
     CacheClientNotifier get(InternalCache cache, CacheServerStats acceptorStats,
         int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
         OverflowAttributes overflowAttributes, boolean isGatewayReceiver);
   }
 
+  @FunctionalInterface
   public interface CacheClientNotifierGetter {
     CacheClientNotifier get();
   }

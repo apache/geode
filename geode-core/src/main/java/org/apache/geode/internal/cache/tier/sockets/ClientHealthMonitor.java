@@ -832,15 +832,18 @@ public class ClientHealthMonitor {
     return new ClientHealthMonitorSingleton();
   }
 
+  @SuppressWarnings("unused")
   public static ClientHealthMonitorGetter singletonGetter() {
     return new ClientHealthMonitorSingleton();
   }
 
+  @FunctionalInterface
   public interface ClientHealthMonitorProvider {
     ClientHealthMonitor get(InternalCache cache, int maximumTimeBetweenPings,
         CacheClientNotifierStats stats);
   }
 
+  @FunctionalInterface
   public interface ClientHealthMonitorGetter {
     ClientHealthMonitor get();
   }

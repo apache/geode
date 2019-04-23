@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,7 +35,6 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.tier.Acceptor;
@@ -46,7 +44,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.wan.GatewayReceiverEndpoint;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.test.junit.categories.WanTest;
@@ -89,17 +86,6 @@ public class GatewayReceiverEndpointTest {
     when(system.getConfig()).thenReturn(config);
     when(system.getProperties()).thenReturn(new Properties());
     when(system.getStatisticsManager()).thenReturn(statisticsManager);
-
-    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
-  }
-
-  @After
-  public void tearDown() {
-    if (CacheClientNotifier.getInstance() != null) {
-      CacheClientNotifier.getInstance().shutdown(0);
-    }
-    ClientHealthMonitor.shutdownInstance();
-    SocketCreatorFactory.close();
   }
 
   @Test

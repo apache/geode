@@ -54,8 +54,9 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.WanTest;
 
-@Category(ClientServerTest.class)
+@Category({ClientServerTest.class, WanTest.class})
 public class AcceptorImplTest {
 
   @Rule
@@ -130,5 +131,4 @@ public class AcceptorImplTest {
 
     assertThat(acceptor.isGatewayReceiver()).isTrue();
   }
-
 }

@@ -20,8 +20,10 @@ import static org.apache.geode.internal.security.SecurableCommunicationChannel.G
 import java.io.IOException;
 import java.util.function.Supplier;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.CacheServerResourceEventNotifier;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
@@ -49,12 +51,24 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
         ClientHealthMonitor.singletonProvider());
   }
 
+  @VisibleForTesting
   public GatewayReceiverEndpoint(final InternalCache cache, final SecurityService securityService,
       final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    super(cache, securityService);
+    this(cache, securityService, new CacheServerResourceEventNotifier() {}, gatewayReceiver,
+        gatewayReceiverMetrics, socketCreatorSupplier, cacheClientNotifierProvider,
+        clientHealthMonitorProvider);
+  }
+
+  private GatewayReceiverEndpoint(final InternalCache cache, final SecurityService securityService,
+      final CacheServerResourceEventNotifier resourceEventNotifier,
+      final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
+      final Supplier<SocketCreator> socketCreatorSupplier,
+      final CacheClientNotifierProvider cacheClientNotifierProvider,
+      final ClientHealthMonitorProvider clientHealthMonitorProvider) {
+    super(cache, securityService, resourceEventNotifier);
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
     this.socketCreatorSupplier = socketCreatorSupplier;
@@ -71,16 +85,6 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
         securityService(), gatewayReceiver, gatewayReceiverMetrics,
         gatewayReceiver.getGatewayTransportFilters(), socketCreatorSupplier,
         cacheClientNotifierProvider, clientHealthMonitorProvider);
-  }
-
-  @Override
-  protected void notifyResourceEventStart() {
-    // nothing
-  }
-
-  @Override
-  protected void notifyResourceEventStop() {
-    // nothing
   }
 
   @Override

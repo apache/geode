@@ -12,24 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier;
-
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+package org.apache.geode.internal.cache;
 
 /**
- * Overflow attributes for configuration of {@link AcceptorImpl}.
+ * Defines the management resource event notifications for {@link InternalCacheServer}.
  */
-public interface OverflowAttributes {
+public interface CacheServerResourceEventNotifier {
 
-  String getEvictionPolicy();
+  default void notifyResourceEventStart() {
+    // nothing
+  }
 
-  int getQueueCapacity();
-
-  int getPort();
-
-  boolean isDiskStore();
-
-  String getOverflowDirectory();
-
-  String getDiskStoreName();
+  default void notifyResourceEventStop() {
+    // nothing
+  }
 }

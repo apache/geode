@@ -98,6 +98,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private final SecurityService securityService;
 
+  private final CacheServerResourceEventNotifier resourceEventNotifier;
+
   /**
    * The server connection factory, that provides a {@link ServerConnection}.
    */
@@ -149,13 +151,42 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         CacheClientNotifier.singletonProvider(), ClientHealthMonitor.singletonProvider());
   }
 
+  // Visible for subclass TODO: delete this when subclass no longer extends
+  protected CacheServerImpl(final InternalCache cache, final SecurityService securityService,
+      final CacheServerResourceEventNotifier resourceEventNotifier) {
+    this(cache, securityService, resourceEventNotifier, () -> getSocketCreatorForComponent(SERVER),
+        CacheClientNotifier.singletonProvider(), ClientHealthMonitor.singletonProvider());
+  }
+
   @VisibleForTesting
   CacheServerImpl(final InternalCache cache, final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
+    this(cache, securityService, new CacheServerResourceEventNotifier() {
+
+      @Override
+      public void notifyResourceEventStart() {
+        InternalDistributedSystem system = cache.getInternalDistributedSystem();
+        system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
+      }
+
+      @Override
+      public void notifyResourceEventStop() {
+        InternalDistributedSystem system = cache.getInternalDistributedSystem();
+        system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
+      }
+    }, socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
+  }
+
+  private CacheServerImpl(final InternalCache cache, final SecurityService securityService,
+      final CacheServerResourceEventNotifier resourceEventNotifier,
+      final Supplier<SocketCreator> socketCreatorSupplier,
+      final CacheClientNotifierProvider cacheClientNotifierProvider,
+      final ClientHealthMonitorProvider clientHealthMonitorProvider) {
     super(cache);
     this.securityService = securityService;
+    this.resourceEventNotifier = resourceEventNotifier;
     this.socketCreatorSupplier = socketCreatorSupplier;
     this.cacheClientNotifierProvider = cacheClientNotifierProvider;
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
@@ -408,7 +439,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       ClientMembership.registerClientMembershipListener(listener);
     }
 
-    notifyResourceEventStart();
+    resourceEventNotifier.notifyResourceEventStart();
   }
 
   @Override
@@ -511,7 +542,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
     txMgr.removeHostedTXStatesForClients();
 
-    notifyResourceEventStop();
+    resourceEventNotifier.notifyResourceEventStop();
   }
 
   private String getConfig() {
@@ -837,16 +868,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   protected long timeLimitMillis() {
     return 120_000;
-  }
-
-  protected void notifyResourceEventStart() {
-    InternalDistributedSystem system = cache.getInternalDistributedSystem();
-    system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
-  }
-
-  protected void notifyResourceEventStop() {
-    InternalDistributedSystem system = cache.getInternalDistributedSystem();
-    system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
   }
 
   protected boolean inheritMembershipGroups() {
