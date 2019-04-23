@@ -233,7 +233,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-security-web')
     }
 
-    dependencySet(group: 'org.springframework', version: '4.3.20.RELEASE') {
+    dependencySet(group: 'org.springframework', version: '4.3.23.RELEASE') {
       entry('spring-aspects')
       entry('spring-beans')
       entry('spring-context')
