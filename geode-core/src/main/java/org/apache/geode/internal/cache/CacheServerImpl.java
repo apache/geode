@@ -100,6 +100,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private final CacheServerResourceEventNotifier resourceEventNotifier;
 
+  private final boolean includeMembershipGroups;
+
   /**
    * The server connection factory, that provides a {@link ServerConnection}.
    */
@@ -151,11 +153,13 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         CacheClientNotifier.singletonProvider(), ClientHealthMonitor.singletonProvider());
   }
 
-  // Visible for subclass TODO: delete this when subclass no longer extends
+  // Visible for GatewayReceiverEndpoint
   protected CacheServerImpl(final InternalCache cache, final SecurityService securityService,
-      final CacheServerResourceEventNotifier resourceEventNotifier) {
-    this(cache, securityService, resourceEventNotifier, () -> getSocketCreatorForComponent(SERVER),
-        CacheClientNotifier.singletonProvider(), ClientHealthMonitor.singletonProvider());
+      final CacheServerResourceEventNotifier resourceEventNotifier,
+      final boolean includeMembershipGroups) {
+    this(cache, securityService, resourceEventNotifier, includeMembershipGroups,
+        () -> getSocketCreatorForComponent(SERVER), CacheClientNotifier.singletonProvider(),
+        ClientHealthMonitor.singletonProvider());
   }
 
   @VisibleForTesting
@@ -176,17 +180,18 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         InternalDistributedSystem system = cache.getInternalDistributedSystem();
         system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
       }
-    }, socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
+    }, true, socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
   }
 
   private CacheServerImpl(final InternalCache cache, final SecurityService securityService,
       final CacheServerResourceEventNotifier resourceEventNotifier,
-      final Supplier<SocketCreator> socketCreatorSupplier,
+      final boolean includeMembershipGroups, final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
     super(cache);
     this.securityService = securityService;
     this.resourceEventNotifier = resourceEventNotifier;
+    this.includeMembershipGroups = includeMembershipGroups;
     this.socketCreatorSupplier = socketCreatorSupplier;
     this.cacheClientNotifierProvider = cacheClientNotifierProvider;
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
@@ -746,7 +751,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   @Override
   public InternalDistributedSystem getSystem() {
-    return (InternalDistributedSystem) this.cache.getDistributedSystem();
+    return cache.getInternalDistributedSystem();
   }
 
   @Override
@@ -772,7 +777,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   public String[] getCombinedGroups() {
     ArrayList<String> groupList = new ArrayList<String>();
-    if (inheritMembershipGroups()) {
+    if (includeMembershipGroups()) {
       for (String g : MemberAttributes.parseGroups(null, getSystem().getConfig().getGroups())) {
         if (!groupList.contains(g)) {
           groupList.add(g);
@@ -870,7 +875,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     return 120_000;
   }
 
-  protected boolean inheritMembershipGroups() {
-    return true;
+  private boolean includeMembershipGroups() {
+    return includeMembershipGroups;
   }
 }

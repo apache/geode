@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.tier.Acceptor;
@@ -47,6 +48,7 @@ public class CacheServerImplTest {
   private SocketCreator socketCreator;
   private CacheClientNotifier cacheClientNotifier;
   private ClientHealthMonitor clientHealthMonitor;
+  private DistributionConfig config;
 
   @Before
   public void setUp() throws IOException {
@@ -55,6 +57,7 @@ public class CacheServerImplTest {
     socketCreator = mock(SocketCreator.class);
     cacheClientNotifier = mock(CacheClientNotifier.class);
     clientHealthMonitor = mock(ClientHealthMonitor.class);
+    config = mock(DistributionConfig.class);
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     ServerSocket serverSocket = mock(ServerSocket.class);
@@ -64,12 +67,12 @@ public class CacheServerImplTest {
     when(serverSocket.getLocalSocketAddress()).thenReturn(mock(SocketAddress.class));
     when(socketCreator.createServerSocket(anyInt(), anyInt(), any(), any(), anyInt()))
         .thenReturn(serverSocket);
-    when(system.getConfig()).thenReturn(mock(DistributionConfig.class));
+    when(system.getConfig()).thenReturn(config);
     when(system.getProperties()).thenReturn(new Properties());
   }
 
   @Test
-  public void isServerEndpoint() throws IOException {
+  public void createdAcceptorIsGatewayEndpoint() throws IOException {
     OverflowAttributes overflowAttributes = mock(OverflowAttributes.class);
     InternalCacheServer server = new CacheServerImpl(cache, securityService, () -> socketCreator,
         (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
@@ -77,5 +80,76 @@ public class CacheServerImplTest {
     Acceptor acceptor = server.createAcceptor(overflowAttributes);
 
     assertThat(acceptor.isGatewayReceiver()).isFalse();
+  }
+
+  @Test
+  public void getGroups_returnsSpecifiedGroup() {
+    CacheServer server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+    String specifiedGroup = "group0";
+
+    server.setGroups(new String[] {specifiedGroup});
+
+    assertThat(server.getGroups())
+        .containsExactly(specifiedGroup);
+  }
+
+  @Test
+  public void getGroups_returnsMultipleSpecifiedGroups() {
+    CacheServer server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+    String specifiedGroup1 = "group1";
+    String specifiedGroup2 = "group2";
+    String specifiedGroup3 = "group3";
+
+    server.setGroups(new String[] {specifiedGroup1, specifiedGroup2, specifiedGroup3});
+
+    assertThat(server.getGroups())
+        .containsExactlyInAnyOrder(specifiedGroup1, specifiedGroup2, specifiedGroup3);
+  }
+
+  @Test
+  public void getCombinedGroups_includesMembershipGroup() {
+    String membershipGroup = "group-m0";
+    when(config.getGroups()).thenReturn(membershipGroup);
+    CacheServerImpl server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+
+    assertThat(server.getCombinedGroups())
+        .contains(membershipGroup);
+  }
+
+  @Test
+  public void getCombinedGroups_includesMultipleMembershipGroups() {
+    String membershipGroup1 = "group-m1";
+    String membershipGroup2 = "group-m2";
+    String membershipGroup3 = "group-m3";
+    when(config.getGroups())
+        .thenReturn(membershipGroup1 + "," + membershipGroup2 + "," + membershipGroup3);
+    CacheServerImpl server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+
+    assertThat(server.getCombinedGroups())
+        .contains(membershipGroup1, membershipGroup2, membershipGroup3);
+  }
+
+  @Test
+  public void getCombinedGroups_includesSpecifiedGroupsAndMembershipGroups() {
+    String membershipGroup1 = "group-m1";
+    String membershipGroup2 = "group-m2";
+    String membershipGroup3 = "group-m3";
+    when(config.getGroups())
+        .thenReturn(membershipGroup1 + "," + membershipGroup2 + "," + membershipGroup3);
+    CacheServerImpl server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+    String specifiedGroup1 = "group1";
+    String specifiedGroup2 = "group2";
+    String specifiedGroup3 = "group3";
+
+    server.setGroups(new String[] {specifiedGroup1, specifiedGroup2, specifiedGroup3});
+
+    assertThat(server.getCombinedGroups())
+        .containsExactlyInAnyOrder(membershipGroup1, membershipGroup2, membershipGroup3,
+            specifiedGroup1, specifiedGroup2, specifiedGroup3);
   }
 }

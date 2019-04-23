@@ -68,7 +68,7 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    super(cache, securityService, resourceEventNotifier);
+    super(cache, securityService, resourceEventNotifier, false);
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
     this.socketCreatorSupplier = socketCreatorSupplier;
@@ -85,10 +85,5 @@ public class GatewayReceiverEndpoint extends CacheServerImpl implements GatewayR
         securityService(), gatewayReceiver, gatewayReceiverMetrics,
         gatewayReceiver.getGatewayTransportFilters(), socketCreatorSupplier,
         cacheClientNotifierProvider, clientHealthMonitorProvider);
-  }
-
-  @Override
-  protected boolean inheritMembershipGroups() {
-    return false;
   }
 }

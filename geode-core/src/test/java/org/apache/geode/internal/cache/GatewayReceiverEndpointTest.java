@@ -58,16 +58,17 @@ public class GatewayReceiverEndpointTest {
   private SocketCreator socketCreator;
   private CacheClientNotifier cacheClientNotifier;
   private ClientHealthMonitor clientHealthMonitor;
+  private DistributionConfig config;
 
   @Before
   public void setUp() throws IOException {
     MeterRegistry meterRegistry = new SimpleMeterRegistry();
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
-    DistributionConfig config = mock(DistributionConfig.class);
     ServerSocket serverSocket = mock(ServerSocket.class);
     StatisticsManager statisticsManager = mock(StatisticsManager.class);
 
     cache = mock(InternalCache.class);
+    config = mock(DistributionConfig.class);
     securityService = mock(SecurityService.class);
     gatewayReceiver = mock(GatewayReceiver.class);
     gatewayReceiverMetrics = new GatewayReceiverMetrics(meterRegistry);
@@ -89,7 +90,7 @@ public class GatewayReceiverEndpointTest {
   }
 
   @Test
-  public void isGatewayEndpoint() throws IOException {
+  public void createdAcceptorIsGatewayEndpoint() throws IOException {
     OverflowAttributes overflowAttributes = mock(OverflowAttributes.class);
     InternalCacheServer server = new GatewayReceiverEndpoint(cache, securityService,
         gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
@@ -98,5 +99,17 @@ public class GatewayReceiverEndpointTest {
     Acceptor acceptor = server.createAcceptor(overflowAttributes);
 
     assertThat(acceptor.isGatewayReceiver()).isTrue();
+  }
+
+  @Test
+  public void cacheServer_getCombinedGroups_doesNotIncludeMembershipGroup() {
+    String membershipGroup = "group-m0";
+    when(config.getGroups()).thenReturn(membershipGroup);
+    GatewayReceiverEndpoint server = new GatewayReceiverEndpoint(cache, securityService,
+        gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
+        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+
+    assertThat(server.getCombinedGroups())
+        .doesNotContain(membershipGroup);
   }
 }
