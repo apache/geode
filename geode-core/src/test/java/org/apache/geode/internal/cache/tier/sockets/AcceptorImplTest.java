@@ -27,12 +27,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.STRICT_STUBS;
 
+import java.net.ServerSocket;
+import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.Properties;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,7 +46,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
@@ -62,44 +61,39 @@ public class AcceptorImplTest {
   @Rule
   public MockitoRule rule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
-  private MeterRegistry meterRegistry;
-  private GatewayReceiverMetrics gatewayReceiverMetrics;
   private InternalCache cache;
-  private ServerConnectionFactory serverConnectionFactory;
-  private GatewayReceiver gatewayReceiver;
-  private SocketCreator socketCreator;
-  private SecurityService securityService;
   private CacheClientNotifier cacheClientNotifier;
   private ClientHealthMonitor clientHealthMonitor;
-  private InternalDistributedSystem system;
+  private ServerConnectionFactory serverConnectionFactory;
+  private GatewayReceiver gatewayReceiver;
+  private GatewayReceiverMetrics gatewayReceiverMetrics;
+  private SecurityService securityService;
+  private SocketCreator socketCreator;
   private StatisticsManager statisticsManager;
+  private InternalDistributedSystem system;
 
   @Before
   public void setUp() throws Exception {
-    meterRegistry = new SimpleMeterRegistry();
-    gatewayReceiverMetrics = new GatewayReceiverMetrics(meterRegistry);
     cache = mock(InternalCache.class);
-    serverConnectionFactory = mock(ServerConnectionFactory.class);
-    gatewayReceiver = mock(GatewayReceiver.class);
-    socketCreator = mock(SocketCreator.class);
-    securityService = mock(SecurityService.class);
     cacheClientNotifier = mock(CacheClientNotifier.class);
     clientHealthMonitor = mock(ClientHealthMonitor.class);
+    serverConnectionFactory = mock(ServerConnectionFactory.class);
+    gatewayReceiver = mock(GatewayReceiver.class);
+    gatewayReceiverMetrics = new GatewayReceiverMetrics(new SimpleMeterRegistry());
+    socketCreator = mock(SocketCreator.class);
+    securityService = mock(SecurityService.class);
     system = mock(InternalDistributedSystem.class);
     statisticsManager = mock(StatisticsManager.class);
 
+    ServerSocket serverSocket = mock(ServerSocket.class);
+
     when(cache.getDistributedSystem()).thenReturn(system);
     when(cache.getInternalDistributedSystem()).thenReturn(system);
-    when(socketCreator.createServerSocket(anyInt(), anyInt(), isNull(),
-        anyList(), anyInt()))
-            .thenReturn(new SocketCreator(new SSLConfig()).createServerSocket(0, 0));
+    when(serverSocket.getLocalSocketAddress()).thenReturn(mock(SocketAddress.class));
+    when(socketCreator.createServerSocket(anyInt(), anyInt(), isNull(), anyList(), anyInt()))
+        .thenReturn(serverSocket);
     when(system.getConfig()).thenReturn(mock(DistributionConfig.class));
     when(system.getProperties()).thenReturn(new Properties());
-  }
-
-  @After
-  public void tearDown() {
-    meterRegistry.close();
   }
 
   @Test

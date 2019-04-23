@@ -25,7 +25,6 @@ import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.util.Properties;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,19 +61,18 @@ public class GatewayReceiverEndpointTest {
 
   @Before
   public void setUp() throws IOException {
-    MeterRegistry meterRegistry = new SimpleMeterRegistry();
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     ServerSocket serverSocket = mock(ServerSocket.class);
     StatisticsManager statisticsManager = mock(StatisticsManager.class);
 
     cache = mock(InternalCache.class);
-    config = mock(DistributionConfig.class);
-    securityService = mock(SecurityService.class);
-    gatewayReceiver = mock(GatewayReceiver.class);
-    gatewayReceiverMetrics = new GatewayReceiverMetrics(meterRegistry);
-    socketCreator = mock(SocketCreator.class);
     cacheClientNotifier = mock(CacheClientNotifier.class);
     clientHealthMonitor = mock(ClientHealthMonitor.class);
+    config = mock(DistributionConfig.class);
+    gatewayReceiver = mock(GatewayReceiver.class);
+    gatewayReceiverMetrics = new GatewayReceiverMetrics(new SimpleMeterRegistry());
+    securityService = mock(SecurityService.class);
+    socketCreator = mock(SocketCreator.class);
 
     when(cache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
     when(cache.getDistributedSystem()).thenReturn(system);

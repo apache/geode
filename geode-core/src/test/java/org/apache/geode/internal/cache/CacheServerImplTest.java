@@ -44,20 +44,20 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class CacheServerImplTest {
 
   private InternalCache cache;
-  private SecurityService securityService;
-  private SocketCreator socketCreator;
   private CacheClientNotifier cacheClientNotifier;
   private ClientHealthMonitor clientHealthMonitor;
   private DistributionConfig config;
+  private SecurityService securityService;
+  private SocketCreator socketCreator;
 
   @Before
   public void setUp() throws IOException {
     cache = mock(InternalCache.class);
-    securityService = mock(SecurityService.class);
-    socketCreator = mock(SocketCreator.class);
     cacheClientNotifier = mock(CacheClientNotifier.class);
     clientHealthMonitor = mock(ClientHealthMonitor.class);
     config = mock(DistributionConfig.class);
+    securityService = mock(SecurityService.class);
+    socketCreator = mock(SocketCreator.class);
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     ServerSocket serverSocket = mock(ServerSocket.class);
