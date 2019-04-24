@@ -312,7 +312,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
     csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1 + "," + TEST_GROUP2);
     commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+    commandResultAssert.tableHasRowCount(1);
     commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, TEST_REGION);
 
     // do destroy mapping
@@ -383,7 +383,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
     csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP2);
     commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
+    commandResultAssert.tableHasRowCount(0);
 
     // do destroy mapping for for TEST_GROUP2
     csb = new CommandStringBuilder(DESTROY_MAPPING + " --groups=" + TEST_GROUP2);
@@ -409,7 +409,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
     csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
     commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+    commandResultAssert.tableHasRowCount(1);
     commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, TEST_REGION);
 
     // do destroy mapping
@@ -487,7 +487,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
     csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP2);
     commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
+    commandResultAssert.tableHasRowCount(0);
 
     // do destroy mapping for for TEST_GROUP2
     csb = new CommandStringBuilder(DESTROY_MAPPING + " --groups=" + TEST_GROUP2);
@@ -513,7 +513,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
     csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
     commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+    commandResultAssert.tableHasRowCount(1);
     commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, TEST_REGION);
 
     // do destroy mapping

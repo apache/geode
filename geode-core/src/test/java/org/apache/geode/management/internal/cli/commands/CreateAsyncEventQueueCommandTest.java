@@ -151,9 +151,12 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsError().tableHasRowCount("Member", 2)
-        .tableHasRowWithValues("Member", "Status", "Message", "member1", "ERROR", "failed")
-        .tableHasRowWithValues("Member", "Status", "Message", "member2", "ERROR",
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsError()
+        .hasTableSection()
+        .hasRowSize(2)
+        .hasAnyRow().containsExactly("member1", "ERROR", "failed")
+        .hasAnyRow()
+        .containsExactly("member2", "ERROR",
             " java.lang.RuntimeException: exception happened");
 
     verify(service, never()).updateCacheConfig(any(), any());
@@ -172,9 +175,12 @@ public class CreateAsyncEventQueueCommandTest {
         isA(Object.class), isA(Set.class));
 
     gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess()
-        .tableHasRowCount("Member", 2)
-        .tableHasRowWithValues("Member", "Status", "Message", "member1", "OK", "SUCCESS")
-        .tableHasRowWithValues("Member", "Status", "Message", "member2", "ERROR",
+        .hasTableSection()
+        .hasRowSize(2)
+        .hasAnyRow()
+        .containsExactly("member1", "OK", "SUCCESS")
+        .hasAnyRow()
+        .containsExactly("member2", "ERROR",
             " java.lang.RuntimeException: exception happened");
 
     verify(service, times(1)).updateCacheConfig(any(), any());

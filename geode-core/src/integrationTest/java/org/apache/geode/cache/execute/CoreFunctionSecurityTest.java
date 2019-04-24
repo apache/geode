@@ -161,7 +161,7 @@ public class CoreFunctionSecurityTest {
     functionStringMap.forEach((function, permission) -> {
       System.out.println("function: " + function.getId() + ", permission: " + permission);
       gfsh.executeAndAssertThat("execute function --id=" + function.getId())
-          .tableHasRowCount(RESULT_HEADER, 1)
+          .tableHasRowCount(1)
           .tableHasRowWithValues(RESULT_HEADER, "Exception: user not authorized for " + permission)
           .statusIsError();
     });

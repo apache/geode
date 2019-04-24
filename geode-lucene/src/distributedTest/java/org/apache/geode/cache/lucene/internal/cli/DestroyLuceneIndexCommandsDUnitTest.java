@@ -346,7 +346,7 @@ public class DestroyLuceneIndexCommandsDUnitTest implements Serializable {
   private void validateCommandResult(CommandResultAssert commandResultAssert,
       String expectedStatus) {
     commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount("Member", 2);
+    commandResultAssert.tableHasRowCount(2);
     commandResultAssert.tableHasColumnOnlyWithValues("Status", expectedStatus);
   }
 

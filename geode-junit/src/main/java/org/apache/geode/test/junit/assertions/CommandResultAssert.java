@@ -84,10 +84,7 @@ public class CommandResultAssert
    * Verifies the gfsh output contains the given output
    */
   public CommandResultAssert containsOutput(String... expectedOutputs) {
-    for (String expectedOutput : expectedOutputs) {
-      assertThat(commandOutput).contains(expectedOutput);
-    }
-
+    assertThat(commandOutput).contains(expectedOutputs);
     return this;
   }
 
@@ -95,10 +92,7 @@ public class CommandResultAssert
    * Verifies the gfsh output does not contain the given output
    */
   public CommandResultAssert doesNotContainOutput(String... expectedOutputs) {
-    for (String expectedOutput : expectedOutputs) {
-      assertThat(commandOutput).doesNotContain(expectedOutput);
-    }
-
+    assertThat(commandOutput).doesNotContain(expectedOutputs);
     return this;
   }
 
@@ -195,8 +189,8 @@ public class CommandResultAssert
     return this;
   }
 
-  public CommandResultAssert tableHasRowCount(String anyColumnHeader, int rowSize) {
-    hasTableSection().hasColumnSize(rowSize);
+  public CommandResultAssert tableHasRowCount(int rowSize) {
+    hasTableSection().hasRowSize(rowSize);
     return this;
   }
 

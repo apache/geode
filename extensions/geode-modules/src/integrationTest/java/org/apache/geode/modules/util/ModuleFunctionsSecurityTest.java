@@ -67,7 +67,7 @@ public class ModuleFunctionsSecurityTest {
       Function function = entry.getKey();
       String permission = entry.getValue();
       gfsh.executeAndAssertThat("execute function --region=AuthRegion --id=" + function.getId())
-          .tableHasRowCount(RESULT_HEADER, 1)
+          .tableHasRowCount(1)
           .tableHasColumnWithValuesContaining(RESULT_HEADER, permission).statusIsError();
     });
   }

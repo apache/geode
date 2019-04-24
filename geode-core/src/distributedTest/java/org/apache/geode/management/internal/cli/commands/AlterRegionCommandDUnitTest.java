@@ -97,7 +97,7 @@ public class AlterRegionCommandDUnitTest {
     String listenerABC =
         "com.cadrdunit.RegionAlterCacheListenerA,com.cadrdunit.RegionAlterCacheListenerB,com.cadrdunit.RegionAlterCacheListenerC";
     gfsh.executeAndAssertThat("alter region --name=regionA --cache-listener=" + listenerABC)
-        .statusIsSuccess().tableHasRowCount("Member", 3);
+        .statusIsSuccess().tableHasRowCount(3);
 
     VMProvider.invokeInEveryMember(() -> {
       RegionAttributes attributes =

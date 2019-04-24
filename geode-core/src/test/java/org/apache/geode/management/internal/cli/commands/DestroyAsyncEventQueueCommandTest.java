@@ -90,7 +90,7 @@ public class DestroyAsyncEventQueueCommandTest {
         DestroyAsyncEventQueueCommand.DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED, "queue1")));
 
     gfsh.executeAndAssertThat(command, "destroy async-event-queue --id=queue1").statusIsSuccess()
-        .containsOutput("\\\"queue1\\\" destroyed").tableHasRowCount("Member", 2);
+        .containsOutput("\"queue1\" destroyed").tableHasRowCount(2);
   }
 
   @Test
@@ -110,7 +110,7 @@ public class DestroyAsyncEventQueueCommandTest {
 
     gfsh.executeAndAssertThat(command,
         "destroy async-event-queue --id=nonexistentQueue --if-exists")
-        .tableHasRowCount("Member", 2);
+        .tableHasRowCount(2);
     verify(command).executeAndGetFunctionResult(any(), argCaptor.capture(), eq(members));
     assertThat(argCaptor.getValue().isIfExists()).isEqualTo(true);
   }
@@ -129,7 +129,7 @@ public class DestroyAsyncEventQueueCommandTest {
         ArgumentCaptor.forClass(DestroyAsyncEventQueueFunctionArgs.class);
 
     gfsh.executeAndAssertThat(command, "destroy async-event-queue --id=nonexistentQueue")
-        .statusIsError().tableHasRowCount("Member", 2);
+        .statusIsError().tableHasRowCount(2);
     verify(command).executeAndGetFunctionResult(any(), argCaptor.capture(), eq(members));
     assertThat(argCaptor.getValue().isIfExists()).isEqualTo(false);
   }

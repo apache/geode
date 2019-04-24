@@ -43,7 +43,7 @@ public class StatusClusterConfigServiceCommandDUnitTest {
   public void testStatusClusterConfigService() {
     gfsh.executeAndAssertThat("status cluster-config-service")
         .statusIsSuccess()
-        .tableHasRowCount("Name", 2)
+        .tableHasRowCount(2)
         .tableHasRowWithValues("Name", "Status", "locator-0", "RUNNING")
         .tableHasRowWithValues("Name", "Status", "locator-1", "RUNNING");
 
@@ -51,7 +51,7 @@ public class StatusClusterConfigServiceCommandDUnitTest {
 
     gfsh.executeAndAssertThat("status cluster-config-service")
         .statusIsSuccess()
-        .tableHasRowCount("Name", 1)
+        .tableHasRowCount(1)
         .tableHasRowWithValues("Name", "Status", "locator-0", "RUNNING");
   }
 }

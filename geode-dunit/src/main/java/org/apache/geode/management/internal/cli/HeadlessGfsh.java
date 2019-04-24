@@ -127,14 +127,16 @@ public class HeadlessGfsh implements ResultHandler {
     try {
       Object result = queue.poll(timeout, TimeUnit.SECONDS);
       queue.clear();
-      if (!(result instanceof CommandResult)) {
-        if (result == null) {
-          return CommandResult.createError("command response was null");
-        } else {
-          return CommandResult.createError(result.toString());
-        }
+      if (result instanceof CommandResult) {
+        return (CommandResult) result;
       }
-      return (CommandResult) result;
+
+      if (result == null) {
+        return CommandResult.createError(outputString);
+      } else {
+        return CommandResult.createError(result.toString());
+      }
+
     } catch (InterruptedException e) {
       e.printStackTrace();
       throw e;

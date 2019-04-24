@@ -98,14 +98,14 @@ public class GfshAbstractUnitTest {
     commandResult = gfsh.executeCommand("echo --string=ApacheGeode!");
     assertThat(commandResult.isSuccess()).isTrue();
     verify(gfsh, times(0)).expandProperties("echo --string=ApacheGeode!");
-    assertThat(((CommandResult) commandResult.getResult()).asString())
+    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
         .isEqualTo("ApacheGeode!");
 
     // '$' character present, should expand properties and delegate to default implementation.
     commandResult = gfsh.executeCommand("echo --string=SYS_USER:${SYS_USER}");
     assertThat(commandResult.isSuccess()).isTrue();
     verify(gfsh, times(1)).expandProperties("echo --string=SYS_USER:${SYS_USER}");
-    assertThat(((CommandResult) commandResult.getResult()).asString())
+    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
         .isEqualTo("SYS_USER:" + System.getProperty("user.name"));
 
     // '$' character present but not variable referenced, should try to expand, find nothing (no
@@ -113,7 +113,7 @@ public class GfshAbstractUnitTest {
     commandResult = gfsh.executeCommand("echo --string=MyNameIs:$USER_NAME");
     assertThat(commandResult.isSuccess()).isTrue();
     verify(gfsh, times(1)).expandProperties("echo --string=MyNameIs:$USER_NAME");
-    assertThat(((CommandResult) commandResult.getResult()).asString())
+    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
         .isEqualTo("MyNameIs:$USER_NAME");
   }
 }
