@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -190,6 +191,9 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   private Set<String> visibleAsyncEventQueueIds;
 
+  /**
+   * This set is always unmodifiable.
+   */
   private Set<String> allGatewaySenderIds;
 
   protected boolean enableSubscriptionConflation;
@@ -703,7 +707,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public Set<String> getAllGatewaySenderIds() {
-    return Collections.unmodifiableSet(this.allGatewaySenderIds);
+    return this.allGatewaySenderIds;
   }
 
   /**
@@ -997,12 +1001,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     if (getGatewaySenderIds().isEmpty() && getAsyncEventQueueIds().isEmpty()) {
       this.allGatewaySenderIds = Collections.emptySet(); // fix for bug 45774
     }
-    Set<String> tmp = new CopyOnWriteArraySet<String>();
-    tmp.addAll(this.getGatewaySenderIds());
+    Set<String> tmp = new HashSet<String>(this.getGatewaySenderIds());
     for (String asyncQueueId : this.getAsyncEventQueueIds()) {
       tmp.add(AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
     }
-    this.allGatewaySenderIds = tmp;
+    this.allGatewaySenderIds = Collections.unmodifiableSet(tmp);
   }
 
   private void initializeVisibleAsyncEventQueueIds(InternalRegionArguments internalRegionArgs) {
