@@ -410,6 +410,8 @@ public class JarDeployer implements Serializable {
       ZipEntry ze = null;
       String driverClassName = null;
       while ((ze = zis.getNextEntry()) != null) {
+        // JDBC 4.0 Drivers must include the file META-INF/services/java.sql.Driver. This file contains the name of the JDBC drivers implementation of java.sql.Driver
+        // See https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html
         if (!ze.getName().equals("META-INF/services/java.sql.Driver")) {
           continue;
         }
