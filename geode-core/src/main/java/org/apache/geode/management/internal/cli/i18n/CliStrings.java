@@ -83,7 +83,6 @@ public class CliStrings {
   public static final String IFNOTEXISTS = "if-not-exists";
   public static final String JAR = "jar";
   public static final String JARS = "jars";
-  public static final String DRIVER_CLASS = "driver-class";
 
   public static final String IFEXISTS_HELP =
       "If true, the command will be a no-op if the entity does not exist.";

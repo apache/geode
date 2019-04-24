@@ -121,9 +121,6 @@ public class CreateDataSourceCommandDUnitTest {
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
     String jarFile = mySqlDriverFile.getAbsolutePath();
-    // String jarFile = "/Users/gzhou/Downloads/mysql-connector-java-8.0.15.jar";
-    // String jarFile =
-    // "/Users/pivotal/workspace/gemfire-greenplum/mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar";
     gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
 
     gfsh.executeAndAssertThat(

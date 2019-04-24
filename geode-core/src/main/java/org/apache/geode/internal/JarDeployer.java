@@ -362,18 +362,6 @@ public class JarDeployer implements Serializable {
 
   }
 
-  public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars, String driverName)
-      throws ClassNotFoundException {
-    for (DeployedJar deployedJar : deployedJars) {
-      if (deployedJar != null) {
-        if (StringUtils.isNotBlank(driverName)) {
-          addToSystemClasspathAndRegisterDriver(deployedJar, driverName);
-        }
-      }
-    }
-    return registerNewVersions(deployedJars);
-  }
-
   public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars)
       throws ClassNotFoundException {
     lock.lock();

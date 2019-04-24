@@ -88,8 +88,6 @@ public class DeployCommand extends GfshCommand {
 
     List<String> jarFullPaths = CommandExecutionContext.getFilePathFromShell();
 
-    System.out.println("BR: " + jarFullPaths);
-
     verifyJarContent(jarFullPaths);
 
     Set<DistributedMember> targetMembers;
