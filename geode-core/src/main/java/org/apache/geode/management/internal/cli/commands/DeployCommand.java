@@ -108,8 +108,7 @@ public class DeployCommand extends GfshCommand {
 
       // this deploys the jars to all the matching servers
       ResultCollector<?, ?> resultCollector =
-          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams},
-              member);
+          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams}, member);
 
       results.add(((List) resultCollector.getResult()).get(0));
 
