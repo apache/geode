@@ -125,7 +125,7 @@ public class CreateDataSourceCommandDUnitTest {
 
     gfsh.executeAndAssertThat(
         "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
-            + URL + "\" --driver-jar=" + jarFile)
+            + URL + "\"")
         .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
   }
 
