@@ -34,7 +34,7 @@ public class CacheServerStatsJUnitTest extends MBeanStatsTestCase {
 
   @Override
   public void init() {
-    cacheServerStats = new CacheServerStats("Test Sock Name");
+    cacheServerStats = new CacheServerStats(system.getStatisticsManager(), "Test Sock Name");
 
     bridge = new CacheServerBridge();
     bridge.addCacheServerStats(cacheServerStats);

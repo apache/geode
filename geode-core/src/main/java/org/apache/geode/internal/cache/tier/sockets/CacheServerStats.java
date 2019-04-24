@@ -19,7 +19,6 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 
 /**
@@ -224,8 +223,8 @@ public class CacheServerStats implements MessageStats {
 
   protected StatisticsType statType;
 
-  public CacheServerStats(String ownerName) {
-    this(InternalDistributedSystem.getAnyInstance(), ownerName, typeName, null);
+  public CacheServerStats(StatisticsFactory statisticsFactory, String ownerName) {
+    this(statisticsFactory, ownerName, typeName, null);
   }
 
   /**

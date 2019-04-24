@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
@@ -101,7 +102,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private final AcceptorFactory acceptorFactory;
 
-  private final CacheServerResourceEventNotifier resourceEventNotifier;
+  private final boolean sendResourceEvents;
 
   private final boolean includeMembershipGroups;
 
@@ -140,10 +141,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private final Supplier<SocketCreator> socketCreatorSupplier;
   private final CacheClientNotifierProvider cacheClientNotifierProvider;
   private final ClientHealthMonitorProvider clientHealthMonitorProvider;
+  private final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider;
 
   public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = Boolean.getBoolean(
       DistributionConfig.GEMFIRE_PREFIX + "cache-server.enable-notify-by-subscription-false");
-
 
   // ////////////////////// Constructors //////////////////////
 
@@ -153,7 +154,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
    */
   public CacheServerImpl(final InternalCache cache, final SecurityService securityService) {
     this(cache, securityService, () -> getSocketCreatorForComponent(SERVER),
-        CacheClientNotifier.singletonProvider(), ClientHealthMonitor.singletonProvider());
+        CacheClientNotifier.singletonProvider(), ClientHealthMonitor.singletonProvider(),
+        CacheServerAdvisor::createCacheServerAdvisor);
   }
 
   @VisibleForTesting
@@ -161,41 +163,31 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
-      final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    this(cache, securityService, new CacheServerAcceptorFactory(),
-        new CacheServerResourceEventNotifier() {
-
-          @Override
-          public void notifyResourceEventStart() {
-            InternalDistributedSystem system = cache.getInternalDistributedSystem();
-            system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
-          }
-
-          @Override
-          public void notifyResourceEventStop() {
-            InternalDistributedSystem system = cache.getInternalDistributedSystem();
-            system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
-          }
-        }, true, socketCreatorSupplier, cacheClientNotifierProvider,
-        clientHealthMonitorProvider);
+      final ClientHealthMonitorProvider clientHealthMonitorProvider,
+      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
+    this(cache, securityService, new CacheServerAcceptorFactory(), true, true,
+        socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider,
+        cacheServerAdvisorProvider);
   }
 
   public CacheServerImpl(final InternalCache cache,
       final SecurityService securityService,
       final AcceptorFactory acceptorFactory,
-      final CacheServerResourceEventNotifier resourceEventNotifier,
+      final boolean sendResourceEvents,
       final boolean includeMembershipGroups,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
-      final ClientHealthMonitorProvider clientHealthMonitorProvider) {
+      final ClientHealthMonitorProvider clientHealthMonitorProvider,
+      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
     super(cache);
     this.securityService = securityService;
     this.acceptorFactory = acceptorFactory;
-    this.resourceEventNotifier = resourceEventNotifier;
+    this.sendResourceEvents = sendResourceEvents;
     this.includeMembershipGroups = includeMembershipGroups;
     this.socketCreatorSupplier = socketCreatorSupplier;
     this.cacheClientNotifierProvider = cacheClientNotifierProvider;
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
+    this.cacheServerAdvisorProvider = cacheServerAdvisorProvider;
   }
 
   // //////////////////// Instance Methods ///////////////////
@@ -371,7 +363,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.notifyBySubscription = true;
       }
     }
-    this.advisor = CacheServerAdvisor.createCacheServerAdvisor(this);
+    this.advisor = cacheServerAdvisorProvider.apply(this);
     this.loadMonitor = new LoadMonitor(loadProbe, maxConnections, loadPollInterval,
         FORCE_LOAD_UPDATE_FREQUENCY, advisor);
 
@@ -421,8 +413,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     // Creating ClientHealthMonitoring region.
     // Force initialization on current cache
     ClientHealthMonitoringRegion.getInstance(this.cache);
-    this.cache.getLogger()
-        .config(String.format("CacheServer Configuration:  %s", getConfig()));
+    logger.info(String.format("CacheServer Configuration:  %s", getConfig()));
 
     /*
      * If the stopped cache server is restarted, we'll need to re-register the client membership
@@ -445,7 +436,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       ClientMembership.registerClientMembershipListener(listener);
     }
 
-    resourceEventNotifier.notifyResourceEventStart();
+    if (sendResourceEvents) {
+      InternalDistributedSystem system = cache.getInternalDistributedSystem();
+      system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
+    }
   }
 
   @Override
@@ -501,8 +495,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.loadMonitor.stop();
       }
     } catch (RuntimeException e) {
-      cache.getLogger()
-          .warning("CacheServer - Error closing load monitor", e);
+      logger.warn("CacheServer - Error closing load monitor", e);
       firstException = e;
     }
 
@@ -511,8 +504,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.advisor.close();
       }
     } catch (RuntimeException e) {
-      cache.getLogger()
-          .warning("CacheServer - Error closing advisor", e);
+      logger.warn("CacheServer - Error closing advisor", e);
       firstException = e;
     }
 
@@ -544,7 +536,10 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
     txMgr.removeHostedTXStatesForClients();
 
-    resourceEventNotifier.notifyResourceEventStop();
+    if (sendResourceEvents) {
+      InternalDistributedSystem system = cache.getInternalDistributedSystem();
+      system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
+    }
   }
 
   private String getConfig() {

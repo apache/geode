@@ -58,6 +58,7 @@ public class GatewayReceiverServerFactoryTest {
   private CacheClientNotifier cacheClientNotifier;
   private ClientHealthMonitor clientHealthMonitor;
   private DistributionConfig config;
+  private CacheServerAdvisor advisor;
 
   @Before
   public void setUp() throws IOException {
@@ -73,6 +74,7 @@ public class GatewayReceiverServerFactoryTest {
     gatewayReceiverMetrics = new GatewayReceiverMetrics(new SimpleMeterRegistry());
     securityService = mock(SecurityService.class);
     socketCreator = mock(SocketCreator.class);
+    advisor = mock(CacheServerAdvisor.class);
 
     when(cache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
     when(cache.getDistributedSystem()).thenReturn(system);
@@ -93,7 +95,8 @@ public class GatewayReceiverServerFactoryTest {
     GatewayReceiverServerFactory serverFactory =
         new GatewayReceiverServerFactory(cache, securityService,
             gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
-            (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+            (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor,
+            a -> advisor);
     InternalCacheServer receiverServer = serverFactory.createServer();
 
     Acceptor acceptor = receiverServer.createAcceptor(overflowAttributes);
@@ -108,7 +111,8 @@ public class GatewayReceiverServerFactoryTest {
     GatewayReceiverServerFactory serverFactory =
         new GatewayReceiverServerFactory(cache, securityService,
             gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
-            (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+            (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor,
+            a -> advisor);
 
     InternalCacheServer receiverServer = serverFactory.createServer();
 

@@ -18,12 +18,14 @@ import static org.apache.geode.internal.net.SocketCreatorFactory.getSocketCreato
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.GATEWAY;
 
 import java.io.IOException;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.internal.cache.CacheServerAdvisor;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.CacheServerResourceEventNotifier;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.tier.Acceptor;
@@ -42,12 +44,12 @@ public class GatewayReceiverServerFactory {
   private final InternalCache cache;
   private final SecurityService securityService;
   private final GatewayReceiverAcceptorFactory acceptorFactory;
-  private final CacheServerResourceEventNotifier resourceEventNotifier;
   private final GatewayReceiver gatewayReceiver;
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
   private final Supplier<SocketCreator> socketCreatorSupplier;
   private final CacheClientNotifierProvider cacheClientNotifierProvider;
   private final ClientHealthMonitorProvider clientHealthMonitorProvider;
+  private final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider;
 
   public GatewayReceiverServerFactory(final InternalCache cache,
       final SecurityService securityService,
@@ -55,7 +57,7 @@ public class GatewayReceiverServerFactory {
       final GatewayReceiverMetrics gatewayReceiverMetrics) {
     this(cache, securityService, gatewayReceiver, gatewayReceiverMetrics,
         () -> getSocketCreatorForComponent(GATEWAY), CacheClientNotifier.singletonProvider(),
-        ClientHealthMonitor.singletonProvider());
+        ClientHealthMonitor.singletonProvider(), CacheServerAdvisor::createCacheServerAdvisor);
   }
 
   @VisibleForTesting
@@ -65,23 +67,24 @@ public class GatewayReceiverServerFactory {
       final GatewayReceiverMetrics gatewayReceiverMetrics,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
-      final ClientHealthMonitorProvider clientHealthMonitorProvider) {
+      final ClientHealthMonitorProvider clientHealthMonitorProvider,
+      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
     this.cache = cache;
     this.securityService = securityService;
     acceptorFactory = new GatewayReceiverAcceptorFactory();
-    resourceEventNotifier = new CacheServerResourceEventNotifier() {};
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
     this.socketCreatorSupplier = socketCreatorSupplier;
     this.cacheClientNotifierProvider = cacheClientNotifierProvider;
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
+    this.cacheServerAdvisorProvider = cacheServerAdvisorProvider;
   }
 
   public InternalCacheServer createServer() {
     acceptorFactory.setGatewayReceiverEndpoint(this);
-    return new CacheServerImpl(cache, securityService, acceptorFactory, resourceEventNotifier,
-        false,
-        socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
+    return new CacheServerImpl(cache, securityService, acceptorFactory, false, false,
+        socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider,
+        cacheServerAdvisorProvider);
   }
 
   private static class GatewayReceiverAcceptorFactory implements AcceptorFactory {
@@ -111,7 +114,8 @@ public class GatewayReceiverServerFactory {
           internalCacheServer.socketCreatorSupplier(),
           internalCacheServer.cacheClientNotifierProvider(),
           internalCacheServer.clientHealthMonitorProvider(),
-          gatewayReceiverEndpoint.gatewayReceiver, gatewayReceiverEndpoint.gatewayReceiverMetrics,
+          gatewayReceiverEndpoint.gatewayReceiver,
+          gatewayReceiverEndpoint.gatewayReceiverMetrics,
           gatewayReceiverEndpoint.gatewayReceiver.getGatewayTransportFilters());
     }
   }

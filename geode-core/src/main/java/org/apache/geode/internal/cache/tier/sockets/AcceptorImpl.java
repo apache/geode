@@ -61,6 +61,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -599,11 +600,12 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       String sockName = getServerName();
       logger.info("Cache server connection listener bound to address {} with backlog {}.",
           sockName, backLog);
+      StatisticsFactory statisticsFactory =
+          internalCache.getInternalDistributedSystem().getStatisticsManager();
       if (isGatewayReceiver()) {
-        stats = GatewayReceiverStats.createGatewayReceiverStats(
-            internalCache.getInternalDistributedSystem().getStatisticsManager(), sockName);
+        stats = GatewayReceiverStats.createGatewayReceiverStats(statisticsFactory, sockName);
       } else {
-        stats = new CacheServerStats(sockName);
+        stats = new CacheServerStats(statisticsFactory, sockName);
       }
     }
 
