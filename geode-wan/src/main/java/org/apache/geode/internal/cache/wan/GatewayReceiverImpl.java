@@ -32,42 +32,42 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * @since GemFire 7.0
  */
-@SuppressWarnings("deprecation")
 public class GatewayReceiverImpl implements GatewayReceiver {
 
   private static final Logger logger = LogService.getLogger();
 
   private final InternalCache cache;
-
   private final String hostnameForSenders;
   private final int startPort;
   private final int endPort;
-  private final int timeBetPings;
+  private final int maximumTimeBetweenPings;
   private final int socketBufferSize;
   private final boolean manualStart;
-  private final List<GatewayTransportFilter> filters;
-  private final String bindAdd;
+  private final List<GatewayTransportFilter> gatewayTransportFilters;
+  private final String bindAddress;
 
-  private GatewayReceiverServer receiver;
-  private int port;
+  private volatile int port;
+  private volatile InternalCacheServer receiverServer;
 
-  GatewayReceiverImpl(InternalCache cache, int startPort, int endPort,
-      int timeBetPings, int buffSize, String bindAdd, List<GatewayTransportFilter> filters,
-      String hostnameForSenders, boolean manualStart) {
+  GatewayReceiverImpl(final InternalCache cache, final int startPort, final int endPort,
+      final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
+      final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
+      final boolean manualStart) {
     this.cache = cache;
     this.hostnameForSenders = hostnameForSenders;
     this.startPort = startPort;
     this.endPort = endPort;
-    this.timeBetPings = timeBetPings;
-    socketBufferSize = buffSize;
-    this.bindAdd = bindAdd;
-    this.filters = filters;
+    this.maximumTimeBetweenPings = maximumTimeBetweenPings;
+    this.socketBufferSize = socketBufferSize;
+    this.bindAddress = bindAddress;
+    this.gatewayTransportFilters = gatewayTransportFilters;
     this.manualStart = manualStart;
   }
 
@@ -78,16 +78,16 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   @Override
   public String getHost() {
-    if (receiver != null) {
-      return receiver.getCacheServer().getExternalAddress();
+    if (receiverServer != null) {
+      return receiverServer.getExternalAddress();
     }
 
     if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
       return hostnameForSenders;
     }
 
-    if (bindAdd != null && !bindAdd.isEmpty()) {
-      return bindAdd;
+    if (bindAddress != null && !bindAddress.isEmpty()) {
+      return bindAddress;
     }
 
     try {
@@ -99,12 +99,12 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   @Override
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
-    return filters;
+    return gatewayTransportFilters;
   }
 
   @Override
   public int getMaximumTimeBetweenPings() {
-    return timeBetPings;
+    return maximumTimeBetweenPings;
   }
 
   @Override
@@ -134,7 +134,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   @Override
   public CacheServer getServer() {
-    return receiver.getCacheServer();
+    return receiverServer;
   }
 
   private boolean tryToStart(int port) {
@@ -142,32 +142,34 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       return false;
     }
 
-    CacheServer cacheServer = receiver.getCacheServer();
+    CacheServer cacheServer = receiverServer;
 
     cacheServer.setPort(port);
     cacheServer.setSocketBufferSize(socketBufferSize);
-    cacheServer.setMaximumTimeBetweenPings(timeBetPings);
+    cacheServer.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
     if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
       cacheServer.setHostnameForClients(hostnameForSenders);
     }
-    cacheServer.setBindAddress(bindAdd);
+    cacheServer.setBindAddress(bindAddress);
     cacheServer.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
+
     try {
       cacheServer.start();
       this.port = port;
       return true;
     } catch (IOException e) {
-      logger.info("Failed to create server socket on {}[{}]", bindAdd, port);
+      logger.info("Failed to create server socket on {}[{}]", bindAddress, port);
       return false;
     }
   }
 
   @Override
   public void start() {
-    if (receiver == null) {
-      receiver = cache.addGatewayReceiverServer(this);
+    if (receiverServer == null) {
+      receiverServer = cache.addGatewayReceiverServer(this);
     }
-    if (receiver.getCacheServer().isRunning()) {
+
+    if (receiverServer.isRunning()) {
       logger.warn("Gateway Receiver is already running");
       return;
     }
@@ -210,35 +212,39 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     if (!isRunning()) {
       throw new GatewayReceiverException("Gateway Receiver is not running");
     }
-    receiver.getCacheServer().stop();
+
+    receiverServer.stop();
   }
 
   @Override
   public void destroy() {
     logger.info("Destroying Gateway Receiver: {}", this);
-    if (receiver == null) {
+
+    if (receiverServer == null) {
       // receiver was not started
       cache.removeGatewayReceiver(this);
     } else {
-      if (receiver.getCacheServer().isRunning()) {
+      if (receiverServer.isRunning()) {
         throw new GatewayReceiverException(
             "Gateway Receiver is running and needs to be stopped first");
       }
       cache.removeGatewayReceiver(this);
+      cache.removeGatewayReceiverServer(receiverServer);
     }
+
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_DESTROY, this);
   }
 
   @Override
   public String getBindAddress() {
-    return bindAdd;
+    return bindAddress;
   }
 
   @Override
   public boolean isRunning() {
-    if (receiver != null) {
-      return receiver.getCacheServer().isRunning();
+    if (receiverServer != null) {
+      return receiverServer.isRunning();
     }
     return false;
   }

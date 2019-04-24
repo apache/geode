@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.wan;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,6 +40,7 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
@@ -58,8 +59,8 @@ public class GatewayReceiverFactoryImplTest {
     InternalCache cacheCreation = mock(CacheCreation.class, "CacheCreation");
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
-    when(gemFireCacheImpl.addGatewayReceiverServer(isA(GatewayReceiver.class)))
-        .thenReturn(mock(GatewayReceiverServer.class));
+    when(gemFireCacheImpl.addGatewayReceiverServer(any()))
+        .thenReturn(mock(InternalCacheServer.class));
     when(gemFireCacheImpl.getDistributedSystem()).thenReturn(system);
     when(gemFireCacheImpl.getInternalDistributedSystem()).thenReturn(system);
 

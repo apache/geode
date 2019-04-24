@@ -63,7 +63,6 @@ import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.wan.GatewayReceiverServer;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
@@ -314,11 +313,11 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
 
   void removeGatewayReceiver(GatewayReceiver receiver);
 
-  GatewayReceiverServer addGatewayReceiverServer(GatewayReceiver receiver);
+  InternalCacheServer addGatewayReceiverServer(GatewayReceiver receiver);
 
   boolean removeCacheServer(CacheServer cacheServer);
 
-  boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer);
+  boolean removeGatewayReceiverServer(InternalCacheServer receiverServer);
 
   /**
    * A test-hook allowing you to alter the cache setting established by

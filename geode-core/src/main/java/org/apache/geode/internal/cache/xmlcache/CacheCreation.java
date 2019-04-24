@@ -150,7 +150,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.GatewayReceiverServer;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -1151,7 +1150,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public GatewayReceiverServer addGatewayReceiverServer(GatewayReceiver gatewayReceiver) {
+  public InternalCacheServer addGatewayReceiverServer(GatewayReceiver gatewayReceiver) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
@@ -1161,7 +1160,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer) {
+  public boolean removeGatewayReceiverServer(InternalCacheServer receiverServer) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

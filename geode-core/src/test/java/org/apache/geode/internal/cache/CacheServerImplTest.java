@@ -112,7 +112,7 @@ public class CacheServerImplTest {
   public void getCombinedGroups_includesMembershipGroup() {
     String membershipGroup = "group-m0";
     when(config.getGroups()).thenReturn(membershipGroup);
-    CacheServerImpl server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService, () -> socketCreator,
         (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
 
     assertThat(server.getCombinedGroups())
@@ -126,7 +126,7 @@ public class CacheServerImplTest {
     String membershipGroup3 = "group-m3";
     when(config.getGroups())
         .thenReturn(membershipGroup1 + "," + membershipGroup2 + "," + membershipGroup3);
-    CacheServerImpl server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService, () -> socketCreator,
         (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
 
     assertThat(server.getCombinedGroups())
@@ -140,7 +140,7 @@ public class CacheServerImplTest {
     String membershipGroup3 = "group-m3";
     when(config.getGroups())
         .thenReturn(membershipGroup1 + "," + membershipGroup2 + "," + membershipGroup3);
-    CacheServerImpl server = new CacheServerImpl(cache, securityService, () -> socketCreator,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService, () -> socketCreator,
         (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
     String specifiedGroup1 = "group1";
     String specifiedGroup2 = "group2";

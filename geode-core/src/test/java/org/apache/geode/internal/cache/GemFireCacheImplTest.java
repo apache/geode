@@ -49,7 +49,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
-import org.apache.geode.internal.cache.wan.GatewayReceiverServer;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.fake.Fakes;
 
@@ -437,11 +436,10 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl = createGemFireCacheImpl();
     gemFireCacheImpl.addGatewayReceiver(gatewayReceiver);
 
-    GatewayReceiverServer gatewayReceiverServer =
-        gemFireCacheImpl.addGatewayReceiverServer(gatewayReceiver);
+    InternalCacheServer receiverServer = gemFireCacheImpl.addGatewayReceiverServer(gatewayReceiver);
 
     assertThat(gemFireCacheImpl.getCacheServersAndGatewayReceiver())
-        .containsOnly(gatewayReceiverServer);
+        .containsOnly(receiverServer);
   }
 
   @Test
@@ -528,8 +526,7 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl = createGemFireCacheImpl();
     GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     gemFireCacheImpl.addGatewayReceiver(gatewayReceiver);
-    GatewayReceiverServer receiverServer =
-        gemFireCacheImpl.addGatewayReceiverServer(gatewayReceiver);
+    InternalCacheServer receiverServer = gemFireCacheImpl.addGatewayReceiverServer(gatewayReceiver);
 
     List<InternalCacheServer> value = gemFireCacheImpl.getCacheServersAndGatewayReceiver();
 
@@ -544,8 +541,7 @@ public class GemFireCacheImplTest {
     InternalCacheServer cacheServer3 = (InternalCacheServer) gemFireCacheImpl.addCacheServer();
     GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     gemFireCacheImpl.addGatewayReceiver(gatewayReceiver);
-    GatewayReceiverServer receiverServer =
-        gemFireCacheImpl.addGatewayReceiverServer(gatewayReceiver);
+    InternalCacheServer receiverServer = gemFireCacheImpl.addGatewayReceiverServer(gatewayReceiver);
 
     List<InternalCacheServer> value = gemFireCacheImpl.getCacheServersAndGatewayReceiver();
 

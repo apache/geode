@@ -37,7 +37,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHe
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 
-public class GatewayReceiverEndpoint implements GatewayReceiverServer {
+public class GatewayReceiverEndpoint {
 
   private final GatewayReceiver gatewayReceiver;
   private final GatewayReceiverMetrics gatewayReceiverMetrics;

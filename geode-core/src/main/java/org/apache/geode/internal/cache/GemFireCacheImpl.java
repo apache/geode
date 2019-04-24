@@ -207,7 +207,6 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewayReceiverEndpoint;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
-import org.apache.geode.internal.cache.wan.GatewayReceiverServer;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
@@ -429,7 +428,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final AtomicReference<GatewayReceiver> gatewayReceiver = new AtomicReference<>();
 
-  private final AtomicReference<GatewayReceiverServer> gatewayReceiverServer =
+  private final AtomicReference<InternalCacheServer> gatewayReceiverServer =
       new AtomicReference<>();
 
   /**
@@ -1636,8 +1635,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
 
-    GatewayReceiverServer receiverServer = cache.gatewayReceiverServer.get();
-    Acceptor acceptor = receiverServer.getCacheServer().getAcceptor();
+    InternalCacheServer receiverServer = cache.gatewayReceiverServer.get();
+    Acceptor acceptor = receiverServer.getAcceptor();
     if (acceptor != null) {
       acceptor.emergencyClose();
     }
@@ -2576,17 +2575,17 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       stoppedCacheServer = true;
     }
 
-    GatewayReceiverServer removedGatewayReceiverServer = gatewayReceiverServer.getAndSet(null);
-    if (removedGatewayReceiverServer != null) {
+    InternalCacheServer receiverServer = gatewayReceiverServer.getAndSet(null);
+    if (receiverServer != null) {
       if (isDebugEnabled) {
-        logger.debug("stopping gateway receiver server {}", removedGatewayReceiverServer);
+        logger.debug("stopping gateway receiver server {}", receiverServer);
       }
       try {
-        removedGatewayReceiverServer.getCacheServer().stop();
+        receiverServer.stop();
       } catch (CancelException e) {
         if (isDebugEnabled) {
           logger.debug("Ignored cache closure while closing gateway receiver server {}",
-              removedGatewayReceiverServer, e);
+              receiverServer, e);
         }
       }
       stoppedCacheServer = true;
@@ -3822,7 +3821,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public GatewayReceiverServer addGatewayReceiverServer(GatewayReceiver receiver) {
+  public InternalCacheServer addGatewayReceiverServer(GatewayReceiver receiver) {
     throwIfClient();
     stopper.checkCancelInProgress(null);
 
@@ -3833,16 +3832,17 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     requireNonNull(metrics,
         "GatewayReceiverMetrics must be added before adding a server endpoint.");
 
-    GatewayReceiverServer server =
+    GatewayReceiverEndpoint receiverEndpoint =
         new GatewayReceiverEndpoint(this, securityService, receiver, metrics);
-    gatewayReceiverServer.set(server);
+    InternalCacheServer receiverServer = receiverEndpoint.getCacheServer();
+    gatewayReceiverServer.set(receiverServer);
 
     sendAddCacheServerProfileMessage();
-    return server;
+    return receiverServer;
   }
 
   @Override
-  public boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer) {
+  public boolean removeGatewayReceiverServer(InternalCacheServer receiverServer) {
     boolean removed = gatewayReceiverServer.compareAndSet(receiverServer, null);
     sendRemoveCacheServerProfileMessage();
     return removed;
@@ -3984,9 +3984,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public List<InternalCacheServer> getCacheServersAndGatewayReceiver() {
     List<InternalCacheServer> allServers = new ArrayList<>(allCacheServers);
 
-    GatewayReceiverServer receiverServer = gatewayReceiverServer.get();
+    InternalCacheServer receiverServer = gatewayReceiverServer.get();
     if (receiverServer != null) {
-      allServers.add(receiverServer.getCacheServer());
+      allServers.add(receiverServer);
     }
 
     return Collections.unmodifiableList(allServers);
@@ -4116,8 +4116,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     if (!hasSerialSenders) {
-      GatewayReceiverServer receiverServer = gatewayReceiverServer.get();
-      if (receiverServer != null && !receiverServer.getCacheServer().getNotifyBySubscription()) {
+      InternalCacheServer receiverServer = gatewayReceiverServer.get();
+      if (receiverServer != null && !receiverServer.getNotifyBySubscription()) {
         hasSerialSenders = true;
       }
     }

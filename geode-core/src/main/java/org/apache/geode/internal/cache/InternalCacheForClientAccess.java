@@ -86,7 +86,6 @@ import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.wan.GatewayReceiverServer;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
@@ -1127,7 +1126,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public GatewayReceiverServer addGatewayReceiverServer(GatewayReceiver receiver) {
+  public InternalCacheServer addGatewayReceiverServer(GatewayReceiver receiver) {
     return delegate.addGatewayReceiverServer(receiver);
   }
 
@@ -1137,7 +1136,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public boolean removeGatewayReceiverServer(GatewayReceiverServer receiverServer) {
+  public boolean removeGatewayReceiverServer(InternalCacheServer receiverServer) {
     return delegate.removeGatewayReceiverServer(receiverServer);
   }
 
