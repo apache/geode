@@ -163,9 +163,9 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
 
   /*
    * This helper method prevents race conditions in local functions. Typically, when calling
-   * ResultCollector.getResultData() one might expect the function to have completed. For local
+   * ResultCollector.getResult() one might expect the function to have completed. For local
    * functions this is true, however, at this point the function stats may not have been updated yet
-   * thus any code which checks stats after calling getResultData() may get wrong data.
+   * thus any code which checks stats after calling getResult() may get wrong data.
    */
   private void waitNoFunctionsRunning(FunctionServiceStats stats) {
     int count = 100;
