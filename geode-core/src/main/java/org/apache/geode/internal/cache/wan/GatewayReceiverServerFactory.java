@@ -37,13 +37,19 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHe
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 
-public class GatewayReceiverEndpoint {
+public class GatewayReceiverServerFactory {
 
+  private final InternalCache cache;
+  private final SecurityService securityService;
+  private final GatewayReceiverAcceptorFactory acceptorFactory;
+  private final CacheServerResourceEventNotifier resourceEventNotifier;
   private final GatewayReceiver gatewayReceiver;
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
-  private final InternalCacheServer internalCacheServer;
+  private final Supplier<SocketCreator> socketCreatorSupplier;
+  private final CacheClientNotifierProvider cacheClientNotifierProvider;
+  private final ClientHealthMonitorProvider clientHealthMonitorProvider;
 
-  public GatewayReceiverEndpoint(final InternalCache cache,
+  public GatewayReceiverServerFactory(final InternalCache cache,
       final SecurityService securityService,
       final GatewayReceiver gatewayReceiver,
       final GatewayReceiverMetrics gatewayReceiverMetrics) {
@@ -53,52 +59,42 @@ public class GatewayReceiverEndpoint {
   }
 
   @VisibleForTesting
-  public GatewayReceiverEndpoint(final InternalCache cache,
+  public GatewayReceiverServerFactory(final InternalCache cache,
       final SecurityService securityService,
       final GatewayReceiver gatewayReceiver,
       final GatewayReceiverMetrics gatewayReceiverMetrics,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    this(cache, securityService, new GatewayReceiverAcceptorFactory(),
-        new CacheServerResourceEventNotifier() {}, gatewayReceiver,
-        gatewayReceiverMetrics, socketCreatorSupplier, cacheClientNotifierProvider,
-        clientHealthMonitorProvider);
-  }
-
-  private GatewayReceiverEndpoint(final InternalCache cache,
-      final SecurityService securityService,
-      final GatewayReceiverAcceptorFactory acceptorFactory,
-      final CacheServerResourceEventNotifier resourceEventNotifier,
-      final GatewayReceiver gatewayReceiver,
-      final GatewayReceiverMetrics gatewayReceiverMetrics,
-      final Supplier<SocketCreator> socketCreatorSupplier,
-      final CacheClientNotifierProvider cacheClientNotifierProvider,
-      final ClientHealthMonitorProvider clientHealthMonitorProvider) {
-    internalCacheServer =
-        new CacheServerImpl(cache, securityService, acceptorFactory, resourceEventNotifier, false,
-            socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
+    this.cache = cache;
+    this.securityService = securityService;
+    acceptorFactory = new GatewayReceiverAcceptorFactory();
+    resourceEventNotifier = new CacheServerResourceEventNotifier() {};
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
-
-    acceptorFactory.setGatewayReceiverEndpoint(this);
+    this.socketCreatorSupplier = socketCreatorSupplier;
+    this.cacheClientNotifierProvider = cacheClientNotifierProvider;
+    this.clientHealthMonitorProvider = clientHealthMonitorProvider;
   }
 
-  public InternalCacheServer getCacheServer() {
-    return internalCacheServer;
+  public InternalCacheServer createServer() {
+    acceptorFactory.setGatewayReceiverEndpoint(this);
+    return new CacheServerImpl(cache, securityService, acceptorFactory, resourceEventNotifier,
+        false,
+        socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider);
   }
 
   private static class GatewayReceiverAcceptorFactory implements AcceptorFactory {
 
     private InternalCacheServer internalCacheServer;
-    private GatewayReceiverEndpoint gatewayReceiverEndpoint;
+    private GatewayReceiverServerFactory gatewayReceiverEndpoint;
 
     @Override
     public void accept(InternalCacheServer internalCacheServer) {
       this.internalCacheServer = internalCacheServer;
     }
 
-    public void setGatewayReceiverEndpoint(GatewayReceiverEndpoint gatewayReceiverEndpoint) {
+    void setGatewayReceiverEndpoint(GatewayReceiverServerFactory gatewayReceiverEndpoint) {
       this.gatewayReceiverEndpoint = gatewayReceiverEndpoint;
     }
 

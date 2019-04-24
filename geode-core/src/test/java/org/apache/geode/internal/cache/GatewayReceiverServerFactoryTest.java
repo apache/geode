@@ -40,15 +40,15 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
-import org.apache.geode.internal.cache.wan.GatewayReceiverEndpoint;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
+import org.apache.geode.internal.cache.wan.GatewayReceiverServerFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category(WanTest.class)
-public class GatewayReceiverEndpointTest {
+public class GatewayReceiverServerFactoryTest {
 
   private InternalCache cache;
   private SecurityService securityService;
@@ -88,26 +88,30 @@ public class GatewayReceiverEndpointTest {
   }
 
   @Test
-  public void createdAcceptorIsGatewayEndpoint() throws IOException {
+  public void createdServer_createAcceptor_isGatewayReceiver() throws IOException {
     OverflowAttributes overflowAttributes = mock(OverflowAttributes.class);
-    GatewayReceiverEndpoint receiverEndpoint = new GatewayReceiverEndpoint(cache, securityService,
-        gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
-        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+    GatewayReceiverServerFactory serverFactory =
+        new GatewayReceiverServerFactory(cache, securityService,
+            gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
+            (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+    InternalCacheServer receiverServer = serverFactory.createServer();
 
-    Acceptor acceptor = receiverEndpoint.getCacheServer().createAcceptor(overflowAttributes);
+    Acceptor acceptor = receiverServer.createAcceptor(overflowAttributes);
 
     assertThat(acceptor.isGatewayReceiver()).isTrue();
   }
 
   @Test
-  public void cacheServer_getCombinedGroups_doesNotIncludeMembershipGroup() {
+  public void createServer_getCombinedGroups_doesNotIncludeMembershipGroup() {
     String membershipGroup = "group-m0";
     when(config.getGroups()).thenReturn(membershipGroup);
-    GatewayReceiverEndpoint receiverEndpoint = new GatewayReceiverEndpoint(cache, securityService,
-        gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
-        (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
+    GatewayReceiverServerFactory serverFactory =
+        new GatewayReceiverServerFactory(cache, securityService,
+            gatewayReceiver, gatewayReceiverMetrics, () -> socketCreator,
+            (a, b, c, d, e, f, g) -> cacheClientNotifier, (a, b, c) -> clientHealthMonitor);
 
-    assertThat(receiverEndpoint.getCacheServer().getCombinedGroups())
-        .doesNotContain(membershipGroup);
+    InternalCacheServer receiverServer = serverFactory.createServer();
+
+    assertThat(receiverServer.getCombinedGroups()).doesNotContain(membershipGroup);
   }
 }
