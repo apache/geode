@@ -469,7 +469,7 @@ public class JarDeployer implements Serializable {
    *         already deployed.
    * @throws IOException When there's an error saving the JAR file to disk
    */
-  public List<DeployedJar> deploy(final Map<String, File> stagedJarFiles, String driverName)
+  public List<DeployedJar> deploy(final Map<String, File> stagedJarFiles)
       throws IOException, ClassNotFoundException {
     List<DeployedJar> deployedJars = new ArrayList<>(stagedJarFiles.size());
 
@@ -486,7 +486,7 @@ public class JarDeployer implements Serializable {
         deployedJars.add(deployWithoutRegistering(fileName, stagedJarFiles.get(fileName)));
       }
 
-      return registerNewVersions(deployedJars, driverName);
+      return registerNewVersions(deployedJars);
     } finally {
       lock.unlock();
     }
@@ -527,7 +527,7 @@ public class JarDeployer implements Serializable {
     jarFiles.put(jarName, stagedJarFile);
 
     try {
-      List<DeployedJar> deployedJars = deploy(jarFiles, null);
+      List<DeployedJar> deployedJars = deploy(jarFiles);
       if (deployedJars == null || deployedJars.size() == 0) {
         return null;
       }

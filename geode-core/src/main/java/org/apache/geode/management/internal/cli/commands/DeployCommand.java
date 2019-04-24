@@ -80,8 +80,6 @@ public class DeployCommand extends GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
-      @CliOption(key = {CliStrings.DRIVER_CLASS},
-          help = CliStrings.DEPLOY__DRIVER__HELP) String driverClass,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir)
       throws IOException {
 
@@ -112,7 +110,7 @@ public class DeployCommand extends GfshCommand {
 
       // this deploys the jars to all the matching servers
       ResultCollector<?, ?> resultCollector =
-          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams, driverClass},
+          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams},
               member);
 
       results.add(((List) resultCollector.getResult()).get(0));
@@ -176,7 +174,6 @@ public class DeployCommand extends GfshCommand {
     public ResultModel preExecution(GfshParseResult parseResult) {
       String[] jars = (String[]) parseResult.getParamValue("jar");
       String dir = (String) parseResult.getParamValue("dir");
-      String driverClass = (String) parseResult.getParamValue("driver-class");
 
       if (ArrayUtils.isEmpty(jars) && StringUtils.isBlank(dir)) {
         return ResultModel.createError(
@@ -186,18 +183,8 @@ public class DeployCommand extends GfshCommand {
       if (ArrayUtils.isNotEmpty(jars) && StringUtils.isNotBlank(dir)) {
         return ResultModel.createError("Parameters \"jar\" and \"dir\" can not both be specified.");
       }
-      
+
       ResultModel result = new ResultModel();
-      if (ArrayUtils.isEmpty(jars) && StringUtils.isNotBlank(driverClass)) {
-        return ResultModel
-            .createError("Parameter \"jar\" is required when driver-class is specified.");
-      }
-
-      if (jars.length > 1 && StringUtils.isNotBlank(driverClass)) {
-        return ResultModel
-            .createError("Only a single \"jar\" is allowed when driver-class is specified.");
-      }
-
       if (jars != null) {
         for (String jar : jars) {
           File jarFile = new File(jar);
