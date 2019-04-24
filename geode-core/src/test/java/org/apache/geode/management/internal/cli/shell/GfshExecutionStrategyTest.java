@@ -29,11 +29,8 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandRequest;
-import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
@@ -97,9 +94,8 @@ public class GfshExecutionStrategyTest {
     when(gfsh.isConnectedAndReady()).thenReturn(true);
     OperationInvoker invoker = mock(OperationInvoker.class);
 
-    Result offLineResult = new Commands().onlineCommand();
-    String jsonResult = CommandResponseBuilder.createCommandResponseJson("memberName",
-        (CommandResult) offLineResult);
+    ResultModel offLineResult = new Commands().onlineCommand();
+    String jsonResult = offLineResult.toJson();
     when(invoker.processCommand(any(CommandRequest.class))).thenReturn(jsonResult);
     when(gfsh.getOperationInvoker()).thenReturn(invoker);
     Result result = (Result) gfshExecutionStrategy.execute(parsedCommand);
@@ -114,9 +110,8 @@ public class GfshExecutionStrategyTest {
     when(gfsh.isConnectedAndReady()).thenReturn(true);
     OperationInvoker invoker = mock(OperationInvoker.class);
 
-    Result interceptedResult = new Commands().interceptedCommand();
-    String jsonResult = CommandResponseBuilder.createCommandResponseJson("memberName",
-        (CommandResult) interceptedResult);
+    ResultModel interceptedResult = new Commands().interceptedCommand();
+    String jsonResult = interceptedResult.toJson();
     when(invoker.processCommand(any(CommandRequest.class))).thenReturn(jsonResult);
     when(gfsh.getOperationInvoker()).thenReturn(invoker);
     Result result = (Result) gfshExecutionStrategy.execute(parsedCommand);
@@ -129,8 +124,8 @@ public class GfshExecutionStrategyTest {
    */
   public static class Commands implements CommandMarker {
     @CliMetaData(shellOnly = true)
-    public Result offlineCommand() {
-      return ResultBuilder.createInfoResult(COMMAND1_SUCCESS);
+    public ResultModel offlineCommand() {
+      return ResultModel.createInfo(COMMAND1_SUCCESS);
     }
 
     @CliMetaData(shellOnly = true)
@@ -139,14 +134,14 @@ public class GfshExecutionStrategyTest {
     }
 
     @CliMetaData(shellOnly = false)
-    public Result onlineCommand() {
-      return ResultBuilder.createInfoResult(COMMAND2_SUCCESS);
+    public ResultModel onlineCommand() {
+      return ResultModel.createInfo(COMMAND2_SUCCESS);
     }
 
     @CliMetaData(shellOnly = false,
         interceptor = "org.apache.geode.management.internal.cli.shell.GfshExecutionStrategyTest$TestInterceptor")
-    public Result interceptedCommand() {
-      return ResultBuilder.createInfoResult(COMMAND4_SUCCESS);
+    public ResultModel interceptedCommand() {
+      return ResultModel.createInfo(COMMAND4_SUCCESS);
     }
   }
 
@@ -156,10 +151,10 @@ public class GfshExecutionStrategyTest {
   public static class TestInterceptor extends AbstractCliAroundInterceptor {
 
     @Override
-    public Result preExecution(GfshParseResult parseResult) {
+    public ResultModel preExecution(GfshParseResult parseResult) {
 
       parseResult.setUserInput(AFTER_INTERCEPTION_MESSAGE);
-      return ResultBuilder.createInfoResult("Interceptor Result");
+      return ResultModel.createInfo("Interceptor Result");
     }
   }
 }

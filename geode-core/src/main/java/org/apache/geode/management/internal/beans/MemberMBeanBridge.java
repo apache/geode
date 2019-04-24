@@ -108,9 +108,7 @@ import org.apache.geode.management.internal.beans.stats.StatsKey;
 import org.apache.geode.management.internal.beans.stats.StatsLatency;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
 import org.apache.geode.management.internal.beans.stats.VMStatsMonitor;
-import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.remote.OnlineCommandProcessor;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
@@ -1504,13 +1502,9 @@ public class MemberMBeanBridge {
               + commandServiceInitError);
     }
 
-    Object result = commandProcessor.executeCommand(commandString, env, stagedFilePaths);
+    ResultModel result = commandProcessor.executeCommand(commandString, env, stagedFilePaths);
 
-    if (result instanceof CommandResult) {
-      return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
-    } else {
-      return CommandResponseBuilder.createCommandResponseJson(getMember(), (ResultModel) result);
-    }
+    return result.toJson();
   }
 
   public long getTotalDiskUsage() {

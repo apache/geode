@@ -32,7 +32,7 @@ import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -82,11 +82,11 @@ public class OnlineCommandProcessor {
     throw new IllegalStateException("Command String should not be null.");
   }
 
-  public Object executeCommand(String command) {
+  public ResultModel executeCommand(String command) {
     return executeCommand(command, Collections.emptyMap(), null);
   }
 
-  public Object executeCommand(String command, Map<String, String> env,
+  public ResultModel executeCommand(String command, Map<String, String> env,
       List<String> stagedFilePaths) {
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
     String commentLessLine = commentSkipper.skipComments(command);
@@ -101,7 +101,7 @@ public class OnlineCommandProcessor {
     ParseResult parseResult = parseCommand(commentLessLine);
 
     if (parseResult == null) {
-      return ResultBuilder.createParsingErrorResult(command);
+      return ResultModel.createError("Could not parse command string. " + command);
     }
 
     Method method = parseResult.getMethod();
@@ -116,10 +116,11 @@ public class OnlineCommandProcessor {
     // this command processor does not execute commands that need fileData passed from client
     CliMetaData metaData = method.getAnnotation(CliMetaData.class);
     if (metaData != null && metaData.isFileUploaded() && stagedFilePaths == null) {
-      return ResultBuilder
-          .createUserErrorResult(command + " can not be executed only from server side");
+      return ResultModel
+          .createError(command + " can not be executed only from server side");
     }
 
-    return commandExecutor.execute((GfshParseResult) parseResult);
+    // we can do a direct cast because this only process online commands
+    return (ResultModel) commandExecutor.execute((GfshParseResult) parseResult);
   }
 }

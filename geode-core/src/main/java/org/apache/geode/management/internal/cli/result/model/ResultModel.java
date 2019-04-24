@@ -293,6 +293,7 @@ public class ResultModel {
     return (DataResultModel) getSection(name);
   }
 
+  @JsonIgnore
   public List<String> getSectionNames() {
     List<String> sectionNames = new ArrayList<>();
     sections.forEach((k, v) -> sectionNames.add(k));

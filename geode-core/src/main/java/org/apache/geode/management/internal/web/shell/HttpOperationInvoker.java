@@ -421,7 +421,7 @@ public class HttpOperationInvoker implements OperationInvoker {
    * (execution).
    *
    * @param command the command requested/entered by the user to be processed.
-   * @return the result of the command execution.
+   * @return the result of the command execution, either a json string of ResultModel or a Path
    */
   @Override
   public Object processCommand(final CommandRequest command) {

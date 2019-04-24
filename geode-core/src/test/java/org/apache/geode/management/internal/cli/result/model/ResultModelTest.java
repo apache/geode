@@ -181,4 +181,15 @@ public class ResultModelTest {
     ResultModel resultModel = mapper.readValue(json, ResultModel.class);
     assertThat(resultModel.getFileToDownload()).isEqualTo(file.toPath());
   }
+
+  @Test
+  public void serializeInfoResult() throws Exception {
+    InfoResultModel info = result.addInfo();
+    info.addLine("line2");
+    ObjectMapper mapper = GeodeJsonMapper.getMapper();
+    String json = mapper.writeValueAsString(result);
+    System.out.println(json);
+    ResultModel resultModel = mapper.readValue(json, ResultModel.class);
+    assertThat(resultModel.getSectionNames()).containsExactly("info");
+  }
 }
