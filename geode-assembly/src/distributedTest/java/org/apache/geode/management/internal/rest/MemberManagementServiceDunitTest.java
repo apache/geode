@@ -24,9 +24,11 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.api.ClusterManagementServiceConfig;
+import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.RuntimeCacheElement;
+import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -41,7 +43,11 @@ public class MemberManagementServiceDunitTest {
   public static void beforeClass() {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server = cluster.startServerVM(1, locator.getPort());
-    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort());
+    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+        .setHost("localhost")
+        .setPort(locator.getHttpPort())
+        .build();
+    cmsClient = new ClientClusterManagementService(config);
   }
 
   @Test

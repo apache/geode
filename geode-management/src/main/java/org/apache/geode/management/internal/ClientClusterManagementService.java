@@ -16,24 +16,14 @@
 package org.apache.geode.management.internal;
 
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriTemplateHandler;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ClusterManagementServiceConfig;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 /**
@@ -54,62 +44,19 @@ import org.apache.geode.management.api.RestfulEndpoint;
  */
 public class ClientClusterManagementService implements ClusterManagementService {
 
-  private static final ResponseErrorHandler DEFAULT_ERROR_HANDLER =
-      new RestTemplateResponseErrorHandler();
-
   private static final String VERSION = "/v2";
 
-  private final RestTemplate restTemplate;
+  private final ClusterManagementServiceConfig serviceConfig;
 
-  private ClientClusterManagementService() {
-    restTemplate = new RestTemplate();
-    restTemplate.setErrorHandler(DEFAULT_ERROR_HANDLER);
-  }
-
-  public ClientClusterManagementService(String host, int port) {
-    this(host, port, null, null, null, null);
-  }
-
-  public ClientClusterManagementService(String host, int port, SSLContext sslContext,
-      HostnameVerifier hostnameVerifier, String username, String password) {
-    this();
-
-    DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
-    String schema = (sslContext == null) ? "http" : "https";
-    templateHandler.setBaseUrl(schema + "://" + host + ":" + port + "/geode-management");
-    restTemplate.setUriTemplateHandler(templateHandler);
-
-    // HttpComponentsClientHttpRequestFactory allows use to preconfigure httpClient for
-    // authentication and ssl context
-    HttpComponentsClientHttpRequestFactory requestFactory =
-        new HttpComponentsClientHttpRequestFactory();
-
-    HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-    // configures the clientBuilder
-    if (username != null) {
-      CredentialsProvider credsProvider = new BasicCredentialsProvider();
-      credsProvider.setCredentials(new AuthScope(host, port),
-          new UsernamePasswordCredentials(username, password));
-      clientBuilder.setDefaultCredentialsProvider(credsProvider);
-    }
-
-    clientBuilder.setSSLContext(sslContext);
-    clientBuilder.setSSLHostnameVerifier(hostnameVerifier);
-
-    requestFactory.setHttpClient(clientBuilder.build());
-    restTemplate.setRequestFactory(requestFactory);
-  }
-
-  public ClientClusterManagementService(ClientHttpRequestFactory requestFactory) {
-    this();
-    this.restTemplate.setRequestFactory(requestFactory);
+  public ClientClusterManagementService(ClusterManagementServiceConfig serviceConfig) {
+    this.serviceConfig = serviceConfig;
   }
 
   @Override
   public ClusterManagementResult create(CacheElement config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
-    return restTemplate
+    return serviceConfig.getRestTemplate()
         .postForEntity(VERSION + endPoint, config, ClusterManagementResult.class)
         .getBody();
   }
@@ -127,14 +74,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public ClusterManagementResult list(CacheElement config) {
     String endPoint = getEndpoint(config);
-    return restTemplate
+    return serviceConfig.getRestTemplate()
         .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
             ClusterManagementResult.class, config.getId(), config.getGroup())
         .getBody();
   }
 
   public RestTemplate getRestTemplate() {
-    return restTemplate;
+    return serviceConfig.getRestTemplate();
   }
 
   private String getEndpoint(CacheElement config) {
@@ -148,7 +95,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   public boolean isConnected() {
-    return restTemplate.getForEntity(VERSION + "/ping", String.class)
+    return serviceConfig.getRestTemplate().getForEntity(VERSION + "/ping", String.class)
         .getBody().equals("pong");
   }
 

@@ -31,8 +31,11 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.api.ClusterManagementServiceConfig;
+import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
+import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -57,7 +60,11 @@ public class ListRegionManagementDunitTest {
     server1 = cluster.startServerVM(1, "group1", locator.getPort());
     server2 = cluster.startServerVM(2, "group2", locator.getPort());
 
-    client = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort());
+    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+        .setHost("localhost")
+        .setPort(locator.getHttpPort())
+        .build();
+    client = new ClientClusterManagementService(config);
     gfsh.connect(locator);
 
     // create regions

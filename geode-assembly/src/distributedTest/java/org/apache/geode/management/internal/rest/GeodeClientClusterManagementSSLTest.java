@@ -30,19 +30,21 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ClusterManagementServiceConfig;
+import org.apache.geode.management.internal.ClientClusterManagementService;
+import org.apache.geode.management.internal.api.GeodeClusterManagementServiceConfig;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.ClientCacheRule;
 
 public class GeodeClientClusterManagementSSLTest {
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(1);
-
-  @ClassRule
-  public static ClientCacheRule client = new ClientCacheRule();
+  public static ClusterStartupRule cluster = new ClusterStartupRule(2);
 
   private static MemberVM locator;
+
+  private static ClientVM client;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -56,13 +58,20 @@ public class GeodeClientClusterManagementSSLTest {
     sslProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.ALL.getConstant());
 
     locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(sslProps));
-    client.withLocatorConnection(locator.getPort())
-        .withProperties(sslProps)
-        .createCache();
+
+    int port = locator.getPort();
+    client = cluster.startClientVM(1, cf -> cf.withLocatorConnection(port)
+        .withProperties(sslProps));
   }
 
   @Test
   public void getServiceUseClientSSLConfig() throws Exception {
-    assertThat(ClusterManagementServiceProvider.getService().isConnected()).isTrue();
+    client.invoke(() -> {
+      ClusterManagementServiceConfig config = GeodeClusterManagementServiceConfig.builder()
+          .setClientCache(ClusterStartupRule.getClientCache())
+          .build();
+      ClusterManagementService service = new ClientClusterManagementService(config);
+      assertThat(service.isConnected()).isTrue();
+    });
   }
 }

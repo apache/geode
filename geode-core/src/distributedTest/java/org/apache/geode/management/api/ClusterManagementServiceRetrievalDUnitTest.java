@@ -21,8 +21,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.springframework.web.util.AbstractUriTemplateHandler;
 
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.management.internal.ClientClusterManagementService;
+import org.apache.geode.management.internal.api.GeodeClusterManagementServiceConfig;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -40,11 +40,14 @@ public class ClusterManagementServiceRetrievalDUnitTest {
         x -> x.withHttpService());
     server1 = cluster.startServerVM(1, locator.getPort());
 
-    final String url =
-        String.format("http://localhost:%d/geode-management", locator.getHttpPort());
+    final String url = String.format("http://localhost:%d/geode-management", locator.getHttpPort());
     server1.invoke(() -> {
-      ClientClusterManagementService cms =
-          (ClientClusterManagementService) ClusterManagementServiceProvider.getService();
+      ClusterManagementServiceConfig config =
+          GeodeClusterManagementServiceConfig.builder()
+              .setCache(ClusterStartupRule.getCache())
+              .build();
+
+      ClientClusterManagementService cms = new ClientClusterManagementService(config);
       assertThat(
           ((AbstractUriTemplateHandler) cms.getRestTemplate().getUriTemplateHandler()).getBaseUrl())
               .isEqualTo(url);
