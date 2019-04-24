@@ -103,36 +103,47 @@ class ClientRegistrationEventQueueManager {
           + " without synchronization");
     }
 
-    drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID, cacheClientNotifier);
-
     ClientRegistrationEventQueue registrationEventQueue =
         registeringProxyEventQueues.get(clientProxyMembershipID);
 
-    registrationEventQueue.lockForDraining();
-    try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Draining remaining events from registration queue for client proxy "
-            + clientProxyMembershipID + " with synchronization");
+    /*
+     * It is possible that multiple threads were actively attempting to register a given client,
+     * so the registration event queue may have already been drained, processed, and removed from
+     * registeringProxyEventQueues. So in that case we would expect registrationEventQueue
+     * to be null.
+     */
+    if (registrationEventQueue != null) {
+      drainEventsReceivedWhileRegisteringClient(registrationEventQueue,
+          clientProxyMembershipID, cacheClientNotifier);
+
+      registrationEventQueue.lockForDraining();
+      try {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Draining remaining events from registration queue for client proxy "
+              + clientProxyMembershipID + " with synchronization");
+        }
+
+        drainEventsReceivedWhileRegisteringClient(registrationEventQueue,
+            clientProxyMembershipID, cacheClientNotifier);
+
+        registeringProxyEventQueues.remove(clientProxyMembershipID);
+      } finally {
+        registrationEventQueue.unlockForDraining();
       }
-
-      drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID, cacheClientNotifier);
-
-      registeringProxyEventQueues.remove(clientProxyMembershipID);
-    } finally {
-      registrationEventQueue.unlockForDraining();
     }
   }
 
-  private void drainEventsReceivedWhileRegisteringClient(final ClientProxyMembershipID proxyID,
+  private void drainEventsReceivedWhileRegisteringClient(
+      final ClientRegistrationEventQueue registrationEventQueue,
+      final ClientProxyMembershipID clientProxyMembershipID,
       final CacheClientNotifier cacheClientNotifier) {
     ClientRegistrationEvent queuedEvent;
-    ClientRegistrationEventQueue registrationEventQueue = registeringProxyEventQueues.get(proxyID);
 
     while ((queuedEvent = registrationEventQueue.poll()) != null) {
       InternalCacheEvent internalCacheEvent = queuedEvent.internalCacheEvent;
       Conflatable conflatable = queuedEvent.conflatable;
-      processEventAndDeliverConflatable(proxyID, cacheClientNotifier, internalCacheEvent,
-          conflatable, null);
+      processEventAndDeliverConflatable(clientProxyMembershipID, cacheClientNotifier,
+          internalCacheEvent, conflatable, null);
     }
   }
 
@@ -143,7 +154,7 @@ class ClientRegistrationEventQueueManager {
     final ClientRegistrationEventQueue clientRegistrationEventQueue =
         new ClientRegistrationEventQueue(eventQueue,
             putDrainLock);
-    registeringProxyEventQueues.put(clientProxyMembershipID,
+    registeringProxyEventQueues.putIfAbsent(clientProxyMembershipID,
         clientRegistrationEventQueue);
     return clientRegistrationEventQueue;
   }
