@@ -18,9 +18,9 @@ import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResourc
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.util.List;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,6 +32,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
@@ -92,6 +93,35 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     server.invoke(() -> assertThatFunctionHasVersion(
         "org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter",
         "ExtendsFunctionAdapterResult"));
+  }
+
+  @Test
+  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
+    String URL = "jdbc:mysql://localhost/";
+    IgnoredException.addIgnoredException(
+        "An Exception was caught while trying to load the driver");
+    IgnoredException.addIgnoredException(
+        "java.lang.ClassNotFoundException: com.mysql.cj.jdbc.Driver");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mysqlUser'@'localhost'");
+    IgnoredException.addIgnoredException(
+        "Failed to connect to \"mysqlDataSource\". See log for details");
+    // create the data-source
+    gfshConnector.executeAndAssertThat(
+        "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
+            + URL + "\"")
+        .statusIsError().containsOutput("An Exception was caught while trying to load the driver");
+
+    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    File mysqlDriverFile = loadTestResource("/" + jdbcJarName);
+    AssertionsForClassTypes.assertThat(mysqlDriverFile).exists();
+    String jarFile = mysqlDriverFile.getAbsolutePath();
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+
+    gfshConnector.executeAndAssertThat(
+        "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
+            + URL + "\"")
+        .containsOutput("Failed to connect to \"mysqlDataSource\". See log for details");
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {

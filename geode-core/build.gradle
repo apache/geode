@@ -146,6 +146,23 @@ configurations {
     extendsFrom api
     description 'a dependency that exposes the compiled classes'
   }
+  //Configuration used to download mysql jar
+  jdbcTestingJars
+}
+
+def jdbcJarsDir = "$buildDir/generated-resources/jdbcJars"
+
+sourceSets {
+  distributedTest {
+    resources {
+      srcDirs jdbcJarsDir
+    }
+    output.dir(jdbcJarsDir, builtBy: 'downloadJdbcJars')
+  }
+}
+task downloadJdbcJars(type:Copy) {
+  from {configurations.jdbcTestingJars}
+  into jdbcJarsDir
 }
 
 dependencies {
@@ -414,6 +431,9 @@ dependencies {
   performanceTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+
+  jdbcTestingJars('mysql:mysql-connector-java:8.0.15')
+
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)

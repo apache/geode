@@ -401,7 +401,7 @@ public class JarDeployer implements Serializable {
     return deployedJars;
   }
 
-  private static String getJdbcDriverName(DeployedJar jar) {
+  private String getJdbcDriverName(DeployedJar jar) {
     File jarFile = jar.getFile();
     try {
       FileInputStream fis = new FileInputStream(jarFile.getAbsolutePath());

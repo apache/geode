@@ -17,10 +17,8 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import java.io.File;
 import java.util.List;
 
-import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -36,7 +34,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
-import org.apache.geode.util.test.TestUtil;
 
 public class CreateDataSourceCommandDUnitTest {
 
@@ -100,40 +97,6 @@ public class CreateDataSourceCommandDUnitTest {
     });
 
     verifyThatNonExistentClassCausesGfshToError();
-  }
-
-  @Test
-  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
-    String URL = "jdbc:mysql://localhost/";
-    IgnoredException.addIgnoredException(
-        "No suitable driver");
-    IgnoredException.addIgnoredException(
-        "Access denied for user 'mySqlUser'@'localhost'");
-    IgnoredException.addIgnoredException(
-        "Failed to connect to \"mySqlDataSource\". See log for details");
-    // create the data-source
-    gfsh.executeAndAssertThat(
-        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
-            + URL + "\"")
-        .statusIsError().containsOutput("No suitable driver");
-
-    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
-    File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
-    assertThat(mySqlDriverFile).exists();
-    String jarFile = mySqlDriverFile.getAbsolutePath();
-    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
-
-    gfsh.executeAndAssertThat(
-        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
-            + URL + "\"")
-        .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
-  }
-
-  private File loadTestResource(String fileName) {
-    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
-    Assertions.assertThat(filePath).isNotNull();
-
-    return new File(filePath);
   }
 
   private void verifyThatNonExistentClassCausesGfshToError() {
